@@ -1,4 +1,4 @@
-import { FlatList, Text, View, TouchableOpacity, RefreshControl, ScrollView } from "react-native";
+import { FlatList, Text, View, TouchableOpacity, RefreshControl, ScrollView, TextInput } from "react-native";
 import { Image } from "expo-image";
 import { useRouter } from "expo-router";
 import { useState } from "react";
@@ -206,8 +206,14 @@ export default function HomeScreen() {
   const router = useRouter();
   const [refreshing, setRefreshing] = useState(false);
   const [filter, setFilter] = useState<FilterType>("all");
+  const [searchQuery, setSearchQuery] = useState("");
+  const [isSearching, setIsSearching] = useState(false);
   
   const { data: challenges, isLoading, refetch } = trpc.events.list.useQuery();
+  const { data: searchResults, refetch: refetchSearch } = trpc.search.challenges.useQuery(
+    { query: searchQuery },
+    { enabled: searchQuery.length > 0 }
+  );
 
   const onRefresh = async () => {
     setRefreshing(true);
@@ -223,10 +229,15 @@ export default function HomeScreen() {
   };
 
   // フィルター適用
-  const filteredChallenges = challenges?.filter((c: Challenge) => {
-    if (filter === "all") return true;
-    return c.eventType === filter;
-  }) || [];
+  const displayChallenges = isSearching && searchResults 
+    ? searchResults.filter((c: Challenge) => {
+        if (filter === "all") return true;
+        return c.eventType === filter;
+      })
+    : (challenges?.filter((c: Challenge) => {
+        if (filter === "all") return true;
+        return c.eventType === filter;
+      }) || []);
 
   return (
     <ScreenContainer containerClassName="bg-[#0D1117]">
@@ -250,6 +261,43 @@ export default function HomeScreen() {
           </View>
         </View>
         
+        {/* 検索バー */}
+        <View style={{ marginTop: 12 }}>
+          <View style={{
+            flexDirection: "row",
+            alignItems: "center",
+            backgroundColor: "#1A1D21",
+            borderRadius: 12,
+            paddingHorizontal: 12,
+            paddingVertical: 10,
+            borderWidth: 1,
+            borderColor: searchQuery ? "#DD6500" : "#2D3139",
+          }}>
+            <MaterialIcons name="search" size={20} color="#9CA3AF" />
+            <TextInput
+              value={searchQuery}
+              onChangeText={(text) => {
+                setSearchQuery(text);
+                setIsSearching(text.length > 0);
+              }}
+              placeholder="チャレンジを検索..."
+              placeholderTextColor="#6B7280"
+              style={{
+                flex: 1,
+                marginLeft: 8,
+                color: "#fff",
+                fontSize: 14,
+              }}
+              returnKeyType="search"
+            />
+            {searchQuery.length > 0 && (
+              <TouchableOpacity onPress={() => { setSearchQuery(""); setIsSearching(false); }}>
+                <MaterialIcons name="close" size={20} color="#9CA3AF" />
+              </TouchableOpacity>
+            )}
+          </View>
+        </View>
+        
         {/* フィルター */}
         <ScrollView 
           horizontal 
@@ -266,9 +314,9 @@ export default function HomeScreen() {
         <View style={{ flex: 1, alignItems: "center", justifyContent: "center", backgroundColor: "#0D1117" }}>
           <Text style={{ color: "#9CA3AF" }}>読み込み中...</Text>
         </View>
-      ) : filteredChallenges.length > 0 ? (
+      ) : displayChallenges.length > 0 ? (
         <FlatList
-          data={filteredChallenges}
+          data={displayChallenges}
           keyExtractor={(item) => item.id.toString()}
           numColumns={2}
           renderItem={({ item }) => (

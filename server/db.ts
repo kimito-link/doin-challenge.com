@@ -1,6 +1,6 @@
 import { eq, desc, and, sql } from "drizzle-orm";
 import { drizzle } from "drizzle-orm/mysql2";
-import { InsertUser, users, challenges, participations, InsertChallenge, InsertParticipation, notificationSettings, notifications, InsertNotificationSetting, InsertNotification, badges, userBadges, pickedComments, InsertBadge, InsertUserBadge, InsertPickedComment, cheers, achievementPages, InsertCheer, InsertAchievementPage, reminders, directMessages, challengeTemplates, InsertReminder, InsertDirectMessage, InsertChallengeTemplate } from "../drizzle/schema";
+import { InsertUser, users, challenges, participations, InsertChallenge, InsertParticipation, notificationSettings, notifications, InsertNotificationSetting, InsertNotification, badges, userBadges, pickedComments, InsertBadge, InsertUserBadge, InsertPickedComment, cheers, achievementPages, InsertCheer, InsertAchievementPage, reminders, directMessages, challengeTemplates, InsertReminder, InsertDirectMessage, InsertChallengeTemplate, follows, searchHistory, InsertFollow, InsertSearchHistory } from "../drizzle/schema";
 
 // 後方互換性のためのエイリアス
 const events = challenges;
@@ -716,4 +716,195 @@ export async function incrementTemplateUseCount(id: number) {
   const db = await getDb();
   if (!db) return;
   await db.update(challengeTemplates).set({ useCount: sql`${challengeTemplates.useCount} + 1` }).where(eq(challengeTemplates.id, id));
+}
+
+
+// ========== Search (検索) ==========
+
+export async function searchChallenges(query: string) {
+  const db = await getDb();
+  if (!db) return [];
+  
+  const searchTerm = `%${query}%`;
+  return db.select().from(challenges)
+    .where(sql`${challenges.title} LIKE ${searchTerm} OR ${challenges.hostName} LIKE ${searchTerm} OR ${challenges.venue} LIKE ${searchTerm} OR ${challenges.description} LIKE ${searchTerm}`)
+    .orderBy(desc(challenges.createdAt));
+}
+
+export async function saveSearchHistory(history: InsertSearchHistory) {
+  const db = await getDb();
+  if (!db) return null;
+  const result = await db.insert(searchHistory).values(history);
+  return result[0].insertId;
+}
+
+export async function getSearchHistoryForUser(userId: number, limit: number = 10) {
+  const db = await getDb();
+  if (!db) return [];
+  return db.select().from(searchHistory)
+    .where(eq(searchHistory.userId, userId))
+    .orderBy(desc(searchHistory.createdAt))
+    .limit(limit);
+}
+
+export async function clearSearchHistoryForUser(userId: number) {
+  const db = await getDb();
+  if (!db) return;
+  await db.delete(searchHistory).where(eq(searchHistory.userId, userId));
+}
+
+// ========== Follows (フォロー) ==========
+
+export async function followUser(follow: InsertFollow) {
+  const db = await getDb();
+  if (!db) return null;
+  
+  // 既にフォロー済みかチェック
+  const existing = await db.select().from(follows)
+    .where(and(eq(follows.followerId, follow.followerId), eq(follows.followeeId, follow.followeeId)));
+  
+  if (existing.length > 0) return null; // 既にフォロー済み
+  
+  const result = await db.insert(follows).values(follow);
+  return result[0].insertId;
+}
+
+export async function unfollowUser(followerId: number, followeeId: number) {
+  const db = await getDb();
+  if (!db) return;
+  await db.delete(follows).where(and(eq(follows.followerId, followerId), eq(follows.followeeId, followeeId)));
+}
+
+export async function getFollowersForUser(userId: number) {
+  const db = await getDb();
+  if (!db) return [];
+  return db.select().from(follows).where(eq(follows.followeeId, userId)).orderBy(desc(follows.createdAt));
+}
+
+export async function getFollowingForUser(userId: number) {
+  const db = await getDb();
+  if (!db) return [];
+  return db.select().from(follows).where(eq(follows.followerId, userId)).orderBy(desc(follows.createdAt));
+}
+
+export async function isFollowing(followerId: number, followeeId: number) {
+  const db = await getDb();
+  if (!db) return false;
+  const result = await db.select().from(follows)
+    .where(and(eq(follows.followerId, followerId), eq(follows.followeeId, followeeId)));
+  return result.length > 0;
+}
+
+export async function getFollowerCount(userId: number) {
+  const db = await getDb();
+  if (!db) return 0;
+  const result = await db.select({ count: sql<number>`count(*)` }).from(follows).where(eq(follows.followeeId, userId));
+  return result[0]?.count || 0;
+}
+
+export async function getFollowingCount(userId: number) {
+  const db = await getDb();
+  if (!db) return 0;
+  const result = await db.select({ count: sql<number>`count(*)` }).from(follows).where(eq(follows.followerId, userId));
+  return result[0]?.count || 0;
+}
+
+export async function updateFollowNotification(followerId: number, followeeId: number, notify: boolean) {
+  const db = await getDb();
+  if (!db) return;
+  await db.update(follows).set({ notifyNewChallenge: notify })
+    .where(and(eq(follows.followerId, followerId), eq(follows.followeeId, followeeId)));
+}
+
+// ========== Rankings (ランキング) ==========
+
+export async function getGlobalContributionRanking(period: "weekly" | "monthly" | "all" = "all", limit: number = 50) {
+  const db = await getDb();
+  if (!db) return [];
+  
+  let dateFilter = sql`1=1`;
+  const now = new Date();
+  
+  if (period === "weekly") {
+    const weekAgo = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
+    dateFilter = sql`${participations.createdAt} >= ${weekAgo}`;
+  } else if (period === "monthly") {
+    const monthAgo = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000);
+    dateFilter = sql`${participations.createdAt} >= ${monthAgo}`;
+  }
+  
+  const result = await db.select({
+    userId: participations.userId,
+    userName: participations.username,
+    userImage: participations.profileImage,
+    totalContribution: sql<number>`SUM(${participations.contribution})`,
+    participationCount: sql<number>`COUNT(*)`,
+  })
+    .from(participations)
+    .where(dateFilter)
+    .groupBy(participations.userId, participations.username, participations.profileImage)
+    .orderBy(sql`SUM(${participations.contribution}) DESC`)
+    .limit(limit);
+  
+  return result;
+}
+
+export async function getChallengeAchievementRanking(limit: number = 50) {
+  const db = await getDb();
+  if (!db) return [];
+  
+  // 達成率が高いチャレンジのランキング
+  const result = await db.select({
+    id: challenges.id,
+    title: challenges.title,
+    hostName: challenges.hostName,
+    goalValue: challenges.goalValue,
+    currentValue: challenges.currentValue,
+    achievementRate: sql<number>`(${challenges.currentValue} / ${challenges.goalValue}) * 100`,
+    eventDate: challenges.eventDate,
+  })
+    .from(challenges)
+    .where(sql`${challenges.goalValue} > 0`)
+    .orderBy(sql`(${challenges.currentValue} / ${challenges.goalValue}) DESC`)
+    .limit(limit);
+  
+  return result;
+}
+
+export async function getHostRanking(limit: number = 50) {
+  const db = await getDb();
+  if (!db) return [];
+  
+  // ホスト別のチャレンジ成功率ランキング
+  const result = await db.select({
+    hostUserId: challenges.hostUserId,
+    hostName: challenges.hostName,
+    hostProfileImage: challenges.hostProfileImage,
+    challengeCount: sql<number>`COUNT(*)`,
+    totalParticipants: sql<number>`SUM(${challenges.currentValue})`,
+    avgAchievementRate: sql<number>`AVG((${challenges.currentValue} / ${challenges.goalValue}) * 100)`,
+  })
+    .from(challenges)
+    .where(sql`${challenges.goalValue} > 0`)
+    .groupBy(challenges.hostUserId, challenges.hostName, challenges.hostProfileImage)
+    .orderBy(sql`AVG((${challenges.currentValue} / ${challenges.goalValue}) * 100) DESC`)
+    .limit(limit);
+  
+  return result;
+}
+
+export async function getUserRankingPosition(userId: number, period: "weekly" | "monthly" | "all" = "all") {
+  const db = await getDb();
+  if (!db) return null;
+  
+  const ranking = await getGlobalContributionRanking(period, 1000);
+  const position = ranking.findIndex(r => r.userId === userId);
+  
+  if (position === -1) return null;
+  
+  return {
+    position: position + 1,
+    totalContribution: ranking[position].totalContribution,
+    participationCount: ranking[position].participationCount,
+  };
 }

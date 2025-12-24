@@ -43,6 +43,13 @@
       "when": 1766605072002,
       "tag": "0005_even_phalanx",
       "breakpoints": true
+    },
+    {
+      "idx": 6,
+      "version": "5",
+      "when": 1766606928975,
+      "tag": "0006_massive_random",
+      "breakpoints": true
     }
   ]
 }

@@ -313,3 +313,39 @@ export const challengeTemplates = mysqlTable("challenge_templates", {
 
 export type ChallengeTemplate = typeof challengeTemplates.$inferSelect;
 export type InsertChallengeTemplate = typeof challengeTemplates.$inferInsert;
+
+
+/**
+ * フォローテーブル（ホスト・アーティストのフォロー）
+ */
+export const follows = mysqlTable("follows", {
+  id: int("id").autoincrement().primaryKey(),
+  // フォローする人
+  followerId: int("followerId").notNull(),
+  followerName: varchar("followerName", { length: 255 }),
+  // フォローされる人（ホスト）
+  followeeId: int("followeeId").notNull(),
+  followeeName: varchar("followeeName", { length: 255 }),
+  followeeImage: text("followeeImage"),
+  // 通知設定
+  notifyNewChallenge: boolean("notifyNewChallenge").default(true).notNull(),
+  // メタデータ
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+});
+
+export type Follow = typeof follows.$inferSelect;
+export type InsertFollow = typeof follows.$inferInsert;
+
+/**
+ * 検索履歴テーブル
+ */
+export const searchHistory = mysqlTable("search_history", {
+  id: int("id").autoincrement().primaryKey(),
+  userId: int("userId").notNull(),
+  query: varchar("query", { length: 255 }).notNull(),
+  resultCount: int("resultCount").default(0).notNull(),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+});
+
+export type SearchHistory = typeof searchHistory.$inferSelect;
+export type InsertSearchHistory = typeof searchHistory.$inferInsert;

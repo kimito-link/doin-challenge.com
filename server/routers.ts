@@ -705,6 +705,146 @@ Design requirements:
         return { success: true };
       }),
   }),
+
+  // 検索関連
+  search: router({
+    // チャレンジを検索
+    challenges: publicProcedure
+      .input(z.object({ query: z.string().min(1) }))
+      .query(async ({ input }) => {
+        return db.searchChallenges(input.query);
+      }),
+
+    // 検索履歴を保存
+    saveHistory: protectedProcedure
+      .input(z.object({ query: z.string(), resultCount: z.number() }))
+      .mutation(async ({ ctx, input }) => {
+        const result = await db.saveSearchHistory({
+          userId: ctx.user.id,
+          query: input.query,
+          resultCount: input.resultCount,
+        });
+        return { success: !!result, id: result };
+      }),
+
+    // 検索履歴を取得
+    history: protectedProcedure
+      .input(z.object({ limit: z.number().optional() }))
+      .query(async ({ ctx, input }) => {
+        return db.getSearchHistoryForUser(ctx.user.id, input.limit || 10);
+      }),
+
+    // 検索履歴をクリア
+    clearHistory: protectedProcedure
+      .mutation(async ({ ctx }) => {
+        await db.clearSearchHistoryForUser(ctx.user.id);
+        return { success: true };
+      }),
+  }),
+
+  // フォロー関連
+  follows: router({
+    // フォローする
+    follow: protectedProcedure
+      .input(z.object({
+        followeeId: z.number(),
+        followeeName: z.string().optional(),
+        followeeImage: z.string().optional(),
+      }))
+      .mutation(async ({ ctx, input }) => {
+        const result = await db.followUser({
+          followerId: ctx.user.id,
+          followerName: ctx.user.name || "匿名",
+          followeeId: input.followeeId,
+          followeeName: input.followeeName,
+          followeeImage: input.followeeImage,
+        });
+        return { success: !!result, id: result };
+      }),
+
+    // フォロー解除
+    unfollow: protectedProcedure
+      .input(z.object({ followeeId: z.number() }))
+      .mutation(async ({ ctx, input }) => {
+        await db.unfollowUser(ctx.user.id, input.followeeId);
+        return { success: true };
+      }),
+
+    // フォロー中のユーザー一覧
+    following: protectedProcedure
+      .query(async ({ ctx }) => {
+        return db.getFollowingForUser(ctx.user.id);
+      }),
+
+    // フォロワー一覧
+    followers: protectedProcedure
+      .query(async ({ ctx }) => {
+        return db.getFollowersForUser(ctx.user.id);
+      }),
+
+    // フォローしているかチェック
+    isFollowing: protectedProcedure
+      .input(z.object({ followeeId: z.number() }))
+      .query(async ({ ctx, input }) => {
+        return db.isFollowing(ctx.user.id, input.followeeId);
+      }),
+
+    // フォロワー数を取得
+    followerCount: publicProcedure
+      .input(z.object({ userId: z.number() }))
+      .query(async ({ input }) => {
+        return db.getFollowerCount(input.userId);
+      }),
+
+    // フォロー中の数を取得
+    followingCount: publicProcedure
+      .input(z.object({ userId: z.number() }))
+      .query(async ({ input }) => {
+        return db.getFollowingCount(input.userId);
+      }),
+
+    // 新着チャレンジ通知設定を更新
+    updateNotification: protectedProcedure
+      .input(z.object({ followeeId: z.number(), notify: z.boolean() }))
+      .mutation(async ({ ctx, input }) => {
+        await db.updateFollowNotification(ctx.user.id, input.followeeId, input.notify);
+        return { success: true };
+      }),
+  }),
+
+  // ランキング関連
+  rankings: router({
+    // 貢献度ランキング
+    contribution: publicProcedure
+      .input(z.object({
+        period: z.enum(["weekly", "monthly", "all"]).optional(),
+        limit: z.number().optional(),
+      }))
+      .query(async ({ input }) => {
+        return db.getGlobalContributionRanking(input.period || "all", input.limit || 50);
+      }),
+
+    // チャレンジ達成率ランキング
+    challengeAchievement: publicProcedure
+      .input(z.object({ limit: z.number().optional() }))
+      .query(async ({ input }) => {
+        return db.getChallengeAchievementRanking(input.limit || 50);
+      }),
+
+    // ホストランキング
+    hosts: publicProcedure
+      .input(z.object({ limit: z.number().optional() }))
+      .query(async ({ input }) => {
+        return db.getHostRanking(input.limit || 50);
+      }),
+
+    // 自分のランキング位置を取得
+    myPosition: protectedProcedure
+      .input(z.object({ period: z.enum(["weekly", "monthly", "all"]).optional() }))
+      .query(async ({ ctx, input }) => {
+        return db.getUserRankingPosition(ctx.user.id, input.period || "all");
+      }),
+  }),
 });
 
 export type AppRouter = typeof appRouter;

@@ -341,6 +341,39 @@ export default function ChallengeDetailScreen() {
   const { data: challenge, isLoading: challengeLoading } = trpc.events.getById.useQuery({ id: challengeId });
   const { data: participations, isLoading: participationsLoading, refetch } = trpc.participations.listByEvent.useQuery({ eventId: challengeId });
   
+  // フォロー状態
+  const hostUserId = challenge?.hostUserId;
+  const { data: isFollowing } = trpc.follows.isFollowing.useQuery(
+    { followeeId: hostUserId! },
+    { enabled: !!user && !!hostUserId && hostUserId !== user.id }
+  );
+  
+  const followMutation = trpc.follows.follow.useMutation({
+    onSuccess: () => {
+      Alert.alert("フォローしました", "新着チャレンジの通知を受け取れます");
+    },
+  });
+  
+  const unfollowMutation = trpc.follows.unfollow.useMutation();
+  
+  const handleFollowToggle = () => {
+    if (!user) {
+      Alert.alert("ログインが必要です", "フォローするにはログインしてください");
+      return;
+    }
+    if (!hostUserId) return;
+    
+    if (isFollowing) {
+      unfollowMutation.mutate({ followeeId: hostUserId });
+    } else {
+      followMutation.mutate({
+        followeeId: hostUserId,
+        followeeName: challenge?.hostName,
+        followeeImage: challenge?.hostProfileImage || undefined,
+      });
+    }
+  };
+  
   const createParticipationMutation = trpc.participations.create.useMutation({
     onSuccess: () => {
       setMessage("");
@@ -534,6 +567,26 @@ export default function ChallengeDetailScreen() {
                   </Text>
                 )}
               </View>
+              {/* フォローボタン */}
+              {user && hostUserId && hostUserId !== user.id && (
+                <TouchableOpacity
+                  onPress={handleFollowToggle}
+                  style={{
+                    paddingHorizontal: 16,
+                    paddingVertical: 8,
+                    borderRadius: 20,
+                    backgroundColor: isFollowing ? "rgba(255,255,255,0.2)" : "#fff",
+                  }}
+                >
+                  <Text style={{ 
+                    color: isFollowing ? "#fff" : "#EC4899", 
+                    fontSize: 13, 
+                    fontWeight: "bold" 
+                  }}>
+                    {isFollowing ? "フォロー中" : "フォロー"}
+                  </Text>
+                </TouchableOpacity>
+              )}
             </View>
 
             <Text style={{ color: "#fff", fontSize: 22, fontWeight: "bold" }}>
