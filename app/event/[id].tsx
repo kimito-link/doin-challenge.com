@@ -7,6 +7,7 @@ import { trpc } from "@/lib/trpc";
 import { useAuth } from "@/hooks/use-auth";
 import MaterialIcons from "@expo/vector-icons/MaterialIcons";
 import { LinearGradient } from "expo-linear-gradient";
+import { Countdown } from "@/components/countdown";
 
 const { width: screenWidth } = Dimensions.get("window");
 
@@ -220,7 +221,7 @@ function ContributionRanking({ participations }: { participations: Participation
 }
 
 // 応援メッセージカード
-function MessageCard({ participation }: { participation: Participation }) {
+function MessageCard({ participation, onCheer, cheerCount }: { participation: Participation; onCheer?: () => void; cheerCount?: number }) {
   return (
     <View
       style={{
@@ -278,10 +279,27 @@ function MessageCard({ participation }: { participation: Participation }) {
         </View>
       </View>
       {participation.message && (
-        <Text style={{ color: "#E5E7EB", fontSize: 15, lineHeight: 22 }}>
+        <Text style={{ color: "#E5E7EB", fontSize: 15, lineHeight: 22, marginBottom: 12 }}>
           {participation.message}
         </Text>
       )}
+      {/* エールボタン */}
+      <View style={{ flexDirection: "row", alignItems: "center", justifyContent: "flex-end", marginTop: 8 }}>
+        <TouchableOpacity
+          onPress={onCheer}
+          style={{
+            flexDirection: "row",
+            alignItems: "center",
+            backgroundColor: "#2D3139",
+            paddingHorizontal: 12,
+            paddingVertical: 6,
+            borderRadius: 16,
+          }}
+        >
+          <Text style={{ fontSize: 16, marginRight: 4 }}>👏</Text>
+          <Text style={{ color: "#9CA3AF", fontSize: 12 }}>エール{cheerCount && cheerCount > 0 ? ` (${cheerCount})` : ""}</Text>
+        </TouchableOpacity>
+      </View>
     </View>
   );
 }
@@ -326,6 +344,29 @@ export default function ChallengeDetailScreen() {
       refetch();
     },
   });
+
+  // エール送信mutation
+  const sendCheerMutation = trpc.cheers.send.useMutation({
+    onSuccess: () => {
+      Alert.alert("👏", "エールを送りました！");
+    },
+    onError: (error) => {
+      Alert.alert("エラー", error.message || "エールの送信に失敗しました");
+    },
+  });
+
+  const handleSendCheer = (participationId: number, toUserId?: number) => {
+    if (!user) {
+      Alert.alert("ログインが必要です", "エールを送るにはログインしてください");
+      return;
+    }
+    sendCheerMutation.mutate({
+      toParticipationId: participationId,
+      toUserId,
+      challengeId,
+      emoji: "👏",
+    });
+  };
 
   const handleSubmit = () => {
     if (user) {
@@ -483,6 +524,28 @@ export default function ChallengeDetailScreen() {
             </Text>
           </LinearGradient>
 
+          {/* カウントダウンセクション */}
+          <View style={{ paddingHorizontal: 16, paddingTop: 16 }}>
+            <View
+              style={{
+                backgroundColor: "#1A1D21",
+                borderRadius: 16,
+                borderWidth: 1,
+                borderColor: "#2D3139",
+                overflow: "hidden",
+              }}
+            >
+              <LinearGradient
+                colors={["rgba(236, 72, 153, 0.1)", "rgba(139, 92, 246, 0.1)"]}
+                start={{ x: 0, y: 0 }}
+                end={{ x: 1, y: 0 }}
+                style={{ paddingVertical: 4 }}
+              >
+                <Countdown targetDate={challenge.eventDate} />
+              </LinearGradient>
+            </View>
+          </View>
+
           {/* 進捗セクション */}
           <View style={{ padding: 16 }}>
             <View
@@ -528,9 +591,27 @@ export default function ChallengeDetailScreen() {
                 />
               </View>
               
-              <Text style={{ color: "#9CA3AF", fontSize: 14, textAlign: "center" }}>
-                あと<Text style={{ color: "#EC4899", fontWeight: "bold" }}>{remaining}{unit}</Text>で目標達成！
-              </Text>
+              {progress >= 100 ? (
+                <TouchableOpacity
+                  onPress={() => router.push(`/achievement/${challengeId}`)}
+                  style={{
+                    backgroundColor: "#EC4899",
+                    paddingVertical: 12,
+                    paddingHorizontal: 24,
+                    borderRadius: 24,
+                    alignItems: "center",
+                    marginTop: 8,
+                  }}
+                >
+                  <Text style={{ color: "#fff", fontSize: 16, fontWeight: "bold" }}>
+                    🎉 達成記念ページを見る
+                  </Text>
+                </TouchableOpacity>
+              ) : (
+                <Text style={{ color: "#9CA3AF", fontSize: 14, textAlign: "center" }}>
+                  あと<Text style={{ color: "#EC4899", fontWeight: "bold" }}>{remaining}{unit}</Text>で目標達成！
+                </Text>
+              )}
 
               {/* 進捗グリッド */}
               <ProgressGrid current={currentValue} goal={goalValue} unit={unit} />
@@ -632,23 +713,59 @@ export default function ChallengeDetailScreen() {
 
             {/* ホスト用管理ボタン */}
             {user && challenge.hostUserId === user.id && (
-              <TouchableOpacity
-                onPress={() => router.push(`/manage-comments/${challengeId}`)}
-                style={{
-                  backgroundColor: "#8B5CF6",
-                  borderRadius: 12,
-                  padding: 14,
-                  marginTop: 16,
-                  flexDirection: "row",
-                  alignItems: "center",
-                  justifyContent: "center",
-                }}
-              >
-                <MaterialIcons name="star" size={20} color="#fff" />
-                <Text style={{ color: "#fff", fontSize: 14, fontWeight: "bold", marginLeft: 8 }}>
-                  コメント管理（ピックアップ）
-                </Text>
-              </TouchableOpacity>
+              <View style={{ gap: 12, marginTop: 16 }}>
+                <TouchableOpacity
+                  onPress={() => router.push(`/manage-comments/${challengeId}`)}
+                  style={{
+                    backgroundColor: "#8B5CF6",
+                    borderRadius: 12,
+                    padding: 14,
+                    flexDirection: "row",
+                    alignItems: "center",
+                    justifyContent: "center",
+                  }}
+                >
+                  <MaterialIcons name="star" size={20} color="#fff" />
+                  <Text style={{ color: "#fff", fontSize: 14, fontWeight: "bold", marginLeft: 8 }}>
+                    コメント管理（ピックアップ）
+                  </Text>
+                </TouchableOpacity>
+                
+                {/* 達成記念ページ作成ボタン（目標達成時のみ） */}
+                {progress >= 100 && (
+                  <TouchableOpacity
+                    onPress={() => {
+                      Alert.alert(
+                        "達成記念ページを作成",
+                        "目標達成を記念して、参加者全員の名前を掲載した記念ページを作成しますか？",
+                        [
+                          { text: "キャンセル", style: "cancel" },
+                          {
+                            text: "作成する",
+                            onPress: async () => {
+                              // TODO: 達成記念ページ作成APIを呼び出す
+                              router.push(`/achievement/${challengeId}`);
+                            },
+                          },
+                        ]
+                      );
+                    }}
+                    style={{
+                      backgroundColor: "#EC4899",
+                      borderRadius: 12,
+                      padding: 14,
+                      flexDirection: "row",
+                      alignItems: "center",
+                      justifyContent: "center",
+                    }}
+                  >
+                    <MaterialIcons name="celebration" size={20} color="#fff" />
+                    <Text style={{ color: "#fff", fontSize: 14, fontWeight: "bold", marginLeft: 8 }}>
+                      達成記念ページを作成
+                    </Text>
+                  </TouchableOpacity>
+                )}
+              </View>
             )}
 
             {/* 地域別マップ */}
@@ -752,7 +869,11 @@ export default function ChallengeDetailScreen() {
                     return p.prefecture === selectedPrefectureFilter;
                   })
                   .map((p: any) => (
-                    <MessageCard key={p.id} participation={p as Participation} />
+                    <MessageCard 
+                      key={p.id} 
+                      participation={p as Participation} 
+                      onCheer={() => handleSendCheer(p.id, p.userId)}
+                    />
                   ))}
                 
                 {participations.filter((p: any) => {

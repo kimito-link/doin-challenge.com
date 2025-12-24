@@ -188,6 +188,52 @@ export const pickedComments = mysqlTable("picked_comments", {
 export type PickedComment = typeof pickedComments.$inferSelect;
 export type InsertPickedComment = typeof pickedComments.$inferInsert;
 
+/**
+ * エールテーブル（参加者同士の応援）
+ */
+export const cheers = mysqlTable("cheers", {
+  id: int("id").autoincrement().primaryKey(),
+  // エールを送る人
+  fromUserId: int("fromUserId").notNull(),
+  fromUserName: varchar("fromUserName", { length: 255 }).notNull(),
+  fromUserImage: text("fromUserImage"),
+  // エールを受ける人
+  toParticipationId: int("toParticipationId").notNull(),
+  toUserId: int("toUserId"),
+  // エール内容
+  message: text("message"),
+  emoji: varchar("emoji", { length: 32 }).default("👏").notNull(),
+  // チャレンジ情報
+  challengeId: int("challengeId").notNull(),
+  // メタデータ
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+});
+
+export type Cheer = typeof cheers.$inferSelect;
+export type InsertCheer = typeof cheers.$inferInsert;
+
+/**
+ * 達成記念ページテーブル
+ */
+export const achievementPages = mysqlTable("achievement_pages", {
+  id: int("id").autoincrement().primaryKey(),
+  challengeId: int("challengeId").notNull(),
+  // 達成情報
+  achievedAt: timestamp("achievedAt").notNull(),
+  finalValue: int("finalValue").notNull(),
+  goalValue: int("goalValue").notNull(),
+  totalParticipants: int("totalParticipants").notNull(),
+  // ページ設定
+  title: varchar("title", { length: 255 }).notNull(),
+  message: text("message"),
+  isPublic: boolean("isPublic").default(true).notNull(),
+  // メタデータ
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+});
+
+export type AchievementPage = typeof achievementPages.$inferSelect;
+export type InsertAchievementPage = typeof achievementPages.$inferInsert;
+
 // 後方互換性のためのエイリアス
 export const events = challenges;
 export type Event = Challenge;

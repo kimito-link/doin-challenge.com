@@ -7,6 +7,7 @@ import { trpc } from "@/lib/trpc";
 import { useColors } from "@/hooks/use-colors";
 import { LinearGradient } from "expo-linear-gradient";
 import MaterialIcons from "@expo/vector-icons/MaterialIcons";
+import { Countdown } from "@/components/countdown";
 
 // キャラクター画像
 const characterImages = {
@@ -158,22 +159,15 @@ function ChallengeCard({ challenge, onPress }: { challenge: Challenge; onPress: 
           </Text>
         </View>
 
-        {/* 日付・場所 */}
+        {/* カウントダウン・日付 */}
         <View style={{ flexDirection: "row", alignItems: "center", justifyContent: "space-between" }}>
+          <Countdown targetDate={challenge.eventDate} compact />
           <View style={{ flexDirection: "row", alignItems: "center" }}>
             <MaterialIcons name="event" size={12} color="#DD6500" />
             <Text style={{ color: "#DD6500", fontSize: 11, marginLeft: 2 }}>
               {formattedDate}
             </Text>
           </View>
-          {challenge.venue && (
-            <View style={{ flexDirection: "row", alignItems: "center" }}>
-              <MaterialIcons name="place" size={12} color="#9CA3AF" />
-              <Text style={{ color: "#9CA3AF", fontSize: 11, marginLeft: 2 }} numberOfLines={1}>
-                {challenge.venue.length > 6 ? challenge.venue.slice(0, 6) + "..." : challenge.venue}
-              </Text>
-            </View>
-          )}
         </View>
       </View>
     </TouchableOpacity>

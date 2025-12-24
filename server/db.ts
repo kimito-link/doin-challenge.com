@@ -1,6 +1,6 @@
 import { eq, desc, and, sql } from "drizzle-orm";
 import { drizzle } from "drizzle-orm/mysql2";
-import { InsertUser, users, challenges, participations, InsertChallenge, InsertParticipation, notificationSettings, notifications, InsertNotificationSetting, InsertNotification, badges, userBadges, pickedComments, InsertBadge, InsertUserBadge, InsertPickedComment } from "../drizzle/schema";
+import { InsertUser, users, challenges, participations, InsertChallenge, InsertParticipation, notificationSettings, notifications, InsertNotificationSetting, InsertNotification, badges, userBadges, pickedComments, InsertBadge, InsertUserBadge, InsertPickedComment, cheers, achievementPages, InsertCheer, InsertAchievementPage } from "../drizzle/schema";
 
 // 後方互換性のためのエイリアス
 const events = challenges;
@@ -479,4 +479,72 @@ export async function getParticipationsByPrefectureFilter(challengeId: number, p
   return db.select().from(participations)
     .where(and(eq(participations.challengeId, challengeId), eq(participations.prefecture, prefecture)))
     .orderBy(desc(participations.createdAt));
+}
+
+// ========== Cheers (エール) ==========
+
+export async function sendCheer(cheer: InsertCheer) {
+  const db = await getDb();
+  if (!db) return null;
+  const result = await db.insert(cheers).values(cheer);
+  return result[0].insertId;
+}
+
+export async function getCheersForParticipation(participationId: number) {
+  const db = await getDb();
+  if (!db) return [];
+  return db.select().from(cheers).where(eq(cheers.toParticipationId, participationId)).orderBy(desc(cheers.createdAt));
+}
+
+export async function getCheersForChallenge(challengeId: number) {
+  const db = await getDb();
+  if (!db) return [];
+  return db.select().from(cheers).where(eq(cheers.challengeId, challengeId)).orderBy(desc(cheers.createdAt));
+}
+
+export async function getCheerCountForParticipation(participationId: number) {
+  const db = await getDb();
+  if (!db) return 0;
+  const result = await db.select({ count: sql<number>`count(*)` }).from(cheers).where(eq(cheers.toParticipationId, participationId));
+  return result[0]?.count || 0;
+}
+
+export async function getCheersReceivedByUser(userId: number) {
+  const db = await getDb();
+  if (!db) return [];
+  return db.select().from(cheers).where(eq(cheers.toUserId, userId)).orderBy(desc(cheers.createdAt));
+}
+
+export async function getCheersSentByUser(userId: number) {
+  const db = await getDb();
+  if (!db) return [];
+  return db.select().from(cheers).where(eq(cheers.fromUserId, userId)).orderBy(desc(cheers.createdAt));
+}
+
+// ========== Achievement Pages (達成記念ページ) ==========
+
+export async function createAchievementPage(page: InsertAchievementPage) {
+  const db = await getDb();
+  if (!db) return null;
+  const result = await db.insert(achievementPages).values(page);
+  return result[0].insertId;
+}
+
+export async function getAchievementPage(challengeId: number) {
+  const db = await getDb();
+  if (!db) return null;
+  const result = await db.select().from(achievementPages).where(eq(achievementPages.challengeId, challengeId));
+  return result[0] || null;
+}
+
+export async function updateAchievementPage(challengeId: number, updates: Partial<InsertAchievementPage>) {
+  const db = await getDb();
+  if (!db) return;
+  await db.update(achievementPages).set(updates).where(eq(achievementPages.challengeId, challengeId));
+}
+
+export async function getPublicAchievementPages() {
+  const db = await getDb();
+  if (!db) return [];
+  return db.select().from(achievementPages).where(eq(achievementPages.isPublic, true)).orderBy(desc(achievementPages.achievedAt));
 }

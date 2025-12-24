@@ -379,6 +379,132 @@ Design requirements:
         return db.getParticipationsByPrefectureFilter(input.challengeId, input.prefecture);
       }),
   }),
+
+  // エール（参加者同士の応援）API
+  cheers: router({
+    // エールを送る
+    send: protectedProcedure
+      .input(z.object({
+        toParticipationId: z.number(),
+        toUserId: z.number().optional(),
+        challengeId: z.number(),
+        message: z.string().optional(),
+        emoji: z.string().default("👏"),
+      }))
+      .mutation(async ({ ctx, input }) => {
+        const result = await db.sendCheer({
+          fromUserId: ctx.user.id,
+          fromUserName: ctx.user.name || "匿名",
+          fromUserImage: null,
+          toParticipationId: input.toParticipationId,
+          toUserId: input.toUserId,
+          challengeId: input.challengeId,
+          message: input.message,
+          emoji: input.emoji,
+        });
+        return { success: !!result, id: result };
+      }),
+
+    // 参加者へのエール一覧
+    forParticipation: publicProcedure
+      .input(z.object({ participationId: z.number() }))
+      .query(async ({ input }) => {
+        return db.getCheersForParticipation(input.participationId);
+      }),
+
+    // チャレンジのエール一覧
+    forChallenge: publicProcedure
+      .input(z.object({ challengeId: z.number() }))
+      .query(async ({ input }) => {
+        return db.getCheersForChallenge(input.challengeId);
+      }),
+
+    // エール数を取得
+    count: publicProcedure
+      .input(z.object({ participationId: z.number() }))
+      .query(async ({ input }) => {
+        return db.getCheerCountForParticipation(input.participationId);
+      }),
+
+    // 自分が受けたエール
+    received: protectedProcedure
+      .query(async ({ ctx }) => {
+        return db.getCheersReceivedByUser(ctx.user.id);
+      }),
+
+    // 自分が送ったエール
+    sent: protectedProcedure
+      .query(async ({ ctx }) => {
+        return db.getCheersSentByUser(ctx.user.id);
+      }),
+  }),
+
+  // 達成記念ページAPI
+  achievements: router({
+    // 達成記念ページを作成
+    create: protectedProcedure
+      .input(z.object({
+        challengeId: z.number(),
+        title: z.string(),
+        message: z.string().optional(),
+      }))
+      .mutation(async ({ ctx, input }) => {
+        const challenge = await db.getEventById(input.challengeId);
+        if (!challenge) throw new Error("Challenge not found");
+        if (challenge.hostUserId !== ctx.user.id && ctx.user.role !== "admin") {
+          throw new Error("Permission denied");
+        }
+        
+        const participations = await db.getParticipationsByEventId(input.challengeId);
+        
+        const result = await db.createAchievementPage({
+          challengeId: input.challengeId,
+          achievedAt: new Date(),
+          finalValue: challenge.currentValue || 0,
+          goalValue: challenge.goalValue || 100,
+          totalParticipants: participations.length,
+          title: input.title,
+          message: input.message,
+          isPublic: true,
+        });
+        return { success: !!result, id: result };
+      }),
+
+    // 達成記念ページを取得
+    get: publicProcedure
+      .input(z.object({ challengeId: z.number() }))
+      .query(async ({ input }) => {
+        return db.getAchievementPage(input.challengeId);
+      }),
+
+    // 達成記念ページを更新
+    update: protectedProcedure
+      .input(z.object({
+        challengeId: z.number(),
+        title: z.string().optional(),
+        message: z.string().optional(),
+        isPublic: z.boolean().optional(),
+      }))
+      .mutation(async ({ ctx, input }) => {
+        const challenge = await db.getEventById(input.challengeId);
+        if (!challenge) throw new Error("Challenge not found");
+        if (challenge.hostUserId !== ctx.user.id && ctx.user.role !== "admin") {
+          throw new Error("Permission denied");
+        }
+        await db.updateAchievementPage(input.challengeId, {
+          title: input.title,
+          message: input.message,
+          isPublic: input.isPublic,
+        });
+        return { success: true };
+      }),
+
+    // 公開中の達成記念ページ一覧
+    public: publicProcedure
+      .query(async () => {
+        return db.getPublicAchievementPages();
+      }),
+  }),
 });
 
 export type AppRouter = typeof appRouter;
