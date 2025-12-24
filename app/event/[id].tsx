@@ -43,6 +43,7 @@ const prefectures = [
 
 type Participation = {
   id: number;
+  userId: number | null;
   displayName: string;
   username: string | null;
   profileImage: string | null;
@@ -221,7 +222,7 @@ function ContributionRanking({ participations }: { participations: Participation
 }
 
 // 応援メッセージカード
-function MessageCard({ participation, onCheer, cheerCount }: { participation: Participation; onCheer?: () => void; cheerCount?: number }) {
+function MessageCard({ participation, onCheer, cheerCount, onDM, challengeId }: { participation: Participation; onCheer?: () => void; cheerCount?: number; onDM?: (userId: number) => void; challengeId?: number }) {
   return (
     <View
       style={{
@@ -283,8 +284,24 @@ function MessageCard({ participation, onCheer, cheerCount }: { participation: Pa
           {participation.message}
         </Text>
       )}
-      {/* エールボタン */}
-      <View style={{ flexDirection: "row", alignItems: "center", justifyContent: "flex-end", marginTop: 8 }}>
+      {/* エール・ DMボタン */}
+      <View style={{ flexDirection: "row", alignItems: "center", justifyContent: "flex-end", marginTop: 8, gap: 8 }}>
+        {onDM && participation.userId && !participation.isAnonymous && (
+          <TouchableOpacity
+            onPress={() => onDM(participation.userId!)}
+            style={{
+              flexDirection: "row",
+              alignItems: "center",
+              backgroundColor: "#2D3139",
+              paddingHorizontal: 12,
+              paddingVertical: 6,
+              borderRadius: 16,
+            }}
+          >
+            <Text style={{ fontSize: 16, marginRight: 4 }}>💬</Text>
+            <Text style={{ color: "#9CA3AF", fontSize: 12 }}>DM</Text>
+          </TouchableOpacity>
+        )}
         <TouchableOpacity
           onPress={onCheer}
           style={{
@@ -873,6 +890,8 @@ export default function ChallengeDetailScreen() {
                       key={p.id} 
                       participation={p as Participation} 
                       onCheer={() => handleSendCheer(p.id, p.userId)}
+                      onDM={(userId) => router.push(`/messages/${userId}?challengeId=${challengeId}` as never)}
+                      challengeId={challengeId}
                     />
                   ))}
                 

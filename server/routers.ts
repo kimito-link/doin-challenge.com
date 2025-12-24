@@ -505,6 +505,206 @@ Design requirements:
         return db.getPublicAchievementPages();
       }),
   }),
+
+  // リマインダー関連
+  reminders: router({
+    // リマインダーを作成
+    create: protectedProcedure
+      .input(z.object({
+        challengeId: z.number(),
+        reminderType: z.enum(["day_before", "day_of", "hour_before", "custom"]),
+        customTime: z.string().optional(),
+      }))
+      .mutation(async ({ ctx, input }) => {
+        const result = await db.createReminder({
+          challengeId: input.challengeId,
+          userId: ctx.user.id,
+          reminderType: input.reminderType,
+          customTime: input.customTime ? new Date(input.customTime) : undefined,
+        });
+        return { success: !!result, id: result };
+      }),
+
+    // ユーザーのリマインダー一覧
+    list: protectedProcedure
+      .query(async ({ ctx }) => {
+        return db.getRemindersForUser(ctx.user.id);
+      }),
+
+    // チャレンジのリマインダー設定を取得
+    getForChallenge: protectedProcedure
+      .input(z.object({ challengeId: z.number() }))
+      .query(async ({ ctx, input }) => {
+        return db.getUserReminderForChallenge(ctx.user.id, input.challengeId);
+      }),
+
+    // リマインダーを更新
+    update: protectedProcedure
+      .input(z.object({
+        id: z.number(),
+        reminderType: z.enum(["day_before", "day_of", "hour_before", "custom"]).optional(),
+        customTime: z.string().optional(),
+      }))
+      .mutation(async ({ input }) => {
+        await db.updateReminder(input.id, {
+          reminderType: input.reminderType,
+          customTime: input.customTime ? new Date(input.customTime) : undefined,
+        });
+        return { success: true };
+      }),
+
+    // リマインダーを削除
+    delete: protectedProcedure
+      .input(z.object({ id: z.number() }))
+      .mutation(async ({ input }) => {
+        await db.deleteReminder(input.id);
+        return { success: true };
+      }),
+  }),
+
+  // DM関連
+  dm: router({
+    // DMを送信
+    send: protectedProcedure
+      .input(z.object({
+        toUserId: z.number(),
+        challengeId: z.number(),
+        message: z.string().min(1).max(1000),
+      }))
+      .mutation(async ({ ctx, input }) => {
+        const result = await db.sendDirectMessage({
+          fromUserId: ctx.user.id,
+          fromUserName: ctx.user.name || "匿名",
+          fromUserImage: null,
+          toUserId: input.toUserId,
+          challengeId: input.challengeId,
+          message: input.message,
+        });
+        return { success: !!result, id: result };
+      }),
+
+    // 会話一覧を取得
+    conversations: protectedProcedure
+      .query(async ({ ctx }) => {
+        return db.getConversationList(ctx.user.id);
+      }),
+
+    // 特定の会話を取得
+    getConversation: protectedProcedure
+      .input(z.object({
+        partnerId: z.number(),
+        challengeId: z.number(),
+      }))
+      .query(async ({ ctx, input }) => {
+        return db.getConversation(ctx.user.id, input.partnerId, input.challengeId);
+      }),
+
+    // 未読メッセージ数を取得
+    unreadCount: protectedProcedure
+      .query(async ({ ctx }) => {
+        return db.getUnreadMessageCount(ctx.user.id);
+      }),
+
+    // メッセージを既読にする
+    markAsRead: protectedProcedure
+      .input(z.object({ id: z.number() }))
+      .mutation(async ({ input }) => {
+        await db.markMessageAsRead(input.id);
+        return { success: true };
+      }),
+
+    // 特定の相手からのメッセージを全て既読にする
+    markAllAsRead: protectedProcedure
+      .input(z.object({ fromUserId: z.number() }))
+      .mutation(async ({ ctx, input }) => {
+        await db.markAllMessagesAsRead(ctx.user.id, input.fromUserId);
+        return { success: true };
+      }),
+  }),
+
+  // テンプレート関連
+  templates: router({
+    // テンプレートを作成
+    create: protectedProcedure
+      .input(z.object({
+        name: z.string().min(1).max(100),
+        description: z.string().optional(),
+        goalType: z.enum(["attendance", "followers", "viewers", "points", "custom"]),
+        goalValue: z.number().min(1),
+        goalUnit: z.string().default("人"),
+        eventType: z.enum(["solo", "group"]),
+        ticketPresale: z.number().optional(),
+        ticketDoor: z.number().optional(),
+        isPublic: z.boolean().default(false),
+      }))
+      .mutation(async ({ ctx, input }) => {
+        const result = await db.createChallengeTemplate({
+          userId: ctx.user.id,
+          ...input,
+        });
+        return { success: !!result, id: result };
+      }),
+
+    // ユーザーのテンプレート一覧
+    list: protectedProcedure
+      .query(async ({ ctx }) => {
+        return db.getChallengeTemplatesForUser(ctx.user.id);
+      }),
+
+    // 公開テンプレート一覧
+    public: publicProcedure
+      .query(async () => {
+        return db.getPublicChallengeTemplates();
+      }),
+
+    // テンプレート詳細を取得
+    get: publicProcedure
+      .input(z.object({ id: z.number() }))
+      .query(async ({ input }) => {
+        return db.getChallengeTemplateById(input.id);
+      }),
+
+    // テンプレートを更新
+    update: protectedProcedure
+      .input(z.object({
+        id: z.number(),
+        name: z.string().min(1).max(100).optional(),
+        description: z.string().optional(),
+        goalType: z.enum(["attendance", "followers", "viewers", "points", "custom"]).optional(),
+        goalValue: z.number().min(1).optional(),
+        goalUnit: z.string().optional(),
+        eventType: z.enum(["solo", "group"]).optional(),
+        ticketPresale: z.number().optional(),
+        ticketDoor: z.number().optional(),
+        isPublic: z.boolean().optional(),
+      }))
+      .mutation(async ({ ctx, input }) => {
+        const template = await db.getChallengeTemplateById(input.id);
+        if (!template) throw new Error("Template not found");
+        if (template.userId !== ctx.user.id) throw new Error("Permission denied");
+        await db.updateChallengeTemplate(input.id, input);
+        return { success: true };
+      }),
+
+    // テンプレートを削除
+    delete: protectedProcedure
+      .input(z.object({ id: z.number() }))
+      .mutation(async ({ ctx, input }) => {
+        const template = await db.getChallengeTemplateById(input.id);
+        if (!template) throw new Error("Template not found");
+        if (template.userId !== ctx.user.id) throw new Error("Permission denied");
+        await db.deleteChallengeTemplate(input.id);
+        return { success: true };
+      }),
+
+    // テンプレートの使用回数をインクリメント
+    incrementUseCount: protectedProcedure
+      .input(z.object({ id: z.number() }))
+      .mutation(async ({ input }) => {
+        await db.incrementTemplateUseCount(input.id);
+        return { success: true };
+      }),
+  }),
 });
 
 export type AppRouter = typeof appRouter;

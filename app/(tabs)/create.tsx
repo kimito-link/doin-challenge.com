@@ -60,6 +60,15 @@ export default function CreateChallengeScreen() {
   const [ticketUrl, setTicketUrl] = useState("");
   const [externalUrl, setExternalUrl] = useState("");
   const [showPrefectureList, setShowPrefectureList] = useState(false);
+  const [saveAsTemplate, setSaveAsTemplate] = useState(false);
+  const [templateName, setTemplateName] = useState("");
+  const [templateIsPublic, setTemplateIsPublic] = useState(false);
+
+  const createTemplateMutation = trpc.templates.create.useMutation({
+    onSuccess: () => {
+      Alert.alert("保存完了", "テンプレートを保存しました");
+    },
+  });
 
   const createChallengeMutation = trpc.events.create.useMutation({
     onSuccess: (newChallenge) => {
@@ -98,6 +107,21 @@ export default function CreateChallengeScreen() {
     if (isNaN(eventDate.getTime())) {
       Alert.alert("エラー", "日付の形式が正しくありません（例: 2025-01-15）");
       return;
+    }
+
+    // テンプレートとして保存
+    if (saveAsTemplate && templateName.trim()) {
+      createTemplateMutation.mutate({
+        name: templateName.trim(),
+        description: description.trim() || undefined,
+        goalType: goalType as "attendance" | "followers" | "viewers" | "points" | "custom",
+        goalValue: parseInt(goalValue) || 100,
+        goalUnit: goalUnit || "人",
+        eventType: eventType as "solo" | "group",
+        ticketPresale: ticketPresale ? parseInt(ticketPresale) : undefined,
+        ticketDoor: ticketDoor ? parseInt(ticketDoor) : undefined,
+        isPublic: templateIsPublic,
+      });
     }
 
     createChallengeMutation.mutate({
@@ -562,6 +586,76 @@ export default function CreateChallengeScreen() {
                 />
               </View>
 
+              {/* テンプレート保存オプション */}
+              {user && (
+                <View style={{ marginBottom: 16, backgroundColor: "#1A1D21", borderRadius: 12, padding: 16, borderWidth: 1, borderColor: "#2D3139" }}>
+                  <TouchableOpacity
+                    onPress={() => setSaveAsTemplate(!saveAsTemplate)}
+                    style={{ flexDirection: "row", alignItems: "center", justifyContent: "space-between" }}
+                  >
+                    <View style={{ flexDirection: "row", alignItems: "center" }}>
+                      <MaterialIcons name="bookmark" size={20} color="#8B5CF6" />
+                      <Text style={{ color: "#fff", fontSize: 14, fontWeight: "600", marginLeft: 8 }}>
+                        テンプレートとして保存
+                      </Text>
+                    </View>
+                    <View style={{
+                      width: 24,
+                      height: 24,
+                      borderRadius: 4,
+                      borderWidth: 2,
+                      borderColor: saveAsTemplate ? "#8B5CF6" : "#6B7280",
+                      backgroundColor: saveAsTemplate ? "#8B5CF6" : "transparent",
+                      alignItems: "center",
+                      justifyContent: "center",
+                    }}>
+                      {saveAsTemplate && <MaterialIcons name="check" size={16} color="#fff" />}
+                    </View>
+                  </TouchableOpacity>
+                  
+                  {saveAsTemplate && (
+                    <View style={{ marginTop: 12 }}>
+                      <TextInput
+                        value={templateName}
+                        onChangeText={setTemplateName}
+                        placeholder="テンプレート名"
+                        placeholderTextColor="#6B7280"
+                        style={{
+                          backgroundColor: "#0D1117",
+                          borderRadius: 8,
+                          padding: 12,
+                          color: "#fff",
+                          borderWidth: 1,
+                          borderColor: "#2D3139",
+                          marginBottom: 8,
+                        }}
+                      />
+                      <TouchableOpacity
+                        onPress={() => setTemplateIsPublic(!templateIsPublic)}
+                        style={{ flexDirection: "row", alignItems: "center" }}
+                      >
+                        <View style={{
+                          width: 20,
+                          height: 20,
+                          borderRadius: 4,
+                          borderWidth: 2,
+                          borderColor: templateIsPublic ? "#22C55E" : "#6B7280",
+                          backgroundColor: templateIsPublic ? "#22C55E" : "transparent",
+                          alignItems: "center",
+                          justifyContent: "center",
+                          marginRight: 8,
+                        }}>
+                          {templateIsPublic && <MaterialIcons name="check" size={14} color="#fff" />}
+                        </View>
+                        <Text style={{ color: "#9CA3AF", fontSize: 13 }}>
+                          他のユーザーにも公開する
+                        </Text>
+                      </TouchableOpacity>
+                    </View>
+                  )}
+                </View>
+              )}
+
               <TouchableOpacity
                 onPress={handleCreate}
                 disabled={createChallengeMutation.isPending}
@@ -586,6 +680,20 @@ export default function CreateChallengeScreen() {
                 />
                 <Text style={{ color: "#fff", fontSize: 16, fontWeight: "bold" }}>
                   {createChallengeMutation.isPending ? "作成中..." : "チャレンジを作成"}
+                </Text>
+              </TouchableOpacity>
+
+              {/* テンプレート一覧へのリンク */}
+              <TouchableOpacity
+                onPress={() => router.push("/templates" as never)}
+                style={{
+                  marginTop: 12,
+                  padding: 12,
+                  alignItems: "center",
+                }}
+              >
+                <Text style={{ color: "#8B5CF6", fontSize: 14 }}>
+                  📁 テンプレートから作成
                 </Text>
               </TouchableOpacity>
             </View>

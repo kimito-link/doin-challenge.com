@@ -238,3 +238,78 @@ export type InsertAchievementPage = typeof achievementPages.$inferInsert;
 export const events = challenges;
 export type Event = Challenge;
 export type InsertEvent = InsertChallenge;
+
+
+/**
+ * リマインダーテーブル
+ */
+export const reminders = mysqlTable("reminders", {
+  id: int("id").autoincrement().primaryKey(),
+  challengeId: int("challengeId").notNull(),
+  userId: int("userId").notNull(),
+  // リマインダー設定
+  reminderType: mysqlEnum("reminderType", ["day_before", "day_of", "hour_before", "custom"]).default("day_before").notNull(),
+  customTime: timestamp("customTime"),
+  // ステータス
+  isSent: boolean("isSent").default(false).notNull(),
+  sentAt: timestamp("sentAt"),
+  // メタデータ
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+});
+
+export type Reminder = typeof reminders.$inferSelect;
+export type InsertReminder = typeof reminders.$inferInsert;
+
+/**
+ * ダイレクトメッセージテーブル
+ */
+export const directMessages = mysqlTable("direct_messages", {
+  id: int("id").autoincrement().primaryKey(),
+  // 送信者
+  fromUserId: int("fromUserId").notNull(),
+  fromUserName: varchar("fromUserName", { length: 255 }).notNull(),
+  fromUserImage: text("fromUserImage"),
+  // 受信者
+  toUserId: int("toUserId").notNull(),
+  // メッセージ内容
+  message: text("message").notNull(),
+  // チャレンジ情報（同じチャレンジの参加者同士のみ）
+  challengeId: int("challengeId").notNull(),
+  // ステータス
+  isRead: boolean("isRead").default(false).notNull(),
+  readAt: timestamp("readAt"),
+  // メタデータ
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+});
+
+export type DirectMessage = typeof directMessages.$inferSelect;
+export type InsertDirectMessage = typeof directMessages.$inferInsert;
+
+/**
+ * チャレンジテンプレートテーブル
+ */
+export const challengeTemplates = mysqlTable("challenge_templates", {
+  id: int("id").autoincrement().primaryKey(),
+  userId: int("userId").notNull(),
+  // テンプレート情報
+  name: varchar("name", { length: 255 }).notNull(),
+  description: text("description"),
+  // チャレンジ設定
+  goalType: mysqlEnum("goalType", ["attendance", "followers", "viewers", "points", "custom"]).default("attendance").notNull(),
+  goalValue: int("goalValue").default(100).notNull(),
+  goalUnit: varchar("goalUnit", { length: 32 }).default("人").notNull(),
+  eventType: mysqlEnum("eventType", ["solo", "group"]).default("solo").notNull(),
+  // チケット情報
+  ticketPresale: int("ticketPresale"),
+  ticketDoor: int("ticketDoor"),
+  // 公開設定
+  isPublic: boolean("isPublic").default(false).notNull(),
+  // 使用回数
+  useCount: int("useCount").default(0).notNull(),
+  // メタデータ
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+  updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
+});
+
+export type ChallengeTemplate = typeof challengeTemplates.$inferSelect;
+export type InsertChallengeTemplate = typeof challengeTemplates.$inferInsert;
