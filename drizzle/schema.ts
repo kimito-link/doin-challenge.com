@@ -91,6 +91,50 @@ export const participations = mysqlTable("participations", {
 export type Participation = typeof participations.$inferSelect;
 export type InsertParticipation = typeof participations.$inferInsert;
 
+/**
+ * 通知設定テーブル
+ */
+export const notificationSettings = mysqlTable("notification_settings", {
+  id: int("id").autoincrement().primaryKey(),
+  userId: int("userId").notNull(),
+  challengeId: int("challengeId").notNull(),
+  // 通知設定
+  onGoalReached: boolean("onGoalReached").default(true).notNull(),
+  onMilestone25: boolean("onMilestone25").default(true).notNull(),
+  onMilestone50: boolean("onMilestone50").default(true).notNull(),
+  onMilestone75: boolean("onMilestone75").default(true).notNull(),
+  onNewParticipant: boolean("onNewParticipant").default(false).notNull(),
+  // Expoプッシュトークン
+  expoPushToken: text("expoPushToken"),
+  // メタデータ
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+  updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
+});
+
+export type NotificationSetting = typeof notificationSettings.$inferSelect;
+export type InsertNotificationSetting = typeof notificationSettings.$inferInsert;
+
+/**
+ * 通知履歴テーブル
+ */
+export const notifications = mysqlTable("notifications", {
+  id: int("id").autoincrement().primaryKey(),
+  userId: int("userId").notNull(),
+  challengeId: int("challengeId").notNull(),
+  // 通知内容
+  type: mysqlEnum("type", ["goal_reached", "milestone_25", "milestone_50", "milestone_75", "new_participant"]).notNull(),
+  title: varchar("title", { length: 255 }).notNull(),
+  body: text("body").notNull(),
+  // ステータス
+  isRead: boolean("isRead").default(false).notNull(),
+  sentAt: timestamp("sentAt").defaultNow().notNull(),
+  // メタデータ
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+});
+
+export type Notification = typeof notifications.$inferSelect;
+export type InsertNotification = typeof notifications.$inferInsert;
+
 // 後方互換性のためのエイリアス
 export const events = challenges;
 export type Event = Challenge;

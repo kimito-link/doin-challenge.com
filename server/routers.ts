@@ -3,6 +3,7 @@ import { COOKIE_NAME } from "../shared/const.js";
 import { getSessionCookieOptions } from "./_core/cookies";
 import { systemRouter } from "./_core/systemRouter";
 import { publicProcedure, protectedProcedure, router } from "./_core/trpc";
+import { generateImage } from "./_core/imageGeneration";
 import * as db from "./db";
 
 export const appRouter = router({
@@ -181,6 +182,94 @@ export const appRouter = router({
         }
         await db.deleteParticipation(input.id);
         return { success: true };
+      }),
+  }),
+
+  // 通知関連API
+  notifications: router({
+    // 通知設定取得
+    getSettings: protectedProcedure
+      .input(z.object({ challengeId: z.number() }))
+      .query(async ({ ctx, input }) => {
+        const settings = await db.getNotificationSettings(ctx.user.id);
+        return settings;
+      }),
+
+    // 通知設定更新
+    updateSettings: protectedProcedure
+      .input(z.object({
+        challengeId: z.number(),
+        onGoalReached: z.boolean().optional(),
+        onMilestone25: z.boolean().optional(),
+        onMilestone50: z.boolean().optional(),
+        onMilestone75: z.boolean().optional(),
+        onNewParticipant: z.boolean().optional(),
+        expoPushToken: z.string().optional(),
+      }))
+      .mutation(async ({ ctx, input }) => {
+        const { challengeId, ...settings } = input;
+        await db.upsertNotificationSettings(ctx.user.id, challengeId, settings);
+        return { success: true };
+      }),
+
+    // 通知履歴取得
+    list: protectedProcedure.query(async ({ ctx }) => {
+      return db.getNotificationsByUserId(ctx.user.id);
+    }),
+
+    // 通知を既読にする
+    markAsRead: protectedProcedure
+      .input(z.object({ id: z.number() }))
+      .mutation(async ({ input }) => {
+        await db.markNotificationAsRead(input.id);
+        return { success: true };
+      }),
+
+    // 全ての通知を既読にする
+    markAllAsRead: protectedProcedure.mutation(async ({ ctx }) => {
+      await db.markAllNotificationsAsRead(ctx.user.id);
+      return { success: true };
+    }),
+  }),
+
+  // OGP画像生成API
+  ogp: router({
+    // チャレンジのシェア用OGP画像を生成
+    generateChallengeOgp: publicProcedure
+      .input(z.object({ challengeId: z.number() }))
+      .mutation(async ({ input }) => {
+        const challenge = await db.getEventById(input.challengeId);
+        if (!challenge) {
+          throw new Error("Challenge not found");
+        }
+
+        const currentValue = challenge.currentValue || 0;
+        const goalValue = challenge.goalValue || 100;
+        const progress = Math.min(Math.round((currentValue / goalValue) * 100), 100);
+        const unit = challenge.goalUnit || "人";
+
+        // OGP画像のプロンプトを生成
+        const prompt = `Create a vibrant social media share card for a Japanese idol fan challenge app called "動員ちゃれんじ". 
+
+Design requirements:
+- Modern dark theme with pink to purple gradient accents (#EC4899 to #8B5CF6)
+- Title: "${challenge.title}"
+- Progress: ${currentValue}/${goalValue}${unit} (${progress}%)
+- Host: ${challenge.hostName}
+- Include a progress bar visualization
+- Japanese text style with cute idol aesthetic
+- Include sparkles and star decorations
+- Aspect ratio 1200x630 (Twitter/OGP standard)
+- Text should be large and readable
+- Include "#動員ちゃれんじ" hashtag at bottom`;
+
+        try {
+          const result = await generateImage({ prompt });
+          return { url: result.url };
+        } catch (error) {
+          console.error("OGP image generation failed:", error);
+          throw new Error("Failed to generate OGP image");
+        }
       }),
   }),
 });

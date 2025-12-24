@@ -63,10 +63,25 @@ export default function MyPageScreen() {
   return (
     <ScreenContainer containerClassName="bg-[#0D1117]">
       {/* ヘッダー */}
-      <View style={{ paddingHorizontal: 16, paddingTop: 16, paddingBottom: 8, backgroundColor: "#0D1117" }}>
+      <View style={{ paddingHorizontal: 16, paddingTop: 16, paddingBottom: 8, backgroundColor: "#0D1117", flexDirection: "row", alignItems: "center", justifyContent: "space-between" }}>
         <Text style={{ color: "#fff", fontSize: 28, fontWeight: "bold" }}>
           マイページ
         </Text>
+        {isAuthenticated && (
+          <TouchableOpacity
+            onPress={() => router.push("/notifications")}
+            style={{
+              width: 44,
+              height: 44,
+              borderRadius: 22,
+              backgroundColor: "#1A1D21",
+              alignItems: "center",
+              justifyContent: "center",
+            }}
+          >
+            <MaterialIcons name="notifications" size={24} color="#fff" />
+          </TouchableOpacity>
+        )}
       </View>
 
       {!isAuthenticated ? (

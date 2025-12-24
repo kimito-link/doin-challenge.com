@@ -1,4 +1,4 @@
-import { FlatList, Text, View, TouchableOpacity, TextInput, ScrollView, KeyboardAvoidingView, Platform, Share, Alert, Dimensions } from "react-native";
+import { Text, View, TouchableOpacity, TextInput, ScrollView, KeyboardAvoidingView, Platform, Alert, Share, Dimensions, Linking } from "react-native";
 import { Image } from "expo-image";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import { useState } from "react";
@@ -297,6 +297,7 @@ export default function ChallengeDetailScreen() {
   const [prefecture, setPrefecture] = useState("");
   const [showForm, setShowForm] = useState(false);
   const [showPrefectureList, setShowPrefectureList] = useState(false);
+  const [allowVideoUse, setAllowVideoUse] = useState(true);
 
   const challengeId = parseInt(id || "0", 10);
   
@@ -378,6 +379,9 @@ export default function ChallengeDetailScreen() {
   const progress = Math.min((currentValue / goalValue) * 100, 100);
   const remaining = Math.max(goalValue - currentValue, 0);
 
+  const [isGeneratingOgp, setIsGeneratingOgp] = useState(false);
+  const generateOgpMutation = trpc.ogp.generateChallengeOgp.useMutation();
+
   const handleShare = async () => {
     try {
       const shareMessage = `🎯 ${challenge.title}\n\n📊 現在 ${currentValue}/${goalValue}${unit}（${Math.round(progress)}%）\nあと${remaining}${unit}で目標達成！\n\n一緒に応援しよう！\n\n#KimitoLink #動員ちゃれんじ`;
@@ -385,6 +389,23 @@ export default function ChallengeDetailScreen() {
       await Share.share({ message: shareMessage });
     } catch (error) {
       Alert.alert("エラー", "シェアに失敗しました");
+    }
+  };
+
+  const handleShareWithOgp = async () => {
+    try {
+      setIsGeneratingOgp(true);
+      const result = await generateOgpMutation.mutateAsync({ challengeId });
+      
+      const shareMessage = `🎯 ${challenge.title}\n\n📊 現在 ${currentValue}/${goalValue}${unit}（${Math.round(progress)}%）\nあと${remaining}${unit}で目標達成！\n\n一緒に応援しよう！\n${result.url || ""}\n\n#KimitoLink #動員ちゃれんじ`;
+      
+      await Share.share({ message: shareMessage });
+    } catch (error) {
+      console.error("OGP share error:", error);
+      // フォールバックとして通常のシェアを実行
+      handleShare();
+    } finally {
+      setIsGeneratingOgp(false);
     }
   };
 
@@ -546,6 +567,66 @@ export default function ChallengeDetailScreen() {
                 </Text>
               )}
             </View>
+
+            {/* チケット情報セクション */}
+            {(challenge.ticketPresale || challenge.ticketDoor || challenge.ticketUrl) && (
+              <View
+                style={{
+                  backgroundColor: "#1A1D21",
+                  borderRadius: 16,
+                  padding: 16,
+                  marginTop: 16,
+                  borderWidth: 1,
+                  borderColor: "#2D3139",
+                }}
+              >
+                <View style={{ flexDirection: "row", alignItems: "center", marginBottom: 12 }}>
+                  <MaterialIcons name="confirmation-number" size={20} color="#EC4899" />
+                  <Text style={{ color: "#fff", fontSize: 16, fontWeight: "bold", marginLeft: 8 }}>
+                    チケット情報
+                  </Text>
+                </View>
+
+                <View style={{ flexDirection: "row", gap: 16 }}>
+                  {challenge.ticketPresale && (
+                    <View style={{ flex: 1, backgroundColor: "#0D1117", borderRadius: 12, padding: 12 }}>
+                      <Text style={{ color: "#9CA3AF", fontSize: 12, marginBottom: 4 }}>前売り券</Text>
+                      <Text style={{ color: "#fff", fontSize: 18, fontWeight: "bold" }}>
+                        ¥{challenge.ticketPresale.toLocaleString()}
+                      </Text>
+                    </View>
+                  )}
+                  {challenge.ticketDoor && (
+                    <View style={{ flex: 1, backgroundColor: "#0D1117", borderRadius: 12, padding: 12 }}>
+                      <Text style={{ color: "#9CA3AF", fontSize: 12, marginBottom: 4 }}>当日券</Text>
+                      <Text style={{ color: "#fff", fontSize: 18, fontWeight: "bold" }}>
+                        ¥{challenge.ticketDoor.toLocaleString()}
+                      </Text>
+                    </View>
+                  )}
+                </View>
+
+                {challenge.ticketUrl && (
+                  <TouchableOpacity
+                    onPress={() => Linking.openURL(challenge.ticketUrl!)}
+                    style={{
+                      backgroundColor: "#EC4899",
+                      borderRadius: 12,
+                      padding: 14,
+                      marginTop: 12,
+                      flexDirection: "row",
+                      alignItems: "center",
+                      justifyContent: "center",
+                    }}
+                  >
+                    <MaterialIcons name="open-in-new" size={18} color="#fff" />
+                    <Text style={{ color: "#fff", fontSize: 14, fontWeight: "bold", marginLeft: 8 }}>
+                      チケットを購入する
+                    </Text>
+                  </TouchableOpacity>
+                )}
+              </View>
+            )}
 
             {/* 地域別マップ */}
             {participations && participations.length > 0 && (
@@ -729,6 +810,124 @@ export default function ChallengeDetailScreen() {
                   />
                 </View>
 
+                {/* 応援動画使用許可 */}
+                <TouchableOpacity
+                  onPress={() => setAllowVideoUse(!allowVideoUse)}
+                  style={{
+                    flexDirection: "row",
+                    alignItems: "center",
+                    marginBottom: 16,
+                    padding: 12,
+                    backgroundColor: "#0D1117",
+                    borderRadius: 8,
+                    borderWidth: 1,
+                    borderColor: allowVideoUse ? "#EC4899" : "#2D3139",
+                  }}
+                >
+                  <View
+                    style={{
+                      width: 24,
+                      height: 24,
+                      borderRadius: 4,
+                      borderWidth: 2,
+                      borderColor: allowVideoUse ? "#EC4899" : "#6B7280",
+                      backgroundColor: allowVideoUse ? "#EC4899" : "transparent",
+                      alignItems: "center",
+                      justifyContent: "center",
+                      marginRight: 12,
+                    }}
+                  >
+                    {allowVideoUse && <MaterialIcons name="check" size={16} color="#fff" />}
+                  </View>
+                  <View style={{ flex: 1 }}>
+                    <Text style={{ color: "#fff", fontSize: 14 }}>
+                      応援動画での使用を許可する
+                    </Text>
+                    <Text style={{ color: "#6B7280", fontSize: 12, marginTop: 2 }}>
+                      素敵なコメントは応援動画で使わせてもらうかも！
+                    </Text>
+                  </View>
+                </TouchableOpacity>
+
+                {/* 参加条件・お約束 */}
+                <View
+                  style={{
+                    backgroundColor: "#0D1117",
+                    borderRadius: 12,
+                    padding: 16,
+                    marginBottom: 16,
+                    borderWidth: 1,
+                    borderColor: "#2D3139",
+                  }}
+                >
+                  <View style={{ flexDirection: "row", alignItems: "center", marginBottom: 12 }}>
+                    <Text style={{ fontSize: 16 }}>🌈</Text>
+                    <Text style={{ color: "#EC4899", fontSize: 14, fontWeight: "bold", marginLeft: 8 }}>
+                      みんなで楽しく応援するためのお約束
+                    </Text>
+                  </View>
+                  <View style={{ backgroundColor: "#1A1D21", borderRadius: 8, padding: 12, marginBottom: 12 }}>
+                    <Text style={{ color: "#9CA3AF", fontSize: 12, lineHeight: 18 }}>
+                      りんくからのお願いだよ～！{"\n"}
+                      みんなで仲良く、楽しく応援していこうね♪
+                    </Text>
+                  </View>
+                  <View style={{ gap: 8 }}>
+                    <View style={{ flexDirection: "row", alignItems: "flex-start" }}>
+                      <Text style={{ color: "#EC4899", marginRight: 8 }}>✱</Text>
+                      <Text style={{ color: "#9CA3AF", fontSize: 11, flex: 1, lineHeight: 16 }}>
+                        このサイトは「アイドル応援ちゃんねる」が愛情たっぷりで運営してるよ！
+                      </Text>
+                    </View>
+                    <View style={{ flexDirection: "row", alignItems: "flex-start" }}>
+                      <Text style={{ color: "#EC4899", marginRight: 8 }}>✱</Text>
+                      <Text style={{ color: "#9CA3AF", fontSize: 11, flex: 1, lineHeight: 16 }}>
+                        素敵なコメントは、応援動画を作るときに使わせてもらうかも！
+                      </Text>
+                    </View>
+                    <View style={{ flexDirection: "row", alignItems: "flex-start" }}>
+                      <Text style={{ color: "#EC4899", marginRight: 8 }}>✱</Text>
+                      <Text style={{ color: "#9CA3AF", fontSize: 11, flex: 1, lineHeight: 16 }}>
+                        アイドルちゃんを傷つけるコメントや、迷惑なコメントは絶対ダメだよ～！
+                      </Text>
+                    </View>
+                    <View style={{ flexDirection: "row", alignItems: "flex-start" }}>
+                      <Text style={{ color: "#EC4899", marginRight: 8 }}>✱</Text>
+                      <Text style={{ color: "#9CA3AF", fontSize: 11, flex: 1, lineHeight: 16 }}>
+                        みんなの「応援のキモチ」で、アイドルちゃんたちをキラキラさせちゃおう！
+                      </Text>
+                    </View>
+                  </View>
+                </View>
+
+                {/* 参加条件 */}
+                <View
+                  style={{
+                    backgroundColor: "#1DA1F2",
+                    borderRadius: 12,
+                    padding: 12,
+                    marginBottom: 16,
+                    flexDirection: "row",
+                    alignItems: "center",
+                  }}
+                >
+                  <MaterialIcons name="info" size={20} color="#fff" />
+                  <Text style={{ color: "#fff", fontSize: 12, marginLeft: 8, flex: 1 }}>
+                    参加条件: @idolfunch のTwitterフォロー必須！
+                  </Text>
+                  <TouchableOpacity
+                    onPress={() => Linking.openURL("https://twitter.com/idolfunch")}
+                    style={{
+                      backgroundColor: "rgba(255,255,255,0.2)",
+                      borderRadius: 8,
+                      paddingHorizontal: 12,
+                      paddingVertical: 6,
+                    }}
+                  >
+                    <Text style={{ color: "#fff", fontSize: 12, fontWeight: "bold" }}>フォロー</Text>
+                  </TouchableOpacity>
+                </View>
+
                 <View style={{ flexDirection: "row", gap: 12 }}>
                   <TouchableOpacity
                     onPress={() => setShowForm(false)}
@@ -772,24 +971,45 @@ export default function ChallengeDetailScreen() {
                 </View>
               </View>
             ) : (
-              <View style={{ flexDirection: "row", gap: 12, marginTop: 16 }}>
-                <TouchableOpacity
-                  onPress={handleShare}
-                  style={{
-                    flex: 1,
-                    backgroundColor: "#1A1D21",
-                    borderRadius: 12,
-                    padding: 16,
-                    alignItems: "center",
-                    flexDirection: "row",
-                    justifyContent: "center",
-                    borderWidth: 1,
-                    borderColor: "#2D3139",
-                  }}
-                >
-                  <MaterialIcons name="share" size={20} color="#fff" />
-                  <Text style={{ color: "#fff", fontSize: 16, marginLeft: 8 }}>シェア</Text>
-                </TouchableOpacity>
+              <View style={{ gap: 12, marginTop: 16 }}>
+                {/* シェアボタン */}
+                <View style={{ flexDirection: "row", gap: 12 }}>
+                  <TouchableOpacity
+                    onPress={handleShare}
+                    style={{
+                      flex: 1,
+                      backgroundColor: "#1A1D21",
+                      borderRadius: 12,
+                      padding: 14,
+                      alignItems: "center",
+                      flexDirection: "row",
+                      justifyContent: "center",
+                      borderWidth: 1,
+                      borderColor: "#2D3139",
+                    }}
+                  >
+                    <MaterialIcons name="share" size={18} color="#fff" />
+                    <Text style={{ color: "#fff", fontSize: 14, marginLeft: 6 }}>シェア</Text>
+                  </TouchableOpacity>
+                  <TouchableOpacity
+                    onPress={handleShareWithOgp}
+                    disabled={isGeneratingOgp}
+                    style={{
+                      flex: 1,
+                      backgroundColor: isGeneratingOgp ? "#2D3139" : "#1DA1F2",
+                      borderRadius: 12,
+                      padding: 14,
+                      alignItems: "center",
+                      flexDirection: "row",
+                      justifyContent: "center",
+                    }}
+                  >
+                    <MaterialIcons name="image" size={18} color="#fff" />
+                    <Text style={{ color: "#fff", fontSize: 14, marginLeft: 6 }}>
+                      {isGeneratingOgp ? "生成中..." : "画像付き"}
+                    </Text>
+                  </TouchableOpacity>
+                </View>
                 <TouchableOpacity
                   onPress={() => setShowForm(true)}
                   style={{

@@ -15,6 +15,13 @@
       "when": 1766586434276,
       "tag": "0001_green_blob",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "5",
+      "when": 1766601352931,
+      "tag": "0002_youthful_cammi",
+      "breakpoints": true
     }
   ]
 }
