@@ -1,6 +1,6 @@
-import { eq } from "drizzle-orm";
+import { eq, desc } from "drizzle-orm";
 import { drizzle } from "drizzle-orm/mysql2";
-import { InsertUser, users } from "../drizzle/schema";
+import { InsertUser, users, events, participations, InsertEvent, InsertParticipation } from "../drizzle/schema";
 import { ENV } from "./_core/env";
 
 let _db: ReturnType<typeof drizzle> | null = null;
@@ -89,4 +89,89 @@ export async function getUserByOpenId(openId: string) {
   return result.length > 0 ? result[0] : undefined;
 }
 
-// TODO: add feature queries here as your schema grows.
+// ========== Events ==========
+
+export async function getAllEvents() {
+  const db = await getDb();
+  if (!db) return [];
+  return db.select().from(events).where(eq(events.isPublic, true)).orderBy(desc(events.eventDate));
+}
+
+export async function getEventById(id: number) {
+  const db = await getDb();
+  if (!db) return null;
+  const result = await db.select().from(events).where(eq(events.id, id));
+  return result[0] || null;
+}
+
+export async function getEventsByHostUserId(hostUserId: number) {
+  const db = await getDb();
+  if (!db) return [];
+  return db.select().from(events).where(eq(events.hostUserId, hostUserId)).orderBy(desc(events.eventDate));
+}
+
+export async function createEvent(data: InsertEvent) {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+  const result = await db.insert(events).values(data);
+  return result[0].insertId;
+}
+
+export async function updateEvent(id: number, data: Partial<InsertEvent>) {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+  await db.update(events).set(data).where(eq(events.id, id));
+}
+
+export async function deleteEvent(id: number) {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+  await db.delete(events).where(eq(events.id, id));
+}
+
+// ========== Participations ==========
+
+export async function getParticipationsByEventId(eventId: number) {
+  const db = await getDb();
+  if (!db) return [];
+  return db.select().from(participations).where(eq(participations.eventId, eventId)).orderBy(desc(participations.createdAt));
+}
+
+export async function getParticipationsByUserId(userId: number) {
+  const db = await getDb();
+  if (!db) return [];
+  return db.select().from(participations).where(eq(participations.userId, userId)).orderBy(desc(participations.createdAt));
+}
+
+export async function createParticipation(data: InsertParticipation) {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+  const result = await db.insert(participations).values(data);
+  return result[0].insertId;
+}
+
+export async function updateParticipation(id: number, data: Partial<InsertParticipation>) {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+  await db.update(participations).set(data).where(eq(participations.id, id));
+}
+
+export async function deleteParticipation(id: number) {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+  await db.delete(participations).where(eq(participations.id, id));
+}
+
+export async function getParticipationCountByEventId(eventId: number) {
+  const db = await getDb();
+  if (!db) return 0;
+  const result = await db.select().from(participations).where(eq(participations.eventId, eventId));
+  return result.length;
+}
+
+export async function getTotalCompanionCountByEventId(eventId: number) {
+  const db = await getDb();
+  if (!db) return 0;
+  const result = await db.select().from(participations).where(eq(participations.eventId, eventId));
+  return result.reduce((sum, p) => sum + (p.companionCount || 0), 0) + result.length;
+}

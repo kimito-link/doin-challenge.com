@@ -9,6 +9,10 @@ export type User = {
   email: string | null;
   loginMethod: string | null;
   lastSignedIn: Date;
+  // Twitter/X specific fields
+  username?: string;
+  profileImage?: string;
+  followersCount?: number;
 };
 
 export async function getSessionToken(): Promise<string | null> {

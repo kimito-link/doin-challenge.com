@@ -1,7 +1,8 @@
 import * as Api from "@/lib/_core/api";
 import * as Auth from "@/lib/_core/auth";
 import { useCallback, useEffect, useMemo, useState } from "react";
-import { Platform } from "react-native";
+import { Platform, Linking } from "react-native";
+import Constants from "expo-constants";
 
 type UseAuthOptions = {
   autoFetch?: boolean;
@@ -94,6 +95,25 @@ export function useAuth(options?: UseAuthOptions) {
     }
   }, []);
 
+  const login = useCallback(async () => {
+    try {
+      // Get the API base URL
+      const apiUrl = Constants.expoConfig?.extra?.apiUrl || "http://localhost:3000";
+      const loginUrl = `${apiUrl}/api/twitter/auth`;
+      
+      if (Platform.OS === "web") {
+        // On web, redirect to the login page
+        window.location.href = loginUrl;
+      } else {
+        // On native, open in browser
+        await Linking.openURL(loginUrl);
+      }
+    } catch (err) {
+      console.error("[Auth] Login failed:", err);
+      setError(err instanceof Error ? err : new Error("Login failed"));
+    }
+  }, []);
+
   const isAuthenticated = useMemo(() => Boolean(user), [user]);
 
   useEffect(() => {
@@ -139,5 +159,6 @@ export function useAuth(options?: UseAuthOptions) {
     isAuthenticated,
     refresh: fetchUser,
     logout,
+    login,
   };
 }
