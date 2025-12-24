@@ -1,122 +1,114 @@
-# 生誕祭応援アプリ - デザイン設計書
+# 君斗りんくの動員ちゃれんじ - 設計ドキュメント
 
-## アプリ概要
-アイドル・ホスト・キャバ嬢の生誕祭（バースデーイベント）を盛り上げるためのアプリ。
-本人とファンの両方が使用し、応援メッセージの収集・表示、参加登録、フォロワー数の誇示を実現。
+## コンセプト
+アイドル・ホスト・キャバ嬢などのクリエイターが、ライブ・配信・SNSなどの目標達成をファンと一緒にチャレンジするアプリ。
 
-## 画面一覧
+## 対応する目標タイプ
 
-### 1. ホーム画面 (Home)
-- 生誕祭イベント一覧
-- 新着イベントの表示
-- イベント検索機能
+| タイプ | 単位 | 用途例 |
+|--------|------|--------|
+| 動員 | 人 | ライブ・イベント参加者 |
+| フォロワー | 人 | Twitter/Instagram等のフォロワー増加 |
+| 同時視聴 | 人 | YouTubeプレミア・配信の同接 |
+| 応援ポイント | pt | ミクチャ等のイベント |
+| カスタム | 自由 | その他の目標 |
 
-### 2. イベント作成画面 (CreateEvent)
-- 本人がTwitterログインして生誕祭イベントを作成
-- イベント名、日付、説明文の入力
-- 自動でTwitterプロフィール情報を取得
+## 画面構成（モバイルポートレート 9:16）
 
-### 3. イベント詳細画面 (EventDetail)
-- 本人のプロフィール表示（アイコン、名前、フォロワー数）
+### 1. ホーム画面（チャレンジ一覧）
+- ヘッダー: ロゴ + キャラクター
+- フィルター: タイプ（すべて/グループ/ソロ）、地域
+- チャレンジカード一覧（グリッド2列）
+  - タイプバッジ（ソロ/グループ）
+  - チャレンジ名
+  - 主催者名
+  - 現在人数 / 目標人数
+  - 達成率 %
+  - 会場・日付
+
+### 2. チャレンジ詳細画面
+- ヘッダー画像（グラデーション背景）
+- 主催者情報（アイコン・名前・フォロワー数）
+- 進捗セクション
+  - 大きな数字: 「7 / 150人」
+  - 進捗バー
+  - 「あと143人で目標達成！」
+  - グリッド表示（参加者をマス目で可視化）
+- チケット情報（任意）
+- 地域別マップ
+  - 北海道・東北、関東、中部、近畿、中国・四国、九州・沖縄
+  - 都道府県ごとの参加人数
 - 応援メッセージ一覧
 - 参加表明ボタン
-- メッセージ投稿フォーム
 
-### 4. 参加登録画面 (JoinEvent)
-- Twitterログインまたは匿名参加
-- 応援メッセージ入力
-- 一緒に参加する友人の追加（任意）
+### 3. 参加表明フォーム
+- お名前（ニックネーム）
+- Twitterユーザー名（任意）
+- 応援メッセージ（任意）
+- 友人追加セクション
+  - 「友達を何人連れて行きますか？」
+  - 人数選択
+- 都道府県選択
 - 参加表明ボタン
 
-### 5. マイページ画面 (MyPage)
-- 自分が作成したイベント一覧
-- 参加表明したイベント一覧
-- プロフィール設定
+### 4. チャレンジ作成画面
+- 目標タイプ選択
+- チャレンジ名
+- 目標数値
+- 期間（開始日・終了日）
+- 会場/URL
+- チケット情報（任意）
+- 説明文
 
-## 主要ユーザーフロー
-
-### フロー1: 本人がイベントを作成
-1. ホーム画面 → 「イベント作成」ボタン
-2. Twitterログイン
-3. イベント情報入力
-4. イベント作成完了 → イベント詳細画面
-
-### フロー2: ファンが参加表明
-1. ホーム画面 → イベント選択
-2. イベント詳細画面 → 「参加表明する！」ボタン
-3. 参加登録画面 → Twitterログインまたは匿名
-4. 応援メッセージ入力
-5. 参加完了 → メッセージが一覧に表示
-
-### フロー3: SNSシェア
-1. イベント詳細画面 → 「SNSでシェアして仲間を増やす」ボタン
-2. シェア画面表示
-3. Twitter/LINE等でシェア
+### 5. マイページ
+- プロフィール情報
+- 参加中のチャレンジ一覧（貢献度付き）
+- 主催したチャレンジ一覧
+- 貢献度履歴
 
 ## カラーパレット
+- プライマリ: #00427B（KimitoLinkブルー）
+- アクセント: #DD6500（KimitoLinkオレンジ）
+- 進捗グラデーション: ピンク → パープル (#EC4899 → #8B5CF6)
+- 背景: ダークテーマ（#0D1117）
 
-### メインカラー
-- **Primary**: グラデーション（ピンク→パープル）#EC4899 → #8B5CF6
-- **Background**: ダークネイビー #0F172A (ダーク) / #F8FAFC (ライト)
-- **Surface**: #1E293B (ダーク) / #FFFFFF (ライト)
-- **Foreground**: #F1F5F9 (ダーク) / #0F172A (ライト)
-- **Muted**: #64748B
-- **Accent**: #06B6D4 (シアン)
-
-### セマンティックカラー
-- **Success**: #22C55E
-- **Warning**: #F59E0B
-- **Error**: #EF4444
-
-## コンポーネント設計
-
-### EventCard
-- イベントサムネイル
-- 本人のプロフィール画像
-- イベント名
-- 開催日
-- 参加者数
-
-### MessageCard
-- 投稿者のプロフィール画像（Twitterアイコンまたは匿名アイコン）
-- 投稿者名（@ユーザー名）
-- 同伴者情報（+○○人連れて行く！）
-- 応援メッセージ本文
-
-### ProfileHeader
-- 本人のTwitterプロフィール画像（大）
-- 表示名
-- @ユーザー名
-- フォロワー数（大きく表示）
-- プロフィール説明
-
-### GradientButton
-- ピンク→パープルのグラデーション
-- 押下時のスケールアニメーション
-- ハプティックフィードバック
+## キャラクター
+- ゆっくりりんく: メインキャラ、ヘッドホン
+- ゆっくりこん太: きつね耳、元気
+- ゆっくりたぬ姉: たぬき耳、しっかり者
 
 ## データ構造
 
-### Event
+### Challenge（チャレンジ）
 - id: string
-- hostTwitterId: string
+- hostId: string
 - hostName: string
 - hostUsername: string
 - hostProfileImage: string
 - hostFollowersCount: number
 - title: string
 - description: string
+- goalType: 'attendance' | 'followers' | 'viewers' | 'points' | 'custom'
+- goalValue: number
+- goalUnit: string
+- currentValue: number
+- eventType: 'solo' | 'group'
 - eventDate: Date
+- venue: string
+- prefecture: string
+- ticketInfo: { presale: number, door: number, saleStart: Date } | null
+- status: 'upcoming' | 'active' | 'ended'
 - createdAt: Date
 
-### Participation
+### Participation（参加登録）
 - id: string
-- eventId: string
-- twitterId: string | null (匿名の場合null)
+- challengeId: string
+- userId: string | null
 - displayName: string
-- username: string | null
+- twitterUsername: string | null
 - profileImage: string | null
 - message: string
 - companionCount: number
-- companions: string[] (友人のTwitter ID)
+- prefecture: string
+- contribution: number
 - createdAt: Date

@@ -1,9 +1,9 @@
 import { describe, it, expect } from "vitest";
 
-describe("KimitoLink App Configuration", () => {
+describe("動員ちゃれんじ App Configuration", () => {
   it("should have correct app name", async () => {
     const config = await import("../app.config");
-    expect(config.default.name).toBe("KimitoLink");
+    expect(config.default.name).toBe("動員ちゃれんじ");
   });
 
   it("should have correct app slug", async () => {

@@ -1,13 +1,44 @@
-import { FlatList, Text, View, TouchableOpacity, TextInput, ScrollView, KeyboardAvoidingView, Platform, Share, Alert } from "react-native";
+import { FlatList, Text, View, TouchableOpacity, TextInput, ScrollView, KeyboardAvoidingView, Platform, Share, Alert, Dimensions } from "react-native";
 import { Image } from "expo-image";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import { useState } from "react";
 import { ScreenContainer } from "@/components/screen-container";
 import { trpc } from "@/lib/trpc";
-import { useColors } from "@/hooks/use-colors";
 import { useAuth } from "@/hooks/use-auth";
 import MaterialIcons from "@expo/vector-icons/MaterialIcons";
 import { LinearGradient } from "expo-linear-gradient";
+
+const { width: screenWidth } = Dimensions.get("window");
+
+// 目標タイプの表示名とアイコン
+const goalTypeConfig: Record<string, { label: string; icon: string; unit: string }> = {
+  attendance: { label: "動員", icon: "people", unit: "人" },
+  followers: { label: "フォロワー", icon: "person-add", unit: "人" },
+  viewers: { label: "同時視聴", icon: "visibility", unit: "人" },
+  points: { label: "ポイント", icon: "star", unit: "pt" },
+  custom: { label: "カスタム", icon: "flag", unit: "" },
+};
+
+// 地域グループ
+const regionGroups = [
+  { name: "北海道・東北", prefectures: ["北海道", "青森県", "岩手県", "宮城県", "秋田県", "山形県", "福島県"] },
+  { name: "関東", prefectures: ["茨城県", "栃木県", "群馬県", "埼玉県", "千葉県", "東京都", "神奈川県"] },
+  { name: "中部", prefectures: ["新潟県", "富山県", "石川県", "福井県", "山梨県", "長野県", "岐阜県", "静岡県", "愛知県"] },
+  { name: "近畿", prefectures: ["三重県", "滋賀県", "京都府", "大阪府", "兵庫県", "奈良県", "和歌山県"] },
+  { name: "中国・四国", prefectures: ["鳥取県", "島根県", "岡山県", "広島県", "山口県", "徳島県", "香川県", "愛媛県", "高知県"] },
+  { name: "九州・沖縄", prefectures: ["福岡県", "佐賀県", "長崎県", "熊本県", "大分県", "宮崎県", "鹿児島県", "沖縄県"] },
+];
+
+// 都道府県リスト
+const prefectures = [
+  "北海道", "青森県", "岩手県", "宮城県", "秋田県", "山形県", "福島県",
+  "茨城県", "栃木県", "群馬県", "埼玉県", "千葉県", "東京都", "神奈川県",
+  "新潟県", "富山県", "石川県", "福井県", "山梨県", "長野県", "岐阜県",
+  "静岡県", "愛知県", "三重県", "滋賀県", "京都府", "大阪府", "兵庫県",
+  "奈良県", "和歌山県", "鳥取県", "島根県", "岡山県", "広島県", "山口県",
+  "徳島県", "香川県", "愛媛県", "高知県", "福岡県", "佐賀県", "長崎県",
+  "熊本県", "大分県", "宮崎県", "鹿児島県", "沖縄県"
+];
 
 type Participation = {
   id: number;
@@ -16,22 +47,189 @@ type Participation = {
   profileImage: string | null;
   message: string | null;
   companionCount: number;
+  contribution: number;
+  prefecture: string | null;
   isAnonymous: boolean;
   createdAt: Date;
 };
 
-function MessageCard({ participation }: { participation: Participation }) {
-  const colors = useColors();
+// 進捗グリッドコンポーネント
+function ProgressGrid({ current, goal, unit }: { current: number; goal: number; unit: string }) {
+  const gridSize = Math.min(goal, 100);
+  const filledCount = Math.min(current, gridSize);
+  const cellSize = Math.floor((screenWidth - 64) / 10);
   
+  return (
+    <View style={{ marginVertical: 16 }}>
+      <View style={{ flexDirection: "row", flexWrap: "wrap", justifyContent: "center" }}>
+        {Array.from({ length: gridSize }).map((_, index) => (
+          <View
+            key={index}
+            style={{
+              width: cellSize - 2,
+              height: cellSize - 2,
+              margin: 1,
+              borderRadius: 2,
+              backgroundColor: index < filledCount ? "#EC4899" : "#2D3139",
+            }}
+          />
+        ))}
+      </View>
+      <Text style={{ color: "#9CA3AF", fontSize: 12, textAlign: "center", marginTop: 8 }}>
+        1マス = 1{unit}
+      </Text>
+    </View>
+  );
+}
+
+// 地域別マップコンポーネント
+function RegionMap({ participations }: { participations: Participation[] }) {
+  // 地域ごとの参加者数を集計
+  const regionCounts: Record<string, number> = {};
+  
+  participations.forEach(p => {
+    if (p.prefecture) {
+      const region = regionGroups.find(r => r.prefectures.includes(p.prefecture!));
+      if (region) {
+        regionCounts[region.name] = (regionCounts[region.name] || 0) + (p.contribution || 1);
+      }
+    }
+  });
+
+  const maxCount = Math.max(...Object.values(regionCounts), 1);
+
+  return (
+    <View style={{ marginVertical: 16 }}>
+      <Text style={{ color: "#fff", fontSize: 16, fontWeight: "bold", marginBottom: 12 }}>
+        地域別参加者
+      </Text>
+      <View style={{ flexDirection: "row", flexWrap: "wrap", justifyContent: "space-between" }}>
+        {regionGroups.map((region) => {
+          const count = regionCounts[region.name] || 0;
+          const intensity = count / maxCount;
+          
+          return (
+            <View
+              key={region.name}
+              style={{
+                width: "48%",
+                backgroundColor: "#1A1D21",
+                borderRadius: 8,
+                padding: 12,
+                marginBottom: 8,
+                borderWidth: 1,
+                borderColor: count > 0 ? `rgba(236, 72, 153, ${0.3 + intensity * 0.7})` : "#2D3139",
+              }}
+            >
+              <Text style={{ color: "#9CA3AF", fontSize: 12 }}>{region.name}</Text>
+              <Text style={{ color: count > 0 ? "#EC4899" : "#6B7280", fontSize: 20, fontWeight: "bold" }}>
+                {count}人
+              </Text>
+            </View>
+          );
+        })}
+      </View>
+    </View>
+  );
+}
+
+// 貢献度ランキングコンポーネント
+function ContributionRanking({ participations }: { participations: Participation[] }) {
+  const sorted = [...participations]
+    .sort((a, b) => (b.contribution || 1) - (a.contribution || 1))
+    .slice(0, 5);
+
+  if (sorted.length === 0) return null;
+
+  return (
+    <View style={{ marginVertical: 16 }}>
+      <Text style={{ color: "#fff", fontSize: 16, fontWeight: "bold", marginBottom: 12 }}>
+        貢献度ランキング
+      </Text>
+      {sorted.map((p, index) => (
+        <View
+          key={p.id}
+          style={{
+            flexDirection: "row",
+            alignItems: "center",
+            backgroundColor: "#1A1D21",
+            borderRadius: 8,
+            padding: 12,
+            marginBottom: 8,
+            borderWidth: index === 0 ? 2 : 1,
+            borderColor: index === 0 ? "#FFD700" : "#2D3139",
+          }}
+        >
+          <View
+            style={{
+              width: 28,
+              height: 28,
+              borderRadius: 14,
+              backgroundColor: index === 0 ? "#FFD700" : index === 1 ? "#C0C0C0" : index === 2 ? "#CD7F32" : "#2D3139",
+              alignItems: "center",
+              justifyContent: "center",
+              marginRight: 12,
+            }}
+          >
+            <Text style={{ color: index < 3 ? "#000" : "#fff", fontSize: 12, fontWeight: "bold" }}>
+              {index + 1}
+            </Text>
+          </View>
+          {p.profileImage && !p.isAnonymous ? (
+            <Image
+              source={{ uri: p.profileImage }}
+              style={{ width: 36, height: 36, borderRadius: 18, marginRight: 12 }}
+            />
+          ) : (
+            <View
+              style={{
+                width: 36,
+                height: 36,
+                borderRadius: 18,
+                backgroundColor: "#EC4899",
+                alignItems: "center",
+                justifyContent: "center",
+                marginRight: 12,
+              }}
+            >
+              <Text style={{ color: "#fff", fontSize: 14, fontWeight: "bold" }}>
+                {p.displayName.charAt(0)}
+              </Text>
+            </View>
+          )}
+          <View style={{ flex: 1 }}>
+            <Text style={{ color: "#fff", fontSize: 14, fontWeight: "600" }}>
+              {p.isAnonymous ? "匿名" : p.displayName}
+            </Text>
+            {p.username && !p.isAnonymous && (
+              <Text style={{ color: "#DD6500", fontSize: 12 }}>@{p.username}</Text>
+            )}
+          </View>
+          <View style={{ alignItems: "flex-end" }}>
+            <Text style={{ color: "#EC4899", fontSize: 18, fontWeight: "bold" }}>
+              +{p.contribution || 1}
+            </Text>
+            <Text style={{ color: "#6B7280", fontSize: 10 }}>
+              {p.companionCount > 0 ? `(本人+${p.companionCount}人)` : ""}
+            </Text>
+          </View>
+        </View>
+      ))}
+    </View>
+  );
+}
+
+// 応援メッセージカード
+function MessageCard({ participation }: { participation: Participation }) {
   return (
     <View
       style={{
-        backgroundColor: colors.surface,
+        backgroundColor: "#1A1D21",
         borderRadius: 12,
         padding: 16,
         marginBottom: 12,
         borderWidth: 1,
-        borderColor: colors.border,
+        borderColor: "#2D3139",
       }}
     >
       <View style={{ flexDirection: "row", alignItems: "center", marginBottom: 8 }}>
@@ -46,7 +244,7 @@ function MessageCard({ participation }: { participation: Participation }) {
               width: 40,
               height: 40,
               borderRadius: 20,
-              backgroundColor: colors.muted,
+              backgroundColor: "#EC4899",
               alignItems: "center",
               justifyContent: "center",
             }}
@@ -57,19 +255,30 @@ function MessageCard({ participation }: { participation: Participation }) {
           </View>
         )}
         <View style={{ marginLeft: 12, flex: 1 }}>
-          <Text style={{ color: colors.foreground, fontSize: 16, fontWeight: "600" }}>
-            {participation.displayName}
+          <Text style={{ color: "#fff", fontSize: 16, fontWeight: "600" }}>
+            {participation.isAnonymous ? "匿名" : participation.displayName}
           </Text>
-          {participation.username && !participation.isAnonymous && (
-            <Text style={{ color: "#DD6500", fontSize: 14 }}>
-              @{participation.username}
-              {participation.companionCount > 0 && ` +${participation.companionCount}人連れて行く！`}
-            </Text>
-          )}
+          <View style={{ flexDirection: "row", alignItems: "center" }}>
+            {participation.username && !participation.isAnonymous && (
+              <Text style={{ color: "#DD6500", fontSize: 14, marginRight: 8 }}>
+                @{participation.username}
+              </Text>
+            )}
+            {participation.prefecture && (
+              <Text style={{ color: "#6B7280", fontSize: 12 }}>
+                📍{participation.prefecture}
+              </Text>
+            )}
+          </View>
+        </View>
+        <View style={{ alignItems: "flex-end" }}>
+          <Text style={{ color: "#EC4899", fontSize: 14, fontWeight: "bold" }}>
+            +{participation.contribution || 1}人
+          </Text>
         </View>
       </View>
       {participation.message && (
-        <Text style={{ color: colors.foreground, fontSize: 15, lineHeight: 22 }}>
+        <Text style={{ color: "#E5E7EB", fontSize: 15, lineHeight: 22 }}>
           {participation.message}
         </Text>
       )}
@@ -77,8 +286,7 @@ function MessageCard({ participation }: { participation: Participation }) {
   );
 }
 
-export default function EventDetailScreen() {
-  const colors = useColors();
+export default function ChallengeDetailScreen() {
   const router = useRouter();
   const { id } = useLocalSearchParams<{ id: string }>();
   const { user } = useAuth();
@@ -86,16 +294,20 @@ export default function EventDetailScreen() {
   const [message, setMessage] = useState("");
   const [displayName, setDisplayName] = useState("");
   const [companionCount, setCompanionCount] = useState(0);
+  const [prefecture, setPrefecture] = useState("");
   const [showForm, setShowForm] = useState(false);
+  const [showPrefectureList, setShowPrefectureList] = useState(false);
 
-  const eventId = parseInt(id || "0", 10);
+  const challengeId = parseInt(id || "0", 10);
   
-  const { data: event, isLoading: eventLoading } = trpc.events.getById.useQuery({ id: eventId });
-  const { data: participations, isLoading: participationsLoading, refetch } = trpc.participations.listByEvent.useQuery({ eventId });
+  const { data: challenge, isLoading: challengeLoading } = trpc.events.getById.useQuery({ id: challengeId });
+  const { data: participations, isLoading: participationsLoading, refetch } = trpc.participations.listByEvent.useQuery({ eventId: challengeId });
   
   const createParticipationMutation = trpc.participations.create.useMutation({
     onSuccess: () => {
       setMessage("");
+      setCompanionCount(0);
+      setPrefecture("");
       setShowForm(false);
       refetch();
     },
@@ -105,6 +317,8 @@ export default function EventDetailScreen() {
     onSuccess: () => {
       setMessage("");
       setDisplayName("");
+      setCompanionCount(0);
+      setPrefecture("");
       setShowForm(false);
       refetch();
     },
@@ -113,376 +327,501 @@ export default function EventDetailScreen() {
   const handleSubmit = () => {
     if (user) {
       createParticipationMutation.mutate({
-        eventId,
+        challengeId,
         message,
         companionCount,
+        prefecture,
         displayName: user.name || "ゲスト",
       });
     } else {
-      if (!displayName.trim()) return;
+      if (!displayName.trim()) {
+        Alert.alert("エラー", "お名前を入力してください");
+        return;
+      }
       createAnonymousMutation.mutate({
-        eventId,
+        challengeId,
         displayName: displayName.trim(),
         message,
         companionCount,
+        prefecture,
       });
     }
   };
 
-  if (eventLoading) {
+  if (challengeLoading) {
     return (
-      <ScreenContainer>
-        <View style={{ flex: 1, alignItems: "center", justifyContent: "center" }}>
-          <Text style={{ color: colors.muted }}>読み込み中...</Text>
+      <ScreenContainer containerClassName="bg-[#0D1117]">
+        <View style={{ flex: 1, alignItems: "center", justifyContent: "center", backgroundColor: "#0D1117" }}>
+          <Text style={{ color: "#9CA3AF" }}>読み込み中...</Text>
         </View>
       </ScreenContainer>
     );
   }
 
-  if (!event) {
+  if (!challenge) {
     return (
-      <ScreenContainer>
-        <View style={{ flex: 1, alignItems: "center", justifyContent: "center" }}>
-          <Text style={{ color: colors.muted }}>イベントが見つかりません</Text>
+      <ScreenContainer containerClassName="bg-[#0D1117]">
+        <View style={{ flex: 1, alignItems: "center", justifyContent: "center", backgroundColor: "#0D1117" }}>
+          <Text style={{ color: "#9CA3AF" }}>チャレンジが見つかりません</Text>
         </View>
       </ScreenContainer>
     );
   }
 
-  const eventDate = new Date(event.eventDate);
+  const eventDate = new Date(challenge.eventDate);
   const formattedDate = `${eventDate.getFullYear()}年${eventDate.getMonth() + 1}月${eventDate.getDate()}日`;
+  
+  const goalConfig = goalTypeConfig[challenge.goalType || "attendance"] || goalTypeConfig.attendance;
+  const unit = challenge.goalUnit || goalConfig.unit;
+  const currentValue = challenge.currentValue || 0;
+  const goalValue = challenge.goalValue || 100;
+  const progress = Math.min((currentValue / goalValue) * 100, 100);
+  const remaining = Math.max(goalValue - currentValue, 0);
 
   const handleShare = async () => {
     try {
-      const shareMessage = `🎉 ${event.hostName}さんの生誕祭！\n\n🎂 ${event.title}\n📅 ${formattedDate}${event.venue ? `\n📍 ${event.venue}` : ""}\n\n一緒にお祝いしよう！\n\n#KimitoLink #生誕祭 #${event.hostName}生誕祭`;
+      const shareMessage = `🎯 ${challenge.title}\n\n📊 現在 ${currentValue}/${goalValue}${unit}（${Math.round(progress)}%）\nあと${remaining}${unit}で目標達成！\n\n一緒に応援しよう！\n\n#KimitoLink #動員ちゃれんじ`;
       
-      const result = await Share.share({
-        message: shareMessage,
-      });
-      
-      if (result.action === Share.sharedAction) {
-        console.log("Shared successfully");
-      }
+      await Share.share({ message: shareMessage });
     } catch (error) {
       Alert.alert("エラー", "シェアに失敗しました");
     }
   };
 
   return (
-    <ScreenContainer edges={["top", "left", "right"]}>
+    <ScreenContainer edges={["top", "left", "right"]} containerClassName="bg-[#0D1117]">
       <KeyboardAvoidingView
         behavior={Platform.OS === "ios" ? "padding" : "height"}
         style={{ flex: 1 }}
       >
-        <ScrollView style={{ flex: 1 }}>
+        <ScrollView style={{ flex: 1, backgroundColor: "#0D1117" }}>
           {/* ヘッダー */}
           <View style={{ paddingHorizontal: 16, paddingTop: 8 }}>
             <TouchableOpacity
               onPress={() => router.back()}
               style={{ flexDirection: "row", alignItems: "center", marginBottom: 16 }}
             >
-              <MaterialIcons name="arrow-back" size={24} color={colors.foreground} />
-              <Text style={{ color: colors.foreground, marginLeft: 8 }}>戻る</Text>
+              <MaterialIcons name="arrow-back" size={24} color="#fff" />
+              <Text style={{ color: "#fff", marginLeft: 8 }}>戻る</Text>
             </TouchableOpacity>
           </View>
 
-          {/* イベント情報カード */}
-          <View
-            style={{
-              backgroundColor: colors.surface,
-              marginHorizontal: 16,
-              borderRadius: 16,
-              overflow: "hidden",
-              borderWidth: 1,
-              borderColor: colors.border,
-            }}
+          {/* ヘッダー画像 */}
+          <LinearGradient
+            colors={["#EC4899", "#8B5CF6"]}
+            start={{ x: 0, y: 0 }}
+            end={{ x: 1, y: 1 }}
+            style={{ marginHorizontal: 16, borderRadius: 16, padding: 20 }}
           >
-            <LinearGradient
-              colors={["#00427B", "#DD6500"]}
-              start={{ x: 0, y: 0 }}
-              end={{ x: 1, y: 0 }}
-              style={{ height: 4 }}
-            />
-            <View style={{ padding: 16 }}>
-              {/* ホスト情報 */}
-              <View style={{ flexDirection: "row", alignItems: "center", marginBottom: 16 }}>
-                {event.hostProfileImage ? (
-                  <Image
-                    source={{ uri: event.hostProfileImage }}
-                    style={{ width: 64, height: 64, borderRadius: 32 }}
-                  />
-                ) : (
-                  <View
-                    style={{
-                      width: 64,
-                      height: 64,
-                      borderRadius: 32,
-                      backgroundColor: "#00427B",
-                      alignItems: "center",
-                      justifyContent: "center",
-                    }}
-                  >
-                    <Text style={{ color: "#fff", fontSize: 24, fontWeight: "bold" }}>
-                      {event.hostName.charAt(0)}
-                    </Text>
-                  </View>
-                )}
-                <View style={{ marginLeft: 16, flex: 1 }}>
-                  <Text style={{ color: colors.foreground, fontSize: 20, fontWeight: "bold" }}>
-                    {event.hostName}
+            {/* ホスト情報 */}
+            <View style={{ flexDirection: "row", alignItems: "center", marginBottom: 16 }}>
+              {challenge.hostProfileImage ? (
+                <Image
+                  source={{ uri: challenge.hostProfileImage }}
+                  style={{ width: 56, height: 56, borderRadius: 28, borderWidth: 2, borderColor: "#fff" }}
+                />
+              ) : (
+                <View
+                  style={{
+                    width: 56,
+                    height: 56,
+                    borderRadius: 28,
+                    backgroundColor: "rgba(255,255,255,0.3)",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    borderWidth: 2,
+                    borderColor: "#fff",
+                  }}
+                >
+                  <Text style={{ color: "#fff", fontSize: 24, fontWeight: "bold" }}>
+                    {challenge.hostName.charAt(0)}
                   </Text>
-                  {event.hostUsername && (
-                    <Text style={{ color: "#DD6500", fontSize: 14 }}>
-                      @{event.hostUsername}
-                    </Text>
-                  )}
-                  {event.hostFollowersCount !== null && (
-                    <View style={{ flexDirection: "row", alignItems: "center", marginTop: 4 }}>
-                      <MaterialIcons name="people" size={16} color={colors.muted} />
-                      <Text style={{ color: colors.muted, fontSize: 14, marginLeft: 4 }}>
-                        {event.hostFollowersCount.toLocaleString()} フォロワー
-                      </Text>
-                    </View>
-                  )}
+                </View>
+              )}
+              <View style={{ marginLeft: 12, flex: 1 }}>
+                <Text style={{ color: "#fff", fontSize: 18, fontWeight: "bold" }}>
+                  {challenge.hostName}
+                </Text>
+                {challenge.hostUsername && (
+                  <Text style={{ color: "rgba(255,255,255,0.8)", fontSize: 14 }}>
+                    @{challenge.hostUsername}
+                  </Text>
+                )}
+                {challenge.hostFollowersCount !== null && (
+                  <Text style={{ color: "rgba(255,255,255,0.7)", fontSize: 12 }}>
+                    {challenge.hostFollowersCount?.toLocaleString()} フォロワー
+                  </Text>
+                )}
+              </View>
+            </View>
+
+            <Text style={{ color: "#fff", fontSize: 22, fontWeight: "bold" }}>
+              {challenge.title}
+            </Text>
+          </LinearGradient>
+
+          {/* 進捗セクション */}
+          <View style={{ padding: 16 }}>
+            <View
+              style={{
+                backgroundColor: "#1A1D21",
+                borderRadius: 16,
+                padding: 20,
+                borderWidth: 1,
+                borderColor: "#2D3139",
+              }}
+            >
+              <View style={{ alignItems: "center", marginBottom: 16 }}>
+                <Text style={{ color: "#9CA3AF", fontSize: 14 }}>現在の達成状況</Text>
+                <View style={{ flexDirection: "row", alignItems: "baseline" }}>
+                  <Text style={{ color: "#EC4899", fontSize: 48, fontWeight: "bold" }}>
+                    {currentValue}
+                  </Text>
+                  <Text style={{ color: "#6B7280", fontSize: 20, marginLeft: 4 }}>
+                    / {goalValue}{unit}
+                  </Text>
                 </View>
               </View>
 
-              {/* イベント詳細 */}
-              <Text style={{ color: colors.foreground, fontSize: 22, fontWeight: "bold", marginBottom: 8 }}>
-                {event.title}
-              </Text>
+              {/* 進捗バー */}
+              <View
+                style={{
+                  height: 12,
+                  backgroundColor: "#2D3139",
+                  borderRadius: 6,
+                  overflow: "hidden",
+                  marginBottom: 8,
+                }}
+              >
+                <LinearGradient
+                  colors={["#EC4899", "#8B5CF6"]}
+                  start={{ x: 0, y: 0 }}
+                  end={{ x: 1, y: 0 }}
+                  style={{
+                    height: "100%",
+                    width: `${progress}%`,
+                    borderRadius: 6,
+                  }}
+                />
+              </View>
               
-              <View style={{ flexDirection: "row", alignItems: "center", marginBottom: 8 }}>
+              <Text style={{ color: "#9CA3AF", fontSize: 14, textAlign: "center" }}>
+                あと<Text style={{ color: "#EC4899", fontWeight: "bold" }}>{remaining}{unit}</Text>で目標達成！
+              </Text>
+
+              {/* 進捗グリッド */}
+              <ProgressGrid current={currentValue} goal={goalValue} unit={unit} />
+            </View>
+
+            {/* イベント情報 */}
+            <View
+              style={{
+                backgroundColor: "#1A1D21",
+                borderRadius: 16,
+                padding: 16,
+                marginTop: 16,
+                borderWidth: 1,
+                borderColor: "#2D3139",
+              }}
+            >
+              <View style={{ flexDirection: "row", alignItems: "center", marginBottom: 12 }}>
                 <MaterialIcons name="event" size={20} color="#DD6500" />
-                <Text style={{ color: colors.foreground, fontSize: 16, marginLeft: 8 }}>
+                <Text style={{ color: "#fff", fontSize: 16, marginLeft: 8 }}>
                   {formattedDate}
                 </Text>
               </View>
 
-              {event.venue && (
-                <View style={{ flexDirection: "row", alignItems: "center", marginBottom: 8 }}>
+              {challenge.venue && (
+                <View style={{ flexDirection: "row", alignItems: "center", marginBottom: 12 }}>
                   <MaterialIcons name="place" size={20} color="#DD6500" />
-                  <Text style={{ color: colors.foreground, fontSize: 16, marginLeft: 8 }}>
-                    {event.venue}
+                  <Text style={{ color: "#fff", fontSize: 16, marginLeft: 8 }}>
+                    {challenge.venue}
                   </Text>
                 </View>
               )}
 
-              {event.description && (
-                <Text style={{ color: colors.muted, fontSize: 15, marginTop: 8, lineHeight: 22 }}>
-                  {event.description}
+              {challenge.description && (
+                <Text style={{ color: "#9CA3AF", fontSize: 15, lineHeight: 22 }}>
+                  {challenge.description}
                 </Text>
               )}
-
-              {/* 参加者数 */}
-              <View
-                style={{
-                  backgroundColor: "#00427B",
-                  borderRadius: 12,
-                  padding: 16,
-                  marginTop: 16,
-                  alignItems: "center",
-                }}
-              >
-                <Text style={{ color: "#fff", fontSize: 14 }}>参加表明</Text>
-                <Text style={{ color: "#fff", fontSize: 32, fontWeight: "bold" }}>
-                  {event.participantCount || 0}
-                </Text>
-                <Text style={{ color: "#fff", fontSize: 14 }}>人</Text>
-              </View>
-
-              {/* SNSシェアボタン */}
-              <TouchableOpacity
-                onPress={handleShare}
-                style={{
-                  backgroundColor: "#DD6500",
-                  borderRadius: 12,
-                  padding: 14,
-                  marginTop: 16,
-                  flexDirection: "row",
-                  alignItems: "center",
-                  justifyContent: "center",
-                }}
-              >
-                <MaterialIcons name="share" size={20} color="#fff" />
-                <Text style={{ color: "#fff", fontSize: 16, fontWeight: "bold", marginLeft: 8 }}>
-                  SNSでシェアして仲間を増やす
-                </Text>
-              </TouchableOpacity>
-            </View>
-          </View>
-
-          {/* 応援メッセージセクション */}
-          <View style={{ padding: 16 }}>
-            <View style={{ flexDirection: "row", alignItems: "center", marginBottom: 16 }}>
-              <MaterialIcons name="message" size={24} color="#DD6500" />
-              <Text style={{ color: colors.foreground, fontSize: 18, fontWeight: "bold", marginLeft: 8 }}>
-                みんなの応援メッセージ
-              </Text>
             </View>
 
-            {participationsLoading ? (
-              <Text style={{ color: colors.muted, textAlign: "center" }}>読み込み中...</Text>
-            ) : participations && participations.length > 0 ? (
-              participations.map((p) => <MessageCard key={p.id} participation={p} />)
-            ) : (
-              <View style={{ alignItems: "center", padding: 32 }}>
-                <MaterialIcons name="chat-bubble-outline" size={48} color={colors.muted} />
-                <Text style={{ color: colors.muted, marginTop: 8 }}>
-                  まだメッセージがありません
+            {/* 地域別マップ */}
+            {participations && participations.length > 0 && (
+              <RegionMap participations={participations as Participation[]} />
+            )}
+
+            {/* 貢献度ランキング */}
+            {participations && participations.length > 0 && (
+              <ContributionRanking participations={participations as Participation[]} />
+            )}
+
+            {/* 応援メッセージ */}
+            {participations && participations.length > 0 && (
+              <View style={{ marginTop: 16 }}>
+                <Text style={{ color: "#fff", fontSize: 16, fontWeight: "bold", marginBottom: 12 }}>
+                  応援メッセージ ({participations.length}件)
                 </Text>
+                {participations.map((p: any) => (
+                  <MessageCard key={p.id} participation={p as Participation} />
+                ))}
               </View>
             )}
-          </View>
 
-          {/* 参加登録フォーム */}
-          {showForm && (
-            <View
-              style={{
-                backgroundColor: colors.surface,
-                margin: 16,
-                borderRadius: 16,
-                padding: 16,
-                borderWidth: 1,
-                borderColor: colors.border,
-              }}
-            >
-              <Text style={{ color: colors.foreground, fontSize: 18, fontWeight: "bold", marginBottom: 16 }}>
-                参加表明する
-              </Text>
+            {/* 参加表明フォーム */}
+            {showForm ? (
+              <View
+                style={{
+                  backgroundColor: "#1A1D21",
+                  borderRadius: 16,
+                  padding: 16,
+                  marginTop: 16,
+                  borderWidth: 1,
+                  borderColor: "#2D3139",
+                }}
+              >
+                <Text style={{ color: "#fff", fontSize: 18, fontWeight: "bold", marginBottom: 16 }}>
+                  参加表明
+                </Text>
 
-              {!user && (
+                {!user && (
+                  <View style={{ marginBottom: 16 }}>
+                    <Text style={{ color: "#9CA3AF", fontSize: 14, marginBottom: 8 }}>
+                      お名前 *
+                    </Text>
+                    <TextInput
+                      value={displayName}
+                      onChangeText={setDisplayName}
+                      placeholder="ニックネーム"
+                      placeholderTextColor="#6B7280"
+                      style={{
+                        backgroundColor: "#0D1117",
+                        borderRadius: 8,
+                        padding: 12,
+                        color: "#fff",
+                        borderWidth: 1,
+                        borderColor: "#2D3139",
+                      }}
+                    />
+                  </View>
+                )}
+
                 <View style={{ marginBottom: 16 }}>
-                  <Text style={{ color: colors.muted, fontSize: 14, marginBottom: 8 }}>
-                    表示名 *
+                  <Text style={{ color: "#9CA3AF", fontSize: 14, marginBottom: 8 }}>
+                    都道府県
                   </Text>
-                  <TextInput
-                    value={displayName}
-                    onChangeText={setDisplayName}
-                    placeholder="あなたの名前"
-                    placeholderTextColor={colors.muted}
+                  <TouchableOpacity
+                    onPress={() => setShowPrefectureList(!showPrefectureList)}
                     style={{
-                      backgroundColor: colors.background,
+                      backgroundColor: "#0D1117",
                       borderRadius: 8,
                       padding: 12,
-                      color: colors.foreground,
                       borderWidth: 1,
-                      borderColor: colors.border,
+                      borderColor: "#2D3139",
+                      flexDirection: "row",
+                      justifyContent: "space-between",
+                      alignItems: "center",
+                    }}
+                  >
+                    <Text style={{ color: prefecture ? "#fff" : "#6B7280" }}>
+                      {prefecture || "選択してください"}
+                    </Text>
+                    <MaterialIcons name="arrow-drop-down" size={24} color="#6B7280" />
+                  </TouchableOpacity>
+                  {showPrefectureList && (
+                    <View
+                      style={{
+                        backgroundColor: "#0D1117",
+                        borderRadius: 8,
+                        marginTop: 4,
+                        maxHeight: 200,
+                        borderWidth: 1,
+                        borderColor: "#2D3139",
+                      }}
+                    >
+                      <ScrollView nestedScrollEnabled>
+                        {prefectures.map((pref) => (
+                          <TouchableOpacity
+                            key={pref}
+                            onPress={() => {
+                              setPrefecture(pref);
+                              setShowPrefectureList(false);
+                            }}
+                            style={{
+                              padding: 12,
+                              borderBottomWidth: 1,
+                              borderBottomColor: "#2D3139",
+                            }}
+                          >
+                            <Text style={{ color: "#fff" }}>{pref}</Text>
+                          </TouchableOpacity>
+                        ))}
+                      </ScrollView>
+                    </View>
+                  )}
+                </View>
+
+                <View style={{ marginBottom: 16 }}>
+                  <Text style={{ color: "#9CA3AF", fontSize: 14, marginBottom: 8 }}>
+                    友達を何人連れて行きますか？
+                  </Text>
+                  <View style={{ flexDirection: "row", alignItems: "center" }}>
+                    <TouchableOpacity
+                      onPress={() => setCompanionCount(Math.max(0, companionCount - 1))}
+                      style={{
+                        width: 44,
+                        height: 44,
+                        borderRadius: 22,
+                        backgroundColor: "#2D3139",
+                        alignItems: "center",
+                        justifyContent: "center",
+                      }}
+                    >
+                      <MaterialIcons name="remove" size={24} color="#fff" />
+                    </TouchableOpacity>
+                    <Text style={{ color: "#fff", fontSize: 24, fontWeight: "bold", marginHorizontal: 24 }}>
+                      {companionCount}
+                    </Text>
+                    <TouchableOpacity
+                      onPress={() => setCompanionCount(companionCount + 1)}
+                      style={{
+                        width: 44,
+                        height: 44,
+                        borderRadius: 22,
+                        backgroundColor: "#EC4899",
+                        alignItems: "center",
+                        justifyContent: "center",
+                      }}
+                    >
+                      <MaterialIcons name="add" size={24} color="#fff" />
+                    </TouchableOpacity>
+                    <Text style={{ color: "#9CA3AF", fontSize: 14, marginLeft: 16 }}>
+                      人
+                    </Text>
+                  </View>
+                  <Text style={{ color: "#6B7280", fontSize: 12, marginTop: 8 }}>
+                    あなたの貢献: {1 + companionCount}人
+                  </Text>
+                </View>
+
+                <View style={{ marginBottom: 16 }}>
+                  <Text style={{ color: "#9CA3AF", fontSize: 14, marginBottom: 8 }}>
+                    応援メッセージ（任意）
+                  </Text>
+                  <TextInput
+                    value={message}
+                    onChangeText={setMessage}
+                    placeholder="応援メッセージを書いてね"
+                    placeholderTextColor="#6B7280"
+                    multiline
+                    numberOfLines={3}
+                    style={{
+                      backgroundColor: "#0D1117",
+                      borderRadius: 8,
+                      padding: 12,
+                      color: "#fff",
+                      borderWidth: 1,
+                      borderColor: "#2D3139",
+                      minHeight: 80,
+                      textAlignVertical: "top",
                     }}
                   />
                 </View>
-              )}
 
-              <View style={{ marginBottom: 16 }}>
-                <Text style={{ color: colors.muted, fontSize: 14, marginBottom: 8 }}>
-                  応援メッセージ（任意）
-                </Text>
-                <TextInput
-                  value={message}
-                  onChangeText={setMessage}
-                  placeholder="お祝いのメッセージを書いてね"
-                  placeholderTextColor={colors.muted}
-                  multiline
-                  numberOfLines={4}
-                  style={{
-                    backgroundColor: colors.background,
-                    borderRadius: 8,
-                    padding: 12,
-                    color: colors.foreground,
-                    borderWidth: 1,
-                    borderColor: colors.border,
-                    minHeight: 100,
-                    textAlignVertical: "top",
-                  }}
-                />
-              </View>
-
-              <View style={{ marginBottom: 16 }}>
-                <Text style={{ color: colors.muted, fontSize: 14, marginBottom: 8 }}>
-                  一緒に参加する友人（任意）
-                </Text>
-                <View style={{ flexDirection: "row", alignItems: "center" }}>
+                <View style={{ flexDirection: "row", gap: 12 }}>
                   <TouchableOpacity
-                    onPress={() => setCompanionCount(Math.max(0, companionCount - 1))}
+                    onPress={() => setShowForm(false)}
                     style={{
-                      width: 40,
-                      height: 40,
-                      borderRadius: 20,
-                      backgroundColor: colors.border,
+                      flex: 1,
+                      backgroundColor: "#2D3139",
+                      borderRadius: 12,
+                      padding: 16,
                       alignItems: "center",
-                      justifyContent: "center",
                     }}
                   >
-                    <MaterialIcons name="remove" size={24} color={colors.foreground} />
+                    <Text style={{ color: "#fff", fontSize: 16 }}>キャンセル</Text>
                   </TouchableOpacity>
-                  <Text style={{ color: colors.foreground, fontSize: 20, marginHorizontal: 16 }}>
-                    {companionCount}人
-                  </Text>
                   <TouchableOpacity
-                    onPress={() => setCompanionCount(companionCount + 1)}
+                    onPress={handleSubmit}
+                    disabled={createParticipationMutation.isPending || createAnonymousMutation.isPending}
                     style={{
-                      width: 40,
-                      height: 40,
-                      borderRadius: 20,
-                      backgroundColor: "#DD6500",
+                      flex: 1,
+                      borderRadius: 12,
+                      padding: 16,
                       alignItems: "center",
-                      justifyContent: "center",
+                      overflow: "hidden",
                     }}
                   >
-                    <MaterialIcons name="add" size={24} color="#fff" />
+                    <LinearGradient
+                      colors={["#EC4899", "#8B5CF6"]}
+                      start={{ x: 0, y: 0 }}
+                      end={{ x: 1, y: 0 }}
+                      style={{
+                        position: "absolute",
+                        left: 0,
+                        right: 0,
+                        top: 0,
+                        bottom: 0,
+                      }}
+                    />
+                    <Text style={{ color: "#fff", fontSize: 16, fontWeight: "bold" }}>
+                      参加表明する
+                    </Text>
                   </TouchableOpacity>
                 </View>
               </View>
+            ) : (
+              <View style={{ flexDirection: "row", gap: 12, marginTop: 16 }}>
+                <TouchableOpacity
+                  onPress={handleShare}
+                  style={{
+                    flex: 1,
+                    backgroundColor: "#1A1D21",
+                    borderRadius: 12,
+                    padding: 16,
+                    alignItems: "center",
+                    flexDirection: "row",
+                    justifyContent: "center",
+                    borderWidth: 1,
+                    borderColor: "#2D3139",
+                  }}
+                >
+                  <MaterialIcons name="share" size={20} color="#fff" />
+                  <Text style={{ color: "#fff", fontSize: 16, marginLeft: 8 }}>シェア</Text>
+                </TouchableOpacity>
+                <TouchableOpacity
+                  onPress={() => setShowForm(true)}
+                  style={{
+                    flex: 2,
+                    borderRadius: 12,
+                    padding: 16,
+                    alignItems: "center",
+                    overflow: "hidden",
+                  }}
+                >
+                  <LinearGradient
+                    colors={["#EC4899", "#8B5CF6"]}
+                    start={{ x: 0, y: 0 }}
+                    end={{ x: 1, y: 0 }}
+                    style={{
+                      position: "absolute",
+                      left: 0,
+                      right: 0,
+                      top: 0,
+                      bottom: 0,
+                    }}
+                  />
+                  <Text style={{ color: "#fff", fontSize: 16, fontWeight: "bold" }}>
+                    参加表明する
+                  </Text>
+                </TouchableOpacity>
+              </View>
+            )}
 
-              <TouchableOpacity
-                onPress={handleSubmit}
-                disabled={!user && !displayName.trim()}
-                style={{
-                  backgroundColor: (!user && !displayName.trim()) ? colors.muted : "#DD6500",
-                  borderRadius: 12,
-                  padding: 16,
-                  alignItems: "center",
-                }}
-              >
-                <Text style={{ color: "#fff", fontSize: 16, fontWeight: "bold" }}>
-                  参加表明する！
-                </Text>
-              </TouchableOpacity>
-            </View>
-          )}
-
-          <View style={{ height: 100 }} />
-        </ScrollView>
-
-        {/* 参加ボタン（固定） */}
-        {!showForm && (
-          <View
-            style={{
-              position: "absolute",
-              bottom: 0,
-              left: 0,
-              right: 0,
-              padding: 16,
-              backgroundColor: colors.background,
-              borderTopWidth: 1,
-              borderTopColor: colors.border,
-            }}
-          >
-            <TouchableOpacity
-              onPress={() => setShowForm(true)}
-              style={{
-                backgroundColor: "#DD6500",
-                borderRadius: 12,
-                padding: 16,
-                alignItems: "center",
-              }}
-            >
-              <Text style={{ color: "#fff", fontSize: 16, fontWeight: "bold" }}>
-                参加表明する！
-              </Text>
-            </TouchableOpacity>
+            <View style={{ height: 100 }} />
           </View>
-        )}
+        </ScrollView>
       </KeyboardAvoidingView>
     </ScreenContainer>
   );

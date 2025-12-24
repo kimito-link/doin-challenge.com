@@ -123,9 +123,10 @@ export const appRouter = router({
     // 参加登録（ログインユーザー）
     create: protectedProcedure
       .input(z.object({
-        eventId: z.number(),
+        challengeId: z.number(),
         message: z.string().optional(),
         companionCount: z.number().default(0),
+        prefecture: z.string().optional(),
         twitterId: z.string().optional(),
         displayName: z.string(),
         username: z.string().optional(),
@@ -133,7 +134,7 @@ export const appRouter = router({
       }))
       .mutation(async ({ ctx, input }) => {
         const participationId = await db.createParticipation({
-          eventId: input.eventId,
+          challengeId: input.challengeId,
           userId: ctx.user.id,
           twitterId: input.twitterId,
           displayName: input.displayName,
@@ -141,6 +142,7 @@ export const appRouter = router({
           profileImage: input.profileImage,
           message: input.message,
           companionCount: input.companionCount,
+          prefecture: input.prefecture,
           isAnonymous: false,
         });
         return { id: participationId };
@@ -149,17 +151,19 @@ export const appRouter = router({
     // 匿名参加登録
     createAnonymous: publicProcedure
       .input(z.object({
-        eventId: z.number(),
+        challengeId: z.number(),
         displayName: z.string(),
         message: z.string().optional(),
         companionCount: z.number().default(0),
+        prefecture: z.string().optional(),
       }))
       .mutation(async ({ input }) => {
         const participationId = await db.createParticipation({
-          eventId: input.eventId,
+          challengeId: input.challengeId,
           displayName: input.displayName,
           message: input.message,
           companionCount: input.companionCount,
+          prefecture: input.prefecture,
           isAnonymous: true,
         });
         return { id: participationId };

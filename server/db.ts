@@ -1,6 +1,10 @@
 import { eq, desc } from "drizzle-orm";
 import { drizzle } from "drizzle-orm/mysql2";
-import { InsertUser, users, events, participations, InsertEvent, InsertParticipation } from "../drizzle/schema";
+import { InsertUser, users, challenges, participations, InsertChallenge, InsertParticipation } from "../drizzle/schema";
+
+// 後方互換性のためのエイリアス
+const events = challenges;
+type InsertEvent = InsertChallenge;
 import { ENV } from "./_core/env";
 
 let _db: ReturnType<typeof drizzle> | null = null;
@@ -134,7 +138,7 @@ export async function deleteEvent(id: number) {
 export async function getParticipationsByEventId(eventId: number) {
   const db = await getDb();
   if (!db) return [];
-  return db.select().from(participations).where(eq(participations.eventId, eventId)).orderBy(desc(participations.createdAt));
+  return db.select().from(participations).where(eq(participations.challengeId, eventId)).orderBy(desc(participations.createdAt));
 }
 
 export async function getParticipationsByUserId(userId: number) {
@@ -165,13 +169,48 @@ export async function deleteParticipation(id: number) {
 export async function getParticipationCountByEventId(eventId: number) {
   const db = await getDb();
   if (!db) return 0;
-  const result = await db.select().from(participations).where(eq(participations.eventId, eventId));
+  const result = await db.select().from(participations).where(eq(participations.challengeId, eventId));
   return result.length;
 }
 
 export async function getTotalCompanionCountByEventId(eventId: number) {
   const db = await getDb();
   if (!db) return 0;
-  const result = await db.select().from(participations).where(eq(participations.eventId, eventId));
-  return result.reduce((sum, p) => sum + (p.companionCount || 0), 0) + result.length;
+  const result = await db.select().from(participations).where(eq(participations.challengeId, eventId));
+  return result.reduce((sum, p) => sum + (p.contribution || 1), 0);
+}
+
+// 地域別の参加者数を取得
+export async function getParticipationsByPrefecture(challengeId: number) {
+  const db = await getDb();
+  if (!db) return {};
+  
+  const result = await db.select().from(participations).where(eq(participations.challengeId, challengeId));
+  
+  const prefectureMap: Record<string, number> = {};
+  result.forEach(p => {
+    const pref = p.prefecture || "未設定";
+    prefectureMap[pref] = (prefectureMap[pref] || 0) + (p.contribution || 1);
+  });
+  
+  return prefectureMap;
+}
+
+// 貢献度ランキングを取得
+export async function getContributionRanking(challengeId: number, limit = 10) {
+  const db = await getDb();
+  if (!db) return [];
+  
+  const result = await db.select().from(participations)
+    .where(eq(participations.challengeId, challengeId))
+    .orderBy(desc(participations.contribution));
+  
+  return result.slice(0, limit).map((p, index) => ({
+    rank: index + 1,
+    displayName: p.displayName,
+    username: p.username,
+    profileImage: p.profileImage,
+    contribution: p.contribution || 1,
+    isAnonymous: p.isAnonymous,
+  }));
 }
