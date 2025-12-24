@@ -298,6 +298,8 @@ export default function ChallengeDetailScreen() {
   const [showForm, setShowForm] = useState(false);
   const [showPrefectureList, setShowPrefectureList] = useState(false);
   const [allowVideoUse, setAllowVideoUse] = useState(true);
+  const [selectedPrefectureFilter, setSelectedPrefectureFilter] = useState("all");
+  const [showPrefectureFilterList, setShowPrefectureFilterList] = useState(false);
 
   const challengeId = parseInt(id || "0", 10);
   
@@ -628,6 +630,27 @@ export default function ChallengeDetailScreen() {
               </View>
             )}
 
+            {/* ホスト用管理ボタン */}
+            {user && challenge.hostUserId === user.id && (
+              <TouchableOpacity
+                onPress={() => router.push(`/manage-comments/${challengeId}`)}
+                style={{
+                  backgroundColor: "#8B5CF6",
+                  borderRadius: 12,
+                  padding: 14,
+                  marginTop: 16,
+                  flexDirection: "row",
+                  alignItems: "center",
+                  justifyContent: "center",
+                }}
+              >
+                <MaterialIcons name="star" size={20} color="#fff" />
+                <Text style={{ color: "#fff", fontSize: 14, fontWeight: "bold", marginLeft: 8 }}>
+                  コメント管理（ピックアップ）
+                </Text>
+              </TouchableOpacity>
+            )}
+
             {/* 地域別マップ */}
             {participations && participations.length > 0 && (
               <RegionMap participations={participations as Participation[]} />
@@ -641,12 +664,110 @@ export default function ChallengeDetailScreen() {
             {/* 応援メッセージ */}
             {participations && participations.length > 0 && (
               <View style={{ marginTop: 16 }}>
-                <Text style={{ color: "#fff", fontSize: 16, fontWeight: "bold", marginBottom: 12 }}>
-                  応援メッセージ ({participations.length}件)
-                </Text>
-                {participations.map((p: any) => (
-                  <MessageCard key={p.id} participation={p as Participation} />
-                ))}
+                <View style={{ flexDirection: "row", alignItems: "center", justifyContent: "space-between", marginBottom: 12 }}>
+                  <Text style={{ color: "#fff", fontSize: 16, fontWeight: "bold" }}>
+                    応援メッセージ ({participations.length}件)
+                  </Text>
+                  
+                  {/* 地域フィルター */}
+                  <TouchableOpacity
+                    onPress={() => setShowPrefectureFilterList(!showPrefectureFilterList)}
+                    style={{
+                      backgroundColor: "#1A1D21",
+                      borderRadius: 8,
+                      paddingHorizontal: 12,
+                      paddingVertical: 8,
+                      flexDirection: "row",
+                      alignItems: "center",
+                      borderWidth: 1,
+                      borderColor: selectedPrefectureFilter !== "all" ? "#EC4899" : "#2D3139",
+                    }}
+                  >
+                    <MaterialIcons name="filter-list" size={16} color={selectedPrefectureFilter !== "all" ? "#EC4899" : "#9CA3AF"} />
+                    <Text style={{ color: selectedPrefectureFilter !== "all" ? "#EC4899" : "#9CA3AF", fontSize: 12, marginLeft: 4 }}>
+                      {selectedPrefectureFilter === "all" ? "地域" : selectedPrefectureFilter}
+                    </Text>
+                  </TouchableOpacity>
+                </View>
+
+                {/* 地域フィルターリスト */}
+                {showPrefectureFilterList && (
+                  <View style={{ backgroundColor: "#1A1D21", borderRadius: 12, padding: 12, marginBottom: 12, borderWidth: 1, borderColor: "#2D3139" }}>
+                    <ScrollView horizontal showsHorizontalScrollIndicator={false} style={{ marginBottom: 8 }}>
+                      <TouchableOpacity
+                        onPress={() => { setSelectedPrefectureFilter("all"); setShowPrefectureFilterList(false); }}
+                        style={{
+                          backgroundColor: selectedPrefectureFilter === "all" ? "#EC4899" : "#2D3139",
+                          borderRadius: 16,
+                          paddingHorizontal: 12,
+                          paddingVertical: 6,
+                          marginRight: 8,
+                        }}
+                      >
+                        <Text style={{ color: "#fff", fontSize: 12 }}>すべて</Text>
+                      </TouchableOpacity>
+                      {regionGroups.map((region) => (
+                        <TouchableOpacity
+                          key={region.name}
+                          onPress={() => { setSelectedPrefectureFilter(region.name); setShowPrefectureFilterList(false); }}
+                          style={{
+                            backgroundColor: selectedPrefectureFilter === region.name ? "#EC4899" : "#2D3139",
+                            borderRadius: 16,
+                            paddingHorizontal: 12,
+                            paddingVertical: 6,
+                            marginRight: 8,
+                          }}
+                        >
+                          <Text style={{ color: "#fff", fontSize: 12 }}>{region.name}</Text>
+                        </TouchableOpacity>
+                      ))}
+                    </ScrollView>
+                    <View style={{ flexDirection: "row", flexWrap: "wrap", gap: 8 }}>
+                      {prefectures.map((pref) => (
+                        <TouchableOpacity
+                          key={pref}
+                          onPress={() => { setSelectedPrefectureFilter(pref); setShowPrefectureFilterList(false); }}
+                          style={{
+                            backgroundColor: selectedPrefectureFilter === pref ? "#EC4899" : "#0D1117",
+                            borderRadius: 8,
+                            paddingHorizontal: 10,
+                            paddingVertical: 6,
+                          }}
+                        >
+                          <Text style={{ color: selectedPrefectureFilter === pref ? "#fff" : "#9CA3AF", fontSize: 11 }}>{pref}</Text>
+                        </TouchableOpacity>
+                      ))}
+                    </View>
+                  </View>
+                )}
+
+                {/* フィルター適用済みメッセージ一覧 */}
+                {participations
+                  .filter((p: any) => {
+                    if (selectedPrefectureFilter === "all") return true;
+                    // 地域グループでフィルター
+                    const region = regionGroups.find(r => r.name === selectedPrefectureFilter);
+                    if (region) return region.prefectures.includes(p.prefecture || "");
+                    // 都道府県でフィルター
+                    return p.prefecture === selectedPrefectureFilter;
+                  })
+                  .map((p: any) => (
+                    <MessageCard key={p.id} participation={p as Participation} />
+                  ))}
+                
+                {participations.filter((p: any) => {
+                  if (selectedPrefectureFilter === "all") return true;
+                  const region = regionGroups.find(r => r.name === selectedPrefectureFilter);
+                  if (region) return region.prefectures.includes(p.prefecture || "");
+                  return p.prefecture === selectedPrefectureFilter;
+                }).length === 0 && selectedPrefectureFilter !== "all" && (
+                  <View style={{ alignItems: "center", paddingVertical: 24 }}>
+                    <MaterialIcons name="search-off" size={48} color="#6B7280" />
+                    <Text style={{ color: "#9CA3AF", fontSize: 14, marginTop: 8 }}>
+                      {selectedPrefectureFilter}からの参加者はまだいません
+                    </Text>
+                  </View>
+                )}
               </View>
             )}
 

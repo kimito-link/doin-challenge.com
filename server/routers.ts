@@ -272,6 +272,113 @@ Design requirements:
         }
       }),
   }),
+
+  // バッジ関連API
+  badges: router({
+    // 全バッジ一覧
+    list: publicProcedure.query(async () => {
+      return db.getAllBadges();
+    }),
+
+    // ユーザーのバッジ一覧
+    myBadges: protectedProcedure.query(async ({ ctx }) => {
+      return db.getUserBadgesWithDetails(ctx.user.id);
+    }),
+
+    // バッジ付与（管理者用）
+    award: protectedProcedure
+      .input(z.object({
+        userId: z.number(),
+        badgeId: z.number(),
+        challengeId: z.number().optional(),
+      }))
+      .mutation(async ({ ctx, input }) => {
+        // 管理者チェック
+        if (ctx.user.role !== "admin") {
+          throw new Error("Admin access required");
+        }
+        const result = await db.awardBadge(input.userId, input.badgeId, input.challengeId);
+        return { success: !!result, id: result };
+      }),
+  }),
+
+  // ピックアップコメント関連API
+  pickedComments: router({
+    // チャレンジのピックアップコメント一覧
+    list: publicProcedure
+      .input(z.object({ challengeId: z.number() }))
+      .query(async ({ input }) => {
+        return db.getPickedCommentsWithParticipation(input.challengeId);
+      }),
+
+    // コメントをピックアップ（管理者/ホスト用）
+    pick: protectedProcedure
+      .input(z.object({
+        participationId: z.number(),
+        challengeId: z.number(),
+        reason: z.string().optional(),
+      }))
+      .mutation(async ({ ctx, input }) => {
+        // ホストか管理者のみ
+        const challenge = await db.getEventById(input.challengeId);
+        if (!challenge) throw new Error("Challenge not found");
+        if (challenge.hostUserId !== ctx.user.id && ctx.user.role !== "admin") {
+          throw new Error("Permission denied");
+        }
+        const result = await db.pickComment(input.participationId, input.challengeId, ctx.user.id, input.reason);
+        return { success: !!result, id: result };
+      }),
+
+    // ピックアップ解除
+    unpick: protectedProcedure
+      .input(z.object({ participationId: z.number(), challengeId: z.number() }))
+      .mutation(async ({ ctx, input }) => {
+        const challenge = await db.getEventById(input.challengeId);
+        if (!challenge) throw new Error("Challenge not found");
+        if (challenge.hostUserId !== ctx.user.id && ctx.user.role !== "admin") {
+          throw new Error("Permission denied");
+        }
+        await db.unpickComment(input.participationId);
+        return { success: true };
+      }),
+
+    // 動画使用済みにマーク
+    markAsUsed: protectedProcedure
+      .input(z.object({ id: z.number(), challengeId: z.number() }))
+      .mutation(async ({ ctx, input }) => {
+        const challenge = await db.getEventById(input.challengeId);
+        if (!challenge) throw new Error("Challenge not found");
+        if (challenge.hostUserId !== ctx.user.id && ctx.user.role !== "admin") {
+          throw new Error("Permission denied");
+        }
+        await db.markCommentAsUsedInVideo(input.id);
+        return { success: true };
+      }),
+
+    // コメントがピックアップされているかチェック
+    isPicked: publicProcedure
+      .input(z.object({ participationId: z.number() }))
+      .query(async ({ input }) => {
+        return db.isCommentPicked(input.participationId);
+      }),
+  }),
+
+  // 地域統計API
+  prefectures: router({
+    // 地域ランキング
+    ranking: publicProcedure
+      .input(z.object({ challengeId: z.number() }))
+      .query(async ({ input }) => {
+        return db.getPrefectureRanking(input.challengeId);
+      }),
+
+    // 地域フィルター付き参加者一覧
+    participations: publicProcedure
+      .input(z.object({ challengeId: z.number(), prefecture: z.string() }))
+      .query(async ({ input }) => {
+        return db.getParticipationsByPrefectureFilter(input.challengeId, input.prefecture);
+      }),
+  }),
 });
 
 export type AppRouter = typeof appRouter;

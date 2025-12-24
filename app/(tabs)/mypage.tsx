@@ -29,6 +29,10 @@ export default function MyPageScreen() {
     enabled: isAuthenticated,
   });
 
+  const { data: myBadges } = trpc.badges.myBadges.useQuery(undefined, {
+    enabled: isAuthenticated,
+  });
+
   const handleLogout = () => {
     Alert.alert(
       "ログアウト",
@@ -248,6 +252,81 @@ export default function MyPageScreen() {
                 </Text>
               </TouchableOpacity>
             </View>
+          </View>
+
+          {/* バッジセクション */}
+          <View style={{ paddingHorizontal: 16, marginBottom: 24 }}>
+            <Text style={{ color: "#fff", fontSize: 18, fontWeight: "bold", marginBottom: 12 }}>
+              獲得バッジ
+            </Text>
+            
+            {myBadges && myBadges.length > 0 ? (
+              <View style={{ flexDirection: "row", flexWrap: "wrap", gap: 12 }}>
+                {myBadges.map((userBadge: any) => (
+                  <View
+                    key={userBadge.id}
+                    style={{
+                      backgroundColor: "#1A1D21",
+                      borderRadius: 12,
+                      padding: 12,
+                      alignItems: "center",
+                      width: 100,
+                      borderWidth: 1,
+                      borderColor: "#2D3139",
+                    }}
+                  >
+                    <View
+                      style={{
+                        width: 48,
+                        height: 48,
+                        borderRadius: 24,
+                        backgroundColor: userBadge.badge?.type === "achievement" ? "#FFD700" : 
+                                        userBadge.badge?.type === "milestone" ? "#8B5CF6" :
+                                        userBadge.badge?.type === "special" ? "#EC4899" : "#4ADE80",
+                        alignItems: "center",
+                        justifyContent: "center",
+                        marginBottom: 8,
+                      }}
+                    >
+                      <MaterialIcons
+                        name={
+                          userBadge.badge?.type === "achievement" ? "emoji-events" :
+                          userBadge.badge?.type === "milestone" ? "flag" :
+                          userBadge.badge?.type === "special" ? "star" : "check-circle"
+                        }
+                        size={24}
+                        color="#fff"
+                      />
+                    </View>
+                    <Text style={{ color: "#fff", fontSize: 12, fontWeight: "bold", textAlign: "center" }} numberOfLines={2}>
+                      {userBadge.badge?.name || "バッジ"}
+                    </Text>
+                    <Text style={{ color: "#6B7280", fontSize: 10, marginTop: 4 }}>
+                      {new Date(userBadge.earnedAt).toLocaleDateString("ja-JP", { month: "short", day: "numeric" })}
+                    </Text>
+                  </View>
+                ))}
+              </View>
+            ) : (
+              <View
+                style={{
+                  backgroundColor: "#1A1D21",
+                  borderRadius: 12,
+                  padding: 24,
+                  alignItems: "center",
+                  borderWidth: 1,
+                  borderColor: "#2D3139",
+                }}
+              >
+                <MaterialIcons name="military-tech" size={48} color="#6B7280" />
+                <Text style={{ color: "#9CA3AF", fontSize: 14, marginTop: 12 }}>
+                  まだバッジを獲得していません
+                </Text>
+                <Text style={{ color: "#6B7280", fontSize: 12, marginTop: 4, textAlign: "center" }}>
+                  チャレンジに参加してバッジを集めよう！
+                </Text>
+              </View>
+            )}
           </View>
 
           {/* 主催したチャレンジ */}

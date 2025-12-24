@@ -135,6 +135,59 @@ export const notifications = mysqlTable("notifications", {
 export type Notification = typeof notifications.$inferSelect;
 export type InsertNotification = typeof notifications.$inferInsert;
 
+/**
+ * バッジマスターテーブル
+ */
+export const badges = mysqlTable("badges", {
+  id: int("id").autoincrement().primaryKey(),
+  // バッジ情報
+  name: varchar("name", { length: 100 }).notNull(),
+  description: text("description"),
+  iconUrl: text("iconUrl"),
+  // バッジ種別
+  type: mysqlEnum("type", ["participation", "achievement", "milestone", "special"]).default("participation").notNull(),
+  // 取得条件
+  conditionType: mysqlEnum("conditionType", ["first_participation", "goal_reached", "milestone_25", "milestone_50", "milestone_75", "contribution_5", "contribution_10", "contribution_20", "host_challenge", "special"]).notNull(),
+  // メタデータ
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+});
+
+export type Badge = typeof badges.$inferSelect;
+export type InsertBadge = typeof badges.$inferInsert;
+
+/**
+ * ユーザーバッジ関連テーブル
+ */
+export const userBadges = mysqlTable("user_badges", {
+  id: int("id").autoincrement().primaryKey(),
+  userId: int("userId").notNull(),
+  badgeId: int("badgeId").notNull(),
+  challengeId: int("challengeId"),
+  // 取得日時
+  earnedAt: timestamp("earnedAt").defaultNow().notNull(),
+});
+
+export type UserBadge = typeof userBadges.$inferSelect;
+export type InsertUserBadge = typeof userBadges.$inferInsert;
+
+/**
+ * ピックアップコメントテーブル
+ */
+export const pickedComments = mysqlTable("picked_comments", {
+  id: int("id").autoincrement().primaryKey(),
+  participationId: int("participationId").notNull(),
+  challengeId: int("challengeId").notNull(),
+  // ピックアップ情報
+  pickedBy: int("pickedBy").notNull(), // 管理者のuserId
+  reason: text("reason"), // ピックアップ理由
+  isUsedInVideo: boolean("isUsedInVideo").default(false).notNull(),
+  // メタデータ
+  pickedAt: timestamp("pickedAt").defaultNow().notNull(),
+});
+
+export type PickedComment = typeof pickedComments.$inferSelect;
+export type InsertPickedComment = typeof pickedComments.$inferInsert;
+
 // 後方互換性のためのエイリアス
 export const events = challenges;
 export type Event = Challenge;

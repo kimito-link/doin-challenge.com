@@ -1,6 +1,6 @@
-import { eq, desc, and } from "drizzle-orm";
+import { eq, desc, and, sql } from "drizzle-orm";
 import { drizzle } from "drizzle-orm/mysql2";
-import { InsertUser, users, challenges, participations, InsertChallenge, InsertParticipation, notificationSettings, notifications, InsertNotificationSetting, InsertNotification } from "../drizzle/schema";
+import { InsertUser, users, challenges, participations, InsertChallenge, InsertParticipation, notificationSettings, notifications, InsertNotificationSetting, InsertNotification, badges, userBadges, pickedComments, InsertBadge, InsertUserBadge, InsertPickedComment } from "../drizzle/schema";
 
 // 後方互換性のためのエイリアス
 const events = challenges;
@@ -283,4 +283,200 @@ export async function markAllNotificationsAsRead(userId: number) {
   const db = await getDb();
   if (!db) throw new Error("Database not available");
   await db.update(notifications).set({ isRead: true }).where(eq(notifications.userId, userId));
+}
+
+
+// ========== Badges ==========
+
+export async function getAllBadges() {
+  const db = await getDb();
+  if (!db) return [];
+  return db.select().from(badges);
+}
+
+export async function getBadgeById(id: number) {
+  const db = await getDb();
+  if (!db) return null;
+  const result = await db.select().from(badges).where(eq(badges.id, id));
+  return result[0] || null;
+}
+
+export async function createBadge(data: InsertBadge) {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+  const result = await db.insert(badges).values(data);
+  return result[0].insertId;
+}
+
+export async function getUserBadges(userId: number) {
+  const db = await getDb();
+  if (!db) return [];
+  return db.select().from(userBadges).where(eq(userBadges.userId, userId)).orderBy(desc(userBadges.earnedAt));
+}
+
+export async function getUserBadgesWithDetails(userId: number) {
+  const db = await getDb();
+  if (!db) return [];
+  
+  const userBadgeList = await db.select().from(userBadges).where(eq(userBadges.userId, userId));
+  const badgeList = await db.select().from(badges);
+  
+  return userBadgeList.map(ub => ({
+    ...ub,
+    badge: badgeList.find(b => b.id === ub.badgeId),
+  }));
+}
+
+export async function awardBadge(userId: number, badgeId: number, challengeId?: number) {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+  
+  // 既に持っているかチェック
+  const existing = await db.select().from(userBadges)
+    .where(and(eq(userBadges.userId, userId), eq(userBadges.badgeId, badgeId)));
+  
+  if (existing.length > 0) return null; // 既に持っている
+  
+  const result = await db.insert(userBadges).values({
+    userId,
+    badgeId,
+    challengeId,
+  });
+  return result[0].insertId;
+}
+
+export async function checkAndAwardBadges(userId: number, challengeId: number, contribution: number) {
+  const db = await getDb();
+  if (!db) return [];
+  
+  const badgeList = await db.select().from(badges);
+  const awardedBadges: typeof badgeList = [];
+  
+  // 参加回数をチェック
+  const participationCount = await db.select().from(participations).where(eq(participations.userId, userId));
+  
+  for (const badge of badgeList) {
+    let shouldAward = false;
+    
+    switch (badge.conditionType) {
+      case "first_participation":
+        shouldAward = participationCount.length === 1;
+        break;
+      case "contribution_5":
+        shouldAward = contribution >= 5;
+        break;
+      case "contribution_10":
+        shouldAward = contribution >= 10;
+        break;
+      case "contribution_20":
+        shouldAward = contribution >= 20;
+        break;
+    }
+    
+    if (shouldAward) {
+      const awarded = await awardBadge(userId, badge.id, challengeId);
+      if (awarded) awardedBadges.push(badge);
+    }
+  }
+  
+  return awardedBadges;
+}
+
+// ========== Picked Comments ==========
+
+export async function getPickedCommentsByChallengeId(challengeId: number) {
+  const db = await getDb();
+  if (!db) return [];
+  return db.select().from(pickedComments).where(eq(pickedComments.challengeId, challengeId)).orderBy(desc(pickedComments.pickedAt));
+}
+
+export async function getPickedCommentsWithParticipation(challengeId: number) {
+  const db = await getDb();
+  if (!db) return [];
+  
+  const picked = await db.select().from(pickedComments).where(eq(pickedComments.challengeId, challengeId));
+  const participationList = await db.select().from(participations).where(eq(participations.challengeId, challengeId));
+  
+  return picked.map(p => ({
+    ...p,
+    participation: participationList.find(part => part.id === p.participationId),
+  }));
+}
+
+export async function pickComment(participationId: number, challengeId: number, pickedBy: number, reason?: string) {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+  
+  // 既にピックアップされているかチェック
+  const existing = await db.select().from(pickedComments)
+    .where(eq(pickedComments.participationId, participationId));
+  
+  if (existing.length > 0) return null; // 既にピックアップ済み
+  
+  const result = await db.insert(pickedComments).values({
+    participationId,
+    challengeId,
+    pickedBy,
+    reason,
+  });
+  return result[0].insertId;
+}
+
+export async function unpickComment(participationId: number) {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+  await db.delete(pickedComments).where(eq(pickedComments.participationId, participationId));
+}
+
+export async function markCommentAsUsedInVideo(id: number) {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+  await db.update(pickedComments).set({ isUsedInVideo: true }).where(eq(pickedComments.id, id));
+}
+
+export async function isCommentPicked(participationId: number) {
+  const db = await getDb();
+  if (!db) return false;
+  const result = await db.select().from(pickedComments).where(eq(pickedComments.participationId, participationId));
+  return result.length > 0;
+}
+
+// ========== Prefecture Statistics ==========
+
+export async function getPrefectureRanking(challengeId: number) {
+  const db = await getDb();
+  if (!db) return [];
+  
+  const result = await db.select().from(participations).where(eq(participations.challengeId, challengeId));
+  
+  const prefectureMap: Record<string, { count: number; contribution: number }> = {};
+  result.forEach(p => {
+    const pref = p.prefecture || "未設定";
+    if (!prefectureMap[pref]) {
+      prefectureMap[pref] = { count: 0, contribution: 0 };
+    }
+    prefectureMap[pref].count += 1;
+    prefectureMap[pref].contribution += p.contribution || 1;
+  });
+  
+  return Object.entries(prefectureMap)
+    .map(([prefecture, data]) => ({
+      prefecture,
+      count: data.count,
+      contribution: data.contribution,
+    }))
+    .sort((a, b) => b.contribution - a.contribution);
+}
+
+export async function getParticipationsByPrefectureFilter(challengeId: number, prefecture: string) {
+  const db = await getDb();
+  if (!db) return [];
+  
+  if (prefecture === "all") {
+    return db.select().from(participations).where(eq(participations.challengeId, challengeId)).orderBy(desc(participations.createdAt));
+  }
+  
+  return db.select().from(participations)
+    .where(and(eq(participations.challengeId, challengeId), eq(participations.prefecture, prefecture)))
+    .orderBy(desc(participations.createdAt));
 }
