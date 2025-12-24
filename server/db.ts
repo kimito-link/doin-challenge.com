@@ -1,6 +1,6 @@
 import { eq, desc, and, sql } from "drizzle-orm";
 import { drizzle } from "drizzle-orm/mysql2";
-import { InsertUser, users, challenges, participations, InsertChallenge, InsertParticipation, notificationSettings, notifications, InsertNotificationSetting, InsertNotification, badges, userBadges, pickedComments, InsertBadge, InsertUserBadge, InsertPickedComment, cheers, achievementPages, InsertCheer, InsertAchievementPage, reminders, directMessages, challengeTemplates, InsertReminder, InsertDirectMessage, InsertChallengeTemplate, follows, searchHistory, InsertFollow, InsertSearchHistory } from "../drizzle/schema";
+import { InsertUser, users, challenges, participations, InsertChallenge, InsertParticipation, notificationSettings, notifications, InsertNotificationSetting, InsertNotification, badges, userBadges, pickedComments, InsertBadge, InsertUserBadge, InsertPickedComment, cheers, achievementPages, InsertCheer, InsertAchievementPage, reminders, directMessages, challengeTemplates, InsertReminder, InsertDirectMessage, InsertChallengeTemplate, follows, searchHistory, InsertFollow, InsertSearchHistory, categories, invitations, invitationUses, InsertCategory, InsertInvitation, InsertInvitationUse } from "../drizzle/schema";
 
 // 後方互換性のためのエイリアス
 const events = challenges;
@@ -906,5 +906,152 @@ export async function getUserRankingPosition(userId: number, period: "weekly" | 
     position: position + 1,
     totalContribution: ranking[position].totalContribution,
     participationCount: ranking[position].participationCount,
+  };
+}
+
+
+// ========== Categories (カテゴリ) ==========
+
+export async function getAllCategories() {
+  const db = await getDb();
+  if (!db) return [];
+  return db.select().from(categories).where(eq(categories.isActive, true)).orderBy(categories.sortOrder);
+}
+
+export async function getCategoryById(id: number) {
+  const db = await getDb();
+  if (!db) return null;
+  const result = await db.select().from(categories).where(eq(categories.id, id));
+  return result[0] || null;
+}
+
+export async function getCategoryBySlug(slug: string) {
+  const db = await getDb();
+  if (!db) return null;
+  const result = await db.select().from(categories).where(eq(categories.slug, slug));
+  return result[0] || null;
+}
+
+export async function createCategory(category: InsertCategory) {
+  const db = await getDb();
+  if (!db) return null;
+  const result = await db.insert(categories).values(category);
+  return result[0].insertId;
+}
+
+export async function getChallengesByCategory(categoryId: number) {
+  const db = await getDb();
+  if (!db) return [];
+  return db.select().from(challenges).where(eq(challenges.categoryId, categoryId)).orderBy(desc(challenges.eventDate));
+}
+
+// ========== Invitations (招待) ==========
+
+export async function createInvitation(invitation: InsertInvitation) {
+  const db = await getDb();
+  if (!db) return null;
+  const result = await db.insert(invitations).values(invitation);
+  return result[0].insertId;
+}
+
+export async function getInvitationByCode(code: string) {
+  const db = await getDb();
+  if (!db) return null;
+  const result = await db.select().from(invitations).where(eq(invitations.code, code));
+  return result[0] || null;
+}
+
+export async function getInvitationsForChallenge(challengeId: number) {
+  const db = await getDb();
+  if (!db) return [];
+  return db.select().from(invitations).where(eq(invitations.challengeId, challengeId)).orderBy(desc(invitations.createdAt));
+}
+
+export async function getInvitationsForUser(userId: number) {
+  const db = await getDb();
+  if (!db) return [];
+  return db.select().from(invitations).where(eq(invitations.inviterId, userId)).orderBy(desc(invitations.createdAt));
+}
+
+export async function incrementInvitationUseCount(code: string) {
+  const db = await getDb();
+  if (!db) return;
+  await db.update(invitations).set({ useCount: sql`${invitations.useCount} + 1` }).where(eq(invitations.code, code));
+}
+
+export async function deactivateInvitation(id: number) {
+  const db = await getDb();
+  if (!db) return;
+  await db.update(invitations).set({ isActive: false }).where(eq(invitations.id, id));
+}
+
+export async function recordInvitationUse(use: InsertInvitationUse) {
+  const db = await getDb();
+  if (!db) return null;
+  const result = await db.insert(invitationUses).values(use);
+  return result[0].insertId;
+}
+
+export async function getInvitationUses(invitationId: number) {
+  const db = await getDb();
+  if (!db) return [];
+  return db.select().from(invitationUses).where(eq(invitationUses.invitationId, invitationId)).orderBy(desc(invitationUses.createdAt));
+}
+
+export async function getInvitationStats(invitationId: number) {
+  const db = await getDb();
+  if (!db) return { useCount: 0, participationCount: 0 };
+  
+  const uses = await db.select({ count: sql<number>`count(*)` }).from(invitationUses).where(eq(invitationUses.invitationId, invitationId));
+  const participations_count = await db.select({ count: sql<number>`count(*)` }).from(invitationUses)
+    .where(and(eq(invitationUses.invitationId, invitationId), sql`${invitationUses.participationId} IS NOT NULL`));
+  
+  return {
+    useCount: uses[0]?.count || 0,
+    participationCount: participations_count[0]?.count || 0,
+  };
+}
+
+// ========== User Profile (公開プロフィール) ==========
+
+export async function getUserPublicProfile(userId: number) {
+  const db = await getDb();
+  if (!db) return null;
+  
+  // ユーザー情報
+  const userResult = await db.select().from(users).where(eq(users.id, userId));
+  if (userResult.length === 0) return null;
+  const user = userResult[0];
+  
+  // 参加履歴
+  const participationList = await db.select().from(participations).where(eq(participations.userId, userId)).orderBy(desc(participations.createdAt));
+  
+  // 獲得バッジ
+  const badgeList = await db.select().from(userBadges).where(eq(userBadges.userId, userId)).orderBy(desc(userBadges.earnedAt));
+  const badgeIds = badgeList.map(b => b.badgeId);
+  const badgeDetails = badgeIds.length > 0 ? await db.select().from(badges).where(sql`${badges.id} IN (${badgeIds.join(",")})`) : [];
+  
+  // 統計
+  const totalContribution = participationList.reduce((sum, p) => sum + (p.contribution || 1), 0);
+  const challengeIds = [...new Set(participationList.map(p => p.challengeId))];
+  
+  // 主催チャレンジ数
+  const hostedChallenges = await db.select({ count: sql<number>`count(*)` }).from(challenges).where(eq(challenges.hostUserId, userId));
+  
+  return {
+    user: {
+      id: user.id,
+      name: user.name,
+      createdAt: user.createdAt,
+    },
+    stats: {
+      totalContribution,
+      participationCount: participationList.length,
+      challengeCount: challengeIds.length,
+      hostedCount: hostedChallenges[0]?.count || 0,
+      badgeCount: badgeList.length,
+    },
+    recentParticipations: participationList.slice(0, 10),
+    badges: badgeDetails,
   };
 }

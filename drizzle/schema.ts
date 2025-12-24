@@ -41,6 +41,8 @@ export const challenges = mysqlTable("challenges", {
   currentValue: int("currentValue").default(0).notNull(),
   // イベント種別
   eventType: mysqlEnum("eventType", ["solo", "group"]).default("solo").notNull(),
+  // カテゴリ
+  categoryId: int("categoryId"),
   // 日時・場所
   eventDate: timestamp("eventDate").notNull(),
   venue: varchar("venue", { length: 255 }),
@@ -349,3 +351,65 @@ export const searchHistory = mysqlTable("search_history", {
 
 export type SearchHistory = typeof searchHistory.$inferSelect;
 export type InsertSearchHistory = typeof searchHistory.$inferInsert;
+
+
+/**
+ * カテゴリマスターテーブル
+ */
+export const categories = mysqlTable("categories", {
+  id: int("id").autoincrement().primaryKey(),
+  name: varchar("name", { length: 64 }).notNull(),
+  slug: varchar("slug", { length: 64 }).notNull().unique(),
+  icon: varchar("icon", { length: 32 }).default("🎤").notNull(),
+  color: varchar("color", { length: 16 }).default("#EC4899").notNull(),
+  description: text("description"),
+  sortOrder: int("sortOrder").default(0).notNull(),
+  isActive: boolean("isActive").default(true).notNull(),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+});
+
+export type Category = typeof categories.$inferSelect;
+export type InsertCategory = typeof categories.$inferInsert;
+
+/**
+ * チャレンジ招待テーブル
+ */
+export const invitations = mysqlTable("invitations", {
+  id: int("id").autoincrement().primaryKey(),
+  challengeId: int("challengeId").notNull(),
+  // 招待者
+  inviterId: int("inviterId").notNull(),
+  inviterName: varchar("inviterName", { length: 255 }),
+  // 招待コード
+  code: varchar("code", { length: 32 }).notNull().unique(),
+  // 使用制限
+  maxUses: int("maxUses").default(0), // 0 = 無制限
+  useCount: int("useCount").default(0).notNull(),
+  // 有効期限
+  expiresAt: timestamp("expiresAt"),
+  // ステータス
+  isActive: boolean("isActive").default(true).notNull(),
+  // メタデータ
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+});
+
+export type Invitation = typeof invitations.$inferSelect;
+export type InsertInvitation = typeof invitations.$inferInsert;
+
+/**
+ * 招待経由の参加追跡テーブル
+ */
+export const invitationUses = mysqlTable("invitation_uses", {
+  id: int("id").autoincrement().primaryKey(),
+  invitationId: int("invitationId").notNull(),
+  // 招待された人
+  userId: int("userId"),
+  displayName: varchar("displayName", { length: 255 }),
+  // 参加情報
+  participationId: int("participationId"),
+  // メタデータ
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+});
+
+export type InvitationUse = typeof invitationUses.$inferSelect;
+export type InsertInvitationUse = typeof invitationUses.$inferInsert;

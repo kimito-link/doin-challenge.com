@@ -63,6 +63,11 @@ export default function CreateChallengeScreen() {
   const [saveAsTemplate, setSaveAsTemplate] = useState(false);
   const [templateName, setTemplateName] = useState("");
   const [templateIsPublic, setTemplateIsPublic] = useState(false);
+  const [categoryId, setCategoryId] = useState<number | null>(null);
+  const [showCategoryList, setShowCategoryList] = useState(false);
+
+  // カテゴリ一覧を取得
+  const { data: categoriesData } = trpc.categories.list.useQuery();
 
   const createTemplateMutation = trpc.templates.create.useMutation({
     onSuccess: () => {
@@ -360,6 +365,95 @@ export default function CreateChallengeScreen() {
                     </TouchableOpacity>
                   ))}
                 </View>
+              </View>
+
+              {/* カテゴリ選択 */}
+              <View style={{ marginBottom: 16 }}>
+                <Text style={{ color: "#9CA3AF", fontSize: 14, marginBottom: 8 }}>
+                  カテゴリ
+                </Text>
+                <TouchableOpacity
+                  onPress={() => setShowCategoryList(!showCategoryList)}
+                  style={{
+                    backgroundColor: "#0D1117",
+                    borderRadius: 8,
+                    padding: 12,
+                    borderWidth: 1,
+                    borderColor: "#2D3139",
+                    flexDirection: "row",
+                    alignItems: "center",
+                    justifyContent: "space-between",
+                  }}
+                >
+                  <View style={{ flexDirection: "row", alignItems: "center" }}>
+                    {categoryId && categoriesData ? (
+                      <>
+                        <Text style={{ fontSize: 18, marginRight: 8 }}>
+                          {categoriesData.find(c => c.id === categoryId)?.icon || "🎵"}
+                        </Text>
+                        <Text style={{ color: "#fff" }}>
+                          {categoriesData.find(c => c.id === categoryId)?.name || "選択してください"}
+                        </Text>
+                      </>
+                    ) : (
+                      <Text style={{ color: "#6B7280" }}>カテゴリを選択（任意）</Text>
+                    )}
+                  </View>
+                  <MaterialIcons name={showCategoryList ? "expand-less" : "expand-more"} size={24} color="#9CA3AF" />
+                </TouchableOpacity>
+                {showCategoryList && categoriesData && (
+                  <View style={{
+                    backgroundColor: "#0D1117",
+                    borderRadius: 8,
+                    marginTop: 4,
+                    borderWidth: 1,
+                    borderColor: "#2D3139",
+                    maxHeight: 200,
+                  }}>
+                    <ScrollView nestedScrollEnabled>
+                      <TouchableOpacity
+                        onPress={() => {
+                          setCategoryId(null);
+                          setShowCategoryList(false);
+                        }}
+                        style={{
+                          padding: 12,
+                          borderBottomWidth: 1,
+                          borderBottomColor: "#2D3139",
+                          flexDirection: "row",
+                          alignItems: "center",
+                        }}
+                      >
+                        <Text style={{ color: "#9CA3AF" }}>指定なし</Text>
+                      </TouchableOpacity>
+                      {categoriesData.map((cat) => (
+                        <TouchableOpacity
+                          key={cat.id}
+                          onPress={() => {
+                            setCategoryId(cat.id);
+                            setShowCategoryList(false);
+                          }}
+                          style={{
+                            padding: 12,
+                            borderBottomWidth: 1,
+                            borderBottomColor: "#2D3139",
+                            flexDirection: "row",
+                            alignItems: "center",
+                            backgroundColor: categoryId === cat.id ? "#1E293B" : "transparent",
+                          }}
+                        >
+                          <Text style={{ fontSize: 18, marginRight: 8 }}>{cat.icon}</Text>
+                          <View style={{ flex: 1 }}>
+                            <Text style={{ color: "#fff", fontWeight: "500" }}>{cat.name}</Text>
+                            {cat.description && (
+                              <Text style={{ color: "#6B7280", fontSize: 12 }}>{cat.description}</Text>
+                            )}
+                          </View>
+                        </TouchableOpacity>
+                      ))}
+                    </ScrollView>
+                  </View>
+                )}
               </View>
 
               <View style={{ marginBottom: 16 }}>

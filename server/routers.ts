@@ -845,6 +845,120 @@ Design requirements:
         return db.getUserRankingPosition(ctx.user.id, input.period || "all");
       }),
   }),
+
+  // カテゴリ関連
+  categories: router({
+    // カテゴリ一覧を取得
+    list: publicProcedure
+      .query(async () => {
+        return db.getAllCategories();
+      }),
+
+    // カテゴリ詳細を取得
+    get: publicProcedure
+      .input(z.object({ id: z.number() }))
+      .query(async ({ input }) => {
+        return db.getCategoryById(input.id);
+      }),
+
+    // カテゴリ別チャレンジ一覧
+    challenges: publicProcedure
+      .input(z.object({ categoryId: z.number() }))
+      .query(async ({ input }) => {
+        return db.getChallengesByCategory(input.categoryId);
+      }),
+  }),
+
+  // 招待関連
+  invitations: router({
+    // 招待リンクを作成
+    create: protectedProcedure
+      .input(z.object({
+        challengeId: z.number(),
+        maxUses: z.number().optional(),
+        expiresAt: z.string().optional(),
+      }))
+      .mutation(async ({ ctx, input }) => {
+        // ランダムな招待コードを生成
+        const code = Math.random().toString(36).substring(2, 10).toUpperCase();
+        const result = await db.createInvitation({
+          challengeId: input.challengeId,
+          inviterId: ctx.user.id,
+          code,
+          maxUses: input.maxUses,
+          expiresAt: input.expiresAt ? new Date(input.expiresAt) : undefined,
+        });
+        return { success: !!result, id: result, code };
+      }),
+
+    // 招待コードで情報を取得
+    getByCode: publicProcedure
+      .input(z.object({ code: z.string() }))
+      .query(async ({ input }) => {
+        return db.getInvitationByCode(input.code);
+      }),
+
+    // チャレンジの招待一覧
+    forChallenge: protectedProcedure
+      .input(z.object({ challengeId: z.number() }))
+      .query(async ({ input }) => {
+        return db.getInvitationsForChallenge(input.challengeId);
+      }),
+
+    // 自分が作成した招待一覧
+    mine: protectedProcedure
+      .query(async ({ ctx }) => {
+        return db.getInvitationsForUser(ctx.user.id);
+      }),
+
+    // 招待を使用
+    use: protectedProcedure
+      .input(z.object({ code: z.string() }))
+      .mutation(async ({ ctx, input }) => {
+        const invitation = await db.getInvitationByCode(input.code);
+        if (!invitation) throw new Error("Invitation not found");
+        if (!invitation.isActive) throw new Error("Invitation is no longer active");
+        if (invitation.maxUses && invitation.useCount >= invitation.maxUses) {
+          throw new Error("Invitation has reached maximum uses");
+        }
+        if (invitation.expiresAt && new Date(invitation.expiresAt) < new Date()) {
+          throw new Error("Invitation has expired");
+        }
+        
+        await db.incrementInvitationUseCount(input.code);
+        await db.recordInvitationUse({
+          invitationId: invitation.id,
+          userId: ctx.user.id,
+        });
+        
+        return { success: true, challengeId: invitation.challengeId };
+      }),
+
+    // 招待を無効化
+    deactivate: protectedProcedure
+      .input(z.object({ id: z.number() }))
+      .mutation(async ({ input }) => {
+        await db.deactivateInvitation(input.id);
+        return { success: true };
+      }),
+
+    // 招待の統計を取得
+    stats: protectedProcedure
+      .input(z.object({ invitationId: z.number() }))
+      .query(async ({ input }) => {
+        return db.getInvitationStats(input.invitationId);
+      }),
+  }),
+
+  // 公開プロフィール関連
+  profiles: router({
+    // ユーザーの公開プロフィールを取得
+    get: publicProcedure
+      .input(z.object({ userId: z.number() }))
+      .query(async ({ input }) => {
+        return db.getUserPublicProfile(input.userId);
+      }),
+  }),
 });
 
 export type AppRouter = typeof appRouter;

@@ -208,12 +208,14 @@ export default function HomeScreen() {
   const [filter, setFilter] = useState<FilterType>("all");
   const [searchQuery, setSearchQuery] = useState("");
   const [isSearching, setIsSearching] = useState(false);
+  const [categoryFilter, setCategoryFilter] = useState<number | null>(null);
   
   const { data: challenges, isLoading, refetch } = trpc.events.list.useQuery();
   const { data: searchResults, refetch: refetchSearch } = trpc.search.challenges.useQuery(
     { query: searchQuery },
     { enabled: searchQuery.length > 0 }
   );
+  const { data: categoriesData } = trpc.categories.list.useQuery();
 
   const onRefresh = async () => {
     setRefreshing(true);
@@ -230,13 +232,15 @@ export default function HomeScreen() {
 
   // フィルター適用
   const displayChallenges = isSearching && searchResults 
-    ? searchResults.filter((c: Challenge) => {
-        if (filter === "all") return true;
-        return c.eventType === filter;
+    ? searchResults.filter((c: Challenge & { categoryId?: number | null }) => {
+        if (filter !== "all" && c.eventType !== filter) return false;
+        if (categoryFilter && c.categoryId !== categoryFilter) return false;
+        return true;
       })
-    : (challenges?.filter((c: Challenge) => {
-        if (filter === "all") return true;
-        return c.eventType === filter;
+    : (challenges?.filter((c: Challenge & { categoryId?: number | null }) => {
+        if (filter !== "all" && c.eventType !== filter) return false;
+        if (categoryFilter && c.categoryId !== categoryFilter) return false;
+        return true;
       }) || []);
 
   return (
@@ -298,7 +302,7 @@ export default function HomeScreen() {
           </View>
         </View>
         
-        {/* フィルター */}
+        {/* タイプフィルター */}
         <ScrollView 
           horizontal 
           showsHorizontalScrollIndicator={false}
@@ -308,6 +312,48 @@ export default function HomeScreen() {
           <FilterButton label="グループ" active={filter === "group"} onPress={() => setFilter("group")} />
           <FilterButton label="ソロ" active={filter === "solo"} onPress={() => setFilter("solo")} />
         </ScrollView>
+
+        {/* カテゴリフィルター */}
+        {categoriesData && categoriesData.length > 0 && (
+          <ScrollView 
+            horizontal 
+            showsHorizontalScrollIndicator={false}
+            style={{ marginTop: 8 }}
+          >
+            <TouchableOpacity
+              onPress={() => setCategoryFilter(null)}
+              style={{
+                paddingHorizontal: 12,
+                paddingVertical: 6,
+                borderRadius: 16,
+                backgroundColor: categoryFilter === null ? "#8B5CF6" : "#1E293B",
+                marginRight: 8,
+                flexDirection: "row",
+                alignItems: "center",
+              }}
+            >
+              <Text style={{ color: "#fff", fontSize: 12 }}>全カテゴリ</Text>
+            </TouchableOpacity>
+            {categoriesData.map((cat) => (
+              <TouchableOpacity
+                key={cat.id}
+                onPress={() => setCategoryFilter(cat.id)}
+                style={{
+                  paddingHorizontal: 12,
+                  paddingVertical: 6,
+                  borderRadius: 16,
+                  backgroundColor: categoryFilter === cat.id ? "#8B5CF6" : "#1E293B",
+                  marginRight: 8,
+                  flexDirection: "row",
+                  alignItems: "center",
+                }}
+              >
+                <Text style={{ marginRight: 4 }}>{cat.icon}</Text>
+                <Text style={{ color: "#fff", fontSize: 12 }}>{cat.name}</Text>
+              </TouchableOpacity>
+            ))}
+          </ScrollView>
+        )}
       </View>
 
       {isLoading ? (

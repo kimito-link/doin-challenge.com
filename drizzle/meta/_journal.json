@@ -50,6 +50,13 @@
       "when": 1766606928975,
       "tag": "0006_massive_random",
       "breakpoints": true
+    },
+    {
+      "idx": 7,
+      "version": "5",
+      "when": 1766607935346,
+      "tag": "0007_gigantic_jane_foster",
+      "breakpoints": true
     }
   ]
 }

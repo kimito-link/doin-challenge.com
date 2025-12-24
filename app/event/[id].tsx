@@ -838,6 +838,25 @@ export default function ChallengeDetailScreen() {
               </View>
             )}
 
+            {/* 友達を招待ボタン */}
+            <TouchableOpacity
+              onPress={() => router.push(`/invite/${challengeId}`)}
+              style={{
+                backgroundColor: "#DD6500",
+                borderRadius: 12,
+                padding: 14,
+                marginTop: 16,
+                flexDirection: "row",
+                alignItems: "center",
+                justifyContent: "center",
+              }}
+            >
+              <MaterialIcons name="person-add" size={20} color="#fff" />
+              <Text style={{ color: "#fff", fontSize: 14, fontWeight: "bold", marginLeft: 8 }}>
+                友達を招待する
+              </Text>
+            </TouchableOpacity>
+
             {/* 地域別マップ */}
             {participations && participations.length > 0 && (
               <RegionMap participations={participations as Participation[]} />
