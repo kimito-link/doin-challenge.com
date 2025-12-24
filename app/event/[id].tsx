@@ -785,6 +785,22 @@ export default function ChallengeDetailScreen() {
             {user && challenge.hostUserId === user.id && (
               <View style={{ gap: 12, marginTop: 16 }}>
                 <TouchableOpacity
+                  onPress={() => router.push(`/dashboard/${challengeId}`)}
+                  style={{
+                    backgroundColor: "#10B981",
+                    borderRadius: 12,
+                    padding: 14,
+                    flexDirection: "row",
+                    alignItems: "center",
+                    justifyContent: "center",
+                  }}
+                >
+                  <MaterialIcons name="bar-chart" size={20} color="#fff" />
+                  <Text style={{ color: "#fff", fontSize: 14, fontWeight: "bold", marginLeft: 8 }}>
+                    統計ダッシュボード
+                  </Text>
+                </TouchableOpacity>
+                <TouchableOpacity
                   onPress={() => router.push(`/manage-comments/${challengeId}`)}
                   style={{
                     backgroundColor: "#8B5CF6",
@@ -835,6 +851,22 @@ export default function ChallengeDetailScreen() {
                     </Text>
                   </TouchableOpacity>
                 )}
+                <TouchableOpacity
+                  onPress={() => router.push(`/collaborators/${challengeId}`)}
+                  style={{
+                    backgroundColor: "#3B82F6",
+                    borderRadius: 12,
+                    padding: 14,
+                    flexDirection: "row",
+                    alignItems: "center",
+                    justifyContent: "center",
+                  }}
+                >
+                  <MaterialIcons name="group-add" size={20} color="#fff" />
+                  <Text style={{ color: "#fff", fontSize: 14, fontWeight: "bold", marginLeft: 8 }}>
+                    共同主催者管理
+                  </Text>
+                </TouchableOpacity>
               </View>
             )}
 

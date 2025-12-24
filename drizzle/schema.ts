@@ -413,3 +413,148 @@ export const invitationUses = mysqlTable("invitation_uses", {
 
 export type InvitationUse = typeof invitationUses.$inferSelect;
 export type InsertInvitationUse = typeof invitationUses.$inferInsert;
+
+
+/**
+ * 統計データテーブル（参加者数推移など）
+ */
+export const challengeStats = mysqlTable("challenge_stats", {
+  id: int("id").autoincrement().primaryKey(),
+  challengeId: int("challengeId").notNull(),
+  // 日時
+  recordedAt: timestamp("recordedAt").defaultNow().notNull(),
+  recordDate: varchar("recordDate", { length: 10 }).notNull(), // YYYY-MM-DD
+  recordHour: int("recordHour").default(0).notNull(), // 0-23
+  // 統計データ
+  participantCount: int("participantCount").default(0).notNull(),
+  totalContribution: int("totalContribution").default(0).notNull(),
+  newParticipants: int("newParticipants").default(0).notNull(),
+  // 地域別データ（JSON形式）
+  prefectureData: text("prefectureData"), // JSON: { "東京都": 10, "大阪府": 5, ... }
+  // メタデータ
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+});
+
+export type ChallengeStat = typeof challengeStats.$inferSelect;
+export type InsertChallengeStat = typeof challengeStats.$inferInsert;
+
+/**
+ * アチーブメントマスターテーブル
+ */
+export const achievements = mysqlTable("achievements", {
+  id: int("id").autoincrement().primaryKey(),
+  // アチーブメント情報
+  name: varchar("name", { length: 100 }).notNull(),
+  description: text("description"),
+  iconUrl: text("iconUrl"),
+  icon: varchar("icon", { length: 32 }).default("🏆").notNull(),
+  // アチーブメント種別
+  type: mysqlEnum("type", ["participation", "hosting", "invitation", "contribution", "streak", "special"]).default("participation").notNull(),
+  // 取得条件
+  conditionType: mysqlEnum("conditionType", [
+    "first_participation",
+    "participate_5",
+    "participate_10",
+    "participate_25",
+    "participate_50",
+    "first_host",
+    "host_5",
+    "host_10",
+    "invite_1",
+    "invite_5",
+    "invite_10",
+    "invite_25",
+    "contribution_10",
+    "contribution_50",
+    "contribution_100",
+    "streak_3",
+    "streak_7",
+    "streak_30",
+    "goal_reached",
+    "special"
+  ]).notNull(),
+  conditionValue: int("conditionValue").default(1).notNull(),
+  // ポイント・レアリティ
+  points: int("points").default(10).notNull(),
+  rarity: mysqlEnum("rarity", ["common", "uncommon", "rare", "epic", "legendary"]).default("common").notNull(),
+  // メタデータ
+  isActive: boolean("isActive").default(true).notNull(),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+});
+
+export type Achievement = typeof achievements.$inferSelect;
+export type InsertAchievement = typeof achievements.$inferInsert;
+
+/**
+ * ユーザーアチーブメントテーブル
+ */
+export const userAchievements = mysqlTable("user_achievements", {
+  id: int("id").autoincrement().primaryKey(),
+  userId: int("userId").notNull(),
+  achievementId: int("achievementId").notNull(),
+  // 進捗（条件が数値の場合）
+  progress: int("progress").default(0).notNull(),
+  isCompleted: boolean("isCompleted").default(false).notNull(),
+  // 取得日時
+  completedAt: timestamp("completedAt"),
+  // メタデータ
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+  updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
+});
+
+export type UserAchievement = typeof userAchievements.$inferSelect;
+export type InsertUserAchievement = typeof userAchievements.$inferInsert;
+
+/**
+ * コラボホストテーブル（共同主催者）
+ */
+export const collaborators = mysqlTable("collaborators", {
+  id: int("id").autoincrement().primaryKey(),
+  challengeId: int("challengeId").notNull(),
+  // コラボホストの情報
+  userId: int("userId").notNull(),
+  userName: varchar("userName", { length: 255 }).notNull(),
+  userImage: text("userImage"),
+  // 権限
+  role: mysqlEnum("role", ["owner", "co-host", "moderator"]).default("co-host").notNull(),
+  canEdit: boolean("canEdit").default(true).notNull(),
+  canManageParticipants: boolean("canManageParticipants").default(true).notNull(),
+  canInvite: boolean("canInvite").default(true).notNull(),
+  // ステータス
+  status: mysqlEnum("status", ["pending", "accepted", "declined"]).default("pending").notNull(),
+  invitedAt: timestamp("invitedAt").defaultNow().notNull(),
+  respondedAt: timestamp("respondedAt"),
+  // メタデータ
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+  updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
+});
+
+export type Collaborator = typeof collaborators.$inferSelect;
+export type InsertCollaborator = typeof collaborators.$inferInsert;
+
+/**
+ * コラボ招待テーブル
+ */
+export const collaboratorInvitations = mysqlTable("collaborator_invitations", {
+  id: int("id").autoincrement().primaryKey(),
+  challengeId: int("challengeId").notNull(),
+  // 招待者（オーナー）
+  inviterId: int("inviterId").notNull(),
+  inviterName: varchar("inviterName", { length: 255 }),
+  // 被招待者
+  inviteeId: int("inviteeId"),
+  inviteeEmail: varchar("inviteeEmail", { length: 320 }),
+  inviteeTwitterId: varchar("inviteeTwitterId", { length: 64 }),
+  // 招待コード
+  code: varchar("code", { length: 32 }).notNull().unique(),
+  // 権限設定
+  role: mysqlEnum("role", ["co-host", "moderator"]).default("co-host").notNull(),
+  // ステータス
+  status: mysqlEnum("status", ["pending", "accepted", "declined", "expired"]).default("pending").notNull(),
+  expiresAt: timestamp("expiresAt"),
+  // メタデータ
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+});
+
+export type CollaboratorInvitation = typeof collaboratorInvitations.$inferSelect;
+export type InsertCollaboratorInvitation = typeof collaboratorInvitations.$inferInsert;
