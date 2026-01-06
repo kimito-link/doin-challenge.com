@@ -3,9 +3,11 @@ import { Image } from "expo-image";
 import { useRouter } from "expo-router";
 import { useState } from "react";
 import { ScreenContainer } from "@/components/screen-container";
+import { ResponsiveContainer } from "@/components/responsive-container";
 import { trpc } from "@/lib/trpc";
 import { useAuth } from "@/hooks/use-auth";
 import { useFollowStatus } from "@/hooks/use-follow-status";
+import { useResponsive } from "@/hooks/use-responsive";
 import { FollowPromptBanner, FollowStatusBadge } from "@/components/follow-gate";
 import MaterialIcons from "@expo/vector-icons/MaterialIcons";
 import { LinearGradient } from "expo-linear-gradient";
@@ -47,6 +49,7 @@ export default function CreateChallengeScreen() {
   const router = useRouter();
   const { user, login, isAuthenticated } = useAuth();
   const { isFollowing, targetUsername, targetDisplayName } = useFollowStatus();
+  const { isDesktop, isTablet } = useResponsive();
   
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
@@ -185,11 +188,14 @@ export default function CreateChallengeScreen() {
           <View
             style={{
               backgroundColor: "#1A1D21",
-              margin: 16,
+              marginHorizontal: isDesktop ? "auto" : 16,
+              marginVertical: 16,
               borderRadius: 16,
               overflow: "hidden",
               borderWidth: 1,
               borderColor: "#2D3139",
+              maxWidth: isDesktop ? 800 : undefined,
+              width: isDesktop ? "100%" : undefined,
             }}
           >
             <LinearGradient

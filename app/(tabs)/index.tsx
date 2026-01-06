@@ -1,10 +1,12 @@
-import { FlatList, Text, View, TouchableOpacity, RefreshControl, ScrollView, TextInput } from "react-native";
+import { FlatList, Text, View, TouchableOpacity, RefreshControl, ScrollView, TextInput, Platform } from "react-native";
 import { Image } from "expo-image";
 import { useRouter } from "expo-router";
 import { useState } from "react";
 import { ScreenContainer } from "@/components/screen-container";
+import { ResponsiveContainer } from "@/components/responsive-container";
 import { trpc } from "@/lib/trpc";
 import { useColors } from "@/hooks/use-colors";
+import { useResponsive, useGridColumns } from "@/hooks/use-responsive";
 import { LinearGradient } from "expo-linear-gradient";
 import MaterialIcons from "@expo/vector-icons/MaterialIcons";
 import { Countdown } from "@/components/countdown";
@@ -62,8 +64,9 @@ type Challenge = {
 
 type FilterType = "all" | "solo" | "group";
 
-function ChallengeCard({ challenge, onPress }: { challenge: Challenge; onPress: () => void }) {
+function ChallengeCard({ challenge, onPress, numColumns = 2 }: { challenge: Challenge; onPress: () => void; numColumns?: number }) {
   const colors = useColors();
+  const { isDesktop } = useResponsive();
   const eventDate = new Date(challenge.eventDate);
   const formattedDate = `${eventDate.getMonth() + 1}/${eventDate.getDate()}`;
   
@@ -73,6 +76,9 @@ function ChallengeCard({ challenge, onPress }: { challenge: Challenge; onPress: 
   const unit = challenge.goalUnit || goalConfig.unit;
   const remaining = Math.max(challenge.goalValue - challenge.currentValue, 0);
 
+  // カラム数に応じた幅を計算
+  const cardWidth = numColumns === 3 ? "31%" : numColumns === 2 ? "47%" : "100%";
+
   return (
     <TouchableOpacity
       onPress={onPress}
@@ -80,12 +86,12 @@ function ChallengeCard({ challenge, onPress }: { challenge: Challenge; onPress: 
       style={{
         backgroundColor: "#1A1D21",
         borderRadius: 16,
-        marginHorizontal: 8,
+        marginHorizontal: isDesktop ? 4 : 8,
         marginVertical: 6,
         overflow: "hidden",
         borderWidth: 1,
         borderColor: "#2D3139",
-        width: "47%",
+        width: cardWidth as any,
       }}
     >
       {/* タイプバッジ */}
@@ -211,6 +217,8 @@ function FilterButton({
 export default function HomeScreen() {
   const colors = useColors();
   const router = useRouter();
+  const { isDesktop, isTablet, width } = useResponsive();
+  const numColumns = isDesktop ? 3 : isTablet ? 2 : 2;
   const [refreshing, setRefreshing] = useState(false);
   const [filter, setFilter] = useState<FilterType>("all");
   const [searchQuery, setSearchQuery] = useState("");
@@ -253,7 +261,7 @@ export default function HomeScreen() {
   return (
     <ScreenContainer containerClassName="bg-[#0D1117]">
       {/* ヘッダー */}
-      <View style={{ paddingHorizontal: 16, paddingTop: 16, paddingBottom: 8, backgroundColor: "#0D1117" }}>
+      <ResponsiveContainer style={{ paddingTop: 16, paddingBottom: 8, backgroundColor: "#0D1117" }}>
         <View style={{ flexDirection: "row", alignItems: "center", justifyContent: "space-between" }}>
           <View style={{ flexDirection: "row", alignItems: "center" }}>
             <Image
@@ -261,14 +269,14 @@ export default function HomeScreen() {
               style={{ width: 100, height: 36 }}
               contentFit="contain"
             />
-            <Text style={{ color: "#fff", fontSize: 14, fontWeight: "bold", marginLeft: 8 }}>
+            <Text style={{ color: "#fff", fontSize: isDesktop ? 18 : 14, fontWeight: "bold", marginLeft: 8 }}>
               動員ちゃれんじ
             </Text>
           </View>
           <View style={{ flexDirection: "row" }}>
-            <Image source={characterImages.linkYukkuri} style={{ width: 36, height: 36, marginLeft: -4 }} contentFit="contain" />
-            <Image source={characterImages.kontaYukkuri} style={{ width: 36, height: 36, marginLeft: -4 }} contentFit="contain" />
-            <Image source={characterImages.tanuneYukkuri} style={{ width: 36, height: 36, marginLeft: -4 }} contentFit="contain" />
+            <Image source={characterImages.linkYukkuri} style={{ width: isDesktop ? 48 : 36, height: isDesktop ? 48 : 36, marginLeft: -4 }} contentFit="contain" />
+            <Image source={characterImages.kontaYukkuri} style={{ width: isDesktop ? 48 : 36, height: isDesktop ? 48 : 36, marginLeft: -4 }} contentFit="contain" />
+            <Image source={characterImages.tanuneYukkuri} style={{ width: isDesktop ? 48 : 36, height: isDesktop ? 48 : 36, marginLeft: -4 }} contentFit="contain" />
           </View>
         </View>
         
@@ -361,7 +369,7 @@ export default function HomeScreen() {
             ))}
           </ScrollView>
         )}
-      </View>
+      </ResponsiveContainer>
 
       {isLoading ? (
         <View style={{ flex: 1, alignItems: "center", justifyContent: "center", backgroundColor: "#0D1117" }}>
@@ -369,18 +377,26 @@ export default function HomeScreen() {
         </View>
       ) : displayChallenges.length > 0 ? (
         <FlatList
+          key={`grid-${numColumns}`}
           data={displayChallenges}
           keyExtractor={(item) => item.id.toString()}
-          numColumns={2}
+          numColumns={numColumns}
           renderItem={({ item }) => (
-            <ChallengeCard challenge={item as Challenge} onPress={() => handleChallengePress(item.id)} />
+            <ChallengeCard challenge={item as Challenge} onPress={() => handleChallengePress(item.id)} numColumns={numColumns} />
           )}
           refreshControl={
             <RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor="#DD6500" />
           }
-          contentContainerStyle={{ paddingHorizontal: 8, paddingBottom: 100, backgroundColor: "#0D1117" }}
+          contentContainerStyle={{ 
+            paddingHorizontal: isDesktop ? 24 : 8, 
+            paddingBottom: 100, 
+            backgroundColor: "#0D1117",
+            maxWidth: isDesktop ? 1200 : undefined,
+            alignSelf: isDesktop ? "center" : undefined,
+            width: isDesktop ? "100%" : undefined,
+          }}
           style={{ backgroundColor: "#0D1117" }}
-          columnWrapperStyle={{ justifyContent: "space-between" }}
+          columnWrapperStyle={{ justifyContent: "flex-start", gap: isDesktop ? 16 : 8 }}
         />
       ) : (
         <View style={{ flex: 1, alignItems: "center", justifyContent: "center", padding: 32, backgroundColor: "#0D1117" }}>

@@ -3,9 +3,11 @@ import { useState, useEffect } from "react";
 import { Image } from "expo-image";
 import { useRouter } from "expo-router";
 import { ScreenContainer } from "@/components/screen-container";
+import { ResponsiveContainer } from "@/components/responsive-container";
 import { trpc } from "@/lib/trpc";
 import { useAuth } from "@/hooks/use-auth";
 import { useFollowStatus } from "@/hooks/use-follow-status";
+import { useResponsive } from "@/hooks/use-responsive";
 import { FollowStatusBadge, FollowPromptBanner } from "@/components/follow-gate";
 import MaterialIcons from "@expo/vector-icons/MaterialIcons";
 import { LinearGradient } from "expo-linear-gradient";
@@ -31,6 +33,7 @@ export default function MyPageScreen() {
   const router = useRouter();
   const { user, loading, login, logout, isAuthenticated } = useAuth();
   const { isFollowing, targetUsername, targetDisplayName, updateFollowStatus } = useFollowStatus();
+  const { isDesktop, isTablet } = useResponsive();
   const [isLoggingIn, setIsLoggingIn] = useState(false);
 
   // ログイン時にフォロー状態を更新
@@ -164,11 +167,14 @@ export default function MyPageScreen() {
           <View
             style={{
               backgroundColor: "#1A1D21",
-              margin: 16,
+              marginHorizontal: isDesktop ? "auto" : 16,
+              marginVertical: 16,
               borderRadius: 16,
               overflow: "hidden",
               borderWidth: 1,
               borderColor: "#2D3139",
+              maxWidth: isDesktop ? 800 : undefined,
+              width: isDesktop ? "100%" : undefined,
             }}
           >
             <LinearGradient
