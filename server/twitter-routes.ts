@@ -1,26 +1,35 @@
 import { Express, Request, Response } from "express";
 import {
-  getRequestToken,
-  getAccessToken,
+  generatePKCE,
+  generateState,
+  buildAuthorizationUrl,
+  exchangeCodeForTokens,
   getUserProfile,
-  storeOAuthTokenSecret,
-  getOAuthTokenSecret,
-  deleteOAuthTokenSecret,
-} from "./twitter-auth";
+  storePKCEData,
+  getPKCEData,
+  deletePKCEData,
+} from "./twitter-oauth2";
 
 export function registerTwitterRoutes(app: Express) {
-  // Step 1: Initiate Twitter OAuth
+  // Step 1: Initiate Twitter OAuth 2.0
   app.get("/api/twitter/auth", async (req: Request, res: Response) => {
     try {
+      // Build callback URL
       const callbackUrl = `${req.protocol}://${req.get("host")}/api/twitter/callback`;
       
-      const { oauth_token, oauth_token_secret } = await getRequestToken(callbackUrl);
+      // Generate PKCE parameters
+      const { codeVerifier, codeChallenge } = generatePKCE();
+      const state = generateState();
       
-      // Store the token secret for later use
-      storeOAuthTokenSecret(oauth_token, oauth_token_secret);
+      // Store PKCE data for callback
+      storePKCEData(state, codeVerifier, callbackUrl);
+      
+      // Build authorization URL
+      const authUrl = buildAuthorizationUrl(callbackUrl, state, codeChallenge);
+      
+      console.log("[Twitter OAuth 2.0] Redirecting to:", authUrl);
       
       // Redirect to Twitter authorization page
-      const authUrl = `https://api.twitter.com/oauth/authorize?oauth_token=${oauth_token}`;
       res.redirect(authUrl);
     } catch (error) {
       console.error("Twitter auth error:", error);
@@ -28,44 +37,54 @@ export function registerTwitterRoutes(app: Express) {
     }
   });
 
-  // Step 2: Handle Twitter OAuth callback
+  // Step 2: Handle Twitter OAuth 2.0 callback
   app.get("/api/twitter/callback", async (req: Request, res: Response) => {
     try {
-      const { oauth_token, oauth_verifier } = req.query as {
-        oauth_token: string;
-        oauth_verifier: string;
+      const { code, state, error: oauthError, error_description } = req.query as {
+        code?: string;
+        state?: string;
+        error?: string;
+        error_description?: string;
       };
 
-      if (!oauth_token || !oauth_verifier) {
-        res.status(400).json({ error: "Missing oauth_token or oauth_verifier" });
+      // Handle OAuth errors
+      if (oauthError) {
+        console.error("Twitter OAuth error:", oauthError, error_description);
+        res.status(400).json({ 
+          error: oauthError, 
+          description: error_description 
+        });
         return;
       }
 
-      // Retrieve the stored token secret
-      const oauth_token_secret = getOAuthTokenSecret(oauth_token);
-      if (!oauth_token_secret) {
-        res.status(400).json({ error: "Invalid or expired oauth_token" });
+      if (!code || !state) {
+        res.status(400).json({ error: "Missing code or state parameter" });
         return;
       }
 
-      // Exchange for access token
-      const accessTokenData = await getAccessToken(
-        oauth_token,
-        oauth_token_secret,
-        oauth_verifier
-      );
+      // Retrieve stored PKCE data
+      const pkceData = getPKCEData(state);
+      if (!pkceData) {
+        res.status(400).json({ error: "Invalid or expired state parameter" });
+        return;
+      }
 
-      // Clean up stored token
-      deleteOAuthTokenSecret(oauth_token);
+      const { codeVerifier, callbackUrl } = pkceData;
 
-      // Get user profile
-      const userProfile = await getUserProfile(
-        accessTokenData.oauth_token,
-        accessTokenData.oauth_token_secret
-      );
+      // Exchange authorization code for tokens
+      const tokens = await exchangeCodeForTokens(code, callbackUrl, codeVerifier);
+      
+      console.log("[Twitter OAuth 2.0] Token exchange successful");
 
-      // Return user data (in production, create a session and redirect)
-      // For mobile app, redirect with deep link
+      // Clean up stored PKCE data
+      deletePKCEData(state);
+
+      // Get user profile using access token
+      const userProfile = await getUserProfile(tokens.access_token);
+      
+      console.log("[Twitter OAuth 2.0] User profile retrieved:", userProfile.username);
+
+      // Build user data object
       const userData = {
         twitterId: userProfile.id,
         name: userProfile.name,
@@ -74,16 +93,21 @@ export function registerTwitterRoutes(app: Express) {
         followersCount: userProfile.public_metrics?.followers_count || 0,
         followingCount: userProfile.public_metrics?.following_count || 0,
         description: userProfile.description || "",
+        accessToken: tokens.access_token,
+        refreshToken: tokens.refresh_token,
       };
 
       // Encode user data for deep link
       const encodedData = encodeURIComponent(JSON.stringify(userData));
       
       // Get the app scheme from environment or use default
-      const appScheme = process.env.APP_SCHEME || "kimitolink";
+      const appScheme = process.env.APP_SCHEME || "manus20250106092504";
       
       // Redirect to app with user data
-      res.redirect(`${appScheme}://twitter-callback?data=${encodedData}`);
+      const redirectUrl = `${appScheme}://twitter-callback?data=${encodedData}`;
+      console.log("[Twitter OAuth 2.0] Redirecting to app:", redirectUrl.substring(0, 100) + "...");
+      
+      res.redirect(redirectUrl);
     } catch (error) {
       console.error("Twitter callback error:", error);
       res.status(500).json({ error: "Failed to complete Twitter authentication" });
@@ -93,15 +117,15 @@ export function registerTwitterRoutes(app: Express) {
   // API endpoint to get user profile (for testing)
   app.get("/api/twitter/me", async (req: Request, res: Response) => {
     try {
-      const accessToken = process.env.TWITTER_ACCESS_TOKEN;
-      const accessTokenSecret = process.env.TWITTER_ACCESS_TOKEN_SECRET;
-
-      if (!accessToken || !accessTokenSecret) {
-        res.status(401).json({ error: "Twitter credentials not configured" });
+      // Get access token from Authorization header
+      const authHeader = req.headers.authorization;
+      if (!authHeader || !authHeader.startsWith("Bearer ")) {
+        res.status(401).json({ error: "Missing or invalid Authorization header" });
         return;
       }
 
-      const userProfile = await getUserProfile(accessToken, accessTokenSecret);
+      const accessToken = authHeader.substring(7);
+      const userProfile = await getUserProfile(accessToken);
       
       res.json({
         twitterId: userProfile.id,

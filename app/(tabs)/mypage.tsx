@@ -1,4 +1,5 @@
 import { FlatList, Text, View, TouchableOpacity, Alert, ScrollView } from "react-native";
+import { useState } from "react";
 import { Image } from "expo-image";
 import { useRouter } from "expo-router";
 import { ScreenContainer } from "@/components/screen-container";
@@ -27,6 +28,18 @@ const logoImage = require("@/assets/images/logo/logo-maru-orange.jpg");
 export default function MyPageScreen() {
   const router = useRouter();
   const { user, loading, login, logout, isAuthenticated } = useAuth();
+  const [isLoggingIn, setIsLoggingIn] = useState(false);
+
+  const handleLogin = async () => {
+    setIsLoggingIn(true);
+    try {
+      await login();
+    } finally {
+      // Webではリダイレクトするので、ここには戻ってこない
+      // Nativeではブラウザが開くので、少し待ってからリセット
+      setTimeout(() => setIsLoggingIn(false), 3000);
+    }
+  };
   
   const { data: myChallenges } = trpc.events.myEvents.useQuery(undefined, {
     enabled: isAuthenticated,
@@ -110,19 +123,21 @@ export default function MyPageScreen() {
           </Text>
           
           <TouchableOpacity
-            onPress={login}
+            onPress={handleLogin}
+            disabled={isLoggingIn}
             style={{
-              backgroundColor: "#1DA1F2",
+              backgroundColor: isLoggingIn ? "#6B7280" : "#1DA1F2",
               borderRadius: 12,
               paddingVertical: 16,
               paddingHorizontal: 32,
               flexDirection: "row",
               alignItems: "center",
+              opacity: isLoggingIn ? 0.7 : 1,
             }}
           >
-            <MaterialIcons name="login" size={20} color="#fff" />
+            <MaterialIcons name={isLoggingIn ? "hourglass-empty" : "login"} size={20} color="#fff" />
             <Text style={{ color: "#fff", fontSize: 16, fontWeight: "bold", marginLeft: 8 }}>
-              Twitterでログイン
+              {isLoggingIn ? "ログイン中..." : "Twitterでログイン"}
             </Text>
           </TouchableOpacity>
 
