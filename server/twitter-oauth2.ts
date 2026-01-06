@@ -170,3 +170,102 @@ export function getPKCEData(state: string): { codeVerifier: string; callbackUrl:
 export function deletePKCEData(state: string): void {
   pkceStore.delete(state);
 }
+
+// Target account to check follow status (idolfunch)
+const TARGET_TWITTER_USERNAME = "idolfunch";
+
+// Check if user follows a specific account
+export async function checkFollowStatus(
+  accessToken: string,
+  sourceUserId: string,
+  targetUsername: string = TARGET_TWITTER_USERNAME
+): Promise<{
+  isFollowing: boolean;
+  targetUser: {
+    id: string;
+    name: string;
+    username: string;
+  } | null;
+}> {
+  try {
+    // First, get the target user's ID by username
+    const userLookupUrl = `https://api.twitter.com/2/users/by/username/${targetUsername}`;
+    
+    const userResponse = await fetch(userLookupUrl, {
+      method: "GET",
+      headers: {
+        "Authorization": `Bearer ${accessToken}`,
+      },
+    });
+    
+    if (!userResponse.ok) {
+      const text = await userResponse.text();
+      console.error("User lookup error:", text);
+      return { isFollowing: false, targetUser: null };
+    }
+    
+    const userData = await userResponse.json();
+    const targetUser = userData.data;
+    
+    if (!targetUser) {
+      console.error("Target user not found:", targetUsername);
+      return { isFollowing: false, targetUser: null };
+    }
+    
+    // Check if source user follows target user
+    // Using the followers lookup endpoint
+    const followCheckUrl = `https://api.twitter.com/2/users/${sourceUserId}/following`;
+    const params = new URLSearchParams({
+      "user.fields": "id,name,username",
+      "max_results": "1000",
+    });
+    
+    const followResponse = await fetch(`${followCheckUrl}?${params}`, {
+      method: "GET",
+      headers: {
+        "Authorization": `Bearer ${accessToken}`,
+      },
+    });
+    
+    if (!followResponse.ok) {
+      const text = await followResponse.text();
+      console.error("Follow check error:", text);
+      // If we can't check, assume not following
+      return { 
+        isFollowing: false, 
+        targetUser: {
+          id: targetUser.id,
+          name: targetUser.name,
+          username: targetUser.username,
+        }
+      };
+    }
+    
+    const followData = await followResponse.json();
+    const following = followData.data || [];
+    
+    // Check if target user is in the following list
+    const isFollowing = following.some((user: { id: string }) => user.id === targetUser.id);
+    
+    return {
+      isFollowing,
+      targetUser: {
+        id: targetUser.id,
+        name: targetUser.name,
+        username: targetUser.username,
+      },
+    };
+  } catch (error) {
+    console.error("Follow status check error:", error);
+    return { isFollowing: false, targetUser: null };
+  }
+}
+
+// Get target account info
+export function getTargetAccountInfo() {
+  return {
+    username: TARGET_TWITTER_USERNAME,
+    displayName: "君斗りんく",
+    profileUrl: `https://twitter.com/${TARGET_TWITTER_USERNAME}`,
+  };
+}

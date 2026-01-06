@@ -13,6 +13,13 @@ export type User = {
   username?: string;
   profileImage?: string;
   followersCount?: number;
+  // Follow status for premium features
+  isFollowingTarget?: boolean;
+  targetAccount?: {
+    id: string;
+    name: string;
+    username: string;
+  };
 };
 
 export async function getSessionToken(): Promise<string | null> {

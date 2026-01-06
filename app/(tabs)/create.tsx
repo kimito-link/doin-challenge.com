@@ -1,10 +1,12 @@
-import { Text, View, TouchableOpacity, TextInput, ScrollView, KeyboardAvoidingView, Platform, Alert } from "react-native";
+import { Text, View, TouchableOpacity, TextInput, ScrollView, KeyboardAvoidingView, Platform, Alert, Linking } from "react-native";
 import { Image } from "expo-image";
 import { useRouter } from "expo-router";
 import { useState } from "react";
 import { ScreenContainer } from "@/components/screen-container";
 import { trpc } from "@/lib/trpc";
 import { useAuth } from "@/hooks/use-auth";
+import { useFollowStatus } from "@/hooks/use-follow-status";
+import { FollowPromptBanner, FollowStatusBadge } from "@/components/follow-gate";
 import MaterialIcons from "@expo/vector-icons/MaterialIcons";
 import { LinearGradient } from "expo-linear-gradient";
 
@@ -43,7 +45,8 @@ const prefectures = [
 
 export default function CreateChallengeScreen() {
   const router = useRouter();
-  const { user, login } = useAuth();
+  const { user, login, isAuthenticated } = useAuth();
+  const { isFollowing, targetUsername, targetDisplayName } = useFollowStatus();
   
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
@@ -168,6 +171,15 @@ export default function CreateChallengeScreen() {
             </View>
             <Image source={characterImages.tanune} style={{ width: 50, height: 50 }} contentFit="contain" />
           </View>
+
+          {/* フォロー促進バナー（未フォロー時のみ表示） */}
+          {isAuthenticated && !isFollowing && (
+            <FollowPromptBanner
+              isFollowing={isFollowing}
+              targetUsername={targetUsername}
+              targetDisplayName={targetDisplayName}
+            />
+          )}
 
           {/* フォーム */}
           <View

@@ -1,10 +1,12 @@
-import { FlatList, Text, View, TouchableOpacity, Alert, ScrollView } from "react-native";
-import { useState } from "react";
+import { FlatList, Text, View, TouchableOpacity, Alert, ScrollView, Linking } from "react-native";
+import { useState, useEffect } from "react";
 import { Image } from "expo-image";
 import { useRouter } from "expo-router";
 import { ScreenContainer } from "@/components/screen-container";
 import { trpc } from "@/lib/trpc";
 import { useAuth } from "@/hooks/use-auth";
+import { useFollowStatus } from "@/hooks/use-follow-status";
+import { FollowStatusBadge, FollowPromptBanner } from "@/components/follow-gate";
 import MaterialIcons from "@expo/vector-icons/MaterialIcons";
 import { LinearGradient } from "expo-linear-gradient";
 
@@ -28,7 +30,15 @@ const logoImage = require("@/assets/images/logo/logo-maru-orange.jpg");
 export default function MyPageScreen() {
   const router = useRouter();
   const { user, loading, login, logout, isAuthenticated } = useAuth();
+  const { isFollowing, targetUsername, targetDisplayName, updateFollowStatus } = useFollowStatus();
   const [isLoggingIn, setIsLoggingIn] = useState(false);
+
+  // ログイン時にフォロー状態を更新
+  useEffect(() => {
+    if (user?.isFollowingTarget !== undefined) {
+      updateFollowStatus(user.isFollowingTarget, user.targetAccount);
+    }
+  }, [user?.isFollowingTarget, user?.targetAccount, updateFollowStatus]);
 
   const handleLogin = async () => {
     setIsLoggingIn(true);
@@ -191,9 +201,12 @@ export default function MyPageScreen() {
                   </View>
                 )}
                 <View style={{ marginLeft: 16, flex: 1 }}>
-                  <Text style={{ color: "#fff", fontSize: 20, fontWeight: "bold" }}>
-                    {user?.name || "ゲスト"}
-                  </Text>
+                  <View style={{ flexDirection: "row", alignItems: "center", gap: 8 }}>
+                    <Text style={{ color: "#fff", fontSize: 20, fontWeight: "bold" }}>
+                      {user?.name || "ゲスト"}
+                    </Text>
+                    <FollowStatusBadge isFollowing={isFollowing} />
+                  </View>
                   {user?.username && (
                     <Text style={{ color: "#DD6500", fontSize: 14 }}>
                       @{user.username}
@@ -275,6 +288,15 @@ export default function MyPageScreen() {
               </TouchableOpacity>
             </View>
           </View>
+
+          {/* フォロー促進バナー（未フォロー時のみ表示） */}
+          {!isFollowing && (
+            <FollowPromptBanner
+              isFollowing={isFollowing}
+              targetUsername={targetUsername}
+              targetDisplayName={targetDisplayName}
+            />
+          )}
 
           {/* アチーブメントリンク */}
           <TouchableOpacity

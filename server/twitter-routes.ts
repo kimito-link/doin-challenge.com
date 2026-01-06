@@ -8,6 +8,8 @@ import {
   storePKCEData,
   getPKCEData,
   deletePKCEData,
+  checkFollowStatus,
+  getTargetAccountInfo,
 } from "./twitter-oauth2";
 
 export function registerTwitterRoutes(app: Express) {
@@ -84,6 +86,14 @@ export function registerTwitterRoutes(app: Express) {
       
       console.log("[Twitter OAuth 2.0] User profile retrieved:", userProfile.username);
 
+      // Check if user follows the target account
+      const followStatus = await checkFollowStatus(
+        tokens.access_token,
+        userProfile.id
+      );
+      
+      console.log("[Twitter OAuth 2.0] Follow status:", followStatus.isFollowing);
+
       // Build user data object
       const userData = {
         twitterId: userProfile.id,
@@ -95,6 +105,8 @@ export function registerTwitterRoutes(app: Express) {
         description: userProfile.description || "",
         accessToken: tokens.access_token,
         refreshToken: tokens.refresh_token,
+        isFollowingTarget: followStatus.isFollowing,
+        targetAccount: followStatus.targetUser,
       };
 
       // Encode user data for deep link
@@ -139,6 +151,51 @@ export function registerTwitterRoutes(app: Express) {
     } catch (error) {
       console.error("Twitter profile error:", error);
       res.status(500).json({ error: "Failed to get Twitter profile" });
+    }
+  });
+
+  // API endpoint to check follow status
+  app.get("/api/twitter/follow-status", async (req: Request, res: Response) => {
+    try {
+      // Get access token from Authorization header
+      const authHeader = req.headers.authorization;
+      if (!authHeader || !authHeader.startsWith("Bearer ")) {
+        res.status(401).json({ error: "Missing or invalid Authorization header" });
+        return;
+      }
+
+      const accessToken = authHeader.substring(7);
+      const userId = req.query.userId as string;
+      
+      if (!userId) {
+        res.status(400).json({ error: "Missing userId parameter" });
+        return;
+      }
+
+      const followStatus = await checkFollowStatus(accessToken, userId);
+      const targetInfo = getTargetAccountInfo();
+      
+      res.json({
+        isFollowing: followStatus.isFollowing,
+        targetAccount: {
+          ...targetInfo,
+          ...followStatus.targetUser,
+        },
+      });
+    } catch (error) {
+      console.error("Follow status error:", error);
+      res.status(500).json({ error: "Failed to check follow status" });
+    }
+  });
+
+  // API endpoint to get target account info
+  app.get("/api/twitter/target-account", async (req: Request, res: Response) => {
+    try {
+      const targetInfo = getTargetAccountInfo();
+      res.json(targetInfo);
+    } catch (error) {
+      console.error("Target account error:", error);
+      res.status(500).json({ error: "Failed to get target account info" });
     }
   });
 }

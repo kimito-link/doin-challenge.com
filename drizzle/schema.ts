@@ -558,3 +558,29 @@ export const collaboratorInvitations = mysqlTable("collaborator_invitations", {
 
 export type CollaboratorInvitation = typeof collaboratorInvitations.$inferSelect;
 export type InsertCollaboratorInvitation = typeof collaboratorInvitations.$inferInsert;
+
+
+/**
+ * Twitterフォロー状態テーブル
+ * 特定アカウント（@idolfunch）のフォロー状態を保存
+ */
+export const twitterFollowStatus = mysqlTable("twitter_follow_status", {
+  id: int("id").autoincrement().primaryKey(),
+  userId: int("userId").notNull(),
+  // Twitter情報
+  twitterId: varchar("twitterId", { length: 64 }).notNull(),
+  twitterUsername: varchar("twitterUsername", { length: 255 }),
+  // フォロー対象アカウント
+  targetTwitterId: varchar("targetTwitterId", { length: 64 }).notNull(),
+  targetUsername: varchar("targetUsername", { length: 255 }).notNull(),
+  // フォロー状態
+  isFollowing: boolean("isFollowing").default(false).notNull(),
+  // 最終確認日時
+  lastCheckedAt: timestamp("lastCheckedAt").defaultNow().notNull(),
+  // メタデータ
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+  updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
+});
+
+export type TwitterFollowStatus = typeof twitterFollowStatus.$inferSelect;
+export type InsertTwitterFollowStatus = typeof twitterFollowStatus.$inferInsert;
