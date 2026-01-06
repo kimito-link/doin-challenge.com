@@ -318,15 +318,11 @@ export default function HomeScreen() {
         </View>
         
         {/* タイプフィルター */}
-        <ScrollView 
-          horizontal 
-          showsHorizontalScrollIndicator={false}
-          style={{ marginTop: 16 }}
-        >
+        <View style={{ flexDirection: "row", marginTop: 16 }}>
           <FilterButton label="すべて" active={filter === "all"} onPress={() => setFilter("all")} />
           <FilterButton label="グループ" active={filter === "group"} onPress={() => setFilter("group")} />
           <FilterButton label="ソロ" active={filter === "solo"} onPress={() => setFilter("solo")} />
-        </ScrollView>
+        </View>
 
         {/* カテゴリフィルター */}
         {categoriesData && categoriesData.length > 0 && (
