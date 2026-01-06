@@ -12,6 +12,13 @@ const characterImages = {
   rinku: require("@/assets/images/characters/rinku.png"),
   konta: require("@/assets/images/characters/konta.png"),
   tanune: require("@/assets/images/characters/tanune.png"),
+  // メインキャラクター（全身）
+  linkFull: require("@/assets/images/characters/KimitoLink.png"),
+  linkIdol: require("@/assets/images/characters/idolKimitoLink.png"),
+  // ゆっくりキャラクター
+  linkYukkuri: require("@/assets/images/characters/link/link-yukkuri-smile-mouth-open.png"),
+  kontaYukkuri: require("@/assets/images/characters/konta/kitsune-yukkuri-smile-mouth-open.png"),
+  tanuneYukkuri: require("@/assets/images/characters/tanunee/tanuki-yukkuri-smile-mouth-open.png"),
 };
 
 // ロゴ画像
@@ -120,9 +127,9 @@ export default function MyPageScreen() {
           </TouchableOpacity>
 
           <View style={{ flexDirection: "row", marginTop: 32 }}>
-            <Image source={characterImages.rinku} style={{ width: 60, height: 60 }} contentFit="contain" />
-            <Image source={characterImages.konta} style={{ width: 60, height: 60, marginLeft: -12 }} contentFit="contain" />
-            <Image source={characterImages.tanune} style={{ width: 60, height: 60, marginLeft: -12 }} contentFit="contain" />
+            <Image source={characterImages.linkYukkuri} style={{ width: 64, height: 64 }} contentFit="contain" />
+            <Image source={characterImages.kontaYukkuri} style={{ width: 64, height: 64, marginLeft: -8 }} contentFit="contain" />
+            <Image source={characterImages.tanuneYukkuri} style={{ width: 64, height: 64, marginLeft: -8 }} contentFit="contain" />
           </View>
         </View>
       ) : (

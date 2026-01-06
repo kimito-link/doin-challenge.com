@@ -14,6 +14,13 @@ const characterImages = {
   rinku: require("@/assets/images/characters/rinku.png"),
   konta: require("@/assets/images/characters/konta.png"),
   tanune: require("@/assets/images/characters/tanune.png"),
+  // メインキャラクター（全身）
+  linkFull: require("@/assets/images/characters/KimitoLink.png"),
+  linkIdol: require("@/assets/images/characters/idolKimitoLink.png"),
+  // ゆっくりキャラクター
+  linkYukkuri: require("@/assets/images/characters/link/link-yukkuri-normal-mouth-open.png"),
+  kontaYukkuri: require("@/assets/images/characters/konta/kitsune-yukkuri-normal.png"),
+  tanuneYukkuri: require("@/assets/images/characters/tanunee/tanuki-yukkuri-normal-mouth-open.png"),
 };
 
 // ロゴ画像
@@ -259,9 +266,9 @@ export default function HomeScreen() {
             </Text>
           </View>
           <View style={{ flexDirection: "row" }}>
-            <Image source={characterImages.rinku} style={{ width: 32, height: 32, marginLeft: -6 }} contentFit="contain" />
-            <Image source={characterImages.konta} style={{ width: 32, height: 32, marginLeft: -6 }} contentFit="contain" />
-            <Image source={characterImages.tanune} style={{ width: 32, height: 32, marginLeft: -6 }} contentFit="contain" />
+            <Image source={characterImages.linkYukkuri} style={{ width: 36, height: 36, marginLeft: -4 }} contentFit="contain" />
+            <Image source={characterImages.kontaYukkuri} style={{ width: 36, height: 36, marginLeft: -4 }} contentFit="contain" />
+            <Image source={characterImages.tanuneYukkuri} style={{ width: 36, height: 36, marginLeft: -4 }} contentFit="contain" />
           </View>
         </View>
         
@@ -377,10 +384,8 @@ export default function HomeScreen() {
         />
       ) : (
         <View style={{ flex: 1, alignItems: "center", justifyContent: "center", padding: 32, backgroundColor: "#0D1117" }}>
-          <View style={{ flexDirection: "row", marginBottom: 16 }}>
-            <Image source={characterImages.rinku} style={{ width: 80, height: 80 }} contentFit="contain" />
-            <Image source={characterImages.konta} style={{ width: 80, height: 80, marginLeft: -16 }} contentFit="contain" />
-            <Image source={characterImages.tanune} style={{ width: 80, height: 80, marginLeft: -16 }} contentFit="contain" />
+          <View style={{ alignItems: "center", marginBottom: 16 }}>
+            <Image source={characterImages.linkIdol} style={{ width: 150, height: 200 }} contentFit="contain" />
           </View>
           <Text style={{ color: "#fff", fontSize: 18, fontWeight: "bold", marginBottom: 8 }}>
             まだチャレンジがありません
