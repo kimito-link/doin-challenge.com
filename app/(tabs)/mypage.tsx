@@ -139,12 +139,15 @@ export default function MyPageScreen() {
             onPress={handleLogin}
             disabled={isLoggingIn}
             style={{
+              // UXガイドライン: 最小44pxのタップエリア
+              minHeight: 48,
               backgroundColor: isLoggingIn ? "#6B7280" : "#1DA1F2",
               borderRadius: 12,
-              paddingVertical: 16,
+              paddingVertical: 14,
               paddingHorizontal: 32,
               flexDirection: "row",
               alignItems: "center",
+              justifyContent: "center",
               opacity: isLoggingIn ? 0.7 : 1,
             }}
           >

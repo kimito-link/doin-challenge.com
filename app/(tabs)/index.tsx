@@ -11,6 +11,7 @@ import { useResponsive, useGridColumns } from "@/hooks/use-responsive";
 import { LinearGradient } from "expo-linear-gradient";
 import MaterialIcons from "@expo/vector-icons/MaterialIcons";
 import { Countdown } from "@/components/countdown";
+import { PressableCard } from "@/components/pressable-card";
 
 // キャラクター画像
 const characterImages = {
@@ -81,9 +82,8 @@ function ChallengeCard({ challenge, onPress, numColumns = 2 }: { challenge: Chal
   const cardWidth = numColumns === 3 ? "31%" : numColumns === 2 ? "47%" : "100%";
 
   return (
-    <TouchableOpacity
+    <PressableCard
       onPress={onPress}
-      activeOpacity={0.85}
       style={{
         backgroundColor: "#1A1D21",
         borderRadius: 12,
@@ -190,7 +190,7 @@ function ChallengeCard({ challenge, onPress, numColumns = 2 }: { challenge: Chal
           </View>
         </View>
       </View>
-    </TouchableOpacity>
+    </PressableCard>
   );
 }
 
@@ -207,14 +207,18 @@ function FilterButton({
     <TouchableOpacity
       onPress={onPress}
       style={{
-        paddingHorizontal: 16,
-        paddingVertical: 8,
-        borderRadius: 20,
+        // UXガイドライン: 最小44pxのタップエリア
+        minHeight: 44,
+        paddingHorizontal: 20,
+        paddingVertical: 12,
+        borderRadius: 22,
         backgroundColor: active ? "#DD6500" : "#2D3139",
         marginRight: 8,
+        justifyContent: "center",
+        alignItems: "center",
       }}
     >
-      <Text style={{ color: "#fff", fontSize: 13, fontWeight: active ? "bold" : "normal" }}>
+      <Text style={{ color: "#fff", fontSize: 14, fontWeight: active ? "bold" : "normal" }}>
         {label}
       </Text>
     </TouchableOpacity>
