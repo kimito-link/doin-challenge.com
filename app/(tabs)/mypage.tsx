@@ -137,7 +137,7 @@ export default function MyPageScreen() {
       "ログアウトしますか？",
       [
         { text: "キャンセル", style: "cancel" },
-        { text: "ログアウト", style: "destructive", onPress: logout },
+        { text: "ログアウト", style: "destructive", onPress: () => router.push("/logout") },
       ]
     );
   };
@@ -194,20 +194,19 @@ export default function MyPageScreen() {
       </View>
 
       {!isAuthenticated ? (
-        // 未ログイン状態 - パターン切り替え対応
+        // 未ログイン状態 - KimitoLinkVoice風UI
         <View style={{ flex: 1, backgroundColor: "#0D1117" }}>
           {/* グラデーション背景 */}
           <LinearGradient
-            colors={[...loginPattern.gradientColors, "#0D1117"]}
+            colors={["#1a237e", "#0D1117"]}
             start={{ x: 0, y: 0 }}
-            end={{ x: 1, y: 1 }}
+            end={{ x: 0, y: 1 }}
             style={{
               position: "absolute",
               top: 0,
               left: 0,
               right: 0,
-              height: 300,
-              opacity: 0.3,
+              bottom: 0,
             }}
           />
           
@@ -215,86 +214,257 @@ export default function MyPageScreen() {
             contentContainerStyle={{ 
               flexGrow: 1, 
               alignItems: "center", 
-              justifyContent: "center", 
               padding: 24,
               paddingBottom: 48,
             }}
           >
-            {/* キャラクターと吹き出し */}
+            {/* ロゴとキャッチコピー */}
+            <Image 
+              source={logoImage} 
+              style={{ 
+                width: 80, 
+                height: 80,
+                borderRadius: 40,
+                marginBottom: 16,
+              }} 
+              contentFit="contain" 
+            />
+            <Text style={{ 
+              color: "#fff", 
+              fontSize: 20, 
+              fontWeight: "bold",
+              marginBottom: 8,
+              textAlign: "center",
+            }}>
+              動員ちゃれんじ
+            </Text>
+            <Text style={{ 
+              color: "#9CA3AF", 
+              fontSize: 14,
+              marginBottom: 24,
+              textAlign: "center",
+            }}>
+              推しと繋がる、みんなで応援する
+            </Text>
+
+            {/* 3つのキャラクターアイコン */}
             <View style={{ 
               flexDirection: "row", 
-              alignItems: "flex-start", 
+              justifyContent: "center", 
+              gap: 12,
               marginBottom: 32,
-              maxWidth: 400,
-              width: "100%",
             }}>
-              <Image 
-                source={characterImages[loginPattern.character as keyof typeof characterImages]} 
-                style={{ 
-                  width: loginPattern.character.includes("Yukkuri") ? 80 : 100, 
-                  height: loginPattern.character.includes("Yukkuri") ? 80 : 140,
-                  marginRight: 16,
-                }} 
-                contentFit="contain" 
-              />
+              <View style={{ alignItems: "center" }}>
+                <View style={{ 
+                  width: 56, 
+                  height: 56, 
+                  borderRadius: 28, 
+                  borderWidth: 2, 
+                  borderColor: "#EC4899",
+                  overflow: "hidden",
+                }}>
+                  <Image 
+                    source={characterImages.linkYukkuri} 
+                    style={{ width: 52, height: 52 }} 
+                    contentFit="cover" 
+                  />
+                </View>
+              </View>
+              <View style={{ alignItems: "center" }}>
+                <View style={{ 
+                  width: 64, 
+                  height: 64, 
+                  borderRadius: 32, 
+                  borderWidth: 3, 
+                  borderColor: "#F59E0B",
+                  overflow: "hidden",
+                }}>
+                  <Image 
+                    source={characterImages.kontaYukkuri} 
+                    style={{ width: 58, height: 58 }} 
+                    contentFit="cover" 
+                  />
+                </View>
+              </View>
+              <View style={{ alignItems: "center" }}>
+                <View style={{ 
+                  width: 56, 
+                  height: 56, 
+                  borderRadius: 28, 
+                  borderWidth: 2, 
+                  borderColor: "#10B981",
+                  overflow: "hidden",
+                }}>
+                  <Image 
+                    source={characterImages.tanuneYukkuri} 
+                    style={{ width: 52, height: 52 }} 
+                    contentFit="cover" 
+                  />
+                </View>
+              </View>
+            </View>
+
+            {/* 3ステップ説明 */}
+            <View style={{ 
+              width: "100%", 
+              maxWidth: 400,
+              marginBottom: 24,
+            }}>
+              {/* ステップ1 */}
               <View style={{ 
-                flex: 1, 
-                backgroundColor: `${loginPattern.accentColor}15`,
-                borderRadius: 16,
-                borderTopLeftRadius: 4,
-                padding: 16,
-                borderWidth: 1,
-                borderColor: `${loginPattern.accentColor}40`,
+                flexDirection: "row", 
+                alignItems: "center",
+                marginBottom: 16,
               }}>
-                <Text style={{ 
-                  color: "#fff", 
-                  fontSize: 18, 
-                  fontWeight: "bold",
-                  marginBottom: 8,
+                <View style={{ 
+                  width: 28, 
+                  height: 28, 
+                  borderRadius: 14, 
+                  backgroundColor: "#1DA1F2",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  marginRight: 12,
                 }}>
-                  {loginPattern.title}
+                  <Text style={{ color: "#fff", fontSize: 14, fontWeight: "bold" }}>1</Text>
+                </View>
+                <Text style={{ color: "#fff", fontSize: 15, fontWeight: "600" }}>
+                  Xアカウントでログイン
                 </Text>
-                <Text style={{ 
-                  color: "#E5E7EB", 
-                  fontSize: 14, 
-                  lineHeight: 22,
+              </View>
+
+              {/* ステップ2 - フォロー必須アカウント */}
+              <View style={{ marginBottom: 16 }}>
+                <View style={{ 
+                  flexDirection: "row", 
+                  alignItems: "center",
+                  marginBottom: 12,
                 }}>
-                  {loginPattern.message}
+                  <View style={{ 
+                    width: 28, 
+                    height: 28, 
+                    borderRadius: 14, 
+                    backgroundColor: "#1DA1F2",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    marginRight: 12,
+                  }}>
+                    <Text style={{ color: "#fff", fontSize: 14, fontWeight: "bold" }}>2</Text>
+                  </View>
+                  <Text style={{ color: "#fff", fontSize: 15, fontWeight: "600" }}>
+                    君斗りんくの2つのアカウントをフォロー
+                  </Text>
+                </View>
+                
+                {/* フォロー必須アカウントカード */}
+                <View style={{ marginLeft: 40 }}>
+                  <TouchableOpacity
+                    onPress={() => Linking.openURL("https://x.com/streamerfunch")}
+                    style={{
+                      flexDirection: "row",
+                      alignItems: "center",
+                      backgroundColor: "#1A1D21",
+                      borderRadius: 12,
+                      padding: 12,
+                      marginBottom: 8,
+                      borderWidth: 1,
+                      borderColor: "#2D3139",
+                    }}
+                  >
+                    <Image 
+                      source={{ uri: "https://pbs.twimg.com/profile_images/1869749892009009152/NLaHfIiB_400x400.jpg" }}
+                      style={{ width: 36, height: 36, borderRadius: 18, marginRight: 12 }}
+                    />
+                    <View style={{ flex: 1 }}>
+                      <Text style={{ color: "#fff", fontSize: 14, fontWeight: "600" }}>
+                        君斗りんく@クリエイター応援
+                      </Text>
+                      <Text style={{ color: "#1DA1F2", fontSize: 12 }}>@streamerfunch</Text>
+                    </View>
+                    <MaterialIcons name="open-in-new" size={18} color="#6B7280" />
+                  </TouchableOpacity>
+                  
+                  <TouchableOpacity
+                    onPress={() => Linking.openURL("https://x.com/idolfunch")}
+                    style={{
+                      flexDirection: "row",
+                      alignItems: "center",
+                      backgroundColor: "#1A1D21",
+                      borderRadius: 12,
+                      padding: 12,
+                      borderWidth: 1,
+                      borderColor: "#2D3139",
+                    }}
+                  >
+                    <Image 
+                      source={{ uri: "https://pbs.twimg.com/profile_images/1869750131579416576/eXDlbCKD_400x400.jpg" }}
+                      style={{ width: 36, height: 36, borderRadius: 18, marginRight: 12 }}
+                    />
+                    <View style={{ flex: 1 }}>
+                      <Text style={{ color: "#fff", fontSize: 14, fontWeight: "600" }}>
+                        君斗りんく@アイドル応援
+                      </Text>
+                      <Text style={{ color: "#1DA1F2", fontSize: 12 }}>@idolfunch</Text>
+                    </View>
+                    <MaterialIcons name="open-in-new" size={18} color="#6B7280" />
+                  </TouchableOpacity>
+                </View>
+              </View>
+
+              {/* ステップ3 */}
+              <View style={{ 
+                flexDirection: "row", 
+                alignItems: "center",
+                marginBottom: 24,
+              }}>
+                <View style={{ 
+                  width: 28, 
+                  height: 28, 
+                  borderRadius: 14, 
+                  backgroundColor: "#1DA1F2",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  marginRight: 12,
+                }}>
+                  <Text style={{ color: "#fff", fontSize: 14, fontWeight: "bold" }}>3</Text>
+                </View>
+                <Text style={{ color: "#fff", fontSize: 15, fontWeight: "600" }}>
+                  プラットフォームへアクセス！
                 </Text>
               </View>
             </View>
 
-            {/* ハイライトメッセージ */}
+            {/* 重要説明ボックス */}
             <View style={{
-              backgroundColor: `${loginPattern.accentColor}20`,
+              backgroundColor: "#1E3A5F",
               borderRadius: 12,
               padding: 16,
-              marginBottom: 32,
-              borderLeftWidth: 3,
-              borderLeftColor: loginPattern.accentColor,
+              marginBottom: 24,
               maxWidth: 400,
               width: "100%",
+              borderWidth: 1,
+              borderColor: "#2563EB",
             }}>
-              <Text style={{ 
-                color: loginPattern.accentColor, 
-                fontSize: 16, 
-                fontWeight: "bold",
-                textAlign: "center",
-              }}>
-                {loginPattern.highlight}
+              <View style={{ flexDirection: "row", alignItems: "center", marginBottom: 8 }}>
+                <MaterialIcons name="info" size={18} color="#60A5FA" />
+                <Text style={{ color: "#60A5FA", fontSize: 14, fontWeight: "bold", marginLeft: 8 }}>
+                  重要：認証されるアカウントについて
+                </Text>
+              </View>
+              <Text style={{ color: "#E5E7EB", fontSize: 13, lineHeight: 20 }}>
+                X.comで現在ログイン中のアカウント、または最後に認証したアカウントが連携されます。
               </Text>
             </View>
 
-            {/* ログインボタン */}
+            {/* Xアカウントで認証ボタン */}
             <TouchableOpacity
               onPress={handleLogin}
               disabled={isLoggingIn}
               style={{
                 minHeight: 52,
                 backgroundColor: isLoggingIn ? "#6B7280" : "#1DA1F2",
-                borderRadius: 16,
-                paddingVertical: 16,
-                paddingHorizontal: 40,
+                borderRadius: 26,
+                paddingVertical: 14,
+                paddingHorizontal: 32,
                 flexDirection: "row",
                 alignItems: "center",
                 justifyContent: "center",
@@ -305,18 +475,53 @@ export default function MyPageScreen() {
                 shadowRadius: 8,
                 elevation: 4,
                 marginBottom: 16,
+                maxWidth: 400,
+                width: "100%",
               }}
             >
-              <MaterialIcons name={isLoggingIn ? "hourglass-empty" : "login"} size={22} color="#fff" />
-              <Text style={{ color: "#fff", fontSize: 17, fontWeight: "bold", marginLeft: 10 }}>
-                {isLoggingIn ? "ログイン中..." : "Twitterでログイン"}
+              <MaterialIcons name="login" size={22} color="#fff" />
+              <Text style={{ color: "#fff", fontSize: 16, fontWeight: "bold", marginLeft: 10 }}>
+                {isLoggingIn ? "認証中..." : "Xアカウントで認証しています"}
               </Text>
             </TouchableOpacity>
 
-            {/* サブテキスト */}
-            <Text style={{ color: "#6B7280", fontSize: 12, textAlign: "center", marginBottom: 24 }}>
-              ログインするとフォロワー数などの情報を自動取得できます
-            </Text>
+            {/* キャラクター切り替えボタン（削除してシンプルに） */}
+            {/* パターンインジケーター（削除してシンプルに） */}
+            {/* 代わりにキャラクターの吹き出しメッセージ */}
+            <View style={{ 
+              flexDirection: "row", 
+              alignItems: "flex-start", 
+              marginTop: 24,
+              maxWidth: 400,
+              width: "100%",
+            }}>
+              <Image 
+                source={characterImages[loginPattern.character as keyof typeof characterImages]} 
+                style={{ 
+                  width: 60, 
+                  height: 60,
+                  marginRight: 12,
+                }} 
+                contentFit="contain" 
+              />
+              <View style={{ 
+                flex: 1, 
+                backgroundColor: "rgba(236, 72, 153, 0.1)",
+                borderRadius: 12,
+                borderTopLeftRadius: 4,
+                padding: 12,
+                borderWidth: 1,
+                borderColor: "rgba(236, 72, 153, 0.3)",
+              }}>
+                <Text style={{ 
+                  color: "#E5E7EB", 
+                  fontSize: 13, 
+                  lineHeight: 20,
+                }}>
+                  {loginPattern.message}
+                </Text>
+              </View>
+            </View>
 
             {/* パターン切り替えボタン */}
             <TouchableOpacity
@@ -327,16 +532,17 @@ export default function MyPageScreen() {
                 padding: 12,
                 borderRadius: 8,
                 backgroundColor: "rgba(255,255,255,0.05)",
+                marginTop: 16,
               }}
             >
               <MaterialIcons name="refresh" size={18} color="#6B7280" />
               <Text style={{ color: "#6B7280", fontSize: 13, marginLeft: 6 }}>
-                他のキャラクターを見る
+                他のキャラクターのメッセージを見る
               </Text>
             </TouchableOpacity>
 
             {/* パターンインジケーター */}
-            <View style={{ flexDirection: "row", marginTop: 16, gap: 8 }}>
+            <View style={{ flexDirection: "row", marginTop: 12, gap: 8 }}>
               {loginPatterns.map((p) => (
                 <TouchableOpacity
                   key={p.id}
@@ -345,7 +551,7 @@ export default function MyPageScreen() {
                     width: 8,
                     height: 8,
                     borderRadius: 4,
-                    backgroundColor: p.id === loginPattern.id ? loginPattern.accentColor : "#3D4148",
+                    backgroundColor: p.id === loginPattern.id ? "#EC4899" : "#3D4148",
                   }}
                 />
               ))}
