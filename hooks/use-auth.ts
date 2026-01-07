@@ -97,15 +97,21 @@ export function useAuth(options?: UseAuthOptions) {
 
   const login = useCallback(async () => {
     try {
-      // Get the API base URL
-      const apiUrl = Constants.expoConfig?.extra?.apiUrl || "http://localhost:3000";
-      const loginUrl = `${apiUrl}/api/twitter/auth`;
+      let loginUrl: string;
       
-      if (Platform.OS === "web") {
-        // On web, redirect to the login page
+      if (Platform.OS === "web" && typeof window !== "undefined") {
+        // On web, derive API URL from current hostname
+        // Pattern: 8081-sandboxid.region.domain -> 3000-sandboxid.region.domain
+        const { protocol, hostname } = window.location;
+        const apiHostname = hostname.replace(/^8081-/, "3000-");
+        loginUrl = `${protocol}//${apiHostname}/api/twitter/auth`;
+        console.log("[Auth] Web login URL:", loginUrl);
         window.location.href = loginUrl;
       } else {
-        // On native, open in browser
+        // On native, use localhost (for development) or configured API URL
+        const apiUrl = Constants.expoConfig?.extra?.apiUrl || "http://localhost:3000";
+        loginUrl = `${apiUrl}/api/twitter/auth`;
+        console.log("[Auth] Native login URL:", loginUrl);
         await Linking.openURL(loginUrl);
       }
     } catch (err) {

@@ -271,3 +271,7 @@
 ## キャラクター名修正
 
 - [x] サンプルデータのキャラクター名を修正（りんく、こん太、たぬ姉）
+
+## Twitter認証のredirect_uri修正
+
+- [x] redirect_uriをlocalhostから本番URLに修正

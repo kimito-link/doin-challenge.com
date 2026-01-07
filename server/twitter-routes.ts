@@ -16,8 +16,10 @@ export function registerTwitterRoutes(app: Express) {
   // Step 1: Initiate Twitter OAuth 2.0
   app.get("/api/twitter/auth", async (req: Request, res: Response) => {
     try {
-      // Build callback URL
-      const callbackUrl = `${req.protocol}://${req.get("host")}/api/twitter/callback`;
+      // Build callback URL - force https for production environments
+      const protocol = req.get("x-forwarded-proto") || req.protocol;
+      const forceHttps = protocol === "https" || req.get("host")?.includes("manus.computer");
+      const callbackUrl = `${forceHttps ? "https" : protocol}://${req.get("host")}/api/twitter/callback`;
       
       // Generate PKCE parameters
       const { codeVerifier, codeChallenge } = generatePKCE();
