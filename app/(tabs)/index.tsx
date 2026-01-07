@@ -227,7 +227,7 @@ function EngagementSection({ challenges }: { challenges: Challenge[] }) {
   );
 }
 
-// LP風キャッチコピーセクション
+// りんくちゃんの語りかけセクション（LP風メッセージ）
 function CatchCopySection() {
   return (
     <View style={{ marginHorizontal: 16, marginVertical: 12 }}>
@@ -238,41 +238,157 @@ function CatchCopySection() {
           padding: 24,
           borderWidth: 1,
           borderColor: "#2D3139",
-          alignItems: "center",
         }}
       >
-        {/* キャラクター */}
-        <Image 
-          source={characterImages.linkIdol} 
-          style={{ width: 120, height: 160, marginBottom: 16 }} 
-          contentFit="contain" 
-        />
-        
-        {/* メインコピー */}
+        {/* キャラクターと吹き出し */}
+        <View style={{ flexDirection: "row", alignItems: "flex-start", marginBottom: 20 }}>
+          <Image 
+            source={characterImages.linkIdol} 
+            style={{ width: 80, height: 110, marginRight: 16 }} 
+            contentFit="contain" 
+          />
+          <View style={{ 
+            flex: 1, 
+            backgroundColor: "rgba(236, 72, 153, 0.1)",
+            borderRadius: 16,
+            borderTopLeftRadius: 4,
+            padding: 12,
+            borderWidth: 1,
+            borderColor: "rgba(236, 72, 153, 0.3)",
+          }}>
+            <Text style={{ 
+              color: "#fff", 
+              fontSize: 15, 
+              fontWeight: "bold",
+              marginBottom: 4,
+            }}>
+              みんな、ちょっと聞いて！😊✨
+            </Text>
+            <Text style={{ 
+              color: "#E5E7EB", 
+              fontSize: 13, 
+              lineHeight: 20,
+            }}>
+              あなたの「推し」が、大きなステージに立つ瞬間を想像してみて。
+            </Text>
+          </View>
+        </View>
+
+        {/* メインメッセージ */}
+        <View style={{ marginBottom: 20 }}>
+          <Text style={{ 
+            color: "#9CA3AF", 
+            fontSize: 14, 
+            lineHeight: 24,
+            marginBottom: 16,
+          }}>
+            客席を埋め尽くすファンの声援、{"\n"}
+            リアルタイムで流れる応援コメント、{"\n"}
+            ステージを照らすスポットライト…
+          </Text>
+          
+          <Text style={{ 
+            color: "#EC4899", 
+            fontSize: 18, 
+            fontWeight: "bold",
+            textAlign: "center",
+            marginBottom: 16,
+          }}>
+            その景色を、一緒に作りたいんだ。
+          </Text>
+
+          <Text style={{ 
+            color: "#9CA3AF", 
+            fontSize: 14, 
+            lineHeight: 24,
+          }}>
+            「動員ちゃれんじ」は、みんなの想いを集めて、{"\n"}
+            推しの夢を叶えるためのプラットフォーム。
+          </Text>
+        </View>
+
+        {/* ハイライトメッセージ */}
+        <View style={{
+          backgroundColor: "rgba(139, 92, 246, 0.1)",
+          borderRadius: 12,
+          padding: 16,
+          marginBottom: 20,
+          borderLeftWidth: 3,
+          borderLeftColor: "#8B5CF6",
+        }}>
+          <Text style={{ 
+            color: "#E5E7EB", 
+            fontSize: 14, 
+            lineHeight: 22,
+          }}>
+            一人の参加表明が、二人、三人と広がって、{"\n"}
+            気づいたら会場が満員になってる。
+          </Text>
+        </View>
+
+        {/* キーメッセージ */}
+        <View style={{ alignItems: "center", marginBottom: 16 }}>
+          <Text style={{ 
+            color: "#fff", 
+            fontSize: 16, 
+            fontWeight: "bold",
+            textAlign: "center",
+            lineHeight: 26,
+          }}>
+            あなたの声援が、{"\n"}
+            誰かの心を動かす。
+          </Text>
+        </View>
+
+        {/* CTA */}
+        <View style={{
+          backgroundColor: "rgba(236, 72, 153, 0.15)",
+          borderRadius: 12,
+          padding: 16,
+          alignItems: "center",
+        }}>
+          <Text style={{ 
+            color: "#EC4899", 
+            fontSize: 15, 
+            fontWeight: "bold",
+            marginBottom: 4,
+          }}>
+            さあ、一緒に推しの未来を作ろう！🙌
+          </Text>
+          <Text style={{ 
+            color: "#9CA3AF", 
+            fontSize: 12,
+          }}>
+            下のチャレンジから参加表明してみてね
+          </Text>
+        </View>
+      </LinearGradient>
+    </View>
+  );
+}
+
+// 特徴リストセクション（別コンポーネントとして分離）
+function FeatureListSection() {
+  return (
+    <View style={{ marginHorizontal: 16, marginVertical: 12 }}>
+      <View style={{
+        backgroundColor: "#1A1D21",
+        borderRadius: 16,
+        padding: 20,
+        borderWidth: 1,
+        borderColor: "#2D3139",
+      }}>
         <Text style={{ 
           color: "#fff", 
-          fontSize: 20, 
-          fontWeight: "bold", 
+          fontSize: 16, 
+          fontWeight: "bold",
+          marginBottom: 16,
           textAlign: "center",
-          marginBottom: 8,
         }}>
-          みんなで一緒に{"\n"}応援企画を盛り上げよう！
+          動員ちゃれんじの特徴
         </Text>
         
-        {/* サブコピー */}
-        <Text style={{ 
-          color: "#9CA3AF", 
-          fontSize: 14, 
-          textAlign: "center",
-          lineHeight: 22,
-          marginBottom: 16,
-        }}>
-          参加表明で応援の気持ちを届けよう{"\n"}
-          あなたの一票がアーティストの力になる ✨
-        </Text>
-
-        {/* 特徴リスト */}
-        <View style={{ width: "100%", gap: 12 }}>
+        <View style={{ gap: 12 }}>
           <View style={{ flexDirection: "row", alignItems: "center" }}>
             <View style={{ 
               width: 32, height: 32, borderRadius: 16, 
@@ -313,7 +429,7 @@ function CatchCopySection() {
             </Text>
           </View>
         </View>
-      </LinearGradient>
+      </View>
     </View>
   );
 }
