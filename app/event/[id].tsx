@@ -410,11 +410,21 @@ export default function ChallengeDetailScreen() {
     id: string;
     displayName: string;
     twitterUsername: string;
+    twitterId?: string;
+    profileImage?: string;
   };
   const [companions, setCompanions] = useState<Companion[]>([]);
   const [showAddCompanionForm, setShowAddCompanionForm] = useState(false);
   const [newCompanionName, setNewCompanionName] = useState("");
   const [newCompanionTwitter, setNewCompanionTwitter] = useState("");
+  const [isLookingUpTwitter, setIsLookingUpTwitter] = useState(false);
+  const [lookupError, setLookupError] = useState<string | null>(null);
+  const [lookedUpProfile, setLookedUpProfile] = useState<{
+    id: string;
+    name: string;
+    username: string;
+    profileImage: string;
+  } | null>(null);
 
   const challengeId = parseInt(id || "0", 10);
   
@@ -506,20 +516,76 @@ export default function ChallengeDetailScreen() {
     });
   };
 
-  // 友人追加ハンドラー
-  const handleAddCompanion = () => {
-    if (!newCompanionName.trim()) {
-      Alert.alert("エラー", "友人の名前を入力してください");
+  // Twitterプロフィール検索
+  const lookupTwitterProfile = async (input: string) => {
+    if (!input.trim()) {
+      setLookedUpProfile(null);
+      setLookupError(null);
       return;
     }
+    
+    setIsLookingUpTwitter(true);
+    setLookupError(null);
+    
+    try {
+      const response = await fetch(`/api/twitter/lookup`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ input: input.trim() }),
+      });
+      
+      if (!response.ok) {
+        if (response.status === 404) {
+          setLookupError("ユーザーが見つかりません");
+        } else {
+          setLookupError("検索に失敗しました");
+        }
+        setLookedUpProfile(null);
+        return;
+      }
+      
+      const data = await response.json();
+      setLookedUpProfile({
+        id: data.id,
+        name: data.name,
+        username: data.username,
+        profileImage: data.profileImage,
+      });
+      // 名前を自動入力
+      if (!newCompanionName.trim()) {
+        setNewCompanionName(data.name);
+      }
+    } catch (error) {
+      console.error("Twitter lookup error:", error);
+      setLookupError("検索に失敗しました");
+      setLookedUpProfile(null);
+    } finally {
+      setIsLookingUpTwitter(false);
+    }
+  };
+
+  // 友人追加ハンドラー
+  const handleAddCompanion = () => {
+    // Twitterプロフィールがあればその名前を使用
+    const displayName = lookedUpProfile?.name || newCompanionName.trim();
+    
+    if (!displayName) {
+      Alert.alert("エラー", "友人の名前を入力するか、Twitterユーザー名を検索してください");
+      return;
+    }
+    
     const newCompanion: Companion = {
       id: Date.now().toString(),
-      displayName: newCompanionName.trim(),
-      twitterUsername: newCompanionTwitter.trim().replace(/^@/, ""),
+      displayName: displayName,
+      twitterUsername: lookedUpProfile?.username || newCompanionTwitter.trim().replace(/^@/, ""),
+      twitterId: lookedUpProfile?.id,
+      profileImage: lookedUpProfile?.profileImage,
     };
     setCompanions([...companions, newCompanion]);
     setNewCompanionName("");
     setNewCompanionTwitter("");
+    setLookedUpProfile(null);
+    setLookupError(null);
     setShowAddCompanionForm(false);
     // companionCountも更新
     setCompanionCount(companions.length + 1);
@@ -1272,49 +1338,140 @@ export default function ChallengeDetailScreen() {
                       borderWidth: 1,
                       borderColor: "#EC4899",
                     }}>
-                      <Text style={{ color: "#9CA3AF", fontSize: 14, marginBottom: 8 }}>
-                        友人の名前 *
+                      {/* Twitterユーザー名入力（優先） */}
+                      <Text style={{ color: "#9CA3AF", fontSize: 14, marginBottom: 4 }}>
+                        Twitterユーザー名またはURL
                       </Text>
-                      <TextInput
-                        value={newCompanionName}
-                        onChangeText={setNewCompanionName}
-                        placeholder="ニックネーム"
-                        placeholderTextColor="#6B7280"
-                        style={{
-                          backgroundColor: "#1A1D21",
+                      <Text style={{ color: "#6B7280", fontSize: 12, marginBottom: 8 }}>
+                        @username または https://x.com/username
+                      </Text>
+                      <View style={{ flexDirection: "row", gap: 8, marginBottom: 12 }}>
+                        <TextInput
+                          value={newCompanionTwitter}
+                          onChangeText={(text) => {
+                            setNewCompanionTwitter(text);
+                            setLookedUpProfile(null);
+                            setLookupError(null);
+                          }}
+                          placeholder="@idolfunch または https://x.com/idolfunch"
+                          placeholderTextColor="#6B7280"
+                          autoCapitalize="none"
+                          style={{
+                            flex: 1,
+                            backgroundColor: "#1A1D21",
+                            borderRadius: 8,
+                            padding: 12,
+                            color: "#1DA1F2",
+                            borderWidth: 1,
+                            borderColor: lookedUpProfile ? "#22C55E" : "#2D3139",
+                          }}
+                        />
+                        <TouchableOpacity
+                          onPress={() => lookupTwitterProfile(newCompanionTwitter)}
+                          disabled={isLookingUpTwitter || !newCompanionTwitter.trim()}
+                          style={{
+                            backgroundColor: isLookingUpTwitter ? "#2D3139" : "#1DA1F2",
+                            borderRadius: 8,
+                            paddingHorizontal: 16,
+                            justifyContent: "center",
+                            alignItems: "center",
+                            opacity: !newCompanionTwitter.trim() ? 0.5 : 1,
+                          }}
+                        >
+                          {isLookingUpTwitter ? (
+                            <Text style={{ color: "#9CA3AF", fontSize: 14 }}>検索中...</Text>
+                          ) : (
+                            <Text style={{ color: "#fff", fontSize: 14, fontWeight: "bold" }}>検索</Text>
+                          )}
+                        </TouchableOpacity>
+                      </View>
+
+                      {/* エラー表示 */}
+                      {lookupError && (
+                        <View style={{
+                          backgroundColor: "rgba(239, 68, 68, 0.1)",
                           borderRadius: 8,
                           padding: 12,
-                          color: "#fff",
-                          borderWidth: 1,
-                          borderColor: "#2D3139",
                           marginBottom: 12,
-                        }}
-                      />
-                      <Text style={{ color: "#9CA3AF", fontSize: 14, marginBottom: 8 }}>
-                        Twitterユーザー名（任意）
-                      </Text>
-                      <TextInput
-                        value={newCompanionTwitter}
-                        onChangeText={setNewCompanionTwitter}
-                        placeholder="@username"
-                        placeholderTextColor="#6B7280"
-                        autoCapitalize="none"
-                        style={{
-                          backgroundColor: "#1A1D21",
-                          borderRadius: 8,
+                          flexDirection: "row",
+                          alignItems: "center",
+                        }}>
+                          <MaterialIcons name="error-outline" size={20} color="#EF4444" />
+                          <Text style={{ color: "#EF4444", fontSize: 14, marginLeft: 8 }}>{lookupError}</Text>
+                        </View>
+                      )}
+
+                      {/* 取得したプロフィール表示 */}
+                      {lookedUpProfile && (
+                        <View style={{
+                          backgroundColor: "rgba(34, 197, 94, 0.1)",
+                          borderRadius: 12,
                           padding: 12,
-                          color: "#DD6500",
-                          borderWidth: 1,
-                          borderColor: "#2D3139",
                           marginBottom: 12,
-                        }}
-                      />
+                          flexDirection: "row",
+                          alignItems: "center",
+                          borderWidth: 1,
+                          borderColor: "#22C55E",
+                        }}>
+                          <Image
+                            source={{ uri: lookedUpProfile.profileImage }}
+                            style={{ width: 48, height: 48, borderRadius: 24, marginRight: 12 }}
+                          />
+                          <View style={{ flex: 1 }}>
+                            <Text style={{ color: "#fff", fontSize: 16, fontWeight: "bold" }}>
+                              {lookedUpProfile.name}
+                            </Text>
+                            <Text style={{ color: "#1DA1F2", fontSize: 14 }}>
+                              @{lookedUpProfile.username}
+                            </Text>
+                          </View>
+                          <MaterialIcons name="check-circle" size={24} color="#22C55E" />
+                        </View>
+                      )}
+
+                      {/* 名前入力（Twitterがない場合のみ必須） */}
+                      {!lookedUpProfile && (
+                        <>
+                          <View style={{ 
+                            flexDirection: "row", 
+                            alignItems: "center", 
+                            marginVertical: 12,
+                          }}>
+                            <View style={{ flex: 1, height: 1, backgroundColor: "#2D3139" }} />
+                            <Text style={{ color: "#6B7280", fontSize: 12, marginHorizontal: 12 }}>
+                              または名前で追加
+                            </Text>
+                            <View style={{ flex: 1, height: 1, backgroundColor: "#2D3139" }} />
+                          </View>
+                          <Text style={{ color: "#9CA3AF", fontSize: 14, marginBottom: 8 }}>
+                            友人の名前
+                          </Text>
+                          <TextInput
+                            value={newCompanionName}
+                            onChangeText={setNewCompanionName}
+                            placeholder="ニックネーム"
+                            placeholderTextColor="#6B7280"
+                            style={{
+                              backgroundColor: "#1A1D21",
+                              borderRadius: 8,
+                              padding: 12,
+                              color: "#fff",
+                              borderWidth: 1,
+                              borderColor: "#2D3139",
+                              marginBottom: 12,
+                            }}
+                          />
+                        </>
+                      )}
+
                       <View style={{ flexDirection: "row", gap: 12 }}>
                         <TouchableOpacity
                           onPress={() => {
                             setShowAddCompanionForm(false);
                             setNewCompanionName("");
                             setNewCompanionTwitter("");
+                            setLookedUpProfile(null);
+                            setLookupError(null);
                           }}
                           style={{
                             flex: 1,
@@ -1328,9 +1485,10 @@ export default function ChallengeDetailScreen() {
                         </TouchableOpacity>
                         <TouchableOpacity
                           onPress={handleAddCompanion}
+                          disabled={!lookedUpProfile && !newCompanionName.trim()}
                           style={{
                             flex: 1,
-                            backgroundColor: "#EC4899",
+                            backgroundColor: (!lookedUpProfile && !newCompanionName.trim()) ? "#2D3139" : "#EC4899",
                             borderRadius: 8,
                             padding: 12,
                             alignItems: "center",
@@ -1355,30 +1513,42 @@ export default function ChallengeDetailScreen() {
                             flexDirection: "row",
                             alignItems: "center",
                             borderWidth: 1,
-                            borderColor: "#2D3139",
+                            borderColor: companion.profileImage ? "#1DA1F2" : "#2D3139",
                           }}
                         >
-                          <View
-                            style={{
-                              width: 40,
-                              height: 40,
-                              borderRadius: 20,
-                              backgroundColor: "#EC4899",
-                              alignItems: "center",
-                              justifyContent: "center",
-                              marginRight: 12,
-                            }}
-                          >
-                            <Text style={{ color: "#fff", fontSize: 16, fontWeight: "bold" }}>
-                              {companion.displayName.charAt(0)}
-                            </Text>
-                          </View>
+                          {companion.profileImage ? (
+                            <Image
+                              source={{ uri: companion.profileImage }}
+                              style={{
+                                width: 40,
+                                height: 40,
+                                borderRadius: 20,
+                                marginRight: 12,
+                              }}
+                            />
+                          ) : (
+                            <View
+                              style={{
+                                width: 40,
+                                height: 40,
+                                borderRadius: 20,
+                                backgroundColor: "#EC4899",
+                                alignItems: "center",
+                                justifyContent: "center",
+                                marginRight: 12,
+                              }}
+                            >
+                              <Text style={{ color: "#fff", fontSize: 16, fontWeight: "bold" }}>
+                                {companion.displayName.charAt(0)}
+                              </Text>
+                            </View>
+                          )}
                           <View style={{ flex: 1 }}>
                             <Text style={{ color: "#fff", fontSize: 14, fontWeight: "600" }}>
                               {companion.displayName}
                             </Text>
                             {companion.twitterUsername && (
-                              <Text style={{ color: "#DD6500", fontSize: 12 }}>
+                              <Text style={{ color: "#1DA1F2", fontSize: 12 }}>
                                 @{companion.twitterUsername}
                               </Text>
                             )}

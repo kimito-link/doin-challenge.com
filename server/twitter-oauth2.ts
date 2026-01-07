@@ -353,3 +353,82 @@ export function getTargetAccountInfo() {
     profileUrl: `https://twitter.com/${TARGET_TWITTER_USERNAME}`,
   };
 }
+
+
+// ユーザー名からプロフィール情報を取得（Bearer Token認証）
+export async function getUserProfileByUsername(username: string): Promise<{
+  id: string;
+  name: string;
+  username: string;
+  profile_image_url: string;
+  description?: string;
+  public_metrics?: {
+    followers_count: number;
+    following_count: number;
+    tweet_count: number;
+  };
+} | null> {
+  // ユーザー名をクリーンアップ（@を削除、URLからユーザー名を抽出）
+  let cleanUsername = username.trim();
+  
+  // URL形式の場合（https://x.com/username または https://twitter.com/username）
+  const urlMatch = cleanUsername.match(/(?:https?:\/\/)?(?:x\.com|twitter\.com)\/([a-zA-Z0-9_]+)/i);
+  if (urlMatch) {
+    cleanUsername = urlMatch[1];
+  }
+  
+  // @を削除
+  cleanUsername = cleanUsername.replace(/^@/, "");
+  
+  if (!cleanUsername) {
+    return null;
+  }
+  
+  try {
+    // Bearer Token認証を使用（アプリ専用認証）
+    const bearerToken = process.env.TWITTER_BEARER_TOKEN;
+    if (!bearerToken) {
+      console.error("TWITTER_BEARER_TOKEN is not set");
+      return null;
+    }
+    
+    const url = `https://api.twitter.com/2/users/by/username/${cleanUsername}`;
+    const params = "user.fields=profile_image_url,public_metrics,description";
+    const fullUrl = `${url}?${params}`;
+    
+    const response = await fetch(fullUrl, {
+      method: "GET",
+      headers: {
+        "Authorization": `Bearer ${bearerToken}`,
+      },
+    });
+    
+    if (!response.ok) {
+      const text = await response.text();
+      console.error("Twitter user lookup error:", response.status, text);
+      return null;
+    }
+    
+    const data = await response.json();
+    
+    if (!data.data) {
+      console.error("Twitter user not found:", cleanUsername);
+      return null;
+    }
+    
+    // プロフィール画像を高解像度に変換
+    const profileImageUrl = data.data.profile_image_url?.replace("_normal", "_400x400") || "";
+    
+    return {
+      id: data.data.id,
+      name: data.data.name,
+      username: data.data.username,
+      profile_image_url: profileImageUrl,
+      description: data.data.description,
+      public_metrics: data.data.public_metrics,
+    };
+  } catch (error) {
+    console.error("Error fetching Twitter user profile:", error);
+    return null;
+  }
+}

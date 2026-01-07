@@ -10,6 +10,7 @@ import {
   deletePKCEData,
   checkFollowStatus,
   getTargetAccountInfo,
+  getUserProfileByUsername,
 } from "./twitter-oauth2";
 
 export function registerTwitterRoutes(app: Express) {
@@ -198,6 +199,71 @@ export function registerTwitterRoutes(app: Express) {
     } catch (error) {
       console.error("Target account error:", error);
       res.status(500).json({ error: "Failed to get target account info" });
+    }
+  });
+
+  // API endpoint to lookup user profile by username
+  // Supports: @username, username, https://x.com/username, https://twitter.com/username
+  app.get("/api/twitter/user/:username", async (req: Request, res: Response) => {
+    try {
+      const { username } = req.params;
+      
+      if (!username) {
+        res.status(400).json({ error: "Username is required" });
+        return;
+      }
+      
+      const profile = await getUserProfileByUsername(username);
+      
+      if (!profile) {
+        res.status(404).json({ error: "User not found" });
+        return;
+      }
+      
+      res.json({
+        id: profile.id,
+        name: profile.name,
+        username: profile.username,
+        profileImage: profile.profile_image_url,
+        description: profile.description || "",
+        followersCount: profile.public_metrics?.followers_count || 0,
+        followingCount: profile.public_metrics?.following_count || 0,
+      });
+    } catch (error) {
+      console.error("Twitter user lookup error:", error);
+      res.status(500).json({ error: "Failed to lookup Twitter user" });
+    }
+  });
+
+  // API endpoint to lookup user profile by URL or username (POST for URL encoding)
+  app.post("/api/twitter/lookup", async (req: Request, res: Response) => {
+    try {
+      const { input } = req.body as { input?: string };
+      
+      if (!input) {
+        res.status(400).json({ error: "Input is required" });
+        return;
+      }
+      
+      const profile = await getUserProfileByUsername(input);
+      
+      if (!profile) {
+        res.status(404).json({ error: "User not found" });
+        return;
+      }
+      
+      res.json({
+        id: profile.id,
+        name: profile.name,
+        username: profile.username,
+        profileImage: profile.profile_image_url,
+        description: profile.description || "",
+        followersCount: profile.public_metrics?.followers_count || 0,
+        followingCount: profile.public_metrics?.following_count || 0,
+      });
+    } catch (error) {
+      console.error("Twitter user lookup error:", error);
+      res.status(500).json({ error: "Failed to lookup Twitter user" });
     }
   });
 }
