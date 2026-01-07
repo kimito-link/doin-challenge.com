@@ -30,12 +30,76 @@ const characterImages = {
 // ロゴ画像
 const logoImage = require("@/assets/images/logo/logo-maru-orange.jpg");
 
+// ログイン画面のパターンデータ
+const loginPatterns = [
+  {
+    id: 1,
+    character: "linkIdol",
+    title: "みんな、ちょっと聞いて！😊✨",
+    message: "あなたの「推し」が、大きなステージに立つ瞬間を\n一緒に作りたいんだ。",
+    highlight: "その景色を、一緒に作ろう！",
+    gradientColors: ["#EC4899", "#8B5CF6"] as const,
+    accentColor: "#EC4899",
+  },
+  {
+    id: 2,
+    character: "linkFull",
+    title: "声を届けよう！🎙️✨",
+    message: "あなたの応援の声が、\n誰かの心を動かす。",
+    highlight: "一緒に推しの夢を叶えよう！",
+    gradientColors: ["#8B5CF6", "#3B82F6"] as const,
+    accentColor: "#8B5CF6",
+  },
+  {
+    id: 3,
+    character: "linkYukkuri",
+    title: "ようこそ！🎉",
+    message: "動員ちゃれんじへようこそ！\nみんなの想いを集めて、推しの夢を叶えよう。",
+    highlight: "さあ、始めよう！",
+    gradientColors: ["#F59E0B", "#EF4444"] as const,
+    accentColor: "#F59E0B",
+  },
+  {
+    id: 4,
+    character: "kontaYukkuri",
+    title: "コンタだよ！🦊",
+    message: "友達を誘って、みんなで盛り上げよう！\n一人の参加が、大きな波になるんだ。",
+    highlight: "一緒に盛り上げよう！",
+    gradientColors: ["#DD6500", "#F59E0B"] as const,
+    accentColor: "#DD6500",
+  },
+  {
+    id: 5,
+    character: "tanuneYukkuri",
+    title: "たぬねだよ！🦝",
+    message: "チャレンジを作って、\nみんなで目標達成を目指そう！",
+    highlight: "目標達成でお祝い！🎉",
+    gradientColors: ["#10B981", "#3B82F6"] as const,
+    accentColor: "#10B981",
+  },
+  {
+    id: 6,
+    character: "linkIdol",
+    title: "ステージへの道！🎭✨",
+    message: "客席を埋め尽くすファンの声援、\nリアルタイムで流れる応援コメント…",
+    highlight: "その感動を、一緒に！",
+    gradientColors: ["#EC4899", "#F43F5E"] as const,
+    accentColor: "#F43F5E",
+  },
+];
+
+// ランダムにパターンを選択する関数
+const getRandomPattern = () => {
+  return loginPatterns[Math.floor(Math.random() * loginPatterns.length)];
+};
+
 export default function MyPageScreen() {
   const router = useRouter();
   const { user, loading, login, logout, isAuthenticated } = useAuth();
   const { isFollowing, targetUsername, targetDisplayName, updateFollowStatus } = useFollowStatus();
   const { isDesktop, isTablet } = useResponsive();
   const [isLoggingIn, setIsLoggingIn] = useState(false);
+  const [loginPattern, setLoginPattern] = useState(() => getRandomPattern());
 
   // ログイン時にフォロー状態を更新
   useEffect(() => {
@@ -130,46 +194,163 @@ export default function MyPageScreen() {
       </View>
 
       {!isAuthenticated ? (
-        // 未ログイン状態
-        <View style={{ flex: 1, alignItems: "center", justifyContent: "center", padding: 32, backgroundColor: "#0D1117" }}>
-          <Image
-            source={logoImage}
-            style={{ width: 120, height: 120, borderRadius: 60, marginBottom: 24 }}
-          />
-          <Text style={{ color: "#fff", fontSize: 20, fontWeight: "bold", marginBottom: 8 }}>
-            ログインしてください
-          </Text>
-          <Text style={{ color: "#9CA3AF", fontSize: 14, textAlign: "center", marginBottom: 24 }}>
-            Twitterでログインすると{"\n"}フォロワー数などの情報を自動取得できます
-          </Text>
-          
-          <TouchableOpacity
-            onPress={handleLogin}
-            disabled={isLoggingIn}
+        // 未ログイン状態 - パターン切り替え対応
+        <View style={{ flex: 1, backgroundColor: "#0D1117" }}>
+          {/* グラデーション背景 */}
+          <LinearGradient
+            colors={[...loginPattern.gradientColors, "#0D1117"]}
+            start={{ x: 0, y: 0 }}
+            end={{ x: 1, y: 1 }}
             style={{
-              // UXガイドライン: 最小44pxのタップエリア
-              minHeight: 48,
-              backgroundColor: isLoggingIn ? "#6B7280" : "#1DA1F2",
-              borderRadius: 12,
-              paddingVertical: 14,
-              paddingHorizontal: 32,
-              flexDirection: "row",
-              alignItems: "center",
-              justifyContent: "center",
-              opacity: isLoggingIn ? 0.7 : 1,
+              position: "absolute",
+              top: 0,
+              left: 0,
+              right: 0,
+              height: 300,
+              opacity: 0.3,
+            }}
+          />
+          
+          <ScrollView 
+            contentContainerStyle={{ 
+              flexGrow: 1, 
+              alignItems: "center", 
+              justifyContent: "center", 
+              padding: 24,
+              paddingBottom: 48,
             }}
           >
-            <MaterialIcons name={isLoggingIn ? "hourglass-empty" : "login"} size={20} color="#fff" />
-            <Text style={{ color: "#fff", fontSize: 16, fontWeight: "bold", marginLeft: 8 }}>
-              {isLoggingIn ? "ログイン中..." : "Twitterでログイン"}
-            </Text>
-          </TouchableOpacity>
+            {/* キャラクターと吹き出し */}
+            <View style={{ 
+              flexDirection: "row", 
+              alignItems: "flex-start", 
+              marginBottom: 32,
+              maxWidth: 400,
+              width: "100%",
+            }}>
+              <Image 
+                source={characterImages[loginPattern.character as keyof typeof characterImages]} 
+                style={{ 
+                  width: loginPattern.character.includes("Yukkuri") ? 80 : 100, 
+                  height: loginPattern.character.includes("Yukkuri") ? 80 : 140,
+                  marginRight: 16,
+                }} 
+                contentFit="contain" 
+              />
+              <View style={{ 
+                flex: 1, 
+                backgroundColor: `${loginPattern.accentColor}15`,
+                borderRadius: 16,
+                borderTopLeftRadius: 4,
+                padding: 16,
+                borderWidth: 1,
+                borderColor: `${loginPattern.accentColor}40`,
+              }}>
+                <Text style={{ 
+                  color: "#fff", 
+                  fontSize: 18, 
+                  fontWeight: "bold",
+                  marginBottom: 8,
+                }}>
+                  {loginPattern.title}
+                </Text>
+                <Text style={{ 
+                  color: "#E5E7EB", 
+                  fontSize: 14, 
+                  lineHeight: 22,
+                }}>
+                  {loginPattern.message}
+                </Text>
+              </View>
+            </View>
 
-          <View style={{ flexDirection: "row", marginTop: 32 }}>
-            <Image source={characterImages.linkYukkuri} style={{ width: 64, height: 64 }} contentFit="contain" />
-            <Image source={characterImages.kontaYukkuri} style={{ width: 64, height: 64, marginLeft: -8 }} contentFit="contain" />
-            <Image source={characterImages.tanuneYukkuri} style={{ width: 64, height: 64, marginLeft: -8 }} contentFit="contain" />
-          </View>
+            {/* ハイライトメッセージ */}
+            <View style={{
+              backgroundColor: `${loginPattern.accentColor}20`,
+              borderRadius: 12,
+              padding: 16,
+              marginBottom: 32,
+              borderLeftWidth: 3,
+              borderLeftColor: loginPattern.accentColor,
+              maxWidth: 400,
+              width: "100%",
+            }}>
+              <Text style={{ 
+                color: loginPattern.accentColor, 
+                fontSize: 16, 
+                fontWeight: "bold",
+                textAlign: "center",
+              }}>
+                {loginPattern.highlight}
+              </Text>
+            </View>
+
+            {/* ログインボタン */}
+            <TouchableOpacity
+              onPress={handleLogin}
+              disabled={isLoggingIn}
+              style={{
+                minHeight: 52,
+                backgroundColor: isLoggingIn ? "#6B7280" : "#1DA1F2",
+                borderRadius: 16,
+                paddingVertical: 16,
+                paddingHorizontal: 40,
+                flexDirection: "row",
+                alignItems: "center",
+                justifyContent: "center",
+                opacity: isLoggingIn ? 0.7 : 1,
+                shadowColor: "#1DA1F2",
+                shadowOffset: { width: 0, height: 4 },
+                shadowOpacity: 0.3,
+                shadowRadius: 8,
+                elevation: 4,
+                marginBottom: 16,
+              }}
+            >
+              <MaterialIcons name={isLoggingIn ? "hourglass-empty" : "login"} size={22} color="#fff" />
+              <Text style={{ color: "#fff", fontSize: 17, fontWeight: "bold", marginLeft: 10 }}>
+                {isLoggingIn ? "ログイン中..." : "Twitterでログイン"}
+              </Text>
+            </TouchableOpacity>
+
+            {/* サブテキスト */}
+            <Text style={{ color: "#6B7280", fontSize: 12, textAlign: "center", marginBottom: 24 }}>
+              ログインするとフォロワー数などの情報を自動取得できます
+            </Text>
+
+            {/* パターン切り替えボタン */}
+            <TouchableOpacity
+              onPress={() => setLoginPattern(getRandomPattern())}
+              style={{
+                flexDirection: "row",
+                alignItems: "center",
+                padding: 12,
+                borderRadius: 8,
+                backgroundColor: "rgba(255,255,255,0.05)",
+              }}
+            >
+              <MaterialIcons name="refresh" size={18} color="#6B7280" />
+              <Text style={{ color: "#6B7280", fontSize: 13, marginLeft: 6 }}>
+                他のキャラクターを見る
+              </Text>
+            </TouchableOpacity>
+
+            {/* パターンインジケーター */}
+            <View style={{ flexDirection: "row", marginTop: 16, gap: 8 }}>
+              {loginPatterns.map((p) => (
+                <TouchableOpacity
+                  key={p.id}
+                  onPress={() => setLoginPattern(p)}
+                  style={{
+                    width: 8,
+                    height: 8,
+                    borderRadius: 4,
+                    backgroundColor: p.id === loginPattern.id ? loginPattern.accentColor : "#3D4148",
+                  }}
+                />
+              ))}
+            </View>
+          </ScrollView>
         </View>
       ) : (
         // ログイン済み状態
