@@ -4,6 +4,7 @@ import { useRouter } from "expo-router";
 import { useState } from "react";
 import { ScreenContainer } from "@/components/screen-container";
 import { ResponsiveContainer } from "@/components/responsive-container";
+import { OnboardingSteps } from "@/components/onboarding-steps";
 import { trpc } from "@/lib/trpc";
 import { useColors } from "@/hooks/use-colors";
 import { useResponsive, useGridColumns } from "@/hooks/use-responsive";
@@ -82,16 +83,22 @@ function ChallengeCard({ challenge, onPress, numColumns = 2 }: { challenge: Chal
   return (
     <TouchableOpacity
       onPress={onPress}
-      activeOpacity={0.8}
+      activeOpacity={0.85}
       style={{
         backgroundColor: "#1A1D21",
-        borderRadius: 16,
-        marginHorizontal: isDesktop ? 4 : 8,
+        borderRadius: 12,
+        marginHorizontal: isDesktop ? 4 : 4,
         marginVertical: 6,
         overflow: "hidden",
         borderWidth: 1,
         borderColor: "#2D3139",
         width: cardWidth as any,
+        // UXガイドライン: 軽いドロップシャドウ
+        shadowColor: "#000",
+        shadowOffset: { width: 0, height: 2 },
+        shadowOpacity: 0.1,
+        shadowRadius: 8,
+        elevation: 3,
       }}
     >
       {/* タイプバッジ */}
@@ -123,7 +130,7 @@ function ChallengeCard({ challenge, onPress, numColumns = 2 }: { challenge: Chal
         </View>
       </LinearGradient>
 
-      <View style={{ padding: 12 }}>
+      <View style={{ padding: 16 }}>
         {/* タイトル */}
         <Text
           style={{ color: "#fff", fontSize: 14, fontWeight: "bold", marginBottom: 4 }}
@@ -366,6 +373,11 @@ export default function HomeScreen() {
           </ScrollView>
         )}
       </ResponsiveContainer>
+
+      {/* 3ステップ説明（初回訪問時のみ表示） */}
+      {!isLoading && displayChallenges.length === 0 && (
+        <OnboardingSteps />
+      )}
 
       {isLoading ? (
         <View style={{ flex: 1, alignItems: "center", justifyContent: "center", backgroundColor: "#0D1117" }}>
