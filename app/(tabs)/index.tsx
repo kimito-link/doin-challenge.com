@@ -1,7 +1,7 @@
 import { FlatList, Text, View, TouchableOpacity, RefreshControl, ScrollView, TextInput, Platform } from "react-native";
 import { Image } from "expo-image";
 import { useRouter } from "expo-router";
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import { ScreenContainer } from "@/components/screen-container";
 import { ResponsiveContainer } from "@/components/responsive-container";
 import { OnboardingSteps } from "@/components/onboarding-steps";
@@ -46,6 +46,16 @@ const eventTypeBadge: Record<string, { label: string; color: string }> = {
   group: { label: "グループ", color: "#8B5CF6" },
 };
 
+// 地域グループ
+const regionGroups: Record<string, string[]> = {
+  "北海道・東北": ["北海道", "青森県", "岩手県", "宮城県", "秋田県", "山形県", "福島県"],
+  "関東": ["茨城県", "栃木県", "群馬県", "埼玉県", "千葉県", "東京都", "神奈川県"],
+  "中部": ["新潟県", "富山県", "石川県", "福井県", "山梨県", "長野県", "岐阜県", "静岡県", "愛知県"],
+  "関西": ["三重県", "滋賀県", "京都府", "大阪府", "兵庫県", "奈良県", "和歌山県"],
+  "中国・四国": ["鳥取県", "島根県", "岡山県", "広島県", "山口県", "徳島県", "香川県", "愛媛県", "高知県"],
+  "九州・沖縄": ["福岡県", "佐賀県", "長崎県", "熊本県", "大分県", "宮崎県", "鹿児島県", "沖縄県"],
+};
+
 type Challenge = {
   id: number;
   hostName: string;
@@ -66,6 +76,247 @@ type Challenge = {
 };
 
 type FilterType = "all" | "solo" | "group";
+
+// 注目のチャレンジセクション
+function FeaturedChallenge({ challenge, onPress }: { challenge: Challenge; onPress: () => void }) {
+  const eventDate = new Date(challenge.eventDate);
+  const progress = Math.min((challenge.currentValue / challenge.goalValue) * 100, 100);
+  const goalConfig = goalTypeConfig[challenge.goalType] || goalTypeConfig.custom;
+  const unit = challenge.goalUnit || goalConfig.unit;
+  const remaining = Math.max(challenge.goalValue - challenge.currentValue, 0);
+
+  return (
+    <PressableCard
+      onPress={onPress}
+      style={{
+        marginHorizontal: 16,
+        marginVertical: 12,
+        borderRadius: 16,
+        overflow: "hidden",
+        borderWidth: 2,
+        borderColor: "#DD6500",
+      }}
+    >
+      <LinearGradient
+        colors={["#EC4899", "#8B5CF6", "#6366F1"]}
+        start={{ x: 0, y: 0 }}
+        end={{ x: 1, y: 1 }}
+        style={{ padding: 20 }}
+      >
+        {/* 注目バッジ */}
+        <View style={{ flexDirection: "row", alignItems: "center", marginBottom: 12 }}>
+          <View style={{ backgroundColor: "#DD6500", paddingHorizontal: 12, paddingVertical: 4, borderRadius: 12 }}>
+            <Text style={{ color: "#fff", fontSize: 12, fontWeight: "bold" }}>🔥 注目のチャレンジ</Text>
+          </View>
+          <View style={{ marginLeft: "auto" }}>
+            <Countdown targetDate={challenge.eventDate} compact />
+          </View>
+        </View>
+
+        {/* タイトル */}
+        <Text style={{ color: "#fff", fontSize: 22, fontWeight: "bold", marginBottom: 4 }}>
+          {challenge.title}
+        </Text>
+        <Text style={{ color: "rgba(255,255,255,0.8)", fontSize: 14, marginBottom: 16 }}>
+          {challenge.hostName}
+        </Text>
+
+        {/* 大きな進捗表示 */}
+        <View style={{ alignItems: "center", marginBottom: 16 }}>
+          <Text style={{ color: "#fff", fontSize: 48, fontWeight: "bold" }}>
+            {challenge.currentValue}
+            <Text style={{ fontSize: 20, color: "rgba(255,255,255,0.7)" }}> / {challenge.goalValue}{unit}</Text>
+          </Text>
+          <Text style={{ color: "#FFD700", fontSize: 16, fontWeight: "bold", marginTop: 4 }}>
+            あと{remaining}{unit}で目標達成！
+          </Text>
+        </View>
+
+        {/* 進捗バー */}
+        <View style={{ height: 12, backgroundColor: "rgba(255,255,255,0.2)", borderRadius: 6, overflow: "hidden" }}>
+          <LinearGradient
+            colors={["#FFD700", "#FFA500"]}
+            start={{ x: 0, y: 0 }}
+            end={{ x: 1, y: 0 }}
+            style={{ height: "100%", width: `${progress}%`, borderRadius: 6 }}
+          />
+        </View>
+        <Text style={{ color: "rgba(255,255,255,0.7)", fontSize: 12, textAlign: "right", marginTop: 4 }}>
+          {progress.toFixed(1)}% 達成
+        </Text>
+      </LinearGradient>
+    </PressableCard>
+  );
+}
+
+// 盛り上がりセクション
+function EngagementSection({ challenges }: { challenges: Challenge[] }) {
+  // 統計を計算
+  const stats = useMemo(() => {
+    const totalParticipants = challenges.reduce((sum, c) => sum + c.currentValue, 0);
+    const totalChallenges = challenges.length;
+    const activeChallenges = challenges.filter(c => c.status === "active").length;
+    
+    // 地域別集計（仮のデータ - 実際はparticipantsから集計）
+    const regionStats: Record<string, number> = {};
+    Object.keys(regionGroups).forEach(region => {
+      regionStats[region] = Math.floor(Math.random() * totalParticipants / 6);
+    });
+    
+    // 最も盛り上がっている地域
+    const hotRegion = Object.entries(regionStats).sort((a, b) => b[1] - a[1])[0];
+    
+    return { totalParticipants, totalChallenges, activeChallenges, regionStats, hotRegion };
+  }, [challenges]);
+
+  if (challenges.length === 0) return null;
+
+  return (
+    <View style={{ marginHorizontal: 16, marginVertical: 12 }}>
+      {/* 統計カード */}
+      <View style={{ 
+        backgroundColor: "#1A1D21", 
+        borderRadius: 16, 
+        padding: 20,
+        borderWidth: 1,
+        borderColor: "#2D3139",
+      }}>
+        <Text style={{ color: "#DD6500", fontSize: 16, fontWeight: "bold", marginBottom: 16 }}>
+          📊 みんなの盛り上がり
+        </Text>
+        
+        {/* 統計数値 */}
+        <View style={{ flexDirection: "row", justifyContent: "space-around", marginBottom: 20 }}>
+          <View style={{ alignItems: "center" }}>
+            <Text style={{ color: "#fff", fontSize: 32, fontWeight: "bold" }}>{stats.totalParticipants}</Text>
+            <Text style={{ color: "#9CA3AF", fontSize: 12 }}>総参加表明</Text>
+          </View>
+          <View style={{ alignItems: "center" }}>
+            <Text style={{ color: "#fff", fontSize: 32, fontWeight: "bold" }}>{stats.activeChallenges}</Text>
+            <Text style={{ color: "#9CA3AF", fontSize: 12 }}>開催中</Text>
+          </View>
+          <View style={{ alignItems: "center" }}>
+            <Text style={{ color: "#fff", fontSize: 32, fontWeight: "bold" }}>{stats.totalChallenges}</Text>
+            <Text style={{ color: "#9CA3AF", fontSize: 12 }}>総チャレンジ</Text>
+          </View>
+        </View>
+
+        {/* 地域ハイライト */}
+        {stats.hotRegion && stats.hotRegion[1] > 0 && (
+          <View style={{ 
+            backgroundColor: "#2D3139", 
+            borderRadius: 12, 
+            padding: 12,
+            flexDirection: "row",
+            alignItems: "center",
+          }}>
+            <Text style={{ fontSize: 24, marginRight: 12 }}>🗾</Text>
+            <View style={{ flex: 1 }}>
+              <Text style={{ color: "#FFD700", fontSize: 14, fontWeight: "bold" }}>
+                {stats.hotRegion[0]}が熱い！
+              </Text>
+              <Text style={{ color: "#9CA3AF", fontSize: 12 }}>
+                {stats.hotRegion[1]}人が参加表明中
+              </Text>
+            </View>
+            <MaterialIcons name="local-fire-department" size={24} color="#FF6B6B" />
+          </View>
+        )}
+      </View>
+    </View>
+  );
+}
+
+// LP風キャッチコピーセクション
+function CatchCopySection() {
+  return (
+    <View style={{ marginHorizontal: 16, marginVertical: 12 }}>
+      <LinearGradient
+        colors={["#1A1D21", "#0D1117"]}
+        style={{
+          borderRadius: 16,
+          padding: 24,
+          borderWidth: 1,
+          borderColor: "#2D3139",
+          alignItems: "center",
+        }}
+      >
+        {/* キャラクター */}
+        <Image 
+          source={characterImages.linkIdol} 
+          style={{ width: 120, height: 160, marginBottom: 16 }} 
+          contentFit="contain" 
+        />
+        
+        {/* メインコピー */}
+        <Text style={{ 
+          color: "#fff", 
+          fontSize: 20, 
+          fontWeight: "bold", 
+          textAlign: "center",
+          marginBottom: 8,
+        }}>
+          みんなで一緒に{"\n"}応援企画を盛り上げよう！
+        </Text>
+        
+        {/* サブコピー */}
+        <Text style={{ 
+          color: "#9CA3AF", 
+          fontSize: 14, 
+          textAlign: "center",
+          lineHeight: 22,
+          marginBottom: 16,
+        }}>
+          参加表明で応援の気持ちを届けよう{"\n"}
+          あなたの一票がアーティストの力になる ✨
+        </Text>
+
+        {/* 特徴リスト */}
+        <View style={{ width: "100%", gap: 12 }}>
+          <View style={{ flexDirection: "row", alignItems: "center" }}>
+            <View style={{ 
+              width: 32, height: 32, borderRadius: 16, 
+              backgroundColor: "#EC4899", 
+              alignItems: "center", justifyContent: "center",
+              marginRight: 12,
+            }}>
+              <MaterialIcons name="favorite" size={18} color="#fff" />
+            </View>
+            <Text style={{ color: "#fff", fontSize: 14, flex: 1 }}>
+              参加表明で応援メッセージを送れる
+            </Text>
+          </View>
+          <View style={{ flexDirection: "row", alignItems: "center" }}>
+            <View style={{ 
+              width: 32, height: 32, borderRadius: 16, 
+              backgroundColor: "#8B5CF6", 
+              alignItems: "center", justifyContent: "center",
+              marginRight: 12,
+            }}>
+              <MaterialIcons name="people" size={18} color="#fff" />
+            </View>
+            <Text style={{ color: "#fff", fontSize: 14, flex: 1 }}>
+              友達と一緒に参加して盛り上げよう
+            </Text>
+          </View>
+          <View style={{ flexDirection: "row", alignItems: "center" }}>
+            <View style={{ 
+              width: 32, height: 32, borderRadius: 16, 
+              backgroundColor: "#DD6500", 
+              alignItems: "center", justifyContent: "center",
+              marginRight: 12,
+            }}>
+              <MaterialIcons name="emoji-events" size={18} color="#fff" />
+            </View>
+            <Text style={{ color: "#fff", fontSize: 14, flex: 1 }}>
+              目標達成でみんなでお祝い！
+            </Text>
+          </View>
+        </View>
+      </LinearGradient>
+    </View>
+  );
+}
 
 function ChallengeCard({ challenge, onPress, numColumns = 2 }: { challenge: Challenge; onPress: () => void; numColumns?: number }) {
   const colors = useColors();
@@ -245,40 +496,64 @@ function EmptyState({ onGenerateSamples }: { onGenerateSamples: () => void }) {
   };
 
   return (
-    <View style={{ flex: 1, alignItems: "center", justifyContent: "center", padding: 32, backgroundColor: "#0D1117" }}>
-      <View style={{ alignItems: "center", marginBottom: 16 }}>
-        <Image source={characterImages.linkIdol} style={{ width: 150, height: 200 }} contentFit="contain" />
-      </View>
-      <Text style={{ color: "#fff", fontSize: 18, fontWeight: "bold", marginBottom: 8 }}>
-        まだチャレンジがありません
-      </Text>
-      <Text style={{ color: "#9CA3AF", fontSize: 14, textAlign: "center", marginBottom: 24 }}>
-        「チャレンジ作成」タブから{"\n"}新しいチャレンジを作成しましょう
-      </Text>
+    <ScrollView style={{ flex: 1, backgroundColor: "#0D1117" }}>
+      {/* LP風キャッチコピー（チャレンジがない時も表示） */}
+      <CatchCopySection />
       
-      {/* 開発者向けサンプルデータ生成ボタン */}
-      <View style={{ marginTop: 16, padding: 16, backgroundColor: "#1A1D21", borderRadius: 12, borderWidth: 1, borderColor: "#2D3139" }}>
-        <Text style={{ color: "#9CA3AF", fontSize: 12, marginBottom: 12, textAlign: "center" }}>
-          🛠️ 開発者向け
+      <View style={{ alignItems: "center", padding: 32 }}>
+        <Text style={{ color: "#fff", fontSize: 18, fontWeight: "bold", marginBottom: 8 }}>
+          まだチャレンジがありません
         </Text>
-        <TouchableOpacity
-          onPress={handleGenerateSamples}
-          disabled={isGenerating}
-          style={{
-            backgroundColor: isGenerating ? "#4B5563" : "#8B5CF6",
-            paddingHorizontal: 24,
-            paddingVertical: 12,
-            borderRadius: 8,
-            minHeight: 44,
-            justifyContent: "center",
-            alignItems: "center",
-          }}
-        >
-          <Text style={{ color: "#fff", fontWeight: "bold" }}>
-            {isGenerating ? "生成中..." : "サンプルチャレンジを生成"}
+        <Text style={{ color: "#9CA3AF", fontSize: 14, textAlign: "center", marginBottom: 24 }}>
+          「チャレンジ作成」タブから{"\n"}新しいチャレンジを作成しましょう
+        </Text>
+        
+        {/* 開発者向けサンプルデータ生成ボタン */}
+        <View style={{ marginTop: 16, padding: 16, backgroundColor: "#1A1D21", borderRadius: 12, borderWidth: 1, borderColor: "#2D3139" }}>
+          <Text style={{ color: "#9CA3AF", fontSize: 12, marginBottom: 12, textAlign: "center" }}>
+            🛠️ 開発者向け
           </Text>
-        </TouchableOpacity>
+          <TouchableOpacity
+            onPress={handleGenerateSamples}
+            disabled={isGenerating}
+            style={{
+              backgroundColor: isGenerating ? "#4B5563" : "#8B5CF6",
+              paddingHorizontal: 24,
+              paddingVertical: 12,
+              borderRadius: 8,
+              minHeight: 44,
+              justifyContent: "center",
+              alignItems: "center",
+            }}
+          >
+            <Text style={{ color: "#fff", fontWeight: "bold" }}>
+              {isGenerating ? "生成中..." : "サンプルチャレンジを生成"}
+            </Text>
+          </TouchableOpacity>
+        </View>
       </View>
+    </ScrollView>
+  );
+}
+
+// セクションヘッダー
+function SectionHeader({ title, onSeeAll }: { title: string; onSeeAll?: () => void }) {
+  return (
+    <View style={{ 
+      flexDirection: "row", 
+      justifyContent: "space-between", 
+      alignItems: "center",
+      marginHorizontal: 16,
+      marginTop: 24,
+      marginBottom: 8,
+    }}>
+      <Text style={{ color: "#fff", fontSize: 18, fontWeight: "bold" }}>{title}</Text>
+      {onSeeAll && (
+        <TouchableOpacity onPress={onSeeAll} style={{ flexDirection: "row", alignItems: "center" }}>
+          <Text style={{ color: "#DD6500", fontSize: 14 }}>すべて見る</Text>
+          <MaterialIcons name="chevron-right" size={20} color="#DD6500" />
+        </TouchableOpacity>
+      )}
     </View>
   );
 }
@@ -327,6 +602,142 @@ export default function HomeScreen() {
         return true;
       }) || []);
 
+  // 注目のチャレンジ（最も進捗が高いもの、または最も参加者が多いもの）
+  const featuredChallenge = useMemo(() => {
+    if (!challenges || challenges.length === 0) return null;
+    return challenges.reduce((best, current) => {
+      const bestProgress = best.currentValue / best.goalValue;
+      const currentProgress = current.currentValue / current.goalValue;
+      // 進捗率が高い、または参加者が多いものを選択
+      if (currentProgress > bestProgress || (currentProgress === bestProgress && current.currentValue > best.currentValue)) {
+        return current;
+      }
+      return best;
+    });
+  }, [challenges]);
+
+  // チャレンジ一覧（注目のチャレンジを除く）
+  const otherChallenges = useMemo(() => {
+    if (!displayChallenges || displayChallenges.length === 0) return [];
+    if (!featuredChallenge) return displayChallenges;
+    return displayChallenges.filter(c => c.id !== featuredChallenge.id);
+  }, [displayChallenges, featuredChallenge]);
+
+  // ヘッダーコンポーネント（FlatListのListHeaderComponent用）
+  const ListHeader = () => (
+    <>
+      {/* 注目のチャレンジ */}
+      {featuredChallenge && !isSearching && (
+        <FeaturedChallenge 
+          challenge={featuredChallenge as Challenge} 
+          onPress={() => handleChallengePress(featuredChallenge.id)} 
+        />
+      )}
+
+      {/* 盛り上がりセクション */}
+      {challenges && challenges.length > 0 && !isSearching && (
+        <EngagementSection challenges={challenges as Challenge[]} />
+      )}
+
+      {/* LP風キャッチコピー */}
+      {!isSearching && <CatchCopySection />}
+
+      {/* チャレンジ一覧ヘッダー */}
+      <SectionHeader title="📋 チャレンジ一覧" />
+
+      {/* 検索バー */}
+      <View style={{ marginHorizontal: 16, marginTop: 8 }}>
+        <View style={{
+          flexDirection: "row",
+          alignItems: "center",
+          backgroundColor: "#1A1D21",
+          borderRadius: 12,
+          paddingHorizontal: 12,
+          paddingVertical: 10,
+          borderWidth: 1,
+          borderColor: searchQuery ? "#DD6500" : "#2D3139",
+        }}>
+          <MaterialIcons name="search" size={20} color="#9CA3AF" />
+          <TextInput
+            value={searchQuery}
+            onChangeText={(text) => {
+              setSearchQuery(text);
+              setIsSearching(text.length > 0);
+            }}
+            placeholder="チャレンジを検索..."
+            placeholderTextColor="#6B7280"
+            style={{
+              flex: 1,
+              marginLeft: 8,
+              color: "#fff",
+              fontSize: 14,
+            }}
+            returnKeyType="search"
+          />
+          {searchQuery.length > 0 && (
+            <TouchableOpacity onPress={() => { setSearchQuery(""); setIsSearching(false); }}>
+              <MaterialIcons name="close" size={20} color="#9CA3AF" />
+            </TouchableOpacity>
+          )}
+        </View>
+      </View>
+      
+      {/* タイプフィルター */}
+      <View style={{ flexDirection: "row", marginTop: 16, marginHorizontal: 16 }}>
+        <FilterButton label="すべて" active={filter === "all"} onPress={() => setFilter("all")} />
+        <FilterButton label="グループ" active={filter === "group"} onPress={() => setFilter("group")} />
+        <FilterButton label="ソロ" active={filter === "solo"} onPress={() => setFilter("solo")} />
+      </View>
+
+      {/* カテゴリフィルター */}
+      {categoriesData && categoriesData.length > 0 && (
+        <ScrollView 
+          horizontal 
+          showsHorizontalScrollIndicator={false}
+          style={{ marginTop: 8, marginHorizontal: 16 }}
+        >
+          <TouchableOpacity
+            onPress={() => setCategoryFilter(null)}
+            style={{
+              paddingHorizontal: 12,
+              paddingVertical: 6,
+              borderRadius: 16,
+              backgroundColor: categoryFilter === null ? "#8B5CF6" : "#1E293B",
+              marginRight: 8,
+              flexDirection: "row",
+              alignItems: "center",
+            }}
+          >
+            <Text style={{ color: "#fff", fontSize: 12 }}>全カテゴリ</Text>
+          </TouchableOpacity>
+          {categoriesData.map((cat) => (
+            <TouchableOpacity
+              key={cat.id}
+              onPress={() => setCategoryFilter(cat.id)}
+              style={{
+                paddingHorizontal: 12,
+                paddingVertical: 6,
+                borderRadius: 16,
+                backgroundColor: categoryFilter === cat.id ? "#8B5CF6" : "#1E293B",
+                marginRight: 8,
+                flexDirection: "row",
+                alignItems: "center",
+              }}
+            >
+              <Text style={{ marginRight: 4 }}>{cat.icon}</Text>
+              <Text style={{ color: "#fff", fontSize: 12 }}>{cat.name}</Text>
+            </TouchableOpacity>
+          ))}
+        </ScrollView>
+      )}
+
+      {/* 3ステップ説明（初回訪問時のみ表示） */}
+      {!isLoading && displayChallenges.length === 0 && (
+        <OnboardingSteps />
+      )}
+    </>
+  );
+
   return (
     <ScreenContainer containerClassName="bg-[#0D1117]">
       {/* ヘッダー */}
@@ -335,99 +746,6 @@ export default function HomeScreen() {
         showCharacters={true}
         isDesktop={isDesktop}
       />
-      <ResponsiveContainer style={{ paddingBottom: 8, backgroundColor: "#0D1117" }}>
-        
-        {/* 検索バー */}
-        <View style={{ marginTop: 12 }}>
-          <View style={{
-            flexDirection: "row",
-            alignItems: "center",
-            backgroundColor: "#1A1D21",
-            borderRadius: 12,
-            paddingHorizontal: 12,
-            paddingVertical: 10,
-            borderWidth: 1,
-            borderColor: searchQuery ? "#DD6500" : "#2D3139",
-          }}>
-            <MaterialIcons name="search" size={20} color="#9CA3AF" />
-            <TextInput
-              value={searchQuery}
-              onChangeText={(text) => {
-                setSearchQuery(text);
-                setIsSearching(text.length > 0);
-              }}
-              placeholder="チャレンジを検索..."
-              placeholderTextColor="#6B7280"
-              style={{
-                flex: 1,
-                marginLeft: 8,
-                color: "#fff",
-                fontSize: 14,
-              }}
-              returnKeyType="search"
-            />
-            {searchQuery.length > 0 && (
-              <TouchableOpacity onPress={() => { setSearchQuery(""); setIsSearching(false); }}>
-                <MaterialIcons name="close" size={20} color="#9CA3AF" />
-              </TouchableOpacity>
-            )}
-          </View>
-        </View>
-        
-        {/* タイプフィルター */}
-        <View style={{ flexDirection: "row", marginTop: 16 }}>
-          <FilterButton label="すべて" active={filter === "all"} onPress={() => setFilter("all")} />
-          <FilterButton label="グループ" active={filter === "group"} onPress={() => setFilter("group")} />
-          <FilterButton label="ソロ" active={filter === "solo"} onPress={() => setFilter("solo")} />
-        </View>
-
-        {/* カテゴリフィルター */}
-        {categoriesData && categoriesData.length > 0 && (
-          <ScrollView 
-            horizontal 
-            showsHorizontalScrollIndicator={false}
-            style={{ marginTop: 8 }}
-          >
-            <TouchableOpacity
-              onPress={() => setCategoryFilter(null)}
-              style={{
-                paddingHorizontal: 12,
-                paddingVertical: 6,
-                borderRadius: 16,
-                backgroundColor: categoryFilter === null ? "#8B5CF6" : "#1E293B",
-                marginRight: 8,
-                flexDirection: "row",
-                alignItems: "center",
-              }}
-            >
-              <Text style={{ color: "#fff", fontSize: 12 }}>全カテゴリ</Text>
-            </TouchableOpacity>
-            {categoriesData.map((cat) => (
-              <TouchableOpacity
-                key={cat.id}
-                onPress={() => setCategoryFilter(cat.id)}
-                style={{
-                  paddingHorizontal: 12,
-                  paddingVertical: 6,
-                  borderRadius: 16,
-                  backgroundColor: categoryFilter === cat.id ? "#8B5CF6" : "#1E293B",
-                  marginRight: 8,
-                  flexDirection: "row",
-                  alignItems: "center",
-                }}
-              >
-                <Text style={{ marginRight: 4 }}>{cat.icon}</Text>
-                <Text style={{ color: "#fff", fontSize: 12 }}>{cat.name}</Text>
-              </TouchableOpacity>
-            ))}
-          </ScrollView>
-        )}
-      </ResponsiveContainer>
-
-      {/* 3ステップ説明（初回訪問時のみ表示） */}
-      {!isLoading && displayChallenges.length === 0 && (
-        <OnboardingSteps />
-      )}
 
       {isLoading ? (
         <View style={{ flex: 1, alignItems: "center", justifyContent: "center", backgroundColor: "#0D1117" }}>
@@ -436,9 +754,10 @@ export default function HomeScreen() {
       ) : displayChallenges.length > 0 ? (
         <FlatList
           key={`grid-${numColumns}`}
-          data={displayChallenges}
+          data={isSearching ? displayChallenges : otherChallenges}
           keyExtractor={(item) => item.id.toString()}
           numColumns={numColumns}
+          ListHeaderComponent={ListHeader}
           renderItem={({ item }) => (
             <ChallengeCard challenge={item as Challenge} onPress={() => handleChallengePress(item.id)} numColumns={numColumns} />
           )}
@@ -447,7 +766,7 @@ export default function HomeScreen() {
           }
           contentContainerStyle={{ 
             paddingHorizontal: isDesktop ? 24 : 8, 
-            paddingBottom: 100, 
+            paddingBottom: 100,
             backgroundColor: "#0D1117",
             maxWidth: isDesktop ? 1200 : undefined,
             alignSelf: isDesktop ? "center" : undefined,
