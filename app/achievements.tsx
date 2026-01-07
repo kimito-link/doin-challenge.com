@@ -6,6 +6,7 @@ import { useAuth } from "@/hooks/use-auth";
 import MaterialIcons from "@expo/vector-icons/MaterialIcons";
 import { LinearGradient } from "expo-linear-gradient";
 import { useMemo } from "react";
+import { AppHeader } from "@/components/app-header";
 
 const { width: screenWidth } = Dimensions.get("window");
 
@@ -341,17 +342,22 @@ export default function AchievementsScreen() {
     <ScreenContainer>
       <ScrollView style={{ flex: 1 }} contentContainerStyle={{ padding: 16 }}>
         {/* ヘッダー */}
-        <View style={{ flexDirection: "row", alignItems: "center", marginBottom: 16 }}>
-          <TouchableOpacity
-            onPress={() => router.back()}
-            style={{ padding: 8, marginRight: 8 }}
-          >
-            <MaterialIcons name="arrow-back" size={24} color="#fff" />
-          </TouchableOpacity>
-          <Text style={{ color: "#fff", fontSize: 20, fontWeight: "bold", flex: 1 }}>
-            アチーブメント
-          </Text>
-        </View>
+        <AppHeader 
+          title="動員ちゃれんじ" 
+          showCharacters={false}
+          rightElement={
+            <TouchableOpacity
+              onPress={() => router.back()}
+              style={{ flexDirection: "row", alignItems: "center" }}
+            >
+              <MaterialIcons name="arrow-back" size={24} color="#fff" />
+              <Text style={{ color: "#fff", marginLeft: 8 }}>戻る</Text>
+            </TouchableOpacity>
+          }
+        />
+        <Text style={{ color: "#fff", fontSize: 20, fontWeight: "bold", marginBottom: 16 }}>
+          アチーブメント
+        </Text>
 
         {/* 統計サマリー */}
         <LinearGradient

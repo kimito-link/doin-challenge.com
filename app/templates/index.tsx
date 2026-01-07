@@ -6,6 +6,7 @@ import { useAuth } from "@/hooks/use-auth";
 import MaterialIcons from "@expo/vector-icons/MaterialIcons";
 import * as Haptics from "expo-haptics";
 import { Platform } from "react-native";
+import { AppHeader } from "@/components/app-header";
 
 const goalTypeLabels: Record<string, string> = {
   attendance: "動員",
@@ -202,11 +203,17 @@ export default function TemplatesScreen() {
   return (
     <ScreenContainer>
       {/* ヘッダー */}
-      <View style={{ flexDirection: "row", alignItems: "center", padding: 16, borderBottomWidth: 1, borderBottomColor: "#2D3139" }}>
-        <TouchableOpacity onPress={() => router.back()} style={{ padding: 8 }}>
-          <Text style={{ fontSize: 24 }}>←</Text>
-        </TouchableOpacity>
-        <Text style={{ fontSize: 20, fontWeight: "bold", color: "#fff", flex: 1, marginLeft: 8 }}>
+      <AppHeader 
+        title="動員ちゃれんじ" 
+        showCharacters={false}
+        rightElement={
+          <TouchableOpacity onPress={() => router.back()} style={{ flexDirection: "row", alignItems: "center" }}>
+            <Text style={{ color: "#fff" }}>← 戻る</Text>
+          </TouchableOpacity>
+        }
+      />
+      <View style={{ padding: 16, borderBottomWidth: 1, borderBottomColor: "#2D3139" }}>
+        <Text style={{ fontSize: 20, fontWeight: "bold", color: "#fff" }}>
           テンプレート
         </Text>
       </View>

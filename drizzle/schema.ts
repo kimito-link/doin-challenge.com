@@ -584,3 +584,24 @@ export const twitterFollowStatus = mysqlTable("twitter_follow_status", {
 
 export type TwitterFollowStatus = typeof twitterFollowStatus.$inferSelect;
 export type InsertTwitterFollowStatus = typeof twitterFollowStatus.$inferInsert;
+
+
+/**
+ * OAuth PKCE データテーブル（認証フロー用）
+ */
+export const oauthPkceData = mysqlTable("oauth_pkce_data", {
+  id: int("id").autoincrement().primaryKey(),
+  // state パラメータ（一意識別子）
+  state: varchar("state", { length: 64 }).notNull().unique(),
+  // PKCE code verifier
+  codeVerifier: varchar("codeVerifier", { length: 128 }).notNull(),
+  // コールバックURL
+  callbackUrl: text("callbackUrl").notNull(),
+  // 有効期限（10分後）
+  expiresAt: timestamp("expiresAt").notNull(),
+  // メタデータ
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+});
+
+export type OAuthPkceData = typeof oauthPkceData.$inferSelect;
+export type InsertOAuthPkceData = typeof oauthPkceData.$inferInsert;

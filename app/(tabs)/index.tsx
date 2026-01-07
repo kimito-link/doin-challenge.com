@@ -12,6 +12,7 @@ import { LinearGradient } from "expo-linear-gradient";
 import MaterialIcons from "@expo/vector-icons/MaterialIcons";
 import { Countdown } from "@/components/countdown";
 import { PressableCard } from "@/components/pressable-card";
+import { AppHeader } from "@/components/app-header";
 
 // キャラクター画像
 const characterImages = {
@@ -329,24 +330,12 @@ export default function HomeScreen() {
   return (
     <ScreenContainer containerClassName="bg-[#0D1117]">
       {/* ヘッダー */}
-      <ResponsiveContainer style={{ paddingTop: 16, paddingBottom: 8, backgroundColor: "#0D1117" }}>
-        <View style={{ flexDirection: "row", alignItems: "center", justifyContent: "space-between" }}>
-          <View style={{ flexDirection: "row", alignItems: "center" }}>
-            <Image
-              source={logoImage}
-              style={{ width: 100, height: 36 }}
-              contentFit="contain"
-            />
-            <Text style={{ color: "#fff", fontSize: isDesktop ? 18 : 14, fontWeight: "bold", marginLeft: 8 }}>
-              動員ちゃれんじ
-            </Text>
-          </View>
-          <View style={{ flexDirection: "row" }}>
-            <Image source={characterImages.linkYukkuri} style={{ width: isDesktop ? 48 : 36, height: isDesktop ? 48 : 36, marginLeft: -4 }} contentFit="contain" />
-            <Image source={characterImages.kontaYukkuri} style={{ width: isDesktop ? 48 : 36, height: isDesktop ? 48 : 36, marginLeft: -4 }} contentFit="contain" />
-            <Image source={characterImages.tanuneYukkuri} style={{ width: isDesktop ? 48 : 36, height: isDesktop ? 48 : 36, marginLeft: -4 }} contentFit="contain" />
-          </View>
-        </View>
+      <AppHeader 
+        title="動員ちゃれんじ" 
+        showCharacters={true}
+        isDesktop={isDesktop}
+      />
+      <ResponsiveContainer style={{ paddingBottom: 8, backgroundColor: "#0D1117" }}>
         
         {/* 検索バー */}
         <View style={{ marginTop: 12 }}>

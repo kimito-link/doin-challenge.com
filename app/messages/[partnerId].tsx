@@ -5,6 +5,7 @@ import { ScreenContainer } from "@/components/screen-container";
 import { trpc } from "@/lib/trpc";
 import { useAuth } from "@/hooks/use-auth";
 import * as Haptics from "expo-haptics";
+import { AppHeader } from "@/components/app-header";
 
 export default function ConversationScreen() {
   const { partnerId, challengeId } = useLocalSearchParams<{ partnerId: string; challengeId: string }>();
@@ -111,15 +112,19 @@ export default function ConversationScreen() {
         keyboardVerticalOffset={Platform.OS === "ios" ? 90 : 0}
       >
         {/* ヘッダー */}
-        <View className="flex-row items-center p-4 border-b border-border">
-          <TouchableOpacity onPress={() => router.back()} className="p-2 mr-2">
-            <Text className="text-2xl">←</Text>
-          </TouchableOpacity>
-          <View className="flex-1">
-            <Text className="text-lg font-bold text-foreground">
-              メッセージ
-            </Text>
-          </View>
+        <AppHeader 
+          title="動員ちゃれんじ" 
+          showCharacters={false}
+          rightElement={
+            <TouchableOpacity onPress={() => router.back()} className="flex-row items-center">
+              <Text className="text-foreground">← 戻る</Text>
+            </TouchableOpacity>
+          }
+        />
+        <View className="p-4 border-b border-border">
+          <Text className="text-lg font-bold text-foreground">
+            メッセージ
+          </Text>
         </View>
 
         {/* メッセージ一覧 */}

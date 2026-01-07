@@ -26,7 +26,7 @@ export function registerTwitterRoutes(app: Express) {
       const state = generateState();
       
       // Store PKCE data for callback
-      storePKCEData(state, codeVerifier, callbackUrl);
+      await storePKCEData(state, codeVerifier, callbackUrl);
       
       // Build authorization URL
       const authUrl = buildAuthorizationUrl(callbackUrl, state, codeChallenge);
@@ -67,7 +67,7 @@ export function registerTwitterRoutes(app: Express) {
       }
 
       // Retrieve stored PKCE data
-      const pkceData = getPKCEData(state);
+      const pkceData = await getPKCEData(state);
       if (!pkceData) {
         res.status(400).json({ error: "Invalid or expired state parameter" });
         return;
@@ -81,21 +81,16 @@ export function registerTwitterRoutes(app: Express) {
       console.log("[Twitter OAuth 2.0] Token exchange successful");
 
       // Clean up stored PKCE data
-      deletePKCEData(state);
+      await deletePKCEData(state);
 
       // Get user profile using access token
       const userProfile = await getUserProfile(tokens.access_token);
       
       console.log("[Twitter OAuth 2.0] User profile retrieved:", userProfile.username);
 
-      // Check if user follows the target account
-      const followStatus = await checkFollowStatus(
-        tokens.access_token,
-        userProfile.id
-      );
+      // Skip follow check for now - will be done separately after login
+      // This avoids scope permission issues during initial auth
       
-      console.log("[Twitter OAuth 2.0] Follow status:", followStatus.isFollowing);
-
       // Build user data object
       const userData = {
         twitterId: userProfile.id,
@@ -107,19 +102,24 @@ export function registerTwitterRoutes(app: Express) {
         description: userProfile.description || "",
         accessToken: tokens.access_token,
         refreshToken: tokens.refresh_token,
-        isFollowingTarget: followStatus.isFollowing,
-        targetAccount: followStatus.targetUser,
+        isFollowingTarget: false, // Will be checked separately
+        targetAccount: null,
       };
 
-      // Encode user data for deep link
+      // Encode user data for redirect
       const encodedData = encodeURIComponent(JSON.stringify(userData));
       
-      // Get the app scheme from environment or use default
-      const appScheme = process.env.APP_SCHEME || "manus20250106092504";
+      // Build redirect URL - redirect to Expo app (port 8081)
+      const host = req.get("host") || "";
+      // Replace port 3000 with 8081 for Expo app
+      const expoHost = host.replace("3000-", "8081-");
+      const protocol = req.get("x-forwarded-proto") || req.protocol;
+      const forceHttps = protocol === "https" || host.includes("manus.computer");
+      const baseUrl = `${forceHttps ? "https" : protocol}://${expoHost}`;
       
-      // Redirect to app with user data
-      const redirectUrl = `${appScheme}://twitter-callback?data=${encodedData}`;
-      console.log("[Twitter OAuth 2.0] Redirecting to app:", redirectUrl.substring(0, 100) + "...");
+      // Redirect to Expo app callback page with user data
+      const redirectUrl = `${baseUrl}/oauth/twitter-callback?data=${encodedData}`;
+      console.log("[Twitter OAuth 2.0] Redirecting to:", redirectUrl.substring(0, 100) + "...");
       
       res.redirect(redirectUrl);
     } catch (error) {

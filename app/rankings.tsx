@@ -7,6 +7,7 @@ import { trpc } from "@/lib/trpc";
 import { useAuth } from "@/hooks/use-auth";
 import MaterialIcons from "@expo/vector-icons/MaterialIcons";
 import { LinearGradient } from "expo-linear-gradient";
+import { AppHeader } from "@/components/app-header";
 
 type PeriodType = "weekly" | "monthly" | "all";
 
@@ -50,17 +51,25 @@ export default function RankingsScreen() {
   return (
     <ScreenContainer containerClassName="bg-[#0D1117]">
       {/* ヘッダー */}
+      <AppHeader 
+        title="動員ちゃれんじ" 
+        showCharacters={false}
+        rightElement={
+          <TouchableOpacity
+            onPress={() => router.back()}
+            style={{ flexDirection: "row", alignItems: "center" }}
+          >
+            <MaterialIcons name="arrow-back" size={24} color="#fff" />
+            <Text style={{ color: "#fff", marginLeft: 8 }}>戻る</Text>
+          </TouchableOpacity>
+        }
+      />
       <View style={{ 
-        flexDirection: "row", 
-        alignItems: "center", 
         paddingHorizontal: 16, 
         paddingVertical: 12,
         borderBottomWidth: 1,
         borderBottomColor: "#2D3139",
       }}>
-        <TouchableOpacity onPress={() => router.back()} style={{ marginRight: 16 }}>
-          <MaterialIcons name="arrow-back" size={24} color="#fff" />
-        </TouchableOpacity>
         <Text style={{ color: "#fff", fontSize: 18, fontWeight: "bold" }}>
           ランキング
         </Text>

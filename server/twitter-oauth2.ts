@@ -1,4 +1,7 @@
 import crypto from "crypto";
+import { getDb } from "./db";
+import { oauthPkceData } from "../drizzle/schema";
+import { eq, lt } from "drizzle-orm";
 
 // Twitter OAuth 2.0 with PKCE implementation
 const TWITTER_CLIENT_ID = process.env.TWITTER_CLIENT_ID || "";
@@ -33,7 +36,7 @@ export function buildAuthorizationUrl(
     response_type: "code",
     client_id: TWITTER_CLIENT_ID,
     redirect_uri: callbackUrl,
-    scope: "tweet.read users.read offline.access",
+    scope: "users.read tweet.read",
     state: state,
     code_challenge: codeChallenge,
     code_challenge_method: "S256",
@@ -154,22 +157,103 @@ export async function refreshAccessToken(refreshToken: string): Promise<{
   return response.json();
 }
 
-// Store for temporary PKCE data (in production, use Redis or database)
-const pkceStore = new Map<string, { codeVerifier: string; callbackUrl: string }>();
-
-export function storePKCEData(state: string, codeVerifier: string, callbackUrl: string): void {
-  pkceStore.set(state, { codeVerifier, callbackUrl });
-  // Clean up after 10 minutes
-  setTimeout(() => pkceStore.delete(state), 10 * 60 * 1000);
+// Store PKCE data in database
+export async function storePKCEData(state: string, codeVerifier: string, callbackUrl: string): Promise<void> {
+  const db = await getDb();
+  if (!db) {
+    console.warn("[PKCE] Database not available, using memory fallback");
+    pkceMemoryStore.set(state, { codeVerifier, callbackUrl });
+    setTimeout(() => pkceMemoryStore.delete(state), 10 * 60 * 1000);
+    return;
+  }
+  
+  // Set expiration to 10 minutes from now
+  const expiresAt = new Date(Date.now() + 10 * 60 * 1000);
+  
+  try {
+    // Clean up expired entries first
+    await db.delete(oauthPkceData).where(lt(oauthPkceData.expiresAt, new Date()));
+    
+    // Insert new PKCE data
+    await db.insert(oauthPkceData).values({
+      state,
+      codeVerifier,
+      callbackUrl,
+      expiresAt,
+    });
+    
+    console.log("[PKCE] Stored PKCE data for state:", state.substring(0, 8) + "...");
+  } catch (error) {
+    console.error("[PKCE] Failed to store in database, using memory fallback:", error);
+    pkceMemoryStore.set(state, { codeVerifier, callbackUrl });
+    setTimeout(() => pkceMemoryStore.delete(state), 10 * 60 * 1000);
+  }
 }
 
-export function getPKCEData(state: string): { codeVerifier: string; callbackUrl: string } | undefined {
-  return pkceStore.get(state);
+// Get PKCE data from database
+export async function getPKCEData(state: string): Promise<{ codeVerifier: string; callbackUrl: string } | undefined> {
+  // Check memory store first (fallback)
+  const memoryData = pkceMemoryStore.get(state);
+  if (memoryData) {
+    console.log("[PKCE] Retrieved PKCE data from memory for state:", state.substring(0, 8) + "...");
+    return memoryData;
+  }
+  
+  const db = await getDb();
+  if (!db) {
+    console.warn("[PKCE] Database not available");
+    return undefined;
+  }
+  
+  try {
+    const result = await db.select().from(oauthPkceData).where(eq(oauthPkceData.state, state)).limit(1);
+    
+    if (result.length === 0) {
+      console.log("[PKCE] No PKCE data found for state:", state.substring(0, 8) + "...");
+      return undefined;
+    }
+    
+    const data = result[0];
+    
+    // Check if expired
+    if (new Date(data.expiresAt) < new Date()) {
+      console.log("[PKCE] PKCE data expired for state:", state.substring(0, 8) + "...");
+      await deletePKCEData(state);
+      return undefined;
+    }
+    
+    console.log("[PKCE] Retrieved PKCE data for state:", state.substring(0, 8) + "...");
+    return {
+      codeVerifier: data.codeVerifier,
+      callbackUrl: data.callbackUrl,
+    };
+  } catch (error) {
+    console.error("[PKCE] Failed to get from database:", error);
+    return undefined;
+  }
 }
 
-export function deletePKCEData(state: string): void {
-  pkceStore.delete(state);
+// Delete PKCE data from database
+export async function deletePKCEData(state: string): Promise<void> {
+  // Delete from memory store
+  pkceMemoryStore.delete(state);
+  
+  const db = await getDb();
+  if (!db) {
+    console.warn("[PKCE] Database not available for delete");
+    return;
+  }
+  
+  try {
+    await db.delete(oauthPkceData).where(eq(oauthPkceData.state, state));
+    console.log("[PKCE] Deleted PKCE data for state:", state.substring(0, 8) + "...");
+  } catch (error) {
+    console.error("[PKCE] Failed to delete from database:", error);
+  }
 }
+
+// Memory fallback store for PKCE data
+const pkceMemoryStore = new Map<string, { codeVerifier: string; callbackUrl: string }>();
 
 // Target account to check follow status (idolfunch)
 const TARGET_TWITTER_USERNAME = "idolfunch";

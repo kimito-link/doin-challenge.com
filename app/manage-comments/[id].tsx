@@ -6,6 +6,7 @@ import { trpc } from "@/lib/trpc";
 import { useAuth } from "@/hooks/use-auth";
 import MaterialIcons from "@expo/vector-icons/MaterialIcons";
 import { Image } from "expo-image";
+import { AppHeader } from "@/components/app-header";
 
 export default function ManageCommentsScreen() {
   const router = useRouter();
@@ -118,29 +119,27 @@ export default function ManageCommentsScreen() {
     <ScreenContainer edges={["top", "left", "right"]} containerClassName="bg-[#0D1117]">
       <ScrollView style={{ flex: 1, backgroundColor: "#0D1117" }}>
         {/* ヘッダー */}
-        <View style={{ paddingHorizontal: 16, paddingTop: 8 }}>
-          <View style={{ flexDirection: "row", alignItems: "center", marginBottom: 16 }}>
+        <AppHeader 
+          title="動員ちゃれんじ" 
+          showCharacters={false}
+          rightElement={
             <TouchableOpacity
               onPress={() => router.back()}
-              style={{
-                width: 40,
-                height: 40,
-                borderRadius: 20,
-                backgroundColor: "#1A1D21",
-                alignItems: "center",
-                justifyContent: "center",
-              }}
+              style={{ flexDirection: "row", alignItems: "center" }}
             >
               <MaterialIcons name="arrow-back" size={24} color="#fff" />
+              <Text style={{ color: "#fff", marginLeft: 8 }}>戻る</Text>
             </TouchableOpacity>
-            <View style={{ flex: 1, marginLeft: 12 }}>
-              <Text style={{ color: "#fff", fontSize: 18, fontWeight: "bold" }}>
-                コメント管理
-              </Text>
-              <Text style={{ color: "#9CA3AF", fontSize: 12 }} numberOfLines={1}>
-                {challenge?.title}
-              </Text>
-            </View>
+          }
+        />
+        <View style={{ paddingHorizontal: 16, paddingTop: 8 }}>
+          <View style={{ marginBottom: 16 }}>
+            <Text style={{ color: "#fff", fontSize: 18, fontWeight: "bold" }}>
+              コメント管理
+            </Text>
+            <Text style={{ color: "#9CA3AF", fontSize: 12 }} numberOfLines={1}>
+              {challenge?.title}
+            </Text>
           </View>
 
           {/* タブ */}

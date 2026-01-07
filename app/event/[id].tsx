@@ -8,6 +8,7 @@ import { useAuth } from "@/hooks/use-auth";
 import MaterialIcons from "@expo/vector-icons/MaterialIcons";
 import { LinearGradient } from "expo-linear-gradient";
 import { Countdown } from "@/components/countdown";
+import { AppHeader } from "@/components/app-header";
 
 const { width: screenWidth } = Dimensions.get("window");
 
@@ -510,15 +511,19 @@ export default function ChallengeDetailScreen() {
       >
         <ScrollView style={{ flex: 1, backgroundColor: "#0D1117" }}>
           {/* ヘッダー */}
-          <View style={{ paddingHorizontal: 16, paddingTop: 8 }}>
-            <TouchableOpacity
-              onPress={() => router.back()}
-              style={{ flexDirection: "row", alignItems: "center", marginBottom: 16 }}
-            >
-              <MaterialIcons name="arrow-back" size={24} color="#fff" />
-              <Text style={{ color: "#fff", marginLeft: 8 }}>戻る</Text>
-            </TouchableOpacity>
-          </View>
+          <AppHeader 
+            title="動員ちゃれんじ" 
+            showCharacters={false}
+            rightElement={
+              <TouchableOpacity
+                onPress={() => router.back()}
+                style={{ flexDirection: "row", alignItems: "center" }}
+              >
+                <MaterialIcons name="arrow-back" size={24} color="#fff" />
+                <Text style={{ color: "#fff", marginLeft: 8 }}>戻る</Text>
+              </TouchableOpacity>
+            }
+          />
 
           {/* ヘッダー画像 */}
           <LinearGradient

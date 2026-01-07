@@ -9,6 +9,7 @@ import MaterialIcons from "@expo/vector-icons/MaterialIcons";
 import { LinearGradient } from "expo-linear-gradient";
 // Clipboardはネイティブ機能を使用
 import * as Haptics from "expo-haptics";
+import { AppHeader } from "@/components/app-header";
 
 export default function InviteScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
@@ -109,19 +110,25 @@ export default function InviteScreen() {
     <ScreenContainer containerClassName="bg-[#0D1117]">
       <ScrollView>
         {/* ヘッダー */}
+        <AppHeader 
+          title="動員ちゃれんじ" 
+          showCharacters={false}
+          rightElement={
+            <TouchableOpacity
+              onPress={() => router.back()}
+              style={{ flexDirection: "row", alignItems: "center" }}
+            >
+              <MaterialIcons name="arrow-back" size={24} color="#fff" />
+              <Text style={{ color: "#fff", marginLeft: 8 }}>戻る</Text>
+            </TouchableOpacity>
+          }
+        />
         <LinearGradient
           colors={["#DD6500", "#EC4899", "#8B5CF6"]}
           start={{ x: 0, y: 0 }}
           end={{ x: 1, y: 1 }}
           style={{ padding: 20, paddingTop: 16 }}
         >
-          <TouchableOpacity
-            onPress={() => router.back()}
-            style={{ marginBottom: 16 }}
-          >
-            <MaterialIcons name="arrow-back" size={24} color="#fff" />
-          </TouchableOpacity>
-
           <View style={{ alignItems: "center" }}>
             <MaterialIcons name="share" size={48} color="#fff" />
             <Text style={{ color: "#fff", fontSize: 24, fontWeight: "bold", marginTop: 12 }}>

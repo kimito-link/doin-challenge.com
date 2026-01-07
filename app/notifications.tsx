@@ -8,6 +8,7 @@ import MaterialIcons from "@expo/vector-icons/MaterialIcons";
 import { LinearGradient } from "expo-linear-gradient";
 import * as Notifications from "expo-notifications";
 import { Platform } from "react-native";
+import { AppHeader } from "@/components/app-header";
 
 export default function NotificationsScreen() {
   const router = useRouter();
@@ -111,22 +112,22 @@ export default function NotificationsScreen() {
     <ScreenContainer edges={["top", "left", "right"]} containerClassName="bg-[#0D1117]">
       <ScrollView style={{ flex: 1, backgroundColor: "#0D1117" }}>
         {/* ヘッダー */}
-        <View style={{ paddingHorizontal: 16, paddingTop: 8 }}>
-          <View style={{ flexDirection: "row", alignItems: "center", marginBottom: 16 }}>
+        <AppHeader 
+          title="動員ちゃれんじ" 
+          showCharacters={false}
+          rightElement={
             <TouchableOpacity
               onPress={() => router.back()}
-              style={{
-                width: 40,
-                height: 40,
-                borderRadius: 20,
-                backgroundColor: "#1A1D21",
-                alignItems: "center",
-                justifyContent: "center",
-              }}
+              style={{ flexDirection: "row", alignItems: "center" }}
             >
               <MaterialIcons name="arrow-back" size={24} color="#fff" />
+              <Text style={{ color: "#fff", marginLeft: 8 }}>戻る</Text>
             </TouchableOpacity>
-            <Text style={{ color: "#fff", fontSize: 20, fontWeight: "bold", marginLeft: 12 }}>
+          }
+        />
+        <View style={{ paddingHorizontal: 16, paddingBottom: 8 }}>
+          <View style={{ flexDirection: "row", alignItems: "center" }}>
+            <Text style={{ color: "#fff", fontSize: 20, fontWeight: "bold" }}>
               通知
             </Text>
             {unreadCount > 0 && (

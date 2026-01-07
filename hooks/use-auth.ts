@@ -20,29 +20,44 @@ export function useAuth(options?: UseAuthOptions) {
       setLoading(true);
       setError(null);
 
-      // Web platform: use cookie-based auth, fetch user from API
+      // Web platform: check localStorage first for Twitter auth, then try API
       if (Platform.OS === "web") {
+        console.log("[useAuth] Web platform: checking localStorage for cached user...");
+        
+        // First check localStorage for Twitter auth data
+        const cachedUser = await Auth.getUserInfo();
+        if (cachedUser) {
+          console.log("[useAuth] Web: Found cached user in localStorage:", cachedUser);
+          setUser(cachedUser);
+          return;
+        }
+        
+        // If no cached user, try API (for server-side session auth)
         console.log("[useAuth] Web platform: fetching user from API...");
-        const apiUser = await Api.getMe();
-        console.log("[useAuth] API user response:", apiUser);
+        try {
+          const apiUser = await Api.getMe();
+          console.log("[useAuth] API user response:", apiUser);
 
-        if (apiUser) {
-          const userInfo: Auth.User = {
-            id: apiUser.id,
-            openId: apiUser.openId,
-            name: apiUser.name,
-            email: apiUser.email,
-            loginMethod: apiUser.loginMethod,
-            lastSignedIn: new Date(apiUser.lastSignedIn),
-          };
-          setUser(userInfo);
-          // Cache user info in localStorage for faster subsequent loads
-          await Auth.setUserInfo(userInfo);
-          console.log("[useAuth] Web user set from API:", userInfo);
-        } else {
-          console.log("[useAuth] Web: No authenticated user from API");
+          if (apiUser) {
+            const userInfo: Auth.User = {
+              id: apiUser.id,
+              openId: apiUser.openId,
+              name: apiUser.name,
+              email: apiUser.email,
+              loginMethod: apiUser.loginMethod,
+              lastSignedIn: new Date(apiUser.lastSignedIn),
+            };
+            setUser(userInfo);
+            // Cache user info in localStorage for faster subsequent loads
+            await Auth.setUserInfo(userInfo);
+            console.log("[useAuth] Web user set from API:", userInfo);
+          } else {
+            console.log("[useAuth] Web: No authenticated user from API");
+            setUser(null);
+          }
+        } catch (apiError) {
+          console.log("[useAuth] Web: API call failed, no user authenticated");
           setUser(null);
-          await Auth.clearUserInfo();
         }
         return;
       }

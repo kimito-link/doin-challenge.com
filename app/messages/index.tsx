@@ -3,6 +3,7 @@ import { useRouter } from "expo-router";
 import { ScreenContainer } from "@/components/screen-container";
 import { trpc } from "@/lib/trpc";
 import { useAuth } from "@/hooks/use-auth";
+import { AppHeader } from "@/components/app-header";
 
 export default function MessagesScreen() {
   const router = useRouter();
@@ -89,20 +90,26 @@ export default function MessagesScreen() {
   return (
     <ScreenContainer>
       {/* ヘッダー */}
-      <View className="flex-row items-center justify-between p-4 border-b border-border">
-        <TouchableOpacity onPress={() => router.back()} className="p-2">
-          <Text className="text-2xl">←</Text>
-        </TouchableOpacity>
+      <AppHeader 
+        title="動員ちゃれんじ" 
+        showCharacters={false}
+        rightElement={
+          <View className="flex-row items-center gap-4">
+            {unreadCount && unreadCount > 0 && (
+              <View className="bg-primary rounded-full px-2 py-1">
+                <Text className="text-xs text-background font-bold text-center">
+                  {unreadCount}
+                </Text>
+              </View>
+            )}
+            <TouchableOpacity onPress={() => router.back()} className="flex-row items-center">
+              <Text className="text-foreground">← 戻る</Text>
+            </TouchableOpacity>
+          </View>
+        }
+      />
+      <View className="p-4 border-b border-border">
         <Text className="text-xl font-bold text-foreground">メッセージ</Text>
-        <View className="w-10">
-          {unreadCount && unreadCount > 0 && (
-            <View className="bg-primary rounded-full px-2 py-1">
-              <Text className="text-xs text-background font-bold text-center">
-                {unreadCount}
-              </Text>
-            </View>
-          )}
-        </View>
       </View>
 
       {/* 会話一覧 */}

@@ -7,6 +7,7 @@ import { useAuth } from "@/hooks/use-auth";
 import MaterialIcons from "@expo/vector-icons/MaterialIcons";
 import { LinearGradient } from "expo-linear-gradient";
 import { useState } from "react";
+import { AppHeader } from "@/components/app-header";
 
 type Participation = {
   id: number;
@@ -89,17 +90,28 @@ export default function AchievementPage() {
     <ScreenContainer containerClassName="bg-[#0D1117]">
       <ScrollView style={{ flex: 1, backgroundColor: "#0D1117" }}>
         {/* ヘッダー */}
-        <View style={{ flexDirection: "row", alignItems: "center", padding: 16 }}>
-          <TouchableOpacity onPress={() => router.back()}>
-            <MaterialIcons name="arrow-back" size={24} color="#fff" />
-          </TouchableOpacity>
-          <Text style={{ color: "#fff", fontSize: 18, fontWeight: "bold", marginLeft: 16 }}>
+        <AppHeader 
+          title="動員ちゃれんじ" 
+          showCharacters={false}
+          rightElement={
+            <View style={{ flexDirection: "row", alignItems: "center", gap: 16 }}>
+              <TouchableOpacity onPress={handleShare}>
+                <MaterialIcons name="share" size={24} color="#fff" />
+              </TouchableOpacity>
+              <TouchableOpacity
+                onPress={() => router.back()}
+                style={{ flexDirection: "row", alignItems: "center" }}
+              >
+                <MaterialIcons name="arrow-back" size={24} color="#fff" />
+                <Text style={{ color: "#fff", marginLeft: 8 }}>戻る</Text>
+              </TouchableOpacity>
+            </View>
+          }
+        />
+        <View style={{ paddingHorizontal: 16, paddingBottom: 8 }}>
+          <Text style={{ color: "#fff", fontSize: 18, fontWeight: "bold" }}>
             達成記念ページ
           </Text>
-          <View style={{ flex: 1 }} />
-          <TouchableOpacity onPress={handleShare}>
-            <MaterialIcons name="share" size={24} color="#fff" />
-          </TouchableOpacity>
         </View>
 
         {/* 達成バナー */}

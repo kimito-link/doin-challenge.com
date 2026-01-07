@@ -6,6 +6,7 @@ import { trpc } from "@/lib/trpc";
 import { useAuth } from "@/hooks/use-auth";
 import * as Haptics from "expo-haptics";
 import { Platform } from "react-native";
+import { AppHeader } from "@/components/app-header";
 
 type ReminderType = "day_before" | "day_of" | "hour_before" | "custom";
 
@@ -95,23 +96,27 @@ export default function ReminderSettingsScreen() {
     <ScreenContainer className="p-6">
       <ScrollView showsVerticalScrollIndicator={false}>
         {/* ヘッダー */}
-        <View className="flex-row items-center mb-6">
-          <TouchableOpacity
-            onPress={() => router.back()}
-            className="mr-4 p-2"
-          >
-            <Text className="text-2xl">←</Text>
-          </TouchableOpacity>
-          <View className="flex-1">
-            <Text className="text-2xl font-bold text-foreground">
-              リマインダー設定
+        <AppHeader 
+          title="動員ちゃれんじ" 
+          showCharacters={false}
+          rightElement={
+            <TouchableOpacity
+              onPress={() => router.back()}
+              className="flex-row items-center"
+            >
+              <Text className="text-foreground">← 戻る</Text>
+            </TouchableOpacity>
+          }
+        />
+        <View className="mb-6">
+          <Text className="text-2xl font-bold text-foreground">
+            リマインダー設定
+          </Text>
+          {challenge && (
+            <Text className="text-sm text-muted mt-1" numberOfLines={1}>
+              {challenge.title}
             </Text>
-            {challenge && (
-              <Text className="text-sm text-muted mt-1" numberOfLines={1}>
-                {challenge.title}
-              </Text>
-            )}
-          </View>
+          )}
         </View>
 
         {/* イベント日時 */}

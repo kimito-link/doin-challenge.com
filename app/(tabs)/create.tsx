@@ -11,6 +11,7 @@ import { useResponsive } from "@/hooks/use-responsive";
 import { FollowPromptBanner, FollowStatusBadge } from "@/components/follow-gate";
 import MaterialIcons from "@expo/vector-icons/MaterialIcons";
 import { LinearGradient } from "expo-linear-gradient";
+import { AppHeader } from "@/components/app-header";
 
 // キャラクター画像
 const characterImages = {
@@ -157,7 +158,12 @@ export default function CreateChallengeScreen() {
       >
         <ScrollView style={{ flex: 1, backgroundColor: "#0D1117" }}>
           {/* ヘッダー */}
-          <View style={{ paddingHorizontal: 16, paddingTop: 16, paddingBottom: 8 }}>
+          <AppHeader 
+            title="動員ちゃれんじ" 
+            showCharacters={false}
+            isDesktop={isDesktop}
+          />
+          <View style={{ paddingHorizontal: 16, paddingBottom: 8 }}>
             <Text style={{ color: "#fff", fontSize: 28, fontWeight: "bold" }}>
               チャレンジ作成
             </Text>

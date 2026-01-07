@@ -7,6 +7,7 @@ import { trpc } from "@/lib/trpc";
 import { useAuth } from "@/hooks/use-auth";
 import MaterialIcons from "@expo/vector-icons/MaterialIcons";
 import { LinearGradient } from "expo-linear-gradient";
+import { AppHeader } from "@/components/app-header";
 
 // 権限の日本語名
 const ROLE_NAMES: Record<string, string> = {
@@ -414,21 +415,26 @@ export default function CollaboratorsScreen() {
     <ScreenContainer>
       <ScrollView style={{ flex: 1 }} contentContainerStyle={{ padding: 16 }}>
         {/* ヘッダー */}
-        <View style={{ flexDirection: "row", alignItems: "center", marginBottom: 16 }}>
-          <TouchableOpacity
-            onPress={() => router.back()}
-            style={{ padding: 8, marginRight: 8 }}
-          >
-            <MaterialIcons name="arrow-back" size={24} color="#fff" />
-          </TouchableOpacity>
-          <View style={{ flex: 1 }}>
-            <Text style={{ color: "#fff", fontSize: 18, fontWeight: "bold" }}>
-              共同主催者管理
-            </Text>
-            <Text style={{ color: "#9CA3AF", fontSize: 14 }} numberOfLines={1}>
-              {challenge.title}
-            </Text>
-          </View>
+        <AppHeader 
+          title="動員ちゃれんじ" 
+          showCharacters={false}
+          rightElement={
+            <TouchableOpacity
+              onPress={() => router.back()}
+              style={{ flexDirection: "row", alignItems: "center" }}
+            >
+              <MaterialIcons name="arrow-back" size={24} color="#fff" />
+              <Text style={{ color: "#fff", marginLeft: 8 }}>戻る</Text>
+            </TouchableOpacity>
+          }
+        />
+        <View style={{ marginBottom: 16 }}>
+          <Text style={{ color: "#fff", fontSize: 18, fontWeight: "bold" }}>
+            共同主催者管理
+          </Text>
+          <Text style={{ color: "#9CA3AF", fontSize: 14 }} numberOfLines={1}>
+            {challenge.title}
+          </Text>
         </View>
 
         {/* 説明 */}

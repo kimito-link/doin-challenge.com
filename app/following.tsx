@@ -5,6 +5,7 @@ import { useState } from "react";
 import { ScreenContainer } from "@/components/screen-container";
 import { trpc } from "@/lib/trpc";
 import MaterialIcons from "@expo/vector-icons/MaterialIcons";
+import { AppHeader } from "@/components/app-header";
 
 export default function FollowingScreen() {
   const router = useRouter();
@@ -28,17 +29,25 @@ export default function FollowingScreen() {
   return (
     <ScreenContainer containerClassName="bg-[#0D1117]">
       {/* ヘッダー */}
+      <AppHeader 
+        title="動員ちゃれんじ" 
+        showCharacters={false}
+        rightElement={
+          <TouchableOpacity
+            onPress={() => router.back()}
+            style={{ flexDirection: "row", alignItems: "center" }}
+          >
+            <MaterialIcons name="arrow-back" size={24} color="#fff" />
+            <Text style={{ color: "#fff", marginLeft: 8 }}>戻る</Text>
+          </TouchableOpacity>
+        }
+      />
       <View style={{ 
-        flexDirection: "row", 
-        alignItems: "center", 
         paddingHorizontal: 16, 
         paddingVertical: 12,
         borderBottomWidth: 1,
         borderBottomColor: "#2D3139",
       }}>
-        <TouchableOpacity onPress={() => router.back()} style={{ marginRight: 16 }}>
-          <MaterialIcons name="arrow-back" size={24} color="#fff" />
-        </TouchableOpacity>
         <Text style={{ color: "#fff", fontSize: 18, fontWeight: "bold" }}>
           フォロー中
         </Text>

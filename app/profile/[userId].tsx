@@ -7,6 +7,7 @@ import { trpc } from "@/lib/trpc";
 import { useAuth } from "@/hooks/use-auth";
 import MaterialIcons from "@expo/vector-icons/MaterialIcons";
 import { LinearGradient } from "expo-linear-gradient";
+import { AppHeader } from "@/components/app-header";
 
 // バッジアイコンマッピング
 const badgeIcons: Record<string, string> = {
@@ -78,18 +79,25 @@ export default function ProfileScreen() {
         }
       >
         {/* ヘッダー */}
+        <AppHeader 
+          title="動員ちゃれんじ" 
+          showCharacters={false}
+          rightElement={
+            <TouchableOpacity
+              onPress={() => router.back()}
+              style={{ flexDirection: "row", alignItems: "center" }}
+            >
+              <MaterialIcons name="arrow-back" size={24} color="#fff" />
+              <Text style={{ color: "#fff", marginLeft: 8 }}>戻る</Text>
+            </TouchableOpacity>
+          }
+        />
         <LinearGradient
           colors={["#DD6500", "#EC4899", "#8B5CF6"]}
           start={{ x: 0, y: 0 }}
           end={{ x: 1, y: 1 }}
           style={{ padding: 20, paddingTop: 16 }}
         >
-          <TouchableOpacity
-            onPress={() => router.back()}
-            style={{ marginBottom: 16 }}
-          >
-            <MaterialIcons name="arrow-back" size={24} color="#fff" />
-          </TouchableOpacity>
 
           <View style={{ alignItems: "center" }}>
             {(profile.user as any)?.profileImage ? (
