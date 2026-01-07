@@ -1,4 +1,4 @@
-import { int, mysqlEnum, mysqlTable, text, timestamp, varchar, boolean } from "drizzle-orm/mysql-core";
+import { int, mysqlEnum, mysqlTable, text, timestamp, varchar, boolean, json } from "drizzle-orm/mysql-core";
 
 /**
  * Core user table backing auth flow.
@@ -60,6 +60,23 @@ export const challenges = mysqlTable("challenges", {
   // メタデータ
   createdAt: timestamp("createdAt").defaultNow().notNull(),
   updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
+  
+  // === AI向け最適化カラム（非正規化・1ホップ取得用） ===
+  // AIサマリー（チャレンジの盛り上がり状況をAIが要約）
+  aiSummary: text("aiSummary"),
+  // 意図タグ（チャレンジのカテゴリ・意図をタグ化）
+  intentTags: json("intentTags").$type<string[]>(),
+  // 地域サマリー（都道府県別参加者数の事前集計）
+  regionSummary: json("regionSummary").$type<Record<string, number>>(),
+  // 参加者サマリー（上位貢献者・最新メッセージなどを埋め込み）
+  participantSummary: json("participantSummary").$type<{
+    totalCount: number;
+    topContributors: Array<{ name: string; contribution: number; message?: string }>;
+    recentMessages: Array<{ name: string; message: string; createdAt: string }>;
+    hotRegion?: string;
+  }>(),
+  // AIサマリーの最終更新日時
+  aiSummaryUpdatedAt: timestamp("aiSummaryUpdatedAt"),
 });
 
 export type Challenge = typeof challenges.$inferSelect;
