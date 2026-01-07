@@ -225,6 +225,63 @@ function FilterButton({
   );
 }
 
+// 空の状態表示コンポーネント（サンプルデータ生成ボタン付き）
+function EmptyState({ onGenerateSamples }: { onGenerateSamples: () => void }) {
+  const [isGenerating, setIsGenerating] = useState(false);
+  const generateMutation = trpc.dev.generateSampleChallenges.useMutation();
+  const clearMutation = trpc.dev.clearSampleChallenges.useMutation();
+
+  const handleGenerateSamples = async () => {
+    setIsGenerating(true);
+    try {
+      await generateMutation.mutateAsync({ count: 6 });
+      onGenerateSamples();
+    } catch (error) {
+      console.error("サンプルデータ生成エラー:", error);
+    } finally {
+      setIsGenerating(false);
+    }
+  };
+
+  return (
+    <View style={{ flex: 1, alignItems: "center", justifyContent: "center", padding: 32, backgroundColor: "#0D1117" }}>
+      <View style={{ alignItems: "center", marginBottom: 16 }}>
+        <Image source={characterImages.linkIdol} style={{ width: 150, height: 200 }} contentFit="contain" />
+      </View>
+      <Text style={{ color: "#fff", fontSize: 18, fontWeight: "bold", marginBottom: 8 }}>
+        まだチャレンジがありません
+      </Text>
+      <Text style={{ color: "#9CA3AF", fontSize: 14, textAlign: "center", marginBottom: 24 }}>
+        「チャレンジ作成」タブから{"\n"}新しいチャレンジを作成しましょう
+      </Text>
+      
+      {/* 開発者向けサンプルデータ生成ボタン */}
+      <View style={{ marginTop: 16, padding: 16, backgroundColor: "#1A1D21", borderRadius: 12, borderWidth: 1, borderColor: "#2D3139" }}>
+        <Text style={{ color: "#9CA3AF", fontSize: 12, marginBottom: 12, textAlign: "center" }}>
+          🛠️ 開発者向け
+        </Text>
+        <TouchableOpacity
+          onPress={handleGenerateSamples}
+          disabled={isGenerating}
+          style={{
+            backgroundColor: isGenerating ? "#4B5563" : "#8B5CF6",
+            paddingHorizontal: 24,
+            paddingVertical: 12,
+            borderRadius: 8,
+            minHeight: 44,
+            justifyContent: "center",
+            alignItems: "center",
+          }}
+        >
+          <Text style={{ color: "#fff", fontWeight: "bold" }}>
+            {isGenerating ? "生成中..." : "サンプルチャレンジを生成"}
+          </Text>
+        </TouchableOpacity>
+      </View>
+    </View>
+  );
+}
+
 export default function HomeScreen() {
   const colors = useColors();
   const router = useRouter();
@@ -411,17 +468,7 @@ export default function HomeScreen() {
           columnWrapperStyle={{ justifyContent: "flex-start", gap: isDesktop ? 16 : 8 }}
         />
       ) : (
-        <View style={{ flex: 1, alignItems: "center", justifyContent: "center", padding: 32, backgroundColor: "#0D1117" }}>
-          <View style={{ alignItems: "center", marginBottom: 16 }}>
-            <Image source={characterImages.linkIdol} style={{ width: 150, height: 200 }} contentFit="contain" />
-          </View>
-          <Text style={{ color: "#fff", fontSize: 18, fontWeight: "bold", marginBottom: 8 }}>
-            まだチャレンジがありません
-          </Text>
-          <Text style={{ color: "#9CA3AF", fontSize: 14, textAlign: "center" }}>
-            「チャレンジ作成」タブから{"\n"}新しいチャレンジを作成しましょう
-          </Text>
-        </View>
+        <EmptyState onGenerateSamples={refetch} />
       )}
     </ScreenContainer>
   );
