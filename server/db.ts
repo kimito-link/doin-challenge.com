@@ -1,6 +1,6 @@
 import { eq, desc, and, sql } from "drizzle-orm";
 import { drizzle } from "drizzle-orm/mysql2";
-import { InsertUser, users, challenges, participations, InsertChallenge, InsertParticipation, notificationSettings, notifications, InsertNotificationSetting, InsertNotification, badges, userBadges, pickedComments, InsertBadge, InsertUserBadge, InsertPickedComment, cheers, achievementPages, InsertCheer, InsertAchievementPage, reminders, directMessages, challengeTemplates, InsertReminder, InsertDirectMessage, InsertChallengeTemplate, follows, searchHistory, InsertFollow, InsertSearchHistory, categories, invitations, invitationUses, InsertCategory, InsertInvitation, InsertInvitationUse } from "../drizzle/schema";
+import { InsertUser, users, challenges, participations, InsertChallenge, InsertParticipation, notificationSettings, notifications, InsertNotificationSetting, InsertNotification, badges, userBadges, pickedComments, InsertBadge, InsertUserBadge, InsertPickedComment, cheers, achievementPages, InsertCheer, InsertAchievementPage, reminders, directMessages, challengeTemplates, InsertReminder, InsertDirectMessage, InsertChallengeTemplate, follows, searchHistory, InsertFollow, InsertSearchHistory, categories, invitations, invitationUses, InsertCategory, InsertInvitation, InsertInvitationUse, participationCompanions, InsertParticipationCompanion } from "../drizzle/schema";
 
 // 後方互換性のためのエイリアス
 const events = challenges;
@@ -1053,5 +1053,60 @@ export async function getUserPublicProfile(userId: number) {
     },
     recentParticipations: participationList.slice(0, 10),
     badges: badgeDetails,
+  };
+}
+
+
+// ========== Participation Companions (一緒に参加する友人) ==========
+
+export async function createCompanion(companion: InsertParticipationCompanion) {
+  const db = await getDb();
+  if (!db) return null;
+  const result = await db.insert(participationCompanions).values(companion);
+  return result[0].insertId;
+}
+
+export async function createCompanions(companions: InsertParticipationCompanion[]) {
+  const db = await getDb();
+  if (!db) return [];
+  if (companions.length === 0) return [];
+  const result = await db.insert(participationCompanions).values(companions);
+  return result;
+}
+
+export async function getCompanionsForParticipation(participationId: number) {
+  const db = await getDb();
+  if (!db) return [];
+  return db.select().from(participationCompanions).where(eq(participationCompanions.participationId, participationId)).orderBy(participationCompanions.createdAt);
+}
+
+export async function getCompanionsForChallenge(challengeId: number) {
+  const db = await getDb();
+  if (!db) return [];
+  return db.select().from(participationCompanions).where(eq(participationCompanions.challengeId, challengeId)).orderBy(desc(participationCompanions.createdAt));
+}
+
+export async function deleteCompanion(id: number) {
+  const db = await getDb();
+  if (!db) return;
+  await db.delete(participationCompanions).where(eq(participationCompanions.id, id));
+}
+
+export async function deleteCompanionsForParticipation(participationId: number) {
+  const db = await getDb();
+  if (!db) return;
+  await db.delete(participationCompanions).where(eq(participationCompanions.participationId, participationId));
+}
+
+// 友人の招待実績を取得
+export async function getCompanionInviteStats(userId: number) {
+  const db = await getDb();
+  if (!db) return { totalInvited: 0, companions: [] };
+  
+  const companions = await db.select().from(participationCompanions).where(eq(participationCompanions.invitedByUserId, userId)).orderBy(desc(participationCompanions.createdAt));
+  
+  return {
+    totalInvited: companions.length,
+    companions,
   };
 }

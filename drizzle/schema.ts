@@ -605,3 +605,26 @@ export const oauthPkceData = mysqlTable("oauth_pkce_data", {
 
 export type OAuthPkceData = typeof oauthPkceData.$inferSelect;
 export type InsertOAuthPkceData = typeof oauthPkceData.$inferInsert;
+
+
+/**
+ * 参加者の友人テーブル（一緒に参加する友人）
+ */
+export const participationCompanions = mysqlTable("participation_companions", {
+  id: int("id").autoincrement().primaryKey(),
+  // 参加登録への紐付け
+  participationId: int("participationId").notNull(),
+  challengeId: int("challengeId").notNull(),
+  // 友人の情報
+  displayName: varchar("displayName", { length: 255 }).notNull(),
+  twitterUsername: varchar("twitterUsername", { length: 255 }),
+  twitterId: varchar("twitterId", { length: 64 }),
+  profileImage: text("profileImage"),
+  // 招待した人のユーザーID
+  invitedByUserId: int("invitedByUserId"),
+  // メタデータ
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+});
+
+export type ParticipationCompanion = typeof participationCompanions.$inferSelect;
+export type InsertParticipationCompanion = typeof participationCompanions.$inferInsert;

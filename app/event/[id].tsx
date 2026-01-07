@@ -223,7 +223,14 @@ function ContributionRanking({ participations }: { participations: Participation
 }
 
 // 応援メッセージカード
-function MessageCard({ participation, onCheer, cheerCount, onDM, challengeId }: { participation: Participation; onCheer?: () => void; cheerCount?: number; onDM?: (userId: number) => void; challengeId?: number }) {
+type CompanionDisplay = {
+  id: number;
+  displayName: string;
+  twitterUsername: string | null;
+  profileImage: string | null;
+};
+
+function MessageCard({ participation, onCheer, cheerCount, onDM, challengeId, companions }: { participation: Participation; onCheer?: () => void; cheerCount?: number; onDM?: (userId: number) => void; challengeId?: number; companions?: CompanionDisplay[] }) {
   return (
     <View
       style={{
@@ -285,6 +292,67 @@ function MessageCard({ participation, onCheer, cheerCount, onDM, challengeId }: 
           {participation.message}
         </Text>
       )}
+      {/* 一緒に参加する友人表示 */}
+      {companions && companions.length > 0 && (
+        <View style={{
+          backgroundColor: "#0D1117",
+          borderRadius: 8,
+          padding: 12,
+          marginBottom: 12,
+        }}>
+          <Text style={{ color: "#9CA3AF", fontSize: 12, marginBottom: 8 }}>
+            一緒に参加する友人:
+          </Text>
+          <View style={{ flexDirection: "row", flexWrap: "wrap", gap: 8 }}>
+            {companions.map((companion) => (
+              <View
+                key={companion.id}
+                style={{
+                  flexDirection: "row",
+                  alignItems: "center",
+                  backgroundColor: "#1A1D21",
+                  borderRadius: 16,
+                  paddingHorizontal: 10,
+                  paddingVertical: 6,
+                  borderWidth: 1,
+                  borderColor: "#2D3139",
+                }}
+              >
+                {companion.profileImage ? (
+                  <Image
+                    source={{ uri: companion.profileImage }}
+                    style={{ width: 20, height: 20, borderRadius: 10, marginRight: 6 }}
+                  />
+                ) : (
+                  <View
+                    style={{
+                      width: 20,
+                      height: 20,
+                      borderRadius: 10,
+                      backgroundColor: "#8B5CF6",
+                      alignItems: "center",
+                      justifyContent: "center",
+                      marginRight: 6,
+                    }}
+                  >
+                    <Text style={{ color: "#fff", fontSize: 10, fontWeight: "bold" }}>
+                      {companion.displayName.charAt(0)}
+                    </Text>
+                  </View>
+                )}
+                <Text style={{ color: "#fff", fontSize: 12 }}>
+                  {companion.displayName}
+                </Text>
+                {companion.twitterUsername && (
+                  <Text style={{ color: "#DD6500", fontSize: 11, marginLeft: 4 }}>
+                    @{companion.twitterUsername}
+                  </Text>
+                )}
+              </View>
+            ))}
+          </View>
+        </View>
+      )}
       {/* エール・ DMボタン */}
       <View style={{ flexDirection: "row", alignItems: "center", justifyContent: "flex-end", marginTop: 8, gap: 8 }}>
         {onDM && participation.userId && !participation.isAnonymous && (
@@ -336,11 +404,28 @@ export default function ChallengeDetailScreen() {
   const [allowVideoUse, setAllowVideoUse] = useState(true);
   const [selectedPrefectureFilter, setSelectedPrefectureFilter] = useState("all");
   const [showPrefectureFilterList, setShowPrefectureFilterList] = useState(false);
+  
+  // 友人追加用のstate
+  type Companion = {
+    id: string;
+    displayName: string;
+    twitterUsername: string;
+  };
+  const [companions, setCompanions] = useState<Companion[]>([]);
+  const [showAddCompanionForm, setShowAddCompanionForm] = useState(false);
+  const [newCompanionName, setNewCompanionName] = useState("");
+  const [newCompanionTwitter, setNewCompanionTwitter] = useState("");
 
   const challengeId = parseInt(id || "0", 10);
   
   const { data: challenge, isLoading: challengeLoading } = trpc.events.getById.useQuery({ id: challengeId });
   const { data: participations, isLoading: participationsLoading, refetch } = trpc.participations.listByEvent.useQuery({ eventId: challengeId });
+  
+  // 友人データを取得
+  const { data: challengeCompanions } = trpc.companions.forChallenge.useQuery(
+    { challengeId },
+    { enabled: challengeId > 0 }
+  );
   
   // フォロー状態
   const hostUserId = challenge?.hostUserId;
@@ -380,6 +465,7 @@ export default function ChallengeDetailScreen() {
       setMessage("");
       setCompanionCount(0);
       setPrefecture("");
+      setCompanions([]);
       setShowForm(false);
       refetch();
     },
@@ -391,6 +477,7 @@ export default function ChallengeDetailScreen() {
       setDisplayName("");
       setCompanionCount(0);
       setPrefecture("");
+      setCompanions([]);
       setShowForm(false);
       refetch();
     },
@@ -419,14 +506,46 @@ export default function ChallengeDetailScreen() {
     });
   };
 
+  // 友人追加ハンドラー
+  const handleAddCompanion = () => {
+    if (!newCompanionName.trim()) {
+      Alert.alert("エラー", "友人の名前を入力してください");
+      return;
+    }
+    const newCompanion: Companion = {
+      id: Date.now().toString(),
+      displayName: newCompanionName.trim(),
+      twitterUsername: newCompanionTwitter.trim().replace(/^@/, ""),
+    };
+    setCompanions([...companions, newCompanion]);
+    setNewCompanionName("");
+    setNewCompanionTwitter("");
+    setShowAddCompanionForm(false);
+    // companionCountも更新
+    setCompanionCount(companions.length + 1);
+  };
+
+  const handleRemoveCompanion = (id: string) => {
+    const updated = companions.filter(c => c.id !== id);
+    setCompanions(updated);
+    setCompanionCount(Math.max(0, updated.length));
+  };
+
   const handleSubmit = () => {
+    // 友人データを整形
+    const companionData = companions.map(c => ({
+      displayName: c.displayName,
+      twitterUsername: c.twitterUsername || undefined,
+    }));
+    
     if (user) {
       createParticipationMutation.mutate({
         challengeId,
         message,
-        companionCount,
+        companionCount: companions.length,
         prefecture,
         displayName: user.name || "ゲスト",
+        companions: companionData,
       });
     } else {
       if (!displayName.trim()) {
@@ -437,8 +556,9 @@ export default function ChallengeDetailScreen() {
         challengeId,
         displayName: displayName.trim(),
         message,
-        companionCount,
+        companionCount: companions.length,
         prefecture,
+        companions: companionData,
       });
     }
   };
@@ -994,15 +1114,22 @@ export default function ChallengeDetailScreen() {
                     // 都道府県でフィルター
                     return p.prefecture === selectedPrefectureFilter;
                   })
-                  .map((p: any) => (
-                    <MessageCard 
-                      key={p.id} 
-                      participation={p as Participation} 
-                      onCheer={() => handleSendCheer(p.id, p.userId)}
-                      onDM={(userId) => router.push(`/messages/${userId}?challengeId=${challengeId}` as never)}
-                      challengeId={challengeId}
-                    />
-                  ))}
+                  .map((p: any) => {
+                    // この参加者の友人をフィルター
+                    const participantCompanions = challengeCompanions?.filter(
+                      (c: any) => c.participationId === p.id
+                    ) || [];
+                    return (
+                      <MessageCard 
+                        key={p.id} 
+                        participation={p as Participation} 
+                        onCheer={() => handleSendCheer(p.id, p.userId)}
+                        onDM={(userId) => router.push(`/messages/${userId}?challengeId=${challengeId}` as never)}
+                        challengeId={challengeId}
+                        companions={participantCompanions}
+                      />
+                    );
+                  })}
                 
                 {participations.filter((p: any) => {
                   if (selectedPrefectureFilter === "all") return true;
@@ -1113,46 +1240,182 @@ export default function ChallengeDetailScreen() {
                   )}
                 </View>
 
+                {/* 一緒に参加する友人セクション */}
                 <View style={{ marginBottom: 16 }}>
-                  <Text style={{ color: "#9CA3AF", fontSize: 14, marginBottom: 8 }}>
-                    友達を何人連れて行きますか？
-                  </Text>
-                  <View style={{ flexDirection: "row", alignItems: "center" }}>
+                  <View style={{ flexDirection: "row", justifyContent: "space-between", alignItems: "center", marginBottom: 12 }}>
+                    <Text style={{ color: "#fff", fontSize: 16, fontWeight: "bold" }}>
+                      一緒に参加する友人（任意）
+                    </Text>
                     <TouchableOpacity
-                      onPress={() => setCompanionCount(Math.max(0, companionCount - 1))}
+                      onPress={() => setShowAddCompanionForm(true)}
                       style={{
-                        width: 44,
-                        height: 44,
-                        borderRadius: 22,
                         backgroundColor: "#2D3139",
+                        borderRadius: 8,
+                        paddingHorizontal: 12,
+                        paddingVertical: 8,
+                        flexDirection: "row",
                         alignItems: "center",
-                        justifyContent: "center",
                       }}
                     >
-                      <MaterialIcons name="remove" size={24} color="#fff" />
+                      <MaterialIcons name="person-add" size={16} color="#EC4899" />
+                      <Text style={{ color: "#EC4899", fontSize: 14, marginLeft: 6 }}>友人を追加</Text>
                     </TouchableOpacity>
-                    <Text style={{ color: "#fff", fontSize: 24, fontWeight: "bold", marginHorizontal: 24 }}>
-                      {companionCount}
-                    </Text>
-                    <TouchableOpacity
-                      onPress={() => setCompanionCount(companionCount + 1)}
-                      style={{
-                        width: 44,
-                        height: 44,
-                        borderRadius: 22,
-                        backgroundColor: "#EC4899",
-                        alignItems: "center",
-                        justifyContent: "center",
-                      }}
-                    >
-                      <MaterialIcons name="add" size={24} color="#fff" />
-                    </TouchableOpacity>
-                    <Text style={{ color: "#9CA3AF", fontSize: 14, marginLeft: 16 }}>
-                      人
-                    </Text>
                   </View>
-                  <Text style={{ color: "#6B7280", fontSize: 12, marginTop: 8 }}>
-                    あなたの貢献: {1 + companionCount}人
+
+                  {/* 友人追加フォーム */}
+                  {showAddCompanionForm && (
+                    <View style={{
+                      backgroundColor: "#0D1117",
+                      borderRadius: 12,
+                      padding: 16,
+                      marginBottom: 12,
+                      borderWidth: 1,
+                      borderColor: "#EC4899",
+                    }}>
+                      <Text style={{ color: "#9CA3AF", fontSize: 14, marginBottom: 8 }}>
+                        友人の名前 *
+                      </Text>
+                      <TextInput
+                        value={newCompanionName}
+                        onChangeText={setNewCompanionName}
+                        placeholder="ニックネーム"
+                        placeholderTextColor="#6B7280"
+                        style={{
+                          backgroundColor: "#1A1D21",
+                          borderRadius: 8,
+                          padding: 12,
+                          color: "#fff",
+                          borderWidth: 1,
+                          borderColor: "#2D3139",
+                          marginBottom: 12,
+                        }}
+                      />
+                      <Text style={{ color: "#9CA3AF", fontSize: 14, marginBottom: 8 }}>
+                        Twitterユーザー名（任意）
+                      </Text>
+                      <TextInput
+                        value={newCompanionTwitter}
+                        onChangeText={setNewCompanionTwitter}
+                        placeholder="@username"
+                        placeholderTextColor="#6B7280"
+                        autoCapitalize="none"
+                        style={{
+                          backgroundColor: "#1A1D21",
+                          borderRadius: 8,
+                          padding: 12,
+                          color: "#DD6500",
+                          borderWidth: 1,
+                          borderColor: "#2D3139",
+                          marginBottom: 12,
+                        }}
+                      />
+                      <View style={{ flexDirection: "row", gap: 12 }}>
+                        <TouchableOpacity
+                          onPress={() => {
+                            setShowAddCompanionForm(false);
+                            setNewCompanionName("");
+                            setNewCompanionTwitter("");
+                          }}
+                          style={{
+                            flex: 1,
+                            backgroundColor: "#2D3139",
+                            borderRadius: 8,
+                            padding: 12,
+                            alignItems: "center",
+                          }}
+                        >
+                          <Text style={{ color: "#9CA3AF" }}>キャンセル</Text>
+                        </TouchableOpacity>
+                        <TouchableOpacity
+                          onPress={handleAddCompanion}
+                          style={{
+                            flex: 1,
+                            backgroundColor: "#EC4899",
+                            borderRadius: 8,
+                            padding: 12,
+                            alignItems: "center",
+                          }}
+                        >
+                          <Text style={{ color: "#fff", fontWeight: "bold" }}>追加</Text>
+                        </TouchableOpacity>
+                      </View>
+                    </View>
+                  )}
+
+                  {/* 登録済み友人リスト */}
+                  {companions.length > 0 && (
+                    <View style={{ gap: 8 }}>
+                      {companions.map((companion) => (
+                        <View
+                          key={companion.id}
+                          style={{
+                            backgroundColor: "#0D1117",
+                            borderRadius: 12,
+                            padding: 12,
+                            flexDirection: "row",
+                            alignItems: "center",
+                            borderWidth: 1,
+                            borderColor: "#2D3139",
+                          }}
+                        >
+                          <View
+                            style={{
+                              width: 40,
+                              height: 40,
+                              borderRadius: 20,
+                              backgroundColor: "#EC4899",
+                              alignItems: "center",
+                              justifyContent: "center",
+                              marginRight: 12,
+                            }}
+                          >
+                            <Text style={{ color: "#fff", fontSize: 16, fontWeight: "bold" }}>
+                              {companion.displayName.charAt(0)}
+                            </Text>
+                          </View>
+                          <View style={{ flex: 1 }}>
+                            <Text style={{ color: "#fff", fontSize: 14, fontWeight: "600" }}>
+                              {companion.displayName}
+                            </Text>
+                            {companion.twitterUsername && (
+                              <Text style={{ color: "#DD6500", fontSize: 12 }}>
+                                @{companion.twitterUsername}
+                              </Text>
+                            )}
+                          </View>
+                          <TouchableOpacity
+                            onPress={() => handleRemoveCompanion(companion.id)}
+                            style={{ padding: 8 }}
+                          >
+                            <MaterialIcons name="close" size={20} color="#6B7280" />
+                          </TouchableOpacity>
+                        </View>
+                      ))}
+                    </View>
+                  )}
+
+                  {/* 貢献度表示 */}
+                  <View style={{
+                    backgroundColor: "#0D1117",
+                    borderRadius: 8,
+                    padding: 12,
+                    marginTop: 12,
+                    flexDirection: "row",
+                    alignItems: "center",
+                    justifyContent: "space-between",
+                  }}>
+                    <Text style={{ color: "#9CA3AF", fontSize: 14 }}>
+                      あなたの貢献
+                    </Text>
+                    <View style={{ flexDirection: "row", alignItems: "baseline" }}>
+                      <Text style={{ color: "#EC4899", fontSize: 24, fontWeight: "bold" }}>
+                        {1 + companions.length}
+                      </Text>
+                      <Text style={{ color: "#9CA3AF", fontSize: 14, marginLeft: 4 }}>人</Text>
+                    </View>
+                  </View>
+                  <Text style={{ color: "#6B7280", fontSize: 11, marginTop: 8 }}>
+                    ※ 自分 + 友人{companions.length}人 = {1 + companions.length}人の貢献になります
                   </Text>
                 </View>
 

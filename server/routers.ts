@@ -132,6 +132,13 @@ export const appRouter = router({
         displayName: z.string(),
         username: z.string().optional(),
         profileImage: z.string().optional(),
+        // 一緒に参加する友人（名前付き）
+        companions: z.array(z.object({
+          displayName: z.string(),
+          twitterUsername: z.string().optional(),
+          twitterId: z.string().optional(),
+          profileImage: z.string().optional(),
+        })).optional(),
       }))
       .mutation(async ({ ctx, input }) => {
         const participationId = await db.createParticipation({
@@ -146,6 +153,21 @@ export const appRouter = router({
           prefecture: input.prefecture,
           isAnonymous: false,
         });
+        
+        // 友人を登録
+        if (input.companions && input.companions.length > 0 && participationId) {
+          const companionRecords = input.companions.map(c => ({
+            participationId,
+            challengeId: input.challengeId,
+            displayName: c.displayName,
+            twitterUsername: c.twitterUsername,
+            twitterId: c.twitterId,
+            profileImage: c.profileImage,
+            invitedByUserId: ctx.user.id,
+          }));
+          await db.createCompanions(companionRecords);
+        }
+        
         return { id: participationId };
       }),
 
@@ -157,6 +179,13 @@ export const appRouter = router({
         message: z.string().optional(),
         companionCount: z.number().default(0),
         prefecture: z.string().optional(),
+        // 一緒に参加する友人（名前付き）
+        companions: z.array(z.object({
+          displayName: z.string(),
+          twitterUsername: z.string().optional(),
+          twitterId: z.string().optional(),
+          profileImage: z.string().optional(),
+        })).optional(),
       }))
       .mutation(async ({ input }) => {
         const participationId = await db.createParticipation({
@@ -167,6 +196,20 @@ export const appRouter = router({
           prefecture: input.prefecture,
           isAnonymous: true,
         });
+        
+        // 友人を登録
+        if (input.companions && input.companions.length > 0 && participationId) {
+          const companionRecords = input.companions.map(c => ({
+            participationId,
+            challengeId: input.challengeId,
+            displayName: c.displayName,
+            twitterUsername: c.twitterUsername,
+            twitterId: c.twitterId,
+            profileImage: c.profileImage,
+          }));
+          await db.createCompanions(companionRecords);
+        }
+        
         return { id: participationId };
       }),
 
@@ -957,6 +1000,43 @@ Design requirements:
       .input(z.object({ userId: z.number() }))
       .query(async ({ input }) => {
         return db.getUserPublicProfile(input.userId);
+      }),
+  }),
+
+  // 友人（コンパニオン）関連
+  companions: router({
+    // 参加者の友人一覧を取得
+    forParticipation: publicProcedure
+      .input(z.object({ participationId: z.number() }))
+      .query(async ({ input }) => {
+        return db.getCompanionsForParticipation(input.participationId);
+      }),
+
+    // チャレンジの友人一覧を取得
+    forChallenge: publicProcedure
+      .input(z.object({ challengeId: z.number() }))
+      .query(async ({ input }) => {
+        return db.getCompanionsForChallenge(input.challengeId);
+      }),
+
+    // 自分が招待した友人の統計
+    myInviteStats: protectedProcedure
+      .query(async ({ ctx }) => {
+        return db.getCompanionInviteStats(ctx.user.id);
+      }),
+
+    // 友人を削除
+    delete: protectedProcedure
+      .input(z.object({ id: z.number() }))
+      .mutation(async ({ ctx, input }) => {
+        // 自分が招待した友人のみ削除可能
+        const stats = await db.getCompanionInviteStats(ctx.user.id);
+        const companion = stats.companions.find(c => c.id === input.id);
+        if (!companion) {
+          throw new Error("Unauthorized");
+        }
+        await db.deleteCompanion(input.id);
+        return { success: true };
       }),
   }),
 
