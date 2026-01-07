@@ -6,6 +6,7 @@ import { useLocalSearchParams, useRouter } from "expo-router";
 import { useEffect, useState } from "react";
 import { ActivityIndicator, Text } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
+import { saveLoginSuccessPending } from "@/lib/login-success-context";
 
 export default function OAuthCallback() {
   const router = useRouter();
@@ -54,6 +55,8 @@ export default function OAuthCallback() {
               };
               await Auth.setUserInfo(userInfo);
               console.log("[OAuth] User info stored:", userInfo);
+              // ログイン成功を保存（モーダル表示用）
+              await saveLoginSuccessPending(userInfo.name || undefined, (userData as { profileImage?: string }).profileImage);
             } catch (err) {
               console.error("[OAuth] Failed to parse user data:", err);
             }
@@ -205,6 +208,8 @@ export default function OAuthCallback() {
             };
             await Auth.setUserInfo(userInfo);
             console.log("[OAuth] User info stored:", userInfo);
+            // ログイン成功を保存（モーダル表示用）
+            await saveLoginSuccessPending(userInfo.name || undefined, (result.user as { profileImage?: string }).profileImage);
           } else {
             console.log("[OAuth] No user data in result");
           }
