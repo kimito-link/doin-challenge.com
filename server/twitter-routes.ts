@@ -89,8 +89,30 @@ export function registerTwitterRoutes(app: Express) {
       
       console.log("[Twitter OAuth 2.0] User profile retrieved:", userProfile.username);
 
-      // Skip follow check for now - will be done separately after login
-      // This avoids scope permission issues during initial auth
+      // Check follow status for premium features
+      let isFollowingTarget = false;
+      let targetAccount = null;
+      
+      try {
+        // Check if user follows @idolfunch
+        const followStatus = await checkFollowStatus(tokens.access_token, userProfile.id, "idolfunch");
+        isFollowingTarget = followStatus.isFollowing;
+        targetAccount = followStatus.targetUser;
+        console.log("[Twitter OAuth 2.0] Follow status for @idolfunch:", isFollowingTarget);
+        
+        // If not following @idolfunch, also check @streamerfunch
+        if (!isFollowingTarget) {
+          const followStatus2 = await checkFollowStatus(tokens.access_token, userProfile.id, "streamerfunch");
+          isFollowingTarget = followStatus2.isFollowing;
+          if (isFollowingTarget) {
+            targetAccount = followStatus2.targetUser;
+          }
+          console.log("[Twitter OAuth 2.0] Follow status for @streamerfunch:", followStatus2.isFollowing);
+        }
+      } catch (followError) {
+        console.error("[Twitter OAuth 2.0] Follow check error (non-fatal):", followError);
+        // Continue without follow status - user can still login
+      }
       
       // Build user data object
       const userData = {
@@ -103,8 +125,8 @@ export function registerTwitterRoutes(app: Express) {
         description: userProfile.description || "",
         accessToken: tokens.access_token,
         refreshToken: tokens.refresh_token,
-        isFollowingTarget: false, // Will be checked separately
-        targetAccount: null,
+        isFollowingTarget,
+        targetAccount,
       };
 
       // Encode user data for redirect

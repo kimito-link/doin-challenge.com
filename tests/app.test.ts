@@ -3,7 +3,7 @@ import { describe, it, expect } from "vitest";
 describe("動員ちゃれんじ App Configuration", () => {
   it("should have correct app name", async () => {
     const config = await import("../app.config");
-    expect(config.default.name).toBe("動員ちゃれんじ");
+    expect(config.default.name).toBe("君斗りんくの動員ちゃれんじ");
   });
 
   it("should have correct app slug", async () => {
