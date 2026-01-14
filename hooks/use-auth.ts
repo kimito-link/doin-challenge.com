@@ -110,7 +110,7 @@ export function useAuth(options?: UseAuthOptions) {
     }
   }, []);
 
-  const login = useCallback(async () => {
+  const login = useCallback(async (returnUrl?: string) => {
     try {
       let loginUrl: string;
       
@@ -119,6 +119,12 @@ export function useAuth(options?: UseAuthOptions) {
         // Pattern: 8081-sandboxid.region.domain -> 3000-sandboxid.region.domain
         const { protocol, hostname } = window.location;
         const apiHostname = hostname.replace(/^8081-/, "3000-");
+        
+        // ログイン後のリダイレクト先を保存（指定がなければ現在のページ）
+        const redirectPath = returnUrl || window.location.pathname;
+        localStorage.setItem("auth_return_url", redirectPath);
+        console.log("[Auth] Saved return URL:", redirectPath);
+        
         loginUrl = `${protocol}//${apiHostname}/api/twitter/auth`;
         console.log("[Auth] Web login URL:", loginUrl);
         window.location.href = loginUrl;

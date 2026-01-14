@@ -1023,8 +1023,31 @@ export async function getUserPublicProfile(userId: number) {
   if (userResult.length === 0) return null;
   const user = userResult[0];
   
-  // 参加履歴
-  const participationList = await db.select().from(participations).where(eq(participations.userId, userId)).orderBy(desc(participations.createdAt));
+  // 参加履歴（チャレンジ情報も含む）
+  const participationList = await db
+    .select({
+      id: participations.id,
+      challengeId: participations.challengeId,
+      displayName: participations.displayName,
+      username: participations.username,
+      profileImage: participations.profileImage,
+      message: participations.message,
+      contribution: participations.contribution,
+      prefecture: participations.prefecture,
+      createdAt: participations.createdAt,
+      // チャレンジ情報
+      challengeTitle: challenges.title,
+      challengeEventDate: challenges.eventDate,
+      challengeVenue: challenges.venue,
+      challengeGoalType: challenges.goalType,
+      challengeHostName: challenges.hostName,
+      challengeHostUsername: challenges.hostUsername,
+      challengeCategoryId: challenges.categoryId,
+    })
+    .from(participations)
+    .innerJoin(challenges, eq(participations.challengeId, challenges.id))
+    .where(eq(participations.userId, userId))
+    .orderBy(desc(participations.createdAt));
   
   // 獲得バッジ
   const badgeList = await db.select().from(userBadges).where(eq(userBadges.userId, userId)).orderBy(desc(userBadges.earnedAt));
@@ -1035,13 +1058,25 @@ export async function getUserPublicProfile(userId: number) {
   const totalContribution = participationList.reduce((sum, p) => sum + (p.contribution || 1), 0);
   const challengeIds = [...new Set(participationList.map(p => p.challengeId))];
   
+  // カテゴリ別の参加数を集計
+  const categoryStats: Record<number, number> = {};
+  participationList.forEach(p => {
+    const categoryId = p.challengeCategoryId || 0;
+    categoryStats[categoryId] = (categoryStats[categoryId] || 0) + 1;
+  });
+  
   // 主催チャレンジ数
   const hostedChallenges = await db.select({ count: sql<number>`count(*)` }).from(challenges).where(eq(challenges.hostUserId, userId));
+  
+  // 最新の参加情報からプロフィール情報を取得
+  const latestParticipation = participationList[0];
   
   return {
     user: {
       id: user.id,
-      name: user.name,
+      name: user.name || latestParticipation?.displayName || "ユーザー",
+      username: latestParticipation?.username || null,
+      profileImage: latestParticipation?.profileImage || null,
       createdAt: user.createdAt,
     },
     stats: {
@@ -1051,7 +1086,8 @@ export async function getUserPublicProfile(userId: number) {
       hostedCount: hostedChallenges[0]?.count || 0,
       badgeCount: badgeList.length,
     },
-    recentParticipations: participationList.slice(0, 10),
+    categoryStats,
+    participations: participationList,
     badges: badgeDetails,
   };
 }
@@ -1352,4 +1388,14 @@ export async function refreshAllChallengeSummaries() {
   }
 
   return { updated, total: allChallenges.length };
+}
+
+
+// ========== User Profile (ユーザープロフィール) ==========
+
+export async function getUserById(userId: number) {
+  const db = await getDb();
+  if (!db) return null;
+  const result = await db.select().from(users).where(eq(users.id, userId)).limit(1);
+  return result[0] || null;
 }

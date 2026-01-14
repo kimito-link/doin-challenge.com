@@ -1274,7 +1274,7 @@ export default function ChallengeDetailScreen() {
                       参加表明にはTwitterログインが必要です。
                     </Text>
                     <TouchableOpacity
-                      onPress={login}
+                      onPress={() => login()}
                       style={{
                         backgroundColor: "#1DA1F2",
                         borderRadius: 8,
@@ -1763,9 +1763,9 @@ export default function ChallengeDetailScreen() {
                     alignItems: "center",
                   }}
                 >
-                  <MaterialIcons name="info" size={20} color="#fff" />
+                  <MaterialIcons name="favorite" size={20} color="#fff" />
                   <Text style={{ color: "#fff", fontSize: 12, marginLeft: 8, flex: 1 }}>
-                    参加条件: @idolfunch のTwitterフォロー必須！
+                    @idolfunch をフォローすると特典がもらえるかも？
                   </Text>
                   <TouchableOpacity
                     onPress={() => Linking.openURL("https://twitter.com/idolfunch")}

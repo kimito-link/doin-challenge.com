@@ -320,10 +320,10 @@ export function FollowPromptBanner({
           </View>
           <View style={{ flex: 1, marginLeft: 12 }}>
             <Text style={{ color: "#fff", fontSize: 14, fontWeight: "bold" }}>
-              プレミアム機能を解放しよう！
+              フォローで特典をゲット！
             </Text>
             <Text style={{ color: "#9CA3AF", fontSize: 12, marginTop: 2 }}>
-              @{targetUsername}をフォローすると全機能が使えます
+              @{targetUsername}をフォローすると特別な特典がもらえるかも？
             </Text>
           </View>
           <MaterialIcons name="chevron-right" size={24} color="#EC4899" />
@@ -394,21 +394,21 @@ export function FollowStatusBadge({ isFollowing }: { isFollowing: boolean }) {
       style={{
         flexDirection: "row",
         alignItems: "center",
-        backgroundColor: "#6B728020",
+        backgroundColor: "#EC489920",
         paddingHorizontal: 8,
         paddingVertical: 4,
         borderRadius: 8,
       }}
     >
-      <MaterialIcons name="lock" size={14} color="#6B7280" />
+      <MaterialIcons name="star-outline" size={14} color="#EC4899" />
       <Text
         style={{
-          color: "#6B7280",
+          color: "#EC4899",
           fontSize: 12,
           marginLeft: 4,
         }}
       >
-        フォロー必須
+        フォローで特典
       </Text>
     </View>
   );

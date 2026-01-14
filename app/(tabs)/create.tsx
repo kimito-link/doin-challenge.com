@@ -214,7 +214,7 @@ export default function CreateChallengeScreen() {
               {/* Twitterログインボタン */}
               {!user && (
                 <TouchableOpacity
-                  onPress={login}
+                  onPress={() => login()}
                   style={{
                     backgroundColor: "#1DA1F2",
                     borderRadius: 12,

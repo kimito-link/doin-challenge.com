@@ -19,6 +19,7 @@ export default function TwitterOAuthCallback() {
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [showFollowSuccessModal, setShowFollowSuccessModal] = useState(false);
   const [targetAccountInfo, setTargetAccountInfo] = useState<{ username: string; name: string } | null>(null);
+  const [savedReturnUrl, setSavedReturnUrl] = useState<string>("/(tabs)/mypage");
   const isFollowingRef = useRef(false);
 
   useEffect(() => {
@@ -99,6 +100,18 @@ export default function TwitterOAuthCallback() {
           setStatus("success");
           console.log("[Twitter OAuth] Authentication successful");
           
+          // ログイン前に保存したリダイレクト先を取得
+          let returnUrl = "/(tabs)/mypage";
+          if (typeof window !== "undefined") {
+            const savedUrl = localStorage.getItem("auth_return_url");
+            if (savedUrl) {
+              returnUrl = savedUrl;
+              localStorage.removeItem("auth_return_url");
+              console.log("[Twitter OAuth] Using saved return URL:", returnUrl);
+            }
+          }
+          setSavedReturnUrl(returnUrl);
+          
           // フォローしている場合はお祝いモーダルを表示
           if (userData.isFollowingTarget) {
             isFollowingRef.current = true;
@@ -110,18 +123,19 @@ export default function TwitterOAuthCallback() {
               console.log("[Twitter OAuth] Showing follow success modal");
               setShowFollowSuccessModal(true);
               await AsyncStorage.setItem(FOLLOW_SUCCESS_SHOWN_KEY, "true");
+              // モーダルを閉じたら保存したリダイレクト先に移動（後でモーダルのonCloseで処理）
             } else {
               // 既に表示済みの場合は直接リダイレクト
               setTimeout(() => {
-                console.log("[Twitter OAuth] Executing redirect...");
-                router.replace("/(tabs)/mypage");
+                console.log("[Twitter OAuth] Executing redirect to:", returnUrl);
+                router.replace(returnUrl as any);
               }, 1500);
             }
           } else {
             // フォローしていない場合は直接リダイレクト
             setTimeout(() => {
-              console.log("[Twitter OAuth] Executing redirect...");
-              router.replace("/(tabs)/mypage");
+              console.log("[Twitter OAuth] Executing redirect to:", returnUrl);
+              router.replace(returnUrl as any);
             }, 1500);
           }
         } catch (parseError) {
@@ -189,8 +203,9 @@ export default function TwitterOAuthCallback() {
           visible={showFollowSuccessModal}
           onClose={() => {
             setShowFollowSuccessModal(false);
-            // モーダルを閉じたらマイページにリダイレクト
-            router.replace("/(tabs)/mypage");
+            // モーダルを閉じたら保存したリダイレクト先に移動
+            console.log("[Twitter OAuth] Modal closed, redirecting to:", savedReturnUrl);
+            router.replace(savedReturnUrl as any);
           }}
           targetUsername={targetAccountInfo?.username || "idolfunch"}
           targetDisplayName={targetAccountInfo?.name || "君斗りんく"}
