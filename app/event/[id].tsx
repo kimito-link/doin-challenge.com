@@ -836,20 +836,33 @@ export default function ChallengeDetailScreen() {
       },
       onError: (error: any) => {
         console.error('Participation creation failed:', error);
+        console.error('Error details:', JSON.stringify(error, null, 2));
         setShowConfirmation(false);
         
         // UNAUTHORIZEDエラーの場合は再ログインを促す
-        if (error.message?.includes('UNAUTHORIZED') || error.data?.code === 'UNAUTHORIZED') {
+        const isUnauthorized = 
+          error.message?.includes('UNAUTHORIZED') || 
+          error.data?.code === 'UNAUTHORIZED' ||
+          error.message?.includes('Invalid session') ||
+          error.message?.includes('FORBIDDEN');
+        
+        if (isUnauthorized) {
           Alert.alert(
             "セッションが切れました",
-            "再度ログインしてください。",
+            "ログインし直してから、もう一度参加表明してください。",
             [
               { text: "キャンセル", style: "cancel" },
               { text: "ログイン", onPress: login },
             ]
           );
+        } else {
+          // その他のエラー
+          Alert.alert(
+            "エラー",
+            `参加表明の送信に失敗しました。\nもう一度お試しください。`,
+            [{ text: "OK" }]
+          );
         }
-        // その他のエラーはmutationのonErrorで処理される
       },
     });
   };
