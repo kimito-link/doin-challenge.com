@@ -1408,9 +1408,14 @@ export default function ChallengeDetailScreen() {
                 )}
 
                 <View style={{ marginBottom: 16 }}>
-                  <Text style={{ color: "#9CA3AF", fontSize: 14, marginBottom: 8 }}>
-                    都道府県
-                  </Text>
+                  <View style={{ flexDirection: "row", alignItems: "center", marginBottom: 8 }}>
+                    <Text style={{ color: "#9CA3AF", fontSize: 14 }}>
+                      都道府県
+                    </Text>
+                    <Text style={{ color: "#EC4899", fontSize: 12, marginLeft: 6, fontWeight: "bold" }}>
+                      必須
+                    </Text>
+                  </View>
                   <TouchableOpacity
                     onPress={() => setShowPrefectureList(!showPrefectureList)}
                     style={{
@@ -1418,7 +1423,7 @@ export default function ChallengeDetailScreen() {
                       borderRadius: 8,
                       padding: 12,
                       borderWidth: 1,
-                      borderColor: "#2D3139",
+                      borderColor: prefecture ? "#22C55E" : "#EC4899",
                       flexDirection: "row",
                       justifyContent: "space-between",
                       alignItems: "center",
@@ -1863,17 +1868,18 @@ export default function ChallengeDetailScreen() {
                   </TouchableOpacity>
                   <TouchableOpacity
                     onPress={handleSubmit}
-                    disabled={createParticipationMutation.isPending || createAnonymousMutation.isPending}
+                    disabled={createParticipationMutation.isPending || createAnonymousMutation.isPending || !prefecture}
                     style={{
                       flex: 1,
                       borderRadius: 12,
                       padding: 16,
                       alignItems: "center",
                       overflow: "hidden",
+                      opacity: !prefecture ? 0.5 : 1,
                     }}
                   >
                     <LinearGradient
-                      colors={["#EC4899", "#8B5CF6"]}
+                      colors={!prefecture ? ["#6B7280", "#4B5563"] : ["#EC4899", "#8B5CF6"]}
                       start={{ x: 0, y: 0 }}
                       end={{ x: 1, y: 0 }}
                       style={{
@@ -1885,7 +1891,7 @@ export default function ChallengeDetailScreen() {
                       }}
                     />
                     <Text style={{ color: "#fff", fontSize: 16, fontWeight: "bold" }}>
-                      参加表明する
+                      {!prefecture ? "都道府県を選択してください" : "参加表明する"}
                     </Text>
                   </TouchableOpacity>
                 </View>
