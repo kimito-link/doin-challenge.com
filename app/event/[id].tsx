@@ -808,16 +808,19 @@ export default function ChallengeDetailScreen() {
     
     console.log('Submitting participation:', submitData);
     
-    try {
-      // 直接mutateAsyncを呼び出して結果を待つ
-      await createParticipationMutation.mutateAsync(submitData);
-      // 成功時に確認画面を閉じる（onSuccessで処理される）
-      setShowConfirmation(false);
-    } catch (error) {
-      // エラー時は確認画面を閉じる（onErrorでアラートが表示される）
-      setShowConfirmation(false);
-      console.error('Participation submission failed:', error);
-    }
+    // mutateを使用（onSuccess/onErrorハンドラーで処理）
+    createParticipationMutation.mutate(submitData, {
+      onSuccess: () => {
+        console.log('Participation created successfully');
+        // 確認画面を閉じる
+        setShowConfirmation(false);
+      },
+      onError: (error) => {
+        console.error('Participation creation failed:', error);
+        // エラー時も確認画面を閉じる（エラーアラートはmutationのonErrorで表示される）
+        setShowConfirmation(false);
+      },
+    });
   };
 
   if (challengeLoading) {
