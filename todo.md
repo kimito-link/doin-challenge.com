@@ -473,3 +473,10 @@
 - [x] 画像読み込み速度の改善（スケルトンローダー、プレースホルダー）
 
 - [x] React Hooksエラー「Rendered more hooks than during the previous render」を修正
+
+
+## パフォーマンス改善・UI改善（v4.2）
+
+- [x] 参加表明の名前入力欄を削除（Twitterアカウント名を自動使用）
+- [x] チャレンジカードの画像最適化（OptimizedImageコンポーネント適用）
+- [x] プリフェッチ機能（次に表示されそうな画像を事前読み込み）

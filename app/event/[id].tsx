@@ -625,18 +625,9 @@ export default function ChallengeDetailScreen() {
         companions: companionData,
       });
     } else {
-      if (!displayName.trim()) {
-        Alert.alert("エラー", "お名前を入力してください");
-        return;
-      }
-      createAnonymousMutation.mutate({
-        challengeId,
-        displayName: displayName.trim(),
-        message,
-        companionCount: companions.length,
-        prefecture,
-        companions: companionData,
-      });
+      // 未ログインの場合はログインを促す
+      Alert.alert("ログインが必要です", "参加表明にはTwitterログインが必要です。マイページからログインしてください。");
+      return;
     }
   };
 
@@ -1242,25 +1233,27 @@ export default function ChallengeDetailScreen() {
                   参加表明
                 </Text>
 
-                {!user && (
-                  <View style={{ marginBottom: 16 }}>
-                    <Text style={{ color: "#9CA3AF", fontSize: 14, marginBottom: 8 }}>
-                      お名前 *
+                {/* ログインユーザーの場合はTwitterアカウント名を表示 */}
+                {user && (
+                  <View style={{ marginBottom: 16, backgroundColor: "#1A1D21", borderRadius: 8, padding: 12, borderWidth: 1, borderColor: "#2D3139" }}>
+                    <Text style={{ color: "#9CA3AF", fontSize: 12, marginBottom: 4 }}>
+                      参加者名
                     </Text>
-                    <TextInput
-                      value={displayName}
-                      onChangeText={setDisplayName}
-                      placeholder="ニックネーム"
-                      placeholderTextColor="#6B7280"
-                      style={{
-                        backgroundColor: "#0D1117",
-                        borderRadius: 8,
-                        padding: 12,
-                        color: "#fff",
-                        borderWidth: 1,
-                        borderColor: "#2D3139",
-                      }}
-                    />
+                    <Text style={{ color: "#fff", fontSize: 16, fontWeight: "600" }}>
+                      {user.name || user.username || "ゲスト"}
+                    </Text>
+                  </View>
+                )}
+
+                {/* 未ログインの場合はログインを促す */}
+                {!user && (
+                  <View style={{ marginBottom: 16, backgroundColor: "rgba(236, 72, 153, 0.1)", borderRadius: 12, padding: 16, borderWidth: 1, borderColor: "#EC4899" }}>
+                    <Text style={{ color: "#EC4899", fontSize: 14, fontWeight: "600", marginBottom: 8 }}>
+                      ログインが必要です
+                    </Text>
+                    <Text style={{ color: "#9CA3AF", fontSize: 13, marginBottom: 12 }}>
+                      参加表明にはTwitterログインが必要です。マイページからログインしてください。
+                    </Text>
                   </View>
                 )}
 

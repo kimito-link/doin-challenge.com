@@ -17,6 +17,8 @@ import { CachedDataIndicator } from "@/components/offline-banner";
 import { useNetworkStatus } from "@/hooks/use-offline-cache";
 import { setCache, getCache, CACHE_KEYS } from "@/lib/offline-cache";
 import { ChallengeCardSkeleton, Skeleton } from "@/components/skeleton-loader";
+import { OptimizedImage, OptimizedAvatar } from "@/components/optimized-image";
+import { prefetchChallengeImages } from "@/lib/image-prefetch";
 
 // キャラクター画像
 const characterImages = {
@@ -500,9 +502,19 @@ function ChallengeCard({ challenge, onPress, numColumns = 2 }: { challenge: Chal
         <View style={{ position: "absolute", top: 8, right: 8 }}>
           <MaterialIcons name={goalConfig.icon as any} size={16} color="rgba(255,255,255,0.7)" />
         </View>
+        {/* ホストプロフィール画像 */}
+        {challenge.hostProfileImage && (
+          <View style={{ position: "absolute", bottom: -16, left: 12 }}>
+            <OptimizedAvatar
+              source={{ uri: challenge.hostProfileImage }}
+              size={32}
+              fallbackColor="#EC4899"
+            />
+          </View>
+        )}
       </LinearGradient>
 
-      <View style={{ padding: 16 }}>
+      <View style={{ padding: 16, paddingTop: challenge.hostProfileImage ? 20 : 16 }}>
         {/* タイトル */}
         <Text
           style={{ color: "#fff", fontSize: 14, fontWeight: "bold", marginBottom: 4 }}
@@ -709,6 +721,14 @@ export default function HomeScreen() {
     if (challenges && challenges.length > 0) {
       setCache(CACHE_KEYS.challenges, challenges);
       setIsStaleData(false);
+    }
+  }, [challenges]);
+
+  // チャレンジの画像をプリフェッチ（事前読み込み）
+  useEffect(() => {
+    if (challenges && challenges.length > 0) {
+      // 最初の10件の画像をプリフェッチ
+      prefetchChallengeImages(challenges.slice(0, 10));
     }
   }, [challenges]);
 
