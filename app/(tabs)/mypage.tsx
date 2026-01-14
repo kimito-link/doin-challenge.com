@@ -96,7 +96,7 @@ const getRandomPattern = () => {
 export default function MyPageScreen() {
   const router = useRouter();
   const { user, loading, login, logout, isAuthenticated } = useAuth();
-  const { isFollowing, targetUsername, targetDisplayName, updateFollowStatus } = useFollowStatus();
+  const { isFollowing, targetUsername, targetDisplayName, updateFollowStatus, refreshFromServer, refreshing } = useFollowStatus();
   const { isDesktop, isTablet } = useResponsive();
   const [isLoggingIn, setIsLoggingIn] = useState(false);
   const [loginPattern, setLoginPattern] = useState(() => getRandomPattern());
@@ -699,6 +699,8 @@ export default function MyPageScreen() {
               isFollowing={isFollowing}
               targetUsername={targetUsername}
               targetDisplayName={targetDisplayName}
+              onRelogin={login}
+              refreshing={refreshing}
             />
           )}
 
