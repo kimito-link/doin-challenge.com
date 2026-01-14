@@ -582,6 +582,9 @@ export default function ChallengeDetailScreen() {
         companionCount: companions.length,
         prefecture,
         displayName: user.name || "ゲスト",
+        username: user.username,
+        profileImage: user.profileImage,
+
         companions: companionData,
       });
     } else {
@@ -1187,15 +1190,38 @@ export default function ChallengeDetailScreen() {
                   参加表明
                 </Text>
 
-                {/* ログインユーザーの場合はTwitterアカウント名を表示 */}
+                {/* ログインユーザーの場合はTwitterアカウント情報を表示 */}
                 {user && (
-                  <View style={{ marginBottom: 16, backgroundColor: "#1A1D21", borderRadius: 8, padding: 12, borderWidth: 1, borderColor: "#2D3139" }}>
-                    <Text style={{ color: "#9CA3AF", fontSize: 12, marginBottom: 4 }}>
-                      参加者名
+                  <View style={{ marginBottom: 16, backgroundColor: "#0D1117", borderRadius: 12, padding: 16, borderWidth: 1, borderColor: "#2D3139" }}>
+                    <Text style={{ color: "#9CA3AF", fontSize: 12, marginBottom: 8 }}>
+                      参加者
                     </Text>
-                    <Text style={{ color: "#fff", fontSize: 16, fontWeight: "600" }}>
-                      {user.name || user.username || "ゲスト"}
-                    </Text>
+                    <View style={{ flexDirection: "row", alignItems: "center", gap: 12 }}>
+                      {/* Twitterアイコン */}
+                      {user.profileImage ? (
+                        <Image
+                          source={{ uri: user.profileImage }}
+                          style={{ width: 48, height: 48, borderRadius: 24 }}
+                          contentFit="cover"
+                        />
+                      ) : (
+                        <View style={{ width: 48, height: 48, borderRadius: 24, backgroundColor: "#EC4899", justifyContent: "center", alignItems: "center" }}>
+                          <Text style={{ color: "#fff", fontSize: 20, fontWeight: "bold" }}>
+                            {(user.name || user.username || "ゲ")?.charAt(0).toUpperCase()}
+                          </Text>
+                        </View>
+                      )}
+                      <View style={{ flex: 1 }}>
+                        <Text style={{ color: "#fff", fontSize: 16, fontWeight: "600" }}>
+                          {user.name || user.username || "ゲスト"}
+                        </Text>
+                        {user.username && (
+                          <Text style={{ color: "#9CA3AF", fontSize: 14, marginTop: 2 }}>
+                            @{user.username}
+                          </Text>
+                        )}
+                      </View>
+                    </View>
                   </View>
                 )}
 
