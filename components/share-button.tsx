@@ -1,0 +1,242 @@
+import { TouchableOpacity, Text, View, StyleSheet, ActivityIndicator, ViewStyle, TextStyle } from "react-native";
+import MaterialIcons from "@expo/vector-icons/MaterialIcons";
+import { useState } from "react";
+import * as Haptics from "expo-haptics";
+import { Platform } from "react-native";
+
+interface ShareButtonProps {
+  onPress: () => Promise<boolean>;
+  label?: string;
+  variant?: "primary" | "secondary" | "icon";
+  size?: "small" | "medium" | "large";
+  disabled?: boolean;
+}
+
+/**
+ * シェアボタンコンポーネント
+ */
+export function ShareButton({
+  onPress,
+  label = "シェア",
+  variant = "primary",
+  size = "medium",
+  disabled = false,
+}: ShareButtonProps) {
+  const [loading, setLoading] = useState(false);
+  const [success, setSuccess] = useState(false);
+
+  const handlePress = async () => {
+    if (loading || disabled) return;
+
+    setLoading(true);
+    try {
+      const result = await onPress();
+      if (result) {
+        setSuccess(true);
+        if (Platform.OS !== "web") {
+          await Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+        }
+        // 成功表示を2秒後にリセット
+        setTimeout(() => setSuccess(false), 2000);
+      }
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const buttonStyle: ViewStyle[] = [
+    styles.button,
+    size === "small" ? styles.buttonSmall : size === "large" ? styles.buttonLarge : styles.buttonMedium,
+    variant === "secondary" ? styles.buttonSecondary : variant === "icon" ? styles.buttonIcon : styles.buttonPrimary,
+    disabled ? styles.buttonDisabled : {},
+    success ? styles.buttonSuccess : {},
+  ];
+
+  const textStyle: TextStyle[] = [
+    styles.text,
+    size === "small" ? styles.textSmall : size === "large" ? styles.textLarge : styles.textMedium,
+    variant === "secondary" ? styles.textSecondary : styles.textPrimary,
+  ];
+
+  const iconSize = size === "small" ? 16 : size === "large" ? 24 : 20;
+
+  if (variant === "icon") {
+    return (
+      <TouchableOpacity
+        onPress={handlePress}
+        disabled={loading || disabled}
+        style={buttonStyle}
+        activeOpacity={0.7}
+      >
+        {loading ? (
+          <ActivityIndicator size="small" color="#fff" />
+        ) : success ? (
+          <MaterialIcons name="check" size={iconSize} color="#22C55E" />
+        ) : (
+          <MaterialIcons name="share" size={iconSize} color="#fff" />
+        )}
+      </TouchableOpacity>
+    );
+  }
+
+  return (
+    <TouchableOpacity
+      onPress={handlePress}
+      disabled={loading || disabled}
+      style={buttonStyle}
+      activeOpacity={0.7}
+    >
+      {loading ? (
+        <ActivityIndicator size="small" color={variant === "secondary" ? "#EC4899" : "#fff"} />
+      ) : (
+        <View style={styles.content}>
+          {success ? (
+            <MaterialIcons name="check" size={iconSize} color={variant === "secondary" ? "#22C55E" : "#fff"} />
+          ) : (
+            <MaterialIcons name="share" size={iconSize} color={variant === "secondary" ? "#EC4899" : "#fff"} />
+          )}
+          <Text style={textStyle}>
+            {success ? "シェアしました！" : label}
+          </Text>
+        </View>
+      )}
+    </TouchableOpacity>
+  );
+}
+
+/**
+ * Twitterシェアボタン
+ */
+export function TwitterShareButton({
+  onPress,
+  label = "Xでシェア",
+  size = "medium",
+  disabled = false,
+}: Omit<ShareButtonProps, "variant">) {
+  const [loading, setLoading] = useState(false);
+
+  const handlePress = async () => {
+    if (loading || disabled) return;
+
+    setLoading(true);
+    try {
+      await onPress();
+      if (Platform.OS !== "web") {
+        await Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+      }
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const iconSize = size === "small" ? 16 : size === "large" ? 24 : 20;
+
+  const buttonStyle: ViewStyle[] = [
+    styles.twitterButton,
+    size === "small" ? styles.buttonSmall : size === "large" ? styles.buttonLarge : styles.buttonMedium,
+    disabled ? styles.buttonDisabled : {},
+  ];
+
+  const textStyle: TextStyle[] = [
+    styles.text,
+    styles.twitterText,
+    size === "small" ? styles.textSmall : size === "large" ? styles.textLarge : styles.textMedium,
+  ];
+
+  return (
+    <TouchableOpacity
+      onPress={handlePress}
+      disabled={loading || disabled}
+      style={buttonStyle}
+      activeOpacity={0.7}
+    >
+      {loading ? (
+        <ActivityIndicator size="small" color="#fff" />
+      ) : (
+        <View style={styles.content}>
+          <Text style={styles.xLogo}>𝕏</Text>
+          <Text style={textStyle}>{label}</Text>
+        </View>
+      )}
+    </TouchableOpacity>
+  );
+}
+
+const styles = StyleSheet.create({
+  button: {
+    borderRadius: 12,
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  buttonSmall: {
+    paddingHorizontal: 12,
+    paddingVertical: 8,
+  },
+  buttonMedium: {
+    paddingHorizontal: 16,
+    paddingVertical: 12,
+  },
+  buttonLarge: {
+    paddingHorizontal: 24,
+    paddingVertical: 16,
+  },
+  buttonPrimary: {
+    backgroundColor: "#EC4899",
+  },
+  buttonSecondary: {
+    backgroundColor: "transparent",
+    borderWidth: 1,
+    borderColor: "#EC4899",
+  },
+  buttonIcon: {
+    backgroundColor: "rgba(236, 72, 153, 0.2)",
+    width: 44,
+    height: 44,
+    borderRadius: 22,
+    paddingHorizontal: 0,
+    paddingVertical: 0,
+  },
+  buttonDisabled: {
+    opacity: 0.5,
+  },
+  buttonSuccess: {
+    backgroundColor: "#22C55E",
+  },
+  content: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 8,
+  },
+  text: {
+    fontWeight: "600",
+  },
+  textSmall: {
+    fontSize: 12,
+  },
+  textMedium: {
+    fontSize: 14,
+  },
+  textLarge: {
+    fontSize: 16,
+  },
+  textPrimary: {
+    color: "#fff",
+  },
+  textSecondary: {
+    color: "#EC4899",
+  },
+  twitterButton: {
+    backgroundColor: "#000",
+    borderRadius: 12,
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  twitterText: {
+    color: "#fff",
+  },
+  xLogo: {
+    color: "#fff",
+    fontSize: 18,
+    fontWeight: "bold",
+  },
+});

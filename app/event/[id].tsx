@@ -9,6 +9,7 @@ import MaterialIcons from "@expo/vector-icons/MaterialIcons";
 import { LinearGradient } from "expo-linear-gradient";
 import { Countdown } from "@/components/countdown";
 import { AppHeader } from "@/components/app-header";
+import { shareToTwitter, shareParticipation } from "@/lib/share";
 
 const { width: screenWidth } = Dimensions.get("window");
 
@@ -670,6 +671,11 @@ export default function ChallengeDetailScreen() {
     } catch (error) {
       Alert.alert("エラー", "シェアに失敗しました");
     }
+  };
+
+  const handleTwitterShare = async () => {
+    const text = `🎯 ${challenge.title}\n\n📊 現在 ${currentValue}/${goalValue}${unit}（${Math.round(progress)}%）\nあと${remaining}${unit}で目標達成！\n\n一緒に応援しよう！`;
+    await shareToTwitter(text, undefined, ["動員ちゃれんじ", "KimitoLink"]);
   };
 
   const handleShareWithOgp = async () => {
@@ -1795,11 +1801,10 @@ export default function ChallengeDetailScreen() {
                     <Text style={{ color: "#fff", fontSize: 14, marginLeft: 6 }}>シェア</Text>
                   </TouchableOpacity>
                   <TouchableOpacity
-                    onPress={handleShareWithOgp}
-                    disabled={isGeneratingOgp}
+                    onPress={handleTwitterShare}
                     style={{
                       flex: 1,
-                      backgroundColor: isGeneratingOgp ? "#2D3139" : "#1DA1F2",
+                      backgroundColor: "#000",
                       borderRadius: 12,
                       padding: 14,
                       alignItems: "center",
@@ -1807,10 +1812,8 @@ export default function ChallengeDetailScreen() {
                       justifyContent: "center",
                     }}
                   >
-                    <MaterialIcons name="image" size={18} color="#fff" />
-                    <Text style={{ color: "#fff", fontSize: 14, marginLeft: 6 }}>
-                      {isGeneratingOgp ? "生成中..." : "画像付き"}
-                    </Text>
+                    <Text style={{ color: "#fff", fontSize: 16, fontWeight: "bold" }}>𝕏</Text>
+                    <Text style={{ color: "#fff", fontSize: 14, marginLeft: 6 }}>Xでシェア</Text>
                   </TouchableOpacity>
                 </View>
                 <TouchableOpacity
