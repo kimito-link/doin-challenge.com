@@ -1,6 +1,5 @@
 import { FlatList, Text, View, TouchableOpacity, ScrollView, Linking } from "react-native";
 import { useState, useEffect } from "react";
-import * as Auth from "@/lib/_core/auth";
 import { Image } from "expo-image";
 import { useRouter } from "expo-router";
 import { ScreenContainer } from "@/components/screen-container";
@@ -104,29 +103,6 @@ export default function MyPageScreen() {
   const [isLoggingIn, setIsLoggingIn] = useState(false);
   const [loginPattern, setLoginPattern] = useState(() => getRandomPattern());
   const [showLogoutModal, setShowLogoutModal] = useState(false);
-  const [showDebugLogin, setShowDebugLogin] = useState(false);
-
-  // デバッグ用テストユーザーでログイン（サンドボックス環境用）
-  const handleDebugLogin = async () => {
-    const testUser: Auth.User = {
-      id: 999999,
-      openId: "twitter:999999999",
-      name: "テストユーザー",
-      email: null,
-      loginMethod: "twitter",
-      lastSignedIn: new Date(),
-      username: "test_user",
-      profileImage: "https://pbs.twimg.com/profile_images/1869750131579416576/eXDlbCKD_400x400.jpg",
-      followersCount: 1234,
-      isFollowingTarget: true,
-      targetAccount: { id: "123456", name: "君斗りんく", username: "idolfunch" },
-    };
-    await Auth.setUserInfo(testUser);
-    // ページをリロードして状態を更新
-    if (typeof window !== "undefined") {
-      window.location.reload();
-    }
-  };
 
   // ログイン時にフォロー状態を更新
   useEffect(() => {
@@ -510,31 +486,6 @@ export default function MyPageScreen() {
               <MaterialIcons name="login" size={22} color="#fff" />
               <Text style={{ color: "#fff", fontSize: 16, fontWeight: "bold", marginLeft: 10 }}>
                 {isLoggingIn ? "認証中..." : "Xアカウントで認証しています"}
-              </Text>
-            </TouchableOpacity>
-
-            {/* デバッグ用テストユーザーログインボタン（サンドボックス環境用） */}
-            <TouchableOpacity
-              onPress={handleDebugLogin}
-              style={{
-                minHeight: 44,
-                backgroundColor: "#374151",
-                borderRadius: 22,
-                paddingVertical: 12,
-                paddingHorizontal: 24,
-                flexDirection: "row",
-                alignItems: "center",
-                justifyContent: "center",
-                marginBottom: 16,
-                maxWidth: 400,
-                width: "100%",
-                borderWidth: 1,
-                borderColor: "#4B5563",
-              }}
-            >
-              <MaterialIcons name="bug-report" size={20} color="#9CA3AF" />
-              <Text style={{ color: "#9CA3AF", fontSize: 14, marginLeft: 8 }}>
-                テストユーザーでログイン（デバッグ用）
               </Text>
             </TouchableOpacity>
 

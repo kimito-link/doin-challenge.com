@@ -63,13 +63,24 @@ export async function shareToTwitter(
 
     const twitterUrl = `https://twitter.com/intent/tweet?${params.toString()}`;
 
+    // Web環境ではwindow.openを使用
+    if (Platform.OS === "web") {
+      if (typeof window !== "undefined") {
+        window.open(twitterUrl, "_blank", "noopener,noreferrer");
+        return true;
+      }
+      return false;
+    }
+
+    // ネイティブ環境ではLinking.openURLを使用
     const canOpen = await Linking.canOpenURL(twitterUrl);
     if (canOpen) {
       await Linking.openURL(twitterUrl);
       return true;
     } else {
-      console.error("[Share] Cannot open Twitter URL");
-      return false;
+      // canOpenURLがfalseでも試みる
+      await Linking.openURL(twitterUrl);
+      return true;
     }
   } catch (error) {
     console.error("[Share] Error sharing to Twitter:", error);

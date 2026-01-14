@@ -57,12 +57,12 @@ const prefectureData: { [key: string]: { name: string; x: number; y: number } } 
 
 // 地域グループ
 const regionGroups = [
-  { name: "北海道・東北", prefectures: ["北海道", "青森県", "岩手県", "宮城県", "秋田県", "山形県", "福島県"] },
-  { name: "関東", prefectures: ["茨城県", "栃木県", "群馬県", "埼玉県", "千葉県", "東京都", "神奈川県"] },
-  { name: "中部", prefectures: ["新潟県", "富山県", "石川県", "福井県", "山梨県", "長野県", "岐阜県", "静岡県", "愛知県"] },
-  { name: "関西", prefectures: ["三重県", "滋賀県", "京都府", "大阪府", "兵庫県", "奈良県", "和歌山県"] },
-  { name: "中国・四国", prefectures: ["鳥取県", "島根県", "岡山県", "広島県", "山口県", "徳島県", "香川県", "愛媛県", "高知県"] },
-  { name: "九州・沖縄", prefectures: ["福岡県", "佐賀県", "長崎県", "熊本県", "大分県", "宮崎県", "鹿児島県", "沖縄県"] },
+  { name: "北海道・東北", prefectures: ["北海道", "青森県", "岩手県", "宮城県", "秋田県", "山形県", "福島県"], color: "#60A5FA" },
+  { name: "関東", prefectures: ["茨城県", "栃木県", "群馬県", "埼玉県", "千葉県", "東京都", "神奈川県"], color: "#F472B6" },
+  { name: "中部", prefectures: ["新潟県", "富山県", "石川県", "福井県", "山梨県", "長野県", "岐阜県", "静岡県", "愛知県"], color: "#34D399" },
+  { name: "関西", prefectures: ["三重県", "滋賀県", "京都府", "大阪府", "兵庫県", "奈良県", "和歌山県"], color: "#FBBF24" },
+  { name: "中国・四国", prefectures: ["鳥取県", "島根県", "岡山県", "広島県", "山口県", "徳島県", "香川県", "愛媛県", "高知県"], color: "#A78BFA" },
+  { name: "九州・沖縄", prefectures: ["福岡県", "佐賀県", "長崎県", "熊本県", "大分県", "宮崎県", "鹿児島県", "沖縄県"], color: "#FB923C" },
 ];
 
 interface PrefectureCount {
@@ -73,51 +73,6 @@ interface JapanMapProps {
   prefectureCounts: PrefectureCount;
   onPrefecturePress?: (prefecture: string) => void;
   selectedPrefecture?: string | null;
-}
-
-// 参加者数に応じた色を計算（青→黄→赤のグラデーション）
-function getHeatColor(count: number, maxCount: number): string {
-  if (count === 0) return "#2D3139"; // 参加者なし
-  
-  const intensity = Math.min(count / Math.max(maxCount, 1), 1);
-  
-  // 青(0) → 黄(0.5) → 赤(1) のグラデーション
-  if (intensity <= 0.5) {
-    // 青 → 黄
-    const t = intensity * 2;
-    const r = Math.round(59 + (251 - 59) * t);
-    const g = Math.round(130 + (191 - 130) * t);
-    const b = Math.round(246 + (36 - 246) * t);
-    return `rgb(${r}, ${g}, ${b})`;
-  } else {
-    // 黄 → 赤
-    const t = (intensity - 0.5) * 2;
-    const r = Math.round(251 + (239 - 251) * t);
-    const g = Math.round(191 + (68 - 191) * t);
-    const b = Math.round(36 + (68 - 36) * t);
-    return `rgb(${r}, ${g}, ${b})`;
-  }
-}
-
-// 参加者数に応じたボーダー色を計算
-function getHeatBorderColor(count: number, maxCount: number): string {
-  if (count === 0) return "#3D4149";
-  
-  const intensity = Math.min(count / Math.max(maxCount, 1), 1);
-  
-  if (intensity <= 0.5) {
-    const t = intensity * 2;
-    const r = Math.round(96 + (253 - 96) * t);
-    const g = Math.round(165 + (224 - 165) * t);
-    const b = Math.round(250 + (71 - 250) * t);
-    return `rgb(${r}, ${g}, ${b})`;
-  } else {
-    const t = (intensity - 0.5) * 2;
-    const r = Math.round(253 + (248 - 253) * t);
-    const g = Math.round(224 + (113 - 224) * t);
-    const b = Math.round(71 + (113 - 71) * t);
-    return `rgb(${r}, ${g}, ${b})`;
-  }
 }
 
 export function JapanMap({ prefectureCounts, onPrefecturePress, selectedPrefecture }: JapanMapProps) {
@@ -165,9 +120,8 @@ export function JapanMap({ prefectureCounts, onPrefecturePress, selectedPrefectu
       <View style={{ flexDirection: "row", flexWrap: "wrap", justifyContent: "space-between", marginBottom: 16 }}>
         {regionGroups.map((region) => {
           const count = regionCounts[region.name] || 0;
+          const intensity = count / maxRegionCount;
           const isHot = region.name === hotRegion.name && count > 0;
-          const bgColor = getHeatColor(count, maxRegionCount);
-          const borderColor = getHeatBorderColor(count, maxRegionCount);
           
           return (
             <TouchableOpacity
@@ -179,12 +133,12 @@ export function JapanMap({ prefectureCounts, onPrefecturePress, selectedPrefectu
               }}
               style={{
                 width: "48%",
-                backgroundColor: count > 0 ? `${bgColor}22` : "#1A1D21",
+                backgroundColor: isHot ? "rgba(236, 72, 153, 0.2)" : "#1A1D21",
                 borderRadius: 12,
                 padding: 12,
                 marginBottom: 8,
                 borderWidth: isHot ? 2 : 1,
-                borderColor: isHot ? "#EF4444" : borderColor,
+                borderColor: isHot ? "#EC4899" : count > 0 ? `rgba(236, 72, 153, ${0.3 + intensity * 0.5})` : "#2D3139",
               }}
             >
               <View style={{ flexDirection: "row", alignItems: "center", justifyContent: "space-between" }}>
@@ -193,7 +147,7 @@ export function JapanMap({ prefectureCounts, onPrefecturePress, selectedPrefectu
                     width: 12,
                     height: 12,
                     borderRadius: 6,
-                    backgroundColor: bgColor,
+                    backgroundColor: region.color,
                     marginRight: 8,
                   }} />
                   <Text style={{ color: "#9CA3AF", fontSize: 12 }}>{region.name}</Text>
@@ -203,7 +157,7 @@ export function JapanMap({ prefectureCounts, onPrefecturePress, selectedPrefectu
                 )}
               </View>
               <Text style={{ 
-                color: count > 0 ? bgColor : "#6B7280", 
+                color: count > 0 ? "#EC4899" : "#6B7280", 
                 fontSize: 24, 
                 fontWeight: "bold",
                 marginTop: 4,
@@ -221,8 +175,8 @@ export function JapanMap({ prefectureCounts, onPrefecturePress, selectedPrefectu
               }}>
                 <View style={{
                   height: "100%",
-                  width: `${(count / maxRegionCount) * 100}%`,
-                  backgroundColor: bgColor,
+                  width: `${intensity * 100}%`,
+                  backgroundColor: region.color,
                   borderRadius: 2,
                 }} />
               </View>
@@ -234,17 +188,17 @@ export function JapanMap({ prefectureCounts, onPrefecturePress, selectedPrefectu
       {/* ホットな地域のハイライト */}
       {hotRegion.count > 0 && (
         <View style={{
-          backgroundColor: "rgba(239, 68, 68, 0.15)",
+          backgroundColor: "rgba(236, 72, 153, 0.15)",
           borderRadius: 12,
           padding: 16,
           borderWidth: 1,
-          borderColor: "rgba(239, 68, 68, 0.3)",
+          borderColor: "rgba(236, 72, 153, 0.3)",
           flexDirection: "row",
           alignItems: "center",
         }}>
           <Text style={{ fontSize: 24, marginRight: 12 }}>🔥</Text>
           <View style={{ flex: 1 }}>
-            <Text style={{ color: "#EF4444", fontSize: 14, fontWeight: "bold" }}>
+            <Text style={{ color: "#EC4899", fontSize: 14, fontWeight: "bold" }}>
               {hotRegion.name}が熱い！
             </Text>
             <Text style={{ color: "#9CA3AF", fontSize: 12, marginTop: 2 }}>
@@ -253,32 +207,11 @@ export function JapanMap({ prefectureCounts, onPrefecturePress, selectedPrefectu
           </View>
         </View>
       )}
-
-      {/* 温度スケール凡例 */}
-      <View style={{ marginTop: 12, alignItems: "center" }}>
-        <View style={{ flexDirection: "row", alignItems: "center" }}>
-          <Text style={{ color: "#9CA3AF", fontSize: 10, marginRight: 8 }}>少</Text>
-          <View style={{ 
-            flexDirection: "row", 
-            height: 8, 
-            width: 120, 
-            borderRadius: 4, 
-            overflow: "hidden",
-          }}>
-            <View style={{ flex: 1, backgroundColor: "#3B82F6" }} />
-            <View style={{ flex: 1, backgroundColor: "#60A5FA" }} />
-            <View style={{ flex: 1, backgroundColor: "#FBBF24" }} />
-            <View style={{ flex: 1, backgroundColor: "#F59E0B" }} />
-            <View style={{ flex: 1, backgroundColor: "#EF4444" }} />
-          </View>
-          <Text style={{ color: "#9CA3AF", fontSize: 10, marginLeft: 8 }}>多</Text>
-        </View>
-      </View>
     </View>
   );
 }
 
-// シンプルな地域別表示（グリッドの代わり）- ヒートマップ対応
+// シンプルな地域別表示（グリッドの代わり）
 export function SimpleRegionMap({ prefectureCounts }: { prefectureCounts: PrefectureCount }) {
   // 地域ごとの参加者数を集計
   const regionCounts = useMemo(() => {
@@ -327,25 +260,24 @@ export function SimpleRegionMap({ prefectureCounts }: { prefectureCounts: Prefec
         </Text>
       </View>
 
-      {/* 地域カード - ヒートマップ表示 */}
+      {/* 地域カード */}
       <View style={{ flexDirection: "row", flexWrap: "wrap", justifyContent: "space-between" }}>
         {regionGroups.map((region) => {
           const count = regionCounts[region.name] || 0;
+          const intensity = count / maxRegionCount;
           const isHot = region.name === hotRegion.name && count > 0;
-          const bgColor = getHeatColor(count, maxRegionCount);
-          const borderColor = getHeatBorderColor(count, maxRegionCount);
           
           return (
             <View
               key={region.name}
               style={{
                 width: "48%",
-                backgroundColor: count > 0 ? `${bgColor}22` : "#1A1D21",
+                backgroundColor: isHot ? "rgba(236, 72, 153, 0.2)" : "#1A1D21",
                 borderRadius: 12,
                 padding: 12,
                 marginBottom: 8,
                 borderWidth: isHot ? 2 : 1,
-                borderColor: isHot ? "#EF4444" : borderColor,
+                borderColor: isHot ? "#EC4899" : count > 0 ? `rgba(236, 72, 153, ${0.3 + intensity * 0.5})` : "#2D3139",
               }}
             >
               <View style={{ flexDirection: "row", alignItems: "center", justifyContent: "space-between" }}>
@@ -354,7 +286,7 @@ export function SimpleRegionMap({ prefectureCounts }: { prefectureCounts: Prefec
                     width: 10,
                     height: 10,
                     borderRadius: 5,
-                    backgroundColor: bgColor,
+                    backgroundColor: region.color,
                     marginRight: 6,
                   }} />
                   <Text style={{ color: "#9CA3AF", fontSize: 11 }}>{region.name}</Text>
@@ -364,7 +296,7 @@ export function SimpleRegionMap({ prefectureCounts }: { prefectureCounts: Prefec
                 )}
               </View>
               <Text style={{ 
-                color: count > 0 ? bgColor : "#6B7280", 
+                color: count > 0 ? "#EC4899" : "#6B7280", 
                 fontSize: 20, 
                 fontWeight: "bold",
                 marginTop: 4,
@@ -372,7 +304,7 @@ export function SimpleRegionMap({ prefectureCounts }: { prefectureCounts: Prefec
                 {count}<Text style={{ fontSize: 12, color: "#9CA3AF" }}>人</Text>
               </Text>
               
-              {/* 参加者バー - ヒートマップ色 */}
+              {/* 参加者バー */}
               <View style={{
                 height: 3,
                 backgroundColor: "#2D3139",
@@ -382,8 +314,8 @@ export function SimpleRegionMap({ prefectureCounts }: { prefectureCounts: Prefec
               }}>
                 <View style={{
                   height: "100%",
-                  width: `${(count / maxRegionCount) * 100}%`,
-                  backgroundColor: bgColor,
+                  width: `${intensity * 100}%`,
+                  backgroundColor: region.color,
                   borderRadius: 2,
                 }} />
               </View>
@@ -395,18 +327,18 @@ export function SimpleRegionMap({ prefectureCounts }: { prefectureCounts: Prefec
       {/* ホットな地域のハイライト */}
       {hotRegion.count > 0 && (
         <View style={{
-          backgroundColor: "rgba(239, 68, 68, 0.15)",
+          backgroundColor: "rgba(236, 72, 153, 0.15)",
           borderRadius: 12,
           padding: 14,
           marginTop: 8,
           borderWidth: 1,
-          borderColor: "rgba(239, 68, 68, 0.3)",
+          borderColor: "rgba(236, 72, 153, 0.3)",
           flexDirection: "row",
           alignItems: "center",
         }}>
           <Text style={{ fontSize: 20, marginRight: 10 }}>🔥</Text>
           <View style={{ flex: 1 }}>
-            <Text style={{ color: "#EF4444", fontSize: 13, fontWeight: "bold" }}>
+            <Text style={{ color: "#EC4899", fontSize: 13, fontWeight: "bold" }}>
               {hotRegion.name}が熱い！
             </Text>
             <Text style={{ color: "#9CA3AF", fontSize: 11, marginTop: 2 }}>
@@ -415,27 +347,6 @@ export function SimpleRegionMap({ prefectureCounts }: { prefectureCounts: Prefec
           </View>
         </View>
       )}
-
-      {/* 温度スケール凡例 */}
-      <View style={{ marginTop: 12, alignItems: "center" }}>
-        <View style={{ flexDirection: "row", alignItems: "center" }}>
-          <Text style={{ color: "#9CA3AF", fontSize: 10, marginRight: 8 }}>少</Text>
-          <View style={{ 
-            flexDirection: "row", 
-            height: 6, 
-            width: 100, 
-            borderRadius: 3, 
-            overflow: "hidden",
-          }}>
-            <View style={{ flex: 1, backgroundColor: "#3B82F6" }} />
-            <View style={{ flex: 1, backgroundColor: "#60A5FA" }} />
-            <View style={{ flex: 1, backgroundColor: "#FBBF24" }} />
-            <View style={{ flex: 1, backgroundColor: "#F59E0B" }} />
-            <View style={{ flex: 1, backgroundColor: "#EF4444" }} />
-          </View>
-          <Text style={{ color: "#9CA3AF", fontSize: 10, marginLeft: 8 }}>多</Text>
-        </View>
-      </View>
     </View>
   );
 }

@@ -1,7 +1,6 @@
 import * as SecureStore from "expo-secure-store";
 import { Platform } from "react-native";
 import { SESSION_TOKEN_KEY, USER_INFO_KEY } from "@/constants/oauth";
-import { cacheUserInfo, getCachedUserInfo, clearUserInfoCache } from "@/lib/cache";
 
 export type User = {
   id: number;
@@ -84,15 +83,6 @@ export async function getUserInfo(): Promise<User | null> {
   try {
     console.log("[Auth] Getting user info...");
 
-    // キャッシュファースト戦略: まずキャッシュを確認（7日間有効）
-    if (Platform.OS === "web") {
-      const cachedUser = getCachedUserInfo();
-      if (cachedUser) {
-        console.log("[Auth] User info retrieved from cache (7-day cache)");
-        return cachedUser;
-      }
-    }
-
     let info: string | null = null;
     if (Platform.OS === "web") {
       // Use localStorage for web
@@ -108,12 +98,6 @@ export async function getUserInfo(): Promise<User | null> {
     }
     const user = JSON.parse(info);
     console.log("[Auth] User info retrieved:", user);
-    
-    // キャッシュに保存（7日間）
-    if (Platform.OS === "web") {
-      cacheUserInfo(user);
-    }
-    
     return user;
   } catch (error) {
     console.error("[Auth] Failed to get user info:", error);
@@ -128,9 +112,7 @@ export async function setUserInfo(user: User): Promise<void> {
     if (Platform.OS === "web") {
       // Use localStorage for web
       window.localStorage.setItem(USER_INFO_KEY, JSON.stringify(user));
-      // キャッシュにも保存（7日間有効）
-      cacheUserInfo(user);
-      console.log("[Auth] User info stored in localStorage and cache (7-day) successfully");
+      console.log("[Auth] User info stored in localStorage successfully");
       return;
     }
 
@@ -147,9 +129,6 @@ export async function clearUserInfo(): Promise<void> {
     if (Platform.OS === "web") {
       // Use localStorage for web
       window.localStorage.removeItem(USER_INFO_KEY);
-      // キャッシュもクリア
-      clearUserInfoCache();
-      console.log("[Auth] User info and cache cleared");
       return;
     }
 

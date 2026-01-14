@@ -12,10 +12,6 @@ import {
   getTargetAccountInfo,
   getUserProfileByUsername,
 } from "./twitter-oauth2";
-import { sdk } from "./_core/sdk";
-import * as db from "./db";
-import { COOKIE_NAME, ONE_YEAR_MS } from "../shared/const.js";
-import { getSessionCookieOptions } from "./_core/cookies";
 
 export function registerTwitterRoutes(app: Express) {
   // Step 1: Initiate Twitter OAuth 2.0
@@ -132,31 +128,6 @@ export function registerTwitterRoutes(app: Express) {
         isFollowingTarget,
         targetAccount,
       };
-
-      // Create openId for Twitter user
-      const openId = `twitter:${userProfile.id}`;
-      
-      // Save user to database
-      await db.upsertUser({
-        openId,
-        name: userProfile.name,
-        email: null,
-        loginMethod: "twitter",
-        lastSignedIn: new Date(),
-      });
-      console.log("[Twitter OAuth 2.0] User saved to database:", openId);
-      
-      // Create session token
-      const sessionToken = await sdk.createSessionToken(openId, {
-        name: userProfile.name,
-        expiresInMs: ONE_YEAR_MS,
-      });
-      console.log("[Twitter OAuth 2.0] Session token created");
-      
-      // Set session cookie using shared cookie options
-      const cookieOptions = getSessionCookieOptions(req);
-      res.cookie(COOKIE_NAME, sessionToken, { ...cookieOptions, maxAge: ONE_YEAR_MS });
-      console.log("[Twitter OAuth 2.0] Session cookie set", cookieOptions);
 
       // Encode user data for redirect
       const encodedData = encodeURIComponent(JSON.stringify(userData));

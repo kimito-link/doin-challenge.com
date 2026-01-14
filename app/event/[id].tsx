@@ -15,7 +15,7 @@ import { ReminderButton } from "@/components/reminder-button";
 import { OptimizedAvatar } from "@/components/optimized-image";
 import { Skeleton } from "@/components/skeleton-loader";
 import { EventDetailSkeleton } from "@/components/event-detail-skeleton";
-import { SimpleRegionMap } from "@/components/japan-map";
+import { JapanHeatmap } from "@/components/japan-heatmap";
 
 const { width: screenWidth } = Dimensions.get("window");
 
@@ -484,10 +484,8 @@ export default function ChallengeDetailScreen() {
   const [showPrefectureFilterList, setShowPrefectureFilterList] = useState(false);
   const [showConfirmation, setShowConfirmation] = useState(false);
   const [justSubmitted, setJustSubmitted] = useState(false);
-  const [myNewParticipationId, setMyNewParticipationId] = useState<number | null>(null);
   const scrollViewRef = useRef<ScrollView>(null);
   const messagesRef = useRef<View>(null);
-  const myPostRef = useRef<View>(null);
   
   // 友人追加用のstate
   type Companion = {
@@ -572,19 +570,7 @@ export default function ChallengeDetailScreen() {
   const generateOgpMutation = trpc.ogp.generateChallengeOgp.useMutation();
 
   const createParticipationMutation = trpc.participations.create.useMutation({
-    onError: (error: any) => {
-      console.error('Participation creation error:', error);
-      // UNAUTHORIZEDエラーの場合は別途処理（handleConfirmSubmit内で処理）
-      if (error.message?.includes('UNAUTHORIZED') || error.data?.code === 'UNAUTHORIZED') {
-        return; // handleConfirmSubmitのonErrorでアラート表示
-      }
-      Alert.alert(
-        "エラー",
-        `参加表明の送信に失敗しました: ${error.message}\nもう一度お試しください。`,
-        [{ text: "OK" }]
-      );
-    },
-    onSuccess: async (data) => {
+    onSuccess: async () => {
       // 参加者情報を保存
       setLastParticipation({
         name: user?.name || "",
@@ -602,65 +588,35 @@ export default function ChallengeDetailScreen() {
       // 参加表明完了フラグをセット（応援メッセージセクションへスクロール用）
       setJustSubmitted(true);
       
-      // 新しい参加表明IDを保存（ハイライト用）
-      if (data?.id) {
-        setMyNewParticipationId(data.id);
-      }
-      
       // データを再取得して最新状態を反映
       await refetch();
       
-      // 自分の投稿へスクロール（複数回試行で確実に動作させる）
-      const scrollToMyPost = () => {
-        if (myPostRef.current && scrollViewRef.current) {
-          myPostRef.current.measureLayout(
-            scrollViewRef.current as any,
-            (x, y) => {
-              // 自分の投稿が画面上部に来るようにスクロール（少し余裕を持たせる）
-              scrollViewRef.current?.scrollTo({ y: Math.max(0, y - 120), animated: true });
-            },
-            () => {
-              // フォールバック: messagesRefの位置へスクロール
-              if (messagesRef.current && scrollViewRef.current) {
-                messagesRef.current.measureLayout(
-                  scrollViewRef.current as any,
-                  (x, y) => {
-                    scrollViewRef.current?.scrollTo({ y: Math.max(0, y - 100), animated: true });
-                  },
-                  () => {
-                    // 最終フォールバック: ページ下部へ
-                    scrollViewRef.current?.scrollToEnd({ animated: true });
-                  }
-                );
-              }
-            }
-          );
-        } else if (messagesRef.current && scrollViewRef.current) {
-          // myPostRefがまだない場合はmessagesRefへ
-          messagesRef.current.measureLayout(
-            scrollViewRef.current as any,
-            (x, y) => {
-              scrollViewRef.current?.scrollTo({ y: Math.max(0, y - 100), animated: true });
-            },
-            () => {
-              scrollViewRef.current?.scrollToEnd({ animated: true });
-            }
-          );
-        } else if (scrollViewRef.current) {
-          // 最終フォールバック
-          scrollViewRef.current.scrollToEnd({ animated: true });
-        }
-      };
-      
-      // データ取得後にスクロール（DOMが更新されてから）
-      setTimeout(scrollToMyPost, 300);
-      setTimeout(scrollToMyPost, 600);
-      setTimeout(scrollToMyPost, 1000);
+      // 応援メッセージセクションへスクロール（データ取得後に実行）
+      setTimeout(() => {
+        // messagesRefの位置を取得してスクロール
+        messagesRef.current?.measureLayout(
+          scrollViewRef.current as any,
+          (x, y) => {
+            scrollViewRef.current?.scrollTo({ y: y - 50, animated: true });
+          },
+          () => {
+            // フォールバック: ページ下部へスクロール
+            scrollViewRef.current?.scrollToEnd({ animated: true });
+          }
+        );
+      }, 600);
       
       // シェア促進モーダルを表示（少し遅らせて反映を見せてから）
       setTimeout(() => {
         setShowSharePrompt(true);
-      }, 2500);
+      }, 2000);
+    },
+    onError: (error) => {
+      console.error("Participation error:", error);
+      Alert.alert(
+        "参加表明に失敗しました",
+        error.message || "もう一度お試しください"
+      );
     },
   });
   
@@ -792,86 +748,38 @@ export default function ChallengeDetailScreen() {
     setShowConfirmation(true);
   };
 
-  const handleConfirmSubmit = async () => {
+  const handleConfirmSubmit = () => {
     // 友人データを整形
     const companionData = companions.map(c => ({
       displayName: c.displayName,
       twitterUsername: c.twitterUsername || undefined,
     }));
     
-    console.log('handleConfirmSubmit called, user:', user);
-    
-    if (!user) {
-      Alert.alert(
-        "ログインが必要です",
-        "参加表明にはX（Twitter）でのログインが必要です。",
-        [
-          { text: "キャンセル", style: "cancel", onPress: () => setShowConfirmation(false) },
-          { text: "ログイン", onPress: () => { setShowConfirmation(false); login(); } },
-        ]
-      );
-      return;
+    if (user) {
+      // まず確認画面を閉じる
+      setShowConfirmation(false);
+      
+      // openIdからtwitterIdを抽出（形式: "twitter:{twitterId}"）
+      const twitterId = user.openId?.startsWith("twitter:") 
+        ? user.openId.replace("twitter:", "") 
+        : user.openId;
+      
+      // 少し遅らせて送信（モーダルが閉じてから）
+      setTimeout(() => {
+        createParticipationMutation.mutate({
+          challengeId,
+          message,
+          companionCount: companions.length,
+          prefecture,
+          twitterId, // Twitter IDを送信
+          displayName: user.name || "ゲスト",
+          username: user.username,
+          profileImage: user.profileImage,
+          followersCount: user.followersCount, // フォロワー数も送信
+          companions: companionData,
+        });
+      }, 100);
     }
-    
-    // 送信データを準備
-    // openIdから twitterId を抽出（形式: "twitter:{twitterId}"）
-    const twitterId = user.openId?.startsWith('twitter:') 
-      ? user.openId.replace('twitter:', '') 
-      : user.openId || '';
-    
-    const submitData = {
-      challengeId,
-      twitterId,
-      message,
-      companionCount: companions.length,
-      prefecture,
-      displayName: user.name || "ゲスト",
-      username: user.username,
-      profileImage: user.profileImage,
-      followersCount: user.followersCount,
-      companions: companionData,
-    };
-    
-    console.log('Submitting participation:', submitData);
-    
-    // mutateを使用（onSuccess/onErrorハンドラーで処理）
-    createParticipationMutation.mutate(submitData, {
-      onSuccess: () => {
-        console.log('Participation created successfully');
-        // 確認画面を閉じる
-        setShowConfirmation(false);
-      },
-      onError: (error: any) => {
-        console.error('Participation creation failed:', error);
-        console.error('Error details:', JSON.stringify(error, null, 2));
-        setShowConfirmation(false);
-        
-        // UNAUTHORIZEDエラーの場合は再ログインを促す
-        const isUnauthorized = 
-          error.message?.includes('UNAUTHORIZED') || 
-          error.data?.code === 'UNAUTHORIZED' ||
-          error.message?.includes('Invalid session') ||
-          error.message?.includes('FORBIDDEN');
-        
-        if (isUnauthorized) {
-          Alert.alert(
-            "セッションが切れました",
-            "ログインし直してから、もう一度参加表明してください。",
-            [
-              { text: "キャンセル", style: "cancel" },
-              { text: "ログイン", onPress: login },
-            ]
-          );
-        } else {
-          // その他のエラー
-          Alert.alert(
-            "エラー",
-            `参加表明の送信に失敗しました。\nもう一度お試しください。`,
-            [{ text: "OK" }]
-          );
-        }
-      },
-    });
   };
 
   if (challengeLoading) {
@@ -1136,7 +1044,7 @@ export default function ChallengeDetailScreen() {
               )}
 
               {/* 地域別参加者マップ */}
-              <SimpleRegionMap prefectureCounts={prefectureCounts} />
+              <JapanHeatmap prefectureCounts={prefectureCounts} />
             </View>
 
             {/* イベント情報 */}
@@ -1359,6 +1267,52 @@ export default function ChallengeDetailScreen() {
             {/* 応援メッセージ */}
             {participations && participations.length > 0 && (
               <View ref={messagesRef} style={{ marginTop: 16 }}>
+                {/* 参加表明完了時のハイライト表示 */}
+                {justSubmitted && (
+                  <View style={{
+                    backgroundColor: "#10B981",
+                    borderRadius: 16,
+                    padding: 20,
+                    marginBottom: 20,
+                    borderWidth: 3,
+                    borderColor: "#34D399",
+                    shadowColor: "#10B981",
+                    shadowOffset: { width: 0, height: 4 },
+                    shadowOpacity: 0.3,
+                    shadowRadius: 8,
+                    elevation: 8,
+                  }}>
+                    <View style={{ flexDirection: "row", alignItems: "center", marginBottom: 12 }}>
+                      <View style={{
+                        width: 48,
+                        height: 48,
+                        borderRadius: 24,
+                        backgroundColor: "rgba(255,255,255,0.2)",
+                        justifyContent: "center",
+                        alignItems: "center",
+                      }}>
+                        <MaterialIcons name="check-circle" size={32} color="#fff" />
+                      </View>
+                      <View style={{ marginLeft: 16, flex: 1 }}>
+                        <Text style={{ color: "#fff", fontSize: 20, fontWeight: "bold" }}>
+                          🎉 参加表明完了！
+                        </Text>
+                        <Text style={{ color: "rgba(255,255,255,0.9)", fontSize: 14, marginTop: 4 }}>
+                          あなたの応援メッセージが反映されました
+                        </Text>
+                      </View>
+                    </View>
+                    <View style={{
+                      backgroundColor: "rgba(255,255,255,0.15)",
+                      borderRadius: 12,
+                      padding: 12,
+                    }}>
+                      <Text style={{ color: "#fff", fontSize: 14, textAlign: "center" }}>
+                        ⬇️ 下にスクロールしてあなたの投稿を確認してね！
+                      </Text>
+                    </View>
+                  </View>
+                )}
                 <View style={{ flexDirection: "row", alignItems: "center", justifyContent: "space-between", marginBottom: 12 }}>
                   <Text style={{ color: "#fff", fontSize: 16, fontWeight: "bold" }}>
                     応援メッセージ ({participations.length}件)
@@ -1452,37 +1406,31 @@ export default function ChallengeDetailScreen() {
                       (c: any) => c.participationId === p.id
                     ) || [];
                     const isOwnPost = user && p.userId === user.id;
-                    // 新しく作成した参加表明かどうか（IDまたはuser.idで判定）
-                    const isNewlyCreated = isOwnPost && (justSubmitted || (myNewParticipationId && p.id === myNewParticipationId));
                     return (
-                      <View 
-                        key={p.id} 
-                        ref={isNewlyCreated ? myPostRef : undefined}
-                        style={isNewlyCreated ? {
-                          borderWidth: 3,
-                          borderColor: "#10B981",
-                          borderRadius: 16,
-                          marginBottom: 12,
-                          shadowColor: "#10B981",
-                          shadowOffset: { width: 0, height: 4 },
-                          shadowOpacity: 0.4,
-                          shadowRadius: 8,
-                          elevation: 8,
-                        } : { marginBottom: 8 }}
-                      >
-                        {isNewlyCreated && (
+                      <View key={p.id} style={isOwnPost && justSubmitted ? {
+                        borderWidth: 3,
+                        borderColor: "#10B981",
+                        borderRadius: 16,
+                        marginBottom: 8,
+                        shadowColor: "#10B981",
+                        shadowOffset: { width: 0, height: 2 },
+                        shadowOpacity: 0.3,
+                        shadowRadius: 4,
+                        elevation: 4,
+                      } : undefined}>
+                        {isOwnPost && justSubmitted && (
                           <View style={{
                             backgroundColor: "#10B981",
-                            paddingVertical: 12,
+                            paddingVertical: 10,
                             paddingHorizontal: 16,
                             borderTopLeftRadius: 13,
                             borderTopRightRadius: 13,
                             flexDirection: "row",
                             alignItems: "center",
                           }}>
-                            <MaterialIcons name="check-circle" size={20} color="#fff" />
-                            <Text style={{ color: "#fff", fontSize: 15, fontWeight: "bold", marginLeft: 8 }}>
-                              🎉 あなたの参加表明が反映されました！
+                            <MaterialIcons name="star" size={18} color="#fff" />
+                            <Text style={{ color: "#fff", fontSize: 14, fontWeight: "bold", marginLeft: 8 }}>
+                              ✨ あなたの参加表明が反映されました！
                             </Text>
                           </View>
                         )}
