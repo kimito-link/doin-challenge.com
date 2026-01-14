@@ -621,8 +621,8 @@ export default function ChallengeDetailScreen() {
         companions: companionData,
       });
     } else {
-      // 未ログインの場合はログインを促す
-      Alert.alert("ログインが必要です", "参加表明にはTwitterログインが必要です。マイページからログインしてください。");
+      // 未ログインの場合は直接ログイン画面に遷移
+      login();
       return;
     }
   };
