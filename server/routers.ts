@@ -1262,6 +1262,82 @@ Design requirements:
           createdIds.push(id);
         }
 
+        // 各チャレンジにサンプル参加者を追加（都道府県分布あり）
+        const sampleParticipants = [
+          { displayName: "さくら", username: "sakura_fan", prefecture: "東京都", followersCount: 1500, message: "応援してます！" },
+          { displayName: "ゆうき", username: "yuuki_idol", prefecture: "東京都", followersCount: 3200, message: "絶対行く！" },
+          { displayName: "みき", username: "miki_love", prefecture: "神奈川県", followersCount: 800, message: "楽しみ！" },
+          { displayName: "たくや", username: "takuya_ota", prefecture: "大阪府", followersCount: 5500, message: "大阪から参戦！" },
+          { displayName: "ななこ", username: "nanako_ch", prefecture: "大阪府", followersCount: 2100, message: "行くよ～" },
+          { displayName: "けんじ", username: "kenji_fan", prefecture: "愛知県", followersCount: 4200, message: "名古屋から参戦！" },
+          { displayName: "あいり", username: "airi_idol", prefecture: "福岡県", followersCount: 6800, message: "福岡から応援！" },
+          { displayName: "ゆうと", username: "yuto_fan", prefecture: "福岡県", followersCount: 1200, message: "九州から行く！" },
+          { displayName: "まい", username: "mai_love", prefecture: "北海道", followersCount: 3500, message: "北海道から飛んで行く！" },
+          { displayName: "こうた", username: "kota_idol", prefecture: "宮城県", followersCount: 900, message: "仙台から参戦！" },
+          { displayName: "りな", username: "rina_fan", prefecture: "広島県", followersCount: 2800, message: "広島から応援！" },
+          { displayName: "たかし", username: "takashi_ota", prefecture: "兵庫県", followersCount: 4500, message: "神戸から行く！" },
+          { displayName: "あやの", username: "ayano_ch", prefecture: "埼玉県", followersCount: 1800, message: "埼玉から参戦！" },
+          { displayName: "ゆうや", username: "yuya_fan", prefecture: "千葉県", followersCount: 2200, message: "千葉から応援！" },
+          { displayName: "みなみ", username: "minami_idol", prefecture: "京都府", followersCount: 7200, message: "京都から行く！" },
+          { displayName: "こうへい", username: "kohei_ota", prefecture: "静岡県", followersCount: 1600, message: "静岡から参戦！" },
+          { displayName: "あかり", username: "akari_fan", prefecture: "新潟県", followersCount: 950, message: "新潟から応援！" },
+          { displayName: "ゆうな", username: "yuna_love", prefecture: "沖縄県", followersCount: 3800, message: "沖縄から飛んで行く！" },
+          { displayName: "たいが", username: "taiga_idol", prefecture: "長崎県", followersCount: 1100, message: "長崎から参戦！" },
+          { displayName: "まこと", username: "makoto_fan", prefecture: "熊本県", followersCount: 2600, message: "熊本から応援！" },
+          { displayName: "さやか", username: "sayaka_ch", prefecture: "鹿児島県", followersCount: 4100, message: "鹿児島から行く！" },
+          { displayName: "ゆうと", username: "yuto_ota", prefecture: "岡山県", followersCount: 1400, message: "岡山から参戦！" },
+          { displayName: "みさき", username: "misaki_idol", prefecture: "愛媛県", followersCount: 2900, message: "愛媛から応援！" },
+          { displayName: "こうすけ", username: "kosuke_fan", prefecture: "香川県", followersCount: 1700, message: "香川から行く！" },
+          { displayName: "あいり", username: "airi_love", prefecture: "徳島県", followersCount: 850, message: "徳島から参戦！" },
+          { displayName: "ゆうな", username: "yuna_ota", prefecture: "高知県", followersCount: 1050, message: "高知から応援！" },
+          { displayName: "たかひろ", username: "takahiro_idol", prefecture: "山口県", followersCount: 2300, message: "山口から行く！" },
+          { displayName: "まりな", username: "marina_fan", prefecture: "島根県", followersCount: 780, message: "島根から参戦！" },
+          { displayName: "ゆうと", username: "yuto_ch", prefecture: "鳥取県", followersCount: 920, message: "鳥取から応援！" },
+          { displayName: "さくら", username: "sakura_ota", prefecture: "富山県", followersCount: 1250, message: "富山から行く！" },
+          { displayName: "こうき", username: "koki_idol", prefecture: "石川県", followersCount: 1850, message: "石川から参戦！" },
+          { displayName: "みゆき", username: "miyuki_fan", prefecture: "福井県", followersCount: 680, message: "福井から応援！" },
+          { displayName: "ゆうと", username: "yuto_love", prefecture: "山梨県", followersCount: 1350, message: "山梨から行く！" },
+          { displayName: "たくみ", username: "takumi_ota", prefecture: "長野県", followersCount: 2050, message: "長野から参戦！" },
+          { displayName: "あいり", username: "airi_ch", prefecture: "岐阜県", followersCount: 1550, message: "岐阜から応援！" },
+          { displayName: "ゆうな", username: "yuna_idol", prefecture: "三重県", followersCount: 2750, message: "三重から行く！" },
+          { displayName: "こうすけ", username: "kosuke_ota", prefecture: "滋賀県", followersCount: 980, message: "滋賀から参戦！" },
+          { displayName: "まいか", username: "maika_fan", prefecture: "奈良県", followersCount: 3100, message: "奈良から応援！" },
+          { displayName: "ゆうと", username: "yuto_idol", prefecture: "和歌山県", followersCount: 720, message: "和歌山から行く！" },
+          { displayName: "さやか", username: "sayaka_ota", prefecture: "青森県", followersCount: 1150, message: "青森から参戦！" },
+          { displayName: "こうた", username: "kota_fan", prefecture: "岩手県", followersCount: 890, message: "岩手から応援！" },
+          { displayName: "みさき", username: "misaki_ota", prefecture: "秋田県", followersCount: 650, message: "秋田から行く！" },
+          { displayName: "ゆうと", username: "yuto_fan2", prefecture: "山形県", followersCount: 1020, message: "山形から参戦！" },
+          { displayName: "たかし", username: "takashi_idol", prefecture: "福島県", followersCount: 1680, message: "福島から応援！" },
+          { displayName: "あやの", username: "ayano_fan", prefecture: "茨城県", followersCount: 2400, message: "茨城から行く！" },
+          { displayName: "ゆうな", username: "yuna_ch", prefecture: "栃木県", followersCount: 1920, message: "栃木から参戦！" },
+          { displayName: "こうへい", username: "kohei_fan", prefecture: "群馬県", followersCount: 1380, message: "群馬から応援！" },
+          { displayName: "まこと", username: "makoto_ota", prefecture: "佐賀県", followersCount: 870, message: "佐賀から行く！" },
+          { displayName: "さやか", username: "sayaka_idol", prefecture: "大分県", followersCount: 2150, message: "大分から参戦！" },
+          { displayName: "ゆうと", username: "yuto_ota2", prefecture: "宮崎県", followersCount: 1480, message: "宮崎から応援！" },
+        ];
+
+        // 各チャレンジにランダムに参加者を追加
+        for (const challengeId of createdIds) {
+          // ランダムに10～30人の参加者を追加
+          const participantCount = Math.floor(Math.random() * 21) + 10;
+          const shuffled = [...sampleParticipants].sort(() => Math.random() - 0.5);
+          const selected = shuffled.slice(0, participantCount);
+          
+          for (const participant of selected) {
+            await db.createParticipation({
+              challengeId,
+              displayName: participant.displayName,
+              username: participant.username,
+              followersCount: participant.followersCount,
+              message: participant.message,
+              prefecture: participant.prefecture,
+              companionCount: Math.floor(Math.random() * 3),
+              contribution: 1 + Math.floor(Math.random() * 3),
+              isAnonymous: false,
+            });
+          }
+        }
+
         return { success: true, createdIds, count: createdIds.length };
       }),
 
