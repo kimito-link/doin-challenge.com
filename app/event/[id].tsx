@@ -474,6 +474,8 @@ export default function ChallengeDetailScreen() {
   };
   
   const [showSharePrompt, setShowSharePrompt] = useState(false);
+  const [isGeneratingOgp, setIsGeneratingOgp] = useState(false);
+  const generateOgpMutation = trpc.ogp.generateChallengeOgp.useMutation();
 
   const createParticipationMutation = trpc.participations.create.useMutation({
     onSuccess: () => {
@@ -667,9 +669,6 @@ export default function ChallengeDetailScreen() {
   const goalValue = challenge.goalValue || 100;
   const progress = Math.min((currentValue / goalValue) * 100, 100);
   const remaining = Math.max(goalValue - currentValue, 0);
-
-  const [isGeneratingOgp, setIsGeneratingOgp] = useState(false);
-  const generateOgpMutation = trpc.ogp.generateChallengeOgp.useMutation();
 
   const handleShare = async () => {
     try {
