@@ -469,6 +469,7 @@
 
 ## バグ修正（v4.0）
 
-- [ ] ログアウトボタンが反応しない問題を修正
+- [x] ログアウトボタンが反応しない問題を修正（Web対応の確認モーダル）
+- [x] 画像読み込み速度の改善（スケルトンローダー、プレースホルダー）
 
 - [x] React Hooksエラー「Rendered more hooks than during the previous render」を修正

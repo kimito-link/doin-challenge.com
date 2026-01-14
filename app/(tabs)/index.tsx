@@ -16,6 +16,7 @@ import { AppHeader } from "@/components/app-header";
 import { CachedDataIndicator } from "@/components/offline-banner";
 import { useNetworkStatus } from "@/hooks/use-offline-cache";
 import { setCache, getCache, CACHE_KEYS } from "@/lib/offline-cache";
+import { ChallengeCardSkeleton, Skeleton } from "@/components/skeleton-loader";
 
 // キャラクター画像
 const characterImages = {
@@ -907,9 +908,27 @@ export default function HomeScreen() {
       />
 
       {isLoading ? (
-        <View style={{ flex: 1, alignItems: "center", justifyContent: "center", backgroundColor: "#0D1117" }}>
-          <Text style={{ color: "#9CA3AF" }}>読み込み中...</Text>
-        </View>
+        <ScrollView style={{ flex: 1, backgroundColor: "#0D1117" }} contentContainerStyle={{ padding: 16 }}>
+          {/* スケルトンローダー */}
+          <View style={{ marginBottom: 24 }}>
+            <Skeleton width="40%" height={24} borderRadius={8} style={{ marginBottom: 16 }} />
+            <Skeleton width="100%" height={180} borderRadius={16} style={{ marginBottom: 16 }} />
+          </View>
+          <View style={{ marginBottom: 24 }}>
+            <Skeleton width="50%" height={20} borderRadius={6} style={{ marginBottom: 12 }} />
+            <View style={{ flexDirection: "row", justifyContent: "space-between", marginBottom: 16 }}>
+              <Skeleton width="30%" height={60} borderRadius={12} />
+              <Skeleton width="30%" height={60} borderRadius={12} />
+              <Skeleton width="30%" height={60} borderRadius={12} />
+            </View>
+          </View>
+          <View>
+            <Skeleton width="45%" height={20} borderRadius={6} style={{ marginBottom: 12 }} />
+            <ChallengeCardSkeleton />
+            <ChallengeCardSkeleton />
+            <ChallengeCardSkeleton />
+          </View>
+        </ScrollView>
       ) : displayChallenges.length > 0 ? (
         <FlatList
           key={`grid-${numColumns}`}
