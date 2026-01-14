@@ -12,6 +12,12 @@ interface SharePromptModalProps {
   challengeTitle: string;
   hostName: string;
   challengeId: number;
+  // 参加者情報（オプション）
+  participantName?: string;
+  participantUsername?: string;
+  participantImage?: string;
+  message?: string;
+  contribution?: number;
 }
 
 /**
@@ -23,6 +29,11 @@ export function SharePromptModal({
   challengeTitle,
   hostName,
   challengeId,
+  participantName,
+  participantUsername,
+  participantImage,
+  message,
+  contribution,
 }: SharePromptModalProps) {
   const scaleAnim = useRef(new Animated.Value(0.8)).current;
   const opacityAnim = useRef(new Animated.Value(0)).current;
@@ -110,6 +121,42 @@ export function SharePromptModal({
             「{challengeTitle}」への参加を表明しました
           </Text>
 
+          {/* 参加者情報カード */}
+          {participantName && (
+            <View style={styles.participantCard}>
+              <View style={styles.participantHeader}>
+                {participantImage ? (
+                  <View style={styles.participantAvatar}>
+                    <View style={[styles.avatarImage, { backgroundColor: '#EC4899' }]}>
+                      <Text style={styles.avatarText}>{participantName.charAt(0)}</Text>
+                    </View>
+                  </View>
+                ) : (
+                  <View style={[styles.participantAvatar, { backgroundColor: '#EC4899' }]}>
+                    <Text style={styles.avatarText}>{participantName.charAt(0)}</Text>
+                  </View>
+                )}
+                <View style={styles.participantInfo}>
+                  <Text style={styles.participantName}>{participantName}</Text>
+                  {participantUsername && (
+                    <Text style={styles.participantUsername}>@{participantUsername}</Text>
+                  )}
+                </View>
+                {contribution && (
+                  <View style={styles.contributionBadge}>
+                    <Text style={styles.contributionText}>+{contribution}</Text>
+                    <Text style={styles.contributionLabel}>貢献</Text>
+                  </View>
+                )}
+              </View>
+              {message && (
+                <View style={styles.messageBox}>
+                  <Text style={styles.messageText}>{message}</Text>
+                </View>
+              )}
+            </View>
+          )}
+
           {/* シェア促進メッセージ */}
           <View style={styles.messageContainer}>
             <Text style={styles.message}>
@@ -168,6 +215,73 @@ const styles = StyleSheet.create({
     width: "100%",
     maxWidth: 340,
     alignItems: "center",
+  },
+  participantCard: {
+    backgroundColor: "#2D3139",
+    borderRadius: 12,
+    padding: 16,
+    width: "100%",
+    marginBottom: 16,
+  },
+  participantHeader: {
+    flexDirection: "row",
+    alignItems: "center",
+  },
+  participantAvatar: {
+    width: 48,
+    height: 48,
+    borderRadius: 24,
+    alignItems: "center",
+    justifyContent: "center",
+    overflow: "hidden",
+  },
+  avatarImage: {
+    width: 48,
+    height: 48,
+    borderRadius: 24,
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  avatarText: {
+    color: "#fff",
+    fontSize: 20,
+    fontWeight: "bold",
+  },
+  participantInfo: {
+    flex: 1,
+    marginLeft: 12,
+  },
+  participantName: {
+    color: "#fff",
+    fontSize: 16,
+    fontWeight: "600",
+  },
+  participantUsername: {
+    color: "#DD6500",
+    fontSize: 14,
+  },
+  contributionBadge: {
+    alignItems: "center",
+  },
+  contributionText: {
+    color: "#EC4899",
+    fontSize: 24,
+    fontWeight: "bold",
+  },
+  contributionLabel: {
+    color: "#6B7280",
+    fontSize: 11,
+  },
+  messageBox: {
+    backgroundColor: "#1A1D21",
+    borderRadius: 8,
+    padding: 12,
+    marginTop: 12,
+  },
+  messageText: {
+    color: "#E5E7EB",
+    fontSize: 14,
+    lineHeight: 20,
   },
   iconContainer: {
     marginBottom: 16,

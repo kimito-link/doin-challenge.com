@@ -13,6 +13,7 @@ import MaterialIcons from "@expo/vector-icons/MaterialIcons";
 import { LinearGradient } from "expo-linear-gradient";
 import { AppHeader } from "@/components/app-header";
 import { ConfirmModal } from "@/components/confirm-modal";
+import { MypageSkeleton } from "@/components/mypage-skeleton";
 
 // キャラクター画像
 const characterImages = {
@@ -155,9 +156,12 @@ export default function MyPageScreen() {
   if (loading) {
     return (
       <ScreenContainer containerClassName="bg-[#0D1117]">
-        <View style={{ flex: 1, alignItems: "center", justifyContent: "center", backgroundColor: "#0D1117" }}>
-          <Text style={{ color: "#9CA3AF" }}>読み込み中...</Text>
-        </View>
+        <AppHeader 
+          title="動員ちゃれんじ" 
+          showCharacters={false}
+          isDesktop={isDesktop}
+        />
+        <MypageSkeleton />
       </ScreenContainer>
     );
   }

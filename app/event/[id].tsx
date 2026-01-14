@@ -197,7 +197,13 @@ function ContributionRanking({ participations }: { participations: Participation
               {p.isAnonymous ? "匿名" : p.displayName}
             </Text>
             {p.username && !p.isAnonymous && (
-              <Text style={{ color: "#DD6500", fontSize: 12 }}>@{p.username}</Text>
+              <TouchableOpacity
+                onPress={() => Linking.openURL(`https://x.com/${p.username}`)}
+                style={{ flexDirection: "row", alignItems: "center" }}
+              >
+                <MaterialIcons name="open-in-new" size={10} color="#DD6500" style={{ marginRight: 2 }} />
+                <Text style={{ color: "#DD6500", fontSize: 12 }}>@{p.username}</Text>
+              </TouchableOpacity>
             )}
           </View>
           <View style={{ alignItems: "flex-end" }}>
@@ -247,9 +253,15 @@ function MessageCard({ participation, onCheer, cheerCount, onDM, challengeId, co
           </Text>
           <View style={{ flexDirection: "row", alignItems: "center" }}>
             {participation.username && !participation.isAnonymous && (
-              <Text style={{ color: "#DD6500", fontSize: 14, marginRight: 8 }}>
-                @{participation.username}
-              </Text>
+              <TouchableOpacity
+                onPress={() => Linking.openURL(`https://x.com/${participation.username}`)}
+                style={{ flexDirection: "row", alignItems: "center", marginRight: 8 }}
+              >
+                <MaterialIcons name="open-in-new" size={12} color="#DD6500" style={{ marginRight: 2 }} />
+                <Text style={{ color: "#DD6500", fontSize: 14 }}>
+                  @{participation.username}
+                </Text>
+              </TouchableOpacity>
             )}
             {participation.prefecture && (
               <Text style={{ color: "#6B7280", fontSize: 12 }}>
@@ -307,9 +319,15 @@ function MessageCard({ participation, onCheer, cheerCount, onDM, challengeId, co
                   {companion.displayName}
                 </Text>
                 {companion.twitterUsername && (
-                  <Text style={{ color: "#DD6500", fontSize: 11, marginLeft: 4 }}>
-                    @{companion.twitterUsername}
-                  </Text>
+                  <TouchableOpacity
+                    onPress={() => Linking.openURL(`https://x.com/${companion.twitterUsername}`)}
+                    style={{ flexDirection: "row", alignItems: "center", marginLeft: 4 }}
+                  >
+                    <MaterialIcons name="open-in-new" size={9} color="#DD6500" style={{ marginRight: 1 }} />
+                    <Text style={{ color: "#DD6500", fontSize: 11 }}>
+                      @{companion.twitterUsername}
+                    </Text>
+                  </TouchableOpacity>
                 )}
               </View>
             ))}
@@ -434,11 +452,26 @@ export default function ChallengeDetailScreen() {
   };
   
   const [showSharePrompt, setShowSharePrompt] = useState(false);
+  const [lastParticipation, setLastParticipation] = useState<{
+    name: string;
+    username?: string;
+    image?: string;
+    message?: string;
+    contribution: number;
+  } | null>(null);
   const [isGeneratingOgp, setIsGeneratingOgp] = useState(false);
   const generateOgpMutation = trpc.ogp.generateChallengeOgp.useMutation();
 
   const createParticipationMutation = trpc.participations.create.useMutation({
     onSuccess: () => {
+      // 参加者情報を保存
+      setLastParticipation({
+        name: user?.name || "",
+        username: user?.username || undefined,
+        image: user?.profileImage || undefined,
+        message: message || undefined,
+        contribution: 1 + companions.length,
+      });
       setMessage("");
       setCompanionCount(0);
       setPrefecture("");
@@ -709,9 +742,15 @@ export default function ChallengeDetailScreen() {
                   {challenge.hostName}
                 </Text>
                 {challenge.hostUsername && (
-                  <Text style={{ color: "rgba(255,255,255,0.8)", fontSize: 14 }}>
-                    @{challenge.hostUsername}
-                  </Text>
+                  <TouchableOpacity
+                    onPress={() => Linking.openURL(`https://x.com/${challenge.hostUsername}`)}
+                    style={{ flexDirection: "row", alignItems: "center" }}
+                  >
+                    <MaterialIcons name="open-in-new" size={12} color="rgba(255,255,255,0.8)" style={{ marginRight: 3 }} />
+                    <Text style={{ color: "rgba(255,255,255,0.8)", fontSize: 14 }}>
+                      @{challenge.hostUsername}
+                    </Text>
+                  </TouchableOpacity>
                 )}
                 {challenge.hostFollowersCount !== null && (
                   <Text style={{ color: "rgba(255,255,255,0.7)", fontSize: 12 }}>
@@ -1552,9 +1591,15 @@ export default function ChallengeDetailScreen() {
                               {companion.displayName}
                             </Text>
                             {companion.twitterUsername && (
-                              <Text style={{ color: "#1DA1F2", fontSize: 12 }}>
-                                @{companion.twitterUsername}
-                              </Text>
+                              <TouchableOpacity
+                                onPress={() => Linking.openURL(`https://x.com/${companion.twitterUsername}`)}
+                                style={{ flexDirection: "row", alignItems: "center" }}
+                              >
+                                <MaterialIcons name="open-in-new" size={10} color="#1DA1F2" style={{ marginRight: 2 }} />
+                                <Text style={{ color: "#1DA1F2", fontSize: 12 }}>
+                                  @{companion.twitterUsername}
+                                </Text>
+                              </TouchableOpacity>
                             )}
                           </View>
                           <TouchableOpacity
@@ -1861,10 +1906,18 @@ export default function ChallengeDetailScreen() {
       {/* シェア促進モーダル */}
       <SharePromptModal
         visible={showSharePrompt}
-        onClose={() => setShowSharePrompt(false)}
+        onClose={() => {
+          setShowSharePrompt(false);
+          setLastParticipation(null);
+        }}
         challengeTitle={challenge.title}
         hostName={challenge.hostName}
         challengeId={challengeId}
+        participantName={lastParticipation?.name}
+        participantUsername={lastParticipation?.username}
+        participantImage={lastParticipation?.image}
+        message={lastParticipation?.message}
+        contribution={lastParticipation?.contribution}
       />
     </ScreenContainer>
   );
