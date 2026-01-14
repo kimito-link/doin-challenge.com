@@ -1,7 +1,7 @@
 import { Text, View, TouchableOpacity, TextInput, ScrollView, KeyboardAvoidingView, Platform, Alert, Share, Dimensions, Linking, Modal } from "react-native";
 import { Image } from "expo-image";
 import { useLocalSearchParams, useRouter } from "expo-router";
-import { useState } from "react";
+import { useState, useRef } from "react";
 import { ScreenContainer } from "@/components/screen-container";
 import { trpc } from "@/lib/trpc";
 import { useAuth } from "@/hooks/use-auth";
@@ -477,6 +477,9 @@ export default function ChallengeDetailScreen() {
   const [selectedPrefectureFilter, setSelectedPrefectureFilter] = useState("all");
   const [showPrefectureFilterList, setShowPrefectureFilterList] = useState(false);
   const [showConfirmation, setShowConfirmation] = useState(false);
+  const [justSubmitted, setJustSubmitted] = useState(false);
+  const scrollViewRef = useRef<ScrollView>(null);
+  const messagesRef = useRef<View>(null);
   
   // 友人追加用のstate
   type Companion = {
@@ -561,7 +564,7 @@ export default function ChallengeDetailScreen() {
   const generateOgpMutation = trpc.ogp.generateChallengeOgp.useMutation();
 
   const createParticipationMutation = trpc.participations.create.useMutation({
-    onSuccess: () => {
+    onSuccess: async () => {
       // 参加者情報を保存
       setLastParticipation({
         name: user?.name || "",
@@ -575,9 +578,22 @@ export default function ChallengeDetailScreen() {
       setPrefecture("");
       setCompanions([]);
       setShowForm(false);
-      refetch();
-      // シェア促進モーダルを表示
-      setShowSharePrompt(true);
+      
+      // データを再取得して最新状態を反映
+      await refetch();
+      
+      // 参加表明完了フラグをセット（応援メッセージセクションへスクロール用）
+      setJustSubmitted(true);
+      
+      // 応援メッセージセクションへスクロール
+      setTimeout(() => {
+        scrollViewRef.current?.scrollTo({ y: 800, animated: true });
+      }, 300);
+      
+      // シェア促進モーダルを表示（少し遅らせて反映を見せてから）
+      setTimeout(() => {
+        setShowSharePrompt(true);
+      }, 1500);
     },
   });
   
@@ -793,7 +809,7 @@ export default function ChallengeDetailScreen() {
         behavior={Platform.OS === "ios" ? "padding" : "height"}
         style={{ flex: 1 }}
       >
-        <ScrollView style={{ flex: 1, backgroundColor: "#0D1117" }}>
+        <ScrollView ref={scrollViewRef} style={{ flex: 1, backgroundColor: "#0D1117" }}>
           {/* ヘッダー */}
           <AppHeader 
             title="動員ちゃれんじ" 
@@ -1205,7 +1221,28 @@ export default function ChallengeDetailScreen() {
 
             {/* 応援メッセージ */}
             {participations && participations.length > 0 && (
-              <View style={{ marginTop: 16 }}>
+              <View ref={messagesRef} style={{ marginTop: 16 }}>
+                {/* 参加表明完了時のハイライト表示 */}
+                {justSubmitted && (
+                  <View style={{
+                    backgroundColor: "#10B981",
+                    borderRadius: 12,
+                    padding: 16,
+                    marginBottom: 16,
+                    flexDirection: "row",
+                    alignItems: "center",
+                  }}>
+                    <MaterialIcons name="check-circle" size={24} color="#fff" />
+                    <View style={{ marginLeft: 12, flex: 1 }}>
+                      <Text style={{ color: "#fff", fontSize: 16, fontWeight: "bold" }}>
+                        参加表明が完了しました！
+                      </Text>
+                      <Text style={{ color: "rgba(255,255,255,0.9)", fontSize: 14, marginTop: 4 }}>
+                        あなたの応援メッセージが下に表示されています
+                      </Text>
+                    </View>
+                  </View>
+                )}
                 <View style={{ flexDirection: "row", alignItems: "center", justifyContent: "space-between", marginBottom: 12 }}>
                   <Text style={{ color: "#fff", fontSize: 16, fontWeight: "bold" }}>
                     応援メッセージ ({participations.length}件)
@@ -1298,15 +1335,35 @@ export default function ChallengeDetailScreen() {
                     const participantCompanions = challengeCompanions?.filter(
                       (c: any) => c.participationId === p.id
                     ) || [];
+                    const isOwnPost = user && p.userId === user.id;
                     return (
-                      <MessageCard 
-                        key={p.id} 
-                        participation={p as Participation} 
-                        onCheer={() => handleSendCheer(p.id, p.userId)}
-                        onDM={(userId) => router.push(`/messages/${userId}?challengeId=${challengeId}` as never)}
-                        challengeId={challengeId}
-                        companions={participantCompanions}
-                      />
+                      <View key={p.id} style={isOwnPost && justSubmitted ? {
+                        borderWidth: 2,
+                        borderColor: "#10B981",
+                        borderRadius: 14,
+                        marginBottom: 4,
+                      } : undefined}>
+                        {isOwnPost && justSubmitted && (
+                          <View style={{
+                            backgroundColor: "#10B981",
+                            paddingVertical: 6,
+                            paddingHorizontal: 12,
+                            borderTopLeftRadius: 12,
+                            borderTopRightRadius: 12,
+                          }}>
+                            <Text style={{ color: "#fff", fontSize: 12, fontWeight: "bold" }}>
+                              ✨ あなたの参加表明
+                            </Text>
+                          </View>
+                        )}
+                        <MessageCard 
+                          participation={p as Participation} 
+                          onCheer={() => handleSendCheer(p.id, p.userId)}
+                          onDM={(userId) => router.push(`/messages/${userId}?challengeId=${challengeId}` as never)}
+                          challengeId={challengeId}
+                          companions={participantCompanions}
+                        />
+                      </View>
                     );
                   })}
                 
