@@ -484,8 +484,10 @@ export default function ChallengeDetailScreen() {
   const [showPrefectureFilterList, setShowPrefectureFilterList] = useState(false);
   const [showConfirmation, setShowConfirmation] = useState(false);
   const [justSubmitted, setJustSubmitted] = useState(false);
+  const [myNewParticipationId, setMyNewParticipationId] = useState<number | null>(null);
   const scrollViewRef = useRef<ScrollView>(null);
   const messagesRef = useRef<View>(null);
+  const myPostRef = useRef<View>(null);
   
   // 友人追加用のstate
   type Companion = {
@@ -578,7 +580,7 @@ export default function ChallengeDetailScreen() {
         [{ text: "OK" }]
       );
     },
-    onSuccess: async () => {
+    onSuccess: async (data) => {
       // 参加者情報を保存
       setLastParticipation({
         name: user?.name || "",
@@ -596,58 +598,65 @@ export default function ChallengeDetailScreen() {
       // 参加表明完了フラグをセット（応援メッセージセクションへスクロール用）
       setJustSubmitted(true);
       
+      // 新しい参加表明IDを保存（ハイライト用）
+      if (data?.id) {
+        setMyNewParticipationId(data.id);
+      }
+      
       // データを再取得して最新状態を反映
       await refetch();
       
-      // 成功アラートを表示
-      Alert.alert(
-        "🎉 参加表明完了！",
-        "あなたの応援メッセージが反映されました。\n下にスクロールして確認してください！",
-        [
-          {
-            text: "確認する",
-            onPress: () => {
-              // 応援メッセージセクションへスクロール
-              if (scrollViewRef.current) {
-                scrollViewRef.current.scrollToEnd({ animated: true });
-              }
+      // 自分の投稿へスクロール（複数回試行で確実に動作させる）
+      const scrollToMyPost = () => {
+        if (myPostRef.current && scrollViewRef.current) {
+          myPostRef.current.measureLayout(
+            scrollViewRef.current as any,
+            (x, y) => {
+              // 自分の投稿が画面上部に来るようにスクロール（少し余裕を持たせる）
+              scrollViewRef.current?.scrollTo({ y: Math.max(0, y - 120), animated: true });
             },
-          },
-        ]
-      );
-      
-      // 応援メッセージセクションへスクロール（複数回試行）
-      const scrollToMessages = () => {
-        if (scrollViewRef.current) {
-          // まずページ下部へスクロール（確実に動作）
-          scrollViewRef.current.scrollToEnd({ animated: true });
-          
-          // その後、messagesRefの位置へ調整
-          setTimeout(() => {
-            if (messagesRef.current && scrollViewRef.current) {
-              messagesRef.current.measureLayout(
-                scrollViewRef.current as any,
-                (x, y) => {
-                  scrollViewRef.current?.scrollTo({ y: Math.max(0, y - 100), animated: true });
-                },
-                () => {
-                  // フォールバック: そのまま下部に留まる
-                }
-              );
+            () => {
+              // フォールバック: messagesRefの位置へスクロール
+              if (messagesRef.current && scrollViewRef.current) {
+                messagesRef.current.measureLayout(
+                  scrollViewRef.current as any,
+                  (x, y) => {
+                    scrollViewRef.current?.scrollTo({ y: Math.max(0, y - 100), animated: true });
+                  },
+                  () => {
+                    // 最終フォールバック: ページ下部へ
+                    scrollViewRef.current?.scrollToEnd({ animated: true });
+                  }
+                );
+              }
             }
-          }, 300);
+          );
+        } else if (messagesRef.current && scrollViewRef.current) {
+          // myPostRefがまだない場合はmessagesRefへ
+          messagesRef.current.measureLayout(
+            scrollViewRef.current as any,
+            (x, y) => {
+              scrollViewRef.current?.scrollTo({ y: Math.max(0, y - 100), animated: true });
+            },
+            () => {
+              scrollViewRef.current?.scrollToEnd({ animated: true });
+            }
+          );
+        } else if (scrollViewRef.current) {
+          // 最終フォールバック
+          scrollViewRef.current.scrollToEnd({ animated: true });
         }
       };
       
-      // 少し遅らせてスクロール（DOMが更新されてから）
-      setTimeout(scrollToMessages, 500);
-      // 念のため再度スクロール
-      setTimeout(scrollToMessages, 1000);
+      // データ取得後にスクロール（DOMが更新されてから）
+      setTimeout(scrollToMyPost, 300);
+      setTimeout(scrollToMyPost, 600);
+      setTimeout(scrollToMyPost, 1000);
       
       // シェア促進モーダルを表示（少し遅らせて反映を見せてから）
       setTimeout(() => {
         setShowSharePrompt(true);
-      }, 3000);
+      }, 2500);
     },
   });
   
@@ -1308,52 +1317,6 @@ export default function ChallengeDetailScreen() {
             {/* 応援メッセージ */}
             {participations && participations.length > 0 && (
               <View ref={messagesRef} style={{ marginTop: 16 }}>
-                {/* 参加表明完了時のハイライト表示 */}
-                {justSubmitted && (
-                  <View style={{
-                    backgroundColor: "#10B981",
-                    borderRadius: 16,
-                    padding: 20,
-                    marginBottom: 20,
-                    borderWidth: 3,
-                    borderColor: "#34D399",
-                    shadowColor: "#10B981",
-                    shadowOffset: { width: 0, height: 4 },
-                    shadowOpacity: 0.3,
-                    shadowRadius: 8,
-                    elevation: 8,
-                  }}>
-                    <View style={{ flexDirection: "row", alignItems: "center", marginBottom: 12 }}>
-                      <View style={{
-                        width: 48,
-                        height: 48,
-                        borderRadius: 24,
-                        backgroundColor: "rgba(255,255,255,0.2)",
-                        justifyContent: "center",
-                        alignItems: "center",
-                      }}>
-                        <MaterialIcons name="check-circle" size={32} color="#fff" />
-                      </View>
-                      <View style={{ marginLeft: 16, flex: 1 }}>
-                        <Text style={{ color: "#fff", fontSize: 20, fontWeight: "bold" }}>
-                          🎉 参加表明完了！
-                        </Text>
-                        <Text style={{ color: "rgba(255,255,255,0.9)", fontSize: 14, marginTop: 4 }}>
-                          あなたの応援メッセージが反映されました
-                        </Text>
-                      </View>
-                    </View>
-                    <View style={{
-                      backgroundColor: "rgba(255,255,255,0.15)",
-                      borderRadius: 12,
-                      padding: 12,
-                    }}>
-                      <Text style={{ color: "#fff", fontSize: 14, textAlign: "center" }}>
-                        ⬇️ 下にスクロールしてあなたの投稿を確認してね！
-                      </Text>
-                    </View>
-                  </View>
-                )}
                 <View style={{ flexDirection: "row", alignItems: "center", justifyContent: "space-between", marginBottom: 12 }}>
                   <Text style={{ color: "#fff", fontSize: 16, fontWeight: "bold" }}>
                     応援メッセージ ({participations.length}件)
@@ -1447,31 +1410,37 @@ export default function ChallengeDetailScreen() {
                       (c: any) => c.participationId === p.id
                     ) || [];
                     const isOwnPost = user && p.userId === user.id;
+                    // 新しく作成した参加表明かどうか（IDまたはuser.idで判定）
+                    const isNewlyCreated = isOwnPost && (justSubmitted || (myNewParticipationId && p.id === myNewParticipationId));
                     return (
-                      <View key={p.id} style={isOwnPost && justSubmitted ? {
-                        borderWidth: 3,
-                        borderColor: "#10B981",
-                        borderRadius: 16,
-                        marginBottom: 8,
-                        shadowColor: "#10B981",
-                        shadowOffset: { width: 0, height: 2 },
-                        shadowOpacity: 0.3,
-                        shadowRadius: 4,
-                        elevation: 4,
-                      } : undefined}>
-                        {isOwnPost && justSubmitted && (
+                      <View 
+                        key={p.id} 
+                        ref={isNewlyCreated ? myPostRef : undefined}
+                        style={isNewlyCreated ? {
+                          borderWidth: 3,
+                          borderColor: "#10B981",
+                          borderRadius: 16,
+                          marginBottom: 12,
+                          shadowColor: "#10B981",
+                          shadowOffset: { width: 0, height: 4 },
+                          shadowOpacity: 0.4,
+                          shadowRadius: 8,
+                          elevation: 8,
+                        } : { marginBottom: 8 }}
+                      >
+                        {isNewlyCreated && (
                           <View style={{
                             backgroundColor: "#10B981",
-                            paddingVertical: 10,
+                            paddingVertical: 12,
                             paddingHorizontal: 16,
                             borderTopLeftRadius: 13,
                             borderTopRightRadius: 13,
                             flexDirection: "row",
                             alignItems: "center",
                           }}>
-                            <MaterialIcons name="star" size={18} color="#fff" />
-                            <Text style={{ color: "#fff", fontSize: 14, fontWeight: "bold", marginLeft: 8 }}>
-                              ✨ あなたの参加表明が反映されました！
+                            <MaterialIcons name="check-circle" size={20} color="#fff" />
+                            <Text style={{ color: "#fff", fontSize: 15, fontWeight: "bold", marginLeft: 8 }}>
+                              🎉 あなたの参加表明が反映されました！
                             </Text>
                           </View>
                         )}
