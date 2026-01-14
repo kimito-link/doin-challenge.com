@@ -591,6 +591,23 @@ export default function ChallengeDetailScreen() {
       // データを再取得して最新状態を反映
       await refetch();
       
+      // 成功アラートを表示
+      Alert.alert(
+        "🎉 参加表明完了！",
+        "あなたの応援メッセージが反映されました。\n下にスクロールして確認してください！",
+        [
+          {
+            text: "確認する",
+            onPress: () => {
+              // 応援メッセージセクションへスクロール
+              if (scrollViewRef.current) {
+                scrollViewRef.current.scrollToEnd({ animated: true });
+              }
+            },
+          },
+        ]
+      );
+      
       // 応援メッセージセクションへスクロール（複数回試行）
       const scrollToMessages = () => {
         if (scrollViewRef.current) {
@@ -622,7 +639,7 @@ export default function ChallengeDetailScreen() {
       // シェア促進モーダルを表示（少し遅らせて反映を見せてから）
       setTimeout(() => {
         setShowSharePrompt(true);
-      }, 2500);
+      }, 3000);
     },
   });
   
@@ -777,7 +794,7 @@ export default function ChallengeDetailScreen() {
           profileImage: user.profileImage,
           companions: companionData,
         });
-      }, 100);
+      }, 200);
     }
   };
 
