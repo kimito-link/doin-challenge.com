@@ -17,6 +17,7 @@ import { Skeleton } from "@/components/skeleton-loader";
 import { EventDetailSkeleton } from "@/components/event-detail-skeleton";
 import { JapanHeatmap } from "@/components/japan-heatmap";
 import { JapanBlockMap } from "@/components/japan-block-map";
+import { JapanDeformedMap } from "@/components/japan-deformed-map";
 import { PrefectureParticipantsModal } from "@/components/prefecture-participants-modal";
 import { RegionParticipantsModal } from "@/components/region-participants-modal";
 import { GrowthTrajectoryChart } from "@/components/growth-trajectory-chart";
@@ -1053,8 +1054,8 @@ export default function ChallengeDetailScreen() {
                 </Text>
               )}
 
-              {/* 地域別参加者マップ（ブロック形式） */}
-              <JapanBlockMap 
+              {/* 地域別参加者マップ（47都道府県デフォルメ地図） */}
+              <JapanDeformedMap 
                 prefectureCounts={prefectureCounts} 
                 onPrefecturePress={(prefName) => setSelectedPrefectureForModal(prefName)}
                 onRegionPress={(regionName, prefectures) => setSelectedRegion({ name: regionName, prefectures })}
