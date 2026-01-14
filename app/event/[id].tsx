@@ -591,25 +591,38 @@ export default function ChallengeDetailScreen() {
       // データを再取得して最新状態を反映
       await refetch();
       
-      // 応援メッセージセクションへスクロール（データ取得後に実行）
-      setTimeout(() => {
-        // messagesRefの位置を取得してスクロール
-        messagesRef.current?.measureLayout(
-          scrollViewRef.current as any,
-          (x, y) => {
-            scrollViewRef.current?.scrollTo({ y: y - 50, animated: true });
-          },
-          () => {
-            // フォールバック: ページ下部へスクロール
-            scrollViewRef.current?.scrollToEnd({ animated: true });
-          }
-        );
-      }, 600);
+      // 応援メッセージセクションへスクロール（複数回試行）
+      const scrollToMessages = () => {
+        if (scrollViewRef.current) {
+          // まずページ下部へスクロール（確実に動作）
+          scrollViewRef.current.scrollToEnd({ animated: true });
+          
+          // その後、messagesRefの位置へ調整
+          setTimeout(() => {
+            if (messagesRef.current && scrollViewRef.current) {
+              messagesRef.current.measureLayout(
+                scrollViewRef.current as any,
+                (x, y) => {
+                  scrollViewRef.current?.scrollTo({ y: Math.max(0, y - 100), animated: true });
+                },
+                () => {
+                  // フォールバック: そのまま下部に留まる
+                }
+              );
+            }
+          }, 300);
+        }
+      };
+      
+      // 少し遅らせてスクロール（DOMが更新されてから）
+      setTimeout(scrollToMessages, 500);
+      // 念のため再度スクロール
+      setTimeout(scrollToMessages, 1000);
       
       // シェア促進モーダルを表示（少し遅らせて反映を見せてから）
       setTimeout(() => {
         setShowSharePrompt(true);
-      }, 2000);
+      }, 2500);
     },
   });
   
