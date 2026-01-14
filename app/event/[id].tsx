@@ -570,6 +570,14 @@ export default function ChallengeDetailScreen() {
   const generateOgpMutation = trpc.ogp.generateChallengeOgp.useMutation();
 
   const createParticipationMutation = trpc.participations.create.useMutation({
+    onError: (error) => {
+      console.error('Participation creation error:', error);
+      Alert.alert(
+        "エラー",
+        `参加表明の送信に失敗しました: ${error.message}\nもう一度お試しください。`,
+        [{ text: "OK" }]
+      );
+    },
     onSuccess: async () => {
       // 参加者情報を保存
       setLastParticipation({
@@ -771,30 +779,44 @@ export default function ChallengeDetailScreen() {
     setShowConfirmation(true);
   };
 
-  const handleConfirmSubmit = () => {
+  const handleConfirmSubmit = async () => {
     // 友人データを整形
     const companionData = companions.map(c => ({
       displayName: c.displayName,
       twitterUsername: c.twitterUsername || undefined,
     }));
     
-    if (user) {
-      // まず確認画面を閉じる
+    console.log('handleConfirmSubmit called, user:', user);
+    
+    if (!user) {
+      Alert.alert("エラー", "ログインが必要です。再度ログインしてください。");
       setShowConfirmation(false);
-      
-      // 少し遅らせて送信（モーダルが閉じてから）
-      setTimeout(() => {
-        createParticipationMutation.mutate({
-          challengeId,
-          message,
-          companionCount: companions.length,
-          prefecture,
-          displayName: user.name || "ゲスト",
-          username: user.username,
-          profileImage: user.profileImage,
-          companions: companionData,
-        });
-      }, 200);
+      return;
+    }
+    
+    // 送信データを準備
+    const submitData = {
+      challengeId,
+      message,
+      companionCount: companions.length,
+      prefecture,
+      displayName: user.name || "ゲスト",
+      username: user.username,
+      profileImage: user.profileImage,
+      companions: companionData,
+    };
+    
+    console.log('Submitting participation:', submitData);
+    
+    try {
+      // 直接mutateAsyncを呼び出して結果を待つ
+      await createParticipationMutation.mutateAsync(submitData);
+      // 成功時に確認画面を閉じる（onSuccessで処理される）
+      setShowConfirmation(false);
+    } catch (error) {
+      // エラー時は確認画面を閉じる（onErrorでアラートが表示される）
+      setShowConfirmation(false);
+      console.error('Participation submission failed:', error);
     }
   };
 
