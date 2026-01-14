@@ -579,21 +579,22 @@ export default function ChallengeDetailScreen() {
       setCompanions([]);
       setShowForm(false);
       
-      // データを再取得して最新状態を反映
-      await refetch();
-      
       // 参加表明完了フラグをセット（応援メッセージセクションへスクロール用）
       setJustSubmitted(true);
       
-      // 応援メッセージセクションへスクロール
+      // データを再取得して最新状態を反映
+      await refetch();
+      
+      // 応援メッセージセクションへスクロール（データ取得後に実行）
       setTimeout(() => {
-        scrollViewRef.current?.scrollTo({ y: 800, animated: true });
-      }, 300);
+        // 応援メッセージセクションの位置を推定（ページ下部へスクロール）
+        scrollViewRef.current?.scrollToEnd({ animated: true });
+      }, 500);
       
       // シェア促進モーダルを表示（少し遅らせて反映を見せてから）
       setTimeout(() => {
         setShowSharePrompt(true);
-      }, 1500);
+      }, 2000);
     },
   });
   
@@ -733,17 +734,22 @@ export default function ChallengeDetailScreen() {
     }));
     
     if (user) {
-      createParticipationMutation.mutate({
-        challengeId,
-        message,
-        companionCount: companions.length,
-        prefecture,
-        displayName: user.name || "ゲスト",
-        username: user.username,
-        profileImage: user.profileImage,
-        companions: companionData,
-      });
+      // まず確認画面を閉じる
       setShowConfirmation(false);
+      
+      // 少し遅らせて送信（モーダルが閉じてから）
+      setTimeout(() => {
+        createParticipationMutation.mutate({
+          challengeId,
+          message,
+          companionCount: companions.length,
+          prefecture,
+          displayName: user.name || "ゲスト",
+          username: user.username,
+          profileImage: user.profileImage,
+          companions: companionData,
+        });
+      }, 100);
     }
   };
 
@@ -1226,19 +1232,44 @@ export default function ChallengeDetailScreen() {
                 {justSubmitted && (
                   <View style={{
                     backgroundColor: "#10B981",
-                    borderRadius: 12,
-                    padding: 16,
-                    marginBottom: 16,
-                    flexDirection: "row",
-                    alignItems: "center",
+                    borderRadius: 16,
+                    padding: 20,
+                    marginBottom: 20,
+                    borderWidth: 3,
+                    borderColor: "#34D399",
+                    shadowColor: "#10B981",
+                    shadowOffset: { width: 0, height: 4 },
+                    shadowOpacity: 0.3,
+                    shadowRadius: 8,
+                    elevation: 8,
                   }}>
-                    <MaterialIcons name="check-circle" size={24} color="#fff" />
-                    <View style={{ marginLeft: 12, flex: 1 }}>
-                      <Text style={{ color: "#fff", fontSize: 16, fontWeight: "bold" }}>
-                        参加表明が完了しました！
-                      </Text>
-                      <Text style={{ color: "rgba(255,255,255,0.9)", fontSize: 14, marginTop: 4 }}>
-                        あなたの応援メッセージが下に表示されています
+                    <View style={{ flexDirection: "row", alignItems: "center", marginBottom: 12 }}>
+                      <View style={{
+                        width: 48,
+                        height: 48,
+                        borderRadius: 24,
+                        backgroundColor: "rgba(255,255,255,0.2)",
+                        justifyContent: "center",
+                        alignItems: "center",
+                      }}>
+                        <MaterialIcons name="check-circle" size={32} color="#fff" />
+                      </View>
+                      <View style={{ marginLeft: 16, flex: 1 }}>
+                        <Text style={{ color: "#fff", fontSize: 20, fontWeight: "bold" }}>
+                          🎉 参加表明完了！
+                        </Text>
+                        <Text style={{ color: "rgba(255,255,255,0.9)", fontSize: 14, marginTop: 4 }}>
+                          あなたの応援メッセージが反映されました
+                        </Text>
+                      </View>
+                    </View>
+                    <View style={{
+                      backgroundColor: "rgba(255,255,255,0.15)",
+                      borderRadius: 12,
+                      padding: 12,
+                    }}>
+                      <Text style={{ color: "#fff", fontSize: 14, textAlign: "center" }}>
+                        ⬇️ 下にスクロールしてあなたの投稿を確認してね！
                       </Text>
                     </View>
                   </View>
@@ -1338,21 +1369,29 @@ export default function ChallengeDetailScreen() {
                     const isOwnPost = user && p.userId === user.id;
                     return (
                       <View key={p.id} style={isOwnPost && justSubmitted ? {
-                        borderWidth: 2,
+                        borderWidth: 3,
                         borderColor: "#10B981",
-                        borderRadius: 14,
-                        marginBottom: 4,
+                        borderRadius: 16,
+                        marginBottom: 8,
+                        shadowColor: "#10B981",
+                        shadowOffset: { width: 0, height: 2 },
+                        shadowOpacity: 0.3,
+                        shadowRadius: 4,
+                        elevation: 4,
                       } : undefined}>
                         {isOwnPost && justSubmitted && (
                           <View style={{
                             backgroundColor: "#10B981",
-                            paddingVertical: 6,
-                            paddingHorizontal: 12,
-                            borderTopLeftRadius: 12,
-                            borderTopRightRadius: 12,
+                            paddingVertical: 10,
+                            paddingHorizontal: 16,
+                            borderTopLeftRadius: 13,
+                            borderTopRightRadius: 13,
+                            flexDirection: "row",
+                            alignItems: "center",
                           }}>
-                            <Text style={{ color: "#fff", fontSize: 12, fontWeight: "bold" }}>
-                              ✨ あなたの参加表明
+                            <MaterialIcons name="star" size={18} color="#fff" />
+                            <Text style={{ color: "#fff", fontSize: 14, fontWeight: "bold", marginLeft: 8 }}>
+                              ✨ あなたの参加表明が反映されました！
                             </Text>
                           </View>
                         )}
