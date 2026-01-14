@@ -1,7 +1,7 @@
 import { View, Text, TouchableOpacity } from "react-native";
 import { Image } from "expo-image";
 import { useRouter } from "expo-router";
-import { useAuth } from "@/hooks/use-auth";
+import { HamburgerMenu } from "./hamburger-menu";
 
 // ロゴ画像
 const logoImage = require("@/assets/images/logo/logo-color.jpg");
@@ -21,19 +21,20 @@ interface AppHeaderProps {
   isDesktop?: boolean;
   rightElement?: React.ReactNode;
   showLoginStatus?: boolean;
+  showHamburgerMenu?: boolean;
 }
 
 export function AppHeader({
   title,
   subtitle,
-  showCharacters = true,
+  showCharacters = false,
   showLogo = true,
   isDesktop = false,
   rightElement,
-  showLoginStatus = true,
+  showLoginStatus = false,
+  showHamburgerMenu = true,
 }: AppHeaderProps) {
   const router = useRouter();
-  const { user } = useAuth();
   
   const handleTitlePress = () => {
     router.push("/(tabs)");
@@ -66,53 +67,34 @@ export function AppHeader({
           )}
         </TouchableOpacity>
         
-        {rightElement ? (
-          rightElement
-        ) : showCharacters ? (
-          <View style={{ flexDirection: "row" }}>
-            <Image 
-              source={characterImages.linkYukkuri} 
-              style={{ width: isDesktop ? 48 : 36, height: isDesktop ? 48 : 36, marginLeft: -4 }} 
-              contentFit="contain" 
-            />
-            <Image 
-              source={characterImages.kontaYukkuri} 
-              style={{ width: isDesktop ? 48 : 36, height: isDesktop ? 48 : 36, marginLeft: -4 }} 
-              contentFit="contain" 
-            />
-            <Image 
-              source={characterImages.tanuneYukkuri} 
-              style={{ width: isDesktop ? 48 : 36, height: isDesktop ? 48 : 36, marginLeft: -4 }} 
-              contentFit="contain" 
-            />
-          </View>
-        ) : null}
-      </View>
-      
-      {/* ログイン状態表示 */}
-      {showLoginStatus && user && (
-        <View style={{ 
-          flexDirection: "row", 
-          alignItems: "center", 
-          marginTop: 8,
-          backgroundColor: "rgba(16, 185, 129, 0.15)",
-          paddingHorizontal: 12,
-          paddingVertical: 6,
-          borderRadius: 20,
-          alignSelf: "flex-start",
-        }}>
-          {user.profileImage && (
-            <Image
-              source={{ uri: user.profileImage }}
-              style={{ width: 20, height: 20, borderRadius: 10, marginRight: 6 }}
-              contentFit="cover"
-            />
+        <View style={{ flexDirection: "row", alignItems: "center" }}>
+          {showCharacters && (
+            <View style={{ flexDirection: "row", marginRight: 8 }}>
+              <Image 
+                source={characterImages.linkYukkuri} 
+                style={{ width: isDesktop ? 40 : 28, height: isDesktop ? 40 : 28, marginLeft: -4 }} 
+                contentFit="contain" 
+              />
+              <Image 
+                source={characterImages.kontaYukkuri} 
+                style={{ width: isDesktop ? 40 : 28, height: isDesktop ? 40 : 28, marginLeft: -4 }} 
+                contentFit="contain" 
+              />
+              <Image 
+                source={characterImages.tanuneYukkuri} 
+                style={{ width: isDesktop ? 40 : 28, height: isDesktop ? 40 : 28, marginLeft: -4 }} 
+                contentFit="contain" 
+              />
+            </View>
           )}
-          <Text style={{ color: "#10B981", fontSize: 12, fontWeight: "600" }}>
-            {user.name || user.username || "ゲスト"}でログイン中
-          </Text>
+          
+          {rightElement}
+          
+          {showHamburgerMenu && (
+            <HamburgerMenu isDesktop={isDesktop} />
+          )}
         </View>
-      )}
+      </View>
       
       {subtitle && (
         <Text style={{ color: "#9CA3AF", fontSize: 14, marginTop: 4 }}>
