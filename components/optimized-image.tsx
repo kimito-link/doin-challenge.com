@@ -1,4 +1,4 @@
-import { View, StyleSheet, Animated } from "react-native";
+import { View, StyleSheet, Animated, Text } from "react-native";
 import { Image, ImageProps } from "expo-image";
 import { useState, useRef, useEffect } from "react";
 import { LinearGradient } from "expo-linear-gradient";
@@ -118,8 +118,34 @@ export function OptimizedImage({
  */
 export function OptimizedAvatar({
   size = 48,
+  fallbackText,
+  fallbackColor = "#3B82F6",
   ...props
-}: OptimizedImageProps & { size?: number }) {
+}: OptimizedImageProps & { size?: number; fallbackText?: string }) {
+  const [showFallback, setShowFallback] = useState(!props.source);
+
+  // sourceがない場合はフォールバックを表示
+  if (showFallback || !props.source) {
+    return (
+      <View
+        style={{
+          width: size,
+          height: size,
+          borderRadius: size / 2,
+          backgroundColor: fallbackColor,
+          alignItems: "center",
+          justifyContent: "center",
+        }}
+      >
+        {fallbackText && (
+          <Text style={{ color: "#fff", fontSize: size * 0.4, fontWeight: "bold" }}>
+            {fallbackText}
+          </Text>
+        )}
+      </View>
+    );
+  }
+
   return (
     <OptimizedImage
       {...props}
@@ -131,7 +157,7 @@ export function OptimizedAvatar({
         },
         props.style,
       ]}
-      fallbackColor="#3B82F6"
+      fallbackColor={fallbackColor}
     />
   );
 }

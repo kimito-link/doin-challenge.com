@@ -12,6 +12,7 @@ import { AppHeader } from "@/components/app-header";
 import { shareToTwitter, shareParticipation } from "@/lib/share";
 import { SharePromptModal } from "@/components/share-prompt-modal";
 import { ReminderButton } from "@/components/reminder-button";
+import { OptimizedAvatar } from "@/components/optimized-image";
 
 const { width: screenWidth } = Dimensions.get("window");
 
@@ -181,28 +182,14 @@ function ContributionRanking({ participations }: { participations: Participation
               {index + 1}
             </Text>
           </View>
-          {p.profileImage && !p.isAnonymous ? (
-            <Image
-              source={{ uri: p.profileImage }}
-              style={{ width: 36, height: 36, borderRadius: 18, marginRight: 12 }}
+          <View style={{ marginRight: 12 }}>
+            <OptimizedAvatar
+              source={p.profileImage && !p.isAnonymous ? { uri: p.profileImage } : undefined}
+              size={36}
+              fallbackColor="#EC4899"
+              fallbackText={p.displayName.charAt(0)}
             />
-          ) : (
-            <View
-              style={{
-                width: 36,
-                height: 36,
-                borderRadius: 18,
-                backgroundColor: "#EC4899",
-                alignItems: "center",
-                justifyContent: "center",
-                marginRight: 12,
-              }}
-            >
-              <Text style={{ color: "#fff", fontSize: 14, fontWeight: "bold" }}>
-                {p.displayName.charAt(0)}
-              </Text>
-            </View>
-          )}
+          </View>
           <View style={{ flex: 1 }}>
             <Text style={{ color: "#fff", fontSize: 14, fontWeight: "600" }}>
               {p.isAnonymous ? "匿名" : p.displayName}
@@ -246,27 +233,12 @@ function MessageCard({ participation, onCheer, cheerCount, onDM, challengeId, co
       }}
     >
       <View style={{ flexDirection: "row", alignItems: "center", marginBottom: 8 }}>
-        {participation.profileImage && !participation.isAnonymous ? (
-          <Image
-            source={{ uri: participation.profileImage }}
-            style={{ width: 40, height: 40, borderRadius: 20 }}
-          />
-        ) : (
-          <View
-            style={{
-              width: 40,
-              height: 40,
-              borderRadius: 20,
-              backgroundColor: "#EC4899",
-              alignItems: "center",
-              justifyContent: "center",
-            }}
-          >
-            <Text style={{ color: "#fff", fontSize: 16, fontWeight: "bold" }}>
-              {participation.displayName.charAt(0)}
-            </Text>
-          </View>
-        )}
+        <OptimizedAvatar
+          source={participation.profileImage && !participation.isAnonymous ? { uri: participation.profileImage } : undefined}
+          size={40}
+          fallbackColor="#EC4899"
+          fallbackText={participation.displayName.charAt(0)}
+        />
         <View style={{ marginLeft: 12, flex: 1 }}>
           <Text style={{ color: "#fff", fontSize: 16, fontWeight: "600" }}>
             {participation.isAnonymous ? "匿名" : participation.displayName}
@@ -321,28 +293,14 @@ function MessageCard({ participation, onCheer, cheerCount, onDM, challengeId, co
                   borderColor: "#2D3139",
                 }}
               >
-                {companion.profileImage ? (
-                  <Image
-                    source={{ uri: companion.profileImage }}
-                    style={{ width: 20, height: 20, borderRadius: 10, marginRight: 6 }}
+                <View style={{ marginRight: 6 }}>
+                  <OptimizedAvatar
+                    source={companion.profileImage ? { uri: companion.profileImage } : undefined}
+                    size={20}
+                    fallbackColor="#8B5CF6"
+                    fallbackText={companion.displayName.charAt(0)}
                   />
-                ) : (
-                  <View
-                    style={{
-                      width: 20,
-                      height: 20,
-                      borderRadius: 10,
-                      backgroundColor: "#8B5CF6",
-                      alignItems: "center",
-                      justifyContent: "center",
-                      marginRight: 6,
-                    }}
-                  >
-                    <Text style={{ color: "#fff", fontSize: 10, fontWeight: "bold" }}>
-                      {companion.displayName.charAt(0)}
-                    </Text>
-                  </View>
-                )}
+                </View>
                 <Text style={{ color: "#fff", fontSize: 12 }}>
                   {companion.displayName}
                 </Text>

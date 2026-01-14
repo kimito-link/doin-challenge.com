@@ -705,9 +705,25 @@ export default function HomeScreen() {
   const [cachedChallenges, setCachedChallenges] = useState<Challenge[] | null>(null);
   const [isStaleData, setIsStaleData] = useState(false);
 
-  const { data: challenges, isLoading, refetch } = trpc.events.list.useQuery(undefined, {
-    enabled: !isOffline,
-  });
+  // 無限スクロール対応のページネーションクエリ
+  const {
+    data: paginatedData,
+    isLoading,
+    fetchNextPage,
+    hasNextPage,
+    isFetchingNextPage,
+    refetch,
+  } = trpc.events.listPaginated.useInfiniteQuery(
+    { limit: 20, filter: filter as "all" | "solo" | "group" },
+    {
+      enabled: !isOffline,
+      getNextPageParam: (lastPage) => lastPage.nextCursor,
+      initialCursor: 0,
+    }
+  );
+
+  // ページネーションデータをフラットな配列に変換
+  const challenges = paginatedData?.pages.flatMap((page) => page.items) ?? [];
   const { data: searchResults, refetch: refetchSearch } = trpc.search.challenges.useQuery(
     { query: searchQuery },
     { enabled: searchQuery.length > 0 && !isOffline }
@@ -961,6 +977,24 @@ export default function HomeScreen() {
           )}
           refreshControl={
             <RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor="#DD6500" />
+          }
+          // 無限スクロール設定
+          onEndReached={() => {
+            if (hasNextPage && !isFetchingNextPage && !isSearching) {
+              fetchNextPage();
+            }
+          }}
+          onEndReachedThreshold={0.5}
+          ListFooterComponent={
+            isFetchingNextPage ? (
+              <View style={{ padding: 20, alignItems: "center" }}>
+                <Text style={{ color: "#9CA3AF" }}>読み込み中...</Text>
+              </View>
+            ) : hasNextPage && !isSearching ? (
+              <View style={{ padding: 20, alignItems: "center" }}>
+                <Text style={{ color: "#6B7280" }}>スクロールしてもっと見る</Text>
+              </View>
+            ) : null
           }
           contentContainerStyle={{ 
             paddingHorizontal: isDesktop ? 24 : 8, 
