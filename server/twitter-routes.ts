@@ -12,6 +12,9 @@ import {
   getTargetAccountInfo,
   getUserProfileByUsername,
 } from "./twitter-oauth2";
+import { sdk } from "./_core/sdk";
+import * as db from "./db";
+import { COOKIE_NAME, ONE_YEAR_MS } from "../shared/const.js";
 
 export function registerTwitterRoutes(app: Express) {
   // Step 1: Initiate Twitter OAuth 2.0
@@ -129,11 +132,54 @@ export function registerTwitterRoutes(app: Express) {
         targetAccount,
       };
 
+      // Create openId for Twitter user
+      const openId = `twitter:${userProfile.id}`;
+      
+      // Save user to database
+      await db.upsertUser({
+        openId,
+        name: userProfile.name,
+        email: null,
+        loginMethod: "twitter",
+        lastSignedIn: new Date(),
+      });
+      console.log("[Twitter OAuth 2.0] User saved to database:", openId);
+      
+      // Create session token
+      const sessionToken = await sdk.createSessionToken(openId, {
+        name: userProfile.name,
+        expiresInMs: ONE_YEAR_MS,
+      });
+      console.log("[Twitter OAuth 2.0] Session token created");
+      
+      // Set session cookie
+      const host = req.get("host") || "";
+      const isProduction = host.includes("manus.computer");
+      
+      // Extract base domain for cookie (e.g., "sg1.manus.computer" from "3000-xxx.sg1.manus.computer")
+      let cookieDomain: string | undefined;
+      if (isProduction) {
+        const parts = host.split(".");
+        if (parts.length >= 3) {
+          // Get last 3 parts (e.g., "sg1.manus.computer")
+          cookieDomain = "." + parts.slice(-3).join(".");
+        }
+      }
+      
+      res.cookie(COOKIE_NAME, sessionToken, {
+        httpOnly: true,
+        secure: isProduction,
+        sameSite: isProduction ? "none" : "lax",
+        maxAge: ONE_YEAR_MS,
+        path: "/",
+        domain: cookieDomain,
+      });
+      console.log("[Twitter OAuth 2.0] Session cookie set", { domain: cookieDomain, secure: isProduction });
+
       // Encode user data for redirect
       const encodedData = encodeURIComponent(JSON.stringify(userData));
       
       // Build redirect URL - redirect to Expo app (port 8081)
-      const host = req.get("host") || "";
       // Replace port 3000 with 8081 for Expo app
       const expoHost = host.replace("3000-", "8081-");
       const protocol = req.get("x-forwarded-proto") || req.protocol;
