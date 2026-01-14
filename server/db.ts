@@ -1,4 +1,4 @@
-import { eq, desc, and, sql } from "drizzle-orm";
+import { eq, desc, and, sql, ne } from "drizzle-orm";
 import { drizzle } from "drizzle-orm/mysql2";
 import { InsertUser, users, challenges, participations, InsertChallenge, InsertParticipation, notificationSettings, notifications, InsertNotificationSetting, InsertNotification, badges, userBadges, pickedComments, InsertBadge, InsertUserBadge, InsertPickedComment, cheers, achievementPages, InsertCheer, InsertAchievementPage, reminders, directMessages, challengeTemplates, InsertReminder, InsertDirectMessage, InsertChallengeTemplate, follows, searchHistory, InsertFollow, InsertSearchHistory, categories, invitations, invitationUses, InsertCategory, InsertInvitation, InsertInvitationUse, participationCompanions, InsertParticipationCompanion } from "../drizzle/schema";
 
@@ -1129,6 +1129,75 @@ export async function getUserPublicProfile(userId: number) {
   };
 }
 
+
+// ========== おすすめホスト（同じカテゴリのチャレンジを開催しているホスト） ==========
+
+export async function getRecommendedHosts(userId?: number, categoryId?: number, limit: number = 5) {
+  const db = await getDb();
+  if (!db) return [];
+  
+  // チャレンジを開催しているホストを取得
+  const allChallenges = await db.select({
+    hostUserId: challenges.hostUserId,
+    hostName: challenges.hostName,
+    hostUsername: challenges.hostUsername,
+    hostProfileImage: challenges.hostProfileImage,
+    categoryId: challenges.categoryId,
+  }).from(challenges)
+    .where(challenges.hostUserId ? ne(challenges.hostUserId, userId || 0) : undefined)
+    .orderBy(desc(challenges.eventDate));
+  
+  // ホストごとにチャレンジ数を集計
+  const hostMap = new Map<number, {
+    hostUserId: number;
+    hostName: string | null;
+    hostUsername: string | null;
+    hostProfileImage: string | null;
+    challengeCount: number;
+    categoryIds: Set<number>;
+  }>();
+  
+  for (const c of allChallenges) {
+    if (!c.hostUserId) continue;
+    if (userId && c.hostUserId === userId) continue;
+    
+    const existing = hostMap.get(c.hostUserId);
+    if (existing) {
+      existing.challengeCount++;
+      if (c.categoryId) existing.categoryIds.add(c.categoryId);
+    } else {
+      hostMap.set(c.hostUserId, {
+        hostUserId: c.hostUserId,
+        hostName: c.hostName,
+        hostUsername: c.hostUsername,
+        hostProfileImage: c.hostProfileImage,
+        challengeCount: 1,
+        categoryIds: c.categoryId ? new Set([c.categoryId]) : new Set(),
+      });
+    }
+  }
+  
+  // カテゴリが指定されている場合、そのカテゴリのホストを優先
+  let hosts = Array.from(hostMap.values());
+  if (categoryId) {
+    hosts.sort((a, b) => {
+      const aHasCategory = a.categoryIds.has(categoryId) ? 1 : 0;
+      const bHasCategory = b.categoryIds.has(categoryId) ? 1 : 0;
+      if (aHasCategory !== bHasCategory) return bHasCategory - aHasCategory;
+      return b.challengeCount - a.challengeCount;
+    });
+  } else {
+    hosts.sort((a, b) => b.challengeCount - a.challengeCount);
+  }
+  
+  return hosts.slice(0, limit).map(h => ({
+    userId: h.hostUserId,
+    name: h.hostName,
+    username: h.hostUsername,
+    profileImage: h.hostProfileImage,
+    challengeCount: h.challengeCount,
+  }));
+}
 
 // ========== Participation Companions (一緒に参加する友人) ==========
 

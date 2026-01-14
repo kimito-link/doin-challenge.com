@@ -1058,6 +1058,17 @@ Design requirements:
       .query(async ({ input }) => {
         return db.getUserPublicProfile(input.userId);
       }),
+    
+    // おすすめホスト（同じカテゴリのチャレンジを開催しているホスト）
+    recommendedHosts: publicProcedure
+      .input(z.object({ 
+        categoryId: z.number().optional(),
+        limit: z.number().min(1).max(10).default(5),
+      }))
+      .query(async ({ ctx, input }) => {
+        const userId = ctx.user?.id;
+        return db.getRecommendedHosts(userId, input.categoryId, input.limit);
+      }),
   }),
 
   // 友人（コンパニオン）関連

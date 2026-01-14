@@ -142,6 +142,62 @@ function RegionMap({ participations }: { participations: Participation[] }) {
   );
 }
 
+// 一緒に参加している人コンポーネント
+function ParticipantsList({ participations }: { participations: Participation[] }) {
+  const router = useRouter();
+  // 匿名でない参加者のみ表示（最大10人）
+  const visibleParticipants = participations
+    .filter(p => !p.isAnonymous && p.userId)
+    .slice(0, 10);
+
+  if (visibleParticipants.length === 0) return null;
+
+  return (
+    <View style={{ marginVertical: 16 }}>
+      <Text style={{ color: "#fff", fontSize: 16, fontWeight: "bold", marginBottom: 12 }}>
+        一緒に参加している人 ({participations.length}人)
+      </Text>
+      <ScrollView horizontal showsHorizontalScrollIndicator={false}>
+        <View style={{ flexDirection: "row", gap: 12 }}>
+          {visibleParticipants.map((p) => (
+            <TouchableOpacity
+              key={p.id}
+              onPress={() => {
+                if (p.userId) {
+                  router.push({ pathname: "/profile/[userId]", params: { userId: p.userId.toString() } });
+                }
+              }}
+              style={{ alignItems: "center", width: 70 }}
+            >
+              <OptimizedAvatar
+                source={p.profileImage ? { uri: p.profileImage } : undefined}
+                size={50}
+                fallbackColor="#EC4899"
+                fallbackText={p.displayName.charAt(0)}
+              />
+              <Text style={{ color: "#fff", fontSize: 11, marginTop: 4, textAlign: "center" }} numberOfLines={1}>
+                {p.displayName}
+              </Text>
+              {p.username && (
+                <Text style={{ color: "#9CA3AF", fontSize: 9 }} numberOfLines={1}>
+                  @{p.username}
+                </Text>
+              )}
+            </TouchableOpacity>
+          ))}
+          {participations.filter(p => !p.isAnonymous && p.userId).length > 10 && (
+            <View style={{ alignItems: "center", justifyContent: "center", width: 50 }}>
+              <Text style={{ color: "#9CA3AF", fontSize: 12 }}>
+                +{participations.filter(p => !p.isAnonymous && p.userId).length - 10}
+              </Text>
+            </View>
+          )}
+        </View>
+      </ScrollView>
+    </View>
+  );
+}
+
 // 貢献度ランキングコンポーネント
 function ContributionRanking({ participations, followerIds = [] }: { participations: Participation[]; followerIds?: number[] }) {
   const router = useRouter();
@@ -1117,6 +1173,11 @@ export default function ChallengeDetailScreen() {
             {/* 地域別マップ */}
             {participations && participations.length > 0 && (
               <RegionMap participations={participations as Participation[]} />
+            )}
+
+            {/* 一緒に参加している人 */}
+            {participations && participations.length > 0 && (
+              <ParticipantsList participations={participations as Participation[]} />
             )}
 
             {/* 貢献度ランキング */}

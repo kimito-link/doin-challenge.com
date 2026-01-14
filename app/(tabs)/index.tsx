@@ -236,6 +236,59 @@ function EngagementSection({ challenges }: { challenges: Challenge[] }) {
   );
 }
 
+// おすすめホストセクション
+function RecommendedHostsSection() {
+  const router = useRouter();
+  const { data: hosts, isLoading } = trpc.profiles.recommendedHosts.useQuery({ limit: 5 });
+
+  if (isLoading || !hosts || hosts.length === 0) return null;
+
+  return (
+    <View style={{ marginHorizontal: 16, marginVertical: 12 }}>
+      <View style={{ 
+        backgroundColor: "#1A1D21", 
+        borderRadius: 16, 
+        padding: 16,
+        borderWidth: 1,
+        borderColor: "#2D3139",
+      }}>
+        <Text style={{ color: "#8B5CF6", fontSize: 16, fontWeight: "bold", marginBottom: 12 }}>
+          ✨ おすすめのホスト
+        </Text>
+        <ScrollView horizontal showsHorizontalScrollIndicator={false}>
+          <View style={{ flexDirection: "row", gap: 16 }}>
+            {hosts.map((host) => (
+              <TouchableOpacity
+                key={host.userId}
+                onPress={() => router.push({ pathname: "/profile/[userId]", params: { userId: host.userId.toString() } })}
+                style={{ alignItems: "center", width: 80 }}
+              >
+                <OptimizedAvatar
+                  source={host.profileImage ? { uri: host.profileImage } : undefined}
+                  size={56}
+                  fallbackColor="#8B5CF6"
+                  fallbackText={(host.name || "?").charAt(0)}
+                />
+                <Text style={{ color: "#fff", fontSize: 12, marginTop: 6, textAlign: "center" }} numberOfLines={1}>
+                  {host.name || "ホスト"}
+                </Text>
+                {host.username && (
+                  <Text style={{ color: "#9CA3AF", fontSize: 10 }} numberOfLines={1}>
+                    @{host.username}
+                  </Text>
+                )}
+                <Text style={{ color: "#8B5CF6", fontSize: 9, marginTop: 2 }}>
+                  {host.challengeCount}チャレンジ
+                </Text>
+              </TouchableOpacity>
+            ))}
+          </View>
+        </ScrollView>
+      </View>
+    </View>
+  );
+}
+
 // りんくちゃんの語りかけセクション（LP風メッセージ）
 function CatchCopySection() {
   return (
@@ -853,6 +906,9 @@ export default function HomeScreen() {
       {effectiveChallenges && effectiveChallenges.length > 0 && !isSearching && (
         <EngagementSection challenges={effectiveChallenges as Challenge[]} />
       )}
+
+      {/* おすすめホストセクション */}
+      {!isSearching && <RecommendedHostsSection />}
 
       {/* LP風キャッチコピー */}
       {!isSearching && <CatchCopySection />}
