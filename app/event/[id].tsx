@@ -572,8 +572,12 @@ export default function ChallengeDetailScreen() {
   const generateOgpMutation = trpc.ogp.generateChallengeOgp.useMutation();
 
   const createParticipationMutation = trpc.participations.create.useMutation({
-    onError: (error) => {
+    onError: (error: any) => {
       console.error('Participation creation error:', error);
+      // UNAUTHORIZEDエラーの場合は別途処理（handleConfirmSubmit内で処理）
+      if (error.message?.includes('UNAUTHORIZED') || error.data?.code === 'UNAUTHORIZED') {
+        return; // handleConfirmSubmitのonErrorでアラート表示
+      }
       Alert.alert(
         "エラー",
         `参加表明の送信に失敗しました: ${error.message}\nもう一度お試しください。`,
@@ -798,8 +802,14 @@ export default function ChallengeDetailScreen() {
     console.log('handleConfirmSubmit called, user:', user);
     
     if (!user) {
-      Alert.alert("エラー", "ログインが必要です。再度ログインしてください。");
-      setShowConfirmation(false);
+      Alert.alert(
+        "ログインが必要です",
+        "参加表明にはX（Twitter）でのログインが必要です。",
+        [
+          { text: "キャンセル", style: "cancel", onPress: () => setShowConfirmation(false) },
+          { text: "ログイン", onPress: () => { setShowConfirmation(false); login(); } },
+        ]
+      );
       return;
     }
     
@@ -824,10 +834,22 @@ export default function ChallengeDetailScreen() {
         // 確認画面を閉じる
         setShowConfirmation(false);
       },
-      onError: (error) => {
+      onError: (error: any) => {
         console.error('Participation creation failed:', error);
-        // エラー時も確認画面を閉じる（エラーアラートはmutationのonErrorで表示される）
         setShowConfirmation(false);
+        
+        // UNAUTHORIZEDエラーの場合は再ログインを促す
+        if (error.message?.includes('UNAUTHORIZED') || error.data?.code === 'UNAUTHORIZED') {
+          Alert.alert(
+            "セッションが切れました",
+            "再度ログインしてください。",
+            [
+              { text: "キャンセル", style: "cancel" },
+              { text: "ログイン", onPress: login },
+            ]
+          );
+        }
+        // その他のエラーはmutationのonErrorで処理される
       },
     });
   };
