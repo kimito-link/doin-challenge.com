@@ -85,10 +85,15 @@ export function registerOAuthRoutes(app: Express) {
 
       // Redirect to the frontend URL (Expo web on port 8081)
       // Cookie is set with parent domain so it works across both 3000 and 8081 subdomains
+      // Derive frontend URL from request host by replacing 3000 with 8081
+      const host = req.get("host") || "";
+      const protocol = req.get("x-forwarded-proto") || req.protocol;
+      const forceHttps = protocol === "https" || host.includes("manus.computer") || host.includes("manus.im");
+      const frontendHost = host.replace(/^3000-/, "8081-");
       const frontendUrl =
         process.env.EXPO_WEB_PREVIEW_URL ||
         process.env.EXPO_PACKAGER_PROXY_URL ||
-        "http://localhost:8081";
+        (host ? `${forceHttps ? "https" : protocol}://${frontendHost}` : "http://localhost:8081");
       res.redirect(302, frontendUrl);
     } catch (error) {
       console.error("[OAuth] Callback failed", error);
