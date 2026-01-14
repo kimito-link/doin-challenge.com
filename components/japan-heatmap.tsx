@@ -1,6 +1,7 @@
-import { View, Text, Dimensions, StyleSheet, ScrollView } from "react-native";
+import { View, Text, Dimensions, StyleSheet, ScrollView, TouchableOpacity, Platform } from "react-native";
 import Svg, { Path, G, Rect, Text as SvgText, Defs, LinearGradient, Stop } from "react-native-svg";
-import { useMemo } from "react";
+import { useMemo, useState } from "react";
+import * as Haptics from "expo-haptics";
 import { prefecturesData, prefectureNameToCode } from "@/lib/prefecture-paths";
 
 const screenWidth = Dimensions.get("window").width;
@@ -21,6 +22,8 @@ interface PrefectureCount {
 
 interface JapanHeatmapProps {
   prefectureCounts: PrefectureCount;
+  onPrefecturePress?: (prefectureName: string) => void;
+  onRegionPress?: (regionName: string, prefectures: string[]) => void;
 }
 
 // 参加者数に基づいて色を計算（青→黄→赤のグラデーション）
@@ -98,7 +101,7 @@ function normalizePrefectureName(name: string): string {
   return name + "県";
 }
 
-export function JapanHeatmap({ prefectureCounts }: JapanHeatmapProps) {
+export function JapanHeatmap({ prefectureCounts, onPrefecturePress, onRegionPress }: JapanHeatmapProps) {
   const mapWidth = Math.min(screenWidth - 32, 360);
   const mapHeight = mapWidth * 1.1;
   
@@ -185,9 +188,22 @@ export function JapanHeatmap({ prefectureCounts }: JapanHeatmapProps) {
               const count = prefectureCounts47[pref.code] || 0;
               const color = getHeatColor(count, maxPrefectureCount, totalCount);
               const isHot = pref.code === (prefecturesData.find(p => p.name === hotPrefecture.name)?.code) && count > 0;
+              const prefName = normalizePrefectureName(pref.name);
+              
+              const handlePress = () => {
+                if (onPrefecturePress) {
+                  if (Platform.OS !== "web") {
+                    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+                  }
+                  onPrefecturePress(prefName);
+                }
+              };
               
               return (
-                <G key={pref.code} transform={`translate(${pref.tx}, ${pref.ty})`}>
+                <G 
+                  key={pref.code} 
+                  transform={`translate(${pref.tx}, ${pref.ty})`}
+                >
                   {pref.paths.map((pathData, idx) => (
                     <Path
                       key={`${pref.code}-${idx}`}
@@ -196,6 +212,7 @@ export function JapanHeatmap({ prefectureCounts }: JapanHeatmapProps) {
                       stroke={isHot ? "#fff" : "#4B5563"}
                       strokeWidth={isHot ? 1.5 : 0.5}
                       strokeLinejoin="round"
+                      onPress={handlePress}
                     />
                   ))}
                 </G>
@@ -255,9 +272,20 @@ export function JapanHeatmap({ prefectureCounts }: JapanHeatmapProps) {
           const isHot = region.name === regionGroups.find(r => regionCounts[r.name] === maxRegionCount)?.name && count > 0;
           const color = count > 0 ? getHeatColor(count, maxRegionCount, totalCount) : "#2D3139";
           
+          const handleRegionCardPress = () => {
+            if (onRegionPress) {
+              if (Platform.OS !== "web") {
+                Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+              }
+              onRegionPress(region.name, region.prefectures);
+            }
+          };
+          
           return (
-            <View
+            <TouchableOpacity
               key={region.name}
+              onPress={handleRegionCardPress}
+              activeOpacity={0.7}
               style={[
                 styles.regionCard,
                 isHot && styles.regionCardHot,
@@ -275,7 +303,7 @@ export function JapanHeatmap({ prefectureCounts }: JapanHeatmapProps) {
               <View style={styles.progressBar}>
                 <View style={[styles.progressFill, { width: `${intensity * 100}%`, backgroundColor: color }]} />
               </View>
-            </View>
+            </TouchableOpacity>
           );
         })}
       </View>

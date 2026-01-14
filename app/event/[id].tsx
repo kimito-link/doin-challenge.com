@@ -16,6 +16,8 @@ import { OptimizedAvatar } from "@/components/optimized-image";
 import { Skeleton } from "@/components/skeleton-loader";
 import { EventDetailSkeleton } from "@/components/event-detail-skeleton";
 import { JapanHeatmap } from "@/components/japan-heatmap";
+import { PrefectureParticipantsModal } from "@/components/prefecture-participants-modal";
+import { RegionParticipantsModal } from "@/components/region-participants-modal";
 
 const { width: screenWidth } = Dimensions.get("window");
 
@@ -507,6 +509,12 @@ export default function ChallengeDetailScreen() {
     username: string;
     profileImage: string;
   } | null>(null);
+
+  // 都道府県別参加者モーダル用のstate
+  const [selectedPrefectureForModal, setSelectedPrefectureForModal] = useState<string | null>(null);
+  
+  // 地域別参加者モーダル用のstate
+  const [selectedRegion, setSelectedRegion] = useState<{ name: string; prefectures: string[] } | null>(null);
 
   const challengeId = parseInt(id || "0", 10);
   
@@ -1044,7 +1052,11 @@ export default function ChallengeDetailScreen() {
               )}
 
               {/* 地域別参加者マップ */}
-              <JapanHeatmap prefectureCounts={prefectureCounts} />
+              <JapanHeatmap 
+                prefectureCounts={prefectureCounts} 
+                onPrefecturePress={(prefName) => setSelectedPrefectureForModal(prefName)}
+                onRegionPress={(regionName, prefectures) => setSelectedRegion({ name: regionName, prefectures })}
+              />
             </View>
 
             {/* イベント情報 */}
@@ -2329,6 +2341,43 @@ export default function ChallengeDetailScreen() {
         participantImage={lastParticipation?.image}
         message={lastParticipation?.message}
         contribution={lastParticipation?.contribution}
+      />
+
+      {/* 都道府県別参加者モーダル */}
+      <PrefectureParticipantsModal
+        visible={!!selectedPrefectureForModal}
+        onClose={() => setSelectedPrefectureForModal(null)}
+        prefectureName={selectedPrefectureForModal || ""}
+        participants={
+          participations?.filter(p => {
+            if (!selectedPrefectureForModal) return false;
+            // 都道府県名の正規化（「県」「府」「都」「道」の有無を吸収）
+            const normalize = (name: string) => {
+              if (!name) return "";
+              return name.replace(/(県|府|都|道)$/, "");
+            };
+            return normalize(p.prefecture || "") === normalize(selectedPrefectureForModal);
+          }) || []
+        }
+      />
+
+      {/* 地域別参加者モーダル */}
+      <RegionParticipantsModal
+        visible={!!selectedRegion}
+        onClose={() => setSelectedRegion(null)}
+        regionName={selectedRegion?.name || ""}
+        prefectures={selectedRegion?.prefectures || []}
+        participants={
+          participations?.filter(p => {
+            if (!selectedRegion) return false;
+            const normalize = (name: string) => {
+              if (!name) return "";
+              return name.replace(/(県|府|都|道)$/, "");
+            };
+            const normalizedPref = normalize(p.prefecture || "");
+            return selectedRegion.prefectures.some(rp => normalize(rp) === normalizedPref);
+          }) || []
+        }
       />
     </ScreenContainer>
   );
