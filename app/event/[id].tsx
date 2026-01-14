@@ -15,6 +15,7 @@ import { ReminderButton } from "@/components/reminder-button";
 import { OptimizedAvatar } from "@/components/optimized-image";
 import { Skeleton } from "@/components/skeleton-loader";
 import { EventDetailSkeleton } from "@/components/event-detail-skeleton";
+import { SimpleRegionMap } from "@/components/japan-map";
 
 const { width: screenWidth } = Dimensions.get("window");
 
@@ -60,7 +61,7 @@ type Participation = {
   prefecture: string | null;
   isAnonymous: boolean;
   createdAt: Date;
-  followerCount?: number | null;
+  followersCount?: number | null;
 };
 
 // 進捗グリッドコンポーネント
@@ -179,9 +180,9 @@ function ParticipantsList({ participations }: { participations: Participation[] 
               <Text style={{ color: "#fff", fontSize: 11, marginTop: 4, textAlign: "center" }} numberOfLines={1}>
                 {p.displayName}
               </Text>
-              {p.followerCount && p.followerCount > 0 && (
+              {p.followersCount && p.followersCount > 0 && (
                 <Text style={{ color: "#EC4899", fontSize: 9, fontWeight: "bold" }} numberOfLines={1}>
-                  {p.followerCount >= 10000 ? `${(p.followerCount / 10000).toFixed(1)}万` : p.followerCount.toLocaleString()}人
+                  {p.followersCount >= 10000 ? `${(p.followersCount / 10000).toFixed(1)}万` : p.followersCount.toLocaleString()}人
                 </Text>
               )}
               {p.username && (
@@ -300,9 +301,9 @@ function ContributionRanking({ participations, followerIds = [] }: { participati
             <Text style={{ color: "#6B7280", fontSize: 10 }}>
               {p.companionCount > 0 ? `(本人+${p.companionCount}人)` : ""}
             </Text>
-            {p.followerCount && p.followerCount > 0 && (
+            {p.followersCount && p.followersCount > 0 && (
               <Text style={{ color: "#9CA3AF", fontSize: 10, marginTop: 2 }}>
-                {p.followerCount >= 10000 ? `${(p.followerCount / 10000).toFixed(1)}万` : p.followerCount.toLocaleString()}フォロワー
+                {p.followersCount >= 10000 ? `${(p.followersCount / 10000).toFixed(1)}万` : p.followersCount.toLocaleString()}フォロワー
               </Text>
             )}
           </View>
@@ -363,6 +364,11 @@ function MessageCard({ participation, onCheer, cheerCount, onDM, challengeId, co
             {participation.prefecture && (
               <Text style={{ color: "#6B7280", fontSize: 12 }}>
                 📍{participation.prefecture}
+              </Text>
+            )}
+            {participation.followersCount && participation.followersCount > 0 && (
+              <Text style={{ color: "#EC4899", fontSize: 11, marginLeft: 8 }}>
+                {participation.followersCount.toLocaleString()} フォロワー
               </Text>
             )}
           </View>
@@ -587,9 +593,18 @@ export default function ChallengeDetailScreen() {
       
       // 応援メッセージセクションへスクロール（データ取得後に実行）
       setTimeout(() => {
-        // 応援メッセージセクションの位置を推定（ページ下部へスクロール）
-        scrollViewRef.current?.scrollToEnd({ animated: true });
-      }, 500);
+        // messagesRefの位置を取得してスクロール
+        messagesRef.current?.measureLayout(
+          scrollViewRef.current as any,
+          (x, y) => {
+            scrollViewRef.current?.scrollTo({ y: y - 50, animated: true });
+          },
+          () => {
+            // フォールバック: ページ下部へスクロール
+            scrollViewRef.current?.scrollToEnd({ animated: true });
+          }
+        );
+      }, 600);
       
       // シェア促進モーダルを表示（少し遅らせて反映を見せてから）
       setTimeout(() => {
@@ -776,6 +791,16 @@ export default function ChallengeDetailScreen() {
   const goalValue = challenge.goalValue || 100;
   const progress = Math.min((currentValue / goalValue) * 100, 100);
   const remaining = Math.max(goalValue - currentValue, 0);
+
+  // 都道府県別の参加者数を集計
+  const prefectureCounts: { [key: string]: number } = {};
+  if (participations) {
+    participations.forEach(p => {
+      if (p.prefecture) {
+        prefectureCounts[p.prefecture] = (prefectureCounts[p.prefecture] || 0) + (p.contribution || 1);
+      }
+    });
+  }
 
   const handleShare = async () => {
     try {
@@ -1004,8 +1029,8 @@ export default function ChallengeDetailScreen() {
                 </Text>
               )}
 
-              {/* 進捗グリッド */}
-              <ProgressGrid current={currentValue} goal={goalValue} unit={unit} />
+              {/* 地域別参加者マップ */}
+              <SimpleRegionMap prefectureCounts={prefectureCounts} />
             </View>
 
             {/* イベント情報 */}
@@ -1466,6 +1491,11 @@ export default function ChallengeDetailScreen() {
                         {user.username && (
                           <Text style={{ color: "#9CA3AF", fontSize: 14, marginTop: 2 }}>
                             @{user.username}
+                          </Text>
+                        )}
+                        {user.followersCount !== undefined && user.followersCount > 0 && (
+                          <Text style={{ color: "#EC4899", fontSize: 12, marginTop: 4 }}>
+                            {user.followersCount.toLocaleString()} フォロワー
                           </Text>
                         )}
                       </View>
@@ -2131,6 +2161,11 @@ export default function ChallengeDetailScreen() {
                   {user?.username && (
                     <Text style={{ color: "#9CA3AF", fontSize: 14, marginTop: 2 }}>
                       @{user.username}
+                    </Text>
+                  )}
+                  {user?.followersCount !== undefined && user.followersCount > 0 && (
+                    <Text style={{ color: "#EC4899", fontSize: 12, marginTop: 4 }}>
+                      {user.followersCount.toLocaleString()} フォロワー
                     </Text>
                   )}
                 </View>
