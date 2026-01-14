@@ -17,8 +17,10 @@ import { CachedDataIndicator } from "@/components/offline-banner";
 import { useNetworkStatus } from "@/hooks/use-offline-cache";
 import { setCache, getCache, CACHE_KEYS } from "@/lib/offline-cache";
 import { ChallengeCardSkeleton, Skeleton } from "@/components/skeleton-loader";
-import { OptimizedImage, OptimizedAvatar } from "@/components/optimized-image";
+import { OptimizedAvatar } from "@/components/optimized-image";
+import { LazyAvatar } from "@/components/lazy-image";
 import { prefetchChallengeImages } from "@/lib/image-prefetch";
+import { SimpleRefreshControl } from "@/components/enhanced-refresh-control";
 
 // キャラクター画像
 const characterImages = {
@@ -502,13 +504,14 @@ function ChallengeCard({ challenge, onPress, numColumns = 2 }: { challenge: Chal
         <View style={{ position: "absolute", top: 8, right: 8 }}>
           <MaterialIcons name={goalConfig.icon as any} size={16} color="rgba(255,255,255,0.7)" />
         </View>
-        {/* ホストプロフィール画像 */}
+        {/* ホストプロフィール画像（遅延読み込み） */}
         {challenge.hostProfileImage && (
           <View style={{ position: "absolute", bottom: -16, left: 12 }}>
-            <OptimizedAvatar
+            <LazyAvatar
               source={{ uri: challenge.hostProfileImage }}
               size={32}
               fallbackColor="#EC4899"
+              lazy={true}
             />
           </View>
         )}
@@ -724,10 +727,24 @@ export default function HomeScreen() {
 
   // ページネーションデータをフラットな配列に変換
   const challenges = paginatedData?.pages.flatMap((page) => page.items) ?? [];
-  const { data: searchResults, refetch: refetchSearch } = trpc.search.challenges.useQuery(
-    { query: searchQuery },
-    { enabled: searchQuery.length > 0 && !isOffline }
+  // 検索結果の無限スクロール対応
+  const {
+    data: searchPaginatedData,
+    fetchNextPage: fetchNextSearchPage,
+    hasNextPage: hasNextSearchPage,
+    isFetchingNextPage: isFetchingNextSearchPage,
+    refetch: refetchSearch,
+  } = trpc.search.challengesPaginated.useInfiniteQuery(
+    { query: searchQuery, limit: 20 },
+    {
+      enabled: searchQuery.length > 0 && !isOffline,
+      getNextPageParam: (lastPage) => lastPage.nextCursor,
+      initialCursor: 0,
+    }
   );
+
+  // 検索結果をフラットな配列に変換
+  const searchResults = searchPaginatedData?.pages.flatMap((page) => page.items) ?? [];
   const { data: categoriesData } = trpc.categories.list.useQuery(undefined, {
     enabled: !isOffline,
   });
@@ -976,21 +993,29 @@ export default function HomeScreen() {
             <ChallengeCard challenge={item as Challenge} onPress={() => handleChallengePress(item.id)} numColumns={numColumns} />
           )}
           refreshControl={
-            <RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor="#DD6500" />
+            <SimpleRefreshControl refreshing={refreshing} onRefresh={onRefresh} />
           }
           // 無限スクロール設定
           onEndReached={() => {
-            if (hasNextPage && !isFetchingNextPage && !isSearching) {
-              fetchNextPage();
+            if (isSearching) {
+              // 検索中は検索結果のページネーション
+              if (hasNextSearchPage && !isFetchingNextSearchPage) {
+                fetchNextSearchPage();
+              }
+            } else {
+              // 通常一覧のページネーション
+              if (hasNextPage && !isFetchingNextPage) {
+                fetchNextPage();
+              }
             }
           }}
           onEndReachedThreshold={0.5}
           ListFooterComponent={
-            isFetchingNextPage ? (
+            (isSearching ? isFetchingNextSearchPage : isFetchingNextPage) ? (
               <View style={{ padding: 20, alignItems: "center" }}>
                 <Text style={{ color: "#9CA3AF" }}>読み込み中...</Text>
               </View>
-            ) : hasNextPage && !isSearching ? (
+            ) : (isSearching ? hasNextSearchPage : hasNextPage) ? (
               <View style={{ padding: 20, alignItems: "center" }}>
                 <Text style={{ color: "#6B7280" }}>スクロールしてもっと見る</Text>
               </View>

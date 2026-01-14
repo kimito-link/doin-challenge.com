@@ -786,6 +786,28 @@ Design requirements:
         return db.searchChallenges(input.query);
       }),
 
+    // ページネーション対応の検索
+    challengesPaginated: publicProcedure
+      .input(z.object({
+        query: z.string().min(1),
+        cursor: z.number().optional(),
+        limit: z.number().min(1).max(50).default(20),
+      }))
+      .query(async ({ input }) => {
+        const { query, cursor = 0, limit } = input;
+        const allResults = await db.searchChallenges(query);
+        
+        // ページネーション
+        const items = allResults.slice(cursor, cursor + limit);
+        const nextCursor = cursor + limit < allResults.length ? cursor + limit : undefined;
+        
+        return {
+          items,
+          nextCursor,
+          totalCount: allResults.length,
+        };
+      }),
+
     // 検索履歴を保存
     saveHistory: protectedProcedure
       .input(z.object({ query: z.string(), resultCount: z.number() }))
