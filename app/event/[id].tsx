@@ -356,7 +356,7 @@ function MessageCard({ participation, onCheer, cheerCount, onDM, challengeId, co
 export default function ChallengeDetailScreen() {
   const router = useRouter();
   const { id } = useLocalSearchParams<{ id: string }>();
-  const { user } = useAuth();
+  const { user, login } = useAuth();
   
   const [message, setMessage] = useState("");
   const [displayName, setDisplayName] = useState("");
@@ -1232,8 +1232,26 @@ export default function ChallengeDetailScreen() {
                       ログインが必要です
                     </Text>
                     <Text style={{ color: "#9CA3AF", fontSize: 13, marginBottom: 12 }}>
-                      参加表明にはTwitterログインが必要です。マイページからログインしてください。
+                      参加表明にはTwitterログインが必要です。
                     </Text>
+                    <TouchableOpacity
+                      onPress={login}
+                      style={{
+                        backgroundColor: "#1DA1F2",
+                        borderRadius: 8,
+                        paddingVertical: 12,
+                        paddingHorizontal: 16,
+                        flexDirection: "row",
+                        alignItems: "center",
+                        justifyContent: "center",
+                        gap: 8,
+                      }}
+                    >
+                      <MaterialIcons name="login" size={20} color="#fff" />
+                      <Text style={{ color: "#fff", fontSize: 14, fontWeight: "600" }}>
+                        X（Twitter）でログイン
+                      </Text>
+                    </TouchableOpacity>
                   </View>
                 )}
 
