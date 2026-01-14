@@ -143,9 +143,23 @@ function RegionMap({ participations }: { participations: Participation[] }) {
 }
 
 // 貢献度ランキングコンポーネント
-function ContributionRanking({ participations }: { participations: Participation[] }) {
+function ContributionRanking({ participations, followerIds = [] }: { participations: Participation[]; followerIds?: number[] }) {
+  const router = useRouter();
+  const followerSet = new Set(followerIds);
+  
+  // フォロワーを優先表示（同じ貢献度の場合フォロワーが上）
   const sorted = [...participations]
-    .sort((a, b) => (b.contribution || 1) - (a.contribution || 1))
+    .sort((a, b) => {
+      const aContrib = b.contribution || 1;
+      const bContrib = a.contribution || 1;
+      if (aContrib !== bContrib) return aContrib - bContrib;
+      // 同じ貢献度の場合、フォロワーを優先
+      const aIsFollower = a.userId ? followerSet.has(a.userId) : false;
+      const bIsFollower = b.userId ? followerSet.has(b.userId) : false;
+      if (aIsFollower && !bIsFollower) return -1;
+      if (!aIsFollower && bIsFollower) return 1;
+      return 0;
+    })
     .slice(0, 5);
 
   if (sorted.length === 0) return null;
@@ -193,15 +207,26 @@ function ContributionRanking({ participations }: { participations: Participation
             />
           </View>
           <View style={{ flex: 1 }}>
-            <Text style={{ color: "#fff", fontSize: 14, fontWeight: "600" }}>
-              {p.isAnonymous ? "匿名" : p.displayName}
-            </Text>
+            <View style={{ flexDirection: "row", alignItems: "center" }}>
+              <Text style={{ color: "#fff", fontSize: 14, fontWeight: "600" }}>
+                {p.isAnonymous ? "匿名" : p.displayName}
+              </Text>
+              {p.userId && followerSet.has(p.userId) && (
+                <View style={{ marginLeft: 6, backgroundColor: "#8B5CF6", paddingHorizontal: 6, paddingVertical: 2, borderRadius: 8 }}>
+                  <Text style={{ color: "#fff", fontSize: 9, fontWeight: "bold" }}>フォロワー</Text>
+                </View>
+              )}
+            </View>
             {p.username && !p.isAnonymous && (
               <TouchableOpacity
-                onPress={() => Linking.openURL(`https://x.com/${p.username}`)}
+                onPress={() => {
+                  if (p.userId) {
+                    router.push({ pathname: "/profile/[userId]", params: { userId: p.userId.toString() } });
+                  }
+                }}
                 style={{ flexDirection: "row", alignItems: "center" }}
               >
-                <MaterialIcons name="open-in-new" size={10} color="#DD6500" style={{ marginRight: 2 }} />
+                <MaterialIcons name="person" size={10} color="#DD6500" style={{ marginRight: 2 }} />
                 <Text style={{ color: "#DD6500", fontSize: 12 }}>@{p.username}</Text>
               </TouchableOpacity>
             )}
@@ -229,6 +254,7 @@ type CompanionDisplay = {
 };
 
 function MessageCard({ participation, onCheer, cheerCount, onDM, challengeId, companions }: { participation: Participation; onCheer?: () => void; cheerCount?: number; onDM?: (userId: number) => void; challengeId?: number; companions?: CompanionDisplay[] }) {
+  const router = useRouter();
   return (
     <View
       style={{
@@ -254,10 +280,14 @@ function MessageCard({ participation, onCheer, cheerCount, onDM, challengeId, co
           <View style={{ flexDirection: "row", alignItems: "center" }}>
             {participation.username && !participation.isAnonymous && (
               <TouchableOpacity
-                onPress={() => Linking.openURL(`https://x.com/${participation.username}`)}
+                onPress={() => {
+                  if (participation.userId) {
+                    router.push({ pathname: "/profile/[userId]", params: { userId: participation.userId.toString() } });
+                  }
+                }}
                 style={{ flexDirection: "row", alignItems: "center", marginRight: 8 }}
               >
-                <MaterialIcons name="open-in-new" size={12} color="#DD6500" style={{ marginRight: 2 }} />
+                <MaterialIcons name="person" size={12} color="#DD6500" style={{ marginRight: 2 }} />
                 <Text style={{ color: "#DD6500", fontSize: 14 }}>
                   @{participation.username}
                 </Text>
@@ -319,15 +349,9 @@ function MessageCard({ participation, onCheer, cheerCount, onDM, challengeId, co
                   {companion.displayName}
                 </Text>
                 {companion.twitterUsername && (
-                  <TouchableOpacity
-                    onPress={() => Linking.openURL(`https://x.com/${companion.twitterUsername}`)}
-                    style={{ flexDirection: "row", alignItems: "center", marginLeft: 4 }}
-                  >
-                    <MaterialIcons name="open-in-new" size={9} color="#DD6500" style={{ marginRight: 1 }} />
-                    <Text style={{ color: "#DD6500", fontSize: 11 }}>
-                      @{companion.twitterUsername}
-                    </Text>
-                  </TouchableOpacity>
+                  <Text style={{ color: "#9CA3AF", fontSize: 11, marginLeft: 4 }}>
+                    @{companion.twitterUsername}
+                  </Text>
                 )}
               </View>
             ))}
@@ -432,6 +456,12 @@ export default function ChallengeDetailScreen() {
   });
   
   const unfollowMutation = trpc.follows.unfollow.useMutation();
+  
+  // ホストのフォロワーID一覧を取得（ランキング優先表示用）
+  const { data: followerIds } = trpc.follows.followerIds.useQuery(
+    { userId: hostUserId! },
+    { enabled: !!hostUserId }
+  );
   
   const handleFollowToggle = () => {
     if (!user) {
@@ -743,10 +773,14 @@ export default function ChallengeDetailScreen() {
                 </Text>
                 {challenge.hostUsername && (
                   <TouchableOpacity
-                    onPress={() => Linking.openURL(`https://x.com/${challenge.hostUsername}`)}
+                    onPress={() => {
+                      if (hostUserId) {
+                        router.push({ pathname: "/profile/[userId]", params: { userId: hostUserId.toString() } });
+                      }
+                    }}
                     style={{ flexDirection: "row", alignItems: "center" }}
                   >
-                    <MaterialIcons name="open-in-new" size={12} color="rgba(255,255,255,0.8)" style={{ marginRight: 3 }} />
+                    <MaterialIcons name="person" size={12} color="rgba(255,255,255,0.8)" style={{ marginRight: 3 }} />
                     <Text style={{ color: "rgba(255,255,255,0.8)", fontSize: 14 }}>
                       @{challenge.hostUsername}
                     </Text>
@@ -1087,7 +1121,7 @@ export default function ChallengeDetailScreen() {
 
             {/* 貢献度ランキング */}
             {participations && participations.length > 0 && (
-              <ContributionRanking participations={participations as Participation[]} />
+              <ContributionRanking participations={participations as Participation[]} followerIds={followerIds || []} />
             )}
 
             {/* 応援メッセージ */}
@@ -1591,15 +1625,9 @@ export default function ChallengeDetailScreen() {
                               {companion.displayName}
                             </Text>
                             {companion.twitterUsername && (
-                              <TouchableOpacity
-                                onPress={() => Linking.openURL(`https://x.com/${companion.twitterUsername}`)}
-                                style={{ flexDirection: "row", alignItems: "center" }}
-                              >
-                                <MaterialIcons name="open-in-new" size={10} color="#1DA1F2" style={{ marginRight: 2 }} />
-                                <Text style={{ color: "#1DA1F2", fontSize: 12 }}>
-                                  @{companion.twitterUsername}
-                                </Text>
-                              </TouchableOpacity>
+                              <Text style={{ color: "#9CA3AF", fontSize: 12 }}>
+                                @{companion.twitterUsername}
+                              </Text>
                             )}
                           </View>
                           <TouchableOpacity

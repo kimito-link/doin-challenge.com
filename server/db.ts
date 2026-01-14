@@ -382,6 +382,31 @@ export async function checkAndAwardBadges(userId: number, challengeId: number, c
   return awardedBadges;
 }
 
+// フォロワーバッジを付与
+export async function awardFollowerBadge(userId: number) {
+  const db = await getDb();
+  if (!db) return null;
+  
+  // フォロワーバッジを取得（なければ作成）
+  let followerBadge = await db.select().from(badges).where(eq(badges.conditionType, "follower_badge"));
+  
+  if (followerBadge.length === 0) {
+    // フォロワーバッジを作成
+    const result = await db.insert(badges).values({
+      name: "💜 公式フォロワー",
+      description: "ホストをフォローして応援しています！",
+      type: "special",
+      conditionType: "follower_badge",
+    });
+    followerBadge = await db.select().from(badges).where(eq(badges.id, result[0].insertId));
+  }
+  
+  if (followerBadge.length === 0) return null;
+  
+  // バッジを付与
+  return awardBadge(userId, followerBadge[0].id);
+}
+
 // ========== Picked Comments ==========
 
 export async function getPickedCommentsByChallengeId(challengeId: number) {
@@ -766,6 +791,10 @@ export async function followUser(follow: InsertFollow) {
   if (existing.length > 0) return null; // 既にフォロー済み
   
   const result = await db.insert(follows).values(follow);
+  
+  // フォロワーバッジを付与
+  await awardFollowerBadge(follow.followerId);
+  
   return result[0].insertId;
 }
 
@@ -807,6 +836,14 @@ export async function getFollowingCount(userId: number) {
   if (!db) return 0;
   const result = await db.select({ count: sql<number>`count(*)` }).from(follows).where(eq(follows.followerId, userId));
   return result[0]?.count || 0;
+}
+
+// 特定ユーザーのフォロワーID一覧を取得（ランキング優先表示用）
+export async function getFollowerIdsForUser(userId: number): Promise<number[]> {
+  const db = await getDb();
+  if (!db) return [];
+  const result = await db.select({ followerId: follows.followerId }).from(follows).where(eq(follows.followeeId, userId));
+  return result.map(r => r.followerId);
 }
 
 export async function updateFollowNotification(followerId: number, followeeId: number, notify: boolean) {

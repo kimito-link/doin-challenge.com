@@ -889,6 +889,13 @@ Design requirements:
         return db.getFollowerCount(input.userId);
       }),
 
+    // 特定ユーザーのフォロワーID一覧を取得（ランキング優先表示用）
+    followerIds: publicProcedure
+      .input(z.object({ userId: z.number() }))
+      .query(async ({ input }) => {
+        return db.getFollowerIdsForUser(input.userId);
+      }),
+
     // フォロー中の数を取得
     followingCount: publicProcedure
       .input(z.object({ userId: z.number() }))

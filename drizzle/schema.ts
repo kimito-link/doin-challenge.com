@@ -166,7 +166,7 @@ export const badges = mysqlTable("badges", {
   // バッジ種別
   type: mysqlEnum("type", ["participation", "achievement", "milestone", "special"]).default("participation").notNull(),
   // 取得条件
-  conditionType: mysqlEnum("conditionType", ["first_participation", "goal_reached", "milestone_25", "milestone_50", "milestone_75", "contribution_5", "contribution_10", "contribution_20", "host_challenge", "special"]).notNull(),
+  conditionType: mysqlEnum("conditionType", ["first_participation", "goal_reached", "milestone_25", "milestone_50", "milestone_75", "contribution_5", "contribution_10", "contribution_20", "host_challenge", "special", "follower_badge"]).notNull(),
   // メタデータ
   createdAt: timestamp("createdAt").defaultNow().notNull(),
 });
