@@ -149,14 +149,15 @@ export const appRouter = router({
       return db.getParticipationsByUserId(ctx.user.id);
     }),
 
-    // 参加登録（ログインユーザー）
-    create: protectedProcedure
+    // 参加登録（ローカルユーザー情報を使用）
+    // セッションCookieがなくても、クライアントから送信されたユーザー情報で参加表明可能
+    create: publicProcedure
       .input(z.object({
         challengeId: z.number(),
         message: z.string().optional(),
         companionCount: z.number().default(0),
         prefecture: z.string().optional(),
-        twitterId: z.string().optional(),
+        twitterId: z.string(),  // 必須に変更（ユーザー識別に使用）
         displayName: z.string(),
         username: z.string().optional(),
         profileImage: z.string().optional(),
@@ -170,9 +171,35 @@ export const appRouter = router({
         })).optional(),
       }))
       .mutation(async ({ ctx, input }) => {
+        // ユーザーIDはセッションから取得するか、twitterIdから生成
+        let userId = ctx.user?.id;
+        
+        // セッションがない場合、twitterIdからユーザーを検索または作成
+        if (!userId && input.twitterId) {
+          const openId = `twitter:${input.twitterId}`;
+          // ユーザーを検索または作成
+          const existingUser = await db.getUserByOpenId(openId);
+          if (existingUser) {
+            userId = existingUser.id;
+          } else {
+            // 新規ユーザーを作成
+            userId = await db.upsertUser({
+              openId,
+              name: input.displayName,
+              email: null,
+              loginMethod: "twitter",
+              lastSignedIn: new Date(),
+            });
+          }
+        }
+        
+        if (!userId) {
+          throw new Error("ユーザー情報が必要です。ログインしてください。");
+        }
+        
         const participationId = await db.createParticipation({
           challengeId: input.challengeId,
-          userId: ctx.user.id,
+          userId: userId,
           twitterId: input.twitterId,
           displayName: input.displayName,
           username: input.username,
@@ -193,7 +220,7 @@ export const appRouter = router({
             twitterUsername: c.twitterUsername,
             twitterId: c.twitterId,
             profileImage: c.profileImage,
-            invitedByUserId: ctx.user.id,
+            invitedByUserId: userId,
           }));
           await db.createCompanions(companionRecords);
         }

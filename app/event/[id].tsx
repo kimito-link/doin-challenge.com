@@ -814,14 +814,21 @@ export default function ChallengeDetailScreen() {
     }
     
     // 送信データを準備
+    // openIdから twitterId を抽出（形式: "twitter:{twitterId}"）
+    const twitterId = user.openId?.startsWith('twitter:') 
+      ? user.openId.replace('twitter:', '') 
+      : user.openId || '';
+    
     const submitData = {
       challengeId,
+      twitterId,
       message,
       companionCount: companions.length,
       prefecture,
       displayName: user.name || "ゲスト",
       username: user.username,
       profileImage: user.profileImage,
+      followersCount: user.followersCount,
       companions: companionData,
     };
     

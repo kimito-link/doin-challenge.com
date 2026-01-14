@@ -22,7 +22,7 @@ export async function getDb() {
   return _db;
 }
 
-export async function upsertUser(user: InsertUser): Promise<void> {
+export async function upsertUser(user: InsertUser): Promise<number | undefined> {
   if (!user.openId) {
     throw new Error("User openId is required for upsert");
   }
@@ -30,7 +30,7 @@ export async function upsertUser(user: InsertUser): Promise<void> {
   const db = await getDb();
   if (!db) {
     console.warn("[Database] Cannot upsert user: database not available");
-    return;
+    return undefined;
   }
 
   try {
@@ -75,6 +75,10 @@ export async function upsertUser(user: InsertUser): Promise<void> {
     await db.insert(users).values(values).onDuplicateKeyUpdate({
       set: updateSet,
     });
+    
+    // 作成または更新したユーザーのIDを取得
+    const createdUser = await getUserByOpenId(user.openId);
+    return createdUser?.id;
   } catch (error) {
     console.error("[Database] Failed to upsert user:", error);
     throw error;
