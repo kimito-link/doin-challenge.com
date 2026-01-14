@@ -1,6 +1,6 @@
-import { View, Text, Dimensions, StyleSheet, ScrollView, TouchableOpacity, Platform } from "react-native";
-import Svg, { Path, G, Rect, Text as SvgText, Defs, LinearGradient, Stop } from "react-native-svg";
-import { useMemo, useState } from "react";
+import { View, Text, StyleSheet, Dimensions, Platform, TouchableOpacity } from "react-native";
+import Svg, { Path, G, Text as SvgText } from "react-native-svg";
+import { useMemo } from "react";
 import * as Haptics from "expo-haptics";
 import { prefecturesData, prefectureNameToCode } from "@/lib/prefecture-paths";
 
@@ -16,6 +16,57 @@ const regionGroups = [
   { name: "九州・沖縄", prefectures: ["福岡県", "佐賀県", "長崎県", "熊本県", "大分県", "宮崎県", "鹿児島県", "沖縄県"] },
 ];
 
+// 都道府県のラベル位置（中心座標）
+const prefectureLabelPositions: { [code: number]: { x: number; y: number } } = {
+  1: { x: 720, y: 140 },   // 北海道
+  2: { x: 680, y: 330 },   // 青森
+  3: { x: 710, y: 400 },   // 岩手
+  4: { x: 695, y: 480 },   // 宮城
+  5: { x: 660, y: 400 },   // 秋田
+  6: { x: 665, y: 470 },   // 山形
+  7: { x: 670, y: 530 },   // 福島
+  8: { x: 680, y: 590 },   // 茨城
+  9: { x: 650, y: 560 },   // 栃木
+  10: { x: 620, y: 570 },  // 群馬
+  11: { x: 650, y: 610 },  // 埼玉
+  12: { x: 700, y: 630 },  // 千葉
+  13: { x: 670, y: 640 },  // 東京
+  14: { x: 670, y: 670 },  // 神奈川
+  15: { x: 570, y: 500 },  // 新潟
+  16: { x: 510, y: 530 },  // 富山
+  17: { x: 480, y: 560 },  // 石川
+  18: { x: 460, y: 600 },  // 福井
+  19: { x: 590, y: 620 },  // 山梨
+  20: { x: 560, y: 580 },  // 長野
+  21: { x: 520, y: 610 },  // 岐阜
+  22: { x: 580, y: 670 },  // 静岡
+  23: { x: 520, y: 660 },  // 愛知
+  24: { x: 480, y: 660 },  // 三重
+  25: { x: 460, y: 620 },  // 滋賀
+  26: { x: 430, y: 610 },  // 京都
+  27: { x: 420, y: 660 },  // 大阪
+  28: { x: 380, y: 640 },  // 兵庫
+  29: { x: 450, y: 680 },  // 奈良
+  30: { x: 420, y: 720 },  // 和歌山
+  31: { x: 340, y: 590 },  // 鳥取
+  32: { x: 290, y: 610 },  // 島根
+  33: { x: 360, y: 640 },  // 岡山
+  34: { x: 310, y: 660 },  // 広島
+  35: { x: 250, y: 680 },  // 山口
+  36: { x: 400, y: 730 },  // 徳島
+  37: { x: 370, y: 700 },  // 香川
+  38: { x: 330, y: 740 },  // 愛媛
+  39: { x: 360, y: 770 },  // 高知
+  40: { x: 220, y: 700 },  // 福岡
+  41: { x: 190, y: 720 },  // 佐賀
+  42: { x: 160, y: 740 },  // 長崎
+  43: { x: 200, y: 770 },  // 熊本
+  44: { x: 240, y: 740 },  // 大分
+  45: { x: 220, y: 800 },  // 宮崎
+  46: { x: 180, y: 830 },  // 鹿児島
+  47: { x: 100, y: 900 },  // 沖縄
+};
+
 interface PrefectureCount {
   [prefecture: string]: number;
 }
@@ -26,74 +77,48 @@ interface JapanHeatmapProps {
   onRegionPress?: (regionName: string, prefectures: string[]) => void;
 }
 
-// 参加者数に基づいて色を計算（青→黄→赤のグラデーション）
-// 最大値が小さい場合は、全体的に青寄りになるよう調整
-// 赤になるのは、最大値が十分に大きい場合（100人以上）のみ
-function getHeatColor(count: number, maxCount: number, totalCount: number): string {
+// 参考画像に基づいた色分け（黄色→オレンジ→赤→濃い赤のグラデーション）
+// 参加者がいない場合はピンク系の薄い色
+function getHeatColor(count: number, maxCount: number): string {
   if (count === 0) {
-    return "#2D3139"; // 参加者なし（ダークグレー）
+    return "#E8D4D4"; // 参加者なし（薄いピンク/ベージュ）
   }
   
-  // 赤になるための閾値を設定
-  // - 最大値が10人以下の場合: 青〜シアンの範囲のみ（0〜0.25）
-  // - 最大値が10〜50人の場合: 青〜黄の範囲（0〜0.5）
-  // - 最大値が50〜100人の場合: 青〜オレンジの範囲（0〜0.75）
-  // - 最大値が100人以上の場合: フルレンジ（0〜1）
-  let maxIntensity: number;
-  if (maxCount <= 10) {
-    maxIntensity = 0.25; // 青〜シアンのみ
-  } else if (maxCount <= 50) {
-    maxIntensity = 0.5; // 青〜黄
-  } else if (maxCount <= 100) {
-    maxIntensity = 0.75; // 青〜オレンジ
-  } else {
-    maxIntensity = 1.0; // フルレンジ
-  }
+  // 最大値に対する割合で色を決定
+  const ratio = maxCount > 0 ? count / maxCount : 0;
   
-  // 相対的な強度を計算（0〜maxIntensity）
-  const relativeIntensity = (count / maxCount) * maxIntensity;
-  const intensity = relativeIntensity;
-  
-  // 青(0) → シアン(0.25) → 黄(0.5) → オレンジ(0.75) → 赤(1) のグラデーション
-  if (intensity <= 0.25) {
-    // 青からシアンへ
-    const t = intensity * 4;
-    const r = Math.round(59 + (34 - 59) * t);
-    const g = Math.round(130 + (211 - 130) * t);
-    const b = Math.round(246 + (238 - 246) * t);
-    return `rgb(${r}, ${g}, ${b})`;
-  } else if (intensity <= 0.5) {
-    // シアンから黄へ
-    const t = (intensity - 0.25) * 4;
-    const r = Math.round(34 + (251 - 34) * t);
-    const g = Math.round(211 + (191 - 211) * t);
-    const b = Math.round(238 + (36 - 238) * t);
-    return `rgb(${r}, ${g}, ${b})`;
-  } else if (intensity <= 0.75) {
-    // 黄からオレンジへ
-    const t = (intensity - 0.5) * 4;
-    const r = Math.round(251 + (249 - 251) * t);
-    const g = Math.round(191 + (115 - 191) * t);
-    const b = Math.round(36 + (22 - 36) * t);
-    return `rgb(${r}, ${g}, ${b})`;
+  // 参考画像の色分け基準に近づける
+  // 黄色(少) → オレンジ → 赤 → 濃い赤/茶色(多)
+  if (ratio <= 0.15) {
+    // 薄い黄色
+    return "#FFF9C4";
+  } else if (ratio <= 0.25) {
+    // 黄色
+    return "#FFEB3B";
+  } else if (ratio <= 0.35) {
+    // 薄いオレンジ
+    return "#FFCC80";
+  } else if (ratio <= 0.50) {
+    // オレンジ
+    return "#FF9800";
+  } else if (ratio <= 0.65) {
+    // 濃いオレンジ
+    return "#F57C00";
+  } else if (ratio <= 0.80) {
+    // 赤
+    return "#E53935";
   } else {
-    // オレンジから赤へ
-    const t = (intensity - 0.75) * 4;
-    const r = Math.round(249 + (239 - 249) * t);
-    const g = Math.round(115 + (68 - 115) * t);
-    const b = Math.round(22 + (68 - 22) * t);
-    return `rgb(${r}, ${g}, ${b})`;
+    // 濃い赤/茶色
+    return "#B71C1C";
   }
 }
 
 // 都道府県名を正規化（「県」「府」「都」「道」を追加）
 function normalizePrefectureName(name: string): string {
   if (!name) return "";
-  // すでに正式名称の場合はそのまま返す
   if (name.endsWith("県") || name.endsWith("府") || name.endsWith("都") || name.endsWith("道")) {
     return name;
   }
-  // 特殊ケース
   if (name === "北海道") return "北海道";
   if (name === "東京") return "東京都";
   if (name === "大阪") return "大阪府";
@@ -101,18 +126,35 @@ function normalizePrefectureName(name: string): string {
   return name + "県";
 }
 
+// 都道府県名を短縮形に変換（地図上表示用）
+function getShortPrefectureName(name: string): string {
+  if (name === "北海道") return "北海道";
+  if (name.endsWith("県")) return name.slice(0, -1);
+  if (name.endsWith("府")) return name.slice(0, -1);
+  if (name.endsWith("都")) return name.slice(0, -1);
+  return name;
+}
+
+// 参加者数に応じた動的アイコンを取得
+function getDynamicIcon(count: number): string {
+  if (count === 0) return "😢"; // 寂しそうな顔
+  if (count <= 5) return "😊"; // 笑顔
+  if (count <= 20) return "🔥"; // 炎
+  return "🎉"; // パーティー
+}
+
 export function JapanHeatmap({ prefectureCounts, onPrefecturePress, onRegionPress }: JapanHeatmapProps) {
-  const mapWidth = Math.min(screenWidth - 32, 360);
-  const mapHeight = mapWidth * 1.1;
+  const mapWidth = Math.min(screenWidth - 32, 380);
+  const mapHeight = mapWidth * 1.2;
   
-  // SVGのviewBoxサイズ（元のSVGに合わせる）
+  // SVGのviewBoxサイズ
   const viewBoxWidth = 800;
-  const viewBoxHeight = 880;
+  const viewBoxHeight = 960;
   
   // スケールと位置調整
   const scale = 0.85;
-  const offsetX = -40;
-  const offsetY = -20;
+  const offsetX = -20;
+  const offsetY = 0;
 
   // 都道府県ごとの参加者数を集計
   const prefectureCounts47 = useMemo(() => {
@@ -177,17 +219,22 @@ export function JapanHeatmap({ prefectureCounts, onPrefecturePress, onRegionPres
     <View style={styles.container}>
       <View style={styles.header}>
         <Text style={styles.title}>🗾 地域別参加者マップ</Text>
-        <Text style={styles.subtitle}>合計 {totalCount}人</Text>
+        <Text style={styles.subtitle}>合計 {totalCount.toLocaleString()}人</Text>
       </View>
 
-      {/* 日本地図（47都道府県） */}
+      {/* 日本地図（47都道府県） - 水色の背景 */}
       <View style={[styles.mapContainer, { width: mapWidth, height: mapHeight }]}>
         <Svg width={mapWidth} height={mapHeight} viewBox={`0 0 ${viewBoxWidth} ${viewBoxHeight}`}>
+          {/* 海の背景 */}
+          <G>
+            <Path d={`M0,0 H${viewBoxWidth} V${viewBoxHeight} H0 Z`} fill="#A8D5E5" />
+          </G>
+          
           <G transform={`translate(${offsetX}, ${offsetY}) scale(${scale})`}>
+            {/* 都道府県のパス */}
             {prefecturesData.map((pref) => {
               const count = prefectureCounts47[pref.code] || 0;
-              const color = getHeatColor(count, maxPrefectureCount, totalCount);
-              const isHot = pref.code === (prefecturesData.find(p => p.name === hotPrefecture.name)?.code) && count > 0;
+              const color = getHeatColor(count, maxPrefectureCount);
               const prefName = normalizePrefectureName(pref.name);
               
               const handlePress = () => {
@@ -209,8 +256,8 @@ export function JapanHeatmap({ prefectureCounts, onPrefecturePress, onRegionPres
                       key={`${pref.code}-${idx}`}
                       d={pathData}
                       fill={color}
-                      stroke={isHot ? "#fff" : "#4B5563"}
-                      strokeWidth={isHot ? 1.5 : 0.5}
+                      stroke="#666666"
+                      strokeWidth={0.8}
                       strokeLinejoin="round"
                       onPress={handlePress}
                     />
@@ -218,21 +265,75 @@ export function JapanHeatmap({ prefectureCounts, onPrefecturePress, onRegionPres
                 </G>
               );
             })}
+            
+            {/* 都道府県名と人数のラベル + 白い丸マーカー */}
+            {prefecturesData.map((pref) => {
+              const count = prefectureCounts47[pref.code] || 0;
+              const labelPos = prefectureLabelPositions[pref.code];
+              if (!labelPos) return null;
+              
+              const shortName = getShortPrefectureName(pref.name);
+              
+              return (
+                <G key={`label-${pref.code}`}>
+                  {/* 動的アイコン */}
+                  <SvgText
+                    x={labelPos.x}
+                    y={labelPos.y - 20}
+                    fontSize={16}
+                    textAnchor="middle"
+                  >
+                    {getDynamicIcon(count)}
+                  </SvgText>
+                  {/* 都道府県名 */}
+                  <SvgText
+                    x={labelPos.x}
+                    y={labelPos.y}
+                    fill="#333333"
+                    fontSize={count > 0 ? 11 : 9}
+                    fontWeight={count > 0 ? "bold" : "normal"}
+                    textAnchor="middle"
+                  >
+                    {shortName}
+                  </SvgText>
+                  {/* 人数 */}
+                  {count > 0 && (
+                    <SvgText
+                      x={labelPos.x}
+                      y={labelPos.y + 12}
+                      fill="#333333"
+                      fontSize={10}
+                      textAnchor="middle"
+                    >
+                      {count.toLocaleString()}名
+                    </SvgText>
+                  )}
+                </G>
+              );
+            })}
           </G>
         </Svg>
       </View>
 
-      {/* 温度スケール（凡例） */}
+      {/* 温度スケール（凡例） - 参考画像に合わせた色 */}
       <View style={styles.legend}>
-        <Text style={styles.legendLabel}>少</Text>
-        <View style={styles.gradientBar}>
-          <View style={[styles.gradientSection, { backgroundColor: "#3B82F6" }]} />
-          <View style={[styles.gradientSection, { backgroundColor: "#22D3EE" }]} />
-          <View style={[styles.gradientSection, { backgroundColor: "#FBBF24" }]} />
-          <View style={[styles.gradientSection, { backgroundColor: "#F97316" }]} />
-          <View style={[styles.gradientSection, { backgroundColor: "#EF4444" }]} />
+        <View style={styles.legendItem}>
+          <View style={[styles.legendColor, { backgroundColor: "#FFF9C4" }]} />
+          <Text style={styles.legendText}>少</Text>
         </View>
-        <Text style={styles.legendLabel}>多</Text>
+        <View style={styles.legendItem}>
+          <View style={[styles.legendColor, { backgroundColor: "#FFEB3B" }]} />
+        </View>
+        <View style={styles.legendItem}>
+          <View style={[styles.legendColor, { backgroundColor: "#FF9800" }]} />
+        </View>
+        <View style={styles.legendItem}>
+          <View style={[styles.legendColor, { backgroundColor: "#E53935" }]} />
+        </View>
+        <View style={styles.legendItem}>
+          <View style={[styles.legendColor, { backgroundColor: "#B71C1C" }]} />
+          <Text style={styles.legendText}>多</Text>
+        </View>
       </View>
 
       {/* 統計サマリー */}
@@ -243,12 +344,12 @@ export function JapanHeatmap({ prefectureCounts, onPrefecturePress, onRegionPres
         </View>
         <View style={styles.statDivider} />
         <View style={styles.statItem}>
-          <Text style={styles.statValue}>{totalCount}</Text>
+          <Text style={styles.statValue}>{totalCount.toLocaleString()}</Text>
           <Text style={styles.statLabel}>総参加者</Text>
         </View>
         <View style={styles.statDivider} />
         <View style={styles.statItem}>
-          <Text style={styles.statValue}>{maxPrefectureCount}</Text>
+          <Text style={styles.statValue}>{maxPrefectureCount.toLocaleString()}</Text>
           <Text style={styles.statLabel}>最多</Text>
         </View>
       </View>
@@ -259,7 +360,7 @@ export function JapanHeatmap({ prefectureCounts, onPrefecturePress, onRegionPres
           <Text style={styles.hotIcon}>🔥</Text>
           <View style={styles.hotInfo}>
             <Text style={styles.hotTitle}>{hotPrefecture.name}が熱い！</Text>
-            <Text style={styles.hotSubtitle}>{hotPrefecture.count}人が参加表明中</Text>
+            <Text style={styles.hotSubtitle}>{hotPrefecture.count.toLocaleString()}人が参加表明中</Text>
           </View>
         </View>
       )}
@@ -270,7 +371,7 @@ export function JapanHeatmap({ prefectureCounts, onPrefecturePress, onRegionPres
           const count = regionCounts[region.name] || 0;
           const intensity = maxRegionCount > 0 ? count / maxRegionCount : 0;
           const isHot = region.name === regionGroups.find(r => regionCounts[r.name] === maxRegionCount)?.name && count > 0;
-          const color = count > 0 ? getHeatColor(count, maxRegionCount, totalCount) : "#2D3139";
+          const color = count > 0 ? getHeatColor(count, maxRegionCount) : "#E8D4D4";
           
           const handleRegionCardPress = () => {
             if (onRegionPress) {
@@ -289,7 +390,7 @@ export function JapanHeatmap({ prefectureCounts, onPrefecturePress, onRegionPres
               style={[
                 styles.regionCard,
                 isHot && styles.regionCardHot,
-                { borderColor: count > 0 ? color : "#2D3139" }
+                { borderColor: count > 0 ? color : "#E8D4D4" }
               ]}
             >
               <View style={styles.regionCardHeader}>
@@ -297,8 +398,8 @@ export function JapanHeatmap({ prefectureCounts, onPrefecturePress, onRegionPres
                 <Text style={styles.regionName}>{region.name}</Text>
                 {isHot && <Text style={styles.hotEmoji}>🔥</Text>}
               </View>
-              <Text style={[styles.regionCount, { color: count > 0 ? color : "#6B7280" }]}>
-                {count}<Text style={styles.regionUnit}>人</Text>
+              <Text style={[styles.regionCount, { color: count > 0 ? "#333" : "#6B7280" }]}>
+                {count.toLocaleString()}<Text style={styles.regionUnit}>人</Text>
               </Text>
               <View style={styles.progressBar}>
                 <View style={[styles.progressFill, { width: `${intensity * 100}%`, backgroundColor: color }]} />
@@ -345,31 +446,35 @@ const styles = StyleSheet.create({
   },
   mapContainer: {
     alignSelf: "center",
-    backgroundColor: "#0D1117",
     borderRadius: 16,
-    padding: 8,
+    overflow: "hidden",
     marginBottom: 16,
+    borderWidth: 2,
+    borderColor: "#666",
   },
   legend: {
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "center",
     marginBottom: 16,
-    gap: 8,
+    gap: 4,
   },
-  legendLabel: {
-    color: "#9CA3AF",
-    fontSize: 12,
-  },
-  gradientBar: {
+  legendItem: {
     flexDirection: "row",
-    height: 12,
-    width: 150,
-    borderRadius: 6,
-    overflow: "hidden",
+    alignItems: "center",
+    gap: 4,
   },
-  gradientSection: {
-    flex: 1,
+  legendColor: {
+    width: 24,
+    height: 16,
+    borderRadius: 2,
+    borderWidth: 1,
+    borderColor: "#666",
+  },
+  legendText: {
+    color: "#9CA3AF",
+    fontSize: 11,
+    marginHorizontal: 4,
   },
   statsRow: {
     flexDirection: "row",
@@ -454,12 +559,13 @@ const styles = StyleSheet.create({
     marginRight: 6,
   },
   regionName: {
-    color: "#9CA3AF",
-    fontSize: 11,
+    color: "#fff",
+    fontSize: 12,
+    fontWeight: "500",
     flex: 1,
   },
   hotEmoji: {
-    fontSize: 10,
+    fontSize: 12,
   },
   regionCount: {
     fontSize: 20,
@@ -468,13 +574,13 @@ const styles = StyleSheet.create({
   },
   regionUnit: {
     fontSize: 12,
-    color: "#9CA3AF",
+    fontWeight: "normal",
   },
   progressBar: {
-    height: 3,
+    height: 4,
     backgroundColor: "#2D3139",
     borderRadius: 2,
-    marginTop: 6,
+    marginTop: 8,
     overflow: "hidden",
   },
   progressFill: {
