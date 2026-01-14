@@ -13,6 +13,8 @@ import { shareToTwitter, shareParticipation } from "@/lib/share";
 import { SharePromptModal } from "@/components/share-prompt-modal";
 import { ReminderButton } from "@/components/reminder-button";
 import { OptimizedAvatar } from "@/components/optimized-image";
+import { Skeleton } from "@/components/skeleton-loader";
+import { EventDetailSkeleton } from "@/components/event-detail-skeleton";
 
 const { width: screenWidth } = Dimensions.get("window");
 
@@ -590,13 +592,7 @@ export default function ChallengeDetailScreen() {
   };
 
   if (challengeLoading) {
-    return (
-      <ScreenContainer containerClassName="bg-[#0D1117]">
-        <View style={{ flex: 1, alignItems: "center", justifyContent: "center", backgroundColor: "#0D1117" }}>
-          <Text style={{ color: "#9CA3AF" }}>読み込み中...</Text>
-        </View>
-      </ScreenContainer>
-    );
+    return <EventDetailSkeleton />;
   }
 
   if (!challenge) {

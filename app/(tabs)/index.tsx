@@ -21,6 +21,7 @@ import { OptimizedAvatar } from "@/components/optimized-image";
 import { LazyAvatar } from "@/components/lazy-image";
 import { prefetchChallengeImages } from "@/lib/image-prefetch";
 import { SimpleRefreshControl } from "@/components/enhanced-refresh-control";
+import { AnimatedCard } from "@/components/animated-pressable";
 
 // キャラクター画像
 const characterImages = {
@@ -458,8 +459,9 @@ function ChallengeCard({ challenge, onPress, numColumns = 2 }: { challenge: Chal
   const cardWidth = numColumns === 3 ? "31%" : numColumns === 2 ? "47%" : "100%";
 
   return (
-    <PressableCard
+    <AnimatedCard
       onPress={onPress}
+      scaleAmount={0.98}
       style={{
         backgroundColor: "#1A1D21",
         borderRadius: 12,
@@ -577,7 +579,7 @@ function ChallengeCard({ challenge, onPress, numColumns = 2 }: { challenge: Chal
           </View>
         </View>
       </View>
-    </PressableCard>
+    </AnimatedCard>
   );
 }
 
