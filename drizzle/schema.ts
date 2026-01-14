@@ -94,6 +94,8 @@ export const participations = mysqlTable("participations", {
   displayName: varchar("displayName", { length: 255 }).notNull(),
   username: varchar("username", { length: 255 }),
   profileImage: text("profileImage"),
+  // 参加者のTwitterフォロワー数
+  followersCount: int("followersCount").default(0),
   // 参加情報
   message: text("message"),
   companionCount: int("companionCount").default(0).notNull(),

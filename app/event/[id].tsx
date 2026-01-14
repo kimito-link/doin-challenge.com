@@ -1,4 +1,4 @@
-import { Text, View, TouchableOpacity, TextInput, ScrollView, KeyboardAvoidingView, Platform, Alert, Share, Dimensions, Linking } from "react-native";
+import { Text, View, TouchableOpacity, TextInput, ScrollView, KeyboardAvoidingView, Platform, Alert, Share, Dimensions, Linking, Modal } from "react-native";
 import { Image } from "expo-image";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import { useState } from "react";
@@ -60,6 +60,7 @@ type Participation = {
   prefecture: string | null;
   isAnonymous: boolean;
   createdAt: Date;
+  followerCount?: number | null;
 };
 
 // 進捗グリッドコンポーネント
@@ -178,6 +179,11 @@ function ParticipantsList({ participations }: { participations: Participation[] 
               <Text style={{ color: "#fff", fontSize: 11, marginTop: 4, textAlign: "center" }} numberOfLines={1}>
                 {p.displayName}
               </Text>
+              {p.followerCount && p.followerCount > 0 && (
+                <Text style={{ color: "#EC4899", fontSize: 9, fontWeight: "bold" }} numberOfLines={1}>
+                  {p.followerCount >= 10000 ? `${(p.followerCount / 10000).toFixed(1)}万` : p.followerCount.toLocaleString()}人
+                </Text>
+              )}
               {p.username && (
                 <Text style={{ color: "#9CA3AF", fontSize: 9 }} numberOfLines={1}>
                   @{p.username}
@@ -294,6 +300,11 @@ function ContributionRanking({ participations, followerIds = [] }: { participati
             <Text style={{ color: "#6B7280", fontSize: 10 }}>
               {p.companionCount > 0 ? `(本人+${p.companionCount}人)` : ""}
             </Text>
+            {p.followerCount && p.followerCount > 0 && (
+              <Text style={{ color: "#9CA3AF", fontSize: 10, marginTop: 2 }}>
+                {p.followerCount >= 10000 ? `${(p.followerCount / 10000).toFixed(1)}万` : p.followerCount.toLocaleString()}フォロワー
+              </Text>
+            )}
           </View>
         </View>
       ))}
@@ -465,6 +476,7 @@ export default function ChallengeDetailScreen() {
   const [allowVideoUse, setAllowVideoUse] = useState(true);
   const [selectedPrefectureFilter, setSelectedPrefectureFilter] = useState("all");
   const [showPrefectureFilterList, setShowPrefectureFilterList] = useState(false);
+  const [showConfirmation, setShowConfirmation] = useState(false);
   
   // 友人追加用のstate
   type Companion = {
@@ -688,6 +700,16 @@ export default function ChallengeDetailScreen() {
   };
 
   const handleSubmit = () => {
+    if (!user) {
+      // 未ログインの場合は直接ログイン画面に遷移
+      login();
+      return;
+    }
+    // 確認画面を表示
+    setShowConfirmation(true);
+  };
+
+  const handleConfirmSubmit = () => {
     // 友人データを整形
     const companionData = companions.map(c => ({
       displayName: c.displayName,
@@ -703,13 +725,9 @@ export default function ChallengeDetailScreen() {
         displayName: user.name || "ゲスト",
         username: user.username,
         profileImage: user.profileImage,
-
         companions: companionData,
       });
-    } else {
-      // 未ログインの場合は直接ログイン画面に遷移
-      login();
-      return;
+      setShowConfirmation(false);
     }
   };
 
@@ -1751,45 +1769,6 @@ export default function ChallengeDetailScreen() {
                   />
                 </View>
 
-                {/* 応援動画使用許可 */}
-                <TouchableOpacity
-                  onPress={() => setAllowVideoUse(!allowVideoUse)}
-                  style={{
-                    flexDirection: "row",
-                    alignItems: "center",
-                    marginBottom: 16,
-                    padding: 12,
-                    backgroundColor: "#0D1117",
-                    borderRadius: 8,
-                    borderWidth: 1,
-                    borderColor: allowVideoUse ? "#EC4899" : "#2D3139",
-                  }}
-                >
-                  <View
-                    style={{
-                      width: 24,
-                      height: 24,
-                      borderRadius: 4,
-                      borderWidth: 2,
-                      borderColor: allowVideoUse ? "#EC4899" : "#6B7280",
-                      backgroundColor: allowVideoUse ? "#EC4899" : "transparent",
-                      alignItems: "center",
-                      justifyContent: "center",
-                      marginRight: 12,
-                    }}
-                  >
-                    {allowVideoUse && <MaterialIcons name="check" size={16} color="#fff" />}
-                  </View>
-                  <View style={{ flex: 1 }}>
-                    <Text style={{ color: "#fff", fontSize: 14 }}>
-                      応援動画での使用を許可する
-                    </Text>
-                    <Text style={{ color: "#6B7280", fontSize: 12, marginTop: 2 }}>
-                      素敵なコメントは応援動画で使わせてもらうかも！
-                    </Text>
-                  </View>
-                </TouchableOpacity>
-
                 {/* 参加条件・お約束 */}
                 <View
                   style={{
@@ -1991,6 +1970,198 @@ export default function ChallengeDetailScreen() {
           </View>
         </ScrollView>
       </KeyboardAvoidingView>
+
+      {/* 参加表明確認モーダル */}
+      <Modal
+        visible={showConfirmation}
+        transparent
+        animationType="fade"
+        onRequestClose={() => setShowConfirmation(false)}
+      >
+        <View style={{
+          flex: 1,
+          backgroundColor: "rgba(0,0,0,0.8)",
+          justifyContent: "center",
+          alignItems: "center",
+          padding: 20,
+        }}>
+          <View style={{
+            backgroundColor: "#1A1D21",
+            borderRadius: 16,
+            padding: 20,
+            width: "100%",
+            maxWidth: 400,
+            borderWidth: 1,
+            borderColor: "#2D3139",
+          }}>
+            <Text style={{ color: "#fff", fontSize: 20, fontWeight: "bold", marginBottom: 16, textAlign: "center" }}>
+              この内容でいいですか？
+            </Text>
+
+            {/* 参加者情報 */}
+            <View style={{
+              backgroundColor: "#0D1117",
+              borderRadius: 12,
+              padding: 16,
+              marginBottom: 16,
+              borderWidth: 1,
+              borderColor: "#2D3139",
+            }}>
+              <Text style={{ color: "#9CA3AF", fontSize: 12, marginBottom: 8 }}>参加者</Text>
+              <View style={{ flexDirection: "row", alignItems: "center", gap: 12 }}>
+                {user?.profileImage ? (
+                  <Image
+                    source={{ uri: user.profileImage }}
+                    style={{ width: 48, height: 48, borderRadius: 24 }}
+                    contentFit="cover"
+                  />
+                ) : (
+                  <View style={{ width: 48, height: 48, borderRadius: 24, backgroundColor: "#EC4899", justifyContent: "center", alignItems: "center" }}>
+                    <Text style={{ color: "#fff", fontSize: 20, fontWeight: "bold" }}>
+                      {(user?.name || user?.username || "ゲ")?.charAt(0).toUpperCase()}
+                    </Text>
+                  </View>
+                )}
+                <View style={{ flex: 1 }}>
+                  <Text style={{ color: "#fff", fontSize: 16, fontWeight: "600" }}>
+                    {user?.name || user?.username || "ゲスト"}
+                  </Text>
+                  {user?.username && (
+                    <Text style={{ color: "#9CA3AF", fontSize: 14, marginTop: 2 }}>
+                      @{user.username}
+                    </Text>
+                  )}
+                </View>
+              </View>
+            </View>
+
+            {/* 都道府県 */}
+            {prefecture && (
+              <View style={{
+                backgroundColor: "#0D1117",
+                borderRadius: 12,
+                padding: 12,
+                marginBottom: 12,
+                borderWidth: 1,
+                borderColor: "#2D3139",
+              }}>
+                <Text style={{ color: "#9CA3AF", fontSize: 12, marginBottom: 4 }}>都道府県</Text>
+                <Text style={{ color: "#fff", fontSize: 16 }}>{prefecture}</Text>
+              </View>
+            )}
+
+            {/* 友人 */}
+            {companions.length > 0 && (
+              <View style={{
+                backgroundColor: "#0D1117",
+                borderRadius: 12,
+                padding: 12,
+                marginBottom: 12,
+                borderWidth: 1,
+                borderColor: "#2D3139",
+              }}>
+                <Text style={{ color: "#9CA3AF", fontSize: 12, marginBottom: 8 }}>一緒に参加する友人（{companions.length}人）</Text>
+                <View style={{ gap: 8 }}>
+                  {companions.map((c) => (
+                    <View key={c.id} style={{ flexDirection: "row", alignItems: "center", gap: 8 }}>
+                      {c.profileImage ? (
+                        <Image source={{ uri: c.profileImage }} style={{ width: 24, height: 24, borderRadius: 12 }} />
+                      ) : (
+                        <View style={{ width: 24, height: 24, borderRadius: 12, backgroundColor: "#8B5CF6", justifyContent: "center", alignItems: "center" }}>
+                          <Text style={{ color: "#fff", fontSize: 10 }}>{c.displayName.charAt(0)}</Text>
+                        </View>
+                      )}
+                      <Text style={{ color: "#fff", fontSize: 14 }}>{c.displayName}</Text>
+                      {c.twitterUsername && (
+                        <Text style={{ color: "#9CA3AF", fontSize: 12 }}>@{c.twitterUsername}</Text>
+                      )}
+                    </View>
+                  ))}
+                </View>
+              </View>
+            )}
+
+            {/* 応援メッセージ */}
+            {message && (
+              <View style={{
+                backgroundColor: "#0D1117",
+                borderRadius: 12,
+                padding: 12,
+                marginBottom: 12,
+                borderWidth: 1,
+                borderColor: "#2D3139",
+              }}>
+                <Text style={{ color: "#9CA3AF", fontSize: 12, marginBottom: 4 }}>応援メッセージ</Text>
+                <Text style={{ color: "#fff", fontSize: 14 }}>{message}</Text>
+              </View>
+            )}
+
+            {/* 貢献度 */}
+            <View style={{
+              backgroundColor: "#0D1117",
+              borderRadius: 12,
+              padding: 12,
+              marginBottom: 20,
+              flexDirection: "row",
+              alignItems: "center",
+              justifyContent: "space-between",
+              borderWidth: 1,
+              borderColor: "#2D3139",
+            }}>
+              <Text style={{ color: "#9CA3AF", fontSize: 14 }}>あなたの貢献</Text>
+              <View style={{ flexDirection: "row", alignItems: "baseline" }}>
+                <Text style={{ color: "#EC4899", fontSize: 24, fontWeight: "bold" }}>
+                  {1 + companions.length}
+                </Text>
+                <Text style={{ color: "#9CA3AF", fontSize: 14, marginLeft: 4 }}>人</Text>
+              </View>
+            </View>
+
+            {/* ボタン */}
+            <View style={{ flexDirection: "row", gap: 12 }}>
+              <TouchableOpacity
+                onPress={() => setShowConfirmation(false)}
+                style={{
+                  flex: 1,
+                  backgroundColor: "#2D3139",
+                  borderRadius: 12,
+                  padding: 16,
+                  alignItems: "center",
+                }}
+              >
+                <Text style={{ color: "#fff", fontSize: 16 }}>戻る</Text>
+              </TouchableOpacity>
+              <TouchableOpacity
+                onPress={handleConfirmSubmit}
+                disabled={createParticipationMutation.isPending}
+                style={{
+                  flex: 1,
+                  borderRadius: 12,
+                  padding: 16,
+                  alignItems: "center",
+                  overflow: "hidden",
+                }}
+              >
+                <LinearGradient
+                  colors={["#EC4899", "#8B5CF6"]}
+                  start={{ x: 0, y: 0 }}
+                  end={{ x: 1, y: 0 }}
+                  style={{
+                    position: "absolute",
+                    left: 0,
+                    right: 0,
+                    top: 0,
+                    bottom: 0,
+                  }}
+                />
+                <Text style={{ color: "#fff", fontSize: 16, fontWeight: "bold" }}>
+                  {createParticipationMutation.isPending ? "送信中..." : "参加表明する"}
+                </Text>
+              </TouchableOpacity>
+            </View>
+          </View>
+        </View>
+      </Modal>
 
       {/* シェア促進モーダル */}
       <SharePromptModal

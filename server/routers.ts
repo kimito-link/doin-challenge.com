@@ -160,6 +160,7 @@ export const appRouter = router({
         displayName: z.string(),
         username: z.string().optional(),
         profileImage: z.string().optional(),
+        followersCount: z.number().optional(),
         // 一緒に参加する友人（名前付き）
         companions: z.array(z.object({
           displayName: z.string(),
@@ -176,6 +177,7 @@ export const appRouter = router({
           displayName: input.displayName,
           username: input.username,
           profileImage: input.profileImage,
+          followersCount: input.followersCount,
           message: input.message,
           companionCount: input.companionCount,
           prefecture: input.prefecture,

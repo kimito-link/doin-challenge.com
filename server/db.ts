@@ -207,10 +207,12 @@ export async function getContributionRanking(challengeId: number, limit = 10) {
   
   return result.slice(0, limit).map((p, index) => ({
     rank: index + 1,
+    userId: p.userId,
     displayName: p.displayName,
     username: p.username,
     profileImage: p.profileImage,
     contribution: p.contribution || 1,
+    followersCount: p.followersCount || 0,
     isAnonymous: p.isAnonymous,
   }));
 }
