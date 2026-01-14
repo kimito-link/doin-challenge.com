@@ -18,6 +18,7 @@ import { EventDetailSkeleton } from "@/components/event-detail-skeleton";
 import { JapanHeatmap } from "@/components/japan-heatmap";
 import { PrefectureParticipantsModal } from "@/components/prefecture-participants-modal";
 import { RegionParticipantsModal } from "@/components/region-participants-modal";
+import { GrowthTrajectoryChart } from "@/components/growth-trajectory-chart";
 
 const { width: screenWidth } = Dimensions.get("window");
 
@@ -1056,6 +1057,48 @@ export default function ChallengeDetailScreen() {
                 prefectureCounts={prefectureCounts} 
                 onPrefecturePress={(prefName) => setSelectedPrefectureForModal(prefName)}
                 onRegionPress={(regionName, prefectures) => setSelectedRegion({ name: regionName, prefectures })}
+              />
+
+              {/* 動員までの軌跡グラフ */}
+              <GrowthTrajectoryChart
+                data={(() => {
+                  // 参加者データから時系列データを生成
+                  if (!participations || participations.length === 0) return [];
+                  
+                  // 日付ごとに参加者を集計
+                  const dateMap = new Map<string, { count: number; milestone?: string }>();
+                  let cumulativeCount = 0;
+                  
+                  // 参加者を日付順にソート
+                  const sortedParticipations = [...participations].sort((a, b) => 
+                    new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime()
+                  );
+                  
+                  sortedParticipations.forEach((p, index) => {
+                    const dateKey = new Date(p.createdAt).toISOString().split('T')[0];
+                    cumulativeCount += p.contribution || 1;
+                    
+                    // マイルストーンを設定
+                    let milestone: string | undefined;
+                    if (cumulativeCount === 1) milestone = "最初の参加者!";
+                    else if (cumulativeCount === 10) milestone = "10人達成!";
+                    else if (cumulativeCount === 50) milestone = "50人達成!";
+                    else if (cumulativeCount === 100) milestone = "100人達成!";
+                    else if (cumulativeCount === 500) milestone = "500人達成!";
+                    else if (cumulativeCount === 1000) milestone = "1000人達成!";
+                    
+                    dateMap.set(dateKey, { count: cumulativeCount, milestone });
+                  });
+                  
+                  // Mapを配列に変換
+                  return Array.from(dateMap.entries()).map(([dateStr, data]) => ({
+                    date: new Date(dateStr),
+                    count: data.count,
+                    milestone: data.milestone,
+                  }));
+                })()}
+                targetCount={goalValue}
+                title="動員までの軌跡"
               />
             </View>
 
