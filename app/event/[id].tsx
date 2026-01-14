@@ -10,6 +10,8 @@ import { LinearGradient } from "expo-linear-gradient";
 import { Countdown } from "@/components/countdown";
 import { AppHeader } from "@/components/app-header";
 import { shareToTwitter, shareParticipation } from "@/lib/share";
+import { SharePromptModal } from "@/components/share-prompt-modal";
+import { ReminderButton } from "@/components/reminder-button";
 
 const { width: screenWidth } = Dimensions.get("window");
 
@@ -471,6 +473,8 @@ export default function ChallengeDetailScreen() {
     }
   };
   
+  const [showSharePrompt, setShowSharePrompt] = useState(false);
+
   const createParticipationMutation = trpc.participations.create.useMutation({
     onSuccess: () => {
       setMessage("");
@@ -479,6 +483,8 @@ export default function ChallengeDetailScreen() {
       setCompanions([]);
       setShowForm(false);
       refetch();
+      // シェア促進モーダルを表示
+      setShowSharePrompt(true);
     },
   });
   
@@ -491,6 +497,8 @@ export default function ChallengeDetailScreen() {
       setCompanions([]);
       setShowForm(false);
       refetch();
+      // シェア促進モーダルを表示
+      setShowSharePrompt(true);
     },
   });
 
@@ -1781,8 +1789,8 @@ export default function ChallengeDetailScreen() {
               </View>
             ) : (
               <View style={{ gap: 12, marginTop: 16 }}>
-                {/* シェアボタン */}
-                <View style={{ flexDirection: "row", gap: 12 }}>
+                {/* シェア・リマインダーボタン */}
+                <View style={{ flexDirection: "row", gap: 12, alignItems: "center" }}>
                   <TouchableOpacity
                     onPress={handleShare}
                     style={{
@@ -1816,6 +1824,16 @@ export default function ChallengeDetailScreen() {
                     <Text style={{ color: "#fff", fontSize: 14, marginLeft: 6 }}>Xでシェア</Text>
                   </TouchableOpacity>
                 </View>
+                {/* リマインダーボタン */}
+                {challenge.eventDate && (
+                  <View style={{ flexDirection: "row", justifyContent: "flex-end" }}>
+                    <ReminderButton
+                      challengeId={challengeId}
+                      challengeTitle={challenge.title}
+                      eventDate={new Date(challenge.eventDate)}
+                    />
+                  </View>
+                )}
                 <TouchableOpacity
                   onPress={() => setShowForm(true)}
                   style={{
@@ -1849,6 +1867,15 @@ export default function ChallengeDetailScreen() {
           </View>
         </ScrollView>
       </KeyboardAvoidingView>
+
+      {/* シェア促進モーダル */}
+      <SharePromptModal
+        visible={showSharePrompt}
+        onClose={() => setShowSharePrompt(false)}
+        challengeTitle={challenge.title}
+        hostName={challenge.hostName}
+        challengeId={challengeId}
+      />
     </ScreenContainer>
   );
 }

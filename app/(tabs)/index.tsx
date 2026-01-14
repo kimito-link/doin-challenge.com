@@ -1,7 +1,7 @@
 import { FlatList, Text, View, TouchableOpacity, RefreshControl, ScrollView, TextInput, Platform } from "react-native";
 import { Image } from "expo-image";
 import { useRouter } from "expo-router";
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 import { ScreenContainer } from "@/components/screen-container";
 import { ResponsiveContainer } from "@/components/responsive-container";
 import { OnboardingSteps } from "@/components/onboarding-steps";
@@ -13,6 +13,9 @@ import MaterialIcons from "@expo/vector-icons/MaterialIcons";
 import { Countdown } from "@/components/countdown";
 import { PressableCard } from "@/components/pressable-card";
 import { AppHeader } from "@/components/app-header";
+import { CachedDataIndicator } from "@/components/offline-banner";
+import { useNetworkStatus } from "@/hooks/use-offline-cache";
+import { setCache, getCache, CACHE_KEYS } from "@/lib/offline-cache";
 
 // キャラクター画像
 const characterImages = {
@@ -685,12 +688,45 @@ export default function HomeScreen() {
   const [isSearching, setIsSearching] = useState(false);
   const [categoryFilter, setCategoryFilter] = useState<number | null>(null);
   
-  const { data: challenges, isLoading, refetch } = trpc.events.list.useQuery();
+  const { isOffline } = useNetworkStatus();
+  const [cachedChallenges, setCachedChallenges] = useState<Challenge[] | null>(null);
+  const [isStaleData, setIsStaleData] = useState(false);
+
+  const { data: challenges, isLoading, refetch } = trpc.events.list.useQuery(undefined, {
+    enabled: !isOffline,
+  });
   const { data: searchResults, refetch: refetchSearch } = trpc.search.challenges.useQuery(
     { query: searchQuery },
-    { enabled: searchQuery.length > 0 }
+    { enabled: searchQuery.length > 0 && !isOffline }
   );
-  const { data: categoriesData } = trpc.categories.list.useQuery();
+  const { data: categoriesData } = trpc.categories.list.useQuery(undefined, {
+    enabled: !isOffline,
+  });
+
+  // チャレンジデータをキャッシュに保存
+  useEffect(() => {
+    if (challenges && challenges.length > 0) {
+      setCache(CACHE_KEYS.challenges, challenges);
+      setIsStaleData(false);
+    }
+  }, [challenges]);
+
+  // オフライン時はキャッシュから読み込み
+  useEffect(() => {
+    if (isOffline) {
+      getCache<Challenge[]>(CACHE_KEYS.challenges).then((cached) => {
+        if (cached) {
+          setCachedChallenges(cached.data);
+          setIsStaleData(cached.isStale);
+        }
+      });
+    } else {
+      setCachedChallenges(null);
+    }
+  }, [isOffline]);
+
+  // オンライン時はAPIデータ、オフライン時はキャッシュデータを使用
+  const effectiveChallenges = isOffline ? cachedChallenges : challenges;
 
   const onRefresh = async () => {
     setRefreshing(true);
@@ -712,7 +748,7 @@ export default function HomeScreen() {
         if (categoryFilter && c.categoryId !== categoryFilter) return false;
         return true;
       })
-    : (challenges?.filter((c: Challenge & { categoryId?: number | null }) => {
+    : (effectiveChallenges?.filter((c: Challenge & { categoryId?: number | null }) => {
         if (filter !== "all" && c.eventType !== filter) return false;
         if (categoryFilter && c.categoryId !== categoryFilter) return false;
         return true;
@@ -720,8 +756,8 @@ export default function HomeScreen() {
 
   // 注目のチャレンジ（最も進捗が高いもの、または最も参加者が多いもの）
   const featuredChallenge = useMemo(() => {
-    if (!challenges || challenges.length === 0) return null;
-    return challenges.reduce((best, current) => {
+    if (!effectiveChallenges || effectiveChallenges.length === 0) return null;
+    return effectiveChallenges.reduce((best, current) => {
       const bestProgress = best.currentValue / best.goalValue;
       const currentProgress = current.currentValue / current.goalValue;
       // 進捗率が高い、または参加者が多いものを選択
@@ -750,9 +786,16 @@ export default function HomeScreen() {
         />
       )}
 
+      {/* オフラインキャッシュインジケーター */}
+      {isOffline && isStaleData && (
+        <View style={{ marginHorizontal: 16, marginTop: 8 }}>
+          <CachedDataIndicator isStale={isStaleData} />
+        </View>
+      )}
+
       {/* 盛り上がりセクション */}
-      {challenges && challenges.length > 0 && !isSearching && (
-        <EngagementSection challenges={challenges as Challenge[]} />
+      {effectiveChallenges && effectiveChallenges.length > 0 && !isSearching && (
+        <EngagementSection challenges={effectiveChallenges as Challenge[]} />
       )}
 
       {/* LP風キャッチコピー */}
