@@ -89,17 +89,23 @@ export function AppHeader({
                 <Image 
                   source={characterImages.linkYukkuri} 
                   style={{ width: isDesktop ? 48 : 36, height: isDesktop ? 48 : 36, marginLeft: -4 }} 
-                  contentFit="contain" 
+                  contentFit="contain"
+                  priority="high"
+                  cachePolicy="memory-disk"
                 />
                 <Image 
                   source={characterImages.kontaYukkuri} 
                   style={{ width: isDesktop ? 48 : 36, height: isDesktop ? 48 : 36, marginLeft: -4 }} 
-                  contentFit="contain" 
+                  contentFit="contain"
+                  priority="high"
+                  cachePolicy="memory-disk"
                 />
                 <Image 
                   source={characterImages.tanuneYukkuri} 
                   style={{ width: isDesktop ? 48 : 36, height: isDesktop ? 48 : 36, marginLeft: -4 }} 
-                  contentFit="contain" 
+                  contentFit="contain"
+                  priority="high"
+                  cachePolicy="memory-disk"
                 />
               </View>
             ) : null}

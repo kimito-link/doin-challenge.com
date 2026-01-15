@@ -95,10 +95,32 @@ export async function getUserByOpenId(openId: string) {
 
 // ========== Events ==========
 
+// サーバーサイドメモリキャッシュ（パフォーマンス最適化）
+let eventsCache: { data: any[] | null; timestamp: number } = { data: null, timestamp: 0 };
+const EVENTS_CACHE_TTL = 30 * 1000; // 30秒
+
 export async function getAllEvents() {
+  const now = Date.now();
+  
+  // キャッシュが有効なら即座に返す
+  if (eventsCache.data && (now - eventsCache.timestamp) < EVENTS_CACHE_TTL) {
+    return eventsCache.data;
+  }
+  
   const db = await getDb();
-  if (!db) return [];
-  return db.select().from(events).where(eq(events.isPublic, true)).orderBy(desc(events.eventDate));
+  if (!db) return eventsCache.data ?? [];
+  
+  const result = await db.select().from(events).where(eq(events.isPublic, true)).orderBy(desc(events.eventDate));
+  
+  // キャッシュを更新
+  eventsCache = { data: result, timestamp: now };
+  
+  return result;
+}
+
+// キャッシュを無効化（イベント作成/更新/削除時に呼び出す）
+export function invalidateEventsCache() {
+  eventsCache = { data: null, timestamp: 0 };
 }
 
 export async function getEventById(id: number) {
@@ -118,6 +140,7 @@ export async function createEvent(data: InsertEvent) {
   const db = await getDb();
   if (!db) throw new Error("Database not available");
   const result = await db.insert(events).values(data);
+  invalidateEventsCache(); // キャッシュを無効化
   return result[0].insertId;
 }
 
@@ -125,12 +148,14 @@ export async function updateEvent(id: number, data: Partial<InsertEvent>) {
   const db = await getDb();
   if (!db) throw new Error("Database not available");
   await db.update(events).set(data).where(eq(events.id, id));
+  invalidateEventsCache(); // キャッシュを無効化
 }
 
 export async function deleteEvent(id: number) {
   const db = await getDb();
   if (!db) throw new Error("Database not available");
   await db.delete(events).where(eq(events.id, id));
+  invalidateEventsCache(); // キャッシュを無効化
 }
 
 // ========== Participations ==========

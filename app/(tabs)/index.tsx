@@ -16,6 +16,7 @@ import { AppHeader } from "@/components/app-header";
 import { CachedDataIndicator } from "@/components/offline-banner";
 import { useNetworkStatus } from "@/hooks/use-offline-cache";
 import { setCache, getCache, CACHE_KEYS } from "@/lib/offline-cache";
+import { getCachedData, setCachedData, PREFETCH_KEYS } from "@/lib/data-prefetch";
 import { ChallengeCardSkeleton, Skeleton } from "@/components/skeleton-loader";
 import { OptimizedAvatar } from "@/components/optimized-image";
 import { LazyAvatar } from "@/components/lazy-image";
@@ -762,11 +763,25 @@ export default function HomeScreen() {
   const { isOffline } = useNetworkStatus();
   const [cachedChallenges, setCachedChallenges] = useState<Challenge[] | null>(null);
   const [isStaleData, setIsStaleData] = useState(false);
+  const [hasInitialCache, setHasInitialCache] = useState(false);
+
+  // 初回ロード時にキャッシュから即座に表示（ローディングなし）
+  useEffect(() => {
+    const loadInitialCache = async () => {
+      const cached = await getCachedData<Challenge[]>(PREFETCH_KEYS.CHALLENGES);
+      if (cached && cached.data.length > 0) {
+        setCachedChallenges(cached.data);
+        setIsStaleData(cached.isStale);
+        setHasInitialCache(true);
+      }
+    };
+    loadInitialCache();
+  }, []);
 
   // 無限スクロール対応のページネーションクエリ
   const {
     data: paginatedData,
-    isLoading,
+    isLoading: isApiLoading,
     isFetching,
     fetchNextPage,
     hasNextPage,
@@ -784,7 +799,14 @@ export default function HomeScreen() {
   );
 
   // ページネーションデータをフラットな配列に変換
-  const challenges = paginatedData?.pages.flatMap((page) => page.items) ?? [];
+  const apiChallenges = paginatedData?.pages.flatMap((page) => page.items) ?? [];
+  
+  // キャッシュ優先表示: APIデータがあればそれを使用、なければキャッシュを使用
+  const challenges = apiChallenges.length > 0 ? apiChallenges : (cachedChallenges ?? []);
+  
+  // ローディング状態: データがあればローディングを表示しない（スケルトンを最小化）
+  // キャッシュがあるか、APIデータがあれば即座に表示
+  const isLoading = challenges.length === 0 && isApiLoading && !hasInitialCache;
   // 検索結果の無限スクロール対応
   const {
     data: searchPaginatedData,
@@ -807,13 +829,16 @@ export default function HomeScreen() {
     enabled: !isOffline,
   });
 
-  // チャレンジデータをキャッシュに保存
+  // チャレンジデータをキャッシュに保存（両方のキャッシュシステムに保存）
   useEffect(() => {
-    if (challenges && challenges.length > 0) {
-      setCache(CACHE_KEYS.challenges, challenges);
+    if (apiChallenges && apiChallenges.length > 0) {
+      // 既存のオフラインキャッシュ
+      setCache(CACHE_KEYS.challenges, apiChallenges);
+      // 新しいプリフェッチキャッシュ（即座表示用）
+      setCachedData(PREFETCH_KEYS.CHALLENGES, apiChallenges);
       setIsStaleData(false);
     }
-  }, [challenges]);
+  }, [apiChallenges]);
 
   // チャレンジの画像をプリフェッチ（事前読み込み）
   useEffect(() => {

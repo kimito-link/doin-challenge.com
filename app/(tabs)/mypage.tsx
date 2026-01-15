@@ -255,7 +255,9 @@ export default function MyPageScreen() {
                   <Image 
                     source={characterImages.linkYukkuri} 
                     style={{ width: 52, height: 52 }} 
-                    contentFit="cover" 
+                    contentFit="cover"
+                    priority="high"
+                    cachePolicy="memory-disk"
                   />
                 </View>
               </View>
@@ -271,7 +273,9 @@ export default function MyPageScreen() {
                   <Image 
                     source={characterImages.kontaYukkuri} 
                     style={{ width: 58, height: 58 }} 
-                    contentFit="cover" 
+                    contentFit="cover"
+                    priority="high"
+                    cachePolicy="memory-disk"
                   />
                 </View>
               </View>
@@ -287,7 +291,9 @@ export default function MyPageScreen() {
                   <Image 
                     source={characterImages.tanuneYukkuri} 
                     style={{ width: 52, height: 52 }} 
-                    contentFit="cover" 
+                    contentFit="cover"
+                    priority="high"
+                    cachePolicy="memory-disk"
                   />
                 </View>
               </View>
