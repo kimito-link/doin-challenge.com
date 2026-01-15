@@ -1016,6 +1016,7 @@ export default function HomeScreen() {
         title="動員ちゃれんじ" 
         showCharacters={true}
         isDesktop={isDesktop}
+        showMenu={true}
       />
 
       {isLoading ? (

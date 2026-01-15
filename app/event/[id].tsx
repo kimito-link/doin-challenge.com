@@ -871,15 +871,7 @@ export default function ChallengeDetailScreen() {
           <AppHeader 
             title="動員ちゃれんじ" 
             showCharacters={false}
-            rightElement={
-              <TouchableOpacity
-                onPress={() => router.back()}
-                style={{ flexDirection: "row", alignItems: "center" }}
-              >
-                <MaterialIcons name="arrow-back" size={24} color="#fff" />
-                <Text style={{ color: "#fff", marginLeft: 8 }}>戻る</Text>
-              </TouchableOpacity>
-            }
+            showMenu={true}
           />
 
           {/* ヘッダー画像 */}

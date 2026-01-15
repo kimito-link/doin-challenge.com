@@ -162,6 +162,7 @@ export default function CreateChallengeScreen() {
             title="動員ちゃれんじ" 
             showCharacters={false}
             isDesktop={isDesktop}
+            showMenu={true}
           />
           <View style={{ paddingHorizontal: 16, paddingBottom: 8 }}>
             <Text style={{ color: "#fff", fontSize: 28, fontWeight: "bold" }}>

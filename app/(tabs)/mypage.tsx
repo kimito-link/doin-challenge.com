@@ -160,6 +160,7 @@ export default function MyPageScreen() {
           title="動員ちゃれんじ" 
           showCharacters={false}
           isDesktop={isDesktop}
+          showMenu={true}
         />
         <MypageSkeleton />
       </ScreenContainer>
@@ -173,23 +174,7 @@ export default function MyPageScreen() {
         title="動員ちゃれんじ" 
         showCharacters={false}
         isDesktop={isDesktop}
-        rightElement={
-          isAuthenticated ? (
-            <TouchableOpacity
-              onPress={() => router.push("/notifications")}
-              style={{
-                width: 44,
-                height: 44,
-                borderRadius: 22,
-                backgroundColor: "#1A1D21",
-                alignItems: "center",
-                justifyContent: "center",
-              }}
-            >
-              <MaterialIcons name="notifications" size={24} color="#fff" />
-            </TouchableOpacity>
-          ) : undefined
-        }
+        showMenu={true}
       />
       <View style={{ paddingHorizontal: 16, paddingBottom: 8, backgroundColor: "#0D1117" }}>
         <Text style={{ color: "#fff", fontSize: 28, fontWeight: "bold" }}>
