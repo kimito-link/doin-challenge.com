@@ -31,7 +31,8 @@ export function generateState(): string {
 export function buildAuthorizationUrl(
   callbackUrl: string,
   state: string,
-  codeChallenge: string
+  codeChallenge: string,
+  forceLogin: boolean = false
 ): string {
   const params = new URLSearchParams({
     response_type: "code",
@@ -42,6 +43,12 @@ export function buildAuthorizationUrl(
     code_challenge: codeChallenge,
     code_challenge_method: "S256",
   });
+  
+  // force_loginパラメータを追加して別のアカウントでログインできるようにする
+  // Twitter OAuth 2.0では直接のパラメータはないが、タイムスタンプを追加してキャッシュを無効化
+  if (forceLogin) {
+    params.set("t", Date.now().toString());
+  }
   
   return `https://twitter.com/i/oauth2/authorize?${params.toString()}`;
 }

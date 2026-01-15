@@ -18,6 +18,9 @@ export function registerTwitterRoutes(app: Express) {
   // Step 1: Initiate Twitter OAuth 2.0
   app.get("/api/twitter/auth", async (req: Request, res: Response) => {
     try {
+      // 別のアカウントでログインするかどうかのフラグ
+      const forceLogin = req.query.force === "true" || req.query.switch === "true";
+      
       // Build callback URL - force https for production environments
       const protocol = req.get("x-forwarded-proto") || req.protocol;
       const forceHttps = protocol === "https" || req.get("host")?.includes("manus.computer");
@@ -30,8 +33,8 @@ export function registerTwitterRoutes(app: Express) {
       // Store PKCE data for callback
       await storePKCEData(state, codeVerifier, callbackUrl);
       
-      // Build authorization URL
-      const authUrl = buildAuthorizationUrl(callbackUrl, state, codeChallenge);
+      // Build authorization URL (forceLoginで別アカウントでログイン可能)
+      const authUrl = buildAuthorizationUrl(callbackUrl, state, codeChallenge, forceLogin);
       
       console.log("[Twitter OAuth 2.0] Redirecting to:", authUrl);
       

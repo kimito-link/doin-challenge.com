@@ -14,6 +14,7 @@ import { LinearGradient } from "expo-linear-gradient";
 import { AppHeader } from "@/components/app-header";
 import { ConfirmModal } from "@/components/confirm-modal";
 import { MypageSkeleton } from "@/components/mypage-skeleton";
+import { AccountSwitcher } from "@/components/account-switcher";
 
 // キャラクター画像
 const characterImages = {
@@ -103,6 +104,7 @@ export default function MyPageScreen() {
   const [isLoggingIn, setIsLoggingIn] = useState(false);
   const [loginPattern, setLoginPattern] = useState(() => getRandomPattern());
   const [showLogoutModal, setShowLogoutModal] = useState(false);
+  const [showAccountSwitcher, setShowAccountSwitcher] = useState(false);
 
   // ログイン時にフォロー状態を更新
   useEffect(() => {
@@ -668,13 +670,32 @@ export default function MyPageScreen() {
                 </View>
               </View>
 
+              {/* アカウント切り替えボタン */}
+              <TouchableOpacity
+                onPress={() => setShowAccountSwitcher(true)}
+                style={{
+                  backgroundColor: "#1E293B",
+                  borderRadius: 8,
+                  padding: 12,
+                  marginTop: 16,
+                  flexDirection: "row",
+                  alignItems: "center",
+                  justifyContent: "center",
+                }}
+              >
+                <MaterialIcons name="swap-horiz" size={20} color="#60A5FA" />
+                <Text style={{ color: "#60A5FA", fontSize: 14, marginLeft: 8 }}>
+                  別のアカウントでログイン
+                </Text>
+              </TouchableOpacity>
+
               <TouchableOpacity
                 onPress={handleLogout}
                 style={{
                   backgroundColor: "#0D1117",
                   borderRadius: 8,
                   padding: 12,
-                  marginTop: 16,
+                  marginTop: 8,
                   flexDirection: "row",
                   alignItems: "center",
                   justifyContent: "center",
@@ -1085,6 +1106,12 @@ export default function MyPageScreen() {
         onCancel={() => setShowLogoutModal(false)}
         icon="logout"
         iconColor="#EF4444"
+      />
+      
+      {/* アカウント切り替えモーダル */}
+      <AccountSwitcher
+        visible={showAccountSwitcher}
+        onClose={() => setShowAccountSwitcher(false)}
       />
     </ScreenContainer>
   );

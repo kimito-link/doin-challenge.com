@@ -118,7 +118,8 @@ export function useAuth(options?: UseAuthOptions) {
     }
   }, []);
 
-  const login = useCallback(async (returnUrl?: string) => {
+  // login関数: forceSwitch=trueで別のアカウントでログイン可能
+  const login = useCallback(async (returnUrl?: string, forceSwitch: boolean = false) => {
     try {
       let loginUrl: string;
       
@@ -133,14 +134,17 @@ export function useAuth(options?: UseAuthOptions) {
         localStorage.setItem("auth_return_url", redirectPath);
         console.log("[Auth] Saved return URL:", redirectPath);
         
-        loginUrl = `${protocol}//${apiHostname}/api/twitter/auth`;
-        console.log("[Auth] Web login URL:", loginUrl);
+        // forceSwitchがtrueの場合は別のアカウントでログインできるようにする
+        const switchParam = forceSwitch ? "?switch=true" : "";
+        loginUrl = `${protocol}//${apiHostname}/api/twitter/auth${switchParam}`;
+        console.log("[Auth] Web login URL:", loginUrl, "forceSwitch:", forceSwitch);
         window.location.href = loginUrl;
       } else {
         // On native, use localhost (for development) or configured API URL
         const apiUrl = Constants.expoConfig?.extra?.apiUrl || "http://localhost:3000";
-        loginUrl = `${apiUrl}/api/twitter/auth`;
-        console.log("[Auth] Native login URL:", loginUrl);
+        const switchParam = forceSwitch ? "?switch=true" : "";
+        loginUrl = `${apiUrl}/api/twitter/auth${switchParam}`;
+        console.log("[Auth] Native login URL:", loginUrl, "forceSwitch:", forceSwitch);
         await Linking.openURL(loginUrl);
       }
     } catch (err) {
