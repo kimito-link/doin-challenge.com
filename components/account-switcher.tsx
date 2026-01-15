@@ -21,6 +21,7 @@ import { Image } from "expo-image";
 import { useAccounts } from "@/hooks/use-accounts";
 import { useAuth } from "@/hooks/use-auth";
 import { useColors } from "@/hooks/use-colors";
+import { useToast } from "@/components/ui/toast";
 import { SavedAccount, setCurrentAccount } from "@/lib/account-manager";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import MaterialIcons from "@expo/vector-icons/MaterialIcons";
@@ -36,6 +37,7 @@ export function AccountSwitcher({ visible, onClose }: AccountSwitcherProps) {
   const colors = useColors();
   const { accounts, currentAccountId, deleteAccount, refreshAccounts } = useAccounts();
   const { user, login, logout, refresh } = useAuth();
+  const { showSuccess } = useToast();
   const [isLoading, setIsLoading] = useState(false);
   const [switchingAccountId, setSwitchingAccountId] = useState<string | null>(null);
 
@@ -117,16 +119,10 @@ export function AccountSwitcher({ visible, onClose }: AccountSwitcherProps) {
       // 6. モーダルを閉じる
       onClose();
       
-      // 注意: トークンは保存されていないため、API呼び出しには再認証が必要
-      // ユーザーに通知
-      if (Platform.OS === "web") {
-        // Webの場合は再認証を促す
-        setTimeout(() => {
-          if (confirm(`${account.displayName}に切り替えました。\n\n一部の機能を使用するには再認証が必要です。今すぐ再認証しますか？`)) {
-            login(undefined, true);
-          }
-        }, 500);
-      }
+      // 7. トースト通知を表示
+      setTimeout(() => {
+        showSuccess(`${account.displayName}さんに切り替えました`);
+      }, 300);
     } catch (error) {
       console.error("[AccountSwitcher] Failed to switch account:", error);
       Alert.alert("エラー", "アカウントの切り替えに失敗しました");
