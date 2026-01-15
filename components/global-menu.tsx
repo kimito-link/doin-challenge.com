@@ -71,7 +71,7 @@ export function GlobalMenu({ isVisible, onClose }: GlobalMenuProps) {
     { icon: "person", label: "マイページ", path: "/(tabs)/mypage" },
     { icon: "leaderboard", label: "ランキング", path: "/ranking" },
     { icon: "notifications", label: "通知", path: "/notifications" },
-    { icon: "settings", label: "設定", path: "/settings/theme" },
+    { icon: "settings", label: "設定", path: "/theme-settings" },
   ];
 
   return (

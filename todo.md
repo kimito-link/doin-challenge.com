@@ -921,3 +921,6 @@
 - [x] 保存済みアカウントのワンタップ切り替え機能を実装
 - [x] ログイン永続化強化（AutoLoginProvider、リフレッシュトークン自動更新）
 - [x] 動作確認（テスト全パス）
+
+## バグ修正（v4.72）
+- [x] 設定ページ（/settings/theme）のUnmatched Routeエラーを修正（/theme-settingsにリンク先を変更）
