@@ -798,3 +798,31 @@
 - [x] ハンバーガーメニューの復元
 - [x] グローバルログイン/ログアウト機能（どの画面からでもアクセス可能）
 - [x] UI/UXの一貫性・アクセシビリティ改善
+
+## UI/UXガイド反映（v4.58）
+
+### Phase 1: システム状態の可視性改善
+- [x] ボタンクリック時の即時フィードバック（ローディング状態） - Button, LoadingButtonコンポーネント
+- [x] 処理中のスピナー/プログレス表示の統一 - LoadingButtonに統合
+- [x] スケルトンスクリーンの改善 - Skeletonコンポーネント
+- [x] 成功/エラー通知（トースト）の統一 - Toast, ToastProvider
+
+### Phase 2: 一貫性と標準の統一
+- [x] プライマリ/セカンダリボタンのデザイン統一 - Button, LoadingButtonコンポーネント
+- [x] アイコンにラベルを追加 - LabeledIconコンポーネント
+- [x] 色・フォント・間隔の統一 - design-system.ts定数ファイル
+
+### Phase 3: タッチターゲットとアクセシビリティ
+- [x] 全タッチターゲットを最低44x44pxに - Touchableコンポーネント
+- [x] 要素間の間隔を8dp以上に - design-system.tsのspacing
+- [x] コントラスト比をWCAG基準に - accessibility.tsユーティリティ
+
+### Phase 4: エラー防止とエラー回復
+- [x] 破壊的操作に確認モーダル追加 - ConfirmModal既存
+- [x] リアルタイムバリデーション追加 - validation.ts, useValidationフック
+- [x] エラーメッセージの改善 - Inputコンポーネントのエラー表示
+
+### Phase 5: マイクロインタラクション
+- [x] 滑らかなトランジション追加 - animations.ts, AnimatedListItem
+- [x] 触覚フィードバックの統一 - hapticsユーティリティ
+- [x] 状態変化のアニメーション - usePressAnimation, useFadeAnimation
