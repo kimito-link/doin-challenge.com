@@ -24,6 +24,8 @@ import { trpc, createTRPCClient } from "@/lib/trpc";
 import { initManusRuntime, subscribeSafeAreaInsets } from "@/lib/_core/manus-runtime";
 import { preloadCriticalImages } from "@/lib/image-preload";
 import { registerServiceWorker } from "@/lib/service-worker";
+import { initAutoSync } from "@/lib/offline-sync";
+import { initSyncHandlers } from "@/lib/sync-handlers";
 
 const DEFAULT_WEB_INSETS: EdgeInsets = { top: 0, right: 0, bottom: 0, left: 0 };
 const DEFAULT_WEB_FRAME: Rect = { x: 0, y: 0, width: 0, height: 0 };
@@ -46,6 +48,11 @@ export default function RootLayout() {
     preloadCriticalImages();
     // Service Workerを登録（Webのみ）
     registerServiceWorker();
+    // オフライン同期ハンドラーを初期化
+    initSyncHandlers();
+    // オンライン復帰時の自動同期を初期化
+    const unsubscribeSync = initAutoSync();
+    return () => unsubscribeSync();
   }, []);
 
   const handleSafeAreaUpdate = useCallback((metrics: Metrics) => {

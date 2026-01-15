@@ -885,3 +885,12 @@
 - [x] Service Workerとキャッシュ戦略を実装
 - [x] オフラインフォールバックページを作成
 - [x] 動作確認（Service Worker登録済み、キャッシュ正常動作）
+
+## オフライン同期機能（v4.66）
+- [x] オフラインキューシステムの設計
+- [x] オフラインキューストレージの実装（AsyncStorage使用）
+- [x] オンライン復帰時の自動同期機能を実装
+- [x] 参加表明にオフライン対応を統合（useOfflineParticipationフック作成）
+- [x] チャレンジ作成にオフライン対応を統合（useOfflineChallengeフック作成）
+- [x] 同期状態のUI表示を実装（SyncStatusIndicatorコンポーネント作成）
+- [x] 動作確認（テスト全てパス）

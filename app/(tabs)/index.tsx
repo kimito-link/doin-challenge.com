@@ -23,6 +23,7 @@ import { LazyAvatar } from "@/components/lazy-image";
 import { prefetchChallengeImages } from "@/lib/image-prefetch";
 import { SimpleRefreshControl } from "@/components/enhanced-refresh-control";
 import { AnimatedCard } from "@/components/animated-pressable";
+import { SyncStatusIndicator } from "@/components/sync-status-indicator";
 
 // キャラクター画像
 const characterImages = {
@@ -929,6 +930,9 @@ export default function HomeScreen() {
           <CachedDataIndicator isStale={isStaleData} />
         </View>
       )}
+
+      {/* オフライン同期インジケーター */}
+      <SyncStatusIndicator />
 
       {/* 盛り上がりセクション */}
       {effectiveChallenges && effectiveChallenges.length > 0 && !isSearching && (
