@@ -137,3 +137,42 @@ export async function clearAllAccounts(): Promise<void> {
     console.error("[AccountManager] Failed to clear accounts:", error);
   }
 }
+
+/**
+ * 最近使用したアカウントの履歴を取得（最大limit件）
+ */
+export async function getRecentAccounts(limit: number = 3): Promise<SavedAccount[]> {
+  try {
+    const accounts = await getSavedAccounts();
+    // 既に最終使用日時でソート済みなので、先頭limit件を返す
+    return accounts.slice(0, limit);
+  } catch (error) {
+    console.error("[AccountManager] Failed to get recent accounts:", error);
+    return [];
+  }
+}
+
+/**
+ * アカウントの最終使用日時をフォーマットして取得
+ */
+export function formatLastUsed(timestamp: number): string {
+  const now = Date.now();
+  const diff = now - timestamp;
+  
+  const minutes = Math.floor(diff / (1000 * 60));
+  const hours = Math.floor(diff / (1000 * 60 * 60));
+  const days = Math.floor(diff / (1000 * 60 * 60 * 24));
+  
+  if (minutes < 1) {
+    return "たった今";
+  } else if (minutes < 60) {
+    return `${minutes}分前`;
+  } else if (hours < 24) {
+    return `${hours}時間前`;
+  } else if (days < 7) {
+    return `${days}日前`;
+  } else {
+    const date = new Date(timestamp);
+    return `${date.getMonth() + 1}/${date.getDate()}`;
+  }
+}

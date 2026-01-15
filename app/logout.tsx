@@ -211,6 +211,30 @@ export default function LogoutScreen() {
               </Text>
             </TouchableOpacity>
 
+            {/* 同じアカウントで再ログイン */}
+            <TouchableOpacity
+              onPress={() => {
+                // 通常のログイン（ブラウザのセッションを使用）
+                const { protocol, hostname } = window.location;
+                const apiHostname = hostname.replace(/^8081-/, "3000-");
+                window.location.href = `${protocol}//${apiHostname}/api/twitter/auth`;
+              }}
+              style={{
+                backgroundColor: "#10B981",
+                borderRadius: 12,
+                paddingVertical: 14,
+                paddingHorizontal: 24,
+                flexDirection: "row",
+                alignItems: "center",
+                justifyContent: "center",
+              }}
+            >
+              <MaterialIcons name="refresh" size={20} color="#fff" />
+              <Text style={{ color: "#fff", fontSize: 16, fontWeight: "bold", marginLeft: 8 }}>
+                同じアカウントで再ログイン
+              </Text>
+            </TouchableOpacity>
+
             {/* 別のアカウントでログイン */}
             <TouchableOpacity
               onPress={() => {
@@ -231,7 +255,7 @@ export default function LogoutScreen() {
                 borderColor: "#3B82F6",
               }}
             >
-              <MaterialIcons name="login" size={20} color="#3B82F6" />
+              <MaterialIcons name="swap-horiz" size={20} color="#3B82F6" />
               <Text style={{ color: "#3B82F6", fontSize: 16, fontWeight: "bold", marginLeft: 8 }}>
                 別のアカウントでログイン
               </Text>

@@ -22,7 +22,7 @@ import { useAccounts } from "@/hooks/use-accounts";
 import { useAuth } from "@/hooks/use-auth";
 import { useColors } from "@/hooks/use-colors";
 import { useToast } from "@/components/ui/toast";
-import { SavedAccount, setCurrentAccount } from "@/lib/account-manager";
+import { SavedAccount, setCurrentAccount, formatLastUsed } from "@/lib/account-manager";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import MaterialIcons from "@expo/vector-icons/MaterialIcons";
 import * as Auth from "@/lib/_core/auth";
@@ -282,9 +282,14 @@ export function AccountSwitcher({ visible, onClose }: AccountSwitcherProps) {
                   <Text style={[styles.displayName, { color: colors.foreground }]}>
                     {account.displayName}
                   </Text>
-                  <Text style={[styles.username, { color: colors.muted }]}>
-                    @{account.username}
-                  </Text>
+                  <View style={styles.usernameRow}>
+                    <Text style={[styles.username, { color: colors.muted }]}>
+                      @{account.username}
+                    </Text>
+                    <Text style={[styles.lastUsed, { color: colors.muted }]}>
+                      ・{formatLastUsed(account.lastUsed)}
+                    </Text>
+                  </View>
                 </View>
                 {switchingAccountId === account.id ? (
                   <ActivityIndicator size="small" color={colors.primary} />
@@ -406,7 +411,14 @@ const styles = StyleSheet.create({
   },
   username: {
     fontSize: 14,
+  },
+  usernameRow: {
+    flexDirection: "row",
+    alignItems: "center",
     marginTop: 2,
+  },
+  lastUsed: {
+    fontSize: 12,
   },
   currentBadge: {
     paddingHorizontal: 8,

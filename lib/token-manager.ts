@@ -246,6 +246,59 @@ export async function refreshAccessToken(): Promise<{
 }
 
 /**
+ * セッション有効期限情報を取得
+ */
+export interface SessionExpiryInfo {
+  expiresAt: Date | null;
+  remainingSeconds: number | null;
+  isExpired: boolean;
+  formattedExpiry: string;
+}
+
+export async function getSessionExpiryInfo(): Promise<SessionExpiryInfo> {
+  const expiresAt = await getTokenExpiresAt();
+  
+  if (!expiresAt) {
+    return {
+      expiresAt: null,
+      remainingSeconds: null,
+      isExpired: true,
+      formattedExpiry: "不明",
+    };
+  }
+  
+  const now = Math.floor(Date.now() / 1000);
+  const remainingSeconds = expiresAt - now;
+  const isExpired = remainingSeconds <= 0;
+  
+  // 有効期限をフォーマット
+  let formattedExpiry: string;
+  if (isExpired) {
+    formattedExpiry = "期限切れ";
+  } else if (remainingSeconds < 60) {
+    formattedExpiry = `${remainingSeconds}秒後`;
+  } else if (remainingSeconds < 3600) {
+    const minutes = Math.floor(remainingSeconds / 60);
+    formattedExpiry = `${minutes}分後`;
+  } else {
+    const hours = Math.floor(remainingSeconds / 3600);
+    const minutes = Math.floor((remainingSeconds % 3600) / 60);
+    if (minutes > 0) {
+      formattedExpiry = `${hours}時間${minutes}分後`;
+    } else {
+      formattedExpiry = `${hours}時間後`;
+    }
+  }
+  
+  return {
+    expiresAt: new Date(expiresAt * 1000),
+    remainingSeconds,
+    isExpired,
+    formattedExpiry,
+  };
+}
+
+/**
  * 有効なアクセストークンを取得（必要に応じて自動更新）
  */
 export async function getValidAccessToken(): Promise<string | null> {

@@ -1,4 +1,4 @@
-import { useState, useCallback } from "react";
+import { useState, useCallback, useEffect } from "react";
 import {
   View,
   Text,
@@ -16,6 +16,7 @@ import { useAuth } from "@/hooks/use-auth";
 import { useAccounts } from "@/hooks/use-accounts";
 import { useThemeContext, getThemeModeLabel, getThemeModeIcon } from "@/lib/theme-provider";
 import { AccountSwitcher } from "@/components/account-switcher";
+import { getSessionExpiryInfo, SessionExpiryInfo } from "@/lib/token-manager";
 
 /**
  * 総合設定画面
@@ -27,6 +28,25 @@ export default function SettingsScreen() {
   const { accounts, currentAccountId, deleteAccount } = useAccounts();
   const { themeMode, colorScheme } = useThemeContext();
   const [showAccountSwitcher, setShowAccountSwitcher] = useState(false);
+  const [sessionExpiry, setSessionExpiry] = useState<SessionExpiryInfo | null>(null);
+
+  // セッション有効期限を取得・更新
+  useEffect(() => {
+    const fetchSessionExpiry = async () => {
+      if (isAuthenticated) {
+        const expiry = await getSessionExpiryInfo();
+        setSessionExpiry(expiry);
+      } else {
+        setSessionExpiry(null);
+      }
+    };
+    
+    fetchSessionExpiry();
+    
+    // 1分ごとに更新
+    const interval = setInterval(fetchSessionExpiry, 60000);
+    return () => clearInterval(interval);
+  }, [isAuthenticated]);
 
   const handleHaptic = useCallback(() => {
     if (Platform.OS !== "web") {
@@ -107,6 +127,23 @@ export default function SettingsScreen() {
                   <Text style={styles.currentBadgeText}>ログイン中</Text>
                 </View>
               </View>
+              
+              {/* セッション有効期限表示 */}
+              {sessionExpiry && (
+                <View style={styles.sessionExpiryRow}>
+                  <MaterialIcons 
+                    name={sessionExpiry.isExpired ? "warning" : "schedule"} 
+                    size={14} 
+                    color={sessionExpiry.isExpired ? "#EF4444" : "#9CA3AF"} 
+                  />
+                  <Text style={[
+                    styles.sessionExpiryText,
+                    sessionExpiry.isExpired && styles.sessionExpiryExpired
+                  ]}>
+                    セッション有効期限: {sessionExpiry.formattedExpiry}
+                  </Text>
+                </View>
+              )}
             </View>
           ) : (
             <View style={styles.notLoggedIn}>
@@ -424,6 +461,22 @@ const styles = StyleSheet.create({
     backgroundColor: "rgba(239, 68, 68, 0.1)",
   },
   logoutText: {
+    color: "#EF4444",
+  },
+  sessionExpiryRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    marginTop: 12,
+    paddingTop: 12,
+    borderTopWidth: 1,
+    borderTopColor: "#2D3139",
+  },
+  sessionExpiryText: {
+    color: "#9CA3AF",
+    fontSize: 12,
+    marginLeft: 6,
+  },
+  sessionExpiryExpired: {
     color: "#EF4444",
   },
   footer: {
