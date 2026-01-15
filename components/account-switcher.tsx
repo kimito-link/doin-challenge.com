@@ -1,6 +1,7 @@
 /**
  * アカウント切り替えUIコンポーネント
  * 別のTwitterアカウントでログインする機能を提供
+ * 保存済みアカウントのワンタップ切り替えをサポート
  */
 
 import React, { useState } from "react";
@@ -14,14 +15,17 @@ import {
   ScrollView,
   ActivityIndicator,
   Platform,
+  Alert,
 } from "react-native";
 import { Image } from "expo-image";
 import { useAccounts } from "@/hooks/use-accounts";
 import { useAuth } from "@/hooks/use-auth";
 import { useColors } from "@/hooks/use-colors";
-import { SavedAccount } from "@/lib/account-manager";
+import { SavedAccount, setCurrentAccount } from "@/lib/account-manager";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import MaterialIcons from "@expo/vector-icons/MaterialIcons";
+import * as Auth from "@/lib/_core/auth";
+import { saveTokenData } from "@/lib/token-manager";
 
 interface AccountSwitcherProps {
   visible: boolean;
@@ -30,12 +34,13 @@ interface AccountSwitcherProps {
 
 export function AccountSwitcher({ visible, onClose }: AccountSwitcherProps) {
   const colors = useColors();
-  const { accounts, currentAccountId, deleteAccount } = useAccounts();
-  const { user, login, logout } = useAuth();
+  const { accounts, currentAccountId, deleteAccount, refreshAccounts } = useAccounts();
+  const { user, login, logout, refresh } = useAuth();
   const [isLoading, setIsLoading] = useState(false);
+  const [switchingAccountId, setSwitchingAccountId] = useState<string | null>(null);
 
-  // 別のアカウントでログイン
-  const handleSwitchAccount = async () => {
+  // 別のアカウントでログイン（新規アカウント追加）
+  const handleAddNewAccount = async () => {
     setIsLoading(true);
     try {
       // 1. 現在のセッションをログアウト
@@ -62,7 +67,6 @@ export function AccountSwitcher({ visible, onClose }: AccountSwitcherProps) {
       onClose();
       
       // 5. forceSwitch=trueで別のアカウントでログイン
-      // 少し遅延を入れてUIの更新を待つ
       setTimeout(async () => {
         try {
           await login(undefined, true);
@@ -71,21 +75,91 @@ export function AccountSwitcher({ visible, onClose }: AccountSwitcherProps) {
         }
       }, 300);
     } catch (error) {
-      console.error("[AccountSwitcher] Failed to switch account:", error);
+      console.error("[AccountSwitcher] Failed to add new account:", error);
     } finally {
       setIsLoading(false);
     }
   };
 
+  // 保存済みアカウントにワンタップで切り替え
+  const handleSwitchToAccount = async (account: SavedAccount) => {
+    setSwitchingAccountId(account.id);
+    try {
+      console.log("[AccountSwitcher] Switching to account:", account.username);
+      
+      // 1. 現在のセッションをクリア（ログアウトはしない）
+      await AsyncStorage.removeItem("twitter_session");
+      
+      // 2. 選択したアカウントを現在のアカウントに設定
+      await setCurrentAccount(account.id);
+      
+      // 3. ユーザー情報を更新
+      const userInfo: Auth.User = {
+        id: parseInt(account.id) || 0,
+        openId: `twitter:${account.id}`,
+        name: account.displayName,
+        email: null,
+        loginMethod: "twitter",
+        lastSignedIn: new Date(),
+        username: account.username,
+        profileImage: account.profileImageUrl,
+      };
+      await Auth.setUserInfo(userInfo);
+      
+      // 4. アカウント一覧を更新
+      await refreshAccounts();
+      
+      // 5. 認証状態を更新
+      await refresh();
+      
+      console.log("[AccountSwitcher] Switched to account:", account.username);
+      
+      // 6. モーダルを閉じる
+      onClose();
+      
+      // 注意: トークンは保存されていないため、API呼び出しには再認証が必要
+      // ユーザーに通知
+      if (Platform.OS === "web") {
+        // Webの場合は再認証を促す
+        setTimeout(() => {
+          if (confirm(`${account.displayName}に切り替えました。\n\n一部の機能を使用するには再認証が必要です。今すぐ再認証しますか？`)) {
+            login(undefined, true);
+          }
+        }, 500);
+      }
+    } catch (error) {
+      console.error("[AccountSwitcher] Failed to switch account:", error);
+      Alert.alert("エラー", "アカウントの切り替えに失敗しました");
+    } finally {
+      setSwitchingAccountId(null);
+    }
+  };
+
   // アカウントを削除
-  const handleRemoveAccount = async (accountId: string) => {
-    await deleteAccount(accountId);
+  const handleRemoveAccount = async (accountId: string, username: string) => {
+    if (Platform.OS === "web") {
+      if (confirm(`@${username}のアカウント情報を削除しますか？`)) {
+        await deleteAccount(accountId);
+      }
+    } else {
+      Alert.alert(
+        "アカウント削除",
+        `@${username}のアカウント情報を削除しますか？`,
+        [
+          { text: "キャンセル", style: "cancel" },
+          {
+            text: "削除",
+            style: "destructive",
+            onPress: () => deleteAccount(accountId),
+          },
+        ]
+      );
+    }
   };
 
   // ユーザーのプロフィール画像を取得（Auth.User型に対応）
   const getUserProfileImage = () => {
     if (!user) return undefined;
-    // Auth.User型にはprofileImageがないため、localStorageから取得
     if (Platform.OS === "web" && typeof window !== "undefined") {
       try {
         const userData = localStorage.getItem("twitter_user");
@@ -119,6 +193,9 @@ export function AccountSwitcher({ visible, onClose }: AccountSwitcherProps) {
 
   const profileImage = getUserProfileImage();
   const username = getUsername();
+  
+  // 現在のアカウント以外の保存済みアカウント
+  const otherAccounts = accounts.filter((a) => a.id !== currentAccountId);
 
   return (
     <Modal
@@ -141,7 +218,7 @@ export function AccountSwitcher({ visible, onClose }: AccountSwitcherProps) {
             </TouchableOpacity>
           </View>
 
-          <ScrollView style={styles.accountList}>
+          <ScrollView style={styles.accountList} showsVerticalScrollIndicator={false}>
             {/* 現在のアカウント */}
             {user && (
               <View
@@ -158,7 +235,7 @@ export function AccountSwitcher({ visible, onClose }: AccountSwitcherProps) {
                     contentFit="cover"
                   />
                 ) : (
-                  <View style={[styles.avatar, { backgroundColor: colors.muted }]}>
+                  <View style={[styles.avatar, styles.avatarPlaceholder, { backgroundColor: colors.muted }]}>
                     <MaterialIcons name="person" size={24} color={colors.foreground} />
                   </View>
                 )}
@@ -178,40 +255,84 @@ export function AccountSwitcher({ visible, onClose }: AccountSwitcherProps) {
               </View>
             )}
 
-            {/* 保存済みの他のアカウント */}
-            {accounts
-              .filter((a) => a.id !== currentAccountId)
-              .map((account) => (
-                <AccountItem
-                  key={account.id}
-                  account={account}
-                  colors={colors}
-                  onRemove={() => handleRemoveAccount(account.id)}
-                />
-              ))}
+            {/* 保存済みの他のアカウント（ワンタップ切り替え可能） */}
+            {otherAccounts.length > 0 && (
+              <View style={styles.sectionHeader}>
+                <Text style={[styles.sectionTitle, { color: colors.muted }]}>
+                  保存済みアカウント
+                </Text>
+              </View>
+            )}
+            
+            {otherAccounts.map((account) => (
+              <TouchableOpacity
+                key={account.id}
+                style={[styles.accountItem, { borderColor: colors.border }]}
+                onPress={() => handleSwitchToAccount(account)}
+                disabled={switchingAccountId === account.id}
+              >
+                {account.profileImageUrl ? (
+                  <Image
+                    source={{ uri: account.profileImageUrl }}
+                    style={styles.avatar}
+                    contentFit="cover"
+                  />
+                ) : (
+                  <View style={[styles.avatar, styles.avatarPlaceholder, { backgroundColor: colors.muted }]}>
+                    <MaterialIcons name="person" size={24} color={colors.foreground} />
+                  </View>
+                )}
+                <View style={styles.accountInfo}>
+                  <Text style={[styles.displayName, { color: colors.foreground }]}>
+                    {account.displayName}
+                  </Text>
+                  <Text style={[styles.username, { color: colors.muted }]}>
+                    @{account.username}
+                  </Text>
+                </View>
+                {switchingAccountId === account.id ? (
+                  <ActivityIndicator size="small" color={colors.primary} />
+                ) : (
+                  <View style={styles.accountActions}>
+                    <TouchableOpacity
+                      onPress={(e) => {
+                        e.stopPropagation();
+                        handleRemoveAccount(account.id, account.username);
+                      }}
+                      style={styles.removeButton}
+                    >
+                      <MaterialIcons name="close" size={18} color={colors.error} />
+                    </TouchableOpacity>
+                    <MaterialIcons name="chevron-right" size={24} color={colors.muted} />
+                  </View>
+                )}
+              </TouchableOpacity>
+            ))}
           </ScrollView>
 
           {/* 注意事項 */}
           <View style={[styles.infoBox, { backgroundColor: colors.background }]}>
             <MaterialIcons name="info-outline" size={18} color={colors.primary} />
             <Text style={[styles.infoText, { color: colors.muted }]}>
-              Twitterの認証画面で別のアカウントを選択できます
+              {otherAccounts.length > 0
+                ? "保存済みアカウントをタップして切り替え、または新しいアカウントを追加"
+                : "Twitterの認証画面で別のアカウントを選択できます"}
             </Text>
           </View>
 
           {/* 別のアカウントでログインボタン */}
           <TouchableOpacity
             style={[styles.switchButton, { backgroundColor: "#1D9BF0" }]}
-            onPress={handleSwitchAccount}
+            onPress={handleAddNewAccount}
             disabled={isLoading}
           >
             {isLoading ? (
               <ActivityIndicator color="#FFFFFF" size="small" />
             ) : (
               <>
-                <MaterialIcons name="swap-horiz" size={20} color="#FFFFFF" />
+                <MaterialIcons name="add" size={20} color="#FFFFFF" />
                 <Text style={styles.switchButtonText}>
-                  別のアカウントでログイン
+                  新しいアカウントを追加
                 </Text>
               </>
             )}
@@ -219,44 +340,6 @@ export function AccountSwitcher({ visible, onClose }: AccountSwitcherProps) {
         </Pressable>
       </Pressable>
     </Modal>
-  );
-}
-
-// 個別のアカウントアイテム
-function AccountItem({
-  account,
-  colors,
-  onRemove,
-}: {
-  account: SavedAccount;
-  colors: ReturnType<typeof useColors>;
-  onRemove: () => void;
-}) {
-  return (
-    <View style={[styles.accountItem, { borderColor: colors.border }]}>
-      {account.profileImageUrl ? (
-        <Image
-          source={{ uri: account.profileImageUrl }}
-          style={styles.avatar}
-          contentFit="cover"
-        />
-      ) : (
-        <View style={[styles.avatar, { backgroundColor: colors.muted }]}>
-          <MaterialIcons name="person" size={24} color={colors.foreground} />
-        </View>
-      )}
-      <View style={styles.accountInfo}>
-        <Text style={[styles.displayName, { color: colors.foreground }]}>
-          {account.displayName}
-        </Text>
-        <Text style={[styles.username, { color: colors.muted }]}>
-          @{account.username}
-        </Text>
-      </View>
-      <TouchableOpacity onPress={onRemove} style={styles.removeButton}>
-        <Text style={[styles.removeButtonText, { color: colors.error }]}>削除</Text>
-      </TouchableOpacity>
-    </View>
   );
 }
 
@@ -270,7 +353,7 @@ const styles = StyleSheet.create({
     borderTopLeftRadius: 20,
     borderTopRightRadius: 20,
     padding: 20,
-    maxHeight: "70%",
+    maxHeight: "80%",
   },
   header: {
     flexDirection: "row",
@@ -287,7 +370,15 @@ const styles = StyleSheet.create({
     padding: 4,
   },
   accountList: {
-    maxHeight: 250,
+    maxHeight: 300,
+  },
+  sectionHeader: {
+    marginTop: 8,
+    marginBottom: 8,
+  },
+  sectionTitle: {
+    fontSize: 13,
+    fontWeight: "600",
   },
   accountItem: {
     flexDirection: "row",
@@ -304,6 +395,8 @@ const styles = StyleSheet.create({
     width: 48,
     height: 48,
     borderRadius: 24,
+  },
+  avatarPlaceholder: {
     justifyContent: "center",
     alignItems: "center",
   },
@@ -329,11 +422,13 @@ const styles = StyleSheet.create({
     fontSize: 12,
     fontWeight: "600",
   },
+  accountActions: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 4,
+  },
   removeButton: {
     padding: 8,
-  },
-  removeButtonText: {
-    fontSize: 14,
   },
   infoBox: {
     flexDirection: "row",

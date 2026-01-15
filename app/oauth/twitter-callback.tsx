@@ -7,6 +7,7 @@ import { useEffect, useState, useRef } from "react";
 import { ActivityIndicator, Text } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import AsyncStorage from "@react-native-async-storage/async-storage";
+import { saveAccount } from "@/lib/account-manager";
 
 const FOLLOW_SUCCESS_SHOWN_KEY = "follow_success_modal_shown";
 
@@ -110,6 +111,15 @@ export default function TwitterOAuthCallback() {
             });
             console.log("[Twitter OAuth] Token data stored for auto-refresh");
           }
+
+          // アカウントを保存（複数アカウント切り替え用）
+          await saveAccount({
+            id: userData.twitterId,
+            username: userData.username,
+            displayName: userData.name,
+            profileImageUrl: userData.profileImage,
+          });
+          console.log("[Twitter OAuth] Account saved for multi-account switching");
 
           setStatus("success");
           console.log("[Twitter OAuth] Authentication successful");
