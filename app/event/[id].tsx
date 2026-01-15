@@ -21,6 +21,7 @@ import { JapanDeformedMap } from "@/components/japan-deformed-map";
 import { PrefectureParticipantsModal } from "@/components/prefecture-participants-modal";
 import { RegionParticipantsModal } from "@/components/region-participants-modal";
 import { GrowthTrajectoryChart } from "@/components/growth-trajectory-chart";
+import { ParticipantRanking, TopThreeRanking } from "@/components/participant-ranking";
 
 const { width: screenWidth } = Dimensions.get("window");
 
@@ -1319,6 +1320,19 @@ export default function ChallengeDetailScreen() {
             {/* 貢献度ランキング */}
             {participations && participations.length > 0 && (
               <ContributionRanking participations={participations as Participation[]} followerIds={followerIds || []} />
+            )}
+
+            {/* 参加者ランキング（トップ3） */}
+            {participations && participations.length >= 3 && (
+              <View style={{ marginTop: 16, marginHorizontal: 16 }}>
+                <View style={{ backgroundColor: "#1A1D21", borderRadius: 16, padding: 16 }}>
+                  <View style={{ flexDirection: "row", alignItems: "center", gap: 8, marginBottom: 8 }}>
+                    <MaterialIcons name="emoji-events" size={24} color="#FFD700" />
+                    <Text style={{ color: "#fff", fontSize: 18, fontWeight: "bold" }}>貢献トップ3</Text>
+                  </View>
+                  <TopThreeRanking participants={participations as Participation[]} />
+                </View>
+              </View>
             )}
 
             {/* 応援メッセージ */}

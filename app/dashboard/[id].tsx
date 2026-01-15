@@ -9,6 +9,7 @@ import { useMemo } from "react";
 import { AppHeader } from "@/components/app-header";
 import { ExportButton } from "@/components/export-button";
 import type { ExportData } from "@/lib/export-stats";
+import { ParticipantRanking } from "@/components/participant-ranking";
 
 const { width: screenWidth } = Dimensions.get("window");
 
@@ -539,6 +540,19 @@ export default function DashboardScreen() {
 
         {/* 時間帯別ヒートマップ */}
         <TimeHeatmap participations={participations} />
+
+        {/* 参加者ランキング */}
+        {participations.length > 0 && (
+          <ParticipantRanking
+            participants={participations.map(p => ({
+              ...p,
+              createdAt: new Date(p.createdAt),
+            }))}
+            maxDisplay={15}
+            showBadges={true}
+            title="貢献ランキング"
+          />
+        )}
 
         {/* 余白 */}
         <View style={{ height: 40 }} />

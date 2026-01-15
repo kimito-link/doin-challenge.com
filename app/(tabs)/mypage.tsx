@@ -747,6 +747,84 @@ export default function MyPageScreen() {
             <MaterialIcons name="chevron-right" size={24} color="#6B7280" />
           </TouchableOpacity>
 
+          {/* 通知設定リンク */}
+          <TouchableOpacity
+            onPress={() => router.push("/notification-settings")}
+            style={{
+              backgroundColor: "#1A1D21",
+              marginHorizontal: 16,
+              marginBottom: 16,
+              borderRadius: 12,
+              padding: 16,
+              flexDirection: "row",
+              alignItems: "center",
+              borderWidth: 1,
+              borderColor: "#2D3139",
+            }}
+          >
+            <View
+              style={{
+                width: 48,
+                height: 48,
+                borderRadius: 24,
+                backgroundColor: "#DD6500",
+                alignItems: "center",
+                justifyContent: "center",
+                marginRight: 12,
+              }}
+            >
+              <MaterialIcons name="notifications" size={24} color="#fff" />
+            </View>
+            <View style={{ flex: 1 }}>
+              <Text style={{ color: "#fff", fontSize: 16, fontWeight: "bold" }}>
+                通知設定
+              </Text>
+              <Text style={{ color: "#9CA3AF", fontSize: 12 }}>
+                目標達成やマイルストーンの通知を管理
+              </Text>
+            </View>
+            <MaterialIcons name="chevron-right" size={24} color="#6B7280" />
+          </TouchableOpacity>
+
+          {/* テーマ設定リンク */}
+          <TouchableOpacity
+            onPress={() => router.push("/theme-settings")}
+            style={{
+              backgroundColor: "#1A1D21",
+              marginHorizontal: 16,
+              marginBottom: 16,
+              borderRadius: 12,
+              padding: 16,
+              flexDirection: "row",
+              alignItems: "center",
+              borderWidth: 1,
+              borderColor: "#2D3139",
+            }}
+          >
+            <View
+              style={{
+                width: 48,
+                height: 48,
+                borderRadius: 24,
+                backgroundColor: "#8B5CF6",
+                alignItems: "center",
+                justifyContent: "center",
+                marginRight: 12,
+              }}
+            >
+              <MaterialIcons name="palette" size={24} color="#fff" />
+            </View>
+            <View style={{ flex: 1 }}>
+              <Text style={{ color: "#fff", fontSize: 16, fontWeight: "bold" }}>
+                テーマ設定
+              </Text>
+              <Text style={{ color: "#9CA3AF", fontSize: 12 }}>
+                ライト/ダークモードを切り替え
+              </Text>
+            </View>
+            <MaterialIcons name="chevron-right" size={24} color="#6B7280" />
+          </TouchableOpacity>
+
           {/* バッジセクション */}
           <View style={{ paddingHorizontal: 16, marginBottom: 24 }}>
             <Text style={{ color: "#fff", fontSize: 18, fontWeight: "bold", marginBottom: 12 }}>
