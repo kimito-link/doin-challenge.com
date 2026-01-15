@@ -1,8 +1,6 @@
-import { View, Text, StyleSheet, Dimensions } from "react-native";
+import { View, Text, StyleSheet, useWindowDimensions } from "react-native";
 import Svg, { Path, Line, Circle, Text as SvgText, Defs, LinearGradient, Stop, G } from "react-native-svg";
 import { useMemo } from "react";
-
-const screenWidth = Dimensions.get("window").width;
 
 interface DataPoint {
   date: Date;
@@ -34,14 +32,136 @@ function formatNumber(num: number): string {
   return num.toString();
 }
 
+// レスポンシブブレークポイント（8段階）
+function getResponsiveConfig(width: number) {
+  if (width < 320) {
+    // 超小型（280px〜319px）
+    return { 
+      chartWidth: width - 24, 
+      chartHeight: 200, 
+      paddingLeft: 40, 
+      paddingRight: 12, 
+      paddingTop: 32, 
+      paddingBottom: 40,
+      fontSize: 8,
+      titleSize: 14,
+      subtitleSize: 11,
+      legendSize: 10,
+      padding: 12,
+    };
+  } else if (width < 375) {
+    // 小型（320px〜374px）
+    return { 
+      chartWidth: width - 28, 
+      chartHeight: 220, 
+      paddingLeft: 45, 
+      paddingRight: 16, 
+      paddingTop: 36, 
+      paddingBottom: 45,
+      fontSize: 9,
+      titleSize: 16,
+      subtitleSize: 12,
+      legendSize: 11,
+      padding: 14,
+    };
+  } else if (width < 414) {
+    // 標準（375px〜413px）
+    return { 
+      chartWidth: width - 32, 
+      chartHeight: 260, 
+      paddingLeft: 50, 
+      paddingRight: 20, 
+      paddingTop: 40, 
+      paddingBottom: 50,
+      fontSize: 10,
+      titleSize: 18,
+      subtitleSize: 14,
+      legendSize: 12,
+      padding: 16,
+    };
+  } else if (width < 768) {
+    // 大型スマホ（414px〜767px）
+    return { 
+      chartWidth: Math.min(width - 32, 420), 
+      chartHeight: 280, 
+      paddingLeft: 55, 
+      paddingRight: 24, 
+      paddingTop: 44, 
+      paddingBottom: 54,
+      fontSize: 11,
+      titleSize: 20,
+      subtitleSize: 15,
+      legendSize: 13,
+      padding: 18,
+    };
+  } else if (width < 1024) {
+    // タブレット（768px〜1023px）
+    return { 
+      chartWidth: Math.min(width - 48, 600), 
+      chartHeight: 320, 
+      paddingLeft: 60, 
+      paddingRight: 28, 
+      paddingTop: 48, 
+      paddingBottom: 58,
+      fontSize: 12,
+      titleSize: 22,
+      subtitleSize: 16,
+      legendSize: 14,
+      padding: 20,
+    };
+  } else if (width < 1440) {
+    // 小型PC（1024px〜1439px）
+    return { 
+      chartWidth: Math.min(width - 64, 720), 
+      chartHeight: 360, 
+      paddingLeft: 65, 
+      paddingRight: 32, 
+      paddingTop: 52, 
+      paddingBottom: 62,
+      fontSize: 13,
+      titleSize: 24,
+      subtitleSize: 17,
+      legendSize: 15,
+      padding: 24,
+    };
+  } else if (width < 2560) {
+    // 大型PC（1440px〜2559px）
+    return { 
+      chartWidth: Math.min(width - 80, 840), 
+      chartHeight: 400, 
+      paddingLeft: 70, 
+      paddingRight: 36, 
+      paddingTop: 56, 
+      paddingBottom: 66,
+      fontSize: 14,
+      titleSize: 26,
+      subtitleSize: 18,
+      legendSize: 16,
+      padding: 28,
+    };
+  } else {
+    // 4K（2560px以上）
+    return { 
+      chartWidth: Math.min(width - 96, 960), 
+      chartHeight: 440, 
+      paddingLeft: 80, 
+      paddingRight: 40, 
+      paddingTop: 60, 
+      paddingBottom: 70,
+      fontSize: 16,
+      titleSize: 28,
+      subtitleSize: 20,
+      legendSize: 18,
+      padding: 32,
+    };
+  }
+}
+
 export function GrowthTrajectoryChart({ data, targetCount, title = "動員までの軌跡" }: GrowthTrajectoryChartProps) {
-  const chartWidth = Math.min(screenWidth - 32, 380);
-  const chartHeight = 280;
-  const paddingLeft = 50;
-  const paddingRight = 20;
-  const paddingTop = 40;
-  const paddingBottom = 50;
+  const { width: screenWidth } = useWindowDimensions();
+  const config = getResponsiveConfig(screenWidth);
   
+  const { chartWidth, chartHeight, paddingLeft, paddingRight, paddingTop, paddingBottom } = config;
   const graphWidth = chartWidth - paddingLeft - paddingRight;
   const graphHeight = chartHeight - paddingTop - paddingBottom;
 
@@ -120,7 +240,7 @@ export function GrowthTrajectoryChart({ data, targetCount, title = "動員まで
       currentCount: current,
       progressPercent: Math.min(progress, 100),
     };
-  }, [data, targetCount, graphWidth, graphHeight]);
+  }, [data, targetCount, graphWidth, graphHeight, paddingLeft, paddingTop]);
 
   // 目標ラインのY座標
   const targetY = useMemo(() => {
@@ -128,27 +248,29 @@ export function GrowthTrajectoryChart({ data, targetCount, title = "動員まで
     const maxDataCount = Math.max(...data.map(d => d.count));
     const yMax = Math.max(targetCount, maxDataCount) * 1.1;
     return paddingTop + graphHeight - (targetCount / yMax) * graphHeight;
-  }, [data, targetCount, graphHeight]);
+  }, [data, targetCount, graphHeight, paddingTop]);
 
   if (data.length === 0) {
     return (
-      <View style={styles.container}>
+      <View style={[styles.container, { padding: config.padding }]}>
         <View style={styles.header}>
-          <Text style={styles.title}>📈 {title}</Text>
+          <Text style={[styles.title, { fontSize: config.titleSize }]}>📈 {title}</Text>
         </View>
         <View style={styles.emptyState}>
           <Text style={styles.emptyIcon}>📊</Text>
-          <Text style={styles.emptyText}>まだデータがありません{"\n"}参加者が増えると軌跡が表示されます</Text>
+          <Text style={[styles.emptyText, { fontSize: config.subtitleSize }]}>
+            まだデータがありません{"\n"}参加者が増えると軌跡が表示されます
+          </Text>
         </View>
       </View>
     );
   }
 
   return (
-    <View style={styles.container}>
+    <View style={[styles.container, { padding: config.padding }]}>
       <View style={styles.header}>
-        <Text style={styles.title}>📈 {title}</Text>
-        <Text style={styles.subtitle}>
+        <Text style={[styles.title, { fontSize: config.titleSize }]}>📈 {title}</Text>
+        <Text style={[styles.subtitle, { fontSize: config.subtitleSize }]}>
           現在 {formatNumber(currentCount)}人 / 目標 {formatNumber(targetCount)}人 ({progressPercent.toFixed(1)}%)
         </Text>
       </View>
@@ -194,7 +316,7 @@ export function GrowthTrajectoryChart({ data, targetCount, title = "動員まで
             x={chartWidth - paddingRight - 5}
             y={targetY - 8}
             fill="#10B981"
-            fontSize={10}
+            fontSize={config.fontSize}
             fontWeight="bold"
             textAnchor="end"
           >
@@ -243,7 +365,7 @@ export function GrowthTrajectoryChart({ data, targetCount, title = "動員まで
                 x={m.x}
                 y={m.y - 15}
                 fill="#333333"
-                fontSize={9}
+                fontSize={config.fontSize - 1}
                 fontWeight="bold"
                 textAnchor="middle"
               >
@@ -267,7 +389,7 @@ export function GrowthTrajectoryChart({ data, targetCount, title = "動員まで
                 x={paddingLeft + graphWidth}
                 y={paddingTop + graphHeight - (currentCount / (Math.max(targetCount, currentCount) * 1.1)) * graphHeight + 4}
                 fill="#FF6B6B"
-                fontSize={8}
+                fontSize={config.fontSize - 2}
                 fontWeight="bold"
                 textAnchor="middle"
               >
@@ -283,7 +405,7 @@ export function GrowthTrajectoryChart({ data, targetCount, title = "動員まで
               x={paddingLeft - 8}
               y={label.y + 4}
               fill="#687076"
-              fontSize={10}
+              fontSize={config.fontSize}
               textAnchor="end"
             >
               {formatNumber(label.value)}
@@ -297,7 +419,7 @@ export function GrowthTrajectoryChart({ data, targetCount, title = "動員まで
               x={label.x}
               y={chartHeight - paddingBottom + 20}
               fill="#687076"
-              fontSize={10}
+              fontSize={config.fontSize}
               textAnchor="middle"
             >
               {formatDate(label.date)}
@@ -328,11 +450,11 @@ export function GrowthTrajectoryChart({ data, targetCount, title = "動員まで
       <View style={styles.legend}>
         <View style={styles.legendItem}>
           <View style={[styles.legendLine, { backgroundColor: "#FF6B6B" }]} />
-          <Text style={styles.legendText}>参加者数の推移</Text>
+          <Text style={[styles.legendText, { fontSize: config.legendSize }]}>参加者数の推移</Text>
         </View>
         <View style={styles.legendItem}>
           <View style={[styles.legendLine, { backgroundColor: "#10B981", borderStyle: "dashed" }]} />
-          <Text style={styles.legendText}>目標ライン</Text>
+          <Text style={[styles.legendText, { fontSize: config.legendSize }]}>目標ライン</Text>
         </View>
       </View>
     </View>
@@ -343,20 +465,17 @@ const styles = StyleSheet.create({
   container: {
     backgroundColor: "#1E2022",
     borderRadius: 16,
-    padding: 16,
     marginVertical: 8,
   },
   header: {
     marginBottom: 16,
   },
   title: {
-    fontSize: 18,
     fontWeight: "bold",
     color: "#ECEDEE",
     marginBottom: 4,
   },
   subtitle: {
-    fontSize: 14,
     color: "#9BA1A6",
   },
   chartContainer: {
@@ -382,7 +501,6 @@ const styles = StyleSheet.create({
     borderRadius: 2,
   },
   legendText: {
-    fontSize: 12,
     color: "#9BA1A6",
   },
   emptyState: {
@@ -395,7 +513,6 @@ const styles = StyleSheet.create({
     marginBottom: 12,
   },
   emptyText: {
-    fontSize: 14,
     color: "#9BA1A6",
     textAlign: "center",
     lineHeight: 22,

@@ -1,7 +1,5 @@
-import { View, Text, StyleSheet, TouchableOpacity, ScrollView, Dimensions } from "react-native";
+import { View, Text, StyleSheet, TouchableOpacity, Dimensions, useWindowDimensions } from "react-native";
 import { useMemo } from "react";
-
-const screenWidth = Dimensions.get("window").width;
 
 interface JapanDeformedMapProps {
   prefectureCounts: { [key: string]: number };
@@ -91,6 +89,14 @@ const prefectureData: { name: string; short: string; region: string; row: number
   { name: "沖縄県", short: "沖縄", region: "沖縄", row: 12, col: 0 },
 ];
 
+// 参加者数に応じた動的アイコン
+function getParticipantIcon(count: number): string {
+  if (count === 0) return "😢";
+  if (count <= 5) return "😊";
+  if (count <= 20) return "🔥";
+  return "🎉";
+}
+
 // 参加者数に応じた色の濃さを計算
 function getHeatColor(count: number, maxCount: number, baseColor: { bg: string; text: string; border: string }) {
   if (count === 0) {
@@ -111,7 +117,42 @@ function getHeatColor(count: number, maxCount: number, baseColor: { bg: string; 
   return { bg: "#FF7043", text: "#fff", border: "#F4511E", hasParticipants: true };
 }
 
+// レスポンシブブレークポイント（8段階）
+function getResponsiveConfig(width: number) {
+  // 最小タップエリア44px以上を保証
+  const MIN_TAP_SIZE = 44;
+  
+  if (width < 320) {
+    // 超小型（280px〜319px）
+    return { cellSize: MIN_TAP_SIZE, fontSize: 8, countSize: 9, gap: 1, padding: 8 };
+  } else if (width < 375) {
+    // 小型（320px〜374px）
+    return { cellSize: MIN_TAP_SIZE, fontSize: 9, countSize: 10, gap: 1, padding: 12 };
+  } else if (width < 414) {
+    // 標準（375px〜413px）
+    return { cellSize: 46, fontSize: 10, countSize: 11, gap: 2, padding: 16 };
+  } else if (width < 768) {
+    // 大型スマホ（414px〜767px）
+    return { cellSize: 48, fontSize: 11, countSize: 12, gap: 2, padding: 16 };
+  } else if (width < 1024) {
+    // タブレット（768px〜1023px）
+    return { cellSize: 56, fontSize: 12, countSize: 14, gap: 3, padding: 20 };
+  } else if (width < 1440) {
+    // 小型PC（1024px〜1439px）
+    return { cellSize: 64, fontSize: 14, countSize: 16, gap: 4, padding: 24 };
+  } else if (width < 2560) {
+    // 大型PC（1440px〜2559px）
+    return { cellSize: 72, fontSize: 16, countSize: 18, gap: 4, padding: 28 };
+  } else {
+    // 4K（2560px以上）
+    return { cellSize: 80, fontSize: 18, countSize: 20, gap: 5, padding: 32 };
+  }
+}
+
 export function JapanDeformedMap({ prefectureCounts, onPrefecturePress, onRegionPress }: JapanDeformedMapProps) {
+  const { width: screenWidth } = useWindowDimensions();
+  const config = getResponsiveConfig(screenWidth);
+  
   // 統計情報を計算
   const stats = useMemo(() => {
     const totalPrefectures = Object.keys(prefectureCounts).filter(k => prefectureCounts[k] > 0).length;
@@ -134,13 +175,15 @@ export function JapanDeformedMap({ prefectureCounts, onPrefecturePress, onRegion
     };
   }, []);
 
-  // セルサイズを画面幅に合わせて計算（より大きく）
+  // セルサイズを画面幅に合わせて計算（最小44px以上を保証）
   const numCols = gridBounds.maxCol - gridBounds.minCol + 1;
-  const cellSize = Math.floor((screenWidth - 48) / numCols);
-  const mapHeight = (gridBounds.maxRow - gridBounds.minRow + 1) * (cellSize + 2) + 20;
+  const availableWidth = screenWidth - (config.padding * 2);
+  const calculatedCellSize = Math.floor(availableWidth / numCols) - config.gap;
+  const cellSize = Math.max(calculatedCellSize, config.cellSize);
+  const mapHeight = (gridBounds.maxRow - gridBounds.minRow + 1) * (cellSize + config.gap) + 20;
 
   return (
-    <View style={styles.container}>
+    <View style={[styles.container, { padding: config.padding }]}>
       <View style={styles.header}>
         <Text style={styles.title}>🗾 地域別参加者マップ</Text>
         <Text style={styles.subtitle}>合計 {stats.totalParticipants}人</Text>
@@ -152,9 +195,10 @@ export function JapanDeformedMap({ prefectureCounts, onPrefecturePress, onRegion
           const count = prefectureCounts[pref.name] || prefectureCounts[pref.short] || 0;
           const baseColor = regionColors[pref.region] || regionColors["関東"];
           const color = getHeatColor(count, stats.maxCount, baseColor);
+          const icon = getParticipantIcon(count);
           
-          const top = (pref.row - gridBounds.minRow) * (cellSize + 2);
-          const left = (pref.col - gridBounds.minCol) * (cellSize + 2);
+          const top = (pref.row - gridBounds.minRow) * (cellSize + config.gap);
+          const left = (pref.col - gridBounds.minCol) * (cellSize + config.gap);
           
           // 都道府県名を短縮（2文字以内）
           let displayName = pref.short.replace("県", "").replace("府", "").replace("都", "");
@@ -171,6 +215,8 @@ export function JapanDeformedMap({ prefectureCounts, onPrefecturePress, onRegion
                 {
                   width: cellSize,
                   height: cellSize,
+                  minWidth: 44, // 最小タップエリア保証
+                  minHeight: 44, // 最小タップエリア保証
                   backgroundColor: color.bg,
                   borderColor: color.hasParticipants ? "#FFFFFF" : color.border,
                   borderWidth: color.hasParticipants ? 2 : 1,
@@ -186,13 +232,18 @@ export function JapanDeformedMap({ prefectureCounts, onPrefecturePress, onRegion
               ]}
               onPress={() => onPrefecturePress?.(pref.name)}
               activeOpacity={0.7}
+              accessibilityLabel={`${pref.name}: ${count}人参加`}
+              accessibilityRole="button"
+              accessibilityHint="タップすると参加者一覧を表示します"
             >
+              {/* アイコン表示 */}
+              <Text style={{ fontSize: config.countSize }}>{icon}</Text>
               <Text 
                 style={[
                   styles.prefectureName, 
                   { 
                     color: color.text, 
-                    fontSize: cellSize < 30 ? 8 : cellSize < 35 ? 9 : 10,
+                    fontSize: config.fontSize,
                     fontWeight: color.hasParticipants ? "bold" : "600",
                   }
                 ]} 
@@ -206,12 +257,12 @@ export function JapanDeformedMap({ prefectureCounts, onPrefecturePress, onRegion
                     styles.prefectureCount, 
                     { 
                       color: color.text, 
-                      fontSize: cellSize < 30 ? 9 : cellSize < 35 ? 10 : 12,
+                      fontSize: config.countSize,
                       fontWeight: "bold",
                     }
                   ]}
                 >
-                  {count}
+                  {count}人
                 </Text>
               )}
             </TouchableOpacity>
@@ -248,7 +299,30 @@ export function JapanDeformedMap({ prefectureCounts, onPrefecturePress, onRegion
         </View>
       )}
 
-      {/* 凡例 */}
+      {/* アイコン凡例 */}
+      <View style={styles.iconLegend}>
+        <Text style={styles.legendTitle}>参加者数アイコン</Text>
+        <View style={styles.iconLegendItems}>
+          <View style={styles.iconLegendItem}>
+            <Text style={styles.iconLegendEmoji}>😢</Text>
+            <Text style={styles.iconLegendText}>0人</Text>
+          </View>
+          <View style={styles.iconLegendItem}>
+            <Text style={styles.iconLegendEmoji}>😊</Text>
+            <Text style={styles.iconLegendText}>1〜5人</Text>
+          </View>
+          <View style={styles.iconLegendItem}>
+            <Text style={styles.iconLegendEmoji}>🔥</Text>
+            <Text style={styles.iconLegendText}>6〜20人</Text>
+          </View>
+          <View style={styles.iconLegendItem}>
+            <Text style={styles.iconLegendEmoji}>🎉</Text>
+            <Text style={styles.iconLegendText}>21人〜</Text>
+          </View>
+        </View>
+      </View>
+
+      {/* 地域カラー凡例 */}
       <View style={styles.legend}>
         <Text style={styles.legendTitle}>地域カラー</Text>
         <View style={styles.legendItems}>
@@ -268,7 +342,6 @@ const styles = StyleSheet.create({
   container: {
     backgroundColor: "#1E2022",
     borderRadius: 16,
-    padding: 16,
     marginVertical: 8,
   },
   header: {
@@ -291,13 +364,14 @@ const styles = StyleSheet.create({
     marginBottom: 16,
   },
   prefectureCell: {
-    borderRadius: 4,
+    borderRadius: 6,
     alignItems: "center",
     justifyContent: "center",
-    padding: 1,
+    padding: 2,
   },
   prefectureName: {
     textAlign: "center",
+    marginTop: -2,
   },
   prefectureCount: {
     marginTop: -2,
@@ -352,6 +426,28 @@ const styles = StyleSheet.create({
   hotSubtitle: {
     fontSize: 12,
     color: "#9BA1A6",
+  },
+  iconLegend: {
+    marginBottom: 12,
+    backgroundColor: "#2D3139",
+    borderRadius: 12,
+    padding: 12,
+  },
+  iconLegendItems: {
+    flexDirection: "row",
+    justifyContent: "space-around",
+    marginTop: 8,
+  },
+  iconLegendItem: {
+    alignItems: "center",
+  },
+  iconLegendEmoji: {
+    fontSize: 20,
+  },
+  iconLegendText: {
+    fontSize: 10,
+    color: "#9BA1A6",
+    marginTop: 4,
   },
   legend: {
     marginTop: 8,
