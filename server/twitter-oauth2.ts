@@ -45,8 +45,12 @@ export function buildAuthorizationUrl(
   });
   
   // force_loginパラメータを追加して別のアカウントでログインできるようにする
-  // Twitter OAuth 2.0では直接のパラメータはないが、タイムスタンプを追加してキャッシュを無効化
+  // Twitter OAuth 2.0では prompt=login で強制的にログイン画面を表示
+  // これによりブラウザにキャッシュされたセッションを無視して別のアカウントを選択可能
   if (forceLogin) {
+    // prompt=login: 強制的にログイン画面を表示（セッションがあっても再認証を要求）
+    params.set("prompt", "login");
+    // タイムスタンプも追加してキャッシュを確実に無効化
     params.set("t", Date.now().toString());
   }
   

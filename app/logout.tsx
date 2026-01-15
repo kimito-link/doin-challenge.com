@@ -211,9 +211,14 @@ export default function LogoutScreen() {
               </Text>
             </TouchableOpacity>
 
-            {/* ログイン */}
+            {/* 別のアカウントでログイン */}
             <TouchableOpacity
-              onPress={() => router.replace("/mypage")}
+              onPress={() => {
+                // forceSwitch=trueで別のアカウントを選択可能にする
+                const { protocol, hostname } = window.location;
+                const apiHostname = hostname.replace(/^8081-/, "3000-");
+                window.location.href = `${protocol}//${apiHostname}/api/twitter/auth?switch=true`;
+              }}
               style={{
                 backgroundColor: "transparent",
                 borderRadius: 12,
@@ -228,7 +233,7 @@ export default function LogoutScreen() {
             >
               <MaterialIcons name="login" size={20} color="#3B82F6" />
               <Text style={{ color: "#3B82F6", fontSize: 16, fontWeight: "bold", marginLeft: 8 }}>
-                ログイン
+                別のアカウントでログイン
               </Text>
             </TouchableOpacity>
           </View>
