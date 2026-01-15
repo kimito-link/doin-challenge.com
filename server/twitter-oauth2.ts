@@ -261,6 +261,7 @@ const TARGET_TWITTER_USERNAME = "idolfunch";
 
 // Check if user follows a specific account
 // 指数バックオフとレート制限対応を適用
+// レート制限時はスキップして認証を継続
 export async function checkFollowStatus(
   accessToken: string,
   sourceUserId: string,
@@ -272,11 +273,13 @@ export async function checkFollowStatus(
     name: string;
     username: string;
   } | null;
+  skipped?: boolean;
 }> {
   try {
     // First, get the target user's ID by username
     const userLookupUrl = `https://api.twitter.com/2/users/by/username/${targetUsername}`;
     
+    // レート制限時はタイムアウトを短くしてスキップ
     const { data: userData, rateLimitInfo: userRateLimitInfo } = await twitterApiFetch<{ data?: { id: string; name: string; username: string } }>(
       userLookupUrl,
       {
@@ -284,11 +287,15 @@ export async function checkFollowStatus(
         headers: {
           "Authorization": `Bearer ${accessToken}`,
         },
-      }
+      },
+      { maxRetries: 2, initialDelayMs: 500, maxDelayMs: 5000 } // リトライを減らして高速化
     );
     
-    // レート制限に近づいている場合は予防的に待機
-    await waitIfRateLimited(userRateLimitInfo);
+    // レート制限に近づいている場合はスキップ（待機しない）
+    if (userRateLimitInfo && userRateLimitInfo.remaining <= 0) {
+      console.log("[Twitter API] Rate limit reached, skipping follow check");
+      return { isFollowing: false, targetUser: null, skipped: true };
+    }
     
     const targetUser = userData.data;
     
@@ -312,7 +319,8 @@ export async function checkFollowStatus(
         headers: {
           "Authorization": `Bearer ${accessToken}`,
         },
-      }
+      },
+      { maxRetries: 2, initialDelayMs: 500, maxDelayMs: 5000 } // リトライを減らして高速化
     );
     
     // レート制限情報をログ
@@ -336,6 +344,12 @@ export async function checkFollowStatus(
       },
     };
   } catch (error) {
+    // レート制限エラーの場合はスキップして認証を継続
+    const errorMessage = error instanceof Error ? error.message : String(error);
+    if (errorMessage.includes("429") || errorMessage.includes("rate limit")) {
+      console.log("[Twitter API] Rate limit error, skipping follow check");
+      return { isFollowing: false, targetUser: null, skipped: true };
+    }
     console.error("Follow status check error:", error);
     return { isFollowing: false, targetUser: null };
   }

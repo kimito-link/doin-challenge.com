@@ -826,3 +826,7 @@
 - [x] 滑らかなトランジション追加 - animations.ts, AnimatedListItem
 - [x] 触覚フィードバックの統一 - hapticsユーティリティ
 - [x] 状態変化のアニメーション - usePressAnimation, useFadeAnimation
+
+## バグ修正（v4.59）
+- [x] Twitter認証後のネットワークエラー修正 - レート制限時はスキップして認証継続
+- [x] 初期読み込み速度の改善 - staleTime/gcTime追加、キャッシュ最適化

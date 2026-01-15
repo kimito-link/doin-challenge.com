@@ -63,6 +63,10 @@ export default function RootLayout() {
             refetchOnWindowFocus: false,
             // Retry failed requests once
             retry: 1,
+            // Cache data for 5 minutes to reduce API calls
+            staleTime: 5 * 60 * 1000,
+            // Keep cached data for 30 minutes
+            gcTime: 30 * 60 * 1000,
           },
         },
       }),

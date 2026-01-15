@@ -767,6 +767,7 @@ export default function HomeScreen() {
   const {
     data: paginatedData,
     isLoading,
+    isFetching,
     fetchNextPage,
     hasNextPage,
     isFetchingNextPage,
@@ -777,6 +778,8 @@ export default function HomeScreen() {
       enabled: !isOffline,
       getNextPageParam: (lastPage) => lastPage.nextCursor,
       initialCursor: 0,
+      // キャッシュがある場合は即座に表示（バックグラウンドで更新）
+      staleTime: 2 * 60 * 1000, // 2分間はキャッシュを新鮮とみなす
     }
   );
 
