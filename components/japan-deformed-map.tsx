@@ -175,11 +175,12 @@ export function JapanDeformedMap({ prefectureCounts, onPrefecturePress, onRegion
     };
   }, []);
 
-  // セルサイズを画面幅に合わせて計算（最小44px以上を保証）
+  // セルサイズを画面幅に合わせて計算（最小44px以上を保証、PC画面では最大800pxに制限）
   const numCols = gridBounds.maxCol - gridBounds.minCol + 1;
-  const availableWidth = screenWidth - (config.padding * 2);
-  const calculatedCellSize = Math.floor(availableWidth / numCols) - config.gap;
+  const maxContainerWidth = Math.min(screenWidth - (config.padding * 2), 800);
+  const calculatedCellSize = Math.floor(maxContainerWidth / numCols) - config.gap;
   const cellSize = Math.max(calculatedCellSize, config.cellSize);
+  const mapWidth = numCols * (cellSize + config.gap);
   const mapHeight = (gridBounds.maxRow - gridBounds.minRow + 1) * (cellSize + config.gap) + 20;
 
   return (
@@ -190,7 +191,7 @@ export function JapanDeformedMap({ prefectureCounts, onPrefecturePress, onRegion
       </View>
 
       {/* デフォルメ日本地図 */}
-      <View style={[styles.mapContainer, { height: mapHeight }]}>
+      <View style={[styles.mapContainer, { height: mapHeight, width: mapWidth }]}>
         {prefectureData.map((pref) => {
           const count = prefectureCounts[pref.name] || prefectureCounts[pref.short] || 0;
           const baseColor = regionColors[pref.region] || regionColors["関東"];
@@ -362,6 +363,9 @@ const styles = StyleSheet.create({
   mapContainer: {
     position: "relative",
     marginBottom: 16,
+    alignSelf: "center",
+    width: "100%",
+    maxWidth: 800,
   },
   prefectureCell: {
     borderRadius: 6,
