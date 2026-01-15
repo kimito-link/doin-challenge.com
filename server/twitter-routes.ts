@@ -53,13 +53,28 @@ export function registerTwitterRoutes(app: Express) {
         error_description?: string;
       };
 
-      // Handle OAuth errors
+      // Handle OAuth errors (e.g., user cancelled authorization)
       if (oauthError) {
         console.error("Twitter OAuth error:", oauthError, error_description);
-        res.status(400).json({ 
-          error: oauthError, 
-          description: error_description 
-        });
+        
+        // Build redirect URL to Expo app with error info
+        const host = req.get("host") || "";
+        const expoHost = host.replace("3000-", "8081-");
+        const protocol = req.get("x-forwarded-proto") || req.protocol;
+        const forceHttps = protocol === "https" || host.includes("manus.computer");
+        const baseUrl = `${forceHttps ? "https" : protocol}://${expoHost}`;
+        
+        // Encode error data for redirect
+        const errorData = encodeURIComponent(JSON.stringify({
+          error: true,
+          code: oauthError,
+          message: oauthError === "access_denied" 
+            ? "認証がキャンセルされました" 
+            : error_description || "Twitter認証中にエラーが発生しました",
+        }));
+        
+        // Redirect to Expo app with error
+        res.redirect(`${baseUrl}/oauth/twitter-callback?error=${errorData}`);
         return;
       }
 

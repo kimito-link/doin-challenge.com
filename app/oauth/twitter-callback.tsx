@@ -40,7 +40,10 @@ export default function TwitterOAuthCallback() {
           // エラーデータをパース（JSON形式の場合）
           try {
             const errorData = JSON.parse(decodeURIComponent(params.error));
-            if (errorData.message) {
+            if (errorData.code === "access_denied") {
+              // ユーザーが認証をキャンセルした場合
+              setErrorMessage("認証がキャンセルされました。ログインするにはTwitter認証を許可してください。");
+            } else if (errorData.message) {
               // ユーザーフレンドリーなエラーメッセージに変換
               if (errorData.message.includes("fetch failed") || errorData.message.includes("network")) {
                 setErrorMessage("ネットワークエラーが発生しました。もう一度お試しください。");
