@@ -825,6 +825,45 @@ export default function MyPageScreen() {
             <MaterialIcons name="chevron-right" size={24} color="#6B7280" />
           </TouchableOpacity>
 
+          {/* API使用量ダッシュボードリンク（管理者向け） */}
+          <TouchableOpacity
+            onPress={() => router.push("/admin/api-usage")}
+            style={{
+              backgroundColor: "#1A1D21",
+              marginHorizontal: 16,
+              marginBottom: 16,
+              borderRadius: 12,
+              padding: 16,
+              flexDirection: "row",
+              alignItems: "center",
+              borderWidth: 1,
+              borderColor: "#2D3139",
+            }}
+          >
+            <View
+              style={{
+                width: 48,
+                height: 48,
+                borderRadius: 24,
+                backgroundColor: "#3B82F6",
+                alignItems: "center",
+                justifyContent: "center",
+                marginRight: 12,
+              }}
+            >
+              <MaterialIcons name="analytics" size={24} color="#fff" />
+            </View>
+            <View style={{ flex: 1 }}>
+              <Text style={{ color: "#fff", fontSize: 16, fontWeight: "bold" }}>
+                API使用量
+              </Text>
+              <Text style={{ color: "#9CA3AF", fontSize: 12 }}>
+                Twitter APIのレート制限状況
+              </Text>
+            </View>
+            <MaterialIcons name="chevron-right" size={24} color="#6B7280" />
+          </TouchableOpacity>
+
           {/* バッジセクション */}
           <View style={{ paddingHorizontal: 16, marginBottom: 24 }}>
             <Text style={{ color: "#fff", fontSize: 18, fontWeight: "bold", marginBottom: 12 }}>

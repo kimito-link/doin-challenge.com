@@ -1,5 +1,11 @@
 import * as Api from "@/lib/_core/api";
 import * as Auth from "@/lib/_core/auth";
+import {
+  getRefreshToken,
+  getValidAccessToken,
+  isAccessTokenExpired,
+  clearAllTokenData,
+} from "@/lib/token-manager";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { Platform, Linking } from "react-native";
 import Constants from "expo-constants";
@@ -105,6 +111,8 @@ export function useAuth(options?: UseAuthOptions) {
     } finally {
       await Auth.removeSessionToken();
       await Auth.clearUserInfo();
+      // Clear all token data including refresh token
+      await clearAllTokenData();
       setUser(null);
       setError(null);
     }

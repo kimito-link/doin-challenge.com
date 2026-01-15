@@ -1,6 +1,7 @@
 import { ThemedView } from "@/components/themed-view";
 import { FollowSuccessModal } from "@/components/follow-success-modal";
 import * as Auth from "@/lib/_core/auth";
+import { saveTokenData } from "@/lib/token-manager";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import { useEffect, useState, useRef } from "react";
 import { ActivityIndicator, Text } from "react-native";
@@ -96,6 +97,16 @@ export default function TwitterOAuthCallback() {
           // Store user info using the Auth module
           await Auth.setUserInfo(userInfo);
           console.log("[Twitter OAuth] User info stored successfully via Auth module");
+
+          // Store token data for auto-refresh (if available)
+          if (userData.accessToken) {
+            await saveTokenData({
+              accessToken: userData.accessToken,
+              refreshToken: userData.refreshToken,
+              expiresIn: 7200, // 2 hours
+            });
+            console.log("[Twitter OAuth] Token data stored for auto-refresh");
+          }
 
           setStatus("success");
           console.log("[Twitter OAuth] Authentication successful");

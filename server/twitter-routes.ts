@@ -11,6 +11,7 @@ import {
   checkFollowStatus,
   getTargetAccountInfo,
   getUserProfileByUsername,
+  refreshAccessToken,
 } from "./twitter-oauth2";
 
 export function registerTwitterRoutes(app: Express) {
@@ -309,6 +310,35 @@ export function registerTwitterRoutes(app: Express) {
     } catch (error) {
       console.error("Twitter refresh follow status error:", error);
       res.status(500).json({ error: "Failed to initiate follow status refresh" });
+    }
+  });
+
+  // Token refresh endpoint
+  app.post("/api/twitter/refresh", async (req: Request, res: Response) => {
+    try {
+      const { refreshToken } = req.body as { refreshToken?: string };
+      
+      if (!refreshToken) {
+        res.status(400).json({ error: "Refresh token is required" });
+        return;
+      }
+      
+      console.log("[Twitter OAuth 2.0] Refreshing access token...");
+      
+      const tokens = await refreshAccessToken(refreshToken);
+      
+      console.log("[Twitter OAuth 2.0] Token refresh successful");
+      
+      res.json({
+        access_token: tokens.access_token,
+        refresh_token: tokens.refresh_token,
+        expires_in: tokens.expires_in,
+        token_type: tokens.token_type,
+        scope: tokens.scope,
+      });
+    } catch (error) {
+      console.error("Twitter token refresh error:", error);
+      res.status(401).json({ error: "Failed to refresh token" });
     }
   });
 

@@ -7,6 +7,7 @@ import { registerOAuthRoutes } from "./oauth";
 import { registerTwitterRoutes } from "../twitter-routes";
 import { appRouter } from "../routers";
 import { createContext } from "./context";
+import { getDashboardSummary, getApiUsageStats } from "../api-usage-tracker";
 
 function isPortAvailable(port: number): Promise<boolean> {
   return new Promise((resolve) => {
@@ -60,6 +61,19 @@ async function startServer() {
 
   app.get("/api/health", (_req, res) => {
     res.json({ ok: true, timestamp: Date.now() });
+  });
+
+  // API使用量ダッシュボード用エンドポイント
+  app.get("/api/admin/api-usage", (_req, res) => {
+    // TODO: 管理者認証を追加
+    const summary = getDashboardSummary();
+    res.json(summary);
+  });
+
+  app.get("/api/admin/api-usage/stats", (_req, res) => {
+    // TODO: 管理者認証を追加
+    const stats = getApiUsageStats();
+    res.json(stats);
   });
 
   app.use(

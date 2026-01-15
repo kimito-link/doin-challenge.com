@@ -51,6 +51,8 @@ export function getApiBaseUrl(): string {
 
 export const SESSION_TOKEN_KEY = "app_session_token";
 export const USER_INFO_KEY = "manus-runtime-user-info";
+export const REFRESH_TOKEN_KEY = "twitter_refresh_token";
+export const TOKEN_EXPIRES_AT_KEY = "twitter_token_expires_at";
 
 const encodeState = (value: string) => {
   if (typeof globalThis.btoa === "function") {
