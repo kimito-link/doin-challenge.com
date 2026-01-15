@@ -1,0 +1,8 @@
+{
+  "buildCommand": "EXPO_PUBLIC_API_BASE_URL=https://doin-challengecom-production.up.railway.app npx expo export --platform web",
+  "outputDirectory": "dist",
+  "framework": null,
+  "rewrites": [
+    { "source": "/(.*)", "destination": "/index.html" }
+  ]
+}
