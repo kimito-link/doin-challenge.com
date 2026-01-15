@@ -7,6 +7,8 @@ import MaterialIcons from "@expo/vector-icons/MaterialIcons";
 import { LinearGradient } from "expo-linear-gradient";
 import { useMemo } from "react";
 import { AppHeader } from "@/components/app-header";
+import { ExportButton } from "@/components/export-button";
+import type { ExportData } from "@/lib/export-stats";
 
 const { width: screenWidth } = Dimensions.get("window");
 
@@ -481,12 +483,37 @@ export default function DashboardScreen() {
           }
         />
         <View style={{ marginBottom: 16 }}>
-          <Text style={{ color: "#fff", fontSize: 18, fontWeight: "bold" }}>
-            統計ダッシュボード
-          </Text>
-          <Text style={{ color: "#9CA3AF", fontSize: 14 }} numberOfLines={1}>
-            {challenge.title}
-          </Text>
+          <View style={{ flexDirection: "row", justifyContent: "space-between", alignItems: "center" }}>
+            <View style={{ flex: 1 }}>
+              <Text style={{ color: "#fff", fontSize: 18, fontWeight: "bold" }}>
+                統計ダッシュボード
+              </Text>
+              <Text style={{ color: "#9CA3AF", fontSize: 14 }} numberOfLines={1}>
+                {challenge.title}
+              </Text>
+            </View>
+            {/* エクスポートボタン（主催者のみ） */}
+            {isHost && (
+              <ExportButton
+                data={{
+                  challenge: {
+                    id: challenge.id,
+                    title: challenge.title,
+                    hostName: challenge.hostName || "",
+                    goalValue: challenge.goalValue,
+                    goalUnit: challenge.goalUnit || "人",
+                    startDate: new Date(challenge.eventDate),
+                    endDate: new Date(challenge.eventDate),
+                  },
+                  participations: participations.map(p => ({
+                    ...p,
+                    createdAt: new Date(p.createdAt),
+                  })),
+                  exportDate: new Date(),
+                }}
+              />
+            )}
+          </View>
         </View>
 
         {/* 主催者限定メッセージ */}

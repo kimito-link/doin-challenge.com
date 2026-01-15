@@ -1,6 +1,7 @@
 import { Pressable, Platform, type PressableProps, type ViewStyle } from "react-native";
 import { useState, useCallback } from "react";
-import Animated, { useAnimatedStyle, withTiming } from "react-native-reanimated";
+import Animated, { useAnimatedStyle, withTiming, Easing } from "react-native-reanimated";
+import * as Haptics from "expo-haptics";
 
 interface PressableCardProps extends Omit<PressableProps, "style"> {
   style?: ViewStyle;
@@ -40,32 +41,37 @@ export function PressableCard({
 
   const handlePressIn = useCallback(() => {
     setIsPressed(true);
+    // ハプティックフィードバック（ネイティブのみ）
+    if (Platform.OS !== "web") {
+      Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+    }
   }, []);
 
   const handlePressOut = useCallback(() => {
     setIsPressed(false);
   }, []);
 
-  // アニメーションスタイル
+  // アニメーションスタイル（よりスムーズなイージング）
   const animatedStyle = useAnimatedStyle(() => {
     const scale = isPressed ? 0.97 : isHovered ? 1.02 : 1;
     const translateY = isHovered && !isPressed ? -4 : 0;
 
     return {
       transform: [
-        { scale: withTiming(scale, { duration: 150 }) },
-        { translateY: withTiming(translateY, { duration: 150 }) },
+        { scale: withTiming(scale, { duration: 150, easing: Easing.out(Easing.cubic) }) },
+        { translateY: withTiming(translateY, { duration: 150, easing: Easing.out(Easing.cubic) }) },
       ],
     };
   }, [isHovered, isPressed]);
 
-  // Web用のホバースタイル
+  // Web用のホバースタイル（より目立つ効果）
   const webHoverStyle: ViewStyle = Platform.OS === "web" && isHovered ? {
     shadowColor: "#DD6500",
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.3,
-    shadowRadius: 12,
+    shadowOffset: { width: 0, height: 8 },
+    shadowOpacity: 0.4,
+    shadowRadius: 16,
     borderColor: "#DD6500",
+    borderWidth: 2,
   } : {};
 
   return (
