@@ -8,6 +8,8 @@ import { registerTwitterRoutes } from "../twitter-routes";
 import { appRouter } from "../routers";
 import { createContext } from "./context";
 import { getDashboardSummary, getApiUsageStats } from "../api-usage-tracker";
+import { getOpenApiSpec } from "../openapi";
+import swaggerUi from "swagger-ui-express";
 
 function isPortAvailable(port: number): Promise<boolean> {
   return new Promise((resolve) => {
@@ -64,6 +66,17 @@ async function startServer() {
   });
 
   // API使用量ダッシュボード用エンドポイント
+  // OpenAPI仕様書エンドポイント
+  app.get("/api/openapi.json", (_req, res) => {
+    res.json(getOpenApiSpec());
+  });
+
+  // Swagger UI
+  app.use("/api/docs", swaggerUi.serve, swaggerUi.setup(getOpenApiSpec(), {
+    customCss: '.swagger-ui .topbar { display: none }',
+    customSiteTitle: "動員ちゃれんじ API ドキュメント",
+  }));
+
   app.get("/api/admin/api-usage", (_req, res) => {
     // TODO: 管理者認証を追加
     const summary = getDashboardSummary();

@@ -775,3 +775,10 @@
 - [x] DATA-FLOW.md（データの流れを可視化）を作成
 - [x] COMPONENT-MAP.md（コンポーネント構成図）を作成
 - [x] DECISION-LOG.md（設計判断の記録）を作成
+
+
+## OpenAPI仕様書自動生成（v4.54）
+- [x] 現在のtRPCルーター構成を確認
+- [x] trpc-openapiパッケージを導入
+- [x] OpenAPI仕様書を自動生成
+- [x] Swagger UIでAPIドキュメントを表示
