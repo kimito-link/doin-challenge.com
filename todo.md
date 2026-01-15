@@ -879,3 +879,9 @@
 - [x] API応答時間の最適化（カテゴリキャッシュ追加、5分TTL）
 - [x] 画像最適化（13MB→5.5MBに削減、全キャラクター画像を26-36KBに圧縮）
 - [x] Twitter認証エラーの修正（フロー正常動作確認済み）
+
+## Service Worker導入（v4.65）
+- [x] ExpoでのService Worker実装方法を調査（Workbox CLI使用）
+- [x] Service Workerとキャッシュ戦略を実装
+- [x] オフラインフォールバックページを作成
+- [x] 動作確認（Service Worker登録済み、キャッシュ正常動作）
