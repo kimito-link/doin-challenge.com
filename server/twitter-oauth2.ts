@@ -2,6 +2,7 @@ import crypto from "crypto";
 import { getDb } from "./db";
 import { oauthPkceData } from "../drizzle/schema";
 import { eq, lt } from "drizzle-orm";
+import { twitterApiFetch, waitIfRateLimited } from "./rate-limit-handler";
 
 // Twitter OAuth 2.0 with PKCE implementation
 const TWITTER_CLIENT_ID = process.env.TWITTER_CLIENT_ID || "";
@@ -36,7 +37,7 @@ export function buildAuthorizationUrl(
     response_type: "code",
     client_id: TWITTER_CLIENT_ID,
     redirect_uri: callbackUrl,
-    scope: "users.read tweet.read",
+    scope: "users.read tweet.read follows.read offline.access",
     state: state,
     code_challenge: codeChallenge,
     code_challenge_method: "S256",
@@ -259,6 +260,7 @@ const pkceMemoryStore = new Map<string, { codeVerifier: string; callbackUrl: str
 const TARGET_TWITTER_USERNAME = "idolfunch";
 
 // Check if user follows a specific account
+// 指数バックオフとレート制限対応を適用
 export async function checkFollowStatus(
   accessToken: string,
   sourceUserId: string,
@@ -275,20 +277,19 @@ export async function checkFollowStatus(
     // First, get the target user's ID by username
     const userLookupUrl = `https://api.twitter.com/2/users/by/username/${targetUsername}`;
     
-    const userResponse = await fetch(userLookupUrl, {
-      method: "GET",
-      headers: {
-        "Authorization": `Bearer ${accessToken}`,
-      },
-    });
+    const { data: userData, rateLimitInfo: userRateLimitInfo } = await twitterApiFetch<{ data?: { id: string; name: string; username: string } }>(
+      userLookupUrl,
+      {
+        method: "GET",
+        headers: {
+          "Authorization": `Bearer ${accessToken}`,
+        },
+      }
+    );
     
-    if (!userResponse.ok) {
-      const text = await userResponse.text();
-      console.error("User lookup error:", text);
-      return { isFollowing: false, targetUser: null };
-    }
+    // レート制限に近づいている場合は予防的に待機
+    await waitIfRateLimited(userRateLimitInfo);
     
-    const userData = await userResponse.json();
     const targetUser = userData.data;
     
     if (!targetUser) {
@@ -304,28 +305,23 @@ export async function checkFollowStatus(
       "max_results": "1000",
     });
     
-    const followResponse = await fetch(`${followCheckUrl}?${params}`, {
-      method: "GET",
-      headers: {
-        "Authorization": `Bearer ${accessToken}`,
-      },
-    });
+    const { data: followData, rateLimitInfo: followRateLimitInfo } = await twitterApiFetch<{ data?: Array<{ id: string; name: string; username: string }> }>(
+      `${followCheckUrl}?${params}`,
+      {
+        method: "GET",
+        headers: {
+          "Authorization": `Bearer ${accessToken}`,
+        },
+      }
+    );
     
-    if (!followResponse.ok) {
-      const text = await followResponse.text();
-      console.error("Follow check error:", text);
-      // If we can't check, assume not following
-      return { 
-        isFollowing: false, 
-        targetUser: {
-          id: targetUser.id,
-          name: targetUser.name,
-          username: targetUser.username,
-        }
-      };
+    // レート制限情報をログ
+    if (followRateLimitInfo) {
+      console.log(
+        `[Twitter API] Follow check rate limit: ${followRateLimitInfo.remaining}/${followRateLimitInfo.limit} remaining`
+      );
     }
     
-    const followData = await followResponse.json();
     const following = followData.data || [];
     
     // Check if target user is in the following list
