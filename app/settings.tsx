@@ -1,0 +1,442 @@
+import { useState, useCallback } from "react";
+import {
+  View,
+  Text,
+  TouchableOpacity,
+  ScrollView,
+  StyleSheet,
+  Platform,
+} from "react-native";
+import { useRouter } from "expo-router";
+import { Image } from "expo-image";
+import MaterialIcons from "@expo/vector-icons/MaterialIcons";
+import * as Haptics from "expo-haptics";
+import { ScreenContainer } from "@/components/screen-container";
+import { useAuth } from "@/hooks/use-auth";
+import { useAccounts } from "@/hooks/use-accounts";
+import { useThemeContext, getThemeModeLabel, getThemeModeIcon } from "@/lib/theme-provider";
+import { AccountSwitcher } from "@/components/account-switcher";
+
+/**
+ * 総合設定画面
+ * テーマ設定、アカウント管理、その他の設定を統合
+ */
+export default function SettingsScreen() {
+  const router = useRouter();
+  const { user, isAuthenticated, logout } = useAuth();
+  const { accounts, currentAccountId, deleteAccount } = useAccounts();
+  const { themeMode, colorScheme } = useThemeContext();
+  const [showAccountSwitcher, setShowAccountSwitcher] = useState(false);
+
+  const handleHaptic = useCallback(() => {
+    if (Platform.OS !== "web") {
+      Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+    }
+  }, []);
+
+  const handleBack = useCallback(() => {
+    handleHaptic();
+    router.back();
+  }, [router, handleHaptic]);
+
+  const handleThemeSettings = useCallback(() => {
+    handleHaptic();
+    router.push("/theme-settings");
+  }, [router, handleHaptic]);
+
+  const handleNotificationSettings = useCallback(() => {
+    handleHaptic();
+    router.push("/notification-settings");
+  }, [router, handleHaptic]);
+
+  const handleAccountSwitch = useCallback(() => {
+    handleHaptic();
+    setShowAccountSwitcher(true);
+  }, [handleHaptic]);
+
+  const handleLogout = useCallback(() => {
+    handleHaptic();
+    router.push("/logout");
+  }, [router, handleHaptic]);
+
+  // 他のアカウント（現在のアカウント以外）
+  const otherAccounts = accounts.filter((a) => a.id !== currentAccountId);
+
+  return (
+    <ScreenContainer containerClassName="bg-[#151718]">
+      {/* ヘッダー */}
+      <View style={styles.header}>
+        <TouchableOpacity onPress={handleBack} style={styles.backButton}>
+          <MaterialIcons name="arrow-back" size={24} color="#fff" />
+        </TouchableOpacity>
+        <Text style={styles.headerTitle}>設定</Text>
+        <View style={styles.headerSpacer} />
+      </View>
+
+      <ScrollView style={styles.content} contentContainerStyle={styles.contentContainer}>
+        {/* アカウント管理セクション */}
+        <View style={styles.section}>
+          <Text style={styles.sectionTitle}>アカウント</Text>
+
+          {/* 現在のアカウント */}
+          {isAuthenticated && user ? (
+            <View style={styles.currentAccount}>
+              <View style={styles.accountRow}>
+                {user.profileImage ? (
+                  <Image
+                    source={{ uri: user.profileImage }}
+                    style={styles.avatar}
+                    contentFit="cover"
+                  />
+                ) : (
+                  <View style={[styles.avatar, styles.avatarPlaceholder]}>
+                    <MaterialIcons name="person" size={24} color="#9CA3AF" />
+                  </View>
+                )}
+                <View style={styles.accountInfo}>
+                  <Text style={styles.accountName} numberOfLines={1}>
+                    {user.name || user.username || "ユーザー"}
+                  </Text>
+                  {user.username && (
+                    <Text style={styles.accountUsername} numberOfLines={1}>
+                      @{user.username}
+                    </Text>
+                  )}
+                </View>
+                <View style={styles.currentBadge}>
+                  <Text style={styles.currentBadgeText}>ログイン中</Text>
+                </View>
+              </View>
+            </View>
+          ) : (
+            <View style={styles.notLoggedIn}>
+              <MaterialIcons name="person-outline" size={32} color="#6B7280" />
+              <Text style={styles.notLoggedInText}>ログインしていません</Text>
+            </View>
+          )}
+
+          {/* アカウント切り替えボタン */}
+          <TouchableOpacity
+            onPress={handleAccountSwitch}
+            style={styles.menuItem}
+            activeOpacity={0.7}
+          >
+            <View style={styles.menuItemIcon}>
+              <MaterialIcons name="swap-horiz" size={24} color="#DD6500" />
+            </View>
+            <View style={styles.menuItemContent}>
+              <Text style={styles.menuItemTitle}>アカウントを切り替え</Text>
+              <Text style={styles.menuItemDescription}>
+                {otherAccounts.length > 0
+                  ? `${otherAccounts.length}件の保存済みアカウント`
+                  : "別のアカウントでログイン"}
+              </Text>
+            </View>
+            <MaterialIcons name="chevron-right" size={24} color="#6B7280" />
+          </TouchableOpacity>
+
+          {/* 保存済みアカウント一覧（簡易表示） */}
+          {otherAccounts.length > 0 && (
+            <View style={styles.savedAccountsPreview}>
+              <Text style={styles.savedAccountsLabel}>保存済みアカウント:</Text>
+              <View style={styles.savedAccountsAvatars}>
+                {otherAccounts.slice(0, 3).map((account) => (
+                  <View key={account.id} style={styles.savedAccountAvatar}>
+                    {account.profileImageUrl ? (
+                      <Image
+                        source={{ uri: account.profileImageUrl }}
+                        style={styles.savedAccountAvatarImage}
+                        contentFit="cover"
+                      />
+                    ) : (
+                      <View style={[styles.savedAccountAvatarImage, styles.avatarPlaceholder]}>
+                        <MaterialIcons name="person" size={12} color="#9CA3AF" />
+                      </View>
+                    )}
+                  </View>
+                ))}
+                {otherAccounts.length > 3 && (
+                  <View style={styles.moreAccountsBadge}>
+                    <Text style={styles.moreAccountsText}>+{otherAccounts.length - 3}</Text>
+                  </View>
+                )}
+              </View>
+            </View>
+          )}
+
+          {/* ログアウトボタン */}
+          {isAuthenticated && (
+            <TouchableOpacity
+              onPress={handleLogout}
+              style={[styles.menuItem, styles.logoutItem]}
+              activeOpacity={0.7}
+            >
+              <View style={[styles.menuItemIcon, styles.logoutIcon]}>
+                <MaterialIcons name="logout" size={24} color="#EF4444" />
+              </View>
+              <View style={styles.menuItemContent}>
+                <Text style={[styles.menuItemTitle, styles.logoutText]}>ログアウト</Text>
+              </View>
+              <MaterialIcons name="chevron-right" size={24} color="#6B7280" />
+            </TouchableOpacity>
+          )}
+        </View>
+
+        {/* 表示設定セクション */}
+        <View style={styles.section}>
+          <Text style={styles.sectionTitle}>表示</Text>
+
+          <TouchableOpacity
+            onPress={handleThemeSettings}
+            style={styles.menuItem}
+            activeOpacity={0.7}
+          >
+            <View style={styles.menuItemIcon}>
+              <MaterialIcons
+                name={getThemeModeIcon(themeMode) as any}
+                size={24}
+                color="#DD6500"
+              />
+            </View>
+            <View style={styles.menuItemContent}>
+              <Text style={styles.menuItemTitle}>テーマ</Text>
+              <Text style={styles.menuItemDescription}>
+                {getThemeModeLabel(themeMode)} ({colorScheme === "dark" ? "ダーク" : "ライト"})
+              </Text>
+            </View>
+            <MaterialIcons name="chevron-right" size={24} color="#6B7280" />
+          </TouchableOpacity>
+        </View>
+
+        {/* 通知設定セクション */}
+        <View style={styles.section}>
+          <Text style={styles.sectionTitle}>通知</Text>
+
+          <TouchableOpacity
+            onPress={handleNotificationSettings}
+            style={styles.menuItem}
+            activeOpacity={0.7}
+          >
+            <View style={styles.menuItemIcon}>
+              <MaterialIcons name="notifications" size={24} color="#DD6500" />
+            </View>
+            <View style={styles.menuItemContent}>
+              <Text style={styles.menuItemTitle}>通知設定</Text>
+              <Text style={styles.menuItemDescription}>
+                プッシュ通知やリマインダーの設定
+              </Text>
+            </View>
+            <MaterialIcons name="chevron-right" size={24} color="#6B7280" />
+          </TouchableOpacity>
+        </View>
+
+        {/* アプリ情報 */}
+        <View style={styles.footer}>
+          <Text style={styles.footerText}>動員ちゃれんじ v1.0.0</Text>
+          <Text style={styles.footerSubtext}>設定はこのデバイスに保存されます</Text>
+        </View>
+      </ScrollView>
+
+      {/* アカウント切り替えモーダル */}
+      <AccountSwitcher
+        visible={showAccountSwitcher}
+        onClose={() => setShowAccountSwitcher(false)}
+      />
+    </ScreenContainer>
+  );
+}
+
+const styles = StyleSheet.create({
+  header: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+    padding: 16,
+    borderBottomWidth: 1,
+    borderBottomColor: "#2D3139",
+  },
+  backButton: {
+    width: 40,
+    height: 40,
+    alignItems: "center",
+    justifyContent: "center",
+    borderRadius: 20,
+  },
+  headerTitle: {
+    color: "#fff",
+    fontSize: 18,
+    fontWeight: "bold",
+  },
+  headerSpacer: {
+    width: 40,
+  },
+  content: {
+    flex: 1,
+  },
+  contentContainer: {
+    paddingBottom: 40,
+  },
+  section: {
+    padding: 16,
+    borderBottomWidth: 1,
+    borderBottomColor: "#2D3139",
+  },
+  sectionTitle: {
+    color: "#9CA3AF",
+    fontSize: 13,
+    fontWeight: "600",
+    textTransform: "uppercase",
+    marginBottom: 12,
+  },
+  currentAccount: {
+    backgroundColor: "#1A1D21",
+    borderRadius: 12,
+    padding: 16,
+    marginBottom: 12,
+  },
+  accountRow: {
+    flexDirection: "row",
+    alignItems: "center",
+  },
+  avatar: {
+    width: 48,
+    height: 48,
+    borderRadius: 24,
+    marginRight: 12,
+  },
+  avatarPlaceholder: {
+    backgroundColor: "#374151",
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  accountInfo: {
+    flex: 1,
+  },
+  accountName: {
+    color: "#fff",
+    fontSize: 16,
+    fontWeight: "600",
+  },
+  accountUsername: {
+    color: "#9CA3AF",
+    fontSize: 14,
+    marginTop: 2,
+  },
+  currentBadge: {
+    backgroundColor: "rgba(16, 185, 129, 0.2)",
+    paddingHorizontal: 10,
+    paddingVertical: 4,
+    borderRadius: 12,
+  },
+  currentBadgeText: {
+    color: "#10B981",
+    fontSize: 12,
+    fontWeight: "600",
+  },
+  notLoggedIn: {
+    backgroundColor: "#1A1D21",
+    borderRadius: 12,
+    padding: 24,
+    alignItems: "center",
+    marginBottom: 12,
+  },
+  notLoggedInText: {
+    color: "#6B7280",
+    fontSize: 14,
+    marginTop: 8,
+  },
+  menuItem: {
+    flexDirection: "row",
+    alignItems: "center",
+    backgroundColor: "#1A1D21",
+    padding: 16,
+    borderRadius: 12,
+    marginBottom: 8,
+  },
+  menuItemIcon: {
+    width: 44,
+    height: 44,
+    borderRadius: 22,
+    backgroundColor: "rgba(221, 101, 0, 0.1)",
+    alignItems: "center",
+    justifyContent: "center",
+    marginRight: 12,
+  },
+  menuItemContent: {
+    flex: 1,
+  },
+  menuItemTitle: {
+    color: "#fff",
+    fontSize: 16,
+    fontWeight: "500",
+  },
+  menuItemDescription: {
+    color: "#9CA3AF",
+    fontSize: 13,
+    marginTop: 2,
+  },
+  savedAccountsPreview: {
+    flexDirection: "row",
+    alignItems: "center",
+    paddingHorizontal: 16,
+    paddingVertical: 8,
+    marginBottom: 8,
+  },
+  savedAccountsLabel: {
+    color: "#6B7280",
+    fontSize: 12,
+    marginRight: 8,
+  },
+  savedAccountsAvatars: {
+    flexDirection: "row",
+    alignItems: "center",
+  },
+  savedAccountAvatar: {
+    marginLeft: -8,
+  },
+  savedAccountAvatarImage: {
+    width: 24,
+    height: 24,
+    borderRadius: 12,
+    borderWidth: 2,
+    borderColor: "#151718",
+  },
+  moreAccountsBadge: {
+    width: 24,
+    height: 24,
+    borderRadius: 12,
+    backgroundColor: "#374151",
+    alignItems: "center",
+    justifyContent: "center",
+    marginLeft: -8,
+    borderWidth: 2,
+    borderColor: "#151718",
+  },
+  moreAccountsText: {
+    color: "#9CA3AF",
+    fontSize: 10,
+    fontWeight: "600",
+  },
+  logoutItem: {
+    marginTop: 8,
+  },
+  logoutIcon: {
+    backgroundColor: "rgba(239, 68, 68, 0.1)",
+  },
+  logoutText: {
+    color: "#EF4444",
+  },
+  footer: {
+    padding: 24,
+    alignItems: "center",
+  },
+  footerText: {
+    color: "#6B7280",
+    fontSize: 14,
+  },
+  footerSubtext: {
+    color: "#4B5563",
+    fontSize: 12,
+    marginTop: 4,
+  },
+});
