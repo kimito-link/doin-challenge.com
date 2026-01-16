@@ -65,7 +65,7 @@ export default function ManageCommentsScreen() {
 
   if (!isAuthenticated || !canManage) {
     return (
-      <ScreenContainer edges={["top", "left", "right"]} containerClassName="bg-[#0D1117]">
+      <ScreenContainer edges={["top", "left", "right"]} containerClassName="bg-background">
         <View style={{ flex: 1, alignItems: "center", justifyContent: "center", padding: 24 }}>
           <MaterialIcons name="lock" size={64} color="#6B7280" />
           <Text style={{ color: "#9CA3AF", fontSize: 16, marginTop: 16, textAlign: "center" }}>
@@ -116,7 +116,7 @@ export default function ManageCommentsScreen() {
   };
 
   return (
-    <ScreenContainer edges={["top", "left", "right"]} containerClassName="bg-[#0D1117]">
+    <ScreenContainer edges={["top", "left", "right"]} containerClassName="bg-background">
       <ScrollView style={{ flex: 1, backgroundColor: "#0D1117" }}>
         {/* ヘッダー */}
         <AppHeader 

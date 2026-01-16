@@ -10,7 +10,7 @@ export default function ThemeSettingsScreen() {
   const router = useRouter();
 
   return (
-    <ScreenContainer containerClassName="bg-[#151718]">
+    <ScreenContainer containerClassName="bg-background">
       <ThemeSettingsPanel onClose={() => router.back()} />
     </ScreenContainer>
   );

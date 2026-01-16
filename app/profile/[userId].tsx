@@ -105,7 +105,7 @@ export default function ProfileScreen() {
 
   if (isLoading) {
     return (
-      <ScreenContainer containerClassName="bg-[#0D1117]">
+      <ScreenContainer containerClassName="bg-background">
         <View style={{ flex: 1, alignItems: "center", justifyContent: "center" }}>
           <Text style={{ color: "#9CA3AF" }}>読み込み中...</Text>
         </View>
@@ -115,7 +115,7 @@ export default function ProfileScreen() {
 
   if (!profile) {
     return (
-      <ScreenContainer containerClassName="bg-[#0D1117]">
+      <ScreenContainer containerClassName="bg-background">
         <View style={{ flex: 1, alignItems: "center", justifyContent: "center" }}>
           <Text style={{ color: "#9CA3AF" }}>プロフィールが見つかりません</Text>
           <TouchableOpacity
@@ -130,7 +130,7 @@ export default function ProfileScreen() {
   }
 
   return (
-    <ScreenContainer containerClassName="bg-[#0D1117]">
+    <ScreenContainer containerClassName="bg-background">
       <ScrollView
         refreshControl={
           <RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor="#DD6500" />

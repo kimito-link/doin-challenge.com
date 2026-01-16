@@ -33,10 +33,17 @@ function getApiBaseUrl(): string {
   return Constants.expoConfig?.extra?.apiUrl || "http://localhost:3000";
 }
 
+// 認証状態のキャッシュ（メモリ内）
+let cachedAuthState: { user: Auth.User | null; timestamp: number } | null = null;
+const AUTH_CACHE_TTL = 5 * 60 * 1000; // 5分
+
 export function useAuth(options?: UseAuthOptions) {
   const { autoFetch = true } = options ?? {};
-  const [user, setUser] = useState<Auth.User | null>(null);
-  const [loading, setLoading] = useState(true);
+  
+  // キャッシュが有効な場合は即座に表示（loading=false）
+  const hasCachedAuth = cachedAuthState !== null && (Date.now() - cachedAuthState.timestamp) < AUTH_CACHE_TTL;
+  const [user, setUser] = useState<Auth.User | null>(hasCachedAuth && cachedAuthState ? cachedAuthState.user : null);
+  const [loading, setLoading] = useState(!hasCachedAuth);
   const [error, setError] = useState<Error | null>(null);
 
   const fetchUser = useCallback(async () => {
@@ -54,6 +61,7 @@ export function useAuth(options?: UseAuthOptions) {
         if (cachedUser) {
           console.log("[useAuth] Web: Found cached user in localStorage:", cachedUser);
           setUser(cachedUser);
+          cachedAuthState = { user: cachedUser, timestamp: Date.now() };
           return;
         }
         
@@ -73,16 +81,19 @@ export function useAuth(options?: UseAuthOptions) {
               lastSignedIn: new Date(apiUser.lastSignedIn),
             };
             setUser(userInfo);
+            cachedAuthState = { user: userInfo, timestamp: Date.now() };
             // Cache user info in localStorage for faster subsequent loads
             await Auth.setUserInfo(userInfo);
             console.log("[useAuth] Web user set from API:", userInfo);
           } else {
             console.log("[useAuth] Web: No authenticated user from API");
             setUser(null);
+            cachedAuthState = { user: null, timestamp: Date.now() };
           }
         } catch (apiError) {
           console.log("[useAuth] Web: API call failed, no user authenticated");
           setUser(null);
+          cachedAuthState = { user: null, timestamp: Date.now() };
         }
         return;
       }
@@ -97,6 +108,7 @@ export function useAuth(options?: UseAuthOptions) {
       if (!sessionToken) {
         console.log("[useAuth] No session token, setting user to null");
         setUser(null);
+        cachedAuthState = { user: null, timestamp: Date.now() };
         return;
       }
 
@@ -106,15 +118,19 @@ export function useAuth(options?: UseAuthOptions) {
       if (cachedUser) {
         console.log("[useAuth] Using cached user info");
         setUser(cachedUser);
+        cachedAuthState = { user: cachedUser, timestamp: Date.now() };
       } else {
         console.log("[useAuth] No cached user, setting user to null");
         setUser(null);
+        cachedAuthState = { user: null, timestamp: Date.now() };
       }
     } catch (err) {
       const error = err instanceof Error ? err : new Error("Failed to fetch user");
       console.error("[useAuth] fetchUser error:", error);
       setError(error);
       setUser(null);
+      // エラー時もキャッシュを更新（未認証状態をキャッシュ）
+      cachedAuthState = { user: null, timestamp: Date.now() };
     } finally {
       setLoading(false);
       console.log("[useAuth] fetchUser completed, loading:", false);

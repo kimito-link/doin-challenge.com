@@ -157,7 +157,7 @@ export default function MyPageScreen() {
 
   if (loading) {
     return (
-      <ScreenContainer containerClassName="bg-[#0D1117]">
+      <ScreenContainer containerClassName="bg-background">
         <AppHeader 
           title="動員ちゃれんじ" 
           showCharacters={false}
@@ -170,7 +170,7 @@ export default function MyPageScreen() {
   }
 
   return (
-    <ScreenContainer containerClassName="bg-[#0D1117]">
+    <ScreenContainer containerClassName="bg-background">
       {/* ヘッダー */}
       <AppHeader 
         title="動員ちゃれんじ" 

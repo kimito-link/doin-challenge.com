@@ -48,7 +48,7 @@ export default function AchievementPage() {
 
   if (challengeLoading || achievementLoading || participationsLoading) {
     return (
-      <ScreenContainer containerClassName="bg-[#0D1117]">
+      <ScreenContainer containerClassName="bg-background">
         <View style={{ flex: 1, alignItems: "center", justifyContent: "center", backgroundColor: "#0D1117" }}>
           <Text style={{ color: "#9CA3AF" }}>読み込み中...</Text>
         </View>
@@ -58,7 +58,7 @@ export default function AchievementPage() {
 
   if (!challenge) {
     return (
-      <ScreenContainer containerClassName="bg-[#0D1117]">
+      <ScreenContainer containerClassName="bg-background">
         <View style={{ flex: 1, alignItems: "center", justifyContent: "center", backgroundColor: "#0D1117" }}>
           <Text style={{ color: "#9CA3AF" }}>チャレンジが見つかりません</Text>
         </View>
@@ -68,7 +68,7 @@ export default function AchievementPage() {
 
   if (!achievementPage) {
     return (
-      <ScreenContainer containerClassName="bg-[#0D1117]">
+      <ScreenContainer containerClassName="bg-background">
         <View style={{ flex: 1, alignItems: "center", justifyContent: "center", backgroundColor: "#0D1117" }}>
           <Text style={{ color: "#9CA3AF" }}>達成記念ページはまだ作成されていません</Text>
           <TouchableOpacity
@@ -87,7 +87,7 @@ export default function AchievementPage() {
   const displayedParticipants = showAllParticipants ? participations : participations?.slice(0, 20);
 
   return (
-    <ScreenContainer containerClassName="bg-[#0D1117]">
+    <ScreenContainer containerClassName="bg-background">
       <ScrollView style={{ flex: 1, backgroundColor: "#0D1117" }}>
         {/* ヘッダー */}
         <AppHeader 

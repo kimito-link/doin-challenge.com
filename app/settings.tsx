@@ -83,7 +83,7 @@ export default function SettingsScreen() {
   const otherAccounts = accounts.filter((a) => a.id !== currentAccountId);
 
   return (
-    <ScreenContainer containerClassName="bg-[#151718]">
+    <ScreenContainer containerClassName="bg-background">
       {/* ヘッダー */}
       <View style={styles.header}>
         <TouchableOpacity onPress={handleBack} style={styles.backButton}>

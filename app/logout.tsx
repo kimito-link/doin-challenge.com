@@ -84,7 +84,7 @@ export default function LogoutScreen() {
   };
 
   return (
-    <ScreenContainer containerClassName="bg-[#0D1117]">
+    <ScreenContainer containerClassName="bg-background">
       {/* グラデーション背景 */}
       <LinearGradient
         colors={["#1E40AF", "#0D1117"]}

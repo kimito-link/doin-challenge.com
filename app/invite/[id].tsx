@@ -82,7 +82,7 @@ export default function InviteScreen() {
 
   if (isLoading) {
     return (
-      <ScreenContainer containerClassName="bg-[#0D1117]">
+      <ScreenContainer containerClassName="bg-background">
         <View style={{ flex: 1, alignItems: "center", justifyContent: "center" }}>
           <Text style={{ color: "#9CA3AF" }}>読み込み中...</Text>
         </View>
@@ -92,7 +92,7 @@ export default function InviteScreen() {
 
   if (!challenge) {
     return (
-      <ScreenContainer containerClassName="bg-[#0D1117]">
+      <ScreenContainer containerClassName="bg-background">
         <View style={{ flex: 1, alignItems: "center", justifyContent: "center" }}>
           <Text style={{ color: "#9CA3AF" }}>チャレンジが見つかりません</Text>
           <TouchableOpacity
@@ -107,7 +107,7 @@ export default function InviteScreen() {
   }
 
   return (
-    <ScreenContainer containerClassName="bg-[#0D1117]">
+    <ScreenContainer containerClassName="bg-background">
       <ScrollView>
         {/* ヘッダー */}
         <AppHeader 

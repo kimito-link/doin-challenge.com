@@ -853,7 +853,7 @@ export default function ChallengeDetailScreen() {
 
   if (!challenge) {
     return (
-      <ScreenContainer containerClassName="bg-[#0D1117]">
+      <ScreenContainer containerClassName="bg-background">
         <View style={{ flex: 1, alignItems: "center", justifyContent: "center", backgroundColor: "#0D1117" }}>
           <Text style={{ color: "#9CA3AF" }}>チャレンジが見つかりません</Text>
         </View>
@@ -918,7 +918,7 @@ export default function ChallengeDetailScreen() {
   };
 
   return (
-    <ScreenContainer edges={["top", "left", "right"]} containerClassName="bg-[#0D1117]">
+    <ScreenContainer edges={["top", "left", "right"]} containerClassName="bg-background">
       <KeyboardAvoidingView
         behavior={Platform.OS === "ios" ? "padding" : "height"}
         style={{ flex: 1 }}

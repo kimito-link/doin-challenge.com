@@ -49,7 +49,7 @@ export default function RankingsScreen() {
   const data = tab === "contribution" ? contributionRanking : hostRanking;
 
   return (
-    <ScreenContainer containerClassName="bg-[#0D1117]">
+    <ScreenContainer containerClassName="bg-background">
       {/* ヘッダー */}
       <AppHeader 
         title="動員ちゃれんじ" 

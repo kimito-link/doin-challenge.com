@@ -153,7 +153,7 @@ export default function CreateChallengeScreen() {
   const selectedGoalType = goalTypes.find(g => g.id === goalType);
 
   return (
-    <ScreenContainer containerClassName="bg-[#0D1117]">
+    <ScreenContainer containerClassName="bg-background">
       <KeyboardAvoidingView
         behavior={Platform.OS === "ios" ? "padding" : "height"}
         style={{ flex: 1 }}
