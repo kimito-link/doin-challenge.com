@@ -101,13 +101,17 @@ export default function FollowingScreen() {
               <TouchableOpacity
                 onPress={() => handleUnfollow(item.followeeId)}
                 style={{
-                  paddingHorizontal: 16,
-                  paddingVertical: 8,
-                  borderRadius: 20,
+                  minHeight: 44,
+                  minWidth: 100,
+                  paddingHorizontal: 20,
+                  paddingVertical: 12,
+                  borderRadius: 22,
                   backgroundColor: "#2D3139",
+                  alignItems: "center",
+                  justifyContent: "center",
                 }}
               >
-                <Text style={{ color: "#fff", fontSize: 13 }}>フォロー解除</Text>
+                <Text style={{ color: "#fff", fontSize: 14, fontWeight: "500" }}>フォロー解除</Text>
               </TouchableOpacity>
             </View>
           )}

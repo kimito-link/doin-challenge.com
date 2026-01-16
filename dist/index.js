@@ -3868,7 +3868,7 @@ Design requirements:
         {
           hostName: "\u308A\u3093\u304F",
           hostUsername: "kimitolink",
-          hostProfileImage: "https://pbs.twimg.com/profile_images/1234567890/rinku_normal.jpg",
+          hostProfileImage: "https://ui-avatars.com/api/?name=%E3%82%8A%E3%82%93%E3%81%8F&background=EC4899&color=fff&size=128",
           hostFollowersCount: 5e3,
           title: "\u751F\u8A95\u796D\u30E9\u30A4\u30D6 \u52D5\u54E1100\u4EBA\u9054\u6210\u30C1\u30E3\u30EC\u30F3\u30B8",
           description: "\u304D\u307F\u3068\u30EA\u30F3\u30AF\u306E\u751F\u8A95\u796D\u30E9\u30A4\u30D6\u3092\u6210\u529F\u3055\u305B\u3088\u3046\uFF01\u307F\u3093\u306A\u3067100\u4EBA\u52D5\u54E1\u3092\u76EE\u6307\u3057\u307E\u3059\u3002",
@@ -3884,7 +3884,7 @@ Design requirements:
         {
           hostName: "\u30A2\u30A4\u30C9\u30EB\u30D5\u30A1\u30F3\u30C1",
           hostUsername: "idolfunch",
-          hostProfileImage: "https://pbs.twimg.com/profile_images/1234567891/idolfunch_normal.jpg",
+          hostProfileImage: "https://ui-avatars.com/api/?name=%E3%82%A2%E3%82%A4%E3%83%89%E3%83%AB&background=8B5CF6&color=fff&size=128",
           hostFollowersCount: 12e3,
           title: "\u30B0\u30EB\u30FC\u30D7\u30E9\u30A4\u30D6 \u30D5\u30A9\u30ED\u30EF\u30FC1\u4E07\u4EBA\u30C1\u30E3\u30EC\u30F3\u30B8",
           description: "\u30A2\u30A4\u30C9\u30EB\u30D5\u30A1\u30F3\u30C1\u306E\u30D5\u30A9\u30ED\u30EF\u30FC\u30921\u4E07\u4EBA\u306B\u3057\u3088\u3046\uFF01",
@@ -3900,7 +3900,7 @@ Design requirements:
         {
           hostName: "\u3053\u3093\u592A",
           hostUsername: "konta_idol",
-          hostProfileImage: "https://pbs.twimg.com/profile_images/1234567892/konta_normal.jpg",
+          hostProfileImage: "https://ui-avatars.com/api/?name=%E3%81%93%E3%82%93%E5%A4%AA&background=DD6500&color=fff&size=128",
           hostFollowersCount: 3e3,
           title: "\u30BD\u30ED\u30E9\u30A4\u30D6 50\u4EBA\u52D5\u54E1\u30C1\u30E3\u30EC\u30F3\u30B8",
           description: "\u521D\u3081\u3066\u306E\u30BD\u30ED\u30E9\u30A4\u30D6\uFF0150\u4EBA\u96C6\u307E\u3063\u305F\u3089\u6210\u529F\uFF01",
@@ -3916,7 +3916,7 @@ Design requirements:
         {
           hostName: "\u305F\u306C\u59C9",
           hostUsername: "tanunee_idol",
-          hostProfileImage: "https://pbs.twimg.com/profile_images/1234567893/tanunee_normal.jpg",
+          hostProfileImage: "https://ui-avatars.com/api/?name=%E3%81%9F%E3%81%AC%E5%A7%89&background=22C55E&color=fff&size=128",
           hostFollowersCount: 2500,
           title: "\u914D\u4FE1\u30E9\u30A4\u30D6 \u540C\u6642\u8996\u8074500\u4EBA\u30C1\u30E3\u30EC\u30F3\u30B8",
           description: "YouTube\u914D\u4FE1\u3067\u540C\u6642\u8996\u8074500\u4EBA\u3092\u76EE\u6307\u3057\u307E\u3059\uFF01",
@@ -3932,7 +3932,7 @@ Design requirements:
         {
           hostName: "\u30EA\u30F3\u30AF",
           hostUsername: "link_official",
-          hostProfileImage: "https://pbs.twimg.com/profile_images/1234567894/link_normal.jpg",
+          hostProfileImage: "https://ui-avatars.com/api/?name=%E3%83%AA%E3%83%B3%E3%82%AF&background=3B82F6&color=fff&size=128",
           hostFollowersCount: 8e3,
           title: "\u30EF\u30F3\u30DE\u30F3\u30E9\u30A4\u30D6 200\u4EBA\u52D5\u54E1\u30C1\u30E3\u30EC\u30F3\u30B8",
           description: "\u30EF\u30F3\u30DE\u30F3\u30E9\u30A4\u30D6\u3067200\u4EBA\u52D5\u54E1\u3092\u76EE\u6307\u3057\u307E\u3059\uFF01",
@@ -3948,7 +3948,7 @@ Design requirements:
         {
           hostName: "\u30A2\u30A4\u30C9\u30EB\u30E6\u30CB\u30C3\u30C8A",
           hostUsername: "idol_unit_a",
-          hostProfileImage: "https://pbs.twimg.com/profile_images/1234567895/idol_unit_a_normal.jpg",
+          hostProfileImage: "https://ui-avatars.com/api/?name=Unit+A&background=F59E0B&color=fff&size=128",
           hostFollowersCount: 15e3,
           title: "\u30B0\u30EB\u30FC\u30D7\u30E9\u30A4\u30D6 300\u4EBA\u52D5\u54E1\u30C1\u30E3\u30EC\u30F3\u30B8",
           description: "5\u4EBA\u7D44\u30A2\u30A4\u30C9\u30EB\u30E6\u30CB\u30C3\u30C8\u306E\u30E9\u30A4\u30D6\uFF01300\u4EBA\u52D5\u54E1\u3092\u76EE\u6307\u3057\u307E\u3059\u3002",

@@ -1251,7 +1251,7 @@ Design requirements:
           {
             hostName: "りんく",
             hostUsername: "kimitolink",
-            hostProfileImage: "https://pbs.twimg.com/profile_images/1234567890/rinku_normal.jpg",
+            hostProfileImage: "https://ui-avatars.com/api/?name=%E3%82%8A%E3%82%93%E3%81%8F&background=EC4899&color=fff&size=128",
             hostFollowersCount: 5000,
             title: "生誕祭ライブ 動員100人達成チャレンジ",
             description: "きみとリンクの生誕祭ライブを成功させよう！みんなで100人動員を目指します。",
@@ -1267,7 +1267,7 @@ Design requirements:
           {
             hostName: "アイドルファンチ",
             hostUsername: "idolfunch",
-            hostProfileImage: "https://pbs.twimg.com/profile_images/1234567891/idolfunch_normal.jpg",
+            hostProfileImage: "https://ui-avatars.com/api/?name=%E3%82%A2%E3%82%A4%E3%83%89%E3%83%AB&background=8B5CF6&color=fff&size=128",
             hostFollowersCount: 12000,
             title: "グループライブ フォロワー1万人チャレンジ",
             description: "アイドルファンチのフォロワーを1万人にしよう！",
@@ -1283,7 +1283,7 @@ Design requirements:
           {
             hostName: "こん太",
             hostUsername: "konta_idol",
-            hostProfileImage: "https://pbs.twimg.com/profile_images/1234567892/konta_normal.jpg",
+            hostProfileImage: "https://ui-avatars.com/api/?name=%E3%81%93%E3%82%93%E5%A4%AA&background=DD6500&color=fff&size=128",
             hostFollowersCount: 3000,
             title: "ソロライブ 50人動員チャレンジ",
             description: "初めてのソロライブ！50人集まったら成功！",
@@ -1299,7 +1299,7 @@ Design requirements:
           {
             hostName: "たぬ姉",
             hostUsername: "tanunee_idol",
-            hostProfileImage: "https://pbs.twimg.com/profile_images/1234567893/tanunee_normal.jpg",
+            hostProfileImage: "https://ui-avatars.com/api/?name=%E3%81%9F%E3%81%AC%E5%A7%89&background=22C55E&color=fff&size=128",
             hostFollowersCount: 2500,
             title: "配信ライブ 同時視聴500人チャレンジ",
             description: "YouTube配信で同時視聴500人を目指します！",
@@ -1315,7 +1315,7 @@ Design requirements:
           {
             hostName: "リンク",
             hostUsername: "link_official",
-            hostProfileImage: "https://pbs.twimg.com/profile_images/1234567894/link_normal.jpg",
+            hostProfileImage: "https://ui-avatars.com/api/?name=%E3%83%AA%E3%83%B3%E3%82%AF&background=3B82F6&color=fff&size=128",
             hostFollowersCount: 8000,
             title: "ワンマンライブ 200人動員チャレンジ",
             description: "ワンマンライブで200人動員を目指します！",
@@ -1331,7 +1331,7 @@ Design requirements:
           {
             hostName: "アイドルユニットA",
             hostUsername: "idol_unit_a",
-            hostProfileImage: "https://pbs.twimg.com/profile_images/1234567895/idol_unit_a_normal.jpg",
+            hostProfileImage: "https://ui-avatars.com/api/?name=Unit+A&background=F59E0B&color=fff&size=128",
             hostFollowersCount: 15000,
             title: "グループライブ 300人動員チャレンジ",
             description: "5人組アイドルユニットのライブ！300人動員を目指します。",

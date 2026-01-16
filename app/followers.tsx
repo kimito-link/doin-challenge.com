@@ -73,7 +73,9 @@ export default function FollowersScreen() {
               style={{
                 flexDirection: "row",
                 alignItems: "center",
-                padding: 16,
+                minHeight: 72,
+                paddingHorizontal: 16,
+                paddingVertical: 14,
                 borderBottomWidth: 1,
                 borderBottomColor: "#2D3139",
               }}

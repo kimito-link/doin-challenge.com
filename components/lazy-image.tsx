@@ -136,9 +136,27 @@ export function LazyAvatar({
   fallbackColor = "#3B82F6",
   ...props
 }: LazyImageProps & { size?: number; fallbackText?: string }) {
-  const [showFallback, setShowFallback] = useState(!props.source);
+  const [hasError, setHasError] = useState(false);
+  const [isLoaded, setIsLoaded] = useState(false);
+  const fadeAnim = useRef(new Animated.Value(0)).current;
 
-  if (showFallback || !props.source) {
+  // sourceがない、またはエラーの場合はフォールバック表示
+  const showFallback = !props.source || hasError;
+
+  const handleLoad = useCallback(() => {
+    setIsLoaded(true);
+    Animated.timing(fadeAnim, {
+      toValue: 1,
+      duration: 200,
+      useNativeDriver: true,
+    }).start();
+  }, [fadeAnim]);
+
+  const handleError = useCallback(() => {
+    setHasError(true);
+  }, []);
+
+  if (showFallback) {
     return (
       <View
         style={{
@@ -160,18 +178,32 @@ export function LazyAvatar({
   }
 
   return (
-    <LazyImage
-      {...props}
-      style={[
-        {
-          width: size,
-          height: size,
-          borderRadius: size / 2,
-        },
-        props.style,
-      ]}
-      fallbackColor={fallbackColor}
-    />
+    <View
+      style={{
+        width: size,
+        height: size,
+        borderRadius: size / 2,
+        overflow: "hidden",
+        backgroundColor: fallbackColor,
+      }}
+    >
+      <Animated.View style={{ opacity: fadeAnim, width: "100%", height: "100%" }}>
+        <Image
+          {...props}
+          style={[
+            {
+              width: size,
+              height: size,
+              borderRadius: size / 2,
+            },
+            props.style,
+          ]}
+          onLoad={handleLoad}
+          onError={handleError}
+          cachePolicy="memory-disk"
+        />
+      </Animated.View>
+    </View>
   );
 }
 

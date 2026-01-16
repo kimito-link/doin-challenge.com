@@ -577,19 +577,18 @@ function ChallengeCard({ challenge, onPress, numColumns = 2 }: { challenge: Chal
           </View>
         )}
         {/* ホストプロフィール画像（遅延読み込み） */}
-        {challenge.hostProfileImage && (
-          <View style={{ position: "absolute", bottom: -16, left: 12 }}>
-            <LazyAvatar
-              source={{ uri: challenge.hostProfileImage }}
-              size={32}
-              fallbackColor="#EC4899"
-              lazy={true}
-            />
-          </View>
-        )}
+        <View style={{ position: "absolute", bottom: -16, left: 12 }}>
+          <LazyAvatar
+            source={challenge.hostProfileImage ? { uri: challenge.hostProfileImage } : undefined}
+            size={32}
+            fallbackColor="#EC4899"
+            fallbackText={challenge.hostName?.charAt(0) || challenge.hostUsername?.charAt(0) || "?"}
+            lazy={true}
+          />
+        </View>
       </LinearGradient>
 
-      <View style={{ padding: 16, paddingTop: challenge.hostProfileImage ? 20 : 16 }}>
+      <View style={{ padding: 16, paddingTop: 20 }}>
         {/* タイトル */}
         <Text
           style={{ color: "#fff", fontSize: 14, fontWeight: "bold", marginBottom: 4 }}

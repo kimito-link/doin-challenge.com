@@ -198,25 +198,33 @@ export default function ProfileScreen() {
                 disabled={followMutation.isPending || unfollowMutation.isPending}
                 style={{
                   marginTop: 16,
-                  paddingHorizontal: 24,
-                  paddingVertical: 10,
-                  borderRadius: 20,
+                  minHeight: 48,
+                  minWidth: 140,
+                  paddingHorizontal: 28,
+                  paddingVertical: 14,
+                  borderRadius: 24,
                   backgroundColor: isFollowing ? "rgba(255,255,255,0.2)" : "#fff",
                   flexDirection: "row",
                   alignItems: "center",
+                  justifyContent: "center",
                   opacity: followMutation.isPending || unfollowMutation.isPending ? 0.6 : 1,
+                  shadowColor: "#000",
+                  shadowOffset: { width: 0, height: 2 },
+                  shadowOpacity: 0.2,
+                  shadowRadius: 4,
+                  elevation: 3,
                 }}
               >
                 <MaterialIcons 
                   name={isFollowing ? "check" : "person-add"} 
-                  size={18} 
+                  size={20} 
                   color={isFollowing ? "#fff" : "#DD6500"} 
                 />
                 <Text style={{ 
                   color: isFollowing ? "#fff" : "#DD6500", 
-                  fontSize: 14, 
+                  fontSize: 15, 
                   fontWeight: "bold",
-                  marginLeft: 6,
+                  marginLeft: 8,
                 }}>
                   {isFollowing ? "フォロー中" : "フォローする"}
                 </Text>
@@ -229,30 +237,45 @@ export default function ProfileScreen() {
         <View style={{ 
           flexDirection: "row", 
           backgroundColor: "#161B22", 
-          paddingVertical: 12,
+          paddingVertical: 8,
           paddingHorizontal: 16,
           borderBottomWidth: 1,
           borderBottomColor: "#2D3139",
+          gap: 12,
         }}>
           <TouchableOpacity 
             onPress={() => router.push({ pathname: "/following", params: { userId: userId } })}
-            style={{ flexDirection: "row", alignItems: "center", marginRight: 24 }}
+            style={{ 
+              flexDirection: "row", 
+              alignItems: "center", 
+              minHeight: 44,
+              paddingVertical: 10,
+              paddingHorizontal: 12,
+              borderRadius: 8,
+            }}
           >
-            <Text style={{ color: "#fff", fontSize: 16, fontWeight: "bold" }}>
+            <Text style={{ color: "#fff", fontSize: 18, fontWeight: "bold" }}>
               {followingCount || 0}
             </Text>
-            <Text style={{ color: "#9CA3AF", fontSize: 14, marginLeft: 4 }}>
+            <Text style={{ color: "#9CA3AF", fontSize: 14, marginLeft: 6 }}>
               フォロー中
             </Text>
           </TouchableOpacity>
           <TouchableOpacity 
             onPress={() => router.push({ pathname: "/followers", params: { userId: userId } })}
-            style={{ flexDirection: "row", alignItems: "center" }}
+            style={{ 
+              flexDirection: "row", 
+              alignItems: "center",
+              minHeight: 44,
+              paddingVertical: 10,
+              paddingHorizontal: 12,
+              borderRadius: 8,
+            }}
           >
-            <Text style={{ color: "#fff", fontSize: 16, fontWeight: "bold" }}>
+            <Text style={{ color: "#fff", fontSize: 18, fontWeight: "bold" }}>
               {followerCount || 0}
             </Text>
-            <Text style={{ color: "#9CA3AF", fontSize: 14, marginLeft: 4 }}>
+            <Text style={{ color: "#9CA3AF", fontSize: 14, marginLeft: 6 }}>
               フォロワー
             </Text>
           </TouchableOpacity>
