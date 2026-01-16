@@ -891,7 +891,11 @@ export default function ChallengeDetailScreen() {
 
   const handleTwitterShare = async () => {
     const text = `🎯 ${challenge.title}\n\n📊 現在 ${currentValue}/${goalValue}${unit}（${Math.round(progress)}%）\nあと${remaining}${unit}で目標達成！\n\n一緒に応援しよう！`;
-    await shareToTwitter(text, undefined, ["動員ちゃれんじ", "KimitoLink"]);
+    // URLを含めることでOGPが表示される
+    const shareUrl = typeof window !== "undefined" 
+      ? `${window.location.origin}/event/${challengeId}`
+      : `https://doin-challenge.com/event/${challengeId}`;
+    await shareToTwitter(text, shareUrl, ["動員ちゃれんじ", "KimitoLink"]);
   };
 
   const handleShareWithOgp = async () => {

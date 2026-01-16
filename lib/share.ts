@@ -1,8 +1,25 @@
-import { Share, Platform, Linking } from "react-native";
+import { Platform, Share, Linking } from "react-native";
 import * as Haptics from "expo-haptics";
 
 const APP_HASHTAG = "#動員ちゃれんじ";
-const APP_URL = "https://douin-challenge.manus.space"; // TODO: 実際のURLに変更
+
+// 本番URLを取得（環境変数から、またはデフォルト値）
+function getAppUrl(): string {
+  // Web環境では現在のURLから取得
+  if (Platform.OS === "web" && typeof window !== "undefined" && window.location) {
+    const { protocol, hostname, port } = window.location;
+    // 開発環境の場合はそのまま使用
+    if (hostname.includes("manus.computer") || hostname.includes("localhost")) {
+      return `${protocol}//${hostname}${port ? ":" + port : ""}`;
+    }
+    // 本番環境
+    if (hostname.includes("doin-challenge.com")) {
+      return "https://doin-challenge.com";
+    }
+  }
+  // デフォルトは本番URL
+  return "https://doin-challenge.com";
+}
 
 export interface ShareContent {
   title: string;
@@ -97,7 +114,7 @@ export async function shareParticipation(
   challengeId: number
 ): Promise<boolean> {
   const text = `🎉 「${challengeTitle}」に参加表明しました！\n\n主催: ${hostName}\n\nみんなも一緒に応援しよう！\n${APP_HASHTAG}`;
-  const url = `${APP_URL}/event/${challengeId}`;
+  const url = `${getAppUrl()}/event/${challengeId}`;
 
   return shareToTwitter(text, url, ["動員ちゃれんじ", hostName.replace(/\s/g, "")]);
 }
@@ -113,7 +130,7 @@ export async function shareChallengeGoalReached(
   challengeId: number
 ): Promise<boolean> {
   const text = `🎊 目標達成！\n\n「${challengeTitle}」が目標の${goalValue}${unit}を達成しました！\n\n主催: ${hostName}\nみんなの応援のおかげです！\n${APP_HASHTAG}`;
-  const url = `${APP_URL}/event/${challengeId}`;
+  const url = `${getAppUrl()}/event/${challengeId}`;
 
   return shareToTwitter(text, url, ["動員ちゃれんじ", "目標達成"]);
 }
@@ -129,7 +146,7 @@ export async function shareMilestoneReached(
   challengeId: number
 ): Promise<boolean> {
   const text = `🏆 ${milestone}%達成！\n\n「${challengeTitle}」が${currentValue}${unit}に到達しました！\n\n目標達成まであと少し！\n${APP_HASHTAG}`;
-  const url = `${APP_URL}/event/${challengeId}`;
+  const url = `${getAppUrl()}/event/${challengeId}`;
 
   return shareToTwitter(text, url, ["動員ちゃれんじ"]);
 }
@@ -144,7 +161,7 @@ export async function shareChallengeCreated(
   challengeId: number
 ): Promise<boolean> {
   const text = `📢 新しいチャレンジを作成しました！\n\n「${challengeTitle}」\n目標: ${goalValue}${unit}\n\nみんなで一緒に目標達成を目指そう！\n${APP_HASHTAG}`;
-  const url = `${APP_URL}/event/${challengeId}`;
+  const url = `${getAppUrl()}/event/${challengeId}`;
 
   return shareToTwitter(text, url, ["動員ちゃれんじ", "新規チャレンジ"]);
 }
@@ -155,7 +172,7 @@ export async function shareChallengeCreated(
 export async function shareApp(): Promise<boolean> {
   const text = `🎵 推しの応援をもっと楽しく！\n\n「動員ちゃれんじ」でライブやイベントの動員目標をみんなで達成しよう！\n\n${APP_HASHTAG}`;
 
-  return shareToTwitter(text, APP_URL, ["動員ちゃれんじ"]);
+  return shareToTwitter(text, getAppUrl(), ["動員ちゃれんじ"]);
 }
 
 /**
@@ -165,7 +182,7 @@ export async function shareCustomMessage(
   message: string,
   challengeId?: number
 ): Promise<boolean> {
-  const url = challengeId ? `${APP_URL}/event/${challengeId}` : APP_URL;
+  const url = challengeId ? `${getAppUrl()}/event/${challengeId}` : getAppUrl();
   const text = `${message}\n\n${APP_HASHTAG}`;
 
   return shareToTwitter(text, url, ["動員ちゃれんじ"]);
