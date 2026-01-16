@@ -8,52 +8,112 @@ const STORAGE_KEY_SEEN = "tutorial_seen";
 export type UserType = "fan" | "host";
 
 /**
- * ファン向けチュートリアルステップ
- * 任天堂原則：
- * - 説明しない
- * - 失敗させない
- * - 1アクション＝1学習
+ * ファン向けチュートリアルステップ（メリット訴求型）
+ * 
+ * メリット：
+ * - 参加が見える → 運営に認知してもらえる
+ * - 運営に届く → 推しに存在を知ってもらえる
+ * - 常連は特別に → 継続参加で特別扱いされる可能性
  */
 export const FAN_TUTORIAL_STEPS: TutorialStep[] = [
   {
-    message: "推しを見つけよう",
+    message: "推しに届けたい？",
+    subMessage: "あなたの応援、ちゃんと届けよう",
+    icon: "cheer",
     messagePosition: "center",
     tapToContinue: true,
     successAnimation: "none",
   },
   {
-    message: "参加しよう",
-    messagePosition: "bottom",
+    message: "参加が見える",
+    subMessage: "運営があなたの存在を認識できる",
+    icon: "list",
+    messagePosition: "center",
     tapToContinue: true,
     successAnimation: "pulse",
   },
   {
-    message: "自分のも作れるよ",
-    messagePosition: "top",
+    message: "運営に届く",
+    subMessage: "参加表明が主催者に通知される",
+    icon: "notification",
+    messagePosition: "center",
+    tapToContinue: true,
+    successAnimation: "pulse",
+  },
+  {
+    message: "常連は特別に",
+    subMessage: "たくさん参加すると覚えてもらえる",
+    icon: "crown",
+    messagePosition: "center",
+    tapToContinue: true,
+    successAnimation: "pulse",
+  },
+  {
+    message: "推しを探そう！",
+    subMessage: "さっそくチャレンジを見てみよう",
+    icon: "smile",
+    messagePosition: "center",
     tapToContinue: true,
     successAnimation: "confetti",
   },
 ];
 
 /**
- * 主催者向けチュートリアルステップ
+ * 主催者向けチュートリアルステップ（メリット訴求型）
+ * 
+ * メリット：
+ * - 参加者が見える → 会場規模の予測ができる
+ * - 影響力もわかる → インフルエンサーを把握できる
+ * - 常連を大切に → ファンサービスの最適化
+ * - 男女比も把握 → グッズや演出の最適化
+ * - 地域もわかる → 遠隔地からの参加者を把握
  */
 export const HOST_TUTORIAL_STEPS: TutorialStep[] = [
   {
-    message: "チャレンジを作ろう",
+    message: "会場選び、迷う？",
+    subMessage: "参加者数を事前に予測できます",
+    icon: "thinking",
     messagePosition: "center",
     tapToContinue: true,
     successAnimation: "none",
   },
   {
-    message: "目標を決めよう",
-    messagePosition: "bottom",
+    message: "参加者が見える",
+    subMessage: "どの地域から来るかマップで確認",
+    icon: "map",
+    messagePosition: "center",
     tapToContinue: true,
     successAnimation: "pulse",
   },
   {
-    message: "公開しよう",
-    messagePosition: "bottom",
+    message: "影響力もわかる",
+    subMessage: "フォロワー数で集客力を予測",
+    icon: "star",
+    messagePosition: "center",
+    tapToContinue: true,
+    successAnimation: "pulse",
+  },
+  {
+    message: "常連を大切に",
+    subMessage: "何度も来てくれるファンを特別扱い",
+    icon: "heart",
+    messagePosition: "center",
+    tapToContinue: true,
+    successAnimation: "pulse",
+  },
+  {
+    message: "男女比も把握",
+    subMessage: "グッズや演出の参考に",
+    icon: "chart",
+    messagePosition: "center",
+    tapToContinue: true,
+    successAnimation: "pulse",
+  },
+  {
+    message: "作ってみよう！",
+    subMessage: "さっそくチャレンジを作成しよう",
+    icon: "smile",
+    messagePosition: "center",
     tapToContinue: true,
     successAnimation: "confetti",
   },

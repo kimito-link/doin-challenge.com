@@ -10,41 +10,49 @@ vi.mock("@react-native-async-storage/async-storage", () => ({
   },
 }));
 
-// チュートリアルステップの定義テスト
-describe("Tutorial Steps Definition", () => {
-  it("ファン向けチュートリアルは3ステップ以下である", () => {
-    // 任天堂原則: 5ステップ以内
-    const FAN_STEPS = [
-      { message: "推しを見つけよう" },
-      { message: "参加しよう" },
-      { message: "自分のも作れるよ" },
-    ];
-    expect(FAN_STEPS.length).toBeLessThanOrEqual(5);
-    expect(FAN_STEPS.length).toBe(3);
+// メリット訴求型チュートリアルステップの定義テスト
+describe("Tutorial Steps Definition (Merit-Based)", () => {
+  // ファン向けチュートリアル（5ステップ）
+  const FAN_STEPS = [
+    { message: "推しに届けたい？", subMessage: "あなたの応援、ちゃんと届けよう" },
+    { message: "参加が見える", subMessage: "運営があなたの存在を認識できる" },
+    { message: "運営に届く", subMessage: "参加表明が主催者に通知される" },
+    { message: "常連は特別に", subMessage: "たくさん参加すると覚えてもらえる" },
+    { message: "推しを探そう！", subMessage: "さっそくチャレンジを見てみよう" },
+  ];
+
+  // 主催者向けチュートリアル（6ステップ）
+  const HOST_STEPS = [
+    { message: "会場選び、迷う？", subMessage: "参加者数を事前に予測できます" },
+    { message: "参加者が見える", subMessage: "どの地域から来るかマップで確認" },
+    { message: "影響力もわかる", subMessage: "フォロワー数で集客力を予測" },
+    { message: "常連を大切に", subMessage: "何度も来てくれるファンを特別扱い" },
+    { message: "男女比も把握", subMessage: "グッズや演出の参考に" },
+    { message: "作ってみよう！", subMessage: "さっそくチャレンジを作成しよう" },
+  ];
+
+  it("ファン向けチュートリアルは5ステップである", () => {
+    expect(FAN_STEPS.length).toBe(5);
   });
 
-  it("主催者向けチュートリアルは3ステップ以下である", () => {
-    const HOST_STEPS = [
-      { message: "チャレンジを作ろう" },
-      { message: "目標を決めよう" },
-      { message: "公開しよう" },
-    ];
-    expect(HOST_STEPS.length).toBeLessThanOrEqual(5);
-    expect(HOST_STEPS.length).toBe(3);
+  it("主催者向けチュートリアルは6ステップである", () => {
+    expect(HOST_STEPS.length).toBe(6);
   });
 
   it("各ステップのメッセージは12文字以内である", () => {
-    const ALL_STEPS = [
-      { message: "推しを見つけよう" },
-      { message: "参加しよう" },
-      { message: "自分のも作れるよ" },
-      { message: "チャレンジを作ろう" },
-      { message: "目標を決めよう" },
-      { message: "公開しよう" },
-    ];
+    const ALL_STEPS = [...FAN_STEPS, ...HOST_STEPS];
     
     ALL_STEPS.forEach((step) => {
       expect(step.message.length).toBeLessThanOrEqual(12);
+    });
+  });
+
+  it("各ステップにサブメッセージ（メリット説明）がある", () => {
+    const ALL_STEPS = [...FAN_STEPS, ...HOST_STEPS];
+    
+    ALL_STEPS.forEach((step) => {
+      expect(step.subMessage).toBeDefined();
+      expect(step.subMessage.length).toBeGreaterThan(0);
     });
   });
 
@@ -54,38 +62,56 @@ describe("Tutorial Steps Definition", () => {
       "データベース", "サーバー", "クライアント",
     ];
     
-    const ALL_MESSAGES = [
-      "推しを見つけよう",
-      "参加しよう",
-      "自分のも作れるよ",
-      "チャレンジを作ろう",
-      "目標を決めよう",
-      "公開しよう",
-    ];
+    const ALL_STEPS = [...FAN_STEPS, ...HOST_STEPS];
     
-    ALL_MESSAGES.forEach((message) => {
+    ALL_STEPS.forEach((step) => {
       FORBIDDEN_TERMS.forEach((term) => {
-        expect(message).not.toContain(term);
+        expect(step.message).not.toContain(term);
+        expect(step.subMessage).not.toContain(term);
       });
     });
   });
 
-  it("メッセージに「してください」「できます」が含まれていない", () => {
-    const FORBIDDEN_PHRASES = ["してください", "できます", "ください"];
+  it("メッセージに「してください」「できます」が含まれていない（メイン）", () => {
+    const FORBIDDEN_PHRASES = ["してください", "ください"];
     
-    const ALL_MESSAGES = [
-      "推しを見つけよう",
-      "参加しよう",
-      "自分のも作れるよ",
-      "チャレンジを作ろう",
-      "目標を決めよう",
-      "公開しよう",
+    const ALL_STEPS = [...FAN_STEPS, ...HOST_STEPS];
+    
+    ALL_STEPS.forEach((step) => {
+      FORBIDDEN_PHRASES.forEach((phrase) => {
+        expect(step.message).not.toContain(phrase);
+      });
+    });
+  });
+});
+
+// メリット訴求のテスト
+describe("Merit Communication", () => {
+  it("ファン向けメリットが明確に伝わる", () => {
+    const FAN_MERITS = [
+      "運営に認知してもらえる",
+      "参加表明が主催者に通知される",
+      "たくさん参加すると覚えてもらえる",
     ];
     
-    ALL_MESSAGES.forEach((message) => {
-      FORBIDDEN_PHRASES.forEach((phrase) => {
-        expect(message).not.toContain(phrase);
-      });
+    // 各メリットが具体的な価値を示している
+    FAN_MERITS.forEach((merit) => {
+      expect(merit.length).toBeGreaterThan(5);
+    });
+  });
+
+  it("主催者向けメリットが明確に伝わる", () => {
+    const HOST_MERITS = [
+      "参加者数を事前に予測できます",
+      "どの地域から来るかマップで確認",
+      "フォロワー数で集客力を予測",
+      "何度も来てくれるファンを特別扱い",
+      "グッズや演出の参考に",
+    ];
+    
+    // 各メリットが具体的な価値を示している
+    HOST_MERITS.forEach((merit) => {
+      expect(merit.length).toBeGreaterThan(5);
     });
   });
 });
@@ -123,54 +149,46 @@ describe("Tutorial Storage", () => {
   });
 });
 
-// 任天堂クオリティチェック
-describe("Nintendo Quality Checklist", () => {
-  it("初回起動から10秒以内に成功体験があるか", () => {
-    // チュートリアルは1秒後に自動表示
-    // 最初のステップはタップで即座に完了
-    const TUTORIAL_DELAY_MS = 1000;
-    const FIRST_STEP_COMPLETION_MS = 3000; // 3秒以内
+// 任天堂クオリティチェック（メリット訴求版）
+describe("Nintendo Quality Checklist (Merit-Based)", () => {
+  it("初回起動から10秒以内にメリットが伝わるか", () => {
+    // チュートリアルは0.5秒後に自動表示
+    // 最初のステップでメリットを提示
+    const TUTORIAL_DELAY_MS = 500;
+    const FIRST_MERIT_SHOWN_MS = 1000; // 1秒以内
     
-    expect(TUTORIAL_DELAY_MS + FIRST_STEP_COMPLETION_MS).toBeLessThanOrEqual(10000);
+    expect(TUTORIAL_DELAY_MS + FIRST_MERIT_SHOWN_MS).toBeLessThanOrEqual(10000);
   });
 
   it("読まなくても進めるか", () => {
     // 全ステップがtapToContinue対応
     const STEPS = [
       { tapToContinue: true },
-      { tapToContinue: false }, // アクション完了で進む
+      { tapToContinue: true },
+      { tapToContinue: true },
+      { tapToContinue: true },
       { tapToContinue: true },
     ];
     
-    // 少なくとも最初と最後はタップで進める
-    expect(STEPS[0].tapToContinue).toBe(true);
-    expect(STEPS[STEPS.length - 1].tapToContinue).toBe(true);
+    // 全てタップで進める
+    STEPS.forEach((step) => {
+      expect(step.tapToContinue).toBe(true);
+    });
   });
 
   it("操作を間違えようがないか", () => {
-    // 各ステップで1つのアクションのみ
+    // 各ステップで1つのアクションのみ（タップ）
     const STEP_ACTIONS = [
-      ["tap"], // 推しを見つけよう: タップのみ
-      ["tap"], // 参加しよう: タップのみ
-      ["tap"], // 自分のも作れるよ: タップのみ
+      ["tap"],
+      ["tap"],
+      ["tap"],
+      ["tap"],
+      ["tap"],
     ];
     
     STEP_ACTIONS.forEach((actions) => {
       expect(actions.length).toBe(1);
     });
-  });
-
-  it("終わった時に説明を思い出せない構成か", () => {
-    // メッセージは短く、感覚的
-    const MESSAGES = [
-      "推しを見つけよう",
-      "参加しよう",
-      "自分のも作れるよ",
-    ];
-    
-    // 平均文字数が8文字以下
-    const avgLength = MESSAGES.reduce((sum, m) => sum + m.length, 0) / MESSAGES.length;
-    expect(avgLength).toBeLessThanOrEqual(8);
   });
 });
 

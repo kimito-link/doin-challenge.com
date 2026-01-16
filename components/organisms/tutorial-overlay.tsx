@@ -1,10 +1,9 @@
 import { View, Text, TouchableOpacity, Dimensions, StyleSheet, Platform } from "react-native";
-import { useEffect, useRef } from "react";
+import { useEffect } from "react";
 import Animated, {
   useSharedValue,
   useAnimatedStyle,
   withTiming,
-  withSpring,
   withRepeat,
   withSequence,
   Easing,
@@ -13,12 +12,31 @@ import Animated, {
 } from "react-native-reanimated";
 import { useColors } from "@/hooks/use-colors";
 import * as Haptics from "expo-haptics";
+import { Image } from "expo-image";
 
 const { width: SCREEN_WIDTH, height: SCREEN_HEIGHT } = Dimensions.get("window");
+
+// アイコン画像のマッピング
+const TUTORIAL_ICONS: Record<string, any> = {
+  cheer: require("@/assets/images/characters/idolKimitoLink.png"),
+  list: require("@/assets/images/characters/idolKimitoLink.png"),
+  notification: require("@/assets/images/characters/idolKimitoLink.png"),
+  crown: require("@/assets/images/characters/idolKimitoLink.png"),
+  smile: require("@/assets/images/characters/KimitoLink.png"),
+  thinking: require("@/assets/images/characters/KimitoLink.png"),
+  map: require("@/assets/images/characters/idolKimitoLink.png"),
+  star: require("@/assets/images/characters/idolKimitoLink.png"),
+  heart: require("@/assets/images/characters/idolKimitoLink.png"),
+  chart: require("@/assets/images/characters/idolKimitoLink.png"),
+};
 
 export type TutorialStep = {
   /** 画面に表示する一言（12文字以内推奨） */
   message: string;
+  /** サブメッセージ（メリットの説明） */
+  subMessage?: string;
+  /** アイコンタイプ */
+  icon?: keyof typeof TUTORIAL_ICONS;
   /** ハイライトする要素の位置（指定しない場合は中央表示） */
   highlight?: {
     x: number;
@@ -52,13 +70,12 @@ type TutorialOverlayProps = {
 };
 
 /**
- * 任天堂クオリティのチュートリアルオーバーレイ
+ * メリット訴求型チュートリアルオーバーレイ
  * 
  * 原則：
- * - 説明文で理解させようとしない
- * - 最初の行動は3秒以内に成功させる
- * - 1ステップにつき1アクションのみ
- * - 専門用語・抽象表現は禁止
+ * - 操作方法ではなく「なぜ使うべきか」を伝える
+ * - キャラクターと一緒にメリットを説明
+ * - 視覚的にわかりやすく
  */
 export function TutorialOverlay({
   step,
@@ -73,14 +90,14 @@ export function TutorialOverlay({
   // アニメーション値
   const pulseScale = useSharedValue(1);
   const messageOpacity = useSharedValue(0);
-  const arrowBounce = useSharedValue(0);
+  const characterBounce = useSharedValue(0);
 
   useEffect(() => {
     if (visible) {
       // メッセージのフェードイン
       messageOpacity.value = withTiming(1, { duration: 300 });
       
-      // パルスアニメーション（ハイライト部分）
+      // パルスアニメーション
       pulseScale.value = withRepeat(
         withSequence(
           withTiming(1.05, { duration: 800, easing: Easing.inOut(Easing.ease) }),
@@ -90,11 +107,11 @@ export function TutorialOverlay({
         true
       );
 
-      // 矢印のバウンスアニメーション
-      arrowBounce.value = withRepeat(
+      // キャラクターのバウンスアニメーション
+      characterBounce.value = withRepeat(
         withSequence(
-          withTiming(-10, { duration: 400, easing: Easing.out(Easing.ease) }),
-          withTiming(0, { duration: 400, easing: Easing.in(Easing.ease) })
+          withTiming(-8, { duration: 600, easing: Easing.out(Easing.ease) }),
+          withTiming(0, { duration: 600, easing: Easing.in(Easing.ease) })
         ),
         -1,
         true
@@ -102,16 +119,12 @@ export function TutorialOverlay({
     }
   }, [visible, step]);
 
-  const pulseStyle = useAnimatedStyle(() => ({
-    transform: [{ scale: pulseScale.value }],
-  }));
-
   const messageStyle = useAnimatedStyle(() => ({
     opacity: messageOpacity.value,
   }));
 
-  const arrowStyle = useAnimatedStyle(() => ({
-    transform: [{ translateY: arrowBounce.value }],
+  const characterStyle = useAnimatedStyle(() => ({
+    transform: [{ translateY: characterBounce.value }],
   }));
 
   const handleTap = () => {
@@ -130,25 +143,7 @@ export function TutorialOverlay({
 
   if (!visible) return null;
 
-  // ハイライト位置の計算
-  const highlight = step.highlight;
-  const hasHighlight = !!highlight;
-  
-  // メッセージ位置の計算
-  const getMessagePosition = () => {
-    if (!hasHighlight) {
-      return { top: SCREEN_HEIGHT / 2 - 50 };
-    }
-    
-    const position = step.messagePosition || "bottom";
-    if (position === "top") {
-      return { top: Math.max(highlight!.y - 120, 60) };
-    } else if (position === "center") {
-      return { top: SCREEN_HEIGHT / 2 - 50 };
-    } else {
-      return { top: Math.min(highlight!.y + highlight!.height + 40, SCREEN_HEIGHT - 150) };
-    }
-  };
+  const iconSource = step.icon ? TUTORIAL_ICONS[step.icon] : TUTORIAL_ICONS.smile;
 
   return (
     <Animated.View
@@ -156,57 +151,31 @@ export function TutorialOverlay({
       exiting={FadeOut.duration(200)}
       style={[styles.container]}
     >
-      {/* 暗いオーバーレイ（ハイライト部分は透明） */}
       <TouchableOpacity
         activeOpacity={1}
         onPress={handleTap}
         style={styles.overlay}
       >
-        {/* SVGでハイライト部分を切り抜く代わりに、4つの暗い領域を配置 */}
-        {hasHighlight ? (
-          <>
-            {/* 上部 */}
-            <View style={[styles.darkArea, { top: 0, left: 0, right: 0, height: highlight!.y - 10 }]} />
-            {/* 下部 */}
-            <View style={[styles.darkArea, { top: highlight!.y + highlight!.height + 10, left: 0, right: 0, bottom: 0 }]} />
-            {/* 左部 */}
-            <View style={[styles.darkArea, { top: highlight!.y - 10, left: 0, width: highlight!.x - 10, height: highlight!.height + 20 }]} />
-            {/* 右部 */}
-            <View style={[styles.darkArea, { top: highlight!.y - 10, left: highlight!.x + highlight!.width + 10, right: 0, height: highlight!.height + 20 }]} />
-            
-            {/* ハイライト枠 */}
-            <Animated.View
-              style={[
-                styles.highlightBorder,
-                pulseStyle,
-                {
-                  top: highlight!.y - 10,
-                  left: highlight!.x - 10,
-                  width: highlight!.width + 20,
-                  height: highlight!.height + 20,
-                  borderRadius: highlight!.circular ? (highlight!.width + 20) / 2 : 16,
-                },
-              ]}
-            />
-          </>
-        ) : (
-          <View style={[styles.darkArea, { top: 0, left: 0, right: 0, bottom: 0 }]} />
-        )}
+        {/* 暗いオーバーレイ */}
+        <View style={styles.darkOverlay} />
 
-        {/* メッセージ */}
-        <Animated.View style={[styles.messageContainer, messageStyle, getMessagePosition()]}>
-          {/* 矢印（ハイライトがある場合） */}
-          {hasHighlight && step.messagePosition !== "center" && (
-            <Animated.View style={[styles.arrow, arrowStyle, step.messagePosition === "top" ? styles.arrowDown : styles.arrowUp]}>
-              <Text style={styles.arrowText}>
-                {step.messagePosition === "top" ? "▼" : "▲"}
-              </Text>
-            </Animated.View>
-          )}
-          
-          {/* メッセージテキスト */}
+        {/* メインコンテンツ */}
+        <Animated.View style={[styles.contentContainer, messageStyle]}>
+          {/* キャラクター */}
+          <Animated.View style={[styles.characterContainer, characterStyle]}>
+            <Image
+              source={iconSource}
+              style={styles.characterImage}
+              contentFit="contain"
+            />
+          </Animated.View>
+
+          {/* メッセージバブル */}
           <View style={styles.messageBubble}>
             <Text style={styles.messageText}>{step.message}</Text>
+            {step.subMessage && (
+              <Text style={styles.subMessageText}>{step.subMessage}</Text>
+            )}
           </View>
 
           {/* ステップインジケーター */}
@@ -240,52 +209,54 @@ const styles = StyleSheet.create({
   },
   overlay: {
     flex: 1,
-  },
-  darkArea: {
-    position: "absolute",
-    backgroundColor: "rgba(0, 0, 0, 0.85)",
-  },
-  highlightBorder: {
-    position: "absolute",
-    borderWidth: 3,
-    borderColor: "#DD6500",
-    backgroundColor: "transparent",
-  },
-  messageContainer: {
-    position: "absolute",
-    left: 20,
-    right: 20,
+    justifyContent: "center",
     alignItems: "center",
+  },
+  darkOverlay: {
+    ...StyleSheet.absoluteFillObject,
+    backgroundColor: "rgba(0, 0, 0, 0.9)",
+  },
+  contentContainer: {
+    alignItems: "center",
+    paddingHorizontal: 24,
+    maxWidth: 400,
+  },
+  characterContainer: {
+    marginBottom: 24,
+  },
+  characterImage: {
+    width: 150,
+    height: 150,
   },
   messageBubble: {
     backgroundColor: "#DD6500",
-    paddingHorizontal: 24,
-    paddingVertical: 16,
-    borderRadius: 20,
-    maxWidth: 300,
+    paddingHorizontal: 28,
+    paddingVertical: 20,
+    borderRadius: 24,
+    alignItems: "center",
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.3,
+    shadowRadius: 8,
+    elevation: 8,
   },
   messageText: {
     color: "#FFFFFF",
-    fontSize: 20,
+    fontSize: 24,
     fontWeight: "bold",
     textAlign: "center",
+    lineHeight: 32,
   },
-  arrow: {
-    position: "absolute",
-  },
-  arrowUp: {
-    top: -20,
-  },
-  arrowDown: {
-    bottom: -20,
-  },
-  arrowText: {
-    color: "#DD6500",
-    fontSize: 24,
+  subMessageText: {
+    color: "rgba(255, 255, 255, 0.9)",
+    fontSize: 14,
+    textAlign: "center",
+    marginTop: 8,
+    lineHeight: 20,
   },
   stepIndicator: {
     flexDirection: "row",
-    marginTop: 16,
+    marginTop: 24,
     gap: 8,
   },
   stepDot: {
@@ -304,6 +275,6 @@ const styles = StyleSheet.create({
   tapHint: {
     color: "rgba(255, 255, 255, 0.6)",
     fontSize: 12,
-    marginTop: 12,
+    marginTop: 16,
   },
 });
