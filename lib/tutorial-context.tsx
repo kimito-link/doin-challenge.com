@@ -8,80 +8,94 @@ const STORAGE_KEY_SEEN = "tutorial_seen";
 export type UserType = "fan" | "host";
 
 /**
- * ファン向けチュートリアルステップ（ベネフィット起点版）
+ * ファン向けチュートリアルステップ（感情のベネフィット起点版）
  * 
  * 設計思想：
- * 「この機能があります」ではなく「こうなれます」を先に伝える
- * ベネフィット → だからこの機能がある → 使い方
+ * - 「相手がどう感じるか」を起点にする
+ * - 押し付けがましくない、自然に「使いたい」と思える流れ
+ * - 感情のベネフィット：ワクワク、達成感、所属感、安心感
  */
 export const FAN_TUTORIAL_STEPS: TutorialStep[] = [
   // ========================================
-  // ベネフィット1：推しに認知されたい
+  // 共感から入る（押し付けない）
   // ========================================
   {
-    message: "推しに認知されたい？",
-    subMessage: "イベントに行っても、モブの一人で終わってない？",
-    character: "rinku_normal",
-    speech: "せっかく遠征したのに、覚えてもらえない...悲しいよね",
+    message: "推し活、楽しんでる？",
+    subMessage: "ライブやイベント、最高だよね",
+    character: "rinku_smile",
+    speech: "推しに会える日って、本当に特別だよね！",
+    messagePosition: "center",
+    tapToContinue: true,
+    successAnimation: "none",
+    previewType: "none",
+  },
+  // ========================================
+  // 感情ベネフィット1：形に残したい（達成感）
+  // ========================================
+  {
+    message: "せっかくの参加、形に残したくない？",
+    subMessage: "「あの日、あの場所にいた」って記録",
+    character: "konta_normal",
+    speech: "思い出って、時間が経つと薄れちゃうから...",
     messagePosition: "center",
     tapToContinue: true,
     successAnimation: "none",
     previewType: "none",
   },
   {
-    message: "認知される方法がある！",
-    subMessage: "参加表明すると、あなたの名前が運営に届く",
-    character: "konta_normal",
-    speech: "このアプリで参加表明すると、運営さんがあなたを認識できるんだ！",
+    message: "参加表明で、記録が残るよ",
+    subMessage: "いつ、どこに参加したか、ぜんぶ残る",
+    character: "konta_smile",
+    speech: "あとで見返すと「こんなに行ってたんだ！」ってなるよ",
     messagePosition: "center",
     tapToContinue: true,
     successAnimation: "sparkle",
     previewType: "participants",
   },
   // ========================================
-  // ベネフィット2：ファンサをもらいたい
+  // 感情ベネフィット2：つながりたい（所属感）
   // ========================================
   {
-    message: "ファンサをもらいたい？",
-    subMessage: "握手会で名前を呼ばれたり、特別対応されたくない？",
-    character: "rinku_smile",
-    speech: "「〇〇さん、いつもありがとう！」って言われたら嬉しいよね！",
+    message: "同じ推しのファン、気になる？",
+    subMessage: "「この人も来るんだ」ってわかると安心",
+    character: "rinku_normal",
+    speech: "一人で遠征するとき、知ってる人がいると心強いよね",
     messagePosition: "center",
     tapToContinue: true,
     successAnimation: "none",
     previewType: "none",
   },
   {
-    message: "常連になれば叶うかも！",
-    subMessage: "何度も参加すると「常連バッジ」がついて、運営に覚えてもらえる",
+    message: "誰が参加するか見えるよ",
+    subMessage: "参加者リストで、仲間を見つけられる",
     character: "tanune_smile",
-    speech: "リピーターさんは運営も大切にしたいの。特別扱いされる確率UP！",
+    speech: "「あ、この人いつも来てる！」ってわかるの、嬉しいわよね",
     messagePosition: "center",
     tapToContinue: true,
     successAnimation: "sparkle",
-    previewType: "crown",
+    previewType: "participants",
   },
   // ========================================
-  // ベネフィット3：他のファンより優位に立ちたい
+  // 感情ベネフィット3：認められたい（承認欲求・でも押し付けない）
   // ========================================
   {
-    message: "古参アピールしたい？",
-    subMessage: "「私、初期から応援してます」って証明したくない？",
+    message: "何度も参加してると...",
+    subMessage: "常連バッジがついて、ちょっと特別な気分",
     character: "konta_smile",
-    speech: "参加履歴が残るから、古参の証明になるよ！",
+    speech: "「いつもありがとう」って思ってもらえてるかも？",
     messagePosition: "center",
     tapToContinue: true,
     successAnimation: "pulse",
-    previewType: "notification",
+    previewType: "crown",
   },
   // ========================================
-  // CTA
+  // CTA（押し付けない、選択肢を与える）
   // ========================================
   {
-    message: "推しを探そう！",
-    subMessage: "さっそくチャレンジを見て、参加表明してみよう",
+    message: "気になるチャレンジ、探してみる？",
+    subMessage: "参加するかどうかは、あなた次第",
     character: "kimitolink",
-    speech: "一緒に推し活しよう！認知されるチャンス！",
+    speech: "無理しなくていいよ。気になったら覗いてみてね！",
     messagePosition: "center",
     tapToContinue: true,
     successAnimation: "confetti",
@@ -90,136 +104,137 @@ export const FAN_TUTORIAL_STEPS: TutorialStep[] = [
 ];
 
 /**
- * 主催者向けチュートリアルステップ（ベネフィット起点版）
+ * 主催者向けチュートリアルステップ（感情のベネフィット起点版）
  * 
  * 設計思想：
- * 主催者の「悩み」から入り、「解決策」として機能を紹介
- * ベネフィット → だからこの機能がある → 具体的なシナリオ
+ * - 「相手がどう感じるか」を起点にする
+ * - 不安を煽らない、安心感を与える
+ * - 感情のベネフィット：安心、ラク、自己実現
  */
 export const HOST_TUTORIAL_STEPS: TutorialStep[] = [
   // ========================================
-  // ベネフィット1：赤字を出したくない
+  // 共感から入る（不安を煽らない）
   // ========================================
   {
-    message: "赤字を出したくない？",
-    subMessage: "100人の会場を借りたのに30人しか来なかった...そんな経験ない？",
+    message: "イベント運営、大変だよね",
+    subMessage: "準備も当日も、やることいっぱい",
     character: "tanune_normal",
-    speech: "会場費だけで赤字...イベント運営あるあるよね...",
+    speech: "私も最初は不安だらけだったわ...",
+    messagePosition: "center",
+    tapToContinue: true,
+    successAnimation: "none",
+    previewType: "none",
+  },
+  // ========================================
+  // 感情ベネフィット1：安心したい（不安解消）
+  // ========================================
+  {
+    message: "「何人来るかな...」って不安、ない？",
+    subMessage: "会場選び、難しいよね",
+    character: "rinku_normal",
+    speech: "大きすぎても小さすぎても困るし...",
     messagePosition: "center",
     tapToContinue: true,
     successAnimation: "none",
     previewType: "none",
   },
   {
-    message: "事前に人数がわかる！",
-    subMessage: "参加表明した人数をリアルタイムで確認できる",
-    character: "konta_normal",
-    speech: "「今50人参加表明してる」ってわかるから、適切な会場を選べるよ！",
+    message: "事前に参加者数がわかると安心",
+    subMessage: "「今○人参加表明してる」ってリアルタイムで見える",
+    character: "konta_smile",
+    speech: "これなら会場選びも、心に余裕を持ってできるね",
     messagePosition: "center",
     tapToContinue: true,
     successAnimation: "sparkle",
     previewType: "participants",
   },
   // ========================================
-  // ベネフィット2：遠征ライブを成功させたい
+  // 感情ベネフィット2：ラクになりたい（負担軽減）
   // ========================================
   {
-    message: "遠征ライブを成功させたい？",
-    subMessage: "地方でライブしたいけど、人が来るかわからない...",
-    character: "rinku_normal",
-    speech: "北海道でライブしたいけど、需要あるのかな...",
+    message: "「どこでやろう...」って迷わない？",
+    subMessage: "地方でやりたいけど、需要あるのかな...",
+    character: "tanune_normal",
+    speech: "手探りで決めるの、ストレスよね",
     messagePosition: "center",
     tapToContinue: true,
     successAnimation: "none",
     previewType: "none",
   },
   {
-    message: "どこから来るかわかる！",
-    subMessage: "参加者の地域をマップで確認できる",
-    character: "konta_smile",
-    speech: "北海道から東京に来てる人が多い！→北海道でライブできるかも！",
+    message: "ファンがどこにいるか、見えるよ",
+    subMessage: "地域ごとの参加者がマップでわかる",
+    character: "konta_normal",
+    speech: "「北海道から来てる人多いな」→「北海道でもやれるかも？」",
     messagePosition: "center",
     tapToContinue: true,
     successAnimation: "sparkle",
     previewType: "map",
   },
   {
-    message: "遠征ライブの判断材料に！",
-    subMessage: "京都から来る人が多ければ、京都でライブ開催の目安になる",
+    message: "データがあると、決めやすい",
+    subMessage: "勘じゃなくて、根拠を持って判断できる",
     character: "tanune_smile",
-    speech: "データを見て「ここなら人が集まる」って判断できるわ",
+    speech: "「ここなら人が集まりそう」って自信を持てるわ",
     messagePosition: "center",
     tapToContinue: true,
     successAnimation: "pulse",
     previewType: "map",
   },
   // ========================================
-  // ベネフィット3：急なトラブルに対応したい
+  // 感情ベネフィット3：トラブル対応（安心感）
   // ========================================
   {
-    message: "急なキャンセル、困る？",
-    subMessage: "当日「仕事で行けなくなりました」...穴埋めどうする？",
-    character: "tanune_normal",
-    speech: "せっかくの枠が空いちゃう...もったいないわよね",
+    message: "急なキャンセル、焦るよね",
+    subMessage: "「仕事で行けなくなりました」...穴埋めどうしよう",
+    character: "rinku_normal",
+    speech: "せっかくの枠が空いちゃう...",
     messagePosition: "center",
     tapToContinue: true,
     successAnimation: "none",
     previewType: "none",
   },
   {
-    message: "すぐ連絡できる！",
-    subMessage: "参加者のTwitterアカウントがわかるから、代わりを募集できる",
-    character: "konta_normal",
-    speech: "「1枠空きました！」ってすぐツイートで呼びかけられるね",
+    message: "参加者のTwitterがわかるから大丈夫",
+    subMessage: "「1枠空きました！」ってすぐ呼びかけられる",
+    character: "konta_smile",
+    speech: "慌てなくていいよ。連絡手段があるから",
     messagePosition: "center",
     tapToContinue: true,
     successAnimation: "sparkle",
     previewType: "notification",
   },
   // ========================================
-  // ベネフィット4：ファンを大切にしたい
+  // 感情ベネフィット4：ファンを大切にしたい（自己実現）
   // ========================================
   {
-    message: "ファンを大切にしたい？",
-    subMessage: "いつも来てくれる人に、感謝を伝えたくない？",
+    message: "いつも来てくれる人、大切にしたいよね",
+    subMessage: "感謝の気持ち、伝えたいけど...",
     character: "rinku_smile",
-    speech: "リピーターさんには特別なファンサしたいよね！",
+    speech: "「〇〇さん、いつもありがとう！」って言いたい",
     messagePosition: "center",
     tapToContinue: true,
     successAnimation: "none",
     previewType: "none",
   },
   {
-    message: "常連がひと目でわかる！",
-    subMessage: "参加回数が多いファンには「常連バッジ」がつく",
+    message: "常連さんがひと目でわかるよ",
+    subMessage: "参加回数が多い人には常連バッジがつく",
     character: "tanune_smile",
-    speech: "「〇〇さん、10回目の参加ありがとう！」って言えるわ",
+    speech: "「10回目の参加ありがとう！」って声かけられるわ",
     messagePosition: "center",
     tapToContinue: true,
     successAnimation: "sparkle",
     previewType: "crown",
   },
   // ========================================
-  // おまけ：データで準備
+  // CTA（押し付けない、選択肢を与える）
   // ========================================
   {
-    message: "データで準備万端！",
-    subMessage: "男女比やフォロワー数も確認できる",
-    character: "konta_smile",
-    speech: "グッズの数や演出の参考になるね！インフルエンサーも見つかるかも",
-    messagePosition: "center",
-    tapToContinue: true,
-    successAnimation: "pulse",
-    previewType: "chart",
-  },
-  // ========================================
-  // CTA
-  // ========================================
-  {
-    message: "作ってみよう！",
-    subMessage: "さっそくチャレンジを作成して、ファンを集めよう",
+    message: "試しに作ってみる？",
+    subMessage: "まずは小さく始めてみるのもアリ",
     character: "kimitolink",
-    speech: "素敵なイベントにしよう！",
+    speech: "無理しなくていいよ。気が向いたら使ってみてね！",
     messagePosition: "center",
     tapToContinue: true,
     successAnimation: "confetti",
