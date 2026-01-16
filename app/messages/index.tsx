@@ -91,7 +91,7 @@ export default function MessagesScreen() {
     <ScreenContainer>
       {/* ヘッダー */}
       <AppHeader 
-        title="動員ちゃれんじ" 
+        title="君斗りんくの動員ちゃれんじ" 
         showCharacters={false}
         rightElement={
           <View className="flex-row items-center gap-4">

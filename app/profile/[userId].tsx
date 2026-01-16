@@ -140,7 +140,7 @@ export default function ProfileScreen() {
       >
         {/* ヘッダー */}
         <AppHeader 
-          title="動員ちゃれんじ" 
+          title="君斗りんくの動員ちゃれんじ" 
           showCharacters={false}
           rightElement={
             <TouchableOpacity

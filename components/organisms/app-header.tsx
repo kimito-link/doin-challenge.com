@@ -76,7 +76,7 @@ export function AppHeader({
                 fontSize: isDesktop ? 16 : 13, 
                 fontWeight: "bold",
               }}>
-                {title || "動員ちゃれんじ"}
+                {title || "君斗りんくの動員ちゃれんじ"}
               </Text>
             </View>
           </TouchableOpacity>

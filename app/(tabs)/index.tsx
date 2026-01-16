@@ -1024,7 +1024,7 @@ export default function HomeScreen() {
     <ScreenContainer containerClassName="bg-background">
       {/* ヘッダー */}
       <AppHeader 
-        title="動員ちゃれんじ" 
+        title="君斗りんくの動員ちゃれんじ" 
         showCharacters={true}
         isDesktop={isDesktop}
         showMenu={true}

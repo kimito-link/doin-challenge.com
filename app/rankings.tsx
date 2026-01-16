@@ -52,7 +52,7 @@ export default function RankingsScreen() {
     <ScreenContainer containerClassName="bg-background">
       {/* ヘッダー */}
       <AppHeader 
-        title="動員ちゃれんじ" 
+        title="君斗りんくの動員ちゃれんじ" 
         showCharacters={false}
         rightElement={
           <TouchableOpacity

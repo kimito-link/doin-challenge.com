@@ -113,7 +113,7 @@ export default function ConversationScreen() {
       >
         {/* ヘッダー */}
         <AppHeader 
-          title="動員ちゃれんじ" 
+          title="君斗りんくの動員ちゃれんじ" 
           showCharacters={false}
           rightElement={
             <TouchableOpacity onPress={() => router.back()} className="flex-row items-center">

@@ -343,7 +343,7 @@ export default function AchievementsScreen() {
       <ScrollView style={{ flex: 1 }} contentContainerStyle={{ padding: 16 }}>
         {/* ヘッダー */}
         <AppHeader 
-          title="動員ちゃれんじ" 
+          title="君斗りんくの動員ちゃれんじ" 
           showCharacters={false}
           rightElement={
             <TouchableOpacity

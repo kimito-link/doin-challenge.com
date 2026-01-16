@@ -93,7 +93,7 @@ export default function AchievementPage() {
       <ScrollView style={{ flex: 1, backgroundColor: colors.background }}>
         {/* ヘッダー */}
         <AppHeader 
-          title="動員ちゃれんじ" 
+          title="君斗りんくの動員ちゃれんじ" 
           showCharacters={false}
           rightElement={
             <View style={{ flexDirection: "row", alignItems: "center", gap: 16 }}>

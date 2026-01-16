@@ -932,7 +932,7 @@ export default function ChallengeDetailScreen() {
         <ScrollView ref={scrollViewRef} style={{ flex: 1, backgroundColor: colors.background }}>
           {/* ヘッダー */}
           <AppHeader 
-            title="動員ちゃれんじ" 
+            title="君斗りんくの動員ちゃれんじ" 
             showCharacters={false}
             showMenu={true}
           />

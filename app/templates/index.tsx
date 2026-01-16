@@ -204,7 +204,7 @@ export default function TemplatesScreen() {
     <ScreenContainer>
       {/* ヘッダー */}
       <AppHeader 
-        title="動員ちゃれんじ" 
+        title="君斗りんくの動員ちゃれんじ" 
         showCharacters={false}
         rightElement={
           <TouchableOpacity onPress={() => router.back()} style={{ flexDirection: "row", alignItems: "center" }}>
