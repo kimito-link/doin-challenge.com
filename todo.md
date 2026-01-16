@@ -1343,3 +1343,10 @@
 - [x] インポートパスの修正（IconSymbol, ToastProvider, useToast）
 - [x] TypeScriptエラーの解消
 - [x] uiディレクトリの削除
+
+
+## コンポーネントドキュメント更新（v4.98）
+- [x] COMPONENT-ARCHITECTURE.mdの内容を確認
+- [x] 最新のコンポーネント構成を反映（Atoms 22, Molecules 31, Organisms 17）
+- [x] 新しいコンポーネントの使用例を追加（TalkingCharacter, ConfirmModal等）
+- [x] ディレクトリ構造図を更新
