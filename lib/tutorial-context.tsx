@@ -8,59 +8,80 @@ const STORAGE_KEY_SEEN = "tutorial_seen";
 export type UserType = "fan" | "host";
 
 /**
- * ファン向けチュートリアルステップ（強化版）
+ * ファン向けチュートリアルステップ（ベネフィット起点版）
  * 
- * ストーリー：りんくちゃんがファンの気持ちを代弁
- * - キャラクターの表情変化
- * - 実際の画面プレビュー
- * - メリット訴求
+ * 設計思想：
+ * 「この機能があります」ではなく「こうなれます」を先に伝える
+ * ベネフィット → だからこの機能がある → 使い方
  */
 export const FAN_TUTORIAL_STEPS: TutorialStep[] = [
+  // ========================================
+  // ベネフィット1：推しに認知されたい
+  // ========================================
   {
-    message: "推しに届けたい？",
-    subMessage: "あなたの応援、ちゃんと届けよう",
+    message: "推しに認知されたい？",
+    subMessage: "イベントに行っても、モブの一人で終わってない？",
     character: "rinku_normal",
-    speech: "ねえねえ、推しのイベント行く？",
+    speech: "せっかく遠征したのに、覚えてもらえない...悲しいよね",
     messagePosition: "center",
     tapToContinue: true,
     successAnimation: "none",
     previewType: "none",
   },
   {
-    message: "参加が見える",
-    subMessage: "運営があなたの存在を認識できる",
+    message: "認知される方法がある！",
+    subMessage: "参加表明すると、あなたの名前が運営に届く",
     character: "konta_normal",
-    speech: "参加表明すると、リストに載るんだよ！",
+    speech: "このアプリで参加表明すると、運営さんがあなたを認識できるんだ！",
     messagePosition: "center",
     tapToContinue: true,
     successAnimation: "sparkle",
     previewType: "participants",
   },
+  // ========================================
+  // ベネフィット2：ファンサをもらいたい
+  // ========================================
   {
-    message: "運営に届く",
-    subMessage: "参加表明が主催者に通知される",
-    character: "tanune_normal",
-    speech: "主催者さんにお知らせが届くの",
+    message: "ファンサをもらいたい？",
+    subMessage: "握手会で名前を呼ばれたり、特別対応されたくない？",
+    character: "rinku_smile",
+    speech: "「〇〇さん、いつもありがとう！」って言われたら嬉しいよね！",
     messagePosition: "center",
     tapToContinue: true,
-    successAnimation: "pulse",
-    previewType: "notification",
+    successAnimation: "none",
+    previewType: "none",
   },
   {
-    message: "常連は特別に",
-    subMessage: "たくさん参加すると覚えてもらえる",
-    character: "rinku_smile",
-    speech: "何度も来てくれる人は特別扱い！",
+    message: "常連になれば叶うかも！",
+    subMessage: "何度も参加すると「常連バッジ」がついて、運営に覚えてもらえる",
+    character: "tanune_smile",
+    speech: "リピーターさんは運営も大切にしたいの。特別扱いされる確率UP！",
     messagePosition: "center",
     tapToContinue: true,
     successAnimation: "sparkle",
     previewType: "crown",
   },
+  // ========================================
+  // ベネフィット3：他のファンより優位に立ちたい
+  // ========================================
+  {
+    message: "古参アピールしたい？",
+    subMessage: "「私、初期から応援してます」って証明したくない？",
+    character: "konta_smile",
+    speech: "参加履歴が残るから、古参の証明になるよ！",
+    messagePosition: "center",
+    tapToContinue: true,
+    successAnimation: "pulse",
+    previewType: "notification",
+  },
+  // ========================================
+  // CTA
+  // ========================================
   {
     message: "推しを探そう！",
-    subMessage: "さっそくチャレンジを見てみよう",
+    subMessage: "さっそくチャレンジを見て、参加表明してみよう",
     character: "kimitolink",
-    speech: "一緒に推し活しよう！",
+    speech: "一緒に推し活しよう！認知されるチャンス！",
     messagePosition: "center",
     tapToContinue: true,
     successAnimation: "confetti",
@@ -69,66 +90,134 @@ export const FAN_TUTORIAL_STEPS: TutorialStep[] = [
 ];
 
 /**
- * 主催者向けチュートリアルステップ（強化版）
+ * 主催者向けチュートリアルステップ（ベネフィット起点版）
  * 
- * ストーリー：たぬ姉が主催者の悩みを解決
- * - 実際の画面プレビュー
- * - データ可視化のメリット
+ * 設計思想：
+ * 主催者の「悩み」から入り、「解決策」として機能を紹介
+ * ベネフィット → だからこの機能がある → 具体的なシナリオ
  */
 export const HOST_TUTORIAL_STEPS: TutorialStep[] = [
+  // ========================================
+  // ベネフィット1：赤字を出したくない
+  // ========================================
   {
-    message: "会場選び、迷う？",
-    subMessage: "参加者数を事前に予測できます",
+    message: "赤字を出したくない？",
+    subMessage: "100人の会場を借りたのに30人しか来なかった...そんな経験ない？",
     character: "tanune_normal",
-    speech: "イベント準備、大変よね...",
+    speech: "会場費だけで赤字...イベント運営あるあるよね...",
     messagePosition: "center",
     tapToContinue: true,
     successAnimation: "none",
     previewType: "none",
   },
   {
-    message: "参加者が見える",
-    subMessage: "どの地域から来るかマップで確認",
+    message: "事前に人数がわかる！",
+    subMessage: "参加表明した人数をリアルタイムで確認できる",
     character: "konta_normal",
-    speech: "地図で参加者の分布がわかるよ！",
+    speech: "「今50人参加表明してる」ってわかるから、適切な会場を選べるよ！",
+    messagePosition: "center",
+    tapToContinue: true,
+    successAnimation: "sparkle",
+    previewType: "participants",
+  },
+  // ========================================
+  // ベネフィット2：遠征ライブを成功させたい
+  // ========================================
+  {
+    message: "遠征ライブを成功させたい？",
+    subMessage: "地方でライブしたいけど、人が来るかわからない...",
+    character: "rinku_normal",
+    speech: "北海道でライブしたいけど、需要あるのかな...",
+    messagePosition: "center",
+    tapToContinue: true,
+    successAnimation: "none",
+    previewType: "none",
+  },
+  {
+    message: "どこから来るかわかる！",
+    subMessage: "参加者の地域をマップで確認できる",
+    character: "konta_smile",
+    speech: "北海道から東京に来てる人が多い！→北海道でライブできるかも！",
     messagePosition: "center",
     tapToContinue: true,
     successAnimation: "sparkle",
     previewType: "map",
   },
   {
-    message: "影響力もわかる",
-    subMessage: "フォロワー数で集客力を予測",
-    character: "rinku_normal",
-    speech: "インフルエンサーさんも見つかる！",
+    message: "遠征ライブの判断材料に！",
+    subMessage: "京都から来る人が多ければ、京都でライブ開催の目安になる",
+    character: "tanune_smile",
+    speech: "データを見て「ここなら人が集まる」って判断できるわ",
     messagePosition: "center",
     tapToContinue: true,
     successAnimation: "pulse",
-    previewType: "participants",
+    previewType: "map",
+  },
+  // ========================================
+  // ベネフィット3：急なトラブルに対応したい
+  // ========================================
+  {
+    message: "急なキャンセル、困る？",
+    subMessage: "当日「仕事で行けなくなりました」...穴埋めどうする？",
+    character: "tanune_normal",
+    speech: "せっかくの枠が空いちゃう...もったいないわよね",
+    messagePosition: "center",
+    tapToContinue: true,
+    successAnimation: "none",
+    previewType: "none",
   },
   {
-    message: "常連を大切に",
-    subMessage: "何度も来てくれるファンを特別扱い",
+    message: "すぐ連絡できる！",
+    subMessage: "参加者のTwitterアカウントがわかるから、代わりを募集できる",
+    character: "konta_normal",
+    speech: "「1枠空きました！」ってすぐツイートで呼びかけられるね",
+    messagePosition: "center",
+    tapToContinue: true,
+    successAnimation: "sparkle",
+    previewType: "notification",
+  },
+  // ========================================
+  // ベネフィット4：ファンを大切にしたい
+  // ========================================
+  {
+    message: "ファンを大切にしたい？",
+    subMessage: "いつも来てくれる人に、感謝を伝えたくない？",
+    character: "rinku_smile",
+    speech: "リピーターさんには特別なファンサしたいよね！",
+    messagePosition: "center",
+    tapToContinue: true,
+    successAnimation: "none",
+    previewType: "none",
+  },
+  {
+    message: "常連がひと目でわかる！",
+    subMessage: "参加回数が多いファンには「常連バッジ」がつく",
     character: "tanune_smile",
-    speech: "リピーターさんには感謝を伝えたいわよね",
+    speech: "「〇〇さん、10回目の参加ありがとう！」って言えるわ",
     messagePosition: "center",
     tapToContinue: true,
     successAnimation: "sparkle",
     previewType: "crown",
   },
+  // ========================================
+  // おまけ：データで準備
+  // ========================================
   {
-    message: "男女比も把握",
-    subMessage: "グッズや演出の参考に",
+    message: "データで準備万端！",
+    subMessage: "男女比やフォロワー数も確認できる",
     character: "konta_smile",
-    speech: "データを見て準備できるね！",
+    speech: "グッズの数や演出の参考になるね！インフルエンサーも見つかるかも",
     messagePosition: "center",
     tapToContinue: true,
     successAnimation: "pulse",
     previewType: "chart",
   },
+  // ========================================
+  // CTA
+  // ========================================
   {
     message: "作ってみよう！",
-    subMessage: "さっそくチャレンジを作成しよう",
+    subMessage: "さっそくチャレンジを作成して、ファンを集めよう",
     character: "kimitolink",
     speech: "素敵なイベントにしよう！",
     messagePosition: "center",
