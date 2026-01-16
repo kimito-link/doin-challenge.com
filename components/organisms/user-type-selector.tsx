@@ -1,4 +1,5 @@
 import { View, Text, TouchableOpacity, StyleSheet, Dimensions } from "react-native";
+import { useEffect } from "react";
 import Animated, {
   FadeIn,
   FadeOut,
@@ -6,19 +7,25 @@ import Animated, {
   useSharedValue,
   useAnimatedStyle,
   withSpring,
+  withRepeat,
+  withSequence,
+  withTiming,
+  withDelay,
+  Easing,
 } from "react-native-reanimated";
 import { Image } from "expo-image";
 import { useColors } from "@/hooks/use-colors";
 import * as Haptics from "expo-haptics";
 import { Platform } from "react-native";
-import type { UserType } from "@/hooks/use-tutorial";
+import type { UserType } from "@/lib/tutorial-context";
 
 const { width: SCREEN_WIDTH } = Dimensions.get("window");
 
 // キャラクター画像
 const characterImages = {
   fan: require("@/assets/images/characters/link/link-yukkuri-normal-mouth-open.png"),
-  host: require("@/assets/images/characters/KimitoLink.png"),
+  host: require("@/assets/images/characters/tanunee/tanuki-yukkuri-normal-mouth-open.png"),
+  main: require("@/assets/images/characters/KimitoLink.png"),
 };
 
 type UserTypeSelectorProps = {
@@ -28,12 +35,11 @@ type UserTypeSelectorProps = {
 };
 
 /**
- * ユーザータイプ選択画面
+ * 強化版ユーザータイプ選択画面
  * 
- * 任天堂原則：
- * - 「今やること」以外は見せない
- * - 失敗しそうな選択肢は表示しない
- * - 成功体験を数秒で与える
+ * - キャラクターのアニメーション
+ * - キラキラエフェクト
+ * - より魅力的なデザイン
  */
 export function UserTypeSelector({ visible, onSelect, onSkip }: UserTypeSelectorProps) {
   const colors = useColors();
@@ -41,6 +47,54 @@ export function UserTypeSelector({ visible, onSelect, onSkip }: UserTypeSelector
   // アニメーション値
   const fanScale = useSharedValue(1);
   const hostScale = useSharedValue(1);
+  const mainCharacterY = useSharedValue(0);
+  const sparkle1Opacity = useSharedValue(0);
+  const sparkle2Opacity = useSharedValue(0);
+  const sparkle3Opacity = useSharedValue(0);
+  const titleScale = useSharedValue(0.8);
+
+  useEffect(() => {
+    if (visible) {
+      // メインキャラクターのバウンス
+      mainCharacterY.value = withRepeat(
+        withSequence(
+          withTiming(-10, { duration: 800, easing: Easing.inOut(Easing.ease) }),
+          withTiming(0, { duration: 800, easing: Easing.inOut(Easing.ease) })
+        ),
+        -1,
+        true
+      );
+
+      // キラキラエフェクト
+      sparkle1Opacity.value = withDelay(0, withRepeat(
+        withSequence(
+          withTiming(1, { duration: 400 }),
+          withTiming(0, { duration: 400 })
+        ),
+        -1,
+        false
+      ));
+      sparkle2Opacity.value = withDelay(200, withRepeat(
+        withSequence(
+          withTiming(1, { duration: 400 }),
+          withTiming(0, { duration: 400 })
+        ),
+        -1,
+        false
+      ));
+      sparkle3Opacity.value = withDelay(400, withRepeat(
+        withSequence(
+          withTiming(1, { duration: 400 }),
+          withTiming(0, { duration: 400 })
+        ),
+        -1,
+        false
+      ));
+
+      // タイトルのスケールイン
+      titleScale.value = withSpring(1, { damping: 10 });
+    }
+  }, [visible]);
 
   const handlePressIn = (type: UserType) => {
     if (type === "fan") {
@@ -73,6 +127,26 @@ export function UserTypeSelector({ visible, onSelect, onSkip }: UserTypeSelector
     transform: [{ scale: hostScale.value }],
   }));
 
+  const mainCharacterStyle = useAnimatedStyle(() => ({
+    transform: [{ translateY: mainCharacterY.value }],
+  }));
+
+  const sparkle1Style = useAnimatedStyle(() => ({
+    opacity: sparkle1Opacity.value,
+  }));
+
+  const sparkle2Style = useAnimatedStyle(() => ({
+    opacity: sparkle2Opacity.value,
+  }));
+
+  const sparkle3Style = useAnimatedStyle(() => ({
+    opacity: sparkle3Opacity.value,
+  }));
+
+  const titleStyle = useAnimatedStyle(() => ({
+    transform: [{ scale: titleScale.value }],
+  }));
+
   if (!visible) return null;
 
   return (
@@ -83,9 +157,24 @@ export function UserTypeSelector({ visible, onSelect, onSkip }: UserTypeSelector
     >
       <View style={styles.overlay}>
         <Animated.View entering={SlideInUp.delay(100).springify()} style={styles.content}>
+          {/* メインキャラクター */}
+          <Animated.View style={[styles.mainCharacterContainer, mainCharacterStyle]}>
+            <Image
+              source={characterImages.main}
+              style={styles.mainCharacterImage}
+              contentFit="contain"
+            />
+            {/* キラキラエフェクト */}
+            <Animated.Text style={[styles.sparkle, styles.sparkle1, sparkle1Style]}>✦</Animated.Text>
+            <Animated.Text style={[styles.sparkle, styles.sparkle2, sparkle2Style]}>✦</Animated.Text>
+            <Animated.Text style={[styles.sparkle, styles.sparkle3, sparkle3Style]}>✦</Animated.Text>
+          </Animated.View>
+
           {/* タイトル */}
-          <Text style={styles.title}>はじめまして！</Text>
-          <Text style={styles.subtitle}>あなたはどっち？</Text>
+          <Animated.View style={titleStyle}>
+            <Text style={styles.title}>はじめまして！</Text>
+            <Text style={styles.subtitle}>あなたはどっち？</Text>
+          </Animated.View>
 
           {/* 選択肢 */}
           <View style={styles.optionsContainer}>
@@ -98,13 +187,18 @@ export function UserTypeSelector({ visible, onSelect, onSkip }: UserTypeSelector
                 style={[styles.optionCard, { backgroundColor: "#EC4899" }]}
                 activeOpacity={1}
               >
-                <Image
-                  source={characterImages.fan}
-                  style={styles.characterImage}
-                  contentFit="contain"
-                />
+                <View style={styles.optionImageContainer}>
+                  <Image
+                    source={characterImages.fan}
+                    style={styles.characterImage}
+                    contentFit="contain"
+                  />
+                </View>
                 <Text style={styles.optionTitle}>ファン</Text>
                 <Text style={styles.optionDescription}>推しを応援したい</Text>
+                <View style={styles.optionBadge}>
+                  <Text style={styles.optionBadgeText}>参加する側</Text>
+                </View>
               </TouchableOpacity>
             </Animated.View>
 
@@ -117,16 +211,26 @@ export function UserTypeSelector({ visible, onSelect, onSkip }: UserTypeSelector
                 style={[styles.optionCard, { backgroundColor: "#DD6500" }]}
                 activeOpacity={1}
               >
-                <Image
-                  source={characterImages.host}
-                  style={styles.characterImage}
-                  contentFit="contain"
-                />
+                <View style={styles.optionImageContainer}>
+                  <Image
+                    source={characterImages.host}
+                    style={styles.characterImage}
+                    contentFit="contain"
+                  />
+                </View>
                 <Text style={styles.optionTitle}>主催者</Text>
                 <Text style={styles.optionDescription}>チャレンジを作りたい</Text>
+                <View style={styles.optionBadge}>
+                  <Text style={styles.optionBadgeText}>企画する側</Text>
+                </View>
               </TouchableOpacity>
             </Animated.View>
           </View>
+
+          {/* 説明テキスト */}
+          <Text style={styles.helpText}>
+            どちらを選んでも、あとで両方使えます
+          </Text>
 
           {/* スキップ */}
           <TouchableOpacity onPress={onSkip} style={styles.skipButton}>
@@ -145,7 +249,7 @@ const styles = StyleSheet.create({
   },
   overlay: {
     flex: 1,
-    backgroundColor: "rgba(0, 0, 0, 0.9)",
+    backgroundColor: "rgba(0, 0, 0, 0.92)",
     justifyContent: "center",
     alignItems: "center",
     padding: 20,
@@ -155,33 +259,73 @@ const styles = StyleSheet.create({
     maxWidth: 400,
     alignItems: "center",
   },
+  mainCharacterContainer: {
+    position: "relative",
+    marginBottom: 16,
+  },
+  mainCharacterImage: {
+    width: 100,
+    height: 100,
+  },
+  sparkle: {
+    position: "absolute",
+    fontSize: 20,
+    color: "#FFD700",
+  },
+  sparkle1: {
+    top: -10,
+    right: -15,
+  },
+  sparkle2: {
+    top: 20,
+    left: -20,
+  },
+  sparkle3: {
+    bottom: 0,
+    right: -20,
+  },
   title: {
     color: "#FFFFFF",
     fontSize: 32,
     fontWeight: "bold",
     marginBottom: 8,
+    textAlign: "center",
   },
   subtitle: {
     color: "rgba(255, 255, 255, 0.7)",
     fontSize: 18,
-    marginBottom: 40,
+    marginBottom: 32,
+    textAlign: "center",
   },
   optionsContainer: {
     flexDirection: "row",
     gap: 16,
-    marginBottom: 32,
+    marginBottom: 20,
   },
   optionCard: {
     width: (SCREEN_WIDTH - 60) / 2,
     maxWidth: 160,
     borderRadius: 20,
-    padding: 20,
+    padding: 16,
     alignItems: "center",
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.3,
+    shadowRadius: 8,
+    elevation: 8,
+  },
+  optionImageContainer: {
+    width: 70,
+    height: 70,
+    borderRadius: 35,
+    backgroundColor: "rgba(255, 255, 255, 0.2)",
+    justifyContent: "center",
+    alignItems: "center",
+    marginBottom: 12,
   },
   characterImage: {
-    width: 80,
-    height: 80,
-    marginBottom: 12,
+    width: 60,
+    height: 60,
   },
   optionTitle: {
     color: "#FFFFFF",
@@ -192,6 +336,24 @@ const styles = StyleSheet.create({
   optionDescription: {
     color: "rgba(255, 255, 255, 0.8)",
     fontSize: 12,
+    textAlign: "center",
+    marginBottom: 8,
+  },
+  optionBadge: {
+    backgroundColor: "rgba(255, 255, 255, 0.2)",
+    paddingHorizontal: 10,
+    paddingVertical: 4,
+    borderRadius: 10,
+  },
+  optionBadgeText: {
+    color: "#FFFFFF",
+    fontSize: 10,
+    fontWeight: "600",
+  },
+  helpText: {
+    color: "rgba(255, 255, 255, 0.5)",
+    fontSize: 12,
+    marginBottom: 16,
     textAlign: "center",
   },
   skipButton: {
