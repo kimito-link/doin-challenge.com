@@ -25,6 +25,7 @@ import { SimpleRefreshControl } from "@/components/molecules/enhanced-refresh-co
 import { AnimatedCard } from "@/components/molecules/animated-pressable";
 import { SyncStatusIndicator } from "@/components/atoms/sync-status-indicator";
 import { BlinkingLink } from "@/components/atoms/blinking-character";
+import { HostEmptyState } from "@/components/organisms/host-empty-state";
 
 // キャラクター画像
 const characterImages = {
@@ -690,62 +691,15 @@ function FilterButton({
   );
 }
 
-// 空の状態表示コンポーネント（サンプルデータ生成ボタン付き）
-function EmptyState({ onGenerateSamples }: { onGenerateSamples: () => void }) {
-  const colors = useColors();
-  const [isGenerating, setIsGenerating] = useState(false);
-  const generateMutation = trpc.dev.generateSampleChallenges.useMutation();
-  const clearMutation = trpc.dev.clearSampleChallenges.useMutation();
-
-  const handleGenerateSamples = async () => {
-    setIsGenerating(true);
-    try {
-      await generateMutation.mutateAsync({ count: 6 });
-      onGenerateSamples();
-    } catch (error) {
-      console.error("サンプルデータ生成エラー:", error);
-    } finally {
-      setIsGenerating(false);
-    }
-  };
-
+// 空の状態表示コンポーネント（改善版）
+function EmptyState({ onGenerateSamples: _onGenerateSamples }: { onGenerateSamples: () => void }) {
   return (
     <ScrollView style={{ flex: 1, backgroundColor: "#0D1117" }}>
       {/* LP風キャッチコピー（チャレンジがない時も表示） */}
       <CatchCopySection />
       
-      <View style={{ alignItems: "center", padding: 32 }}>
-        <Text style={{ color: colors.foreground, fontSize: 18, fontWeight: "bold", marginBottom: 8 }}>
-          まだチャレンジがありません
-        </Text>
-        <Text style={{ color: "#9CA3AF", fontSize: 14, textAlign: "center", marginBottom: 24 }}>
-          「チャレンジ作成」タブから{"\n"}新しいチャレンジを作成しましょう
-        </Text>
-        
-        {/* 開発者向けサンプルデータ生成ボタン */}
-        <View style={{ marginTop: 16, padding: 16, backgroundColor: "#1A1D21", borderRadius: 12, borderWidth: 1, borderColor: "#2D3139" }}>
-          <Text style={{ color: "#9CA3AF", fontSize: 12, marginBottom: 12, textAlign: "center" }}>
-            🛠️ 開発者向け
-          </Text>
-          <TouchableOpacity
-            onPress={handleGenerateSamples}
-            disabled={isGenerating}
-            style={{
-              backgroundColor: isGenerating ? "#4B5563" : "#8B5CF6",
-              paddingHorizontal: 24,
-              paddingVertical: 12,
-              borderRadius: 8,
-              minHeight: 44,
-              justifyContent: "center",
-              alignItems: "center",
-            }}
-          >
-            <Text style={{ color: colors.foreground, fontWeight: "bold" }}>
-              {isGenerating ? "生成中..." : "サンプルチャレンジを生成"}
-            </Text>
-          </TouchableOpacity>
-        </View>
-      </View>
+      {/* 主催者向け空状態画面 */}
+      <HostEmptyState />
     </ScrollView>
   );
 }

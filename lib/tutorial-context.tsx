@@ -3,7 +3,7 @@ import AsyncStorage from "@react-native-async-storage/async-storage";
 import type { TutorialStep } from "@/components/organisms/tutorial-overlay";
 
 const STORAGE_KEY_PREFIX = "tutorial_completed_";
-const STORAGE_KEY_FIRST_LAUNCH = "tutorial_first_launch";
+const STORAGE_KEY_SEEN = "tutorial_seen";
 
 export type UserType = "fan" | "host";
 
@@ -24,7 +24,7 @@ export const FAN_TUTORIAL_STEPS: TutorialStep[] = [
   {
     message: "参加しよう",
     messagePosition: "bottom",
-    tapToContinue: false,
+    tapToContinue: true,
     successAnimation: "pulse",
   },
   {
@@ -48,20 +48,20 @@ export const HOST_TUTORIAL_STEPS: TutorialStep[] = [
   {
     message: "目標を決めよう",
     messagePosition: "bottom",
-    tapToContinue: false,
+    tapToContinue: true,
     successAnimation: "pulse",
   },
   {
     message: "公開しよう",
     messagePosition: "bottom",
-    tapToContinue: false,
+    tapToContinue: true,
     successAnimation: "confetti",
   },
 ];
 
 type TutorialContextType = {
-  /** 初回起動かどうか */
-  isFirstLaunch: boolean;
+  /** チュートリアル未視聴かどうか */
+  hasNotSeenTutorial: boolean;
   /** ユーザータイプ選択画面を表示中か */
   showUserTypeSelector: boolean;
   /** チュートリアル表示中かどうか */
@@ -100,7 +100,7 @@ const TutorialContext = createContext<TutorialContextType | null>(null);
 
 export function TutorialProvider({ children }: { children: ReactNode }) {
   const [isInitialized, setIsInitialized] = useState(false);
-  const [isFirstLaunch, setIsFirstLaunch] = useState(false);
+  const [hasNotSeenTutorial, setHasNotSeenTutorial] = useState(false);
   const [showUserTypeSelector, setShowUserTypeSelector] = useState(false);
   const [isActive, setIsActive] = useState(false);
   const [currentStepIndex, setCurrentStepIndex] = useState(0);
@@ -109,24 +109,19 @@ export function TutorialProvider({ children }: { children: ReactNode }) {
   const [steps, setSteps] = useState<TutorialStep[]>([]);
   const [currentHighlight, setCurrentHighlight] = useState<TutorialStep["highlight"]>();
 
-  // 初期化：完了状態と初回起動を確認
+  // 初期化：チュートリアル視聴状態を確認（ログイン状態に依存しない）
   useEffect(() => {
     const initialize = async () => {
       try {
-        const [fanCompleted, hostCompleted, firstLaunch] = await Promise.all([
-          AsyncStorage.getItem(`${STORAGE_KEY_PREFIX}fan`),
-          AsyncStorage.getItem(`${STORAGE_KEY_PREFIX}host`),
-          AsyncStorage.getItem(STORAGE_KEY_FIRST_LAUNCH),
-        ]);
+        const seen = await AsyncStorage.getItem(STORAGE_KEY_SEEN);
         
-        const completed = fanCompleted === "true" || hostCompleted === "true";
-        setIsCompleted(completed);
-        
-        // 初回起動判定
-        if (firstLaunch === null && !completed) {
-          setIsFirstLaunch(true);
-          // 初回起動フラグを保存
-          await AsyncStorage.setItem(STORAGE_KEY_FIRST_LAUNCH, "false");
+        // 一度も見ていない場合
+        if (seen === null) {
+          setHasNotSeenTutorial(true);
+          setIsCompleted(false);
+        } else {
+          setHasNotSeenTutorial(false);
+          setIsCompleted(true);
         }
         
         setIsInitialized(true);
@@ -138,16 +133,16 @@ export function TutorialProvider({ children }: { children: ReactNode }) {
     initialize();
   }, []);
 
-  // 初回起動時に自動でユーザータイプ選択を表示
+  // 初回起動時に自動でユーザータイプ選択を表示（ログイン不要）
   useEffect(() => {
-    if (isInitialized && isFirstLaunch && !isCompleted) {
-      // 少し遅延させてアプリの読み込みを待つ
+    if (isInitialized && hasNotSeenTutorial && !isCompleted) {
+      // 即座に表示（アプリ起動直後）
       const timer = setTimeout(() => {
         setShowUserTypeSelector(true);
-      }, 1000);
+      }, 500); // 0.5秒後に表示
       return () => clearTimeout(timer);
     }
-  }, [isInitialized, isFirstLaunch, isCompleted]);
+  }, [isInitialized, hasNotSeenTutorial, isCompleted]);
 
   const showTypeSelector = useCallback(() => {
     setShowUserTypeSelector(true);
@@ -177,13 +172,15 @@ export function TutorialProvider({ children }: { children: ReactNode }) {
   const completeTutorial = useCallback(async () => {
     setIsActive(false);
     setIsCompleted(true);
-    setIsFirstLaunch(false);
-    if (userType) {
-      try {
+    setHasNotSeenTutorial(false);
+    try {
+      // チュートリアル視聴済みフラグを保存
+      await AsyncStorage.setItem(STORAGE_KEY_SEEN, "true");
+      if (userType) {
         await AsyncStorage.setItem(`${STORAGE_KEY_PREFIX}${userType}`, "true");
-      } catch (error) {
-        console.error("Failed to save tutorial status:", error);
       }
+    } catch (error) {
+      console.error("Failed to save tutorial status:", error);
     }
   }, [userType]);
 
@@ -191,10 +188,10 @@ export function TutorialProvider({ children }: { children: ReactNode }) {
     setShowUserTypeSelector(false);
     setIsActive(false);
     setIsCompleted(true);
-    setIsFirstLaunch(false);
+    setHasNotSeenTutorial(false);
     try {
-      await AsyncStorage.setItem(`${STORAGE_KEY_PREFIX}fan`, "true");
-      await AsyncStorage.setItem(`${STORAGE_KEY_PREFIX}host`, "true");
+      // スキップした場合も視聴済みとして保存
+      await AsyncStorage.setItem(STORAGE_KEY_SEEN, "true");
     } catch (error) {
       console.error("Failed to save tutorial status:", error);
     }
@@ -208,12 +205,16 @@ export function TutorialProvider({ children }: { children: ReactNode }) {
     try {
       await AsyncStorage.removeItem(`${STORAGE_KEY_PREFIX}fan`);
       await AsyncStorage.removeItem(`${STORAGE_KEY_PREFIX}host`);
-      await AsyncStorage.removeItem(STORAGE_KEY_FIRST_LAUNCH);
+      await AsyncStorage.removeItem(STORAGE_KEY_SEEN);
       setIsCompleted(false);
-      setIsFirstLaunch(true);
+      setHasNotSeenTutorial(true);
       setCurrentStepIndex(0);
       setUserType(null);
       setSteps([]);
+      // リセット後、即座にユーザータイプ選択を表示
+      setTimeout(() => {
+        setShowUserTypeSelector(true);
+      }, 100);
     } catch (error) {
       console.error("Failed to reset tutorial:", error);
     }
@@ -230,7 +231,7 @@ export function TutorialProvider({ children }: { children: ReactNode }) {
   return (
     <TutorialContext.Provider
       value={{
-        isFirstLaunch,
+        hasNotSeenTutorial,
         showUserTypeSelector,
         isActive,
         currentStepIndex,
