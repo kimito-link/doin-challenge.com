@@ -12,7 +12,25 @@ import { Image } from "expo-image";
 
 // 画像アセット
 const APP_LOGO = require("@/assets/images/logos/kimitolink-logo.jpg");
-const CHARACTER_WORRIED = require("@/assets/images/characters/link/link-yukkuri-half-eyes-mouth-open.png");
+
+// キャラクター画像（各状態用）
+const CHARACTER_IMAGES = {
+  // ローディング中：通常表情（口閉じ）
+  loading: require("@/assets/images/characters/link/link-yukkuri-normal-mouth-closed.png"),
+  // 成功：笑顔（口開け）
+  success: require("@/assets/images/characters/link/link-yukkuri-smile-mouth-open.png"),
+  // エラー：困った表情（半目）
+  error: require("@/assets/images/characters/link/link-yukkuri-half-eyes-mouth-open.png"),
+  // ネットワークエラー：目をつぶった表情
+  networkError: require("@/assets/images/characters/link/link-yukkuri-blink-mouth-closed.png"),
+  // キャンセル：困った表情（口閉じ）
+  cancelled: require("@/assets/images/characters/link/link-yukkuri-half-eyes-mouth-closed.png"),
+  // 有効期限切れ：まばたき
+  expired: require("@/assets/images/characters/link/link-yukkuri-blink-mouth-open.png"),
+};
+
+// エラータイプ
+type ErrorType = "network" | "cancelled" | "expired" | "general";
 
 const FOLLOW_SUCCESS_SHOWN_KEY = "follow_success_modal_shown";
 
@@ -24,6 +42,7 @@ export default function TwitterOAuthCallback() {
   }>();
   const [status, setStatus] = useState<"processing" | "success" | "error">("processing");
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
+  const [errorType, setErrorType] = useState<ErrorType>("general");
   const [showFollowSuccessModal, setShowFollowSuccessModal] = useState(false);
   const [targetAccountInfo, setTargetAccountInfo] = useState<{ username: string; name: string } | null>(null);
   const [savedReturnUrl, setSavedReturnUrl] = useState<string>("/(tabs)/mypage");
@@ -49,19 +68,25 @@ export default function TwitterOAuthCallback() {
             if (errorData.code === "access_denied") {
               // ユーザーが認証をキャンセルした場合
               setErrorMessage("認証がキャンセルされました。ログインするにはTwitter認証を許可してください。");
+              setErrorType("cancelled");
             } else if (errorData.message) {
               // ユーザーフレンドリーなエラーメッセージに変換
               if (errorData.message.includes("fetch failed") || errorData.message.includes("network")) {
                 setErrorMessage("ネットワークエラーが発生しました。もう一度お試しください。");
+                setErrorType("network");
               } else if (errorData.message.includes("Invalid or expired state")) {
                 setErrorMessage("認証の有効期限が切れました。もう一度ログインしてください。");
+                setErrorType("expired");
               } else if (errorData.message.includes("exchange code")) {
                 setErrorMessage("Twitter認証に失敗しました。もう一度お試しください。");
+                setErrorType("general");
               } else {
                 setErrorMessage(errorData.message);
+                setErrorType("general");
               }
             } else {
               setErrorMessage("認証に失敗しました");
+              setErrorType("general");
             }
           } catch {
             // JSONパースに失敗した場合はそのまま表示
@@ -188,23 +213,50 @@ export default function TwitterOAuthCallback() {
     <SafeAreaView className="flex-1 bg-background" edges={["top", "bottom", "left", "right"]}>
       <ThemedView className="flex-1 items-center justify-center gap-4 p-5">
         {status === "processing" && (
-          <>
+          <View className="items-center justify-center gap-4">
+            {/* ロゴ */}
+            <Image
+              source={APP_LOGO}
+              style={{ width: 120, height: 40 }}
+              contentFit="contain"
+            />
+            
+            {/* キャラクター（通常表情） */}
+            <Image
+              source={CHARACTER_IMAGES.loading}
+              style={{ width: 100, height: 100, marginVertical: 12 }}
+              contentFit="contain"
+            />
+            
             <ActivityIndicator size="large" color="#F97316" />
-            <Text className="mt-4 text-base leading-6 text-center text-foreground">
+            <Text className="mt-2 text-base leading-6 text-center text-foreground">
               認証を完了しています...
             </Text>
-          </>
+          </View>
         )}
         {status === "success" && (
-          <>
-            <Text className="text-4xl mb-2">✓</Text>
-            <Text className="text-xl font-bold text-center text-foreground">
+          <View className="items-center justify-center gap-4">
+            {/* ロゴ */}
+            <Image
+              source={APP_LOGO}
+              style={{ width: 120, height: 40 }}
+              contentFit="contain"
+            />
+            
+            {/* キャラクター（笑顔） */}
+            <Image
+              source={CHARACTER_IMAGES.success}
+              style={{ width: 120, height: 120, marginVertical: 16 }}
+              contentFit="contain"
+            />
+            
+            <Text className="text-xl font-bold text-center text-success">
               認証成功！
             </Text>
             <Text className="text-base leading-6 text-center text-muted">
               リダイレクトしています...
             </Text>
-          </>
+          </View>
         )}
         {status === "error" && (
           <View className="items-center justify-center gap-4">
@@ -215,9 +267,14 @@ export default function TwitterOAuthCallback() {
               contentFit="contain"
             />
             
-            {/* キャラクター（困った表情） */}
+            {/* キャラクター（エラー種別に応じた表情） */}
             <Image
-              source={CHARACTER_WORRIED}
+              source={
+                errorType === "network" ? CHARACTER_IMAGES.networkError :
+                errorType === "cancelled" ? CHARACTER_IMAGES.cancelled :
+                errorType === "expired" ? CHARACTER_IMAGES.expired :
+                CHARACTER_IMAGES.error
+              }
               style={{ width: 120, height: 120, marginVertical: 16 }}
               contentFit="contain"
             />
