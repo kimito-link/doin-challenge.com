@@ -50,11 +50,11 @@ const variantStyles = {
 
 const sizeStyles = {
   sm: {
-    paddingVertical: 8,
+    paddingVertical: 10,
     paddingHorizontal: 16,
     fontSize: 14,
     iconSize: 16,
-    minHeight: 36,
+    minHeight: 44, // Apple HIG準拠
   },
   md: {
     paddingVertical: 12,

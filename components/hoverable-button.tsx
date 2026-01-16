@@ -171,8 +171,8 @@ function getSizeStyles(size: string) {
       return {
         container: {
           paddingHorizontal: 12,
-          paddingVertical: 8,
-          minHeight: 36,
+          paddingVertical: 10,
+          minHeight: 44, // Apple HIG準拠
           borderRadius: 8,
         } as ViewStyle,
         text: {
