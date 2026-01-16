@@ -649,3 +649,100 @@ export const participationCompanions = mysqlTable("participation_companions", {
 
 export type ParticipationCompanion = typeof participationCompanions.$inferSelect;
 export type InsertParticipationCompanion = typeof participationCompanions.$inferInsert;
+
+
+/**
+ * チャレンジメンバーテーブル（グループのメンバー）
+ */
+export const challengeMembers = mysqlTable("challenge_members", {
+  id: int("id").autoincrement().primaryKey(),
+  challengeId: int("challengeId").notNull(),
+  // メンバーの情報
+  twitterUsername: varchar("twitterUsername", { length: 255 }).notNull(),
+  twitterId: varchar("twitterId", { length: 64 }),
+  displayName: varchar("displayName", { length: 255 }),
+  profileImage: text("profileImage"),
+  followersCount: int("followersCount").default(0),
+  // 並び順
+  sortOrder: int("sortOrder").default(0).notNull(),
+  // メタデータ
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+  updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
+});
+
+export type ChallengeMember = typeof challengeMembers.$inferSelect;
+export type InsertChallengeMember = typeof challengeMembers.$inferInsert;
+
+/**
+ * Twitterユーザーキャッシュテーブル
+ */
+export const twitterUserCache = mysqlTable("twitter_user_cache", {
+  id: int("id").autoincrement().primaryKey(),
+  // Twitterユーザー情報
+  twitterUsername: varchar("twitterUsername", { length: 255 }).notNull().unique(),
+  twitterId: varchar("twitterId", { length: 64 }),
+  displayName: varchar("displayName", { length: 255 }),
+  profileImage: text("profileImage"),
+  followersCount: int("followersCount").default(0),
+  description: text("description"),
+  // キャッシュ有効期限（24時間）
+  cachedAt: timestamp("cachedAt").defaultNow().notNull(),
+  expiresAt: timestamp("expiresAt").notNull(),
+  // メタデータ
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+  updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
+});
+
+export type TwitterUserCache = typeof twitterUserCache.$inferSelect;
+export type InsertTwitterUserCache = typeof twitterUserCache.$inferInsert;
+
+
+/**
+ * チケット譲渡テーブル
+ */
+export const ticketTransfers = mysqlTable("ticket_transfers", {
+  id: int("id").autoincrement().primaryKey(),
+  challengeId: int("challengeId").notNull(),
+  // 譲渡者の情報
+  userId: int("userId").notNull(),
+  userName: varchar("userName", { length: 255 }).notNull(),
+  userUsername: varchar("userUsername", { length: 255 }), // Xのユーザー名（DM用）
+  userImage: text("userImage"),
+  // 譲渡情報
+  ticketCount: int("ticketCount").default(1).notNull(),
+  priceType: mysqlEnum("priceType", ["face_value", "negotiable", "free"]).default("face_value").notNull(),
+  comment: text("comment"),
+  // ステータス
+  status: mysqlEnum("status", ["available", "reserved", "completed", "cancelled"]).default("available").notNull(),
+  // メタデータ
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+  updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
+});
+
+export type TicketTransfer = typeof ticketTransfers.$inferSelect;
+export type InsertTicketTransfer = typeof ticketTransfers.$inferInsert;
+
+/**
+ * チケット待機リストテーブル
+ */
+export const ticketWaitlist = mysqlTable("ticket_waitlist", {
+  id: int("id").autoincrement().primaryKey(),
+  challengeId: int("challengeId").notNull(),
+  // 待機者の情報
+  userId: int("userId").notNull(),
+  userName: varchar("userName", { length: 255 }).notNull(),
+  userUsername: varchar("userUsername", { length: 255 }), // Xのユーザー名（DM用）
+  userImage: text("userImage"),
+  // 希望枚数
+  desiredCount: int("desiredCount").default(1).notNull(),
+  // 通知設定
+  notifyOnNew: boolean("notifyOnNew").default(true).notNull(),
+  // ステータス
+  isActive: boolean("isActive").default(true).notNull(),
+  // メタデータ
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+  updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
+});
+
+export type TicketWaitlist = typeof ticketWaitlist.$inferSelect;
+export type InsertTicketWaitlist = typeof ticketWaitlist.$inferInsert;

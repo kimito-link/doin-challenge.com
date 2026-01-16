@@ -313,6 +313,42 @@ export const appRouter = router({
         await db.deleteParticipation(input.id);
         return { success: true };
       }),
+
+    // 参加をキャンセル（チケット譲渡オプション付き）
+    cancel: protectedProcedure
+      .input(z.object({
+        participationId: z.number(),
+        createTransfer: z.boolean().default(false), // チケット譲渡投稿を同時に作成するか
+        transferComment: z.string().max(500).optional(),
+        userUsername: z.string().optional(),
+      }))
+      .mutation(async ({ ctx, input }) => {
+        const result = await db.cancelParticipation(input.participationId, ctx.user.id);
+        
+        if (!result.success) {
+          return result;
+        }
+        
+        // チケット譲渡投稿を作成
+        if (input.createTransfer && result.challengeId) {
+          await db.createTicketTransfer({
+            challengeId: result.challengeId,
+            userId: ctx.user.id,
+            userName: ctx.user.name || "匿名",
+            userUsername: input.userUsername,
+            userImage: null,
+            ticketCount: result.contribution || 1,
+            priceType: "face_value",
+            comment: input.transferComment || "参加キャンセルのため譲渡します",
+          });
+          
+          // 待機者に通知
+          const waitlistUsers = await db.getWaitlistUsersForNotification(result.challengeId);
+          // TODO: プッシュ通知を送信
+        }
+        
+        return { success: true, challengeId: result.challengeId };
+      }),
   }),
 
   // 通知関連API
@@ -928,10 +964,13 @@ Design requirements:
         return db.getFollowingForUser(ctx.user.id);
       }),
 
-    // フォロワー一覧
-    followers: protectedProcedure
-      .query(async ({ ctx }) => {
-        return db.getFollowersForUser(ctx.user.id);
+    // フォロワー一覧（特定ユーザーまたは自分）
+    followers: publicProcedure
+      .input(z.object({ userId: z.number().optional() }).optional())
+      .query(async ({ ctx, input }) => {
+        const targetUserId = input?.userId || ctx.user?.id;
+        if (!targetUserId) return [];
+        return db.getFollowersForUser(targetUserId);
       }),
 
     // フォローしているかチェック
@@ -1212,7 +1251,7 @@ Design requirements:
           {
             hostName: "りんく",
             hostUsername: "kimitolink",
-            hostProfileImage: null,
+            hostProfileImage: "https://pbs.twimg.com/profile_images/1234567890/rinku_normal.jpg",
             hostFollowersCount: 5000,
             title: "生誕祭ライブ 動員100人達成チャレンジ",
             description: "きみとリンクの生誕祭ライブを成功させよう！みんなで100人動員を目指します。",
@@ -1228,7 +1267,7 @@ Design requirements:
           {
             hostName: "アイドルファンチ",
             hostUsername: "idolfunch",
-            hostProfileImage: null,
+            hostProfileImage: "https://pbs.twimg.com/profile_images/1234567891/idolfunch_normal.jpg",
             hostFollowersCount: 12000,
             title: "グループライブ フォロワー1万人チャレンジ",
             description: "アイドルファンチのフォロワーを1万人にしよう！",
@@ -1244,7 +1283,7 @@ Design requirements:
           {
             hostName: "こん太",
             hostUsername: "konta_idol",
-            hostProfileImage: null,
+            hostProfileImage: "https://pbs.twimg.com/profile_images/1234567892/konta_normal.jpg",
             hostFollowersCount: 3000,
             title: "ソロライブ 50人動員チャレンジ",
             description: "初めてのソロライブ！50人集まったら成功！",
@@ -1260,7 +1299,7 @@ Design requirements:
           {
             hostName: "たぬ姉",
             hostUsername: "tanunee_idol",
-            hostProfileImage: null,
+            hostProfileImage: "https://pbs.twimg.com/profile_images/1234567893/tanunee_normal.jpg",
             hostFollowersCount: 2500,
             title: "配信ライブ 同時視聴500人チャレンジ",
             description: "YouTube配信で同時視聴500人を目指します！",
@@ -1276,7 +1315,7 @@ Design requirements:
           {
             hostName: "リンク",
             hostUsername: "link_official",
-            hostProfileImage: null,
+            hostProfileImage: "https://pbs.twimg.com/profile_images/1234567894/link_normal.jpg",
             hostFollowersCount: 8000,
             title: "ワンマンライブ 200人動員チャレンジ",
             description: "ワンマンライブで200人動員を目指します！",
@@ -1292,7 +1331,7 @@ Design requirements:
           {
             hostName: "アイドルユニットA",
             hostUsername: "idol_unit_a",
-            hostProfileImage: null,
+            hostProfileImage: "https://pbs.twimg.com/profile_images/1234567895/idol_unit_a_normal.jpg",
             hostFollowersCount: 15000,
             title: "グループライブ 300人動員チャレンジ",
             description: "5人組アイドルユニットのライブ！300人動員を目指します。",
@@ -1338,6 +1377,120 @@ Design requirements:
         }
 
         return { success: true, deletedCount };
+      }),
+  }),
+
+  // チケット譲渡関連
+  ticketTransfer: router({
+    // 譲渡投稿を作成
+    create: protectedProcedure
+      .input(z.object({
+        challengeId: z.number(),
+        ticketCount: z.number().min(1).max(10).default(1),
+        priceType: z.enum(["face_value", "negotiable", "free"]).default("face_value"),
+        comment: z.string().max(500).optional(),
+        userUsername: z.string().optional(), // XのDM用ユーザー名
+      }))
+      .mutation(async ({ ctx, input }) => {
+        const result = await db.createTicketTransfer({
+          challengeId: input.challengeId,
+          userId: ctx.user.id,
+          userName: ctx.user.name || "匿名",
+          userUsername: input.userUsername,
+          userImage: null,
+          ticketCount: input.ticketCount,
+          priceType: input.priceType,
+          comment: input.comment,
+        });
+        
+        // 待機者に通知を送る
+        const waitlistUsers = await db.getWaitlistUsersForNotification(input.challengeId);
+        // TODO: プッシュ通知を送信
+        
+        return { success: !!result, id: result, notifiedCount: waitlistUsers.length };
+      }),
+
+    // チャレンジの譲渡投稿一覧を取得
+    listByChallenge: publicProcedure
+      .input(z.object({ challengeId: z.number() }))
+      .query(async ({ input }) => {
+        return db.getTicketTransfersForChallenge(input.challengeId);
+      }),
+
+    // 自分の譲渡投稿一覧を取得
+    myTransfers: protectedProcedure
+      .query(async ({ ctx }) => {
+        return db.getTicketTransfersForUser(ctx.user.id);
+      }),
+
+    // 譲渡投稿のステータスを更新
+    updateStatus: protectedProcedure
+      .input(z.object({
+        id: z.number(),
+        status: z.enum(["available", "reserved", "completed", "cancelled"]),
+      }))
+      .mutation(async ({ ctx, input }) => {
+        // TODO: 権限チェック
+        await db.updateTicketTransferStatus(input.id, input.status);
+        return { success: true };
+      }),
+
+    // 譲渡投稿をキャンセル
+    cancel: protectedProcedure
+      .input(z.object({ id: z.number() }))
+      .mutation(async ({ ctx, input }) => {
+        const result = await db.cancelTicketTransfer(input.id, ctx.user.id);
+        return { success: result };
+      }),
+  }),
+
+  // チケット待機リスト関連
+  ticketWaitlist: router({
+    // 待機リストに登録
+    add: protectedProcedure
+      .input(z.object({
+        challengeId: z.number(),
+        desiredCount: z.number().min(1).max(10).default(1),
+        userUsername: z.string().optional(), // XのDM用ユーザー名
+      }))
+      .mutation(async ({ ctx, input }) => {
+        const result = await db.addToTicketWaitlist({
+          challengeId: input.challengeId,
+          userId: ctx.user.id,
+          userName: ctx.user.name || "匿名",
+          userUsername: input.userUsername,
+          userImage: null,
+          desiredCount: input.desiredCount,
+        });
+        return { success: !!result, id: result };
+      }),
+
+    // 待機リストから削除
+    remove: protectedProcedure
+      .input(z.object({ challengeId: z.number() }))
+      .mutation(async ({ ctx, input }) => {
+        const result = await db.removeFromTicketWaitlist(input.challengeId, ctx.user.id);
+        return { success: result };
+      }),
+
+    // チャレンジの待機リストを取得
+    listByChallenge: publicProcedure
+      .input(z.object({ challengeId: z.number() }))
+      .query(async ({ input }) => {
+        return db.getTicketWaitlistForChallenge(input.challengeId);
+      }),
+
+    // 自分の待機リストを取得
+    myWaitlist: protectedProcedure
+      .query(async ({ ctx }) => {
+        return db.getTicketWaitlistForUser(ctx.user.id);
+      }),
+
+    // 待機リストに登録しているかチェック
+    isInWaitlist: protectedProcedure
+      .input(z.object({ challengeId: z.number() }))
+      .query(async ({ ctx, input }) => {
+        return db.isUserInWaitlist(input.challengeId, ctx.user.id);
       }),
   }),
 });

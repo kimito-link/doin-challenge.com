@@ -473,6 +473,75 @@ var participationCompanions = mysqlTable("participation_companions", {
   // メタデータ
   createdAt: timestamp("createdAt").defaultNow().notNull()
 });
+var challengeMembers = mysqlTable("challenge_members", {
+  id: int("id").autoincrement().primaryKey(),
+  challengeId: int("challengeId").notNull(),
+  // メンバーの情報
+  twitterUsername: varchar("twitterUsername", { length: 255 }).notNull(),
+  twitterId: varchar("twitterId", { length: 64 }),
+  displayName: varchar("displayName", { length: 255 }),
+  profileImage: text("profileImage"),
+  followersCount: int("followersCount").default(0),
+  // 並び順
+  sortOrder: int("sortOrder").default(0).notNull(),
+  // メタデータ
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+  updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull()
+});
+var twitterUserCache = mysqlTable("twitter_user_cache", {
+  id: int("id").autoincrement().primaryKey(),
+  // Twitterユーザー情報
+  twitterUsername: varchar("twitterUsername", { length: 255 }).notNull().unique(),
+  twitterId: varchar("twitterId", { length: 64 }),
+  displayName: varchar("displayName", { length: 255 }),
+  profileImage: text("profileImage"),
+  followersCount: int("followersCount").default(0),
+  description: text("description"),
+  // キャッシュ有効期限（24時間）
+  cachedAt: timestamp("cachedAt").defaultNow().notNull(),
+  expiresAt: timestamp("expiresAt").notNull(),
+  // メタデータ
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+  updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull()
+});
+var ticketTransfers = mysqlTable("ticket_transfers", {
+  id: int("id").autoincrement().primaryKey(),
+  challengeId: int("challengeId").notNull(),
+  // 譲渡者の情報
+  userId: int("userId").notNull(),
+  userName: varchar("userName", { length: 255 }).notNull(),
+  userUsername: varchar("userUsername", { length: 255 }),
+  // Xのユーザー名（DM用）
+  userImage: text("userImage"),
+  // 譲渡情報
+  ticketCount: int("ticketCount").default(1).notNull(),
+  priceType: mysqlEnum("priceType", ["face_value", "negotiable", "free"]).default("face_value").notNull(),
+  comment: text("comment"),
+  // ステータス
+  status: mysqlEnum("status", ["available", "reserved", "completed", "cancelled"]).default("available").notNull(),
+  // メタデータ
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+  updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull()
+});
+var ticketWaitlist = mysqlTable("ticket_waitlist", {
+  id: int("id").autoincrement().primaryKey(),
+  challengeId: int("challengeId").notNull(),
+  // 待機者の情報
+  userId: int("userId").notNull(),
+  userName: varchar("userName", { length: 255 }).notNull(),
+  userUsername: varchar("userUsername", { length: 255 }),
+  // Xのユーザー名（DM用）
+  userImage: text("userImage"),
+  // 希望枚数
+  desiredCount: int("desiredCount").default(1).notNull(),
+  // 通知設定
+  notifyOnNew: boolean("notifyOnNew").default(true).notNull(),
+  // ステータス
+  isActive: boolean("isActive").default(true).notNull(),
+  // メタデータ
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+  updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull()
+});
 
 // server/_core/env.ts
 var ENV = {
@@ -982,7 +1051,15 @@ async function unfollowUser(followerId, followeeId) {
 async function getFollowersForUser(userId) {
   const db = await getDb();
   if (!db) return [];
-  return db.select().from(follows).where(eq(follows.followeeId, userId)).orderBy(desc(follows.createdAt));
+  const result = await db.select().from(follows).where(eq(follows.followeeId, userId)).orderBy(desc(follows.createdAt));
+  const followersWithImages = await Promise.all(result.map(async (f) => {
+    const latestParticipation = await db.select({ profileImage: participations.profileImage }).from(participations).where(eq(participations.userId, f.followerId)).orderBy(desc(participations.createdAt)).limit(1);
+    return {
+      ...f,
+      followerImage: latestParticipation[0]?.profileImage || null
+    };
+  }));
+  return followersWithImages;
 }
 async function getFollowingForUser(userId) {
   const db = await getDb();
@@ -1456,6 +1533,110 @@ async function refreshAllChallengeSummaries() {
     }
   }
   return { updated, total: allChallenges.length };
+}
+async function createTicketTransfer(transfer) {
+  const db = await getDb();
+  if (!db) return null;
+  const result = await db.insert(ticketTransfers).values(transfer);
+  return result[0].insertId;
+}
+async function getTicketTransfersForChallenge(challengeId) {
+  const db = await getDb();
+  if (!db) return [];
+  return db.select().from(ticketTransfers).where(and(
+    eq(ticketTransfers.challengeId, challengeId),
+    eq(ticketTransfers.status, "available")
+  )).orderBy(desc(ticketTransfers.createdAt));
+}
+async function getTicketTransfersForUser(userId) {
+  const db = await getDb();
+  if (!db) return [];
+  return db.select().from(ticketTransfers).where(eq(ticketTransfers.userId, userId)).orderBy(desc(ticketTransfers.createdAt));
+}
+async function updateTicketTransferStatus(id, status) {
+  const db = await getDb();
+  if (!db) return;
+  await db.update(ticketTransfers).set({ status }).where(eq(ticketTransfers.id, id));
+}
+async function cancelTicketTransfer(id, userId) {
+  const db = await getDb();
+  if (!db) return false;
+  const result = await db.update(ticketTransfers).set({ status: "cancelled" }).where(and(eq(ticketTransfers.id, id), eq(ticketTransfers.userId, userId)));
+  return true;
+}
+async function addToTicketWaitlist(waitlist) {
+  const db = await getDb();
+  if (!db) return null;
+  const existing = await db.select().from(ticketWaitlist).where(and(
+    eq(ticketWaitlist.challengeId, waitlist.challengeId),
+    eq(ticketWaitlist.userId, waitlist.userId),
+    eq(ticketWaitlist.isActive, true)
+  )).limit(1);
+  if (existing.length > 0) {
+    return existing[0].id;
+  }
+  const result = await db.insert(ticketWaitlist).values(waitlist);
+  return result[0].insertId;
+}
+async function removeFromTicketWaitlist(challengeId, userId) {
+  const db = await getDb();
+  if (!db) return false;
+  await db.update(ticketWaitlist).set({ isActive: false }).where(and(
+    eq(ticketWaitlist.challengeId, challengeId),
+    eq(ticketWaitlist.userId, userId)
+  ));
+  return true;
+}
+async function getTicketWaitlistForChallenge(challengeId) {
+  const db = await getDb();
+  if (!db) return [];
+  return db.select().from(ticketWaitlist).where(and(
+    eq(ticketWaitlist.challengeId, challengeId),
+    eq(ticketWaitlist.isActive, true)
+  )).orderBy(ticketWaitlist.createdAt);
+}
+async function getTicketWaitlistForUser(userId) {
+  const db = await getDb();
+  if (!db) return [];
+  return db.select().from(ticketWaitlist).where(and(
+    eq(ticketWaitlist.userId, userId),
+    eq(ticketWaitlist.isActive, true)
+  )).orderBy(desc(ticketWaitlist.createdAt));
+}
+async function isUserInWaitlist(challengeId, userId) {
+  const db = await getDb();
+  if (!db) return false;
+  const result = await db.select().from(ticketWaitlist).where(and(
+    eq(ticketWaitlist.challengeId, challengeId),
+    eq(ticketWaitlist.userId, userId),
+    eq(ticketWaitlist.isActive, true)
+  )).limit(1);
+  return result.length > 0;
+}
+async function getWaitlistUsersForNotification(challengeId) {
+  const db = await getDb();
+  if (!db) return [];
+  return db.select().from(ticketWaitlist).where(and(
+    eq(ticketWaitlist.challengeId, challengeId),
+    eq(ticketWaitlist.isActive, true),
+    eq(ticketWaitlist.notifyOnNew, true)
+  ));
+}
+async function cancelParticipation(participationId, userId) {
+  const db = await getDb();
+  if (!db) return { success: false, error: "Database not available" };
+  const participation = await db.select().from(participations).where(and(
+    eq(participations.id, participationId),
+    eq(participations.userId, userId)
+  )).limit(1);
+  if (participation.length === 0) {
+    return { success: false, error: "Participation not found" };
+  }
+  const p = participation[0];
+  await db.delete(participations).where(eq(participations.id, participationId));
+  await db.delete(participationCompanions).where(eq(participationCompanions.participationId, participationId));
+  await db.update(challenges).set({ currentValue: sql`${challenges.currentValue} - ${p.contribution}` }).where(eq(challenges.id, p.challengeId));
+  return { success: true, challengeId: p.challengeId, contribution: p.contribution };
 }
 
 // server/_core/cookies.ts
@@ -2999,6 +3180,33 @@ var appRouter = router({
       }
       await deleteParticipation(input.id);
       return { success: true };
+    }),
+    // 参加をキャンセル（チケット譲渡オプション付き）
+    cancel: protectedProcedure.input(z2.object({
+      participationId: z2.number(),
+      createTransfer: z2.boolean().default(false),
+      // チケット譲渡投稿を同時に作成するか
+      transferComment: z2.string().max(500).optional(),
+      userUsername: z2.string().optional()
+    })).mutation(async ({ ctx, input }) => {
+      const result = await cancelParticipation(input.participationId, ctx.user.id);
+      if (!result.success) {
+        return result;
+      }
+      if (input.createTransfer && result.challengeId) {
+        await createTicketTransfer({
+          challengeId: result.challengeId,
+          userId: ctx.user.id,
+          userName: ctx.user.name || "\u533F\u540D",
+          userUsername: input.userUsername,
+          userImage: null,
+          ticketCount: result.contribution || 1,
+          priceType: "face_value",
+          comment: input.transferComment || "\u53C2\u52A0\u30AD\u30E3\u30F3\u30BB\u30EB\u306E\u305F\u3081\u8B72\u6E21\u3057\u307E\u3059"
+        });
+        const waitlistUsers = await getWaitlistUsersForNotification(result.challengeId);
+      }
+      return { success: true, challengeId: result.challengeId };
     })
   }),
   // 通知関連API
@@ -3465,9 +3673,11 @@ Design requirements:
     following: protectedProcedure.query(async ({ ctx }) => {
       return getFollowingForUser(ctx.user.id);
     }),
-    // フォロワー一覧
-    followers: protectedProcedure.query(async ({ ctx }) => {
-      return getFollowersForUser(ctx.user.id);
+    // フォロワー一覧（特定ユーザーまたは自分）
+    followers: publicProcedure.input(z2.object({ userId: z2.number().optional() }).optional()).query(async ({ ctx, input }) => {
+      const targetUserId = input?.userId || ctx.user?.id;
+      if (!targetUserId) return [];
+      return getFollowersForUser(targetUserId);
     }),
     // フォローしているかチェック
     isFollowing: protectedProcedure.input(z2.object({ followeeId: z2.number() })).query(async ({ ctx, input }) => {
@@ -3658,7 +3868,7 @@ Design requirements:
         {
           hostName: "\u308A\u3093\u304F",
           hostUsername: "kimitolink",
-          hostProfileImage: null,
+          hostProfileImage: "https://pbs.twimg.com/profile_images/1234567890/rinku_normal.jpg",
           hostFollowersCount: 5e3,
           title: "\u751F\u8A95\u796D\u30E9\u30A4\u30D6 \u52D5\u54E1100\u4EBA\u9054\u6210\u30C1\u30E3\u30EC\u30F3\u30B8",
           description: "\u304D\u307F\u3068\u30EA\u30F3\u30AF\u306E\u751F\u8A95\u796D\u30E9\u30A4\u30D6\u3092\u6210\u529F\u3055\u305B\u3088\u3046\uFF01\u307F\u3093\u306A\u3067100\u4EBA\u52D5\u54E1\u3092\u76EE\u6307\u3057\u307E\u3059\u3002",
@@ -3674,7 +3884,7 @@ Design requirements:
         {
           hostName: "\u30A2\u30A4\u30C9\u30EB\u30D5\u30A1\u30F3\u30C1",
           hostUsername: "idolfunch",
-          hostProfileImage: null,
+          hostProfileImage: "https://pbs.twimg.com/profile_images/1234567891/idolfunch_normal.jpg",
           hostFollowersCount: 12e3,
           title: "\u30B0\u30EB\u30FC\u30D7\u30E9\u30A4\u30D6 \u30D5\u30A9\u30ED\u30EF\u30FC1\u4E07\u4EBA\u30C1\u30E3\u30EC\u30F3\u30B8",
           description: "\u30A2\u30A4\u30C9\u30EB\u30D5\u30A1\u30F3\u30C1\u306E\u30D5\u30A9\u30ED\u30EF\u30FC\u30921\u4E07\u4EBA\u306B\u3057\u3088\u3046\uFF01",
@@ -3690,7 +3900,7 @@ Design requirements:
         {
           hostName: "\u3053\u3093\u592A",
           hostUsername: "konta_idol",
-          hostProfileImage: null,
+          hostProfileImage: "https://pbs.twimg.com/profile_images/1234567892/konta_normal.jpg",
           hostFollowersCount: 3e3,
           title: "\u30BD\u30ED\u30E9\u30A4\u30D6 50\u4EBA\u52D5\u54E1\u30C1\u30E3\u30EC\u30F3\u30B8",
           description: "\u521D\u3081\u3066\u306E\u30BD\u30ED\u30E9\u30A4\u30D6\uFF0150\u4EBA\u96C6\u307E\u3063\u305F\u3089\u6210\u529F\uFF01",
@@ -3706,7 +3916,7 @@ Design requirements:
         {
           hostName: "\u305F\u306C\u59C9",
           hostUsername: "tanunee_idol",
-          hostProfileImage: null,
+          hostProfileImage: "https://pbs.twimg.com/profile_images/1234567893/tanunee_normal.jpg",
           hostFollowersCount: 2500,
           title: "\u914D\u4FE1\u30E9\u30A4\u30D6 \u540C\u6642\u8996\u8074500\u4EBA\u30C1\u30E3\u30EC\u30F3\u30B8",
           description: "YouTube\u914D\u4FE1\u3067\u540C\u6642\u8996\u8074500\u4EBA\u3092\u76EE\u6307\u3057\u307E\u3059\uFF01",
@@ -3722,7 +3932,7 @@ Design requirements:
         {
           hostName: "\u30EA\u30F3\u30AF",
           hostUsername: "link_official",
-          hostProfileImage: null,
+          hostProfileImage: "https://pbs.twimg.com/profile_images/1234567894/link_normal.jpg",
           hostFollowersCount: 8e3,
           title: "\u30EF\u30F3\u30DE\u30F3\u30E9\u30A4\u30D6 200\u4EBA\u52D5\u54E1\u30C1\u30E3\u30EC\u30F3\u30B8",
           description: "\u30EF\u30F3\u30DE\u30F3\u30E9\u30A4\u30D6\u3067200\u4EBA\u52D5\u54E1\u3092\u76EE\u6307\u3057\u307E\u3059\uFF01",
@@ -3738,7 +3948,7 @@ Design requirements:
         {
           hostName: "\u30A2\u30A4\u30C9\u30EB\u30E6\u30CB\u30C3\u30C8A",
           hostUsername: "idol_unit_a",
-          hostProfileImage: null,
+          hostProfileImage: "https://pbs.twimg.com/profile_images/1234567895/idol_unit_a_normal.jpg",
           hostFollowersCount: 15e3,
           title: "\u30B0\u30EB\u30FC\u30D7\u30E9\u30A4\u30D6 300\u4EBA\u52D5\u54E1\u30C1\u30E3\u30EC\u30F3\u30B8",
           description: "5\u4EBA\u7D44\u30A2\u30A4\u30C9\u30EB\u30E6\u30CB\u30C3\u30C8\u306E\u30E9\u30A4\u30D6\uFF01300\u4EBA\u52D5\u54E1\u3092\u76EE\u6307\u3057\u307E\u3059\u3002",
@@ -3776,6 +3986,89 @@ Design requirements:
         }
       }
       return { success: true, deletedCount };
+    })
+  }),
+  // チケット譲渡関連
+  ticketTransfer: router({
+    // 譲渡投稿を作成
+    create: protectedProcedure.input(z2.object({
+      challengeId: z2.number(),
+      ticketCount: z2.number().min(1).max(10).default(1),
+      priceType: z2.enum(["face_value", "negotiable", "free"]).default("face_value"),
+      comment: z2.string().max(500).optional(),
+      userUsername: z2.string().optional()
+      // XのDM用ユーザー名
+    })).mutation(async ({ ctx, input }) => {
+      const result = await createTicketTransfer({
+        challengeId: input.challengeId,
+        userId: ctx.user.id,
+        userName: ctx.user.name || "\u533F\u540D",
+        userUsername: input.userUsername,
+        userImage: null,
+        ticketCount: input.ticketCount,
+        priceType: input.priceType,
+        comment: input.comment
+      });
+      const waitlistUsers = await getWaitlistUsersForNotification(input.challengeId);
+      return { success: !!result, id: result, notifiedCount: waitlistUsers.length };
+    }),
+    // チャレンジの譲渡投稿一覧を取得
+    listByChallenge: publicProcedure.input(z2.object({ challengeId: z2.number() })).query(async ({ input }) => {
+      return getTicketTransfersForChallenge(input.challengeId);
+    }),
+    // 自分の譲渡投稿一覧を取得
+    myTransfers: protectedProcedure.query(async ({ ctx }) => {
+      return getTicketTransfersForUser(ctx.user.id);
+    }),
+    // 譲渡投稿のステータスを更新
+    updateStatus: protectedProcedure.input(z2.object({
+      id: z2.number(),
+      status: z2.enum(["available", "reserved", "completed", "cancelled"])
+    })).mutation(async ({ ctx, input }) => {
+      await updateTicketTransferStatus(input.id, input.status);
+      return { success: true };
+    }),
+    // 譲渡投稿をキャンセル
+    cancel: protectedProcedure.input(z2.object({ id: z2.number() })).mutation(async ({ ctx, input }) => {
+      const result = await cancelTicketTransfer(input.id, ctx.user.id);
+      return { success: result };
+    })
+  }),
+  // チケット待機リスト関連
+  ticketWaitlist: router({
+    // 待機リストに登録
+    add: protectedProcedure.input(z2.object({
+      challengeId: z2.number(),
+      desiredCount: z2.number().min(1).max(10).default(1),
+      userUsername: z2.string().optional()
+      // XのDM用ユーザー名
+    })).mutation(async ({ ctx, input }) => {
+      const result = await addToTicketWaitlist({
+        challengeId: input.challengeId,
+        userId: ctx.user.id,
+        userName: ctx.user.name || "\u533F\u540D",
+        userUsername: input.userUsername,
+        userImage: null,
+        desiredCount: input.desiredCount
+      });
+      return { success: !!result, id: result };
+    }),
+    // 待機リストから削除
+    remove: protectedProcedure.input(z2.object({ challengeId: z2.number() })).mutation(async ({ ctx, input }) => {
+      const result = await removeFromTicketWaitlist(input.challengeId, ctx.user.id);
+      return { success: result };
+    }),
+    // チャレンジの待機リストを取得
+    listByChallenge: publicProcedure.input(z2.object({ challengeId: z2.number() })).query(async ({ input }) => {
+      return getTicketWaitlistForChallenge(input.challengeId);
+    }),
+    // 自分の待機リストを取得
+    myWaitlist: protectedProcedure.query(async ({ ctx }) => {
+      return getTicketWaitlistForUser(ctx.user.id);
+    }),
+    // 待機リストに登録しているかチェック
+    isInWaitlist: protectedProcedure.input(z2.object({ challengeId: z2.number() })).query(async ({ ctx, input }) => {
+      return isUserInWaitlist(input.challengeId, ctx.user.id);
     })
   })
 });

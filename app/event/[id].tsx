@@ -22,6 +22,7 @@ import { PrefectureParticipantsModal } from "@/components/prefecture-participant
 import { RegionParticipantsModal } from "@/components/region-participants-modal";
 import { GrowthTrajectoryChart } from "@/components/growth-trajectory-chart";
 import { ParticipantRanking, TopThreeRanking } from "@/components/participant-ranking";
+import { TicketTransferSection } from "@/components/ticket-transfer-section";
 
 const { width: screenWidth } = Dimensions.get("window");
 
@@ -68,6 +69,7 @@ type Participation = {
   isAnonymous: boolean;
   createdAt: Date;
   followersCount?: number | null;
+  gender?: "male" | "female" | "unspecified" | null;
 };
 
 // 進捗グリッドコンポーネント
@@ -1348,6 +1350,12 @@ export default function ChallengeDetailScreen() {
               </Text>
             </TouchableOpacity>
 
+            {/* チケット譲渡セクション */}
+            <TicketTransferSection
+              challengeId={challengeId}
+              challengeTitle={challenge.title}
+            />
+
             {/* 地域別マップ */}
             {participations && participations.length > 0 && (
               <RegionMap participations={participations as Participation[]} />
@@ -1425,6 +1433,104 @@ export default function ChallengeDetailScreen() {
                     </View>
                   </View>
                 )}
+                {/* 男女比表示 */}
+                {(() => {
+                  const maleCount = participations.filter((p: Participation) => p.gender === "male").length;
+                  const femaleCount = participations.filter((p: Participation) => p.gender === "female").length;
+                  const unspecifiedCount = participations.filter((p: Participation) => !p.gender || p.gender === "unspecified").length;
+                  const total = participations.length;
+                  const malePercent = total > 0 ? Math.round((maleCount / total) * 100) : 0;
+                  const femalePercent = total > 0 ? Math.round((femaleCount / total) * 100) : 0;
+                  const unspecifiedPercent = total > 0 ? Math.round((unspecifiedCount / total) * 100) : 0;
+                  
+                  return (
+                    <View style={{
+                      backgroundColor: "#1A1D21",
+                      borderRadius: 12,
+                      padding: 12,
+                      marginBottom: 16,
+                      borderWidth: 1,
+                      borderColor: "#2D3139",
+                    }}>
+                      <View style={{ flexDirection: "row", alignItems: "center", marginBottom: 8 }}>
+                        <MaterialIcons name="people" size={16} color="#EC4899" />
+                        <Text style={{ color: "#fff", fontSize: 14, fontWeight: "bold", marginLeft: 8 }}>
+                          男女比
+                        </Text>
+                      </View>
+                      
+                      {/* バー表示 */}
+                      <View style={{
+                        flexDirection: "row",
+                        height: 24,
+                        borderRadius: 12,
+                        overflow: "hidden",
+                        backgroundColor: "#0D1117",
+                        marginBottom: 8,
+                      }}>
+                        {maleCount > 0 && (
+                          <View style={{
+                            width: `${malePercent}%`,
+                            backgroundColor: "#3B82F6",
+                            justifyContent: "center",
+                            alignItems: "center",
+                          }}>
+                            {malePercent >= 15 && (
+                              <Text style={{ color: "#fff", fontSize: 10, fontWeight: "bold" }}>
+                                {malePercent}%
+                              </Text>
+                            )}
+                          </View>
+                        )}
+                        {femaleCount > 0 && (
+                          <View style={{
+                            width: `${femalePercent}%`,
+                            backgroundColor: "#EC4899",
+                            justifyContent: "center",
+                            alignItems: "center",
+                          }}>
+                            {femalePercent >= 15 && (
+                              <Text style={{ color: "#fff", fontSize: 10, fontWeight: "bold" }}>
+                                {femalePercent}%
+                              </Text>
+                            )}
+                          </View>
+                        )}
+                        {unspecifiedCount > 0 && (
+                          <View style={{
+                            width: `${unspecifiedPercent}%`,
+                            backgroundColor: "#6B7280",
+                            justifyContent: "center",
+                            alignItems: "center",
+                          }}>
+                            {unspecifiedPercent >= 15 && (
+                              <Text style={{ color: "#fff", fontSize: 10, fontWeight: "bold" }}>
+                                {unspecifiedPercent}%
+                              </Text>
+                            )}
+                          </View>
+                        )}
+                      </View>
+                      
+                      {/* 凡例 */}
+                      <View style={{ flexDirection: "row", justifyContent: "center", gap: 16 }}>
+                        <View style={{ flexDirection: "row", alignItems: "center" }}>
+                          <View style={{ width: 12, height: 12, borderRadius: 6, backgroundColor: "#3B82F6", marginRight: 6 }} />
+                          <Text style={{ color: "#9CA3AF", fontSize: 12 }}>男性 {maleCount}人</Text>
+                        </View>
+                        <View style={{ flexDirection: "row", alignItems: "center" }}>
+                          <View style={{ width: 12, height: 12, borderRadius: 6, backgroundColor: "#EC4899", marginRight: 6 }} />
+                          <Text style={{ color: "#9CA3AF", fontSize: 12 }}>女性 {femaleCount}人</Text>
+                        </View>
+                        <View style={{ flexDirection: "row", alignItems: "center" }}>
+                          <View style={{ width: 12, height: 12, borderRadius: 6, backgroundColor: "#6B7280", marginRight: 6 }} />
+                          <Text style={{ color: "#9CA3AF", fontSize: 12 }}>未設定 {unspecifiedCount}人</Text>
+                        </View>
+                      </View>
+                    </View>
+                  );
+                })()}
+
                 <View style={{ flexDirection: "row", alignItems: "center", justifyContent: "space-between", marginBottom: 12 }}>
                   <Text style={{ color: "#fff", fontSize: 16, fontWeight: "bold" }}>
                     応援メッセージ ({participations.length}件)

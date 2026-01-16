@@ -1,4 +1,4 @@
-import { Text, View, ScrollView, TouchableOpacity, FlatList, RefreshControl } from "react-native";
+import { Text, View, ScrollView, TouchableOpacity, FlatList, RefreshControl, Alert } from "react-native";
 import { Image } from "expo-image";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import { useState } from "react";
@@ -29,12 +29,52 @@ export default function ProfileScreen() {
   const [refreshing, setRefreshing] = useState(false);
   const [activeTab, setActiveTab] = useState<"challenges" | "badges">("challenges");
 
+  const parsedUserId = parseInt(userId || "0");
+
   const { data: profile, isLoading, refetch } = trpc.profiles.get.useQuery(
-    { userId: parseInt(userId || "0") },
+    { userId: parsedUserId },
     { enabled: !!userId }
   ) as any;
 
-  const isOwnProfile = user?.id === parseInt(userId || "0");
+  const isOwnProfile = user?.id === parsedUserId;
+
+  // フォロー状態を取得
+  const { data: isFollowing, refetch: refetchFollowStatus } = trpc.follows.isFollowing.useQuery(
+    { followeeId: parsedUserId },
+    { enabled: !!user && !isOwnProfile && parsedUserId > 0 }
+  );
+
+  // フォロワー数を取得
+  const { data: followerCount } = trpc.follows.followerCount.useQuery(
+    { userId: parsedUserId },
+    { enabled: parsedUserId > 0 }
+  );
+
+  // フォロー中数を取得
+  const { data: followingCount } = trpc.follows.followingCount.useQuery(
+    { userId: parsedUserId },
+    { enabled: parsedUserId > 0 }
+  );
+
+  // フォロー/フォロー解除のミューテーション
+  const followMutation = trpc.follows.follow.useMutation({
+    onSuccess: () => {
+      refetchFollowStatus();
+      Alert.alert("フォローしました", "新着チャレンジの通知を受け取れます");
+    },
+    onError: (error) => {
+      Alert.alert("エラー", error.message);
+    },
+  });
+
+  const unfollowMutation = trpc.follows.unfollow.useMutation({
+    onSuccess: () => {
+      refetchFollowStatus();
+    },
+    onError: (error) => {
+      Alert.alert("エラー", error.message);
+    },
+  });
 
   // バッジはプロフィールから取得
   const badges = profile?.badges || [];
@@ -42,7 +82,25 @@ export default function ProfileScreen() {
   const onRefresh = async () => {
     setRefreshing(true);
     await refetch();
+    await refetchFollowStatus();
     setRefreshing(false);
+  };
+
+  const handleFollowToggle = () => {
+    if (!user) {
+      Alert.alert("ログインが必要です", "フォローするにはログインしてください");
+      return;
+    }
+
+    if (isFollowing) {
+      unfollowMutation.mutate({ followeeId: parsedUserId });
+    } else {
+      followMutation.mutate({
+        followeeId: parsedUserId,
+        followeeName: profile?.user?.name,
+        followeeImage: (profile?.user as any)?.profileImage || undefined,
+      });
+    }
   };
 
   if (isLoading) {
@@ -132,8 +190,73 @@ export default function ProfileScreen() {
                 @{(profile.user as any).username}
               </Text>
             )}
+
+            {/* フォローボタン（自分以外のプロフィールの場合） */}
+            {!isOwnProfile && user && (
+              <TouchableOpacity
+                onPress={handleFollowToggle}
+                disabled={followMutation.isPending || unfollowMutation.isPending}
+                style={{
+                  marginTop: 16,
+                  paddingHorizontal: 24,
+                  paddingVertical: 10,
+                  borderRadius: 20,
+                  backgroundColor: isFollowing ? "rgba(255,255,255,0.2)" : "#fff",
+                  flexDirection: "row",
+                  alignItems: "center",
+                  opacity: followMutation.isPending || unfollowMutation.isPending ? 0.6 : 1,
+                }}
+              >
+                <MaterialIcons 
+                  name={isFollowing ? "check" : "person-add"} 
+                  size={18} 
+                  color={isFollowing ? "#fff" : "#DD6500"} 
+                />
+                <Text style={{ 
+                  color: isFollowing ? "#fff" : "#DD6500", 
+                  fontSize: 14, 
+                  fontWeight: "bold",
+                  marginLeft: 6,
+                }}>
+                  {isFollowing ? "フォロー中" : "フォローする"}
+                </Text>
+              </TouchableOpacity>
+            )}
           </View>
         </LinearGradient>
+
+        {/* フォロー数・フォロワー数 */}
+        <View style={{ 
+          flexDirection: "row", 
+          backgroundColor: "#161B22", 
+          paddingVertical: 12,
+          paddingHorizontal: 16,
+          borderBottomWidth: 1,
+          borderBottomColor: "#2D3139",
+        }}>
+          <TouchableOpacity 
+            onPress={() => router.push({ pathname: "/following", params: { userId: userId } })}
+            style={{ flexDirection: "row", alignItems: "center", marginRight: 24 }}
+          >
+            <Text style={{ color: "#fff", fontSize: 16, fontWeight: "bold" }}>
+              {followingCount || 0}
+            </Text>
+            <Text style={{ color: "#9CA3AF", fontSize: 14, marginLeft: 4 }}>
+              フォロー中
+            </Text>
+          </TouchableOpacity>
+          <TouchableOpacity 
+            onPress={() => router.push({ pathname: "/followers", params: { userId: userId } })}
+            style={{ flexDirection: "row", alignItems: "center" }}
+          >
+            <Text style={{ color: "#fff", fontSize: 16, fontWeight: "bold" }}>
+              {followerCount || 0}
+            </Text>
+            <Text style={{ color: "#9CA3AF", fontSize: 14, marginLeft: 4 }}>
+              フォロワー
+            </Text>
+          </TouchableOpacity>
+        </View>
 
         {/* 統計 */}
         <View style={{ flexDirection: "row", backgroundColor: "#161B22", padding: 16 }}>
