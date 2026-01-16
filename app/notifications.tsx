@@ -4,6 +4,7 @@ import { useState, useEffect } from "react";
 import { ScreenContainer } from "@/components/screen-container";
 import { trpc } from "@/lib/trpc";
 import { useAuth } from "@/hooks/use-auth";
+import { useColors } from "@/hooks/use-colors";
 import MaterialIcons from "@expo/vector-icons/MaterialIcons";
 import { LinearGradient } from "expo-linear-gradient";
 import * as Notifications from "expo-notifications";
@@ -11,6 +12,7 @@ import { Platform } from "react-native";
 import { AppHeader } from "@/components/app-header";
 
 export default function NotificationsScreen() {
+  const colors = useColors();
   const router = useRouter();
   const { user, isAuthenticated } = useAuth();
   
@@ -110,7 +112,7 @@ export default function NotificationsScreen() {
 
   return (
     <ScreenContainer edges={["top", "left", "right"]} containerClassName="bg-background">
-      <ScrollView style={{ flex: 1, backgroundColor: "#0D1117" }}>
+      <ScrollView style={{ flex: 1, backgroundColor: colors.background }}>
         {/* ヘッダー */}
         <AppHeader 
           title="動員ちゃれんじ" 
@@ -120,14 +122,14 @@ export default function NotificationsScreen() {
               onPress={() => router.back()}
               style={{ flexDirection: "row", alignItems: "center" }}
             >
-              <MaterialIcons name="arrow-back" size={24} color="#fff" />
-              <Text style={{ color: "#fff", marginLeft: 8 }}>戻る</Text>
+              <MaterialIcons name="arrow-back" size={24} color={colors.foreground} />
+              <Text style={{ color: colors.foreground, marginLeft: 8 }}>戻る</Text>
             </TouchableOpacity>
           }
         />
         <View style={{ paddingHorizontal: 16, paddingBottom: 8 }}>
           <View style={{ flexDirection: "row", alignItems: "center" }}>
-            <Text style={{ color: "#fff", fontSize: 20, fontWeight: "bold" }}>
+            <Text style={{ color: colors.foreground, fontSize: 20, fontWeight: "bold" }}>
               通知
             </Text>
             {unreadCount > 0 && (
@@ -140,7 +142,7 @@ export default function NotificationsScreen() {
                   marginLeft: 8,
                 }}
               >
-                <Text style={{ color: "#fff", fontSize: 12, fontWeight: "bold" }}>
+                <Text style={{ color: colors.foreground, fontSize: 12, fontWeight: "bold" }}>
                   {unreadCount}
                 </Text>
               </View>
@@ -178,7 +180,7 @@ export default function NotificationsScreen() {
             <View style={{ flexDirection: "row", alignItems: "center" }}>
               <MaterialIcons name="warning" size={24} color="#F59E0B" />
               <View style={{ flex: 1, marginLeft: 12 }}>
-                <Text style={{ color: "#fff", fontSize: 14, fontWeight: "bold" }}>
+                <Text style={{ color: colors.foreground, fontSize: 14, fontWeight: "bold" }}>
                   プッシュ通知が無効です
                 </Text>
                 <Text style={{ color: "#9CA3AF", fontSize: 12, marginTop: 4 }}>
@@ -232,7 +234,7 @@ export default function NotificationsScreen() {
                     />
                   </View>
                   <View style={{ flex: 1, marginLeft: 12 }}>
-                    <Text style={{ color: "#fff", fontSize: 14, fontWeight: "bold" }}>
+                    <Text style={{ color: colors.foreground, fontSize: 14, fontWeight: "bold" }}>
                       {notification.title}
                     </Text>
                     <Text style={{ color: "#9CA3AF", fontSize: 13, marginTop: 4, lineHeight: 18 }}>

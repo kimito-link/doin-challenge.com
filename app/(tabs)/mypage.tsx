@@ -8,6 +8,7 @@ import { trpc } from "@/lib/trpc";
 import { useAuth } from "@/hooks/use-auth";
 import { useFollowStatus } from "@/hooks/use-follow-status";
 import { useResponsive } from "@/hooks/use-responsive";
+import { useColors } from "@/hooks/use-colors";
 import { FollowStatusBadge, FollowPromptBanner } from "@/components/follow-gate";
 import MaterialIcons from "@expo/vector-icons/MaterialIcons";
 import { LinearGradient } from "expo-linear-gradient";
@@ -97,6 +98,7 @@ const getRandomPattern = () => {
 };
 
 export default function MyPageScreen() {
+  const colors = useColors();
   const router = useRouter();
   const { user, loading, login, logout, isAuthenticated } = useAuth();
   const { isFollowing, targetUsername, targetDisplayName, updateFollowStatus, refreshFromServer, refreshing } = useFollowStatus();
@@ -178,15 +180,15 @@ export default function MyPageScreen() {
         isDesktop={isDesktop}
         showMenu={true}
       />
-      <View style={{ paddingHorizontal: 16, paddingBottom: 8, backgroundColor: "#0D1117" }}>
-        <Text style={{ color: "#fff", fontSize: 28, fontWeight: "bold" }}>
+      <View style={{ paddingHorizontal: 16, paddingBottom: 8, backgroundColor: colors.background }}>
+        <Text style={{ color: colors.foreground, fontSize: 28, fontWeight: "bold" }}>
           マイページ
         </Text>
       </View>
 
       {!isAuthenticated ? (
         // 未ログイン状態 - KimitoLinkVoice風UI
-        <View style={{ flex: 1, backgroundColor: "#0D1117" }}>
+        <View style={{ flex: 1, backgroundColor: colors.background }}>
           {/* グラデーション背景 */}
           <LinearGradient
             colors={["#1a237e", "#0D1117"]}
@@ -221,7 +223,7 @@ export default function MyPageScreen() {
               contentFit="contain" 
             />
             <Text style={{ 
-              color: "#fff", 
+              color: colors.foreground, 
               fontSize: 20, 
               fontWeight: "bold",
               marginBottom: 8,
@@ -322,9 +324,9 @@ export default function MyPageScreen() {
                   justifyContent: "center",
                   marginRight: 12,
                 }}>
-                  <Text style={{ color: "#fff", fontSize: 14, fontWeight: "bold" }}>1</Text>
+                  <Text style={{ color: colors.foreground, fontSize: 14, fontWeight: "bold" }}>1</Text>
                 </View>
-                <Text style={{ color: "#fff", fontSize: 15, fontWeight: "600" }}>
+                <Text style={{ color: colors.foreground, fontSize: 15, fontWeight: "600" }}>
                   Xアカウントでログイン
                 </Text>
               </View>
@@ -345,9 +347,9 @@ export default function MyPageScreen() {
                     justifyContent: "center",
                     marginRight: 12,
                   }}>
-                    <Text style={{ color: "#fff", fontSize: 14, fontWeight: "bold" }}>2</Text>
+                    <Text style={{ color: colors.foreground, fontSize: 14, fontWeight: "bold" }}>2</Text>
                   </View>
-                  <Text style={{ color: "#fff", fontSize: 15, fontWeight: "600" }}>
+                  <Text style={{ color: colors.foreground, fontSize: 15, fontWeight: "600" }}>
                     君斗りんくの2つのアカウントをフォロー
                   </Text>
                 </View>
@@ -372,7 +374,7 @@ export default function MyPageScreen() {
                       style={{ width: 36, height: 36, borderRadius: 18, marginRight: 12 }}
                     />
                     <View style={{ flex: 1 }}>
-                      <Text style={{ color: "#fff", fontSize: 14, fontWeight: "600" }}>
+                      <Text style={{ color: colors.foreground, fontSize: 14, fontWeight: "600" }}>
                         君斗りんく@クリエイター応援
                       </Text>
                       <Text style={{ color: "#1DA1F2", fontSize: 12 }}>@streamerfunch</Text>
@@ -397,7 +399,7 @@ export default function MyPageScreen() {
                       style={{ width: 36, height: 36, borderRadius: 18, marginRight: 12 }}
                     />
                     <View style={{ flex: 1 }}>
-                      <Text style={{ color: "#fff", fontSize: 14, fontWeight: "600" }}>
+                      <Text style={{ color: colors.foreground, fontSize: 14, fontWeight: "600" }}>
                         君斗りんく@アイドル応援
                       </Text>
                       <Text style={{ color: "#1DA1F2", fontSize: 12 }}>@idolfunch</Text>
@@ -422,9 +424,9 @@ export default function MyPageScreen() {
                   justifyContent: "center",
                   marginRight: 12,
                 }}>
-                  <Text style={{ color: "#fff", fontSize: 14, fontWeight: "bold" }}>3</Text>
+                  <Text style={{ color: colors.foreground, fontSize: 14, fontWeight: "bold" }}>3</Text>
                 </View>
-                <Text style={{ color: "#fff", fontSize: 15, fontWeight: "600" }}>
+                <Text style={{ color: colors.foreground, fontSize: 15, fontWeight: "600" }}>
                   プラットフォームへアクセス！
                 </Text>
               </View>
@@ -476,8 +478,8 @@ export default function MyPageScreen() {
                 width: "100%",
               }}
             >
-              <MaterialIcons name="login" size={22} color="#fff" />
-              <Text style={{ color: "#fff", fontSize: 16, fontWeight: "bold", marginLeft: 10 }}>
+              <MaterialIcons name="login" size={22} color={colors.foreground} />
+              <Text style={{ color: colors.foreground, fontSize: 16, fontWeight: "bold", marginLeft: 10 }}>
                 {isLoggingIn ? "認証中..." : "Xアカウントで認証しています"}
               </Text>
             </TouchableOpacity>
@@ -557,7 +559,7 @@ export default function MyPageScreen() {
         </View>
       ) : (
         // ログイン済み状態
-        <ScrollView style={{ flex: 1, backgroundColor: "#0D1117" }}>
+        <ScrollView style={{ flex: 1, backgroundColor: colors.background }}>
           {/* プロフィールカード */}
           <View
             style={{
@@ -596,14 +598,14 @@ export default function MyPageScreen() {
                       justifyContent: "center",
                     }}
                   >
-                    <Text style={{ color: "#fff", fontSize: 24, fontWeight: "bold" }}>
+                    <Text style={{ color: colors.foreground, fontSize: 24, fontWeight: "bold" }}>
                       {user?.name?.charAt(0) || "?"}
                     </Text>
                   </View>
                 )}
                 <View style={{ marginLeft: 16, flex: 1 }}>
                   <View style={{ flexDirection: "row", alignItems: "center", gap: 8 }}>
-                    <Text style={{ color: "#fff", fontSize: 20, fontWeight: "bold" }}>
+                    <Text style={{ color: colors.foreground, fontSize: 20, fontWeight: "bold" }}>
                       {user?.name || "ゲスト"}
                     </Text>
                     <FollowStatusBadge isFollowing={isFollowing} />
@@ -629,7 +631,7 @@ export default function MyPageScreen() {
                 <View
                   style={{
                     flex: 1,
-                    backgroundColor: "#0D1117",
+                    backgroundColor: colors.background,
                     borderRadius: 12,
                     padding: 12,
                     alignItems: "center",
@@ -643,7 +645,7 @@ export default function MyPageScreen() {
                 <View
                   style={{
                     flex: 1,
-                    backgroundColor: "#0D1117",
+                    backgroundColor: colors.background,
                     borderRadius: 12,
                     padding: 12,
                     alignItems: "center",
@@ -657,7 +659,7 @@ export default function MyPageScreen() {
                 <View
                   style={{
                     flex: 1,
-                    backgroundColor: "#0D1117",
+                    backgroundColor: colors.background,
                     borderRadius: 12,
                     padding: 12,
                     alignItems: "center",
@@ -692,7 +694,7 @@ export default function MyPageScreen() {
               <TouchableOpacity
                 onPress={handleLogout}
                 style={{
-                  backgroundColor: "#0D1117",
+                  backgroundColor: colors.background,
                   borderRadius: 8,
                   padding: 12,
                   marginTop: 8,
@@ -749,7 +751,7 @@ export default function MyPageScreen() {
               <Text style={{ fontSize: 24 }}>🏆</Text>
             </View>
             <View style={{ flex: 1 }}>
-              <Text style={{ color: "#fff", fontSize: 16, fontWeight: "bold" }}>
+              <Text style={{ color: colors.foreground, fontSize: 16, fontWeight: "bold" }}>
                 アチーブメント
               </Text>
               <Text style={{ color: "#9CA3AF", fontSize: 12 }}>
@@ -785,10 +787,10 @@ export default function MyPageScreen() {
                 marginRight: 12,
               }}
             >
-              <MaterialIcons name="notifications" size={24} color="#fff" />
+              <MaterialIcons name="notifications" size={24} color={colors.foreground} />
             </View>
             <View style={{ flex: 1 }}>
-              <Text style={{ color: "#fff", fontSize: 16, fontWeight: "bold" }}>
+              <Text style={{ color: colors.foreground, fontSize: 16, fontWeight: "bold" }}>
                 通知設定
               </Text>
               <Text style={{ color: "#9CA3AF", fontSize: 12 }}>
@@ -824,10 +826,10 @@ export default function MyPageScreen() {
                 marginRight: 12,
               }}
             >
-              <MaterialIcons name="palette" size={24} color="#fff" />
+              <MaterialIcons name="palette" size={24} color={colors.foreground} />
             </View>
             <View style={{ flex: 1 }}>
-              <Text style={{ color: "#fff", fontSize: 16, fontWeight: "bold" }}>
+              <Text style={{ color: colors.foreground, fontSize: 16, fontWeight: "bold" }}>
                 テーマ設定
               </Text>
               <Text style={{ color: "#9CA3AF", fontSize: 12 }}>
@@ -863,10 +865,10 @@ export default function MyPageScreen() {
                 marginRight: 12,
               }}
             >
-              <MaterialIcons name="analytics" size={24} color="#fff" />
+              <MaterialIcons name="analytics" size={24} color={colors.foreground} />
             </View>
             <View style={{ flex: 1 }}>
-              <Text style={{ color: "#fff", fontSize: 16, fontWeight: "bold" }}>
+              <Text style={{ color: colors.foreground, fontSize: 16, fontWeight: "bold" }}>
                 API使用量
               </Text>
               <Text style={{ color: "#9CA3AF", fontSize: 12 }}>
@@ -878,7 +880,7 @@ export default function MyPageScreen() {
 
           {/* バッジセクション */}
           <View style={{ paddingHorizontal: 16, marginBottom: 24 }}>
-            <Text style={{ color: "#fff", fontSize: 18, fontWeight: "bold", marginBottom: 12 }}>
+            <Text style={{ color: colors.foreground, fontSize: 18, fontWeight: "bold", marginBottom: 12 }}>
               獲得バッジ
             </Text>
             
@@ -917,10 +919,10 @@ export default function MyPageScreen() {
                           userBadge.badge?.type === "special" ? "star" : "check-circle"
                         }
                         size={24}
-                        color="#fff"
+                        color={colors.foreground}
                       />
                     </View>
-                    <Text style={{ color: "#fff", fontSize: 12, fontWeight: "bold", textAlign: "center" }} numberOfLines={2}>
+                    <Text style={{ color: colors.foreground, fontSize: 12, fontWeight: "bold", textAlign: "center" }} numberOfLines={2}>
                       {userBadge.badge?.name || "バッジ"}
                     </Text>
                     <Text style={{ color: "#6B7280", fontSize: 10, marginTop: 4 }}>
@@ -953,7 +955,7 @@ export default function MyPageScreen() {
 
           {/* 主催したチャレンジ */}
           <View style={{ paddingHorizontal: 16, marginBottom: 24 }}>
-            <Text style={{ color: "#fff", fontSize: 18, fontWeight: "bold", marginBottom: 12 }}>
+            <Text style={{ color: colors.foreground, fontSize: 18, fontWeight: "bold", marginBottom: 12 }}>
               主催したチャレンジ
             </Text>
 
@@ -979,7 +981,7 @@ export default function MyPageScreen() {
                   >
                     <View style={{ flexDirection: "row", alignItems: "center", marginBottom: 8 }}>
                       <View style={{ flex: 1 }}>
-                        <Text style={{ color: "#fff", fontSize: 16, fontWeight: "600" }}>
+                        <Text style={{ color: colors.foreground, fontSize: 16, fontWeight: "600" }}>
                           {item.title}
                         </Text>
                         <Text style={{ color: "#9CA3AF", fontSize: 14, marginTop: 4 }}>
@@ -1036,7 +1038,7 @@ export default function MyPageScreen() {
 
           {/* 参加したチャレンジ */}
           <View style={{ paddingHorizontal: 16, marginBottom: 100 }}>
-            <Text style={{ color: "#fff", fontSize: 18, fontWeight: "bold", marginBottom: 12 }}>
+            <Text style={{ color: colors.foreground, fontSize: 18, fontWeight: "bold", marginBottom: 12 }}>
               参加したチャレンジ
             </Text>
 
@@ -1055,7 +1057,7 @@ export default function MyPageScreen() {
                 >
                   <View style={{ flexDirection: "row", alignItems: "center", justifyContent: "space-between" }}>
                     <View style={{ flex: 1 }}>
-                      <Text style={{ color: "#fff", fontSize: 14 }}>
+                      <Text style={{ color: colors.foreground, fontSize: 14 }}>
                         チャレンジID: {item.challengeId}
                       </Text>
                       {item.message && (

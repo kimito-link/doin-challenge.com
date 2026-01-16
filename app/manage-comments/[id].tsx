@@ -4,11 +4,13 @@ import { useState } from "react";
 import { ScreenContainer } from "@/components/screen-container";
 import { trpc } from "@/lib/trpc";
 import { useAuth } from "@/hooks/use-auth";
+import { useColors } from "@/hooks/use-colors";
 import MaterialIcons from "@expo/vector-icons/MaterialIcons";
 import { Image } from "expo-image";
 import { AppHeader } from "@/components/app-header";
 
 export default function ManageCommentsScreen() {
+  const colors = useColors();
   const router = useRouter();
   const { id } = useLocalSearchParams<{ id: string }>();
   const challengeId = parseInt(id || "0", 10);
@@ -117,7 +119,7 @@ export default function ManageCommentsScreen() {
 
   return (
     <ScreenContainer edges={["top", "left", "right"]} containerClassName="bg-background">
-      <ScrollView style={{ flex: 1, backgroundColor: "#0D1117" }}>
+      <ScrollView style={{ flex: 1, backgroundColor: colors.background }}>
         {/* ヘッダー */}
         <AppHeader 
           title="動員ちゃれんじ" 
@@ -127,14 +129,14 @@ export default function ManageCommentsScreen() {
               onPress={() => router.back()}
               style={{ flexDirection: "row", alignItems: "center" }}
             >
-              <MaterialIcons name="arrow-back" size={24} color="#fff" />
-              <Text style={{ color: "#fff", marginLeft: 8 }}>戻る</Text>
+              <MaterialIcons name="arrow-back" size={24} color={colors.foreground} />
+              <Text style={{ color: colors.foreground, marginLeft: 8 }}>戻る</Text>
             </TouchableOpacity>
           }
         />
         <View style={{ paddingHorizontal: 16, paddingTop: 8 }}>
           <View style={{ marginBottom: 16 }}>
-            <Text style={{ color: "#fff", fontSize: 18, fontWeight: "bold" }}>
+            <Text style={{ color: colors.foreground, fontSize: 18, fontWeight: "bold" }}>
               コメント管理
             </Text>
             <Text style={{ color: "#9CA3AF", fontSize: 12 }} numberOfLines={1}>
@@ -154,7 +156,7 @@ export default function ManageCommentsScreen() {
                 alignItems: "center",
               }}
             >
-              <Text style={{ color: "#fff", fontWeight: "bold" }}>
+              <Text style={{ color: colors.foreground, fontWeight: "bold" }}>
                 すべて ({commentsWithMessage.length})
               </Text>
             </TouchableOpacity>
@@ -168,7 +170,7 @@ export default function ManageCommentsScreen() {
                 alignItems: "center",
               }}
             >
-              <Text style={{ color: "#fff", fontWeight: "bold" }}>
+              <Text style={{ color: colors.foreground, fontWeight: "bold" }}>
                 ピックアップ ({pickedComments?.length || 0})
               </Text>
             </TouchableOpacity>
@@ -213,13 +215,13 @@ export default function ManageCommentsScreen() {
                             justifyContent: "center",
                           }}
                         >
-                          <Text style={{ color: "#fff", fontWeight: "bold" }}>
+                          <Text style={{ color: colors.foreground, fontWeight: "bold" }}>
                             {participation.displayName?.charAt(0) || "?"}
                           </Text>
                         </View>
                       )}
                       <View style={{ flex: 1, marginLeft: 12 }}>
-                        <Text style={{ color: "#fff", fontWeight: "bold" }}>
+                        <Text style={{ color: colors.foreground, fontWeight: "bold" }}>
                           {participation.isAnonymous ? "匿名" : participation.displayName}
                         </Text>
                         {participation.prefecture && (
@@ -237,7 +239,7 @@ export default function ManageCommentsScreen() {
                             paddingVertical: 4,
                           }}
                         >
-                          <Text style={{ color: "#fff", fontSize: 10, fontWeight: "bold" }}>
+                          <Text style={{ color: colors.foreground, fontSize: 10, fontWeight: "bold" }}>
                             ピックアップ済
                           </Text>
                         </View>
@@ -258,10 +260,10 @@ export default function ManageCommentsScreen() {
                           placeholder="ピックアップ理由（任意）"
                           placeholderTextColor="#6B7280"
                           style={{
-                            backgroundColor: "#0D1117",
+                            backgroundColor: colors.background,
                             borderRadius: 8,
                             padding: 12,
-                            color: "#fff",
+                            color: colors.foreground,
                             borderWidth: 1,
                             borderColor: "#EC4899",
                           }}
@@ -283,7 +285,7 @@ export default function ManageCommentsScreen() {
                             alignItems: "center",
                           }}
                         >
-                          <Text style={{ color: "#fff", fontWeight: "bold" }}>
+                          <Text style={{ color: colors.foreground, fontWeight: "bold" }}>
                             ピックアップ解除
                           </Text>
                         </TouchableOpacity>
@@ -300,7 +302,7 @@ export default function ManageCommentsScreen() {
                                 alignItems: "center",
                               }}
                             >
-                              <Text style={{ color: "#fff" }}>キャンセル</Text>
+                              <Text style={{ color: colors.foreground }}>キャンセル</Text>
                             </TouchableOpacity>
                           )}
                           <TouchableOpacity
@@ -314,7 +316,7 @@ export default function ManageCommentsScreen() {
                               alignItems: "center",
                             }}
                           >
-                            <Text style={{ color: "#fff", fontWeight: "bold" }}>
+                            <Text style={{ color: colors.foreground, fontWeight: "bold" }}>
                               {isPickingThis ? "確定" : "ピックアップ"}
                             </Text>
                           </TouchableOpacity>
@@ -365,13 +367,13 @@ export default function ManageCommentsScreen() {
                           justifyContent: "center",
                         }}
                       >
-                        <Text style={{ color: "#fff", fontWeight: "bold" }}>
+                        <Text style={{ color: colors.foreground, fontWeight: "bold" }}>
                           {picked.participation?.displayName?.charAt(0) || "?"}
                         </Text>
                       </View>
                     )}
                     <View style={{ flex: 1, marginLeft: 12 }}>
-                      <Text style={{ color: "#fff", fontWeight: "bold" }}>
+                      <Text style={{ color: colors.foreground, fontWeight: "bold" }}>
                         {picked.participation?.isAnonymous ? "匿名" : picked.participation?.displayName}
                       </Text>
                       {picked.reason && (
@@ -413,7 +415,7 @@ export default function ManageCommentsScreen() {
                         alignItems: "center",
                       }}
                     >
-                      <Text style={{ color: "#fff" }}>解除</Text>
+                      <Text style={{ color: colors.foreground }}>解除</Text>
                     </TouchableOpacity>
                     {!picked.isUsedInVideo && (
                       <TouchableOpacity

@@ -2,7 +2,7 @@
 const themeColors = {
   // KimitoLink ブランドカラー
   primary: { light: '#00427B', dark: '#4A90D9' },      // ブルー（メイン）
-  secondary: { light: '#DD6500', dark: '#FF8C33' },   // オレンジ（アクセント）
+  secondary: { light: '#B85400', dark: '#FF8C33' },   // オレンジ（アクセント）- ライトモードでWCAG AA準拠
   background: { light: '#ffffff', dark: '#0D1117' },
   surface: { light: '#F8F9FA', dark: '#161B22' },
   foreground: { light: '#1F2937', dark: '#E6EDF3' },

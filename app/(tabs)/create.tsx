@@ -8,6 +8,7 @@ import { trpc } from "@/lib/trpc";
 import { useAuth } from "@/hooks/use-auth";
 import { useFollowStatus } from "@/hooks/use-follow-status";
 import { useResponsive } from "@/hooks/use-responsive";
+import { useColors } from "@/hooks/use-colors";
 import { FollowPromptBanner, FollowStatusBadge } from "@/components/follow-gate";
 import MaterialIcons from "@expo/vector-icons/MaterialIcons";
 import { LinearGradient } from "expo-linear-gradient";
@@ -53,6 +54,7 @@ export default function CreateChallengeScreen() {
   const { user, login, isAuthenticated } = useAuth();
   const { isFollowing, targetUsername, targetDisplayName } = useFollowStatus();
   const { isDesktop, isTablet } = useResponsive();
+  const colors = useColors();
   
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
@@ -159,7 +161,7 @@ export default function CreateChallengeScreen() {
         style={{ flex: 1 }}
       >
         <ScrollView 
-            style={{ flex: 1, backgroundColor: "#0D1117" }}
+            style={{ flex: 1, backgroundColor: colors.background }}
             showsHorizontalScrollIndicator={false}
             horizontal={false}
             contentContainerStyle={{ flexGrow: 1 }}
@@ -172,10 +174,10 @@ export default function CreateChallengeScreen() {
             showMenu={true}
           />
           <View style={{ paddingHorizontal: 16, paddingBottom: 8 }}>
-            <Text style={{ color: "#fff", fontSize: 28, fontWeight: "bold" }}>
+            <Text style={{ color: colors.foreground, fontSize: 28, fontWeight: "bold" }}>
               チャレンジ作成
             </Text>
-            <Text style={{ color: "#9CA3AF", fontSize: 14, marginTop: 4 }}>
+            <Text style={{ color: colors.muted, fontSize: 14, marginTop: 4 }}>
               目標を設定してファンと一緒に達成しよう
             </Text>
           </View>
@@ -234,7 +236,7 @@ export default function CreateChallengeScreen() {
                   }}
                 >
                   <MaterialIcons name="login" size={20} color="#fff" />
-                  <Text style={{ color: "#fff", fontSize: 16, fontWeight: "bold", marginLeft: 8 }}>
+                  <Text style={{ color: colors.foreground, fontSize: 16, fontWeight: "bold", marginLeft: 8 }}>
                     Twitterでログインして作成
                   </Text>
                 </TouchableOpacity>
@@ -243,7 +245,7 @@ export default function CreateChallengeScreen() {
               {user && (
                 <View
                   style={{
-                    backgroundColor: "#0D1117",
+                    backgroundColor: colors.background,
                     borderRadius: 12,
                     padding: 12,
                     flexDirection: "row",
@@ -267,13 +269,13 @@ export default function CreateChallengeScreen() {
                         justifyContent: "center",
                       }}
                     >
-                      <Text style={{ color: "#fff", fontSize: 20, fontWeight: "bold" }}>
+                      <Text style={{ color: colors.foreground, fontSize: 20, fontWeight: "bold" }}>
                         {user.name?.charAt(0) || "?"}
                       </Text>
                     </View>
                   )}
                   <View style={{ marginLeft: 12, flex: 1 }}>
-                    <Text style={{ color: "#fff", fontSize: 16, fontWeight: "600" }}>
+                    <Text style={{ color: colors.foreground, fontSize: 16, fontWeight: "600" }}>
                       {user.name}
                     </Text>
                     {user.username && (
@@ -282,7 +284,7 @@ export default function CreateChallengeScreen() {
                       </Text>
                     )}
                     {user.followersCount !== undefined && (
-                      <Text style={{ color: "#9CA3AF", fontSize: 12 }}>
+                      <Text style={{ color: colors.muted, fontSize: 12 }}>
                         {user.followersCount.toLocaleString()} フォロワー
                       </Text>
                     )}
@@ -300,7 +302,7 @@ export default function CreateChallengeScreen() {
                   </View>
 
                   <View style={{ marginBottom: 16 }}>
-                    <Text style={{ color: "#9CA3AF", fontSize: 14, marginBottom: 8 }}>
+                    <Text style={{ color: colors.muted, fontSize: 14, marginBottom: 8 }}>
                       ホスト名 *
                     </Text>
                     <TextInput
@@ -309,10 +311,10 @@ export default function CreateChallengeScreen() {
                       placeholder="あなたの名前・アーティスト名"
                       placeholderTextColor="#6B7280"
                       style={{
-                        backgroundColor: "#0D1117",
+                        backgroundColor: colors.background,
                         borderRadius: 8,
                         padding: 12,
-                        color: "#fff",
+                        color: colors.foreground,
                         borderWidth: 1,
                         borderColor: "#2D3139",
                       }}
@@ -323,7 +325,7 @@ export default function CreateChallengeScreen() {
 
               {/* 目標タイプ選択 */}
               <View style={{ marginBottom: 16 }}>
-                <Text style={{ color: "#9CA3AF", fontSize: 14, marginBottom: 8 }}>
+                <Text style={{ color: colors.muted, fontSize: 14, marginBottom: 8 }}>
                   目標タイプ *
                 </Text>
                 <ScrollView horizontal showsHorizontalScrollIndicator={false}>
@@ -369,7 +371,7 @@ export default function CreateChallengeScreen() {
 
               {/* イベントタイプ選択 */}
               <View style={{ marginBottom: 16 }}>
-                <Text style={{ color: "#9CA3AF", fontSize: 14, marginBottom: 8 }}>
+                <Text style={{ color: colors.muted, fontSize: 14, marginBottom: 8 }}>
                   イベントタイプ *
                 </Text>
                 <View style={{ flexDirection: "row" }}>
@@ -388,7 +390,7 @@ export default function CreateChallengeScreen() {
                       }}
                     >
                       <Text style={{ 
-                        color: "#fff", 
+                        color: colors.foreground, 
                         fontSize: 14, 
                         fontWeight: eventType === type.id ? "bold" : "normal" 
                       }}>
@@ -401,13 +403,13 @@ export default function CreateChallengeScreen() {
 
               {/* カテゴリ選択 */}
               <View style={{ marginBottom: 16 }}>
-                <Text style={{ color: "#9CA3AF", fontSize: 14, marginBottom: 8 }}>
+                <Text style={{ color: colors.muted, fontSize: 14, marginBottom: 8 }}>
                   カテゴリ
                 </Text>
                 <TouchableOpacity
                   onPress={() => setShowCategoryList(!showCategoryList)}
                   style={{
-                    backgroundColor: "#0D1117",
+                    backgroundColor: colors.background,
                     borderRadius: 8,
                     padding: 12,
                     borderWidth: 1,
@@ -423,7 +425,7 @@ export default function CreateChallengeScreen() {
                         <Text style={{ fontSize: 18, marginRight: 8 }}>
                           {categoriesData.find(c => c.id === categoryId)?.icon || "🎵"}
                         </Text>
-                        <Text style={{ color: "#fff" }}>
+                        <Text style={{ color: colors.foreground }}>
                           {categoriesData.find(c => c.id === categoryId)?.name || "選択してください"}
                         </Text>
                       </>
@@ -435,7 +437,7 @@ export default function CreateChallengeScreen() {
                 </TouchableOpacity>
                 {showCategoryList && categoriesData && (
                   <View style={{
-                    backgroundColor: "#0D1117",
+                    backgroundColor: colors.background,
                     borderRadius: 8,
                     marginTop: 4,
                     borderWidth: 1,
@@ -456,7 +458,7 @@ export default function CreateChallengeScreen() {
                           alignItems: "center",
                         }}
                       >
-                        <Text style={{ color: "#9CA3AF" }}>指定なし</Text>
+                        <Text style={{ color: colors.muted }}>指定なし</Text>
                       </TouchableOpacity>
                       {categoriesData.map((cat) => (
                         <TouchableOpacity
@@ -476,7 +478,7 @@ export default function CreateChallengeScreen() {
                         >
                           <Text style={{ fontSize: 18, marginRight: 8 }}>{cat.icon}</Text>
                           <View style={{ flex: 1 }}>
-                            <Text style={{ color: "#fff", fontWeight: "500" }}>{cat.name}</Text>
+                            <Text style={{ color: colors.foreground, fontWeight: "500" }}>{cat.name}</Text>
                             {cat.description && (
                               <Text style={{ color: "#6B7280", fontSize: 12 }}>{cat.description}</Text>
                             )}
@@ -489,7 +491,7 @@ export default function CreateChallengeScreen() {
               </View>
 
               <View style={{ marginBottom: 16 }}>
-                <Text style={{ color: "#9CA3AF", fontSize: 14, marginBottom: 8 }}>
+                <Text style={{ color: colors.muted, fontSize: 14, marginBottom: 8 }}>
                   チャレンジ名 *
                 </Text>
                 <TextInput
@@ -498,10 +500,10 @@ export default function CreateChallengeScreen() {
                   placeholder="例: ○○ ワンマンライブ 動員100人チャレンジ"
                   placeholderTextColor="#6B7280"
                   style={{
-                    backgroundColor: "#0D1117",
+                    backgroundColor: colors.background,
                     borderRadius: 8,
                     padding: 12,
-                    color: "#fff",
+                    color: colors.foreground,
                     borderWidth: 1,
                     borderColor: "#2D3139",
                   }}
@@ -510,7 +512,7 @@ export default function CreateChallengeScreen() {
 
               {/* 目標数値 */}
               <View style={{ marginBottom: 16 }}>
-                <Text style={{ color: "#9CA3AF", fontSize: 14, marginBottom: 8 }}>
+                <Text style={{ color: colors.muted, fontSize: 14, marginBottom: 8 }}>
                   目標数値 *
                 </Text>
                 <View style={{ flexDirection: "row", alignItems: "center" }}>
@@ -521,23 +523,23 @@ export default function CreateChallengeScreen() {
                     placeholderTextColor="#6B7280"
                     keyboardType="numeric"
                     style={{
-                      backgroundColor: "#0D1117",
+                      backgroundColor: colors.background,
                       borderRadius: 8,
                       padding: 12,
-                      color: "#fff",
+                      color: colors.foreground,
                       borderWidth: 1,
                       borderColor: "#2D3139",
                       flex: 1,
                     }}
                   />
-                  <Text style={{ color: "#fff", fontSize: 16, marginLeft: 12 }}>
+                  <Text style={{ color: colors.foreground, fontSize: 16, marginLeft: 12 }}>
                     {goalUnit || "人"}
                   </Text>
                 </View>
               </View>
 
               <View style={{ marginBottom: 16 }}>
-                <Text style={{ color: "#9CA3AF", fontSize: 14, marginBottom: 8 }}>
+                <Text style={{ color: colors.muted, fontSize: 14, marginBottom: 8 }}>
                   開催日 *
                 </Text>
                 <DatePicker
@@ -548,7 +550,7 @@ export default function CreateChallengeScreen() {
               </View>
 
               <View style={{ marginBottom: 16 }}>
-                <Text style={{ color: "#9CA3AF", fontSize: 14, marginBottom: 8 }}>
+                <Text style={{ color: colors.muted, fontSize: 14, marginBottom: 8 }}>
                   開催場所（任意）
                 </Text>
                 <TextInput
@@ -557,10 +559,10 @@ export default function CreateChallengeScreen() {
                   placeholder="例: 渋谷○○ホール / YouTube / ミクチャ"
                   placeholderTextColor="#6B7280"
                   style={{
-                    backgroundColor: "#0D1117",
+                    backgroundColor: colors.background,
                     borderRadius: 8,
                     padding: 12,
-                    color: "#fff",
+                    color: colors.foreground,
                     borderWidth: 1,
                     borderColor: "#2D3139",
                   }}
@@ -568,7 +570,7 @@ export default function CreateChallengeScreen() {
               </View>
 
               <View style={{ marginBottom: 16 }}>
-                <Text style={{ color: "#9CA3AF", fontSize: 14, marginBottom: 8 }}>
+                <Text style={{ color: colors.muted, fontSize: 14, marginBottom: 8 }}>
                   外部URL（任意）
                 </Text>
                 <TextInput
@@ -577,10 +579,10 @@ export default function CreateChallengeScreen() {
                   placeholder="YouTubeプレミア公開URL等"
                   placeholderTextColor="#6B7280"
                   style={{
-                    backgroundColor: "#0D1117",
+                    backgroundColor: colors.background,
                     borderRadius: 8,
                     padding: 12,
-                    color: "#fff",
+                    color: colors.foreground,
                     borderWidth: 1,
                     borderColor: "#2D3139",
                   }}
@@ -591,7 +593,7 @@ export default function CreateChallengeScreen() {
               {goalType === "attendance" && (
                 <View
                   style={{
-                    backgroundColor: "#0D1117",
+                    backgroundColor: colors.background,
                     borderRadius: 12,
                     padding: 16,
                     marginBottom: 16,
@@ -601,14 +603,14 @@ export default function CreateChallengeScreen() {
                 >
                   <View style={{ flexDirection: "row", alignItems: "center", marginBottom: 12 }}>
                     <MaterialIcons name="confirmation-number" size={20} color="#EC4899" />
-                    <Text style={{ color: "#fff", fontSize: 16, fontWeight: "600", marginLeft: 8 }}>
+                    <Text style={{ color: colors.foreground, fontSize: 16, fontWeight: "600", marginLeft: 8 }}>
                       チケット情報（任意）
                     </Text>
                   </View>
                   
                   <View style={{ flexDirection: "row", gap: 12, marginBottom: 12 }}>
                     <View style={{ flex: 1 }}>
-                      <Text style={{ color: "#9CA3AF", fontSize: 12, marginBottom: 4 }}>
+                      <Text style={{ color: colors.muted, fontSize: 12, marginBottom: 4 }}>
                         前売り券
                       </Text>
                       <View style={{ flexDirection: "row", alignItems: "center" }}>
@@ -622,17 +624,17 @@ export default function CreateChallengeScreen() {
                             backgroundColor: "#1A1D21",
                             borderRadius: 8,
                             padding: 10,
-                            color: "#fff",
+                            color: colors.foreground,
                             borderWidth: 1,
                             borderColor: "#2D3139",
                             flex: 1,
                           }}
                         />
-                        <Text style={{ color: "#9CA3AF", fontSize: 14, marginLeft: 8 }}>円</Text>
+                        <Text style={{ color: colors.muted, fontSize: 14, marginLeft: 8 }}>円</Text>
                       </View>
                     </View>
                     <View style={{ flex: 1 }}>
-                      <Text style={{ color: "#9CA3AF", fontSize: 12, marginBottom: 4 }}>
+                      <Text style={{ color: colors.muted, fontSize: 12, marginBottom: 4 }}>
                         当日券
                       </Text>
                       <View style={{ flexDirection: "row", alignItems: "center" }}>
@@ -646,19 +648,19 @@ export default function CreateChallengeScreen() {
                             backgroundColor: "#1A1D21",
                             borderRadius: 8,
                             padding: 10,
-                            color: "#fff",
+                            color: colors.foreground,
                             borderWidth: 1,
                             borderColor: "#2D3139",
                             flex: 1,
                           }}
                         />
-                        <Text style={{ color: "#9CA3AF", fontSize: 14, marginLeft: 8 }}>円</Text>
+                        <Text style={{ color: colors.muted, fontSize: 14, marginLeft: 8 }}>円</Text>
                       </View>
                     </View>
                   </View>
 
                   <View>
-                    <Text style={{ color: "#9CA3AF", fontSize: 12, marginBottom: 4 }}>
+                    <Text style={{ color: colors.muted, fontSize: 12, marginBottom: 4 }}>
                       チケット購入URL
                     </Text>
                     <TextInput
@@ -670,7 +672,7 @@ export default function CreateChallengeScreen() {
                         backgroundColor: "#1A1D21",
                         borderRadius: 8,
                         padding: 10,
-                        color: "#fff",
+                        color: colors.foreground,
                         borderWidth: 1,
                         borderColor: "#2D3139",
                       }}
@@ -680,7 +682,7 @@ export default function CreateChallengeScreen() {
               )}
 
               <View style={{ marginBottom: 16 }}>
-                <Text style={{ color: "#9CA3AF", fontSize: 14, marginBottom: 8 }}>
+                <Text style={{ color: colors.muted, fontSize: 14, marginBottom: 8 }}>
                   チャレンジ説明（任意）
                 </Text>
                 <TextInput
@@ -691,10 +693,10 @@ export default function CreateChallengeScreen() {
                   multiline
                   numberOfLines={4}
                   style={{
-                    backgroundColor: "#0D1117",
+                    backgroundColor: colors.background,
                     borderRadius: 8,
                     padding: 12,
-                    color: "#fff",
+                    color: colors.foreground,
                     borderWidth: 1,
                     borderColor: "#2D3139",
                     minHeight: 100,
@@ -712,7 +714,7 @@ export default function CreateChallengeScreen() {
                   >
                     <View style={{ flexDirection: "row", alignItems: "center" }}>
                       <MaterialIcons name="bookmark" size={20} color="#8B5CF6" />
-                      <Text style={{ color: "#fff", fontSize: 14, fontWeight: "600", marginLeft: 8 }}>
+                      <Text style={{ color: colors.foreground, fontSize: 14, fontWeight: "600", marginLeft: 8 }}>
                         テンプレートとして保存
                       </Text>
                     </View>
@@ -738,10 +740,10 @@ export default function CreateChallengeScreen() {
                         placeholder="テンプレート名"
                         placeholderTextColor="#6B7280"
                         style={{
-                          backgroundColor: "#0D1117",
+                          backgroundColor: colors.background,
                           borderRadius: 8,
                           padding: 12,
-                          color: "#fff",
+                          color: colors.foreground,
                           borderWidth: 1,
                           borderColor: "#2D3139",
                           marginBottom: 8,
@@ -764,7 +766,7 @@ export default function CreateChallengeScreen() {
                         }}>
                           {templateIsPublic && <MaterialIcons name="check" size={14} color="#fff" />}
                         </View>
-                        <Text style={{ color: "#9CA3AF", fontSize: 13 }}>
+                        <Text style={{ color: colors.muted, fontSize: 13 }}>
                           他のユーザーにも公開する
                         </Text>
                       </TouchableOpacity>
@@ -795,7 +797,7 @@ export default function CreateChallengeScreen() {
                     bottom: 0,
                   }}
                 />
-                <Text style={{ color: "#fff", fontSize: 16, fontWeight: "bold" }}>
+                <Text style={{ color: colors.foreground, fontSize: 16, fontWeight: "bold" }}>
                   {createChallengeMutation.isPending ? "作成中..." : "チャレンジを作成"}
                 </Text>
               </TouchableOpacity>

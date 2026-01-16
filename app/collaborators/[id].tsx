@@ -5,6 +5,7 @@ import { useState } from "react";
 import { ScreenContainer } from "@/components/screen-container";
 import { trpc } from "@/lib/trpc";
 import { useAuth } from "@/hooks/use-auth";
+import { useColors } from "@/hooks/use-colors";
 import MaterialIcons from "@expo/vector-icons/MaterialIcons";
 import { LinearGradient } from "expo-linear-gradient";
 import { AppHeader } from "@/components/app-header";
@@ -42,6 +43,7 @@ function CollaboratorCard({
   onRemove?: () => void;
   onChangeRole?: (role: string) => void;
 }) {
+  const colors = useColors();
   return (
     <View
       style={{
@@ -70,14 +72,14 @@ function CollaboratorCard({
               justifyContent: "center",
             }}
           >
-            <Text style={{ color: "#fff", fontSize: 18, fontWeight: "bold" }}>
+            <Text style={{ color: colors.foreground, fontSize: 18, fontWeight: "bold" }}>
               {collaborator.userName?.charAt(0) || "?"}
             </Text>
           </View>
         )}
         <View style={{ flex: 1, marginLeft: 12 }}>
           <View style={{ flexDirection: "row", alignItems: "center" }}>
-            <Text style={{ color: "#fff", fontSize: 16, fontWeight: "bold" }}>
+            <Text style={{ color: colors.foreground, fontSize: 16, fontWeight: "bold" }}>
               {collaborator.userName}
             </Text>
             <View
@@ -89,7 +91,7 @@ function CollaboratorCard({
                 marginLeft: 8,
               }}
             >
-              <Text style={{ color: "#fff", fontSize: 10, fontWeight: "bold" }}>
+              <Text style={{ color: colors.foreground, fontSize: 10, fontWeight: "bold" }}>
                 {ROLE_NAMES[collaborator.role] || collaborator.role}
               </Text>
             </View>
@@ -134,7 +136,7 @@ function CollaboratorCard({
               alignItems: "center",
             }}
           >
-            <Text style={{ color: "#fff", fontSize: 12 }}>
+            <Text style={{ color: colors.foreground, fontSize: 12 }}>
               {collaborator.role === "co-host" ? "モデレーターに変更" : "共同主催者に変更"}
             </Text>
           </TouchableOpacity>
@@ -147,7 +149,7 @@ function CollaboratorCard({
               paddingHorizontal: 16,
             }}
           >
-            <MaterialIcons name="close" size={16} color="#fff" />
+            <MaterialIcons name="close" size={16} color={colors.foreground} />
           </TouchableOpacity>
         </View>
       )}
@@ -163,6 +165,7 @@ function InviteForm({
   onInvite: (twitterId: string, role: string) => void;
   isLoading: boolean;
 }) {
+  const colors = useColors();
   const [twitterId, setTwitterId] = useState("");
   const [role, setRole] = useState<"co-host" | "moderator">("co-host");
 
@@ -186,7 +189,7 @@ function InviteForm({
         borderColor: "#2D3139",
       }}
     >
-      <Text style={{ color: "#fff", fontSize: 16, fontWeight: "bold", marginBottom: 12 }}>
+      <Text style={{ color: colors.foreground, fontSize: 16, fontWeight: "bold", marginBottom: 12 }}>
         共同主催者を招待
       </Text>
       
@@ -200,10 +203,10 @@ function InviteForm({
           placeholder="例: idolfunch"
           placeholderTextColor="#6B7280"
           style={{
-            backgroundColor: "#0D1117",
+            backgroundColor: colors.background,
             borderRadius: 8,
             padding: 12,
-            color: "#fff",
+            color: colors.foreground,
             fontSize: 16,
             borderWidth: 1,
             borderColor: "#2D3139",
@@ -228,7 +231,7 @@ function InviteForm({
               alignItems: "center",
             }}
           >
-            <Text style={{ color: "#fff", fontSize: 14, fontWeight: role === "co-host" ? "bold" : "normal" }}>
+            <Text style={{ color: colors.foreground, fontSize: 14, fontWeight: role === "co-host" ? "bold" : "normal" }}>
               共同主催者
             </Text>
             <Text style={{ color: role === "co-host" ? "rgba(255,255,255,0.8)" : "#6B7280", fontSize: 10, marginTop: 2 }}>
@@ -245,7 +248,7 @@ function InviteForm({
               alignItems: "center",
             }}
           >
-            <Text style={{ color: "#fff", fontSize: 14, fontWeight: role === "moderator" ? "bold" : "normal" }}>
+            <Text style={{ color: colors.foreground, fontSize: 14, fontWeight: role === "moderator" ? "bold" : "normal" }}>
               モデレーター
             </Text>
             <Text style={{ color: role === "moderator" ? "rgba(255,255,255,0.8)" : "#6B7280", fontSize: 10, marginTop: 2 }}>
@@ -267,8 +270,8 @@ function InviteForm({
           justifyContent: "center",
         }}
       >
-        <MaterialIcons name="person-add" size={20} color="#fff" />
-        <Text style={{ color: "#fff", fontSize: 16, fontWeight: "bold", marginLeft: 8 }}>
+        <MaterialIcons name="person-add" size={20} color={colors.foreground} />
+        <Text style={{ color: colors.foreground, fontSize: 16, fontWeight: "bold", marginLeft: 8 }}>
           {isLoading ? "招待中..." : "招待を送信"}
         </Text>
       </TouchableOpacity>
@@ -277,6 +280,7 @@ function InviteForm({
 }
 
 export default function CollaboratorsScreen() {
+  const colors = useColors();
   const { id } = useLocalSearchParams<{ id: string }>();
   const router = useRouter();
   const { user } = useAuth();
@@ -423,13 +427,13 @@ export default function CollaboratorsScreen() {
               onPress={() => router.back()}
               style={{ flexDirection: "row", alignItems: "center" }}
             >
-              <MaterialIcons name="arrow-back" size={24} color="#fff" />
-              <Text style={{ color: "#fff", marginLeft: 8 }}>戻る</Text>
+              <MaterialIcons name="arrow-back" size={24} color={colors.foreground} />
+              <Text style={{ color: colors.foreground, marginLeft: 8 }}>戻る</Text>
             </TouchableOpacity>
           }
         />
         <View style={{ marginBottom: 16 }}>
-          <Text style={{ color: "#fff", fontSize: 18, fontWeight: "bold" }}>
+          <Text style={{ color: colors.foreground, fontSize: 18, fontWeight: "bold" }}>
             共同主催者管理
           </Text>
           <Text style={{ color: "#9CA3AF", fontSize: 14 }} numberOfLines={1}>
@@ -450,7 +454,7 @@ export default function CollaboratorsScreen() {
         >
           <View style={{ flexDirection: "row", alignItems: "center", marginBottom: 8 }}>
             <MaterialIcons name="info" size={20} color="#3B82F6" />
-            <Text style={{ color: "#fff", fontSize: 14, fontWeight: "bold", marginLeft: 8 }}>
+            <Text style={{ color: colors.foreground, fontSize: 14, fontWeight: "bold", marginLeft: 8 }}>
               コラボ機能について
             </Text>
           </View>
@@ -465,7 +469,7 @@ export default function CollaboratorsScreen() {
         <InviteForm onInvite={handleInvite} isLoading={isInviting} />
 
         {/* コラボレーター一覧 */}
-        <Text style={{ color: "#fff", fontSize: 18, fontWeight: "bold", marginBottom: 12 }}>
+        <Text style={{ color: colors.foreground, fontSize: 18, fontWeight: "bold", marginBottom: 12 }}>
           メンバー ({allCollaborators.length}人)
         </Text>
         

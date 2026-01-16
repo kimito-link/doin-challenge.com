@@ -1298,3 +1298,26 @@
 - [x] エラーハンドリングの実装状況確認（36箇所）
 - [x] トースト通知の実装状況確認（20箇所）
 - [x] 基本的なフィードバックは実装済み
+
+
+## UI/UX最適化 残りタスク（v4.95）
+
+### StyleSheet内のハードコード色の置換
+- [x] app/(tabs)/index.tsxのハードコード色を置換
+- [x] app/(tabs)/create.tsxのハードコード色を置換
+- [x] app/(tabs)/mypage.tsxのハードコード色を置換
+- [x] app/event/[id].tsxのハードコード色を置換
+- [x] その他の画面のハードコード色を置換（12ファイル）
+
+### ライトモードのデザイン調整
+- [x] ライトモード時の配色確認
+- [x] コントラスト比の調整（secondary色を#B85400に変更、WCAG AA準拠）
+- [x] 視認性の改善（全色がWCAG AA基準を満たす）
+
+### コンポーネントリファクタリング（Atomic Design）
+- [x] 残りのコンポーネントをatoms/molecules/organismsに整理
+  - atoms: 9コンポーネント追加（BlinkingCharacter, Countdown, ExternalLink等）
+  - molecules: 13コンポーネント追加（CelebrationAnimation, ConfirmModal等）
+  - organisms: 14コンポーネント追加（JapanMap, GlobalMenu等）
+- [x] インデックスファイルの更新（atoms/molecules/organismsのindex.ts）
+- [x] インポートパスの修正（loading-screen.tsx）

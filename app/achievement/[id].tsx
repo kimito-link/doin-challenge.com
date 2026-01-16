@@ -4,6 +4,7 @@ import { useLocalSearchParams, useRouter } from "expo-router";
 import { ScreenContainer } from "@/components/screen-container";
 import { trpc } from "@/lib/trpc";
 import { useAuth } from "@/hooks/use-auth";
+import { useColors } from "@/hooks/use-colors";
 import MaterialIcons from "@expo/vector-icons/MaterialIcons";
 import { LinearGradient } from "expo-linear-gradient";
 import { useState } from "react";
@@ -23,6 +24,7 @@ type Participation = {
 };
 
 export default function AchievementPage() {
+  const colors = useColors();
   const router = useRouter();
   const { id } = useLocalSearchParams<{ id: string }>();
   const { user } = useAuth();
@@ -49,7 +51,7 @@ export default function AchievementPage() {
   if (challengeLoading || achievementLoading || participationsLoading) {
     return (
       <ScreenContainer containerClassName="bg-background">
-        <View style={{ flex: 1, alignItems: "center", justifyContent: "center", backgroundColor: "#0D1117" }}>
+        <View style={{ flex: 1, alignItems: "center", justifyContent: "center", backgroundColor: colors.background }}>
           <Text style={{ color: "#9CA3AF" }}>読み込み中...</Text>
         </View>
       </ScreenContainer>
@@ -59,7 +61,7 @@ export default function AchievementPage() {
   if (!challenge) {
     return (
       <ScreenContainer containerClassName="bg-background">
-        <View style={{ flex: 1, alignItems: "center", justifyContent: "center", backgroundColor: "#0D1117" }}>
+        <View style={{ flex: 1, alignItems: "center", justifyContent: "center", backgroundColor: colors.background }}>
           <Text style={{ color: "#9CA3AF" }}>チャレンジが見つかりません</Text>
         </View>
       </ScreenContainer>
@@ -69,13 +71,13 @@ export default function AchievementPage() {
   if (!achievementPage) {
     return (
       <ScreenContainer containerClassName="bg-background">
-        <View style={{ flex: 1, alignItems: "center", justifyContent: "center", backgroundColor: "#0D1117" }}>
+        <View style={{ flex: 1, alignItems: "center", justifyContent: "center", backgroundColor: colors.background }}>
           <Text style={{ color: "#9CA3AF" }}>達成記念ページはまだ作成されていません</Text>
           <TouchableOpacity
             onPress={() => router.back()}
             style={{ marginTop: 16, paddingHorizontal: 24, paddingVertical: 12, backgroundColor: "#EC4899", borderRadius: 24 }}
           >
-            <Text style={{ color: "#fff", fontWeight: "bold" }}>戻る</Text>
+            <Text style={{ color: colors.foreground, fontWeight: "bold" }}>戻る</Text>
           </TouchableOpacity>
         </View>
       </ScreenContainer>
@@ -88,7 +90,7 @@ export default function AchievementPage() {
 
   return (
     <ScreenContainer containerClassName="bg-background">
-      <ScrollView style={{ flex: 1, backgroundColor: "#0D1117" }}>
+      <ScrollView style={{ flex: 1, backgroundColor: colors.background }}>
         {/* ヘッダー */}
         <AppHeader 
           title="動員ちゃれんじ" 
@@ -96,20 +98,20 @@ export default function AchievementPage() {
           rightElement={
             <View style={{ flexDirection: "row", alignItems: "center", gap: 16 }}>
               <TouchableOpacity onPress={handleShare}>
-                <MaterialIcons name="share" size={24} color="#fff" />
+                <MaterialIcons name="share" size={24} color={colors.foreground} />
               </TouchableOpacity>
               <TouchableOpacity
                 onPress={() => router.back()}
                 style={{ flexDirection: "row", alignItems: "center" }}
               >
-                <MaterialIcons name="arrow-back" size={24} color="#fff" />
-                <Text style={{ color: "#fff", marginLeft: 8 }}>戻る</Text>
+                <MaterialIcons name="arrow-back" size={24} color={colors.foreground} />
+                <Text style={{ color: colors.foreground, marginLeft: 8 }}>戻る</Text>
               </TouchableOpacity>
             </View>
           }
         />
         <View style={{ paddingHorizontal: 16, paddingBottom: 8 }}>
-          <Text style={{ color: "#fff", fontSize: 18, fontWeight: "bold" }}>
+          <Text style={{ color: colors.foreground, fontSize: 18, fontWeight: "bold" }}>
             達成記念ページ
           </Text>
         </View>
@@ -122,7 +124,7 @@ export default function AchievementPage() {
           style={{ marginHorizontal: 16, borderRadius: 24, padding: 24, alignItems: "center" }}
         >
           <Text style={{ fontSize: 64, marginBottom: 8 }}>🎉</Text>
-          <Text style={{ color: "#fff", fontSize: 28, fontWeight: "bold", textAlign: "center", marginBottom: 8 }}>
+          <Text style={{ color: colors.foreground, fontSize: 28, fontWeight: "bold", textAlign: "center", marginBottom: 8 }}>
             目標達成！
           </Text>
           <Text style={{ color: "rgba(255,255,255,0.9)", fontSize: 18, textAlign: "center" }}>
@@ -201,7 +203,7 @@ export default function AchievementPage() {
                 borderColor: "#2D3139",
               }}
             >
-              <Text style={{ color: "#fff", fontSize: 16, lineHeight: 24 }}>
+              <Text style={{ color: colors.foreground, fontSize: 16, lineHeight: 24 }}>
                 {achievementPage.message}
               </Text>
             </View>
@@ -221,7 +223,7 @@ export default function AchievementPage() {
           >
             <View style={{ flexDirection: "row", alignItems: "center", marginBottom: 16 }}>
               <MaterialIcons name="people" size={24} color="#EC4899" />
-              <Text style={{ color: "#fff", fontSize: 18, fontWeight: "bold", marginLeft: 8 }}>
+              <Text style={{ color: colors.foreground, fontSize: 18, fontWeight: "bold", marginLeft: 8 }}>
                 参加者の皆さん
               </Text>
               <View style={{ flex: 1 }} />
@@ -258,7 +260,7 @@ export default function AchievementPage() {
                         marginBottom: 4,
                       }}
                     >
-                      <Text style={{ color: "#fff", fontSize: 18, fontWeight: "bold" }}>
+                      <Text style={{ color: colors.foreground, fontSize: 18, fontWeight: "bold" }}>
                         {(p.isAnonymous ? "匿" : p.displayName.charAt(0))}
                       </Text>
                     </View>
@@ -307,7 +309,7 @@ export default function AchievementPage() {
             style={{ borderRadius: 16, padding: 24, alignItems: "center" }}
           >
             <Text style={{ fontSize: 32, marginBottom: 8 }}>💖</Text>
-            <Text style={{ color: "#fff", fontSize: 18, fontWeight: "bold", textAlign: "center", marginBottom: 8 }}>
+            <Text style={{ color: colors.foreground, fontSize: 18, fontWeight: "bold", textAlign: "center", marginBottom: 8 }}>
               ありがとうございました！
             </Text>
             <Text style={{ color: "#9CA3AF", fontSize: 14, textAlign: "center", lineHeight: 22 }}>
@@ -330,8 +332,8 @@ export default function AchievementPage() {
               borderRadius: 24,
             }}
           >
-            <MaterialIcons name="share" size={20} color="#fff" />
-            <Text style={{ color: "#fff", fontSize: 16, fontWeight: "bold", marginLeft: 8 }}>
+            <MaterialIcons name="share" size={20} color={colors.foreground} />
+            <Text style={{ color: colors.foreground, fontSize: 16, fontWeight: "bold", marginLeft: 8 }}>
               達成をシェアする
             </Text>
           </TouchableOpacity>

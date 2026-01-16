@@ -91,6 +91,7 @@ type FilterType = "all" | "solo" | "group";
 
 // 注目のチャレンジセクション
 function FeaturedChallenge({ challenge, onPress }: { challenge: Challenge; onPress: () => void }) {
+  const colors = useColors();
   const eventDate = new Date(challenge.eventDate);
   const progress = Math.min((challenge.currentValue / challenge.goalValue) * 100, 100);
   const goalConfig = goalTypeConfig[challenge.goalType] || goalTypeConfig.custom;
@@ -118,7 +119,7 @@ function FeaturedChallenge({ challenge, onPress }: { challenge: Challenge; onPre
         {/* 注目バッジ */}
         <View style={{ flexDirection: "row", alignItems: "center", marginBottom: 12 }}>
           <View style={{ backgroundColor: "#DD6500", paddingHorizontal: 12, paddingVertical: 4, borderRadius: 12 }}>
-            <Text style={{ color: "#fff", fontSize: 12, fontWeight: "bold" }}>🔥 注目のチャレンジ</Text>
+            <Text style={{ color: colors.foreground, fontSize: 12, fontWeight: "bold" }}>🔥 注目のチャレンジ</Text>
           </View>
           <View style={{ marginLeft: "auto" }}>
             <Countdown targetDate={challenge.eventDate} compact />
@@ -126,7 +127,7 @@ function FeaturedChallenge({ challenge, onPress }: { challenge: Challenge; onPre
         </View>
 
         {/* タイトル */}
-        <Text style={{ color: "#fff", fontSize: 22, fontWeight: "bold", marginBottom: 4 }}>
+        <Text style={{ color: colors.foreground, fontSize: 22, fontWeight: "bold", marginBottom: 4 }}>
           {challenge.title}
         </Text>
         <Text style={{ color: "rgba(255,255,255,0.8)", fontSize: 14, marginBottom: 16 }}>
@@ -135,7 +136,7 @@ function FeaturedChallenge({ challenge, onPress }: { challenge: Challenge; onPre
 
         {/* 大きな進捗表示 */}
         <View style={{ alignItems: "center", marginBottom: 16 }}>
-          <Text style={{ color: "#fff", fontSize: 48, fontWeight: "bold" }}>
+          <Text style={{ color: colors.foreground, fontSize: 48, fontWeight: "bold" }}>
             {challenge.currentValue}
             <Text style={{ fontSize: 20, color: "rgba(255,255,255,0.7)" }}> / {challenge.goalValue}{unit}</Text>
           </Text>
@@ -163,6 +164,7 @@ function FeaturedChallenge({ challenge, onPress }: { challenge: Challenge; onPre
 
 // 盛り上がりセクション
 function EngagementSection({ challenges }: { challenges: Challenge[] }) {
+  const colors = useColors();
   // 統計を計算
   const stats = useMemo(() => {
     const totalParticipants = challenges.reduce((sum, c) => sum + c.currentValue, 0);
@@ -200,15 +202,15 @@ function EngagementSection({ challenges }: { challenges: Challenge[] }) {
         {/* 統計数値 */}
         <View style={{ flexDirection: "row", justifyContent: "space-around", marginBottom: 20 }}>
           <View style={{ alignItems: "center" }}>
-            <Text style={{ color: "#fff", fontSize: 32, fontWeight: "bold" }}>{stats.totalParticipants}</Text>
+            <Text style={{ color: colors.foreground, fontSize: 32, fontWeight: "bold" }}>{stats.totalParticipants}</Text>
             <Text style={{ color: "#9CA3AF", fontSize: 12 }}>総参加表明</Text>
           </View>
           <View style={{ alignItems: "center" }}>
-            <Text style={{ color: "#fff", fontSize: 32, fontWeight: "bold" }}>{stats.activeChallenges}</Text>
+            <Text style={{ color: colors.foreground, fontSize: 32, fontWeight: "bold" }}>{stats.activeChallenges}</Text>
             <Text style={{ color: "#9CA3AF", fontSize: 12 }}>開催中</Text>
           </View>
           <View style={{ alignItems: "center" }}>
-            <Text style={{ color: "#fff", fontSize: 32, fontWeight: "bold" }}>{stats.totalChallenges}</Text>
+            <Text style={{ color: colors.foreground, fontSize: 32, fontWeight: "bold" }}>{stats.totalChallenges}</Text>
             <Text style={{ color: "#9CA3AF", fontSize: 12 }}>総チャレンジ</Text>
           </View>
         </View>
@@ -241,6 +243,7 @@ function EngagementSection({ challenges }: { challenges: Challenge[] }) {
 
 // おすすめホストセクション
 function RecommendedHostsSection() {
+  const colors = useColors();
   const router = useRouter();
   const { data: hosts, isLoading } = trpc.profiles.recommendedHosts.useQuery({ limit: 5 });
 
@@ -272,7 +275,7 @@ function RecommendedHostsSection() {
                   fallbackColor="#8B5CF6"
                   fallbackText={(host.name || "?").charAt(0)}
                 />
-                <Text style={{ color: "#fff", fontSize: 12, marginTop: 6, textAlign: "center" }} numberOfLines={1}>
+                <Text style={{ color: colors.foreground, fontSize: 12, marginTop: 6, textAlign: "center" }} numberOfLines={1}>
                   {host.name || "ホスト"}
                 </Text>
                 {host.username && (
@@ -294,6 +297,7 @@ function RecommendedHostsSection() {
 
 // りんくちゃんの語りかけセクション（LP風メッセージ）
 function CatchCopySection() {
+  const colors = useColors();
   return (
     <View style={{ marginHorizontal: 16, marginVertical: 12 }}>
       <LinearGradient
@@ -322,7 +326,7 @@ function CatchCopySection() {
             borderColor: "rgba(236, 72, 153, 0.3)",
           }}>
             <Text style={{ 
-              color: "#fff", 
+              color: colors.foreground, 
               fontSize: 15, 
               fontWeight: "bold",
               marginBottom: 4,
@@ -394,7 +398,7 @@ function CatchCopySection() {
         {/* キーメッセージ */}
         <View style={{ alignItems: "center", marginBottom: 16 }}>
           <Text style={{ 
-            color: "#fff", 
+            color: colors.foreground, 
             fontSize: 16, 
             fontWeight: "bold",
             textAlign: "center",
@@ -434,6 +438,7 @@ function CatchCopySection() {
 
 // 特徴リストセクション（別コンポーネントとして分離）
 function FeatureListSection() {
+  const colors = useColors();
   return (
     <View style={{ marginHorizontal: 16, marginVertical: 12 }}>
       <View style={{
@@ -444,7 +449,7 @@ function FeatureListSection() {
         borderColor: "#2D3139",
       }}>
         <Text style={{ 
-          color: "#fff", 
+          color: colors.foreground, 
           fontSize: 16, 
           fontWeight: "bold",
           marginBottom: 16,
@@ -461,9 +466,9 @@ function FeatureListSection() {
               alignItems: "center", justifyContent: "center",
               marginRight: 12,
             }}>
-              <MaterialIcons name="favorite" size={18} color="#fff" />
+              <MaterialIcons name="favorite" size={18} color={colors.foreground} />
             </View>
-            <Text style={{ color: "#fff", fontSize: 14, flex: 1 }}>
+            <Text style={{ color: colors.foreground, fontSize: 14, flex: 1 }}>
               参加表明で応援メッセージを送れる
             </Text>
           </View>
@@ -474,9 +479,9 @@ function FeatureListSection() {
               alignItems: "center", justifyContent: "center",
               marginRight: 12,
             }}>
-              <MaterialIcons name="people" size={18} color="#fff" />
+              <MaterialIcons name="people" size={18} color={colors.foreground} />
             </View>
-            <Text style={{ color: "#fff", fontSize: 14, flex: 1 }}>
+            <Text style={{ color: colors.foreground, fontSize: 14, flex: 1 }}>
               友達と一緒に参加して盛り上げよう
             </Text>
           </View>
@@ -487,9 +492,9 @@ function FeatureListSection() {
               alignItems: "center", justifyContent: "center",
               marginRight: 12,
             }}>
-              <MaterialIcons name="emoji-events" size={18} color="#fff" />
+              <MaterialIcons name="emoji-events" size={18} color={colors.foreground} />
             </View>
-            <Text style={{ color: "#fff", fontSize: 14, flex: 1 }}>
+            <Text style={{ color: colors.foreground, fontSize: 14, flex: 1 }}>
               目標達成でみんなでお祝い！
             </Text>
           </View>
@@ -545,7 +550,7 @@ function ChallengeCard({ challenge, onPress, numColumns = 2 }: { challenge: Chal
             borderRadius: 4,
           }}
         >
-          <Text style={{ color: "#fff", fontSize: 10, fontWeight: "bold" }}>
+          <Text style={{ color: colors.foreground, fontSize: 10, fontWeight: "bold" }}>
             {typeBadge.label}
           </Text>
         </View>
@@ -592,7 +597,7 @@ function ChallengeCard({ challenge, onPress, numColumns = 2 }: { challenge: Chal
       <View style={{ padding: 16, paddingTop: 20 }}>
         {/* タイトル */}
         <Text
-          style={{ color: "#fff", fontSize: 14, fontWeight: "bold", marginBottom: 4 }}
+          style={{ color: colors.foreground, fontSize: 14, fontWeight: "bold", marginBottom: 4 }}
           numberOfLines={2}
         >
           {challenge.title}
@@ -606,7 +611,7 @@ function ChallengeCard({ challenge, onPress, numColumns = 2 }: { challenge: Chal
         {/* 進捗表示 */}
         <View style={{ marginBottom: 8 }}>
           <View style={{ flexDirection: "row", justifyContent: "space-between", marginBottom: 4 }}>
-            <Text style={{ color: "#fff", fontSize: 18, fontWeight: "bold" }}>
+            <Text style={{ color: colors.foreground, fontSize: 18, fontWeight: "bold" }}>
               {challenge.currentValue}
               <Text style={{ fontSize: 12, color: "#9CA3AF" }}> / {challenge.goalValue}{unit}</Text>
             </Text>
@@ -662,6 +667,7 @@ function FilterButton({
   active: boolean; 
   onPress: () => void;
 }) {
+  const colors = useColors();
   return (
     <TouchableOpacity
       onPress={onPress}
@@ -677,7 +683,7 @@ function FilterButton({
         alignItems: "center",
       }}
     >
-      <Text style={{ color: "#fff", fontSize: 14, fontWeight: active ? "bold" : "normal" }}>
+      <Text style={{ color: colors.foreground, fontSize: 14, fontWeight: active ? "bold" : "normal" }}>
         {label}
       </Text>
     </TouchableOpacity>
@@ -686,6 +692,7 @@ function FilterButton({
 
 // 空の状態表示コンポーネント（サンプルデータ生成ボタン付き）
 function EmptyState({ onGenerateSamples }: { onGenerateSamples: () => void }) {
+  const colors = useColors();
   const [isGenerating, setIsGenerating] = useState(false);
   const generateMutation = trpc.dev.generateSampleChallenges.useMutation();
   const clearMutation = trpc.dev.clearSampleChallenges.useMutation();
@@ -708,7 +715,7 @@ function EmptyState({ onGenerateSamples }: { onGenerateSamples: () => void }) {
       <CatchCopySection />
       
       <View style={{ alignItems: "center", padding: 32 }}>
-        <Text style={{ color: "#fff", fontSize: 18, fontWeight: "bold", marginBottom: 8 }}>
+        <Text style={{ color: colors.foreground, fontSize: 18, fontWeight: "bold", marginBottom: 8 }}>
           まだチャレンジがありません
         </Text>
         <Text style={{ color: "#9CA3AF", fontSize: 14, textAlign: "center", marginBottom: 24 }}>
@@ -733,7 +740,7 @@ function EmptyState({ onGenerateSamples }: { onGenerateSamples: () => void }) {
               alignItems: "center",
             }}
           >
-            <Text style={{ color: "#fff", fontWeight: "bold" }}>
+            <Text style={{ color: colors.foreground, fontWeight: "bold" }}>
               {isGenerating ? "生成中..." : "サンプルチャレンジを生成"}
             </Text>
           </TouchableOpacity>
@@ -745,6 +752,7 @@ function EmptyState({ onGenerateSamples }: { onGenerateSamples: () => void }) {
 
 // セクションヘッダー
 function SectionHeader({ title, onSeeAll }: { title: string; onSeeAll?: () => void }) {
+  const colors = useColors();
   return (
     <View style={{ 
       flexDirection: "row", 
@@ -754,7 +762,7 @@ function SectionHeader({ title, onSeeAll }: { title: string; onSeeAll?: () => vo
       marginTop: 24,
       marginBottom: 8,
     }}>
-      <Text style={{ color: "#fff", fontSize: 18, fontWeight: "bold" }}>{title}</Text>
+      <Text style={{ color: colors.foreground, fontSize: 18, fontWeight: "bold" }}>{title}</Text>
       {onSeeAll && (
         <TouchableOpacity onPress={onSeeAll} style={{ flexDirection: "row", alignItems: "center" }}>
           <Text style={{ color: "#DD6500", fontSize: 14 }}>すべて見る</Text>
@@ -987,7 +995,7 @@ export default function HomeScreen() {
             style={{
               flex: 1,
               marginLeft: 8,
-              color: "#fff",
+              color: colors.foreground,
               fontSize: 14,
             }}
             returnKeyType="search"
@@ -1026,7 +1034,7 @@ export default function HomeScreen() {
               alignItems: "center",
             }}
           >
-            <Text style={{ color: "#fff", fontSize: 12 }}>全カテゴリ</Text>
+            <Text style={{ color: colors.foreground, fontSize: 12 }}>全カテゴリ</Text>
           </TouchableOpacity>
           {categoriesData.map((cat) => (
             <TouchableOpacity
@@ -1043,7 +1051,7 @@ export default function HomeScreen() {
               }}
             >
               <Text style={{ marginRight: 4 }}>{cat.icon}</Text>
-              <Text style={{ color: "#fff", fontSize: 12 }}>{cat.name}</Text>
+              <Text style={{ color: colors.foreground, fontSize: 12 }}>{cat.name}</Text>
             </TouchableOpacity>
           ))}
         </ScrollView>

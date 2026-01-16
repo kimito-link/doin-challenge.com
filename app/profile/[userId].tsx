@@ -5,6 +5,7 @@ import { useState } from "react";
 import { ScreenContainer } from "@/components/screen-container";
 import { trpc } from "@/lib/trpc";
 import { useAuth } from "@/hooks/use-auth";
+import { useColors } from "@/hooks/use-colors";
 import MaterialIcons from "@expo/vector-icons/MaterialIcons";
 import { LinearGradient } from "expo-linear-gradient";
 import { AppHeader } from "@/components/app-header";
@@ -23,6 +24,7 @@ const badgeIcons: Record<string, string> = {
 };
 
 export default function ProfileScreen() {
+  const colors = useColors();
   const { userId } = useLocalSearchParams<{ userId: string }>();
   const router = useRouter();
   const { user } = useAuth();
@@ -145,8 +147,8 @@ export default function ProfileScreen() {
               onPress={() => router.back()}
               style={{ flexDirection: "row", alignItems: "center" }}
             >
-              <MaterialIcons name="arrow-back" size={24} color="#fff" />
-              <Text style={{ color: "#fff", marginLeft: 8 }}>戻る</Text>
+              <MaterialIcons name="arrow-back" size={24} color={colors.foreground} />
+              <Text style={{ color: colors.foreground, marginLeft: 8 }}>戻る</Text>
             </TouchableOpacity>
           }
         />
@@ -176,13 +178,13 @@ export default function ProfileScreen() {
                   borderColor: "#fff",
                 }}
               >
-                <Text style={{ color: "#fff", fontSize: 40, fontWeight: "bold" }}>
+                <Text style={{ color: colors.foreground, fontSize: 40, fontWeight: "bold" }}>
                   {profile.user?.name?.charAt(0) || "?"}
                 </Text>
               </View>
             )}
 
-            <Text style={{ color: "#fff", fontSize: 24, fontWeight: "bold", marginTop: 12 }}>
+            <Text style={{ color: colors.foreground, fontSize: 24, fontWeight: "bold", marginTop: 12 }}>
               {profile.user?.name || "名前未設定"}
             </Text>
             {(profile.user as any)?.username && (
@@ -254,7 +256,7 @@ export default function ProfileScreen() {
               borderRadius: 8,
             }}
           >
-            <Text style={{ color: "#fff", fontSize: 18, fontWeight: "bold" }}>
+            <Text style={{ color: colors.foreground, fontSize: 18, fontWeight: "bold" }}>
               {followingCount || 0}
             </Text>
             <Text style={{ color: "#9CA3AF", fontSize: 14, marginLeft: 6 }}>
@@ -272,7 +274,7 @@ export default function ProfileScreen() {
               borderRadius: 8,
             }}
           >
-            <Text style={{ color: "#fff", fontSize: 18, fontWeight: "bold" }}>
+            <Text style={{ color: colors.foreground, fontSize: 18, fontWeight: "bold" }}>
               {followerCount || 0}
             </Text>
             <Text style={{ color: "#9CA3AF", fontSize: 14, marginLeft: 6 }}>
@@ -306,7 +308,7 @@ export default function ProfileScreen() {
         </View>
 
         {/* タブ */}
-        <View style={{ flexDirection: "row", backgroundColor: "#0D1117", borderBottomWidth: 1, borderBottomColor: "#2D3139" }}>
+        <View style={{ flexDirection: "row", backgroundColor: colors.background, borderBottomWidth: 1, borderBottomColor: "#2D3139" }}>
           <TouchableOpacity
             onPress={() => setActiveTab("challenges")}
             style={{
@@ -357,7 +359,7 @@ export default function ProfileScreen() {
                     borderColor: "#2D3139",
                   }}
                 >
-                  <Text style={{ color: "#fff", fontSize: 16, fontWeight: "600", marginBottom: 4 }}>
+                  <Text style={{ color: colors.foreground, fontSize: 16, fontWeight: "600", marginBottom: 4 }}>
                     {participation.challengeTitle || "チャレンジ"}
                   </Text>
                   <View style={{ flexDirection: "row", alignItems: "center", marginTop: 8 }}>
@@ -407,7 +409,7 @@ export default function ProfileScreen() {
                     >
                       <Text style={{ fontSize: 28 }}>{badge.icon || "🏆"}</Text>
                     </View>
-                    <Text style={{ color: "#fff", fontSize: 12, fontWeight: "600", textAlign: "center" }}>
+                    <Text style={{ color: colors.foreground, fontSize: 12, fontWeight: "600", textAlign: "center" }}>
                       {badge.name}
                     </Text>
                     <Text style={{ color: "#9CA3AF", fontSize: 10, textAlign: "center", marginTop: 2 }}>
@@ -437,7 +439,7 @@ export default function ProfileScreen() {
                 alignItems: "center",
               }}
             >
-              <Text style={{ color: "#fff", fontWeight: "600" }}>プロフィールを編集</Text>
+              <Text style={{ color: colors.foreground, fontWeight: "600" }}>プロフィールを編集</Text>
             </TouchableOpacity>
           </View>
         )}

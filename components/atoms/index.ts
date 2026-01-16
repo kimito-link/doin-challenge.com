@@ -23,3 +23,19 @@ export { IconSymbol } from "./icon-symbol";
 // Feedback系
 export { Skeleton } from "./skeleton";
 export { Toast, ToastProvider, useToast } from "./toast";
+
+// Animation系
+export { BlinkingCharacter } from "./blinking-character";
+export { HelloWave } from "./hello-wave";
+
+// Navigation系
+export { ExternalLink } from "./external-link";
+export { HapticTab } from "./haptic-tab";
+
+// Utility系
+export { Countdown } from "./countdown";
+export { LazyLoadingFallback } from "./lazy-loading-fallback";
+
+// View系
+export { ThemedView } from "./themed-view";
+export { default as ParallaxScrollView } from "./parallax-scroll-view";
