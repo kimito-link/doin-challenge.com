@@ -1,4 +1,4 @@
-import { Text, View, TouchableOpacity } from "react-native";
+import { Text, View, TouchableOpacity, Platform } from "react-native";
 import { useState, useEffect } from "react";
 import { Image } from "expo-image";
 import { useRouter } from "expo-router";
@@ -6,6 +6,7 @@ import { ScreenContainer } from "@/components/screen-container";
 import { useAuth } from "@/hooks/use-auth";
 import MaterialIcons from "@expo/vector-icons/MaterialIcons";
 import { LinearGradient } from "expo-linear-gradient";
+import Constants from "expo-constants";
 
 // キャラクター画像
 const characterImages = {
@@ -23,6 +24,25 @@ const logoutMessages = [
   { character: "kontaYukkuri", message: "バイバイ！🦊", subMessage: "次も一緒に盛り上げよう！" },
   { character: "tanuneYukkuri", message: "お疲れさま！🦝", subMessage: "また会えるの楽しみにしてるよ！" },
 ];
+
+// Get API base URL from environment variable or derive from hostname
+function getApiBaseUrl(): string {
+  // Check for environment variable first (production)
+  const envApiUrl = process.env.EXPO_PUBLIC_API_BASE_URL;
+  if (envApiUrl) {
+    return envApiUrl;
+  }
+  
+  // Development: derive from hostname
+  if (Platform.OS === "web" && typeof window !== "undefined") {
+    const { protocol, hostname } = window.location;
+    const apiHostname = hostname.replace(/^8081-/, "3000-");
+    return `${protocol}//${apiHostname}`;
+  }
+  
+  // Native fallback
+  return Constants.expoConfig?.extra?.apiUrl || "http://localhost:3000";
+}
 
 export default function LogoutScreen() {
   const router = useRouter();
@@ -52,6 +72,16 @@ export default function LogoutScreen() {
       handleLogout();
     }
   }, [isAuthenticated]);
+
+  const handleSameAccountLogin = () => {
+    const apiBaseUrl = getApiBaseUrl();
+    window.location.href = `${apiBaseUrl}/api/twitter/auth`;
+  };
+
+  const handleDifferentAccountLogin = () => {
+    const apiBaseUrl = getApiBaseUrl();
+    window.location.href = `${apiBaseUrl}/api/twitter/auth?switch=true`;
+  };
 
   return (
     <ScreenContainer containerClassName="bg-[#0D1117]">
@@ -213,12 +243,7 @@ export default function LogoutScreen() {
 
             {/* 同じアカウントで再ログイン */}
             <TouchableOpacity
-              onPress={() => {
-                // 通常のログイン（ブラウザのセッションを使用）
-                const { protocol, hostname } = window.location;
-                const apiHostname = hostname.replace(/^8081-/, "3000-");
-                window.location.href = `${protocol}//${apiHostname}/api/twitter/auth`;
-              }}
+              onPress={handleSameAccountLogin}
               style={{
                 backgroundColor: "#10B981",
                 borderRadius: 12,
@@ -237,12 +262,7 @@ export default function LogoutScreen() {
 
             {/* 別のアカウントでログイン */}
             <TouchableOpacity
-              onPress={() => {
-                // forceSwitch=trueで別のアカウントを選択可能にする
-                const { protocol, hostname } = window.location;
-                const apiHostname = hostname.replace(/^8081-/, "3000-");
-                window.location.href = `${protocol}//${apiHostname}/api/twitter/auth?switch=true`;
-              }}
+              onPress={handleDifferentAccountLogin}
               style={{
                 backgroundColor: "transparent",
                 borderRadius: 12,

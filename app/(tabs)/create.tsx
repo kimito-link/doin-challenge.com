@@ -1,4 +1,4 @@
-import { Text, View, TouchableOpacity, TextInput, ScrollView, KeyboardAvoidingView, Platform, Alert, Linking } from "react-native";
+import { Text, View, TouchableOpacity, TextInput, ScrollView, KeyboardAvoidingView, Platform, Linking } from "react-native";
 import { Image } from "expo-image";
 import { useRouter } from "expo-router";
 import { useState } from "react";
@@ -12,6 +12,8 @@ import { FollowPromptBanner, FollowStatusBadge } from "@/components/follow-gate"
 import MaterialIcons from "@expo/vector-icons/MaterialIcons";
 import { LinearGradient } from "expo-linear-gradient";
 import { AppHeader } from "@/components/app-header";
+import { DatePicker } from "@/components/date-picker";
+import { showAlert } from "@/lib/web-alert";
 
 // キャラクター画像
 const characterImages = {
@@ -78,13 +80,13 @@ export default function CreateChallengeScreen() {
 
   const createTemplateMutation = trpc.templates.create.useMutation({
     onSuccess: () => {
-      Alert.alert("保存完了", "テンプレートを保存しました");
+      showAlert("保存完了", "テンプレートを保存しました");
     },
   });
 
   const createChallengeMutation = trpc.events.create.useMutation({
     onSuccess: (newChallenge) => {
-      Alert.alert("成功", "チャレンジを作成しました！", [
+      showAlert("成功", "チャレンジを作成しました！", [
         {
           text: "OK",
           onPress: () => {
@@ -97,27 +99,27 @@ export default function CreateChallengeScreen() {
       ]);
     },
     onError: (error) => {
-      Alert.alert("エラー", error.message);
+      showAlert("エラー", error.message);
     },
   });
 
   const handleCreate = () => {
     if (!title.trim()) {
-      Alert.alert("エラー", "チャレンジ名を入力してください");
+      showAlert("エラー", "チャレンジ名を入力してください");
       return;
     }
     if (!eventDateStr.trim()) {
-      Alert.alert("エラー", "開催日を入力してください（例: 2025-01-15）");
+      showAlert("エラー", "開催日を選択してください");
       return;
     }
     if (!hostName.trim() && !user) {
-      Alert.alert("エラー", "ホスト名を入力してください");
+      showAlert("エラー", "ホスト名を入力してください");
       return;
     }
 
     const eventDate = new Date(eventDateStr);
     if (isNaN(eventDate.getTime())) {
-      Alert.alert("エラー", "日付の形式が正しくありません（例: 2025-01-15）");
+      showAlert("エラー", "日付の形式が正しくありません");
       return;
     }
 
@@ -533,19 +535,10 @@ export default function CreateChallengeScreen() {
                 <Text style={{ color: "#9CA3AF", fontSize: 14, marginBottom: 8 }}>
                   開催日 *
                 </Text>
-                <TextInput
+                <DatePicker
                   value={eventDateStr}
-                  onChangeText={setEventDateStr}
-                  placeholder="2025-01-15"
-                  placeholderTextColor="#6B7280"
-                  style={{
-                    backgroundColor: "#0D1117",
-                    borderRadius: 8,
-                    padding: 12,
-                    color: "#fff",
-                    borderWidth: 1,
-                    borderColor: "#2D3139",
-                  }}
+                  onChange={setEventDateStr}
+                  placeholder="日付を選択"
                 />
               </View>
 

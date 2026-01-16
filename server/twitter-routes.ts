@@ -60,12 +60,20 @@ export function registerTwitterRoutes(app: Express) {
       if (oauthError) {
         console.error("Twitter OAuth error:", oauthError, error_description);
         
-        // Build redirect URL to Expo app with error info
+        // Build redirect URL to frontend app with error info
         const host = req.get("host") || "";
-        const expoHost = host.replace("3000-", "8081-");
         const protocol = req.get("x-forwarded-proto") || req.protocol;
-        const forceHttps = protocol === "https" || host.includes("manus.computer");
-        const baseUrl = `${forceHttps ? "https" : protocol}://${expoHost}`;
+        const forceHttps = protocol === "https" || host.includes("manus.computer") || host.includes("railway.app");
+        
+        // Production: redirect to doin-challenge.com
+        // Development: redirect to Expo app (port 8081)
+        let baseUrl: string;
+        if (host.includes("railway.app")) {
+          baseUrl = "https://doin-challenge.com";
+        } else {
+          const expoHost = host.replace("3000-", "8081-");
+          baseUrl = `${forceHttps ? "https" : protocol}://${expoHost}`;
+        }
         
         // Encode error data for redirect
         const errorData = encodeURIComponent(JSON.stringify({
@@ -151,13 +159,20 @@ export function registerTwitterRoutes(app: Express) {
       // Encode user data for redirect
       const encodedData = encodeURIComponent(JSON.stringify(userData));
       
-      // Build redirect URL - redirect to Expo app (port 8081)
+      // Build redirect URL - redirect to frontend app
       const host = req.get("host") || "";
-      // Replace port 3000 with 8081 for Expo app
-      const expoHost = host.replace("3000-", "8081-");
       const protocol = req.get("x-forwarded-proto") || req.protocol;
-      const forceHttps = protocol === "https" || host.includes("manus.computer");
-      const baseUrl = `${forceHttps ? "https" : protocol}://${expoHost}`;
+      const forceHttps = protocol === "https" || host.includes("manus.computer") || host.includes("railway.app");
+      
+      // Production: redirect to doin-challenge.com
+      // Development: redirect to Expo app (port 8081)
+      let baseUrl: string;
+      if (host.includes("railway.app")) {
+        baseUrl = "https://doin-challenge.com";
+      } else {
+        const expoHost = host.replace("3000-", "8081-");
+        baseUrl = `${forceHttps ? "https" : protocol}://${expoHost}`;
+      }
       
       // Redirect to Expo app callback page with user data
       const redirectUrl = `${baseUrl}/oauth/twitter-callback?data=${encodedData}`;
@@ -180,10 +195,18 @@ export function registerTwitterRoutes(app: Express) {
       
       // エラーページにリダイレクト（ユーザーフレンドリーなエラー表示）
       const host = req.get("host") || "";
-      const expoHost = host.replace("3000-", "8081-");
       const protocol = req.get("x-forwarded-proto") || req.protocol;
-      const forceHttps = protocol === "https" || host.includes("manus.computer");
-      const baseUrl = `${forceHttps ? "https" : protocol}://${expoHost}`;
+      const forceHttps = protocol === "https" || host.includes("manus.computer") || host.includes("railway.app");
+      
+      // Production: redirect to doin-challenge.com
+      // Development: redirect to Expo app (port 8081)
+      let baseUrl: string;
+      if (host.includes("railway.app")) {
+        baseUrl = "https://doin-challenge.com";
+      } else {
+        const expoHost = host.replace("3000-", "8081-");
+        baseUrl = `${forceHttps ? "https" : protocol}://${expoHost}`;
+      }
       
       // エラー情報をエンコードしてリダイレクト
       const errorData = encodeURIComponent(JSON.stringify({

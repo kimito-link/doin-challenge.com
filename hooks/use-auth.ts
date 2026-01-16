@@ -14,6 +14,25 @@ type UseAuthOptions = {
   autoFetch?: boolean;
 };
 
+// Get API base URL from environment variable or derive from hostname
+function getApiBaseUrl(): string {
+  // Check for environment variable first (production)
+  const envApiUrl = process.env.EXPO_PUBLIC_API_BASE_URL;
+  if (envApiUrl) {
+    return envApiUrl;
+  }
+  
+  // Development: derive from hostname
+  if (Platform.OS === "web" && typeof window !== "undefined") {
+    const { protocol, hostname } = window.location;
+    const apiHostname = hostname.replace(/^8081-/, "3000-");
+    return `${protocol}//${apiHostname}`;
+  }
+  
+  // Native fallback
+  return Constants.expoConfig?.extra?.apiUrl || "http://localhost:3000";
+}
+
 export function useAuth(options?: UseAuthOptions) {
   const { autoFetch = true } = options ?? {};
   const [user, setUser] = useState<Auth.User | null>(null);
@@ -121,14 +140,9 @@ export function useAuth(options?: UseAuthOptions) {
   // login関数: forceSwitch=trueで別のアカウントでログイン可能
   const login = useCallback(async (returnUrl?: string, forceSwitch: boolean = false) => {
     try {
-      let loginUrl: string;
+      const apiBaseUrl = getApiBaseUrl();
       
       if (Platform.OS === "web" && typeof window !== "undefined") {
-        // On web, derive API URL from current hostname
-        // Pattern: 8081-sandboxid.region.domain -> 3000-sandboxid.region.domain
-        const { protocol, hostname } = window.location;
-        const apiHostname = hostname.replace(/^8081-/, "3000-");
-        
         // ログイン後のリダイレクト先を保存（指定がなければ現在のページ）
         const redirectPath = returnUrl || window.location.pathname;
         localStorage.setItem("auth_return_url", redirectPath);
@@ -136,14 +150,13 @@ export function useAuth(options?: UseAuthOptions) {
         
         // forceSwitchがtrueの場合は別のアカウントでログインできるようにする
         const switchParam = forceSwitch ? "?switch=true" : "";
-        loginUrl = `${protocol}//${apiHostname}/api/twitter/auth${switchParam}`;
+        const loginUrl = `${apiBaseUrl}/api/twitter/auth${switchParam}`;
         console.log("[Auth] Web login URL:", loginUrl, "forceSwitch:", forceSwitch);
         window.location.href = loginUrl;
       } else {
-        // On native, use localhost (for development) or configured API URL
-        const apiUrl = Constants.expoConfig?.extra?.apiUrl || "http://localhost:3000";
+        // On native, use configured API URL
         const switchParam = forceSwitch ? "?switch=true" : "";
-        loginUrl = `${apiUrl}/api/twitter/auth${switchParam}`;
+        const loginUrl = `${apiBaseUrl}/api/twitter/auth${switchParam}`;
         console.log("[Auth] Native login URL:", loginUrl, "forceSwitch:", forceSwitch);
         await Linking.openURL(loginUrl);
       }
