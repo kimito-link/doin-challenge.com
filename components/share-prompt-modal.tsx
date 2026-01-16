@@ -1,4 +1,5 @@
 import { Modal, View, Text, TouchableOpacity, StyleSheet, Animated } from "react-native";
+import { Image } from "expo-image";
 import MaterialIcons from "@expo/vector-icons/MaterialIcons";
 import { useEffect, useRef, useState } from "react";
 import { LinearGradient } from "expo-linear-gradient";
@@ -126,11 +127,11 @@ export function SharePromptModal({
             <View style={styles.participantCard}>
               <View style={styles.participantHeader}>
                 {participantImage ? (
-                  <View style={styles.participantAvatar}>
-                    <View style={[styles.avatarImage, { backgroundColor: '#EC4899' }]}>
-                      <Text style={styles.avatarText}>{participantName.charAt(0)}</Text>
-                    </View>
-                  </View>
+                  <Image
+                    source={{ uri: participantImage }}
+                    style={styles.participantAvatar}
+                    contentFit="cover"
+                  />
                 ) : (
                   <View style={[styles.participantAvatar, { backgroundColor: '#EC4899' }]}>
                     <Text style={styles.avatarText}>{participantName.charAt(0)}</Text>
