@@ -19,6 +19,7 @@ export { Badge } from "./badge";
 
 // Icon系
 export { IconSymbol } from "./icon-symbol";
+export { LabeledIcon } from "./labeled-icon";
 
 // Feedback系
 export { Skeleton } from "./skeleton";
@@ -41,3 +42,4 @@ export { LazyLoadingFallback } from "./lazy-loading-fallback";
 // View系
 export { ThemedView } from "./themed-view";
 export { default as ParallaxScrollView } from "./parallax-scroll-view";
+export { Touchable } from "./touchable";

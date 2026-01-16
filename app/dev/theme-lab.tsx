@@ -3,7 +3,7 @@ import { Pressable, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 
 
 import { ScreenContainer } from "@/components/organisms/screen-container";
 import { ThemedView } from "@/components/atoms/themed-view";
-import { IconSymbol } from "@/components/ui/icon-symbol";
+import { IconSymbol } from "@/components/atoms/icon-symbol";
 import { SchemeColors, type ColorScheme } from "@/constants/theme";
 import { useColors } from "@/hooks/use-colors";
 import { useThemeContext } from "@/lib/theme-provider";

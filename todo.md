@@ -1332,3 +1332,14 @@
 - [x] インデックスファイルの更新
 - [x] インポートパスの修正
 - [x] TypeScriptエラーの解消
+
+
+## components/uiディレクトリ統合（v4.97）
+### uiディレクトリのコンポーネントをAtomic Designに統合
+- [x] uiディレクトリのコンポーネントを分類
+- [x] Atomsに移動（icon-symbol.ios, labeled-icon, touchable）
+- [x] Moleculesに移動（animated-list-item, collapsible）
+- [x] インデックスファイルの更新
+- [x] インポートパスの修正（IconSymbol, ToastProvider, useToast）
+- [x] TypeScriptエラーの解消
+- [x] uiディレクトリの削除

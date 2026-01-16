@@ -21,7 +21,7 @@ import { Image } from "expo-image";
 import { useAccounts } from "@/hooks/use-accounts";
 import { useAuth } from "@/hooks/use-auth";
 import { useColors } from "@/hooks/use-colors";
-import { useToast } from "@/components/ui/toast";
+import { useToast } from "@/components/atoms/toast";
 import { SavedAccount, setCurrentAccount, formatLastUsed } from "@/lib/account-manager";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import MaterialIcons from "@expo/vector-icons/MaterialIcons";

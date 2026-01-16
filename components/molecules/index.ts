@@ -40,6 +40,10 @@ export { CelebrationAnimation } from "./celebration-animation";
 export { InteractiveCharacter, TappableLink, LongPressCharacter } from "./interactive-character";
 export { TalkingCharacter } from "./talking-character";
 
+// Animation系
+export { AnimatedListItem } from "./animated-list-item";
+export { Collapsible } from "./collapsible";
+
 // Utility系
 export { EnhancedRefreshControl } from "./enhanced-refresh-control";
 export { FollowGate } from "./follow-gate";
