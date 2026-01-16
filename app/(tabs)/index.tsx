@@ -561,6 +561,21 @@ function ChallengeCard({ challenge, onPress, numColumns = 2 }: { challenge: Chal
         <View style={{ position: "absolute", top: 8, right: 8 }}>
           <MaterialIcons name={goalConfig.icon as any} size={16} color="rgba(255,255,255,0.7)" />
         </View>
+        {/* イベント名（会場名） */}
+        {challenge.venue && (
+          <View style={{ position: "absolute", top: 8, left: 8, right: 32 }}>
+            <Text 
+              style={{ 
+                color: "rgba(255,255,255,0.9)", 
+                fontSize: 11, 
+                fontWeight: "600",
+              }}
+              numberOfLines={1}
+            >
+              {challenge.venue}
+            </Text>
+          </View>
+        )}
         {/* ホストプロフィール画像（遅延読み込み） */}
         {challenge.hostProfileImage && (
           <View style={{ position: "absolute", bottom: -16, left: 12 }}>

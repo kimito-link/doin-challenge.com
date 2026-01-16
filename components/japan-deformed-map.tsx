@@ -98,22 +98,31 @@ function getParticipantIcon(count: number): string {
 }
 
 // 参加者数に応じた色の濃さを計算
+// 参加者がいない場合は灰色、参加者が多いほど赤くなる
 function getHeatColor(count: number, maxCount: number, baseColor: { bg: string; text: string; border: string }) {
   if (count === 0) {
-    return { bg: baseColor.bg, text: baseColor.text, border: baseColor.border, hasParticipants: false };
+    // 参加者がいない場合は灰色
+    return { bg: "#3A3F47", text: "#9CA3AF", border: "#2D3139", hasParticipants: false };
   }
   
-  // 参加者がいる場合は赤系の色に
-  const intensity = Math.min(count / Math.max(maxCount, 10), 1);
+  // 参加者がいる場合は赤系の色に（参加者数に応じて濃くなる）
+  const intensity = Math.min(count / Math.max(maxCount, 1), 1);
   
-  if (intensity > 0.7) {
+  if (intensity >= 0.8) {
+    // 最も参加者が多い（濃い赤）
+    return { bg: "#B71C1C", text: "#fff", border: "#7F0000", hasParticipants: true };
+  } else if (intensity >= 0.6) {
+    // 参加者が多い（赤）
     return { bg: "#D32F2F", text: "#fff", border: "#B71C1C", hasParticipants: true };
-  } else if (intensity > 0.4) {
+  } else if (intensity >= 0.4) {
+    // 参加者が中程度（オレンジ赤）
     return { bg: "#F44336", text: "#fff", border: "#D32F2F", hasParticipants: true };
-  } else if (intensity > 0.1) {
+  } else if (intensity >= 0.2) {
+    // 参加者が少なめ（オレンジ）
     return { bg: "#FF5722", text: "#fff", border: "#E64A19", hasParticipants: true };
   }
   
+  // 参加者が少ない（薄いオレンジ）
   return { bg: "#FF7043", text: "#fff", border: "#F4511E", hasParticipants: true };
 }
 
