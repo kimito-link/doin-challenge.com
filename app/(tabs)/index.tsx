@@ -1103,12 +1103,10 @@ export default function HomeScreen() {
           // 無限スクロール設定
           onEndReached={() => {
             if (isSearching) {
-              // 検索中は検索結果のページネーション
               if (hasNextSearchPage && !isFetchingNextSearchPage) {
                 fetchNextSearchPage();
               }
             } else {
-              // 通常一覧のページネーション
               if (hasNextPage && !isFetchingNextPage) {
                 fetchNextPage();
               }
@@ -1136,6 +1134,12 @@ export default function HomeScreen() {
           }}
           style={{ backgroundColor: "#0D1117" }}
           columnWrapperStyle={{ justifyContent: "flex-start", gap: isDesktop ? 16 : 8 }}
+          // パフォーマンス最適化
+          windowSize={5}
+          maxToRenderPerBatch={6}
+          initialNumToRender={6}
+          removeClippedSubviews={Platform.OS !== "web"}
+          updateCellsBatchingPeriod={50}
         />
       ) : (
         <EmptyState onGenerateSamples={refetch} />

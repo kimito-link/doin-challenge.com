@@ -140,6 +140,13 @@ export default function ConversationScreen() {
               <Text className="text-muted">メッセージを送ってみましょう</Text>
             </View>
           }
+          // パフォーマンス最適化
+          windowSize={10}
+          maxToRenderPerBatch={15}
+          initialNumToRender={20}
+          removeClippedSubviews={Platform.OS !== "web"}
+          updateCellsBatchingPeriod={50}
+          inverted={false}
         />
 
         {/* 入力エリア */}

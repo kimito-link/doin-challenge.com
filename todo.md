@@ -1161,3 +1161,21 @@
 ## 左右スワイプ画面ずれ問題（v4.86）
 
 - [x] チャレンジ作成画面の水平スクロール問題を修正
+
+
+## パフォーマンス最適化（v4.87）
+
+### 画像遅延読み込み
+- [x] LazyImage/LazyAvatarの最適化
+- [x] 画像プレースホルダーの改善
+- [x] 画像キャッシュ戦略の見直し
+
+### リスト仮想化
+- [x] FlatListの最適化（windowSize、maxToRenderPerBatch）
+- [x] useOptimizedFlatListフックの作成
+- [x] メモ化の強化（MemoizedChallengeCard）
+
+### バンドルサイズ削減
+- [x] パフォーマンス最適化ドキュメント作成
+- [ ] 動的インポートの活用（今後の課題）
+- [ ] Tree Shakingの確認（今後の課題）

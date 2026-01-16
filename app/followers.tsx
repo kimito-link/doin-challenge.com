@@ -1,4 +1,4 @@
-import { FlatList, Text, View, TouchableOpacity, RefreshControl } from "react-native";
+import { FlatList, Text, View, TouchableOpacity, RefreshControl, Platform } from "react-native";
 import { Image } from "expo-image";
 import { useRouter, useLocalSearchParams } from "expo-router";
 import { useState } from "react";
@@ -116,6 +116,12 @@ export default function FollowersScreen() {
             <RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor="#DD6500" />
           }
           contentContainerStyle={{ paddingBottom: 100 }}
+          // パフォーマンス最適化
+          windowSize={5}
+          maxToRenderPerBatch={10}
+          initialNumToRender={10}
+          removeClippedSubviews={Platform.OS !== "web"}
+          updateCellsBatchingPeriod={50}
         />
       ) : (
         <View style={{ flex: 1, alignItems: "center", justifyContent: "center", padding: 32 }}>

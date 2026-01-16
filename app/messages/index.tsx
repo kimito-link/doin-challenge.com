@@ -1,4 +1,4 @@
-import { View, Text, FlatList, TouchableOpacity, Image } from "react-native";
+import { View, Text, FlatList, TouchableOpacity, Image, Platform } from "react-native";
 import { useRouter } from "expo-router";
 import { ScreenContainer } from "@/components/screen-container";
 import { trpc } from "@/lib/trpc";
@@ -123,6 +123,12 @@ export default function MessagesScreen() {
           renderItem={renderConversation}
           keyExtractor={(item) => `${item.id}`}
           showsVerticalScrollIndicator={false}
+          // パフォーマンス最適化
+          windowSize={5}
+          maxToRenderPerBatch={10}
+          initialNumToRender={10}
+          removeClippedSubviews={Platform.OS !== "web"}
+          updateCellsBatchingPeriod={50}
         />
       ) : (
         <View className="flex-1 items-center justify-center p-6">
