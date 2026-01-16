@@ -101,6 +101,8 @@ export const participations = mysqlTable("participations", {
   companionCount: int("companionCount").default(0).notNull(),
   // 地域情報
   prefecture: varchar("prefecture", { length: 32 }),
+  // 性別（male/female/unspecified）
+  gender: mysqlEnum("gender", ["male", "female", "unspecified"]).default("unspecified").notNull(),
   // 貢献度（自分 + 同伴者数）
   contribution: int("contribution").default(1).notNull(),
   isAnonymous: boolean("isAnonymous").default(false).notNull(),

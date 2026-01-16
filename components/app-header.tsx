@@ -65,20 +65,19 @@ export function AppHeader({
             {showLogo && (
               <Image
                 source={logoImage}
-                style={{ width: isDesktop ? 100 : 80, height: isDesktop ? 36 : 28 }}
+                style={{ width: isDesktop ? 56 : 48, height: isDesktop ? 56 : 48 }}
                 contentFit="contain"
               />
             )}
-            {title && (
+            <View style={{ marginLeft: showLogo ? 8 : 0 }}>
               <Text style={{ 
                 color: "#fff", 
-                fontSize: isDesktop ? 18 : 14, 
-                fontWeight: "bold", 
-                marginLeft: showLogo ? 8 : 0 
+                fontSize: isDesktop ? 16 : 13, 
+                fontWeight: "bold",
               }}>
-                {title}
+                {title || "動員ちゃれんじ"}
               </Text>
-            )}
+            </View>
           </TouchableOpacity>
           
           <View style={{ flexDirection: "row", alignItems: "center" }}>
