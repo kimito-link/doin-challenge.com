@@ -10,6 +10,7 @@ import {
 } from "react-native";
 import { Image } from "expo-image";
 import { useRouter } from "expo-router";
+import { Link } from "expo-router";
 import MaterialIcons from "@expo/vector-icons/MaterialIcons";
 import { useAuth } from "@/hooks/use-auth";
 import { ConfirmModal } from "@/components/molecules/confirm-modal";
@@ -59,10 +60,9 @@ export function GlobalMenu({ isVisible, onClose }: GlobalMenuProps) {
     router.push("/logout");
   };
 
-  const handleNavigate = (path: string) => {
+  const handleLinkPress = () => {
     handleHaptic();
     onClose();
-    router.push(path as any);
   };
 
   const menuItems = [
@@ -266,12 +266,13 @@ export function GlobalMenu({ isVisible, onClose }: GlobalMenuProps) {
                 )}
               </View>
 
-              {/* メニュー項目 */}
+              {/* メニュー項目 - Linkコンポーネントを使用してステータスバーにURL表示 */}
               <View style={{ padding: 12 }}>
                 {menuItems.map((item, index) => (
-                  <TouchableOpacity
+                  <Link
                     key={index}
-                    onPress={() => handleNavigate(item.path)}
+                    href={item.path as any}
+                    onPress={handleLinkPress}
                     style={{
                       flexDirection: "row",
                       alignItems: "center",
@@ -279,19 +280,21 @@ export function GlobalMenu({ isVisible, onClose }: GlobalMenuProps) {
                       paddingHorizontal: 12,
                       borderRadius: 12,
                       marginBottom: 4,
+                      textDecorationLine: "none",
                     }}
-                    activeOpacity={0.7}
                   >
-                    <MaterialIcons
-                      name={item.icon as any}
-                      size={24}
-                      color="#9CA3AF"
-                      style={{ marginRight: 16 }}
-                    />
-                    <Text style={{ color: "#fff", fontSize: 16 }}>
-                      {item.label}
-                    </Text>
-                  </TouchableOpacity>
+                    <View style={{ flexDirection: "row", alignItems: "center" }}>
+                      <MaterialIcons
+                        name={item.icon as any}
+                        size={24}
+                        color="#9CA3AF"
+                        style={{ marginRight: 16 }}
+                      />
+                      <Text style={{ color: "#fff", fontSize: 16 }}>
+                        {item.label}
+                      </Text>
+                    </View>
+                  </Link>
                 ))}
               </View>
 
