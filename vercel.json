@@ -3,6 +3,19 @@
   "installCommand": "",
   "outputDirectory": ".",
   "framework": null,
+  "redirects": [
+    {
+      "source": "/:path*",
+      "has": [
+        {
+          "type": "host",
+          "value": "www.doin-challenge.com"
+        }
+      ],
+      "destination": "https://doin-challenge.com/:path*",
+      "permanent": true
+    }
+  ],
   "rewrites": [
     { "source": "/(.*)", "destination": "/index.html" }
   ]
