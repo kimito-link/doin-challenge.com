@@ -1139,25 +1139,23 @@
 - [x] Input系コンポーネントの統合
 - [x] Text/Label系コンポーネントの整理
 - [x] Icon系コンポーネントの整理
-- [x] Badge/Tag系コンポーネントの整理
-
-### Molecules（複合コンポーネント）
-- [ ] Card系コンポーネントの整理
-- [ ] Form系コンポーネントの整理
-- [ ] Avatar系コンポーネントの統合
+- [x] Badge/Tag系コンポーネン### Molecules（複合コンポーネント）
+- [x] Card系コンポーネントの整理
+- [x] Avatar系コンポーネントの整理
+- [x] ListItem系コンポーネントの整理統合
 - [ ] ListItem系コンポーネントの整理
 
 ### Organisms（機能単位コンポーネント）
-- [ ] Header/Navigation系の整理
-- [ ] ChallengeCard系の整理
-- [ ] ParticipantList系の整理
-- [ ] TicketTransfer系の整理
+- [x] Header/Navigation系の整理
+- [x] ChallengeCard系の整理
+- [x] ParticipantList系の整理
+- [x] TicketTransfer系の整理
 
 ### ディレクトリ構成
-- [ ] components/atoms/ ディレクトリ作成
-- [ ] components/molecules/ ディレクトリ作成
-- [ ] components/organisms/ ディレクトリ作成
-- [ ] インデックスファイルの作成
+- [x] components/atoms/ ディレクトリ作成
+- [x] components/molecules/ ディレクトリ作成
+- [x] components/organisms/ ディレクトリ作成
+- [x] インデックスファイルの作成
 
 
 ## 左右スワイプ画面ずれ問題（v4.86）
