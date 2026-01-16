@@ -1,7 +1,7 @@
 import { Text, View, TouchableOpacity } from "react-native";
 import { Image } from "expo-image";
 import { useRouter } from "expo-router";
-import { ScreenContainer } from "@/components/screen-container";
+import { ScreenContainer } from "@/components/organisms/screen-container";
 import MaterialIcons from "@expo/vector-icons/MaterialIcons";
 
 // 画像アセット

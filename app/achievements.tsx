@@ -1,12 +1,12 @@
 import { Text, View, TouchableOpacity, ScrollView, Dimensions } from "react-native";
 import { useRouter } from "expo-router";
-import { ScreenContainer } from "@/components/screen-container";
+import { ScreenContainer } from "@/components/organisms/screen-container";
 import { trpc } from "@/lib/trpc";
 import { useAuth } from "@/hooks/use-auth";
 import MaterialIcons from "@expo/vector-icons/MaterialIcons";
 import { LinearGradient } from "expo-linear-gradient";
 import { useMemo } from "react";
-import { AppHeader } from "@/components/app-header";
+import { AppHeader } from "@/components/organisms/app-header";
 
 const { width: screenWidth } = Dimensions.get("window");
 

@@ -1,7 +1,7 @@
 import { View } from "react-native";
 import { useRouter } from "expo-router";
-import { ScreenContainer } from "@/components/screen-container";
-import { NotificationSettingsPanel } from "@/components/notification-settings";
+import { ScreenContainer } from "@/components/organisms/screen-container";
+import { NotificationSettingsPanel } from "@/components/organisms/notification-settings";
 
 /**
  * 通知設定画面

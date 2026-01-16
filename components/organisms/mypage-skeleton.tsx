@@ -1,6 +1,6 @@
 import { View, StyleSheet } from "react-native";
-import { Skeleton } from "@/components/skeleton-loader";
-import { BlinkingLink } from "@/components/blinking-character";
+import { Skeleton } from "@/components/atoms/skeleton-loader";
+import { BlinkingLink } from "@/components/atoms/blinking-character";
 
 /**
  * マイページのスケルトンローダー

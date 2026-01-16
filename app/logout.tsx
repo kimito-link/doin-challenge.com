@@ -2,7 +2,7 @@ import { Text, View, TouchableOpacity, Platform } from "react-native";
 import { useState, useEffect } from "react";
 import { Image } from "expo-image";
 import { useRouter } from "expo-router";
-import { ScreenContainer } from "@/components/screen-container";
+import { ScreenContainer } from "@/components/organisms/screen-container";
 import { useAuth } from "@/hooks/use-auth";
 import MaterialIcons from "@expo/vector-icons/MaterialIcons";
 import { LinearGradient } from "expo-linear-gradient";

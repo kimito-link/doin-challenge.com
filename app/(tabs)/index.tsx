@@ -2,29 +2,29 @@ import { FlatList, Text, View, TouchableOpacity, RefreshControl, ScrollView, Tex
 import { Image } from "expo-image";
 import { useRouter } from "expo-router";
 import { useState, useMemo, useEffect } from "react";
-import { ScreenContainer } from "@/components/screen-container";
-import { ResponsiveContainer } from "@/components/responsive-container";
-import { OnboardingSteps } from "@/components/onboarding-steps";
+import { ScreenContainer } from "@/components/organisms/screen-container";
+import { ResponsiveContainer } from "@/components/molecules/responsive-container";
+import { OnboardingSteps } from "@/components/organisms/onboarding-steps";
 import { trpc } from "@/lib/trpc";
 import { useColors } from "@/hooks/use-colors";
 import { useResponsive, useGridColumns } from "@/hooks/use-responsive";
 import { LinearGradient } from "expo-linear-gradient";
 import MaterialIcons from "@expo/vector-icons/MaterialIcons";
-import { Countdown } from "@/components/countdown";
-import { PressableCard } from "@/components/pressable-card";
-import { AppHeader } from "@/components/app-header";
-import { CachedDataIndicator } from "@/components/offline-banner";
+import { Countdown } from "@/components/atoms/countdown";
+import { PressableCard } from "@/components/molecules/pressable-card";
+import { AppHeader } from "@/components/organisms/app-header";
+import { CachedDataIndicator } from "@/components/organisms/offline-banner";
 import { useNetworkStatus } from "@/hooks/use-offline-cache";
 import { setCache, getCache, CACHE_KEYS } from "@/lib/offline-cache";
 import { getCachedData, setCachedData, PREFETCH_KEYS } from "@/lib/data-prefetch";
-import { ChallengeCardSkeleton, Skeleton } from "@/components/skeleton-loader";
-import { OptimizedAvatar } from "@/components/optimized-image";
-import { LazyAvatar } from "@/components/lazy-image";
+import { ChallengeCardSkeleton, Skeleton } from "@/components/atoms/skeleton-loader";
+import { OptimizedAvatar } from "@/components/molecules/optimized-image";
+import { LazyAvatar } from "@/components/molecules/lazy-image";
 import { prefetchChallengeImages } from "@/lib/image-prefetch";
-import { SimpleRefreshControl } from "@/components/enhanced-refresh-control";
-import { AnimatedCard } from "@/components/animated-pressable";
-import { SyncStatusIndicator } from "@/components/sync-status-indicator";
-import { BlinkingLink } from "@/components/blinking-character";
+import { SimpleRefreshControl } from "@/components/molecules/enhanced-refresh-control";
+import { AnimatedCard } from "@/components/molecules/animated-pressable";
+import { SyncStatusIndicator } from "@/components/atoms/sync-status-indicator";
+import { BlinkingLink } from "@/components/atoms/blinking-character";
 
 // キャラクター画像
 const characterImages = {

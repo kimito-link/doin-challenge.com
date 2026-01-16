@@ -1,13 +1,13 @@
 import { Text, View, TouchableOpacity, ScrollView, ActivityIndicator, Alert, TextInput } from "react-native";
 import { useRouter, useLocalSearchParams } from "expo-router";
 import { useState } from "react";
-import { ScreenContainer } from "@/components/screen-container";
+import { ScreenContainer } from "@/components/organisms/screen-container";
 import { trpc } from "@/lib/trpc";
 import { useAuth } from "@/hooks/use-auth";
 import { useColors } from "@/hooks/use-colors";
 import MaterialIcons from "@expo/vector-icons/MaterialIcons";
 import { Image } from "expo-image";
-import { AppHeader } from "@/components/app-header";
+import { AppHeader } from "@/components/organisms/app-header";
 
 export default function ManageCommentsScreen() {
   const colors = useColors();

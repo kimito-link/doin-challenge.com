@@ -5,7 +5,7 @@
  * 管理者向け機能
  */
 
-import { ScreenContainer } from "@/components/screen-container";
+import { ScreenContainer } from "@/components/organisms/screen-container";
 import { useColors } from "@/hooks/use-colors";
 import { getApiBaseUrl } from "@/constants/oauth";
 import { useRouter } from "expo-router";

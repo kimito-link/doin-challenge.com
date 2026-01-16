@@ -1,5 +1,5 @@
 import { View, Text, ActivityIndicator } from "react-native";
-import { BlinkingLink } from "@/components/blinking-character";
+import { BlinkingLink } from "./blinking-character";
 
 interface LoadingScreenProps {
   message?: string;

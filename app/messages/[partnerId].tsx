@@ -1,11 +1,11 @@
 import { useState, useEffect, useRef } from "react";
 import { View, Text, FlatList, TextInput, TouchableOpacity, KeyboardAvoidingView, Platform } from "react-native";
 import { useLocalSearchParams, useRouter } from "expo-router";
-import { ScreenContainer } from "@/components/screen-container";
+import { ScreenContainer } from "@/components/organisms/screen-container";
 import { trpc } from "@/lib/trpc";
 import { useAuth } from "@/hooks/use-auth";
 import * as Haptics from "expo-haptics";
-import { AppHeader } from "@/components/app-header";
+import { AppHeader } from "@/components/organisms/app-header";
 
 export default function ConversationScreen() {
   const { partnerId, challengeId } = useLocalSearchParams<{ partnerId: string; challengeId: string }>();

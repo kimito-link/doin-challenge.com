@@ -42,7 +42,7 @@ export function lazyLoad<T extends ComponentType<any>>(
  * @example
  * ```tsx
  * const { JapanHeatmap } = lazyLoadNamed(
- *   () => import('@/components/japan-heatmap'),
+ *   () => import('@/components/organisms/japan-heatmap'),
  *   'JapanHeatmap'
  * );
  * ```
@@ -110,15 +110,15 @@ export function lazyWithPreload<T extends ComponentType<any>>(
  */
 export const HEAVY_COMPONENTS = {
   // チャート系
-  "japan-heatmap": () => import("@/components/japan-heatmap"),
-  "japan-map": () => import("@/components/japan-map"),
-  "japan-block-map": () => import("@/components/japan-block-map"),
-  "japan-deformed-map": () => import("@/components/japan-deformed-map"),
-  "growth-trajectory-chart": () => import("@/components/growth-trajectory-chart"),
+  "japan-heatmap": () => import("@/components/organisms/japan-heatmap"),
+  "japan-map": () => import("@/components/organisms/japan-map"),
+  "japan-block-map": () => import("@/components/organisms/japan-block-map"),
+  "japan-deformed-map": () => import("@/components/organisms/japan-deformed-map"),
+  "growth-trajectory-chart": () => import("@/components/organisms/growth-trajectory-chart"),
   
   // 複雑なモーダル系（名前付きエクスポート）
-  "prefecture-participants-modal": () => import("@/components/prefecture-participants-modal"),
-  "region-participants-modal": () => import("@/components/region-participants-modal"),
+  "prefecture-participants-modal": () => import("@/components/molecules/prefecture-participants-modal"),
+  "region-participants-modal": () => import("@/components/molecules/region-participants-modal"),
 } as const;
 
 /**

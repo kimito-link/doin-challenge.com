@@ -1,7 +1,7 @@
 import { View, ScrollView, Dimensions, StyleSheet } from "react-native";
-import { Skeleton } from "@/components/skeleton-loader";
-import { ScreenContainer } from "@/components/screen-container";
-import { AppHeader } from "@/components/app-header";
+import { Skeleton } from "@/components/atoms/skeleton-loader";
+import { ScreenContainer } from "@/components/organisms/screen-container";
+import { AppHeader } from "@/components/organisms/app-header";
 
 const { width: screenWidth } = Dimensions.get("window");
 

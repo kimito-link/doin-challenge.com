@@ -1,8 +1,8 @@
 import { useMemo, useState } from "react";
 import { Pressable, ScrollView, StyleSheet, Text, TouchableOpacity, View } from "react-native";
 
-import { ScreenContainer } from "@/components/screen-container";
-import { ThemedView } from "@/components/themed-view";
+import { ScreenContainer } from "@/components/organisms/screen-container";
+import { ThemedView } from "@/components/atoms/themed-view";
 import { IconSymbol } from "@/components/ui/icon-symbol";
 import { SchemeColors, type ColorScheme } from "@/constants/theme";
 import { useColors } from "@/hooks/use-colors";

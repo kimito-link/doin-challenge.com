@@ -1,14 +1,14 @@
 import { ScrollView, Text, View, TouchableOpacity, Share, Alert } from "react-native";
 import { Image } from "expo-image";
 import { useLocalSearchParams, useRouter } from "expo-router";
-import { ScreenContainer } from "@/components/screen-container";
+import { ScreenContainer } from "@/components/organisms/screen-container";
 import { trpc } from "@/lib/trpc";
 import { useAuth } from "@/hooks/use-auth";
 import { useColors } from "@/hooks/use-colors";
 import MaterialIcons from "@expo/vector-icons/MaterialIcons";
 import { LinearGradient } from "expo-linear-gradient";
 import { useState } from "react";
-import { AppHeader } from "@/components/app-header";
+import { AppHeader } from "@/components/organisms/app-header";
 
 type Participation = {
   id: number;

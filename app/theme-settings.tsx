@@ -1,6 +1,6 @@
 import { useRouter } from "expo-router";
-import { ScreenContainer } from "@/components/screen-container";
-import { ThemeSettingsPanel } from "@/components/theme-settings";
+import { ScreenContainer } from "@/components/organisms/screen-container";
+import { ThemeSettingsPanel } from "@/components/molecules/theme-settings";
 
 /**
  * テーマ設定画面

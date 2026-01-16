@@ -11,11 +11,11 @@ import { useRouter } from "expo-router";
 import { Image } from "expo-image";
 import MaterialIcons from "@expo/vector-icons/MaterialIcons";
 import * as Haptics from "expo-haptics";
-import { ScreenContainer } from "@/components/screen-container";
+import { ScreenContainer } from "@/components/organisms/screen-container";
 import { useAuth } from "@/hooks/use-auth";
 import { useAccounts } from "@/hooks/use-accounts";
 import { useThemeContext, getThemeModeLabel, getThemeModeIcon } from "@/lib/theme-provider";
-import { AccountSwitcher } from "@/components/account-switcher";
+import { AccountSwitcher } from "@/components/organisms/account-switcher";
 import { getSessionExpiryInfo, SessionExpiryInfo } from "@/lib/token-manager";
 
 /**

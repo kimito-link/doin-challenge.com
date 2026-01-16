@@ -2,14 +2,14 @@ import { Text, View, ScrollView, TouchableOpacity, Share, Platform } from "react
 import { Image } from "expo-image";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import { useState, useEffect } from "react";
-import { ScreenContainer } from "@/components/screen-container";
+import { ScreenContainer } from "@/components/organisms/screen-container";
 import { trpc } from "@/lib/trpc";
 import { useAuth } from "@/hooks/use-auth";
 import MaterialIcons from "@expo/vector-icons/MaterialIcons";
 import { LinearGradient } from "expo-linear-gradient";
 // Clipboardはネイティブ機能を使用
 import * as Haptics from "expo-haptics";
-import { AppHeader } from "@/components/app-header";
+import { AppHeader } from "@/components/organisms/app-header";
 
 export default function InviteScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();

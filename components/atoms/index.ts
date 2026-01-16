@@ -22,10 +22,12 @@ export { IconSymbol } from "./icon-symbol";
 
 // Feedback系
 export { Skeleton } from "./skeleton";
+export { CardSkeleton, ListItemSkeleton, ProfileSkeleton, ChallengeCardSkeleton } from "./skeleton-loader";
 export { Toast, ToastProvider, useToast } from "./toast";
+export { SyncStatusIndicator } from "./sync-status-indicator";
 
 // Animation系
-export { BlinkingCharacter } from "./blinking-character";
+export { BlinkingCharacter, BlinkingLink } from "./blinking-character";
 export { HelloWave } from "./hello-wave";
 
 // Navigation系

@@ -1,5 +1,5 @@
-import { ThemedView } from "@/components/themed-view";
-import { FollowSuccessModal } from "@/components/follow-success-modal";
+import { ThemedView } from "@/components/atoms/themed-view";
+import { FollowSuccessModal } from "@/components/molecules/follow-success-modal";
 import * as Auth from "@/lib/_core/auth";
 import { saveTokenData } from "@/lib/token-manager";
 import { useLocalSearchParams, useRouter } from "expo-router";
@@ -9,8 +9,8 @@ import { SafeAreaView } from "react-native-safe-area-context";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { saveAccount } from "@/lib/account-manager";
 import { Image } from "expo-image";
-import { BlinkingLink, LINK_CHARACTER_SETS } from "@/components/blinking-character";
-import { CelebrationAnimation } from "@/components/celebration-animation";
+import { BlinkingLink, LINK_CHARACTER_SETS } from "@/components/atoms/blinking-character";
+import { CelebrationAnimation } from "@/components/molecules/celebration-animation";
 
 // 画像アセット
 const APP_LOGO = require("@/assets/images/logos/kimitolink-logo.jpg");

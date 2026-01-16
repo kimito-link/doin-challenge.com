@@ -2,18 +2,18 @@ import { Text, View, TouchableOpacity, TextInput, ScrollView, KeyboardAvoidingVi
 import { Image } from "expo-image";
 import { useRouter } from "expo-router";
 import { useState } from "react";
-import { ScreenContainer } from "@/components/screen-container";
-import { ResponsiveContainer } from "@/components/responsive-container";
+import { ScreenContainer } from "@/components/organisms/screen-container";
+import { ResponsiveContainer } from "@/components/molecules/responsive-container";
 import { trpc } from "@/lib/trpc";
 import { useAuth } from "@/hooks/use-auth";
 import { useFollowStatus } from "@/hooks/use-follow-status";
 import { useResponsive } from "@/hooks/use-responsive";
 import { useColors } from "@/hooks/use-colors";
-import { FollowPromptBanner, FollowStatusBadge } from "@/components/follow-gate";
+import { FollowPromptBanner, FollowStatusBadge } from "@/components/molecules/follow-gate";
 import MaterialIcons from "@expo/vector-icons/MaterialIcons";
 import { LinearGradient } from "expo-linear-gradient";
-import { AppHeader } from "@/components/app-header";
-import { DatePicker } from "@/components/date-picker";
+import { AppHeader } from "@/components/organisms/app-header";
+import { DatePicker } from "@/components/molecules/date-picker";
 import { showAlert } from "@/lib/web-alert";
 
 // キャラクター画像

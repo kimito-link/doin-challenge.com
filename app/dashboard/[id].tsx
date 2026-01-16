@@ -1,15 +1,15 @@
 import { Text, View, TouchableOpacity, ScrollView, Dimensions } from "react-native";
 import { useLocalSearchParams, useRouter } from "expo-router";
-import { ScreenContainer } from "@/components/screen-container";
+import { ScreenContainer } from "@/components/organisms/screen-container";
 import { trpc } from "@/lib/trpc";
 import { useAuth } from "@/hooks/use-auth";
 import MaterialIcons from "@expo/vector-icons/MaterialIcons";
 import { LinearGradient } from "expo-linear-gradient";
 import { useMemo } from "react";
-import { AppHeader } from "@/components/app-header";
-import { ExportButton } from "@/components/export-button";
+import { AppHeader } from "@/components/organisms/app-header";
+import { ExportButton } from "@/components/molecules/export-button";
 import type { ExportData } from "@/lib/export-stats";
-import { ParticipantRanking } from "@/components/participant-ranking";
+import { ParticipantRanking } from "@/components/organisms/participant-ranking";
 
 const { width: screenWidth } = Dimensions.get("window");
 

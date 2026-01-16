@@ -12,6 +12,7 @@ export { GlobalMenu } from "./global-menu";
 // Section系
 export { TicketTransferSection } from "./ticket-transfer-section";
 export { GrowthTrajectoryChart } from "./growth-trajectory-chart";
+export { ParticipantRanking } from "./participant-ranking";
 
 // Error/Status系
 export { NetworkError, EmptyState, ErrorMessage } from "./error-message";
@@ -32,6 +33,9 @@ export { NotificationSettingsPanel } from "./notification-settings";
 
 // Auth系
 export { AccountSwitcher } from "./account-switcher";
+
+// Onboarding系
+export { OnboardingSteps } from "./onboarding-steps";
 
 // Layout系
 export { ScreenContainer } from "./screen-container";

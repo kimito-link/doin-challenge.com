@@ -1321,3 +1321,14 @@
   - organisms: 14コンポーネント追加（JapanMap, GlobalMenu等）
 - [x] インデックスファイルの更新（atoms/molecules/organismsのindex.ts）
 - [x] インポートパスの修正（loading-screen.tsx）
+
+
+### コンポーネント完全整理（v4.96）
+### 残りのコンポーネントをAtomic Designに整理
+- [x] components/直下の残り55個のコンポーネントを分類
+- [x] Atomsに移動（基本UI要素）
+- [x] Moleculesに移動（複合コンポーネント）
+- [x] Organismsに移動（機能単位コンポーネント）
+- [x] インデックスファイルの更新
+- [x] インポートパスの修正
+- [x] TypeScriptエラーの解消

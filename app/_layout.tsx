@@ -9,8 +9,8 @@ import { Platform } from "react-native";
 import "@/lib/_core/nativewind-pressable";
 import { ThemeProvider } from "@/lib/theme-provider";
 import { LoginSuccessProvider } from "@/lib/login-success-context";
-import { LoginSuccessModalWrapper } from "@/components/login-success-modal-wrapper";
-import { OfflineBanner } from "@/components/offline-banner";
+import { LoginSuccessModalWrapper } from "@/components/molecules/login-success-modal-wrapper";
+import { OfflineBanner } from "@/components/organisms/offline-banner";
 import { ToastProvider } from "@/components/ui/toast";
 import {
   SafeAreaFrameContext,

@@ -2,20 +2,20 @@ import { FlatList, Text, View, TouchableOpacity, ScrollView, Linking } from "rea
 import { useState, useEffect } from "react";
 import { Image } from "expo-image";
 import { useRouter } from "expo-router";
-import { ScreenContainer } from "@/components/screen-container";
-import { ResponsiveContainer } from "@/components/responsive-container";
+import { ScreenContainer } from "@/components/organisms/screen-container";
+import { ResponsiveContainer } from "@/components/molecules/responsive-container";
 import { trpc } from "@/lib/trpc";
 import { useAuth } from "@/hooks/use-auth";
 import { useFollowStatus } from "@/hooks/use-follow-status";
 import { useResponsive } from "@/hooks/use-responsive";
 import { useColors } from "@/hooks/use-colors";
-import { FollowStatusBadge, FollowPromptBanner } from "@/components/follow-gate";
+import { FollowStatusBadge, FollowPromptBanner } from "@/components/molecules/follow-gate";
 import MaterialIcons from "@expo/vector-icons/MaterialIcons";
 import { LinearGradient } from "expo-linear-gradient";
-import { AppHeader } from "@/components/app-header";
-import { ConfirmModal } from "@/components/confirm-modal";
-import { MypageSkeleton } from "@/components/mypage-skeleton";
-import { AccountSwitcher } from "@/components/account-switcher";
+import { AppHeader } from "@/components/organisms/app-header";
+import { ConfirmModal } from "@/components/molecules/confirm-modal";
+import { MypageSkeleton } from "@/components/organisms/mypage-skeleton";
+import { AccountSwitcher } from "@/components/organisms/account-switcher";
 
 // キャラクター画像
 const characterImages = {

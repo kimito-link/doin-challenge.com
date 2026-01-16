@@ -12,7 +12,7 @@ import { Image } from "expo-image";
 import { useRouter } from "expo-router";
 import MaterialIcons from "@expo/vector-icons/MaterialIcons";
 import { useAuth } from "@/hooks/use-auth";
-import { ConfirmModal } from "@/components/confirm-modal";
+import { ConfirmModal } from "@/components/molecules/confirm-modal";
 import * as Haptics from "expo-haptics";
 
 // キャラクター画像
