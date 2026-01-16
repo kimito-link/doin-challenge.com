@@ -26,6 +26,8 @@ import { AnimatedCard } from "@/components/molecules/animated-pressable";
 import { SyncStatusIndicator } from "@/components/atoms/sync-status-indicator";
 import { BlinkingLink } from "@/components/atoms/blinking-character";
 import { HostEmptyState } from "@/components/organisms/host-empty-state";
+import { TutorialHighlightTarget } from "@/components/atoms/tutorial-highlight-target";
+import { useTutorial } from "@/lib/tutorial-context";
 
 // キャラクター画像
 const characterImages = {
@@ -1065,9 +1067,19 @@ export default function HomeScreen() {
           keyExtractor={(item) => item.id.toString()}
           numColumns={numColumns}
           ListHeaderComponent={ListHeader}
-          renderItem={({ item }) => (
-            <ChallengeCard challenge={item as Challenge} onPress={() => handleChallengePress(item.id)} numColumns={numColumns} />
-          )}
+          renderItem={({ item, index }) => {
+            // 最初のアイテムのみチュートリアルハイライト対象
+            if (index === 0) {
+              return (
+                <TutorialHighlightTarget tutorialStep={1} userType="fan">
+                  <ChallengeCard challenge={item as Challenge} onPress={() => handleChallengePress(item.id)} numColumns={numColumns} />
+                </TutorialHighlightTarget>
+              );
+            }
+            return (
+              <ChallengeCard challenge={item as Challenge} onPress={() => handleChallengePress(item.id)} numColumns={numColumns} />
+            );
+          }}
           refreshControl={
             <SimpleRefreshControl refreshing={refreshing} onRefresh={onRefresh} />
           }

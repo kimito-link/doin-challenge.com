@@ -17,6 +17,7 @@ import { ConfirmModal } from "@/components/molecules/confirm-modal";
 import { MypageSkeleton } from "@/components/organisms/mypage-skeleton";
 import { AccountSwitcher } from "@/components/organisms/account-switcher";
 import { TutorialResetButton } from "@/components/molecules/tutorial-reset-button";
+import { FanEmptyState } from "@/components/organisms/fan-empty-state";
 
 // キャラクター画像
 const characterImages = {
@@ -1082,21 +1083,7 @@ export default function MyPageScreen() {
                 </View>
               ))
             ) : (
-              <View
-                style={{
-                  backgroundColor: "#1A1D21",
-                  borderRadius: 12,
-                  padding: 24,
-                  alignItems: "center",
-                  borderWidth: 1,
-                  borderColor: "#2D3139",
-                }}
-              >
-                <MaterialIcons name="favorite-border" size={48} color="#6B7280" />
-                <Text style={{ color: "#9CA3AF", marginTop: 8, textAlign: "center" }}>
-                  まだチャレンジに参加していません
-                </Text>
-              </View>
+              <FanEmptyState />
             )}
           </View>
         </ScrollView>

@@ -5,12 +5,31 @@ import { HapticTab } from "@/components/atoms/haptic-tab";
 import { IconSymbol } from "@/components/atoms/icon-symbol";
 import { Platform } from "react-native";
 import { useColors } from "@/hooks/use-colors";
+import { useTutorial } from "@/lib/tutorial-context";
+import { FanTutorialCreateTabButton, HostTutorialCreateTabButton } from "@/components/atoms/tutorial-tab-button";
 
 export default function TabLayout() {
   const insets = useSafeAreaInsets();
   const colors = useColors();
+  const tutorial = useTutorial();
   const bottomPadding = Platform.OS === "web" ? 12 : Math.max(insets.bottom, 8);
   const tabBarHeight = 56 + bottomPadding;
+
+  // チュートリアル中は適切なタブボタンを使用
+  const getCreateTabButton = () => {
+    if (!tutorial.isActive) return HapticTab;
+    
+    if (tutorial.userType === "fan" && tutorial.currentStepIndex === 2) {
+      // ファン向けステップ3
+      return FanTutorialCreateTabButton;
+    }
+    if (tutorial.userType === "host" && tutorial.currentStepIndex === 0) {
+      // 主催者向けステップ1
+      return HostTutorialCreateTabButton;
+    }
+    
+    return HapticTab;
+  };
 
   return (
     <Tabs
@@ -41,6 +60,7 @@ export default function TabLayout() {
         options={{
           title: "チャレンジ作成",
           tabBarIcon: ({ color }) => <IconSymbol size={28} name="plus.circle.fill" color={color} />,
+          tabBarButton: getCreateTabButton(),
         }}
       />
       <Tabs.Screen

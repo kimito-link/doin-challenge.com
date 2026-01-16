@@ -30,6 +30,7 @@ import { AutoLoginProvider } from "@/lib/auto-login-provider";
 import { TutorialProvider, useTutorial } from "@/lib/tutorial-context";
 import { TutorialOverlay } from "@/components/organisms/tutorial-overlay";
 import { UserTypeSelector } from "@/components/organisms/user-type-selector";
+import { LoginPromptModal } from "@/components/organisms/login-prompt-modal";
 
 const DEFAULT_WEB_INSETS: EdgeInsets = { top: 0, right: 0, bottom: 0, left: 0 };
 const DEFAULT_WEB_FRAME: Rect = { x: 0, y: 0, width: 0, height: 0 };
@@ -64,6 +65,13 @@ function TutorialUI() {
           visible={tutorial.isActive}
         />
       )}
+      
+      {/* チュートリアル完了後のログイン誘導モーダル */}
+      <LoginPromptModal
+        visible={tutorial.showLoginPrompt}
+        onLogin={tutorial.dismissLoginPrompt}
+        onSkip={tutorial.dismissLoginPrompt}
+      />
     </>
   );
 }

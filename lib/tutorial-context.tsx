@@ -94,6 +94,10 @@ type TutorialContextType = {
   resetTutorial: () => Promise<void>;
   /** 初期化完了 */
   isInitialized: boolean;
+  /** ログイン誘導モーダルを表示中か */
+  showLoginPrompt: boolean;
+  /** ログイン誘導モーダルを閉じる */
+  dismissLoginPrompt: () => void;
 };
 
 const TutorialContext = createContext<TutorialContextType | null>(null);
@@ -108,6 +112,7 @@ export function TutorialProvider({ children }: { children: ReactNode }) {
   const [isCompleted, setIsCompleted] = useState(false);
   const [steps, setSteps] = useState<TutorialStep[]>([]);
   const [currentHighlight, setCurrentHighlight] = useState<TutorialStep["highlight"]>();
+  const [showLoginPrompt, setShowLoginPrompt] = useState(false);
 
   // 初期化：チュートリアル視聴状態を確認（ログイン状態に依存しない）
   useEffect(() => {
@@ -173,6 +178,12 @@ export function TutorialProvider({ children }: { children: ReactNode }) {
     setIsActive(false);
     setIsCompleted(true);
     setHasNotSeenTutorial(false);
+    
+    // チュートリアル完了後、ログイン誘導モーダルを表示
+    setTimeout(() => {
+      setShowLoginPrompt(true);
+    }, 500);
+    
     try {
       // チュートリアル視聴済みフラグを保存
       await AsyncStorage.setItem(STORAGE_KEY_SEEN, "true");
@@ -211,6 +222,7 @@ export function TutorialProvider({ children }: { children: ReactNode }) {
       setCurrentStepIndex(0);
       setUserType(null);
       setSteps([]);
+      setShowLoginPrompt(false);
       // リセット後、即座にユーザータイプ選択を表示
       setTimeout(() => {
         setShowUserTypeSelector(true);
@@ -218,6 +230,10 @@ export function TutorialProvider({ children }: { children: ReactNode }) {
     } catch (error) {
       console.error("Failed to reset tutorial:", error);
     }
+  }, []);
+
+  const dismissLoginPrompt = useCallback(() => {
+    setShowLoginPrompt(false);
   }, []);
 
   // 現在のステップにハイライト情報をマージ
@@ -248,6 +264,8 @@ export function TutorialProvider({ children }: { children: ReactNode }) {
         setHighlight,
         resetTutorial,
         isInitialized,
+        showLoginPrompt,
+        dismissLoginPrompt,
       }}
     >
       {children}
