@@ -9,14 +9,13 @@ import { SafeAreaView } from "react-native-safe-area-context";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { saveAccount } from "@/lib/account-manager";
 import { Image } from "expo-image";
+import { BlinkingLink, LINK_CHARACTER_SETS } from "@/components/blinking-character";
 
 // 画像アセット
 const APP_LOGO = require("@/assets/images/logos/kimitolink-logo.jpg");
 
 // キャラクター画像（各状態用）
 const CHARACTER_IMAGES = {
-  // ローディング中：通常表情（口閉じ）
-  loading: require("@/assets/images/characters/link/link-yukkuri-normal-mouth-closed.png"),
   // 成功：笑顔（口開け）
   success: require("@/assets/images/characters/link/link-yukkuri-smile-mouth-open.png"),
   // エラー：困った表情（半目）
@@ -221,11 +220,12 @@ export default function TwitterOAuthCallback() {
               contentFit="contain"
             />
             
-            {/* キャラクター（通常表情） */}
-            <Image
-              source={CHARACTER_IMAGES.loading}
-              style={{ width: 100, height: 100, marginVertical: 12 }}
-              contentFit="contain"
+            {/* キャラクター（まばたきアニメーション付き） */}
+            <BlinkingLink
+              variant="normalClosed"
+              size={100}
+              blinkInterval={2500}
+              style={{ marginVertical: 12 }}
             />
             
             <ActivityIndicator size="large" color="#F97316" />
