@@ -249,6 +249,57 @@ export const appRouter = router({
         return { id: participationId };
       }),
 
+    // 参加表明の更新（都道府県・コメント・一緒に参加する人の変更）
+    update: publicProcedure
+      .input(z.object({
+        id: z.number(),
+        twitterId: z.string(),
+        message: z.string().optional(),
+        prefecture: z.string().optional(),
+        companionCount: z.number().default(0),
+        companions: z.array(z.object({
+          displayName: z.string(),
+          twitterUsername: z.string().optional(),
+          twitterId: z.string().optional(),
+          profileImage: z.string().optional(),
+        })).optional(),
+      }))
+      .mutation(async ({ input }) => {
+        // twitterIdで本人確認
+        if (!input.twitterId) {
+          throw new Error("ログインが必要です。");
+        }
+        
+        // 参加表明を取得して本人確認
+        const participation = await db.getParticipationById(input.id);
+        if (!participation || participation.twitterId !== input.twitterId) {
+          throw new Error("この参加表明を編集する権限がありません。");
+        }
+        
+        // 参加表明を更新
+        await db.updateParticipation(input.id, {
+          message: input.message,
+          prefecture: input.prefecture,
+          companionCount: input.companionCount,
+        });
+        
+        // 友人を更新（既存を削除して再作成）
+        await db.deleteCompanionsForParticipation(input.id);
+        if (input.companions && input.companions.length > 0) {
+          const companionRecords = input.companions.map(c => ({
+            participationId: input.id,
+            challengeId: participation.challengeId,
+            displayName: c.displayName,
+            twitterUsername: c.twitterUsername,
+            twitterId: c.twitterId,
+            profileImage: c.profileImage,
+          }));
+          await db.createCompanions(companionRecords);
+        }
+        
+        return { success: true };
+      }),
+
     // 参加取消
     delete: protectedProcedure
       .input(z.object({ id: z.number() }))

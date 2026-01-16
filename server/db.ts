@@ -172,6 +172,13 @@ export async function getParticipationsByUserId(userId: number) {
   return db.select().from(participations).where(eq(participations.userId, userId)).orderBy(desc(participations.createdAt));
 }
 
+export async function getParticipationById(id: number) {
+  const db = await getDb();
+  if (!db) return null;
+  const result = await db.select().from(participations).where(eq(participations.id, id));
+  return result[0] || null;
+}
+
 export async function createParticipation(data: InsertParticipation) {
   const db = await getDb();
   if (!db) throw new Error("Database not available");

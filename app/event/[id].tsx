@@ -1,7 +1,7 @@
 import { Text, View, TouchableOpacity, TextInput, ScrollView, KeyboardAvoidingView, Platform, Alert, Share, Dimensions, Linking, Modal } from "react-native";
 import { Image } from "expo-image";
 import { useLocalSearchParams, useRouter } from "expo-router";
-import { useState, useRef } from "react";
+import { useState, useRef, useMemo } from "react";
 import { ScreenContainer } from "@/components/screen-container";
 import { trpc } from "@/lib/trpc";
 import { useAuth } from "@/hooks/use-auth";
@@ -490,6 +490,8 @@ export default function ChallengeDetailScreen() {
   const [showPrefectureFilterList, setShowPrefectureFilterList] = useState(false);
   const [showConfirmation, setShowConfirmation] = useState(false);
   const [justSubmitted, setJustSubmitted] = useState(false);
+  const [isEditMode, setIsEditMode] = useState(false); // 編集モード
+  const [editingParticipationId, setEditingParticipationId] = useState<number | null>(null); // 編集中の参加表明ID
   const scrollViewRef = useRef<ScrollView>(null);
   const messagesRef = useRef<View>(null);
   
@@ -524,6 +526,34 @@ export default function ChallengeDetailScreen() {
   
   const { data: challenge, isLoading: challengeLoading } = trpc.events.getById.useQuery({ id: challengeId });
   const { data: participations, isLoading: participationsLoading, refetch } = trpc.participations.listByEvent.useQuery({ eventId: challengeId });
+  
+  // 自分の参加表明を確認（twitterIdで照合）
+  const myParticipation = useMemo(() => {
+    if (!user || !participations) return null;
+    const twitterId = user.openId?.startsWith("twitter:") 
+      ? user.openId.replace("twitter:", "") 
+      : user.openId;
+    return participations.find(p => p.twitterId === twitterId) || null;
+  }, [user, participations]);
+  
+  // 勢いを計算（24時間以内の参加表明数）
+  const momentum = useMemo(() => {
+    if (!participations) return { recent24h: 0, recent1h: 0, isHot: false };
+    const now = new Date();
+    const recent24h = participations.filter(p => {
+      const createdAt = new Date(p.createdAt);
+      return (now.getTime() - createdAt.getTime()) < 24 * 60 * 60 * 1000;
+    }).length;
+    const recent1h = participations.filter(p => {
+      const createdAt = new Date(p.createdAt);
+      return (now.getTime() - createdAt.getTime()) < 60 * 60 * 1000;
+    }).length;
+    return {
+      recent24h,
+      recent1h,
+      isHot: recent24h >= 5 || recent1h >= 2,
+    };
+  }, [participations]);
   
   // 友人データを取得
   const { data: challengeCompanions } = trpc.companions.forChallenge.useQuery(
@@ -643,6 +673,25 @@ export default function ChallengeDetailScreen() {
       refetch();
       // シェア促進モーダルを表示
       setShowSharePrompt(true);
+    },
+  });
+  
+  // 参加表明更新mutation
+  const updateParticipationMutation = trpc.participations.update.useMutation({
+    onSuccess: async () => {
+      setMessage("");
+      setCompanionCount(0);
+      setPrefecture("");
+      setCompanions([]);
+      setShowForm(false);
+      setIsEditMode(false);
+      setEditingParticipationId(null);
+      await refetch();
+      Alert.alert("更新完了", "参加表明を更新しました");
+    },
+    onError: (error) => {
+      console.error("Update error:", error);
+      Alert.alert("更新に失敗しました", error.message || "もう一度お試しください");
     },
   });
 
@@ -2031,7 +2080,7 @@ export default function ChallengeDetailScreen() {
                 {/* 参加条件 */}
                 <View
                   style={{
-                    backgroundColor: "#1DA1F2",
+                    backgroundColor: user?.isFollowingTarget ? "#10B981" : "#1DA1F2",
                     borderRadius: 12,
                     padding: 12,
                     marginBottom: 16,
@@ -2039,21 +2088,37 @@ export default function ChallengeDetailScreen() {
                     alignItems: "center",
                   }}
                 >
-                  <MaterialIcons name="favorite" size={20} color="#fff" />
+                  <MaterialIcons name={user?.isFollowingTarget ? "check-circle" : "favorite"} size={20} color="#fff" />
                   <Text style={{ color: "#fff", fontSize: 12, marginLeft: 8, flex: 1 }}>
-                    @idolfunch をフォローすると特典がもらえるかも？
+                    {user?.isFollowingTarget 
+                      ? `@${user?.targetAccount?.username || "idolfunch"} をフォロー中 ✨`
+                      : "@idolfunch をフォローすると特典がもらえるかも？"}
                   </Text>
-                  <TouchableOpacity
-                    onPress={() => Linking.openURL("https://twitter.com/idolfunch")}
-                    style={{
-                      backgroundColor: "rgba(255,255,255,0.2)",
-                      borderRadius: 8,
-                      paddingHorizontal: 12,
-                      paddingVertical: 6,
-                    }}
-                  >
-                    <Text style={{ color: "#fff", fontSize: 12, fontWeight: "bold" }}>フォロー</Text>
-                  </TouchableOpacity>
+                  {!user?.isFollowingTarget && (
+                    <TouchableOpacity
+                      onPress={() => Linking.openURL("https://twitter.com/idolfunch")}
+                      style={{
+                        backgroundColor: "rgba(255,255,255,0.2)",
+                        borderRadius: 8,
+                        paddingHorizontal: 12,
+                        paddingVertical: 6,
+                      }}
+                    >
+                      <Text style={{ color: "#fff", fontSize: 12, fontWeight: "bold" }}>フォロー</Text>
+                    </TouchableOpacity>
+                  )}
+                  {user?.isFollowingTarget && (
+                    <View
+                      style={{
+                        backgroundColor: "rgba(255,255,255,0.2)",
+                        borderRadius: 8,
+                        paddingHorizontal: 12,
+                        paddingVertical: 6,
+                      }}
+                    >
+                      <Text style={{ color: "#fff", fontSize: 12, fontWeight: "bold" }}>フォロー中</Text>
+                    </View>
+                  )}
                 </View>
 
                 <View style={{ flexDirection: "row", gap: 12 }}>

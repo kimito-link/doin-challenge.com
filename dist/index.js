@@ -611,11 +611,22 @@ async function getParticipationsByUserId(userId) {
   if (!db) return [];
   return db.select().from(participations).where(eq(participations.userId, userId)).orderBy(desc(participations.createdAt));
 }
+async function getParticipationById(id) {
+  const db = await getDb();
+  if (!db) return null;
+  const result = await db.select().from(participations).where(eq(participations.id, id));
+  return result[0] || null;
+}
 async function createParticipation(data) {
   const db = await getDb();
   if (!db) throw new Error("Database not available");
   const result = await db.insert(participations).values(data);
   return result[0].insertId;
+}
+async function updateParticipation(id, data) {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+  await db.update(participations).set(data).where(eq(participations.id, id));
 }
 async function deleteParticipation(id) {
   const db = await getDb();
@@ -1263,6 +1274,11 @@ async function deleteCompanion(id) {
   const db = await getDb();
   if (!db) return;
   await db.delete(participationCompanions).where(eq(participationCompanions.id, id));
+}
+async function deleteCompanionsForParticipation(participationId) {
+  const db = await getDb();
+  if (!db) return;
+  await db.delete(participationCompanions).where(eq(participationCompanions.participationId, participationId));
 }
 async function getCompanionInviteStats(userId) {
   const db = await getDb();
@@ -2931,6 +2947,46 @@ var appRouter = router({
         await createCompanions(companionRecords);
       }
       return { id: participationId };
+    }),
+    // 参加表明の更新（都道府県・コメント・一緒に参加する人の変更）
+    update: publicProcedure.input(z2.object({
+      id: z2.number(),
+      twitterId: z2.string(),
+      message: z2.string().optional(),
+      prefecture: z2.string().optional(),
+      companionCount: z2.number().default(0),
+      companions: z2.array(z2.object({
+        displayName: z2.string(),
+        twitterUsername: z2.string().optional(),
+        twitterId: z2.string().optional(),
+        profileImage: z2.string().optional()
+      })).optional()
+    })).mutation(async ({ input }) => {
+      if (!input.twitterId) {
+        throw new Error("\u30ED\u30B0\u30A4\u30F3\u304C\u5FC5\u8981\u3067\u3059\u3002");
+      }
+      const participation = await getParticipationById(input.id);
+      if (!participation || participation.twitterId !== input.twitterId) {
+        throw new Error("\u3053\u306E\u53C2\u52A0\u8868\u660E\u3092\u7DE8\u96C6\u3059\u308B\u6A29\u9650\u304C\u3042\u308A\u307E\u305B\u3093\u3002");
+      }
+      await updateParticipation(input.id, {
+        message: input.message,
+        prefecture: input.prefecture,
+        companionCount: input.companionCount
+      });
+      await deleteCompanionsForParticipation(input.id);
+      if (input.companions && input.companions.length > 0) {
+        const companionRecords = input.companions.map((c) => ({
+          participationId: input.id,
+          challengeId: participation.challengeId,
+          displayName: c.displayName,
+          twitterUsername: c.twitterUsername,
+          twitterId: c.twitterId,
+          profileImage: c.profileImage
+        }));
+        await createCompanions(companionRecords);
+      }
+      return { success: true };
     }),
     // 参加取消
     delete: protectedProcedure.input(z2.object({ id: z2.number() })).mutation(async ({ ctx, input }) => {
