@@ -1,12 +1,17 @@
 import { View, StyleSheet, Animated, Text } from "react-native";
-import { Image, ImageProps } from "expo-image";
-import { useState, useRef, useEffect } from "react";
+import { Image, ImageProps, ImageSource } from "expo-image";
+import { useState, useRef, useEffect, useMemo } from "react";
 import { LinearGradient } from "expo-linear-gradient";
+import { optimizeImageUrl, IMAGE_SIZE_PRESETS } from "@/lib/image-format";
 
 interface OptimizedImageProps extends Omit<ImageProps, "onLoad" | "onError"> {
   fallbackColor?: string;
   showPlaceholder?: boolean;
   placeholderType?: "shimmer" | "blur" | "solid";
+  /** WebP最適化を有効にする */
+  optimizeFormat?: boolean;
+  /** 画像サイズプリセット */
+  sizePreset?: keyof typeof IMAGE_SIZE_PRESETS;
 }
 
 /**
@@ -19,13 +24,19 @@ export function OptimizedImage({
   fallbackColor = "#2D3139",
   showPlaceholder = true,
   placeholderType = "shimmer",
+  optimizeFormat = true,
+  sizePreset,
   style,
+  source,
   ...props
 }: OptimizedImageProps) {
   const [isLoading, setIsLoading] = useState(true);
   const [hasError, setHasError] = useState(false);
   const fadeAnim = useRef(new Animated.Value(0)).current;
   const shimmerAnim = useRef(new Animated.Value(0)).current;
+  
+  // 画像ソースを最適化（WebP変換等）
+  const optimizedSource = useOptimizedSource(source as ImageSource | undefined, optimizeFormat, sizePreset);
 
   useEffect(() => {
     if (showPlaceholder && placeholderType === "shimmer") {
@@ -101,6 +112,7 @@ export function OptimizedImage({
         <Animated.View style={[styles.imageContainer, { opacity: fadeAnim }]}>
           <Image
             {...props}
+            source={optimizedSource}
             style={[style, styles.image]}
             onLoad={handleLoad}
             onError={handleError}
@@ -111,6 +123,32 @@ export function OptimizedImage({
       )}
     </View>
   );
+}
+
+/**
+ * 画像ソースを最適化するヘルパー関数
+ */
+function useOptimizedSource(
+  source: ImageSource | undefined,
+  optimizeFormat: boolean,
+  sizePreset?: keyof typeof IMAGE_SIZE_PRESETS
+): ImageSource | undefined {
+  return useMemo(() => {
+    if (!source || !optimizeFormat) return source;
+
+    // URIがある場合のみ最適化
+    if (typeof source === "object" && "uri" in source && source.uri) {
+      const preset = sizePreset ? IMAGE_SIZE_PRESETS[sizePreset] : undefined;
+      const optimizedUri = optimizeImageUrl(source.uri, {
+        width: preset?.width,
+        height: preset?.height,
+        quality: preset?.quality,
+      });
+      return { ...source, uri: optimizedUri };
+    }
+
+    return source;
+  }, [source, optimizeFormat, sizePreset]);
 }
 
 /**

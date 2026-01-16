@@ -4,10 +4,15 @@ import * as Auth from "@/lib/_core/auth";
 import { saveTokenData } from "@/lib/token-manager";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import { useEffect, useState, useRef } from "react";
-import { ActivityIndicator, Text } from "react-native";
+import { ActivityIndicator, Text, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { saveAccount } from "@/lib/account-manager";
+import { Image } from "expo-image";
+
+// 画像アセット
+const APP_LOGO = require("@/assets/images/logos/kimitolink-logo.jpg");
+const CHARACTER_WORRIED = require("@/assets/images/characters/link/link-yukkuri-half-eyes-mouth-open.png");
 
 const FOLLOW_SUCCESS_SHOWN_KEY = "follow_success_modal_shown";
 
@@ -202,12 +207,25 @@ export default function TwitterOAuthCallback() {
           </>
         )}
         {status === "error" && (
-          <>
-            <Text className="text-4xl mb-2">✕</Text>
+          <View className="items-center justify-center gap-4">
+            {/* ロゴ */}
+            <Image
+              source={APP_LOGO}
+              style={{ width: 120, height: 40 }}
+              contentFit="contain"
+            />
+            
+            {/* キャラクター（困った表情） */}
+            <Image
+              source={CHARACTER_WORRIED}
+              style={{ width: 120, height: 120, marginVertical: 16 }}
+              contentFit="contain"
+            />
+            
             <Text className="mb-2 text-xl font-bold leading-7 text-error">
               認証に失敗しました
             </Text>
-            <Text className="text-base leading-6 text-center text-foreground">
+            <Text className="text-base leading-6 text-center text-foreground px-4">
               {errorMessage}
             </Text>
             <Text
@@ -219,7 +237,7 @@ export default function TwitterOAuthCallback() {
             >
               マイページに戻って再ログイン
             </Text>
-          </>
+          </View>
         )}
         
         {/* フォロー完了お祝いモーダル */}
