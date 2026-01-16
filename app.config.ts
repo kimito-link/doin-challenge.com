@@ -66,7 +66,16 @@ const config: ExpoConfig = {
     favicon: "./assets/images/favicon.png",
   },
   plugins: [
-    "expo-router",
+    [
+      "expo-router",
+      {
+        origin: "https://doin-challenge.com",
+        asyncRoutes: {
+          web: true,
+          default: "development"
+        }
+      }
+    ],
     [
       "expo-audio",
       {
