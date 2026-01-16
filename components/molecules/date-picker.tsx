@@ -1,10 +1,10 @@
 /**
  * Web対応の日付ピッカーコンポーネント
- * Webではinput type="date"を使用し、ネイティブではTextInputを使用
+ * Web/ネイティブ共通でカスタムカレンダーモーダルを使用
  */
 
-import { Platform, View, Text, TouchableOpacity, TextInput, Modal, ScrollView } from "react-native";
-import { useState, useEffect } from "react";
+import { Platform, View, Text, TouchableOpacity, Modal, Pressable, StyleSheet } from "react-native";
+import { useState, useEffect, useId } from "react";
 import MaterialIcons from "@expo/vector-icons/MaterialIcons";
 
 interface DatePickerProps {
@@ -44,11 +44,19 @@ function parseDate(dateStr: string): { year: number; month: number; day: number 
   };
 }
 
+// 日付を表示用にフォーマット
+function formatDisplayDate(dateStr: string): string {
+  const parsed = parseDate(dateStr);
+  if (!parsed) return "";
+  return `${parsed.year}年${parsed.month + 1}月${parsed.day}日`;
+}
+
 const MONTHS = ["1月", "2月", "3月", "4月", "5月", "6月", "7月", "8月", "9月", "10月", "11月", "12月"];
 const WEEKDAYS = ["日", "月", "火", "水", "木", "金", "土"];
 
 export function DatePicker({ value, onChange, placeholder = "日付を選択", minDate, maxDate }: DatePickerProps) {
   const [showCalendar, setShowCalendar] = useState(false);
+  const uniqueId = useId();
   
   // カレンダー表示用の年月
   const today = new Date();
@@ -65,61 +73,10 @@ export function DatePicker({ value, onChange, placeholder = "日付を選択", m
     }
   }, [value]);
 
-  // Webの場合はネイティブのdate inputを使用
-  if (Platform.OS === "web") {
-    return (
-      <View style={{ position: "relative" }}>
-        <TouchableOpacity
-          onPress={() => {
-            // input要素をクリック
-            const input = document.getElementById("date-picker-input") as HTMLInputElement;
-            if (input) {
-              input.showPicker?.();
-              input.focus();
-            }
-          }}
-          style={{
-            backgroundColor: "#0D1117",
-            borderRadius: 8,
-            padding: 12,
-            borderWidth: 1,
-            borderColor: "#2D3139",
-            flexDirection: "row",
-            alignItems: "center",
-            justifyContent: "space-between",
-          }}
-        >
-          <Text style={{ color: value ? "#fff" : "#6B7280", fontSize: 14 }}>
-            {value || placeholder}
-          </Text>
-          <MaterialIcons name="calendar-today" size={20} color="#9CA3AF" />
-        </TouchableOpacity>
-        <input
-          id="date-picker-input"
-          type="date"
-          value={value}
-          onChange={(e) => onChange(e.target.value)}
-          min={minDate}
-          max={maxDate}
-          style={{
-            position: "absolute",
-            top: 0,
-            left: 0,
-            width: "100%",
-            height: "100%",
-            opacity: 0,
-            cursor: "pointer",
-          }}
-        />
-      </View>
-    );
-  }
-
-  // ネイティブの場合はカスタムカレンダーモーダルを使用
+  // カレンダーの日付配列を作成
   const daysInMonth = getDaysInMonth(viewYear, viewMonth);
   const firstDay = getFirstDayOfMonth(viewYear, viewMonth);
   
-  // カレンダーの日付配列を作成
   const calendarDays: (number | null)[] = [];
   for (let i = 0; i < firstDay; i++) {
     calendarDays.push(null);
@@ -163,125 +120,264 @@ export function DatePicker({ value, onChange, placeholder = "日付を選択", m
     return today.getFullYear() === viewYear && today.getMonth() === viewMonth && today.getDate() === day;
   };
 
+  // 日付が選択可能かチェック
+  const isDateDisabled = (day: number): boolean => {
+    const dateStr = formatDate(viewYear, viewMonth, day);
+    if (minDate && dateStr < minDate) return true;
+    if (maxDate && dateStr > maxDate) return true;
+    return false;
+  };
+
+  // カレンダーコンテンツ
+  const CalendarContent = () => (
+    <View style={styles.calendarContainer}>
+      {/* ヘッダー */}
+      <View style={styles.calendarHeader}>
+        <TouchableOpacity 
+          onPress={handlePrevMonth} 
+          style={styles.navButton}
+          accessibilityLabel="前の月"
+        >
+          <MaterialIcons name="chevron-left" size={24} color="#fff" />
+        </TouchableOpacity>
+        <Text style={styles.monthYearText}>
+          {viewYear}年 {MONTHS[viewMonth]}
+        </Text>
+        <TouchableOpacity 
+          onPress={handleNextMonth} 
+          style={styles.navButton}
+          accessibilityLabel="次の月"
+        >
+          <MaterialIcons name="chevron-right" size={24} color="#fff" />
+        </TouchableOpacity>
+      </View>
+
+      {/* 曜日ヘッダー */}
+      <View style={styles.weekdayHeader}>
+        {WEEKDAYS.map((day, index) => (
+          <View key={day} style={styles.weekdayCell}>
+            <Text style={[
+              styles.weekdayText,
+              index === 0 && styles.sundayText,
+              index === 6 && styles.saturdayText,
+            ]}>
+              {day}
+            </Text>
+          </View>
+        ))}
+      </View>
+
+      {/* カレンダーグリッド */}
+      <View style={styles.calendarGrid}>
+        {calendarDays.map((day, index) => (
+          <View key={index} style={styles.dayCell}>
+            {day !== null && (
+              <TouchableOpacity
+                onPress={() => !isDateDisabled(day) && handleSelectDate(day)}
+                disabled={isDateDisabled(day)}
+                style={[
+                  styles.dayButton,
+                  isSelected(day) && styles.selectedDay,
+                  isToday(day) && !isSelected(day) && styles.todayDay,
+                  isDateDisabled(day) && styles.disabledDay,
+                ]}
+                accessibilityLabel={`${viewYear}年${viewMonth + 1}月${day}日`}
+              >
+                <Text style={[
+                  styles.dayText,
+                  isSelected(day) && styles.selectedDayText,
+                  isToday(day) && !isSelected(day) && styles.todayDayText,
+                ]}>
+                  {day}
+                </Text>
+              </TouchableOpacity>
+            )}
+          </View>
+        ))}
+      </View>
+
+      {/* 今日ボタン */}
+      <TouchableOpacity
+        onPress={() => {
+          setViewYear(today.getFullYear());
+          setViewMonth(today.getMonth());
+        }}
+        style={styles.todayButton}
+        accessibilityLabel="今日の日付に移動"
+      >
+        <Text style={styles.todayButtonText}>今日</Text>
+      </TouchableOpacity>
+
+      {/* 閉じるボタン */}
+      <TouchableOpacity
+        onPress={() => setShowCalendar(false)}
+        style={styles.closeButton}
+        accessibilityLabel="カレンダーを閉じる"
+      >
+        <Text style={styles.closeButtonText}>閉じる</Text>
+      </TouchableOpacity>
+    </View>
+  );
+
+  // 表示テキスト
+  const displayText = value ? formatDisplayDate(value) : placeholder;
+
   return (
     <>
       <TouchableOpacity
         onPress={() => setShowCalendar(true)}
-        style={{
-          backgroundColor: "#0D1117",
-          borderRadius: 8,
-          padding: 12,
-          borderWidth: 1,
-          borderColor: "#2D3139",
-          flexDirection: "row",
-          alignItems: "center",
-          justifyContent: "space-between",
-        }}
+        style={styles.inputContainer}
+        accessibilityLabel={value ? `開催日: ${formatDisplayDate(value)}` : "開催日を選択"}
+        accessibilityHint="タップしてカレンダーを開く"
       >
-        <Text style={{ color: value ? "#fff" : "#6B7280", fontSize: 14 }}>
-          {value || placeholder}
+        <Text style={[styles.inputText, !value && styles.placeholderText]}>
+          {displayText}
         </Text>
         <MaterialIcons name="calendar-today" size={20} color="#9CA3AF" />
       </TouchableOpacity>
 
+      {/* カレンダーモーダル */}
       <Modal
         visible={showCalendar}
         transparent
         animationType="fade"
         onRequestClose={() => setShowCalendar(false)}
       >
-        <TouchableOpacity
-          style={{
-            flex: 1,
-            backgroundColor: "rgba(0, 0, 0, 0.7)",
-            justifyContent: "center",
-            alignItems: "center",
-          }}
-          activeOpacity={1}
+        <Pressable
+          style={styles.modalOverlay}
           onPress={() => setShowCalendar(false)}
         >
-          <View
-            style={{
-              backgroundColor: "#1A1D21",
-              borderRadius: 16,
-              padding: 16,
-              width: 320,
-              maxWidth: "90%",
-            }}
-            onStartShouldSetResponder={() => true}
-          >
-            {/* ヘッダー */}
-            <View style={{ flexDirection: "row", justifyContent: "space-between", alignItems: "center", marginBottom: 16 }}>
-              <TouchableOpacity onPress={handlePrevMonth} style={{ padding: 8 }}>
-                <MaterialIcons name="chevron-left" size={24} color="#fff" />
-              </TouchableOpacity>
-              <Text style={{ color: "#fff", fontSize: 18, fontWeight: "bold" }}>
-                {viewYear}年 {MONTHS[viewMonth]}
-              </Text>
-              <TouchableOpacity onPress={handleNextMonth} style={{ padding: 8 }}>
-                <MaterialIcons name="chevron-right" size={24} color="#fff" />
-              </TouchableOpacity>
-            </View>
-
-            {/* 曜日ヘッダー */}
-            <View style={{ flexDirection: "row", marginBottom: 8 }}>
-              {WEEKDAYS.map((day, index) => (
-                <View key={day} style={{ flex: 1, alignItems: "center" }}>
-                  <Text style={{ 
-                    color: index === 0 ? "#EF4444" : index === 6 ? "#3B82F6" : "#9CA3AF",
-                    fontSize: 12,
-                    fontWeight: "500",
-                  }}>
-                    {day}
-                  </Text>
-                </View>
-              ))}
-            </View>
-
-            {/* カレンダーグリッド */}
-            <View style={{ flexDirection: "row", flexWrap: "wrap" }}>
-              {calendarDays.map((day, index) => (
-                <View key={index} style={{ width: "14.28%", aspectRatio: 1, padding: 2 }}>
-                  {day !== null && (
-                    <TouchableOpacity
-                      onPress={() => handleSelectDate(day)}
-                      style={{
-                        flex: 1,
-                        justifyContent: "center",
-                        alignItems: "center",
-                        borderRadius: 8,
-                        backgroundColor: isSelected(day) ? "#EC4899" : isToday(day) ? "#2D3139" : "transparent",
-                      }}
-                    >
-                      <Text style={{
-                        color: isSelected(day) ? "#fff" : isToday(day) ? "#EC4899" : "#fff",
-                        fontSize: 14,
-                        fontWeight: isSelected(day) || isToday(day) ? "bold" : "normal",
-                      }}>
-                        {day}
-                      </Text>
-                    </TouchableOpacity>
-                  )}
-                </View>
-              ))}
-            </View>
-
-            {/* 閉じるボタン */}
-            <TouchableOpacity
-              onPress={() => setShowCalendar(false)}
-              style={{
-                marginTop: 16,
-                padding: 12,
-                backgroundColor: "#2D3139",
-                borderRadius: 8,
-                alignItems: "center",
-              }}
-            >
-              <Text style={{ color: "#fff", fontWeight: "500" }}>閉じる</Text>
-            </TouchableOpacity>
-          </View>
-        </TouchableOpacity>
+          <Pressable onPress={(e) => e.stopPropagation()}>
+            <CalendarContent />
+          </Pressable>
+        </Pressable>
       </Modal>
     </>
   );
 }
+
+const styles = StyleSheet.create({
+  inputContainer: {
+    backgroundColor: "#0D1117",
+    borderRadius: 8,
+    padding: 12,
+    borderWidth: 1,
+    borderColor: "#2D3139",
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+    minHeight: 48,
+  },
+  inputText: {
+    color: "#fff",
+    fontSize: 14,
+  },
+  placeholderText: {
+    color: "#6B7280",
+  },
+  modalOverlay: {
+    flex: 1,
+    backgroundColor: "rgba(0, 0, 0, 0.7)",
+    justifyContent: "center",
+    alignItems: "center",
+  },
+  calendarContainer: {
+    backgroundColor: "#1A1D21",
+    borderRadius: 16,
+    padding: 16,
+    width: 320,
+    maxWidth: "90%",
+  },
+  calendarHeader: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+    marginBottom: 16,
+  },
+  navButton: {
+    padding: 8,
+    minWidth: 44,
+    minHeight: 44,
+    justifyContent: "center",
+    alignItems: "center",
+  },
+  monthYearText: {
+    color: "#fff",
+    fontSize: 18,
+    fontWeight: "bold",
+  },
+  weekdayHeader: {
+    flexDirection: "row",
+    marginBottom: 8,
+  },
+  weekdayCell: {
+    flex: 1,
+    alignItems: "center",
+  },
+  weekdayText: {
+    color: "#9CA3AF",
+    fontSize: 12,
+    fontWeight: "500",
+  },
+  sundayText: {
+    color: "#EF4444",
+  },
+  saturdayText: {
+    color: "#3B82F6",
+  },
+  calendarGrid: {
+    flexDirection: "row",
+    flexWrap: "wrap",
+  },
+  dayCell: {
+    width: "14.28%",
+    aspectRatio: 1,
+    padding: 2,
+  },
+  dayButton: {
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
+    borderRadius: 8,
+  },
+  selectedDay: {
+    backgroundColor: "#EC4899",
+  },
+  todayDay: {
+    backgroundColor: "#2D3139",
+  },
+  disabledDay: {
+    opacity: 0.3,
+  },
+  dayText: {
+    color: "#fff",
+    fontSize: 14,
+  },
+  selectedDayText: {
+    fontWeight: "bold",
+  },
+  todayDayText: {
+    color: "#EC4899",
+    fontWeight: "bold",
+  },
+  todayButton: {
+    marginTop: 12,
+    padding: 8,
+    alignItems: "center",
+  },
+  todayButtonText: {
+    color: "#EC4899",
+    fontWeight: "500",
+  },
+  closeButton: {
+    marginTop: 8,
+    padding: 12,
+    backgroundColor: "#2D3139",
+    borderRadius: 8,
+    alignItems: "center",
+  },
+  closeButtonText: {
+    color: "#fff",
+    fontWeight: "500",
+  },
+});
