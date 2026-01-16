@@ -24,6 +24,7 @@ import { prefetchChallengeImages } from "@/lib/image-prefetch";
 import { SimpleRefreshControl } from "@/components/enhanced-refresh-control";
 import { AnimatedCard } from "@/components/animated-pressable";
 import { SyncStatusIndicator } from "@/components/sync-status-indicator";
+import { BlinkingLink } from "@/components/blinking-character";
 
 // キャラクター画像
 const characterImages = {
@@ -1067,6 +1068,14 @@ export default function HomeScreen() {
 
       {isLoading ? (
         <ScrollView style={{ flex: 1, backgroundColor: "#0D1117" }} contentContainerStyle={{ padding: 16 }}>
+          {/* キャラクターローディング */}
+          <View style={{ alignItems: "center", marginBottom: 16 }}>
+            <BlinkingLink
+              variant="normalClosed"
+              size={80}
+              blinkInterval={2500}
+            />
+          </View>
           {/* スケルトンローダー */}
           <View style={{ marginBottom: 24 }}>
             <Skeleton width="40%" height={24} borderRadius={8} style={{ marginBottom: 16 }} />

@@ -1,5 +1,6 @@
 import { View, StyleSheet } from "react-native";
 import { Skeleton } from "@/components/skeleton-loader";
+import { BlinkingLink } from "@/components/blinking-character";
 
 /**
  * マイページのスケルトンローダー
@@ -8,6 +9,14 @@ import { Skeleton } from "@/components/skeleton-loader";
 export function MypageSkeleton() {
   return (
     <View style={styles.container}>
+      {/* キャラクターローディング */}
+      <View style={styles.characterContainer}>
+        <BlinkingLink
+          variant="normalClosed"
+          size={80}
+          blinkInterval={2500}
+        />
+      </View>
       {/* プロフィールセクション */}
       <View style={styles.profileSection}>
         <Skeleton width={80} height={80} borderRadius={40} />
@@ -82,6 +91,10 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     padding: 16,
+  },
+  characterContainer: {
+    alignItems: "center",
+    marginBottom: 16,
   },
   profileSection: {
     flexDirection: "row",

@@ -10,6 +10,7 @@ import AsyncStorage from "@react-native-async-storage/async-storage";
 import { saveAccount } from "@/lib/account-manager";
 import { Image } from "expo-image";
 import { BlinkingLink, LINK_CHARACTER_SETS } from "@/components/blinking-character";
+import { CelebrationAnimation } from "@/components/celebration-animation";
 
 // 画像アセット
 const APP_LOGO = require("@/assets/images/logos/kimitolink-logo.jpg");
@@ -236,17 +237,17 @@ export default function TwitterOAuthCallback() {
         )}
         {status === "success" && (
           <View className="items-center justify-center gap-4">
+            {/* お祝いアニメーション */}
+            <CelebrationAnimation
+              visible={true}
+              characterSize={120}
+              showConfetti={true}
+            />
+            
             {/* ロゴ */}
             <Image
               source={APP_LOGO}
-              style={{ width: 120, height: 40 }}
-              contentFit="contain"
-            />
-            
-            {/* キャラクター（笑顔） */}
-            <Image
-              source={CHARACTER_IMAGES.success}
-              style={{ width: 120, height: 120, marginVertical: 16 }}
+              style={{ width: 120, height: 40, marginTop: 140 }}
               contentFit="contain"
             />
             
