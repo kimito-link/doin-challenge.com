@@ -1350,3 +1350,13 @@
 - [x] 最新のコンポーネント構成を反映（Atoms 22, Molecules 31, Organisms 17）
 - [x] 新しいコンポーネントの使用例を追加（TalkingCharacter, ConfirmModal等）
 - [x] ディレクトリ構造図を更新
+
+
+## アクセシビリティテスト自動化（v4.99）
+- [x] React Native Testing Libraryのセットアップ
+- [x] a11yテストユーティリティの作成（__tests__/utils/a11y-helpers.ts）
+- [x] Atomsコンポーネントのa11yテスト（18テスト）
+- [x] Moleculesコンポーネントのa11yテスト（16テスト）
+- [x] Organismsコンポーネントのa11yテスト（22テスト）
+- [x] デザインシステムのa11yテスト（15テスト）
+- [x] テスト実行と問題修正（71テスト全てパス）
