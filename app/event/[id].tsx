@@ -23,6 +23,8 @@ import { RegionParticipantsModal } from "@/components/region-participants-modal"
 import { GrowthTrajectoryChart } from "@/components/growth-trajectory-chart";
 import { ParticipantRanking, TopThreeRanking } from "@/components/participant-ranking";
 import { TicketTransferSection } from "@/components/ticket-transfer-section";
+import { CelebrationAnimation } from "@/components/celebration-animation";
+import { TalkingCharacter, ACHIEVEMENT_MESSAGES } from "@/components/talking-character";
 
 const { width: screenWidth } = Dimensions.get("window");
 
@@ -1081,21 +1083,29 @@ export default function ChallengeDetailScreen() {
               </View>
               
               {progress >= 100 ? (
-                <TouchableOpacity
-                  onPress={() => router.push(`/achievement/${challengeId}`)}
-                  style={{
-                    backgroundColor: "#EC4899",
-                    paddingVertical: 12,
-                    paddingHorizontal: 24,
-                    borderRadius: 24,
-                    alignItems: "center",
-                    marginTop: 8,
-                  }}
-                >
-                  <Text style={{ color: "#fff", fontSize: 16, fontWeight: "bold" }}>
-                    🎉 達成記念ページを見る
-                  </Text>
-                </TouchableOpacity>
+                <View style={{ alignItems: "center" }}>
+                  {/* 達成お祝いキャラクター */}
+                  <TalkingCharacter
+                    size={80}
+                    messages={ACHIEVEMENT_MESSAGES}
+                    bubblePosition="top"
+                  />
+                  <TouchableOpacity
+                    onPress={() => router.push(`/achievement/${challengeId}`)}
+                    style={{
+                      backgroundColor: "#EC4899",
+                      paddingVertical: 12,
+                      paddingHorizontal: 24,
+                      borderRadius: 24,
+                      alignItems: "center",
+                      marginTop: 8,
+                    }}
+                  >
+                    <Text style={{ color: "#fff", fontSize: 16, fontWeight: "bold" }}>
+                      🎉 達成記念ページを見る
+                    </Text>
+                  </TouchableOpacity>
+                </View>
               ) : (
                 <Text style={{ color: "#9CA3AF", fontSize: 14, textAlign: "center" }}>
                   あと<Text style={{ color: "#EC4899", fontWeight: "bold" }}>{remaining}{unit}</Text>で目標達成！

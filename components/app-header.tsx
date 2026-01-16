@@ -5,6 +5,7 @@ import { useRouter } from "expo-router";
 import MaterialIcons from "@expo/vector-icons/MaterialIcons";
 import { useAuth } from "@/hooks/use-auth";
 import { GlobalMenu } from "@/components/global-menu";
+import { TalkingCharacter } from "@/components/talking-character";
 import * as Haptics from "expo-haptics";
 
 // ロゴ画像
@@ -84,24 +85,23 @@ export function AppHeader({
             {rightElement ? (
               rightElement
             ) : showCharacters ? (
-              <View style={{ flexDirection: "row", marginRight: showMenu ? 8 : 0 }}>
-                <Image 
-                  source={characterImages.linkYukkuri} 
-                  style={{ width: isDesktop ? 48 : 36, height: isDesktop ? 48 : 36, marginLeft: -4 }} 
-                  contentFit="contain"
-                  priority="high"
-                  cachePolicy="memory-disk"
+              <View style={{ flexDirection: "row", marginRight: showMenu ? 8 : 0, alignItems: "center" }}>
+                {/* タップ反応キャラクター（メイン） */}
+                <TalkingCharacter
+                  size={isDesktop ? 44 : 36}
+                  bubblePosition="bottom"
                 />
+                {/* 他のキャラクター（装飾） */}
                 <Image 
                   source={characterImages.kontaYukkuri} 
-                  style={{ width: isDesktop ? 48 : 36, height: isDesktop ? 48 : 36, marginLeft: -4 }} 
+                  style={{ width: isDesktop ? 40 : 32, height: isDesktop ? 40 : 32, marginLeft: -8 }} 
                   contentFit="contain"
                   priority="high"
                   cachePolicy="memory-disk"
                 />
                 <Image 
                   source={characterImages.tanuneYukkuri} 
-                  style={{ width: isDesktop ? 48 : 36, height: isDesktop ? 48 : 36, marginLeft: -4 }} 
+                  style={{ width: isDesktop ? 40 : 32, height: isDesktop ? 40 : 32, marginLeft: -8 }} 
                   contentFit="contain"
                   priority="high"
                   cachePolicy="memory-disk"
