@@ -27,6 +27,9 @@ import { registerServiceWorker } from "@/lib/service-worker";
 import { initAutoSync } from "@/lib/offline-sync";
 import { initSyncHandlers } from "@/lib/sync-handlers";
 import { AutoLoginProvider } from "@/lib/auto-login-provider";
+import { TutorialProvider, useTutorial } from "@/lib/tutorial-context";
+import { TutorialOverlay } from "@/components/organisms/tutorial-overlay";
+import { UserTypeSelector } from "@/components/organisms/user-type-selector";
 
 const DEFAULT_WEB_INSETS: EdgeInsets = { top: 0, right: 0, bottom: 0, left: 0 };
 const DEFAULT_WEB_FRAME: Rect = { x: 0, y: 0, width: 0, height: 0 };
@@ -34,6 +37,36 @@ const DEFAULT_WEB_FRAME: Rect = { x: 0, y: 0, width: 0, height: 0 };
 export const unstable_settings = {
   anchor: "(tabs)",
 };
+
+/**
+ * チュートリアルUI（ユーザータイプ選択 + チュートリアルオーバーレイ）
+ */
+function TutorialUI() {
+  const tutorial = useTutorial();
+
+  return (
+    <>
+      {/* ユーザータイプ選択画面 */}
+      <UserTypeSelector
+        visible={tutorial.showUserTypeSelector}
+        onSelect={tutorial.selectUserType}
+        onSkip={tutorial.skipTutorial}
+      />
+      
+      {/* チュートリアルオーバーレイ */}
+      {tutorial.currentStep && (
+        <TutorialOverlay
+          step={tutorial.currentStep}
+          stepNumber={tutorial.currentStepIndex + 1}
+          totalSteps={tutorial.totalSteps}
+          onNext={tutorial.nextStep}
+          onComplete={tutorial.completeTutorial}
+          visible={tutorial.isActive}
+        />
+      )}
+    </>
+  );
+}
 
 export default function RootLayout() {
   const initialInsets = initialWindowMetrics?.insets ?? DEFAULT_WEB_INSETS;
@@ -106,17 +139,20 @@ export default function RootLayout() {
         <QueryClientProvider client={queryClient}>
           <AutoLoginProvider>
             <LoginSuccessProvider>
-              <ToastProvider>
-              {/* Default to hiding native headers so raw route segments don't appear (e.g. "(tabs)", "products/[id]"). */}
-              {/* If a screen needs the native header, explicitly enable it and set a human title via Stack.Screen options. */}
-              <Stack screenOptions={{ headerShown: false }}>
-                <Stack.Screen name="(tabs)" />
-                <Stack.Screen name="oauth/callback" />
-              </Stack>
-              <StatusBar style="auto" />
-              <LoginSuccessModalWrapper />
-              <OfflineBanner />
-              </ToastProvider>
+              <TutorialProvider>
+                <ToastProvider>
+                  {/* Default to hiding native headers so raw route segments don't appear (e.g. "(tabs)", "products/[id]"). */}
+                  {/* If a screen needs the native header, explicitly enable it and set a human title via Stack.Screen options. */}
+                  <Stack screenOptions={{ headerShown: false }}>
+                    <Stack.Screen name="(tabs)" />
+                    <Stack.Screen name="oauth/callback" />
+                  </Stack>
+                  <StatusBar style="auto" />
+                  <LoginSuccessModalWrapper />
+                  <OfflineBanner />
+                  <TutorialUI />
+                </ToastProvider>
+              </TutorialProvider>
             </LoginSuccessProvider>
           </AutoLoginProvider>
         </QueryClientProvider>

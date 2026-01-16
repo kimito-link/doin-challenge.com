@@ -16,6 +16,7 @@ import { AppHeader } from "@/components/organisms/app-header";
 import { ConfirmModal } from "@/components/molecules/confirm-modal";
 import { MypageSkeleton } from "@/components/organisms/mypage-skeleton";
 import { AccountSwitcher } from "@/components/organisms/account-switcher";
+import { TutorialResetButton } from "@/components/molecules/tutorial-reset-button";
 
 // キャラクター画像
 const characterImages = {
@@ -838,6 +839,11 @@ export default function MyPageScreen() {
             </View>
             <MaterialIcons name="chevron-right" size={24} color="#6B7280" />
           </TouchableOpacity>
+
+          {/* チュートリアル再表示 */}
+          <View style={{ paddingHorizontal: 16, marginBottom: 8 }}>
+            <TutorialResetButton />
+          </View>
 
           {/* API使用量ダッシュボードリンク（管理者向け） */}
           <TouchableOpacity
