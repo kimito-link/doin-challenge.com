@@ -2,6 +2,7 @@ import { View, Text, TouchableOpacity, StyleSheet, Modal, Platform } from "react
 import { Image } from "expo-image";
 import { useColors } from "@/hooks/use-colors";
 import { useAuth } from "@/hooks/use-auth";
+import { useTutorial } from "@/lib/tutorial-context";
 import * as Haptics from "expo-haptics";
 import Animated, { 
   useAnimatedStyle, 
@@ -9,13 +10,13 @@ import Animated, {
   withRepeat, 
   withTiming,
   withSequence,
-  withDelay,
   Easing,
   FadeIn,
   FadeOut,
 } from "react-native-reanimated";
 import { useEffect } from "react";
 import { LinearGradient } from "expo-linear-gradient";
+import { useRouter } from "expo-router";
 
 // キャラクター画像
 const characterImage = require("@/assets/images/characters/link/link-yukkuri-smile-mouth-open.png");
@@ -29,14 +30,17 @@ interface LoginPromptModalProps {
 /**
  * チュートリアル完了後のログイン誘導モーダル
  * 
- * 任天堂原則：
- * - 強制しない（スキップ可能）
- * - ポジティブな表現
- * - キャラクターで親しみやすく
+ * 導線強化版：
+ * - 「次に何をすればいいか」を明確に
+ * - ファン向け：チャレンジを探す
+ * - 主催者向け：チャレンジを作成
+ * - ログインは任意（押し付けない）
  */
 export function LoginPromptModal({ visible, onLogin, onSkip }: LoginPromptModalProps) {
   const colors = useColors();
   const { login } = useAuth();
+  const { userType } = useTutorial();
+  const router = useRouter();
   
   // キャラクターのワクワクアニメーション
   const bounce = useSharedValue(0);
@@ -93,7 +97,33 @@ export function LoginPromptModal({ visible, onLogin, onSkip }: LoginPromptModalP
     onSkip();
   };
   
+  // メインアクション（ユーザータイプに応じて変更）
+  const handleMainAction = () => {
+    if (Platform.OS !== "web") {
+      Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
+    }
+    onSkip(); // モーダルを閉じる
+    
+    if (userType === "host") {
+      // 主催者向け：チャレンジ作成画面へ
+      router.push("/create");
+    } else {
+      // ファン向け：ホーム画面（チャレンジ一覧）へ
+      router.push("/");
+    }
+  };
+  
   if (!visible) return null;
+  
+  // ユーザータイプに応じたメッセージ
+  const isHost = userType === "host";
+  const title = "準備完了！";
+  const subtitle = isHost 
+    ? "さっそくチャレンジを作ってみよう"
+    : "気になるチャレンジを探してみよう";
+  const mainButtonText = isHost 
+    ? "チャレンジを作成する"
+    : "チャレンジを探す";
   
   return (
     <Modal
@@ -132,27 +162,43 @@ export function LoginPromptModal({ visible, onLogin, onSkip }: LoginPromptModalP
           
           {/* メッセージ */}
           <Text style={[styles.title, { color: colors.foreground }]}>
-            準備完了！
+            {title}
           </Text>
           <Text style={[styles.subtitle, { color: colors.muted }]}>
-            ログインして、推し活を始めよう
+            {subtitle}
           </Text>
           
-          {/* ログインボタン */}
+          {/* メインアクションボタン（チャレンジを探す/作成する） */}
+          <TouchableOpacity
+            onPress={handleMainAction}
+            style={styles.mainButton}
+            activeOpacity={0.8}
+          >
+            <LinearGradient
+              colors={isHost ? ["#DD6500", "#F59E0B"] : ["#EC4899", "#F472B6"]}
+              start={{ x: 0, y: 0 }}
+              end={{ x: 1, y: 0 }}
+              style={styles.mainButtonGradient}
+            >
+              <Text style={styles.mainButtonText}>{mainButtonText}</Text>
+            </LinearGradient>
+          </TouchableOpacity>
+          
+          {/* ログインボタン（サブ） */}
           <TouchableOpacity
             onPress={handleLogin}
             style={styles.loginButton}
             activeOpacity={0.8}
           >
-            <LinearGradient
-              colors={["#DD6500", "#F59E0B"]}
-              start={{ x: 0, y: 0 }}
-              end={{ x: 1, y: 0 }}
-              style={styles.loginButtonGradient}
-            >
-              <Text style={styles.loginButtonText}>ログインして始める</Text>
-            </LinearGradient>
+            <Text style={[styles.loginButtonText, { color: colors.foreground }]}>
+              ログインして記録を残す
+            </Text>
           </TouchableOpacity>
+          
+          {/* 説明テキスト */}
+          <Text style={[styles.helperText, { color: colors.muted }]}>
+            ログインすると参加履歴が保存されます
+          </Text>
           
           {/* スキップボタン */}
           <TouchableOpacity
@@ -184,7 +230,7 @@ const styles = StyleSheet.create({
     borderRadius: 24,
     overflow: "hidden",
     alignItems: "center",
-    paddingVertical: 40,
+    paddingVertical: 32,
     paddingHorizontal: 24,
   },
   gradient: {
@@ -200,45 +246,65 @@ const styles = StyleSheet.create({
     left: 30,
   },
   characterContainer: {
-    marginBottom: 24,
+    marginBottom: 20,
   },
   character: {
-    width: 120,
-    height: 120,
+    width: 100,
+    height: 100,
   },
   title: {
-    fontSize: 28,
+    fontSize: 26,
     fontWeight: "bold",
     marginBottom: 8,
     textAlign: "center",
   },
   subtitle: {
-    fontSize: 16,
+    fontSize: 15,
     textAlign: "center",
-    marginBottom: 32,
+    marginBottom: 24,
+    lineHeight: 22,
   },
-  loginButton: {
+  mainButton: {
     width: "100%",
     borderRadius: 16,
     overflow: "hidden",
-    shadowColor: "#DD6500",
+    shadowColor: "#EC4899",
     shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.4,
     shadowRadius: 12,
     elevation: 8,
+    marginBottom: 12,
   },
-  loginButtonGradient: {
+  mainButtonGradient: {
     paddingVertical: 16,
     alignItems: "center",
   },
-  loginButtonText: {
+  mainButtonText: {
     color: "#FFFFFF",
-    fontSize: 18,
+    fontSize: 17,
     fontWeight: "bold",
   },
+  loginButton: {
+    width: "100%",
+    paddingVertical: 14,
+    alignItems: "center",
+    borderRadius: 12,
+    borderWidth: 1,
+    borderColor: "rgba(255, 255, 255, 0.2)",
+    backgroundColor: "rgba(255, 255, 255, 0.05)",
+  },
+  loginButtonText: {
+    fontSize: 15,
+    fontWeight: "600",
+  },
+  helperText: {
+    fontSize: 12,
+    marginTop: 8,
+    textAlign: "center",
+  },
   skipButton: {
-    marginTop: 16,
-    paddingVertical: 12,
+    marginTop: 12,
+    paddingVertical: 8,
     paddingHorizontal: 24,
   },
   skipButtonText: {

@@ -17,6 +17,7 @@ import { useAccounts } from "@/hooks/use-accounts";
 import { useThemeContext, getThemeModeLabel, getThemeModeIcon } from "@/lib/theme-provider";
 import { AccountSwitcher } from "@/components/organisms/account-switcher";
 import { getSessionExpiryInfo, SessionExpiryInfo } from "@/lib/token-manager";
+import { useTutorial } from "@/lib/tutorial-context";
 
 /**
  * 総合設定画面
@@ -29,6 +30,7 @@ export default function SettingsScreen() {
   const { themeMode, colorScheme } = useThemeContext();
   const [showAccountSwitcher, setShowAccountSwitcher] = useState(false);
   const [sessionExpiry, setSessionExpiry] = useState<SessionExpiryInfo | null>(null);
+  const { resetTutorial } = useTutorial();
 
   // セッション有効期限を取得・更新
   useEffect(() => {
@@ -78,6 +80,16 @@ export default function SettingsScreen() {
     handleHaptic();
     router.push("/logout");
   }, [router, handleHaptic]);
+
+  const handleHelp = useCallback(() => {
+    handleHaptic();
+    router.push("/help");
+  }, [router, handleHaptic]);
+
+  const handleReplayTutorial = useCallback(async () => {
+    handleHaptic();
+    await resetTutorial();
+  }, [handleHaptic, resetTutorial]);
 
   // 他のアカウント（現在のアカウント以外）
   const otherAccounts = accounts.filter((a) => a.id !== currentAccountId);
@@ -261,6 +273,45 @@ export default function SettingsScreen() {
               <Text style={styles.menuItemTitle}>通知設定</Text>
               <Text style={styles.menuItemDescription}>
                 プッシュ通知やリマインダーの設定
+              </Text>
+            </View>
+            <MaterialIcons name="chevron-right" size={24} color="#6B7280" />
+          </TouchableOpacity>
+        </View>
+
+        {/* ヘルプセクション */}
+        <View style={styles.section}>
+          <Text style={styles.sectionTitle}>ヘルプ</Text>
+
+          <TouchableOpacity
+            onPress={handleHelp}
+            style={styles.menuItem}
+            activeOpacity={0.7}
+          >
+            <View style={styles.menuItemIcon}>
+              <MaterialIcons name="help-outline" size={24} color="#DD6500" />
+            </View>
+            <View style={styles.menuItemContent}>
+              <Text style={styles.menuItemTitle}>使い方ガイド</Text>
+              <Text style={styles.menuItemDescription}>
+                アプリの使い方とよくある質問
+              </Text>
+            </View>
+            <MaterialIcons name="chevron-right" size={24} color="#6B7280" />
+          </TouchableOpacity>
+
+          <TouchableOpacity
+            onPress={handleReplayTutorial}
+            style={styles.menuItem}
+            activeOpacity={0.7}
+          >
+            <View style={[styles.menuItemIcon, { backgroundColor: "rgba(236, 72, 153, 0.1)" }]}>
+              <MaterialIcons name="replay" size={24} color="#EC4899" />
+            </View>
+            <View style={styles.menuItemContent}>
+              <Text style={styles.menuItemTitle}>チュートリアルを見返す</Text>
+              <Text style={styles.menuItemDescription}>
+                はじめの説明をもう一度見る
               </Text>
             </View>
             <MaterialIcons name="chevron-right" size={24} color="#6B7280" />
