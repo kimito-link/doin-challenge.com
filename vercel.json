@@ -1,7 +1,7 @@
 {
-  "buildCommand": "",
-  "installCommand": "",
-  "outputDirectory": ".",
+  "buildCommand": "npx expo export -p web",
+  "installCommand": "pnpm install",
+  "outputDirectory": "dist",
   "framework": null,
   "redirects": [
     {
