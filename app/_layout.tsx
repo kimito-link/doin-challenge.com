@@ -101,7 +101,7 @@ export default function RootLayout() {
   }, [initialInsets, initialFrame]);
 
   const content = (
-    <GestureHandlerRootView style={{ flex: 1 }}>
+    <GestureHandlerRootView style={{ flex: 1, overflow: "hidden" }}>
       <trpc.Provider client={trpcClient} queryClient={queryClient}>
         <QueryClientProvider client={queryClient}>
           <AutoLoginProvider>

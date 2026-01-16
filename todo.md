@@ -1130,3 +1130,36 @@
 ### エラーハンドリング改善
 - [x] ネットワークエラー時のフィードバック改善
 - [x] フォーム送信エラーの表示改善
+
+
+## Atomic Designコンポーネント整理（v4.85）
+
+### Atoms（基本UI要素）
+- [x] Button系コンポーネントの統合
+- [x] Input系コンポーネントの統合
+- [x] Text/Label系コンポーネントの整理
+- [x] Icon系コンポーネントの整理
+- [x] Badge/Tag系コンポーネントの整理
+
+### Molecules（複合コンポーネント）
+- [ ] Card系コンポーネントの整理
+- [ ] Form系コンポーネントの整理
+- [ ] Avatar系コンポーネントの統合
+- [ ] ListItem系コンポーネントの整理
+
+### Organisms（機能単位コンポーネント）
+- [ ] Header/Navigation系の整理
+- [ ] ChallengeCard系の整理
+- [ ] ParticipantList系の整理
+- [ ] TicketTransfer系の整理
+
+### ディレクトリ構成
+- [ ] components/atoms/ ディレクトリ作成
+- [ ] components/molecules/ ディレクトリ作成
+- [ ] components/organisms/ ディレクトリ作成
+- [ ] インデックスファイルの作成
+
+
+## 左右スワイプ画面ずれ問題（v4.86）
+
+- [x] チャレンジ作成画面の水平スクロール問題を修正

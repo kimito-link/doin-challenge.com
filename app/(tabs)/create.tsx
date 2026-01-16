@@ -158,7 +158,12 @@ export default function CreateChallengeScreen() {
         behavior={Platform.OS === "ios" ? "padding" : "height"}
         style={{ flex: 1 }}
       >
-        <ScrollView style={{ flex: 1, backgroundColor: "#0D1117" }}>
+        <ScrollView 
+            style={{ flex: 1, backgroundColor: "#0D1117" }}
+            showsHorizontalScrollIndicator={false}
+            horizontal={false}
+            contentContainerStyle={{ flexGrow: 1 }}
+          >
           {/* ヘッダー */}
           <AppHeader 
             title="動員ちゃれんじ" 
