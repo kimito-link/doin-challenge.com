@@ -12,7 +12,7 @@ import * as Haptics from "expo-haptics";
 const logoImage = require("@/assets/images/logo/logo-color.jpg");
 
 // アプリバージョン（デプロイ確認用）
-const APP_VERSION = "v5.55";
+const APP_VERSION = "v5.56";
 
 // キャラクター画像
 const characterImages = {
