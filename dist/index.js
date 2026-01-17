@@ -2220,28 +2220,30 @@ async function refreshAccessToken(refreshToken) {
   return response.json();
 }
 async function storePKCEData(state, codeVerifier, callbackUrl) {
-  const db = await getDb();
-  if (!db) {
-    console.warn("[PKCE] Database not available, using memory fallback");
-    pkceMemoryStore.set(state, { codeVerifier, callbackUrl });
-    setTimeout(() => pkceMemoryStore.delete(state), 10 * 60 * 1e3);
-    return;
-  }
-  const expiresAt = new Date(Date.now() + 10 * 60 * 1e3);
-  try {
-    await db.delete(oauthPkceData).where(lt(oauthPkceData.expiresAt, /* @__PURE__ */ new Date()));
-    await db.insert(oauthPkceData).values({
-      state,
-      codeVerifier,
-      callbackUrl,
-      expiresAt
-    });
-    console.log("[PKCE] Stored PKCE data for state:", state.substring(0, 8) + "...");
-  } catch (error) {
-    console.error("[PKCE] Failed to store in database, using memory fallback:", error);
-    pkceMemoryStore.set(state, { codeVerifier, callbackUrl });
-    setTimeout(() => pkceMemoryStore.delete(state), 10 * 60 * 1e3);
-  }
+  pkceMemoryStore.set(state, { codeVerifier, callbackUrl });
+  setTimeout(() => pkceMemoryStore.delete(state), 10 * 60 * 1e3);
+  console.log("[PKCE] Stored PKCE data in memory for state:", state.substring(0, 8) + "...");
+  setImmediate(async () => {
+    try {
+      const db = await getDb();
+      if (!db) {
+        console.log("[PKCE] Database not available, memory-only mode");
+        return;
+      }
+      const expiresAt = new Date(Date.now() + 10 * 60 * 1e3);
+      await db.delete(oauthPkceData).where(lt(oauthPkceData.expiresAt, /* @__PURE__ */ new Date())).catch(() => {
+      });
+      await db.insert(oauthPkceData).values({
+        state,
+        codeVerifier,
+        callbackUrl,
+        expiresAt
+      });
+      console.log("[PKCE] Also stored PKCE data in database for state:", state.substring(0, 8) + "...");
+    } catch (error) {
+      console.log("[PKCE] Database storage failed (memory fallback active):", error instanceof Error ? error.message : error);
+    }
+  });
 }
 async function getPKCEData(state) {
   const memoryData = pkceMemoryStore.get(state);
