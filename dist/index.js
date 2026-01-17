@@ -1638,6 +1638,59 @@ async function cancelParticipation(participationId, userId) {
   await db.update(challenges).set({ currentValue: sql`${challenges.currentValue} - ${p.contribution}` }).where(eq(challenges.id, p.challengeId));
   return { success: true, challengeId: p.challengeId, contribution: p.contribution };
 }
+async function getOshikatsuStats(userId, twitterId) {
+  const db = await getDb();
+  if (!db) return null;
+  if (!userId && !twitterId) return null;
+  let participationList;
+  if (userId) {
+    participationList = await db.select({
+      id: participations.id,
+      challengeId: participations.challengeId,
+      contribution: participations.contribution,
+      createdAt: participations.createdAt
+    }).from(participations).where(eq(participations.userId, userId)).orderBy(desc(participations.createdAt)).limit(20);
+  } else if (twitterId) {
+    participationList = await db.select({
+      id: participations.id,
+      challengeId: participations.challengeId,
+      contribution: participations.contribution,
+      createdAt: participations.createdAt
+    }).from(participations).where(eq(participations.twitterId, twitterId)).orderBy(desc(participations.createdAt)).limit(20);
+  } else {
+    return null;
+  }
+  if (participationList.length === 0) {
+    return {
+      totalParticipations: 0,
+      totalContribution: 0,
+      recentChallenges: []
+    };
+  }
+  const totalParticipations = participationList.length;
+  const totalContribution = participationList.reduce((sum, p) => sum + (p.contribution || 1), 0);
+  const challengeIds = [...new Set(participationList.map((p) => p.challengeId))];
+  const challengeList = await db.select({
+    id: challenges.id,
+    title: challenges.title,
+    hostName: challenges.hostName
+  }).from(challenges).where(sql`${challenges.id} IN (${sql.join(challengeIds.map((id) => sql`${id}`), sql`, `)})`);
+  const challengeMap = new Map(challengeList.map((c) => [c.id, c]));
+  const recentChallenges = participationList.slice(0, 5).map((p) => {
+    const challenge = challengeMap.get(p.challengeId);
+    return {
+      id: p.challengeId,
+      title: challenge?.title || "\u4E0D\u660E\u306A\u30C1\u30E3\u30EC\u30F3\u30B8",
+      targetName: challenge?.hostName || "",
+      participatedAt: p.createdAt.toISOString()
+    };
+  });
+  return {
+    totalParticipations,
+    totalContribution,
+    recentChallenges
+  };
+}
 
 // server/_core/cookies.ts
 var LOCAL_HOSTS = /* @__PURE__ */ new Set(["localhost", "127.0.0.1", "::1"]);
@@ -3789,6 +3842,13 @@ Design requirements:
     // ユーザーの公開プロフィールを取得
     get: publicProcedure.input(z2.object({ userId: z2.number() })).query(async ({ input }) => {
       return getUserPublicProfile(input.userId);
+    }),
+    // 推し活状況を取得
+    getOshikatsuStats: publicProcedure.input(z2.object({
+      userId: z2.number().optional(),
+      twitterId: z2.string().optional()
+    })).query(async ({ input }) => {
+      return getOshikatsuStats(input.userId, input.twitterId);
     }),
     // おすすめホスト（同じカテゴリのチャレンジを開催しているホスト）
     recommendedHosts: publicProcedure.input(z2.object({

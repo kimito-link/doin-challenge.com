@@ -1747,3 +1747,87 @@ export async function cancelParticipation(participationId: number, userId: numbe
   
   return { success: true, challengeId: p.challengeId, contribution: p.contribution };
 }
+
+
+// ========== 推し活状況 (Oshikatsu Stats) ==========
+
+/**
+ * ユーザーの推し活状況を取得
+ * @param userId ユーザーID（オプション）
+ * @param twitterId TwitterID（オプション）
+ */
+export async function getOshikatsuStats(userId?: number, twitterId?: string) {
+  const db = await getDb();
+  if (!db) return null;
+  
+  if (!userId && !twitterId) return null;
+  
+  // 参加履歴を取得
+  let participationList;
+  if (userId) {
+    participationList = await db.select({
+      id: participations.id,
+      challengeId: participations.challengeId,
+      contribution: participations.contribution,
+      createdAt: participations.createdAt,
+    })
+      .from(participations)
+      .where(eq(participations.userId, userId))
+      .orderBy(desc(participations.createdAt))
+      .limit(20);
+  } else if (twitterId) {
+    participationList = await db.select({
+      id: participations.id,
+      challengeId: participations.challengeId,
+      contribution: participations.contribution,
+      createdAt: participations.createdAt,
+    })
+      .from(participations)
+      .where(eq(participations.twitterId, twitterId))
+      .orderBy(desc(participations.createdAt))
+      .limit(20);
+  } else {
+    return null;
+  }
+  
+  if (participationList.length === 0) {
+    return {
+      totalParticipations: 0,
+      totalContribution: 0,
+      recentChallenges: [],
+    };
+  }
+  
+  // 統計を計算
+  const totalParticipations = participationList.length;
+  const totalContribution = participationList.reduce((sum, p) => sum + (p.contribution || 1), 0);
+  
+  // チャレンジ情報を取得
+  const challengeIds = [...new Set(participationList.map(p => p.challengeId))];
+  const challengeList = await db.select({
+    id: challenges.id,
+    title: challenges.title,
+    hostName: challenges.hostName,
+  })
+    .from(challenges)
+    .where(sql`${challenges.id} IN (${sql.join(challengeIds.map(id => sql`${id}`), sql`, `)})`);
+  
+  const challengeMap = new Map(challengeList.map(c => [c.id, c]));
+  
+  // 最近の参加チャレンジを構築
+  const recentChallenges = participationList.slice(0, 5).map(p => {
+    const challenge = challengeMap.get(p.challengeId);
+    return {
+      id: p.challengeId,
+      title: challenge?.title || "不明なチャレンジ",
+      targetName: challenge?.hostName || "",
+      participatedAt: p.createdAt.toISOString(),
+    };
+  });
+  
+  return {
+    totalParticipations,
+    totalContribution,
+    recentChallenges,
+  };
+}

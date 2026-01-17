@@ -1157,6 +1157,16 @@ Design requirements:
         return db.getUserPublicProfile(input.userId);
       }),
     
+    // 推し活状況を取得
+    getOshikatsuStats: publicProcedure
+      .input(z.object({
+        userId: z.number().optional(),
+        twitterId: z.string().optional(),
+      }))
+      .query(async ({ input }) => {
+        return db.getOshikatsuStats(input.userId, input.twitterId);
+      }),
+    
     // おすすめホスト（同じカテゴリのチャレンジを開催しているホスト）
     recommendedHosts: publicProcedure
       .input(z.object({ 

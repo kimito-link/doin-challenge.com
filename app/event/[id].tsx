@@ -27,6 +27,8 @@ import { ParticipantRanking, TopThreeRanking } from "@/components/organisms/part
 import { TicketTransferSection } from "@/components/organisms/ticket-transfer-section";
 import { CelebrationAnimation } from "@/components/molecules/celebration-animation";
 import { TalkingCharacter, ACHIEVEMENT_MESSAGES } from "@/components/molecules/talking-character";
+import { HostProfileModal } from "@/components/organisms/host-profile-modal";
+import { FanProfileModal } from "@/components/organisms/fan-profile-modal";
 
 const { width: screenWidth } = Dimensions.get("window");
 
@@ -63,6 +65,7 @@ const prefectures = [
 type Participation = {
   id: number;
   userId: number | null;
+  twitterId: string | null;
   displayName: string;
   username: string | null;
   profileImage: string | null;
@@ -158,7 +161,7 @@ function RegionMap({ participations }: { participations: Participation[] }) {
 }
 
 // 一緒に参加している人コンポーネント
-function ParticipantsList({ participations }: { participations: Participation[] }) {
+function ParticipantsList({ participations, onFanPress }: { participations: Participation[]; onFanPress?: (fan: { twitterId: string; username: string; displayName: string; profileImage?: string }) => void }) {
   const colors = useColors();
   const router = useRouter();
   // 匿名でない参加者のみ表示（最大10人）
@@ -179,18 +182,32 @@ function ParticipantsList({ participations }: { participations: Participation[] 
             <TouchableOpacity
               key={p.id}
               onPress={() => {
-                if (p.userId) {
+                // ファンプロフィールモーダルを表示
+                if (onFanPress && p.twitterId && p.username) {
+                  onFanPress({
+                    twitterId: p.twitterId,
+                    username: p.username,
+                    displayName: p.displayName,
+                    profileImage: p.profileImage || undefined,
+                  });
+                } else if (p.userId) {
                   router.push({ pathname: "/profile/[userId]", params: { userId: p.userId.toString() } });
                 }
               }}
               style={{ alignItems: "center", width: 70 }}
+              activeOpacity={0.7}
             >
-              <OptimizedAvatar
-                source={p.profileImage ? { uri: p.profileImage } : undefined}
-                size={50}
-                fallbackColor="#EC4899"
-                fallbackText={p.displayName.charAt(0)}
-              />
+              <View>
+                <OptimizedAvatar
+                  source={p.profileImage ? { uri: p.profileImage } : undefined}
+                  size={50}
+                  fallbackColor="#EC4899"
+                  fallbackText={p.displayName.charAt(0)}
+                />
+                <View style={{ position: "absolute", bottom: -2, right: -2, backgroundColor: "#EC4899", borderRadius: 8, padding: 2 }}>
+                  <MaterialIcons name="info" size={10} color="#fff" />
+                </View>
+              </View>
               <Text style={{ color: colors.foreground, fontSize: 11, marginTop: 4, textAlign: "center" }} numberOfLines={1}>
                 {p.displayName}
               </Text>
@@ -532,6 +549,17 @@ export default function ChallengeDetailScreen() {
   
   // 地域別参加者モーダル用のstate
   const [selectedRegion, setSelectedRegion] = useState<{ name: string; prefectures: string[] } | null>(null);
+
+  // ホストプロフィールモーダル用のstate
+  const [showHostProfileModal, setShowHostProfileModal] = useState(false);
+  
+  // ファンプロフィールモーダル用のstate
+  const [selectedFan, setSelectedFan] = useState<{
+    twitterId: string;
+    username: string;
+    displayName: string;
+    profileImage?: string;
+  } | null>(null);
 
   const challengeId = parseInt(id || "0", 10);
   
@@ -942,8 +970,12 @@ export default function ChallengeDetailScreen() {
             end={{ x: 1, y: 1 }}
             style={{ marginHorizontal: 16, borderRadius: 16, padding: 20 }}
           >
-            {/* ホスト情報 */}
-            <View style={{ flexDirection: "row", alignItems: "center", marginBottom: 16 }}>
+            {/* ホスト情報（クリックでプロフィールモーダル表示） */}
+            <TouchableOpacity 
+              onPress={() => setShowHostProfileModal(true)}
+              style={{ flexDirection: "row", alignItems: "center", marginBottom: 16 }}
+              activeOpacity={0.7}
+            >
               {challenge.hostProfileImage ? (
                 <Image
                   source={{ uri: challenge.hostProfileImage }}
@@ -968,23 +1000,19 @@ export default function ChallengeDetailScreen() {
                 </View>
               )}
               <View style={{ marginLeft: 12, flex: 1 }}>
-                <Text style={{ color: colors.foreground, fontSize: 18, fontWeight: "bold" }}>
-                  {challenge.hostName}
-                </Text>
+                <View style={{ flexDirection: "row", alignItems: "center" }}>
+                  <Text style={{ color: colors.foreground, fontSize: 18, fontWeight: "bold" }}>
+                    {challenge.hostName}
+                  </Text>
+                  <MaterialIcons name="info-outline" size={16} color="rgba(255,255,255,0.6)" style={{ marginLeft: 6 }} />
+                </View>
                 {challenge.hostUsername && (
-                  <TouchableOpacity
-                    onPress={() => {
-                      if (hostUserId) {
-                        router.push({ pathname: "/profile/[userId]", params: { userId: hostUserId.toString() } });
-                      }
-                    }}
-                    style={{ flexDirection: "row", alignItems: "center" }}
-                  >
+                  <View style={{ flexDirection: "row", alignItems: "center" }}>
                     <MaterialIcons name="person" size={12} color="rgba(255,255,255,0.8)" style={{ marginRight: 3 }} />
                     <Text style={{ color: "rgba(255,255,255,0.8)", fontSize: 14 }}>
                       @{challenge.hostUsername}
                     </Text>
-                  </TouchableOpacity>
+                  </View>
                 )}
                 {challenge.hostFollowersCount !== null && (
                   <Text style={{ color: "rgba(255,255,255,0.7)", fontSize: 12 }}>
@@ -992,6 +1020,9 @@ export default function ChallengeDetailScreen() {
                   </Text>
                 )}
               </View>
+            </TouchableOpacity>
+            {/* フォローボタン（別の行に移動） */}
+            <View style={{ flexDirection: "row", justifyContent: "flex-end", marginBottom: 16, marginTop: -8 }}>
               {/* フォローボタン */}
               {user && hostUserId && hostUserId !== user.id && (
                 <TouchableOpacity
@@ -1381,7 +1412,10 @@ export default function ChallengeDetailScreen() {
 
             {/* 一緒に参加している人 */}
             {participations && participations.length > 0 && (
-              <ParticipantsList participations={participations as Participation[]} />
+              <ParticipantsList 
+                participations={participations as Participation[]} 
+                onFanPress={(fan) => setSelectedFan(fan)}
+              />
             )}
 
             {/* 貢献度ランキング */}
@@ -2619,6 +2653,29 @@ export default function ChallengeDetailScreen() {
           }) || []
         }
       />
+
+      {/* ホストプロフィールモーダル */}
+      {challenge && (
+        <HostProfileModal
+          visible={showHostProfileModal}
+          onClose={() => setShowHostProfileModal(false)}
+          username={challenge.hostUsername || ""}
+          displayName={challenge.hostName}
+          profileImage={challenge.hostProfileImage || undefined}
+        />
+      )}
+
+      {/* ファンプロフィールモーダル */}
+      {selectedFan && (
+        <FanProfileModal
+          visible={!!selectedFan}
+          onClose={() => setSelectedFan(null)}
+          twitterId={selectedFan.twitterId}
+          username={selectedFan.username}
+          displayName={selectedFan.displayName}
+          profileImage={selectedFan.profileImage}
+        />
+      )}
     </ScreenContainer>
   );
 }

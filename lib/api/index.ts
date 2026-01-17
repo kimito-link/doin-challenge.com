@@ -55,6 +55,15 @@ export {
   type FollowStatusResult,
 } from "./endpoints";
 
+// v5.38: プロフィール情報取得とキャッシュ
+export {
+  getProfile,
+  getProfiles,
+  clearProfileCache,
+  invalidateProfileCache,
+  type TwitterProfile,
+} from "./profile-cache";
+
 // Twitter認証
 export {
   getTwitterAuthUrl,
