@@ -1,5 +1,5 @@
 import { FlatList, Text, View, TouchableOpacity, ScrollView, Linking } from "react-native";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { Image } from "expo-image";
 import { useRouter } from "expo-router";
 import { ScreenContainer } from "@/components/organisms/screen-container";
@@ -120,10 +120,17 @@ export default function MyPageScreen() {
   }, [user?.isFollowingTarget, user?.targetAccount, updateFollowStatus]);
 
   // ログイン後に非同期でフォローステータスを確認（ログイン高速化のため）
+  // 無限ループを防ぐため、一度だけチェックする
+  const hasCheckedFollowStatus = useRef(false);
   useEffect(() => {
-    if (isAuthenticated && user && !user.isFollowingTarget && !checkingFollowStatus) {
-      // フォローステータスが未確認の場合、バックグラウンドで確認
-      console.log("[MyPage] Checking follow status in background...");
+    // 既にチェック済み、またはチェック中の場合はスキップ
+    if (hasCheckedFollowStatus.current || checkingFollowStatus) {
+      return;
+    }
+    // ログイン済みでフォローステータスが未確認の場合のみチェック
+    if (isAuthenticated && user && user.isFollowingTarget === undefined) {
+      console.log("[MyPage] Checking follow status in background (once)...");
+      hasCheckedFollowStatus.current = true;
       checkFollowStatusFromServer();
     }
   }, [isAuthenticated, user, checkingFollowStatus, checkFollowStatusFromServer]);
