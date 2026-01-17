@@ -1,5 +1,5 @@
 {
-  "buildCommand": "echo 'v5.54 build' && rm -rf node_modules/.cache dist && mkdir -p node_modules/react-native-css-interop/.cache && npx tailwindcss -i ./global.css -o ./node_modules/react-native-css-interop/.cache/web.css && npx expo export -p web",
+  "buildCommand": "echo 'v5.57 build' && rm -rf node_modules/.cache dist && mkdir -p node_modules/react-native-css-interop/.cache && npx tailwindcss -i ./global.css -o ./node_modules/react-native-css-interop/.cache/web.css && npx expo export -p web",
   "installCommand": "pnpm install",
   "outputDirectory": "dist",
   "framework": null,
@@ -100,6 +100,7 @@
     }
   ],
   "rewrites": [
-    { "source": "/(.*)", "destination": "/index.html" }
+    { "source": "/api/:path*", "destination": "/api/:path*" },
+    { "source": "/((?!api/).*)", "destination": "/index.html" }
   ]
 }
