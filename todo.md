@@ -1906,3 +1906,11 @@
 - [x] カテゴリデータをデータベースに追加（8カテゴリ）
 - [x] チャレンジ作成APIをpublicProcedureに変更（Twitter IDで識別）
 - [ ] プロフィールのdescription表示を修正
+
+
+## コンポーネント整理（v5.52）
+- [x] TwitterUserCardコンポーネントを作成（プロフィール画像、名前、@username、フォロワー数、description）
+- [x] チャレンジ作成画面でTwitterUserCardを使用
+- [x] チャレンジ詳細画面でTwitterUserCardを使用
+- [x] マイページでTwitterUserCardを使用
+- [ ] 参加者一覧でTwitterUserCardを使用（必要に応じて）

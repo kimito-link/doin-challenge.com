@@ -29,6 +29,7 @@ import { CelebrationAnimation } from "@/components/molecules/celebration-animati
 import { TalkingCharacter, ACHIEVEMENT_MESSAGES } from "@/components/molecules/talking-character";
 import { HostProfileModal } from "@/components/organisms/host-profile-modal";
 import { FanProfileModal } from "@/components/organisms/fan-profile-modal";
+import { TwitterUserCard } from "@/components/molecules/twitter-user-card";
 
 const { width: screenWidth } = Dimensions.get("window");
 
@@ -971,56 +972,21 @@ export default function ChallengeDetailScreen() {
             style={{ marginHorizontal: 16, borderRadius: 16, padding: 20 }}
           >
             {/* ホスト情報（クリックでプロフィールモーダル表示） */}
-            <TouchableOpacity 
+            <TwitterUserCard
+              user={{
+                twitterId: challenge.hostTwitterId || undefined,
+                name: challenge.hostName,
+                username: challenge.hostUsername || undefined,
+                profileImage: challenge.hostProfileImage || undefined,
+                followersCount: challenge.hostFollowersCount || undefined,
+                description: challenge.hostDescription || undefined,
+              }}
+              size="large"
+              showFollowers
+              showDescription
               onPress={() => setShowHostProfileModal(true)}
-              style={{ flexDirection: "row", alignItems: "center", marginBottom: 16 }}
-              activeOpacity={0.7}
-            >
-              {challenge.hostProfileImage ? (
-                <Image
-                  source={{ uri: challenge.hostProfileImage }}
-                  style={{ width: 56, height: 56, borderRadius: 28, borderWidth: 2, borderColor: "#fff" }}
-                />
-              ) : (
-                <View
-                  style={{
-                    width: 56,
-                    height: 56,
-                    borderRadius: 28,
-                    backgroundColor: "rgba(255,255,255,0.3)",
-                    alignItems: "center",
-                    justifyContent: "center",
-                    borderWidth: 2,
-                    borderColor: "#fff",
-                  }}
-                >
-                  <Text style={{ color: colors.foreground, fontSize: 24, fontWeight: "bold" }}>
-                    {challenge.hostName.charAt(0)}
-                  </Text>
-                </View>
-              )}
-              <View style={{ marginLeft: 12, flex: 1 }}>
-                <View style={{ flexDirection: "row", alignItems: "center" }}>
-                  <Text style={{ color: colors.foreground, fontSize: 18, fontWeight: "bold" }}>
-                    {challenge.hostName}
-                  </Text>
-                  <MaterialIcons name="info-outline" size={16} color="rgba(255,255,255,0.6)" style={{ marginLeft: 6 }} />
-                </View>
-                {challenge.hostUsername && (
-                  <View style={{ flexDirection: "row", alignItems: "center" }}>
-                    <MaterialIcons name="person" size={12} color="rgba(255,255,255,0.8)" style={{ marginRight: 3 }} />
-                    <Text style={{ color: "rgba(255,255,255,0.8)", fontSize: 14 }}>
-                      @{challenge.hostUsername}
-                    </Text>
-                  </View>
-                )}
-                {challenge.hostFollowersCount !== null && (
-                  <Text style={{ color: "rgba(255,255,255,0.7)", fontSize: 12 }}>
-                    {challenge.hostFollowersCount?.toLocaleString()} フォロワー
-                  </Text>
-                )}
-              </View>
-            </TouchableOpacity>
+              className="mb-4"
+            />
             {/* フォローボタン（別の行に移動） */}
             <View style={{ flexDirection: "row", justifyContent: "flex-end", marginBottom: 16, marginTop: -8 }}>
               {/* フォローボタン */}

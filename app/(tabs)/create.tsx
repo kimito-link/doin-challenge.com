@@ -15,6 +15,7 @@ import { LinearGradient } from "expo-linear-gradient";
 import { AppHeader } from "@/components/organisms/app-header";
 import { DatePicker } from "@/components/molecules/date-picker";
 import { showAlert } from "@/lib/web-alert";
+import { TwitterUserCard } from "@/components/molecules/twitter-user-card";
 
 // キャラクター画像
 const characterImages = {
@@ -270,43 +271,20 @@ export default function CreateChallengeScreen() {
                     marginBottom: 16,
                   }}
                 >
-                  {user.profileImage ? (
-                    <Image
-                      source={{ uri: user.profileImage }}
-                      style={{ width: 48, height: 48, borderRadius: 24 }}
-                    />
-                  ) : (
-                    <View
-                      style={{
-                        width: 48,
-                        height: 48,
-                        borderRadius: 24,
-                        backgroundColor: "#00427B",
-                        alignItems: "center",
-                        justifyContent: "center",
-                      }}
-                    >
-                      <Text style={{ color: colors.foreground, fontSize: 20, fontWeight: "bold" }}>
-                        {user.name?.charAt(0) || "?"}
-                      </Text>
-                    </View>
-                  )}
-                  <View style={{ marginLeft: 12, flex: 1 }}>
-                    <Text style={{ color: colors.foreground, fontSize: 16, fontWeight: "600" }}>
-                      {user.name}
-                    </Text>
-                    {user.username && (
-                      <Text style={{ color: "#DD6500", fontSize: 14 }}>
-                        @{user.username}
-                      </Text>
-                    )}
-                    {user.followersCount !== undefined && (
-                      <Text style={{ color: colors.muted, fontSize: 12 }}>
-                        {user.followersCount.toLocaleString()} フォロワー
-                      </Text>
-                    )}
-                  </View>
-                  <MaterialIcons name="check-circle" size={24} color="#22C55E" />
+                  <TwitterUserCard
+                    user={{
+                      twitterId: user.twitterId,
+                      name: user.name || "",
+                      username: user.username,
+                      profileImage: user.profileImage,
+                      followersCount: user.followersCount,
+                      description: user.description,
+                    }}
+                    size="medium"
+                    showFollowers
+                    showDescription
+                  />
+                  <MaterialIcons name="check-circle" size={24} color="#22C55E" style={{ marginLeft: 8 }} />
                 </View>
               )}
 

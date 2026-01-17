@@ -19,6 +19,7 @@ import { MypageSkeleton } from "@/components/organisms/mypage-skeleton";
 import { AccountSwitcher } from "@/components/organisms/account-switcher";
 import { TutorialResetButton } from "@/components/molecules/tutorial-reset-button";
 import { FanEmptyState } from "@/components/organisms/fan-empty-state";
+import { TwitterUserCard } from "@/components/molecules/twitter-user-card";
 
 // キャラクター画像
 const characterImages = {
@@ -593,59 +594,25 @@ export default function MyPageScreen() {
               style={{ height: 4 }}
             />
             <View style={{ padding: 16 }}>
-              <View style={{ flexDirection: "row", alignItems: "center" }}>
-                {user?.profileImage ? (
-                  <Image
-                    source={{ uri: user.profileImage }}
-                    style={{ width: 64, height: 64, borderRadius: 32, borderWidth: 2, borderColor: "#EC4899" }}
-                  />
-                ) : (
-                  <View
-                    style={{
-                      width: 64,
-                      height: 64,
-                      borderRadius: 32,
-                      backgroundColor: "#EC4899",
-                      alignItems: "center",
-                      justifyContent: "center",
+              {/* Twitterユーザーカード */}
+              <View style={{ flexDirection: "row", alignItems: "flex-start" }}>
+                <View style={{ flex: 1 }}>
+                  <TwitterUserCard
+                    user={{
+                      twitterId: user?.twitterId,
+                      name: user?.name || "ゲスト",
+                      username: user?.username,
+                      profileImage: user?.profileImage,
+                      followersCount: user?.followersCount,
+                      description: user?.description,
                     }}
-                  >
-                    <Text style={{ color: colors.foreground, fontSize: 24, fontWeight: "bold" }}>
-                      {user?.name?.charAt(0) || "?"}
-                    </Text>
-                  </View>
-                )}
-                <View style={{ marginLeft: 16, flex: 1 }}>
-                  <View style={{ flexDirection: "row", alignItems: "center", gap: 8 }}>
-                    <Text style={{ color: colors.foreground, fontSize: 20, fontWeight: "bold" }}>
-                      {user?.name || "ゲスト"}
-                    </Text>
-                    <FollowStatusBadge isFollowing={isFollowing} />
-                  </View>
-                  {user?.username && (
-                    <Text style={{ color: "#DD6500", fontSize: 14 }}>
-                      @{user.username}
-                    </Text>
-                  )}
-                  {user?.followersCount !== undefined && (
-                    <View style={{ flexDirection: "row", alignItems: "center", marginTop: 4 }}>
-                      <MaterialIcons name="people" size={16} color="#9CA3AF" />
-                      <Text style={{ color: "#9CA3AF", fontSize: 14, marginLeft: 4 }}>
-                        {user.followersCount.toLocaleString()} フォロワー
-                      </Text>
-                    </View>
-                  )}
+                    size="large"
+                    showFollowers
+                    showDescription
+                  />
                 </View>
+                <FollowStatusBadge isFollowing={isFollowing} />
               </View>
-
-              {/* 自己紹介 */}
-              {user?.description && (
-                <View style={{ marginTop: 12, paddingTop: 12, borderTopWidth: 1, borderTopColor: colors.border }}>
-                  <Text style={{ color: colors.foreground, fontSize: 14, lineHeight: 20 }}>
-                    {user.description}
-                  </Text>
-                </View>
-              )}
 
               {/* 統計 */}
               <View style={{ flexDirection: "row", marginTop: 16, gap: 12 }}>
