@@ -2470,24 +2470,9 @@ function registerTwitterRoutes(app) {
       await deletePKCEData(state);
       const userProfile = await getUserProfile(tokens.access_token);
       console.log("[Twitter OAuth 2.0] User profile retrieved:", userProfile.username);
-      let isFollowingTarget = false;
-      let targetAccount = null;
-      try {
-        const followStatus = await checkFollowStatus(tokens.access_token, userProfile.id, "idolfunch");
-        isFollowingTarget = followStatus.isFollowing;
-        targetAccount = followStatus.targetUser;
-        console.log("[Twitter OAuth 2.0] Follow status for @idolfunch:", isFollowingTarget);
-        if (!isFollowingTarget) {
-          const followStatus2 = await checkFollowStatus(tokens.access_token, userProfile.id, "streamerfunch");
-          isFollowingTarget = followStatus2.isFollowing;
-          if (isFollowingTarget) {
-            targetAccount = followStatus2.targetUser;
-          }
-          console.log("[Twitter OAuth 2.0] Follow status for @streamerfunch:", followStatus2.isFollowing);
-        }
-      } catch (followError) {
-        console.error("[Twitter OAuth 2.0] Follow check error (non-fatal):", followError);
-      }
+      const isFollowingTarget = false;
+      const targetAccount = null;
+      console.log("[Twitter OAuth 2.0] Skipping follow check for faster login");
       const userData = {
         twitterId: userProfile.id,
         name: userProfile.name,
