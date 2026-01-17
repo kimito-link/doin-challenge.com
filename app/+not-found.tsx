@@ -1,4 +1,4 @@
-import { Text, View, TouchableOpacity } from "react-native";
+import { Text, View, TouchableOpacity, Platform } from "react-native";
 import { Image } from "expo-image";
 import { useRouter } from "expo-router";
 import { ScreenContainer } from "@/components/organisms/screen-container";
@@ -10,6 +10,27 @@ const CHARACTER_CONFUSED = require("@/assets/images/characters/link/link-yukkuri
 
 export default function NotFoundScreen() {
   const router = useRouter();
+
+  // 前のページに戻る（履歴がない場合はホームに戻る）
+  const handleGoBack = () => {
+    if (Platform.OS === "web") {
+      // Webの場合、履歴があるかチェック
+      if (typeof window !== "undefined" && window.history.length > 1) {
+        router.back();
+      } else {
+        // 履歴がない場合はホームに戻る
+        router.replace("/");
+      }
+    } else {
+      // ネイティブの場合は直接back()を呼ぶ
+      // canGoBack()がないので、try-catchで対応
+      try {
+        router.back();
+      } catch {
+        router.replace("/");
+      }
+    }
+  };
 
   return (
     <ScreenContainer containerClassName="bg-background">
@@ -60,7 +81,7 @@ export default function NotFoundScreen() {
           </TouchableOpacity>
 
           <TouchableOpacity
-            onPress={() => router.back()}
+            onPress={handleGoBack}
             className="bg-surface rounded-xl py-4 px-6 flex-row items-center justify-center border border-border"
             activeOpacity={0.8}
           >
