@@ -108,8 +108,8 @@ export function registerTwitterRoutes(app: Express) {
       
       console.log("[Twitter OAuth 2.0] Token exchange successful");
 
-      // Clean up stored PKCE data
-      await deletePKCEData(state);
+      // Clean up stored PKCE data (background, don't wait)
+      setImmediate(() => deletePKCEData(state).catch(() => {}));
 
       // Get user profile using access token
       const userProfile = await getUserProfile(tokens.access_token);

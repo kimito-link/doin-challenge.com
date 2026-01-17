@@ -1717,3 +1717,13 @@
 ### 最適化
 - [x] PKCEデータをメモリ優先で保存（即座にレスポンス）
 - [x] データベース保存をバックグラウンドで実行（setImmediate）
+
+
+## Twitter認証コールバック遅延の改善（v5.18）
+
+### 調査
+- [x] /api/twitter/callback エンドポイントの処理を確認
+- [x] 遅延の原因を特定（deletePKCEDataのDB操作、Twitter API応答時間）
+
+### 最適化
+- [x] deletePKCEDataをバックグラウンドで実行（setImmediate）
