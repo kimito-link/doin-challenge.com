@@ -36,8 +36,11 @@ export function getApiBaseUrl(): string {
   }
 
   // On web, derive from current hostname
-  if (ReactNative.Platform.OS === "web" && typeof window !== "undefined" && window.location) {
-    const { protocol, hostname } = window.location;
+  // Note: Use global `location` directly instead of `window.location` for Expo Web compatibility
+  // window.location.hostname returns undefined in Expo Web, but location.hostname works
+  if (ReactNative.Platform.OS === "web" && typeof location !== "undefined") {
+    const protocol = location.protocol;
+    const hostname = location.hostname;
     
     // Production: doin-challenge.com -> Railway backend
     if (hostname.includes("doin-challenge.com") || hostname.includes("doin-challengecom.vercel.app")) {
