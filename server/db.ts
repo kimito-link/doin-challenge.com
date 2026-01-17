@@ -139,9 +139,50 @@ export async function getEventsByHostUserId(hostUserId: number) {
 export async function createEvent(data: InsertEvent) {
   const db = await getDb();
   if (!db) throw new Error("Database not available");
-  const result = await db.insert(events).values(data);
+  
+  // TiDBのdefaultキーワード問題を回避するため、raw SQLを使用
+  const now = new Date().toISOString().slice(0, 19).replace('T', ' ');
+  const eventDate = data.eventDate ? new Date(data.eventDate).toISOString().slice(0, 19).replace('T', ' ') : now;
+  
+  const result = await db.execute(sql`
+    INSERT INTO challenges (
+      hostUserId, hostTwitterId, hostName, hostUsername, hostProfileImage, hostFollowersCount, hostDescription,
+      title, description, goalType, goalValue, goalUnit, currentValue,
+      eventType, categoryId, eventDate, venue, prefecture,
+      ticketPresale, ticketDoor, ticketUrl, externalUrl,
+      status, isPublic, createdAt, updatedAt
+    ) VALUES (
+      ${data.hostUserId ?? null},
+      ${data.hostTwitterId ?? null},
+      ${data.hostName},
+      ${data.hostUsername ?? null},
+      ${data.hostProfileImage ?? null},
+      ${data.hostFollowersCount ?? 0},
+      ${data.hostDescription ?? null},
+      ${data.title},
+      ${data.description ?? null},
+      ${data.goalType ?? 'attendance'},
+      ${data.goalValue ?? 100},
+      ${data.goalUnit ?? '人'},
+      ${data.currentValue ?? 0},
+      ${data.eventType ?? 'solo'},
+      ${data.categoryId ?? null},
+      ${eventDate},
+      ${data.venue ?? null},
+      ${data.prefecture ?? null},
+      ${data.ticketPresale ?? null},
+      ${data.ticketDoor ?? null},
+      ${data.ticketUrl ?? null},
+      ${data.externalUrl ?? null},
+      ${data.status ?? 'active'},
+      ${data.isPublic ?? true},
+      ${now},
+      ${now}
+    )
+  `);
+  
   invalidateEventsCache(); // キャッシュを無効化
-  return result[0].insertId;
+  return (result[0] as any).insertId;
 }
 
 export async function updateEvent(id: number, data: Partial<InsertEvent>) {

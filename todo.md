@@ -1914,3 +1914,9 @@
 - [x] チャレンジ詳細画面でTwitterUserCardを使用
 - [x] マイページでTwitterUserCardを使用
 - [ ] 参加者一覧でTwitterUserCardを使用（必要に応じて）
+
+
+## v5.54 TiDB default問題の修正
+- [x] events.createのINSERTをraw SQLに変更（defaultキーワード回避）
+- [x] カテゴリデータを再投入（8カテゴリ）
+- [x] バージョン番号表示をv5.54に更新
