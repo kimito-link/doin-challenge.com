@@ -244,13 +244,24 @@ function EngagementSection({ challenges }: { challenges: Challenge[] }) {
   );
 }
 
-// おすすめホストセクション
+// おすすめホストセクション（遅延読み込み）
 function RecommendedHostsSection() {
   const colors = useColors();
   const router = useRouter();
-  const { data: hosts, isLoading } = trpc.profiles.recommendedHosts.useQuery({ limit: 5 });
+  const [shouldLoad, setShouldLoad] = useState(false);
+  
+  // 500ms後に読み込み開始（初期表示を優先）
+  useEffect(() => {
+    const timer = setTimeout(() => setShouldLoad(true), 500);
+    return () => clearTimeout(timer);
+  }, []);
+  
+  const { data: hosts, isLoading } = trpc.profiles.recommendedHosts.useQuery(
+    { limit: 5 },
+    { enabled: shouldLoad } // 遅延読み込み
+  );
 
-  if (isLoading || !hosts || hosts.length === 0) return null;
+  if (!shouldLoad || isLoading || !hosts || hosts.length === 0) return null;
 
   return (
     <View style={{ marginHorizontal: 16, marginVertical: 12 }}>
@@ -786,7 +797,9 @@ export default function HomeScreen() {
   
   // ローディング状態: データがあればローディングを表示しない（スケルトンを最小化）
   // キャッシュがあるか、APIデータがあれば即座に表示
-  const isLoading = challenges.length === 0 && isApiLoading && !hasInitialCache;
+  // v5.33: 初回表示を高速化 - スケルトンは最小限にし、UIを先に表示
+  const isLoading = false; // スケルトンを表示しない（UIを即座に表示）
+  const isDataLoading = challenges.length === 0 && isApiLoading && !hasInitialCache;
   // 検索結果の無限スクロール対応
   const {
     data: searchPaginatedData,
@@ -893,38 +906,10 @@ export default function HomeScreen() {
   }, [displayChallenges, featuredChallenge]);
 
   // ヘッダーコンポーネント（FlatListのListHeaderComponent用）
+  // v5.33: 初期表示を高速化 - 検索バーとフィルターを最初に表示
   const ListHeader = () => (
     <>
-      {/* 注目のチャレンジ */}
-      {featuredChallenge && !isSearching && (
-        <FeaturedChallenge 
-          challenge={featuredChallenge as Challenge} 
-          onPress={() => handleChallengePress(featuredChallenge.id)} 
-        />
-      )}
-
-      {/* オフラインキャッシュインジケーター */}
-      {isOffline && isStaleData && (
-        <View style={{ marginHorizontal: 16, marginTop: 8 }}>
-          <CachedDataIndicator isStale={isStaleData} />
-        </View>
-      )}
-
-      {/* オフライン同期インジケーター */}
-      <SyncStatusIndicator />
-
-      {/* 盛り上がりセクション */}
-      {effectiveChallenges && effectiveChallenges.length > 0 && !isSearching && (
-        <EngagementSection challenges={effectiveChallenges as Challenge[]} />
-      )}
-
-      {/* おすすめホストセクション */}
-      {!isSearching && <RecommendedHostsSection />}
-
-      {/* LP風キャッチコピー */}
-      {!isSearching && <CatchCopySection />}
-
-      {/* チャレンジ一覧ヘッダー */}
+      {/* チャレンジ一覧ヘッダー（最初に表示） */}
       <SectionHeader title="📋 チャレンジ一覧" />
 
       {/* 検索バー */}
@@ -1017,6 +1002,48 @@ export default function HomeScreen() {
       {!isLoading && displayChallenges.length === 0 && (
         <OnboardingSteps />
       )}
+      
+      {/* データ読み込み中のインジケーター */}
+      {isDataLoading && (
+        <View style={{ padding: 20, alignItems: "center" }}>
+          <Text style={{ color: "#9CA3AF" }}>読み込み中...</Text>
+        </View>
+      )}
+    </>
+  );
+  
+  // フッターコンポーネント（チャレンジ一覧の後に表示）
+  // v5.33: 重いセクションをフッターに移動して初期表示を高速化
+  const ListFooterSections = () => (
+    <>
+      {/* 注目のチャレンジ */}
+      {featuredChallenge && !isSearching && (
+        <FeaturedChallenge 
+          challenge={featuredChallenge as Challenge} 
+          onPress={() => handleChallengePress(featuredChallenge.id)} 
+        />
+      )}
+
+      {/* オフラインキャッシュインジケーター */}
+      {isOffline && isStaleData && (
+        <View style={{ marginHorizontal: 16, marginTop: 8 }}>
+          <CachedDataIndicator isStale={isStaleData} />
+        </View>
+      )}
+
+      {/* オフライン同期インジケーター */}
+      <SyncStatusIndicator />
+
+      {/* 盛り上がりセクション */}
+      {effectiveChallenges && effectiveChallenges.length > 0 && !isSearching && (
+        <EngagementSection challenges={effectiveChallenges as Challenge[]} />
+      )}
+
+      {/* おすすめホストセクション */}
+      {!isSearching && <RecommendedHostsSection />}
+
+      {/* LP風キャッチコピー */}
+      {!isSearching && <CatchCopySection />}
     </>
   );
 
@@ -1097,15 +1124,20 @@ export default function HomeScreen() {
           }}
           onEndReachedThreshold={0.5}
           ListFooterComponent={
-            (isSearching ? isFetchingNextSearchPage : isFetchingNextPage) ? (
-              <View style={{ padding: 20, alignItems: "center" }}>
-                <Text style={{ color: "#9CA3AF" }}>読み込み中...</Text>
-              </View>
-            ) : (isSearching ? hasNextSearchPage : hasNextPage) ? (
-              <View style={{ padding: 20, alignItems: "center" }}>
-                <Text style={{ color: "#6B7280" }}>スクロールしてもっと見る</Text>
-              </View>
-            ) : null
+            <>
+              {/* ページネーションインジケーター */}
+              {(isSearching ? isFetchingNextSearchPage : isFetchingNextPage) ? (
+                <View style={{ padding: 20, alignItems: "center" }}>
+                  <Text style={{ color: "#9CA3AF" }}>読み込み中...</Text>
+                </View>
+              ) : (isSearching ? hasNextSearchPage : hasNextPage) ? (
+                <View style={{ padding: 20, alignItems: "center" }}>
+                  <Text style={{ color: "#6B7280" }}>スクロールしてもっと見る</Text>
+                </View>
+              ) : null}
+              {/* 追加セクション（チャレンジ一覧の後に表示） */}
+              <ListFooterSections />
+            </>
           }
           contentContainerStyle={{ 
             paddingHorizontal: isDesktop ? 24 : 8, 
