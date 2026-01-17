@@ -638,6 +638,15 @@ export default function MyPageScreen() {
                 </View>
               </View>
 
+              {/* 自己紹介 */}
+              {user?.description && (
+                <View style={{ marginTop: 12, paddingTop: 12, borderTopWidth: 1, borderTopColor: colors.border }}>
+                  <Text style={{ color: colors.foreground, fontSize: 14, lineHeight: 20 }}>
+                    {user.description}
+                  </Text>
+                </View>
+              )}
+
               {/* 統計 */}
               <View style={{ flexDirection: "row", marginTop: 16, gap: 12 }}>
                 <View

@@ -110,6 +110,7 @@ export default function TwitterOAuthCallback() {
             twitterId: userData.twitterId,
             username: userData.username,
             name: userData.name,
+            description: userData.description,
           });
 
           // Convert Twitter user data to Auth.User format
@@ -124,6 +125,7 @@ export default function TwitterOAuthCallback() {
             username: userData.username,
             profileImage: userData.profileImage,
             followersCount: userData.followersCount,
+            description: userData.description, // Twitter bio/自己紹介
             twitterId: userData.twitterId,
             twitterAccessToken: userData.accessToken,
             isFollowingTarget: userData.isFollowingTarget,

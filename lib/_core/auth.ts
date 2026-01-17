@@ -13,6 +13,7 @@ export type User = {
   username?: string;
   profileImage?: string;
   followersCount?: number;
+  description?: string; // Twitter bio/自己紹介
   twitterId?: string;
   twitterAccessToken?: string;
   // Follow status for premium features
