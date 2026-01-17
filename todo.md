@@ -1841,3 +1841,9 @@
 - [x] AsyncStorageキャッシュのTTLを延長（CACHE_TTL: 30分, STALE_WHILE_REVALIDATE: 5分）
 - [x] タブ切り替え時の白い画面を修正（sceneStyleに背景色設定）
 - [x] カテゴリが選択できない問題を修正（nestedScrollEnabled、activeOpacity、minHeight追加）
+
+## UI改善とUX機能追加（v5.37）
+- [x] ホーム画面にプルトゥリフレッシュを追加（既に実装済み）
+- [x] 設定画面にキャッシュクリアボタンを追加
+- [x] オフライン時のトースト表示を追加（NetworkToastコンポーネント）
+- [x] グレーテキストの色を改善（muted: #8B949E → #B0B8C1）

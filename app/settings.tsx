@@ -21,6 +21,8 @@ import { AccountSwitcher } from "@/components/organisms/account-switcher";
 import { getSessionExpiryInfo, SessionExpiryInfo } from "@/lib/token-manager";
 import { useTutorial } from "@/lib/tutorial-context";
 import { useResponsive } from "@/hooks/use-responsive";
+import AsyncStorage from "@react-native-async-storage/async-storage";
+import { showAlert } from "@/lib/web-alert";
 
 /**
  * 総合設定画面
@@ -94,6 +96,30 @@ export default function SettingsScreen() {
     handleHaptic();
     await resetTutorial();
   }, [handleHaptic, resetTutorial]);
+
+  // v5.37: キャッシュクリア機能
+  const handleClearCache = useCallback(async () => {
+    handleHaptic();
+    try {
+      // キャッシュ関連のキーを取得して削除
+      const allKeys = await AsyncStorage.getAllKeys();
+      const cacheKeys = allKeys.filter(key => 
+        key.startsWith('prefetch:') || 
+        key.startsWith('offline_cache_') || 
+        key.startsWith('cache_expiry_') ||
+        key.startsWith('api_cache:')
+      );
+      
+      if (cacheKeys.length > 0) {
+        await AsyncStorage.multiRemove(cacheKeys);
+      }
+      
+      showAlert("キャッシュをクリアしました", cacheKeys.length + "件のキャッシュデータを削除しました。最新のデータを取得するには、ホーム画面を下に引っ張って更新してください。");
+    } catch (error) {
+      console.error("Failed to clear cache:", error);
+      showAlert("エラー", "キャッシュのクリアに失敗しました");
+    }
+  }, [handleHaptic]);
 
   // 他のアカウント（現在のアカウント以外）
   const otherAccounts = accounts.filter((a) => a.id !== currentAccountId);
@@ -322,6 +348,24 @@ export default function SettingsScreen() {
               <Text style={styles.menuItemTitle}>チュートリアルを見返す</Text>
               <Text style={styles.menuItemDescription}>
                 はじめの説明をもう一度見る
+              </Text>
+            </View>
+            <MaterialIcons name="chevron-right" size={24} color="#6B7280" />
+          </TouchableOpacity>
+
+          {/* v5.37: キャッシュクリアボタン */}
+          <TouchableOpacity
+            onPress={handleClearCache}
+            style={styles.menuItem}
+            activeOpacity={0.7}
+          >
+            <View style={[styles.menuItemIcon, { backgroundColor: "rgba(59, 130, 246, 0.1)" }]}>
+              <MaterialIcons name="cached" size={24} color="#3B82F6" />
+            </View>
+            <View style={styles.menuItemContent}>
+              <Text style={styles.menuItemTitle}>キャッシュをクリア</Text>
+              <Text style={styles.menuItemDescription}>
+                古いデータを削除して最新の情報を取得
               </Text>
             </View>
             <MaterialIcons name="chevron-right" size={24} color="#6B7280" />

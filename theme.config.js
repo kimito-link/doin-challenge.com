@@ -6,7 +6,7 @@ const themeColors = {
   background: { light: '#ffffff', dark: '#0D1117' },
   surface: { light: '#F8F9FA', dark: '#161B22' },
   foreground: { light: '#1F2937', dark: '#E6EDF3' },
-  muted: { light: '#6B7280', dark: '#8B949E' },
+  muted: { light: '#6B7280', dark: '#B0B8C1' },  // v5.37: ダークモードで見やすく明るく
   border: { light: '#E5E7EB', dark: '#30363D' },
   success: { light: '#22C55E', dark: '#4ADE80' },
   warning: { light: '#F59E0B', dark: '#FBBF24' },
