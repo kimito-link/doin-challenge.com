@@ -14,6 +14,7 @@ import MaterialIcons from "@expo/vector-icons/MaterialIcons";
 import { LinearGradient } from "expo-linear-gradient";
 import { AppHeader } from "@/components/organisms/app-header";
 import { ConfirmModal } from "@/components/molecules/confirm-modal";
+import { LogoutConfirmModal } from "@/components/molecules/logout-confirm-modal";
 import { MypageSkeleton } from "@/components/organisms/mypage-skeleton";
 import { AccountSwitcher } from "@/components/organisms/account-switcher";
 import { TutorialResetButton } from "@/components/molecules/tutorial-reset-button";
@@ -1098,18 +1099,11 @@ export default function MyPageScreen() {
         </ScrollView>
       )}
 
-      {/* ログアウト確認モーダル */}
-      <ConfirmModal
+      {/* ログアウト確認モーダル（キャラクター付き） */}
+      <LogoutConfirmModal
         visible={showLogoutModal}
-        title="ログアウト"
-        message="ログアウトしますか？"
-        confirmText="ログアウト"
-        cancelText="キャンセル"
-        confirmStyle="destructive"
         onConfirm={confirmLogout}
         onCancel={() => setShowLogoutModal(false)}
-        icon="logout"
-        iconColor="#EF4444"
       />
       
       {/* アカウント切り替えモーダル */}
