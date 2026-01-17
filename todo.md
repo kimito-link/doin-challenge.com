@@ -1901,3 +1901,13 @@
 - [x] 原因特定: categoriesテーブルにデータが0件だった
 - [x] 初期カテゴリデータを投入（アイドル、VTuber、バンド、シンガー、ダンス、声優、お笑い、その他）
 - [x] MySQL/TiDBのboolean比較問題を修正（`eq(isActive, true)` → `sql\`isActive = 1\``）
+
+## v5.46 チャレンジ作成時の認証エラー修正
+- [ ] ログイン済みでも「Please login (10001)」エラーが出る問題の調査
+- [ ] チャレンジ作成APIの認証処理の修正
+
+
+## v5.46 チャレンジ作成時の認証エラー修正
+- [x] ログイン済みでも「Please login (10001)」エラーが出る問題の調査
+- [x] Twitter OAuth後にセッショントークン（JWT）を生成してlocalStorageに保存
+- [x] tRPCクライアントがAuthorizationヘッダーでトークンを送信するよう修正

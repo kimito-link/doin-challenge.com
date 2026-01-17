@@ -2531,6 +2531,18 @@ function registerTwitterRoutes(app) {
       const isFollowingTarget = false;
       const targetAccount = null;
       console.log("[Twitter OAuth 2.0] Skipping follow check for faster login");
+      const openId = `twitter:${userProfile.id}`;
+      await upsertUser({
+        openId,
+        name: userProfile.name,
+        loginMethod: "twitter",
+        lastSignedIn: /* @__PURE__ */ new Date()
+      });
+      console.log("[Twitter OAuth 2.0] User upserted in database:", openId);
+      const sessionToken = await sdk.createSessionToken(openId, {
+        name: userProfile.name || userProfile.username
+      });
+      console.log("[Twitter OAuth 2.0] Session token generated");
       const userData = {
         twitterId: userProfile.id,
         name: userProfile.name,
@@ -2541,6 +2553,8 @@ function registerTwitterRoutes(app) {
         description: userProfile.description || "",
         accessToken: tokens.access_token,
         refreshToken: tokens.refresh_token,
+        sessionToken,
+        // Add session token for API authentication
         isFollowingTarget,
         targetAccount
       };

@@ -4,6 +4,7 @@ import { FollowSuccessModal } from "@/components/molecules/follow-success-modal"
 import * as Auth from "@/lib/_core/auth";
 import { saveTokenData } from "@/lib/token-manager";
 import { useLocalSearchParams, useRouter } from "expo-router";
+import { SESSION_TOKEN_KEY } from "@/constants/oauth";
 import { useEffect, useState, useRef } from "react";
 import { ActivityIndicator, Text, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
@@ -145,6 +146,14 @@ export default function TwitterOAuthCallback() {
           console.log("[Twitter OAuth] Verification - stored info:", JSON.stringify(storedInfo));
           console.log("[Twitter OAuth] Verification - description:", storedInfo?.description);
 
+          // Store session token for API authentication (JWT)
+          if (userData.sessionToken) {
+            if (typeof window !== "undefined") {
+              window.localStorage.setItem(SESSION_TOKEN_KEY, userData.sessionToken);
+              console.log("[Twitter OAuth] Session token stored in localStorage for API auth");
+            }
+          }
+          
           // Store token data for auto-refresh (if available)
           if (userData.accessToken) {
             await saveTokenData({
