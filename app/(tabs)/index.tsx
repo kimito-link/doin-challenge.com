@@ -16,7 +16,8 @@ import { AppHeader } from "@/components/organisms/app-header";
 import { CachedDataIndicator } from "@/components/organisms/offline-banner";
 import { useNetworkStatus } from "@/hooks/use-offline-cache";
 import { setCache, getCache, CACHE_KEYS } from "@/lib/offline-cache";
-import { getCachedData, setCachedData, PREFETCH_KEYS } from "@/lib/data-prefetch";
+import { setCachedData, getCachedData, PREFETCH_KEYS } from "@/lib/data-prefetch";
+import { useTabPrefetch } from "@/hooks/use-prefetch";
 import { ChallengeCardSkeleton, Skeleton } from "@/components/atoms/skeleton-loader";
 import { OptimizedAvatar } from "@/components/molecules/optimized-image";
 import { LazyAvatar } from "@/components/molecules/lazy-image";
@@ -752,6 +753,10 @@ export default function HomeScreen() {
   const [categoryFilter, setCategoryFilter] = useState<number | null>(null);
   
   const { isOffline } = useNetworkStatus();
+  
+  // v5.34: タブ切り替え前に他のタブのデータをプリフェッチ
+  useTabPrefetch("home");
+  
   const [cachedChallenges, setCachedChallenges] = useState<Challenge[] | null>(null);
   const [isStaleData, setIsStaleData] = useState(false);
   const [hasInitialCache, setHasInitialCache] = useState(false);
@@ -1057,37 +1062,8 @@ export default function HomeScreen() {
         showMenu={true}
       />
 
-      {isLoading ? (
-        <ScrollView style={{ flex: 1, backgroundColor: "#0D1117" }} contentContainerStyle={{ padding: 16 }}>
-          {/* キャラクターローディング */}
-          <View style={{ alignItems: "center", marginBottom: 16 }}>
-            <BlinkingLink
-              variant="normalClosed"
-              size={80}
-              blinkInterval={2500}
-            />
-          </View>
-          {/* スケルトンローダー */}
-          <View style={{ marginBottom: 24 }}>
-            <Skeleton width="40%" height={24} borderRadius={8} style={{ marginBottom: 16 }} />
-            <Skeleton width="100%" height={180} borderRadius={16} style={{ marginBottom: 16 }} />
-          </View>
-          <View style={{ marginBottom: 24 }}>
-            <Skeleton width="50%" height={20} borderRadius={6} style={{ marginBottom: 12 }} />
-            <View style={{ flexDirection: "row", justifyContent: "space-between", marginBottom: 16 }}>
-              <Skeleton width="30%" height={60} borderRadius={12} />
-              <Skeleton width="30%" height={60} borderRadius={12} />
-              <Skeleton width="30%" height={60} borderRadius={12} />
-            </View>
-          </View>
-          <View>
-            <Skeleton width="45%" height={20} borderRadius={6} style={{ marginBottom: 12 }} />
-            <ChallengeCardSkeleton />
-            <ChallengeCardSkeleton />
-            <ChallengeCardSkeleton />
-          </View>
-        </ScrollView>
-      ) : displayChallenges.length > 0 ? (
+      {/* v5.34: スケルトンを完全に削除し、常にFlatListを表示 */}
+      {displayChallenges.length > 0 || isDataLoading ? (
         <FlatList
           key={`grid-${numColumns}`}
           data={isSearching ? displayChallenges : otherChallenges}

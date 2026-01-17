@@ -85,6 +85,9 @@ export const MemoizedChallengeCard = memo<MemoizedChallengeCardProps>(
                   source={{ uri: challenge.hostProfileImage }}
                   style={styles.avatar}
                   cachePolicy="memory-disk"
+                  placeholder={{ blurhash: 'L6PZfSi_.AyE_3t7t7R**0o#DgR4' }}
+                  transition={200}
+                  priority="low"
                 />
               ) : (
                 <View style={[styles.avatar, styles.avatarFallback]}>
