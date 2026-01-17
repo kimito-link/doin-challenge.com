@@ -13,8 +13,6 @@ import {
   getUserProfileByUsername,
   refreshAccessToken,
 } from "./twitter-oauth2";
-import { sdk } from "./_core/sdk";
-import * as db from "./db";
 
 export function registerTwitterRoutes(app: Express) {
   // Step 1: Initiate Twitter OAuth 2.0
@@ -117,32 +115,12 @@ export function registerTwitterRoutes(app: Express) {
       const userProfile = await getUserProfile(tokens.access_token);
       
       console.log("[Twitter OAuth 2.0] User profile retrieved:", userProfile.username);
-      console.log("[Twitter OAuth 2.0] User profile description:", userProfile.description);
-      console.log("[Twitter OAuth 2.0] Full user profile:", JSON.stringify(userProfile));
 
       // フォローチェックはログイン後に非同期で行うため、ここではスキップ
       // フロントエンドから /api/twitter/follow-status を呼び出して確認する
       const isFollowingTarget = false; // 後で確認
       const targetAccount = null; // 後で確認
       console.log("[Twitter OAuth 2.0] Skipping follow check for faster login");
-      
-      // Create openId for Twitter user (format: twitter:{twitterId})
-      const openId = `twitter:${userProfile.id}`;
-      
-      // Upsert user in database
-      await db.upsertUser({
-        openId,
-        name: userProfile.name,
-        loginMethod: "twitter",
-        lastSignedIn: new Date(),
-      });
-      console.log("[Twitter OAuth 2.0] User upserted in database:", openId);
-      
-      // Generate session token (JWT) for API authentication
-      const sessionToken = await sdk.createSessionToken(openId, {
-        name: userProfile.name || userProfile.username,
-      });
-      console.log("[Twitter OAuth 2.0] Session token generated");
       
       // Build user data object
       const userData = {
@@ -155,13 +133,10 @@ export function registerTwitterRoutes(app: Express) {
         description: userProfile.description || "",
         accessToken: tokens.access_token,
         refreshToken: tokens.refresh_token,
-        sessionToken, // Add session token for API authentication
         isFollowingTarget,
         targetAccount,
       };
 
-      console.log("[Twitter OAuth 2.0] userData.description:", userData.description);
-      
       // Encode user data for redirect
       const encodedData = encodeURIComponent(JSON.stringify(userData));
       

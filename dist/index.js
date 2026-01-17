@@ -579,36 +579,39 @@ async function upsertUser(user) {
     return;
   }
   try {
-    const existingUser = await db.select().from(users).where(eq(users.openId, user.openId)).limit(1);
-    const now = /* @__PURE__ */ new Date();
-    const nowStr = now.toISOString().slice(0, 19).replace("T", " ");
-    let role = user.role || "user";
-    if (user.openId === ENV.ownerOpenId) {
-      role = "admin";
+    const values = {
+      openId: user.openId
+    };
+    const updateSet = {};
+    const textFields = ["name", "email", "loginMethod"];
+    const assignNullable = (field) => {
+      const value = user[field];
+      if (value === void 0) return;
+      const normalized = value ?? null;
+      values[field] = normalized;
+      updateSet[field] = normalized;
+    };
+    textFields.forEach(assignNullable);
+    if (user.lastSignedIn !== void 0) {
+      values.lastSignedIn = user.lastSignedIn;
+      updateSet.lastSignedIn = user.lastSignedIn;
     }
-    if (existingUser.length > 0) {
-      await db.update(users).set({
-        name: user.name || existingUser[0].name,
-        loginMethod: user.loginMethod || existingUser[0].loginMethod,
-        role,
-        updatedAt: now,
-        lastSignedIn: now
-      }).where(eq(users.openId, user.openId));
-    } else {
-      await db.execute(sql`
-        INSERT INTO users (openId, name, email, loginMethod, role, createdAt, updatedAt, lastSignedIn)
-        VALUES (
-          ${user.openId},
-          ${user.name || null},
-          ${user.email || null},
-          ${user.loginMethod || null},
-          ${role},
-          ${nowStr},
-          ${nowStr},
-          ${nowStr}
-        )
-      `);
+    if (user.role !== void 0) {
+      values.role = user.role;
+      updateSet.role = user.role;
+    } else if (user.openId === ENV.ownerOpenId) {
+      values.role = "admin";
+      updateSet.role = "admin";
     }
+    if (!values.lastSignedIn) {
+      values.lastSignedIn = /* @__PURE__ */ new Date();
+    }
+    if (Object.keys(updateSet).length === 0) {
+      updateSet.lastSignedIn = /* @__PURE__ */ new Date();
+    }
+    await db.insert(users).values(values).onDuplicateKeyUpdate({
+      set: updateSet
+    });
   } catch (error) {
     console.error("[Database] Failed to upsert user:", error);
     throw error;
@@ -1872,15 +1875,14 @@ var SDKServer = class {
         algorithms: ["HS256"]
       });
       const { openId, appId, name } = payload;
-      if (!isNonEmptyString(openId) || !isNonEmptyString(appId)) {
-        console.warn("[Auth] Session payload missing required fields (openId or appId)");
+      if (!isNonEmptyString(openId) || !isNonEmptyString(appId) || !isNonEmptyString(name)) {
+        console.warn("[Auth] Session payload missing required fields");
         return null;
       }
-      const nameStr = typeof name === "string" ? name : "";
       return {
         openId,
         appId,
-        name: nameStr
+        name
       };
     } catch (error) {
       console.warn("[Auth] Session verification failed", String(error));
@@ -2524,23 +2526,9 @@ function registerTwitterRoutes(app) {
       }));
       const userProfile = await getUserProfile(tokens.access_token);
       console.log("[Twitter OAuth 2.0] User profile retrieved:", userProfile.username);
-      console.log("[Twitter OAuth 2.0] User profile description:", userProfile.description);
-      console.log("[Twitter OAuth 2.0] Full user profile:", JSON.stringify(userProfile));
       const isFollowingTarget = false;
       const targetAccount = null;
       console.log("[Twitter OAuth 2.0] Skipping follow check for faster login");
-      const openId = `twitter:${userProfile.id}`;
-      await upsertUser({
-        openId,
-        name: userProfile.name,
-        loginMethod: "twitter",
-        lastSignedIn: /* @__PURE__ */ new Date()
-      });
-      console.log("[Twitter OAuth 2.0] User upserted in database:", openId);
-      const sessionToken = await sdk.createSessionToken(openId, {
-        name: userProfile.name || userProfile.username
-      });
-      console.log("[Twitter OAuth 2.0] Session token generated");
       const userData = {
         twitterId: userProfile.id,
         name: userProfile.name,
@@ -2551,12 +2539,9 @@ function registerTwitterRoutes(app) {
         description: userProfile.description || "",
         accessToken: tokens.access_token,
         refreshToken: tokens.refresh_token,
-        sessionToken,
-        // Add session token for API authentication
         isFollowingTarget,
         targetAccount
       };
-      console.log("[Twitter OAuth 2.0] userData.description:", userData.description);
       const encodedData = encodeURIComponent(JSON.stringify(userData));
       const host = req.get("host") || "";
       const protocol = req.get("x-forwarded-proto") || req.protocol;
@@ -3032,21 +3017,36 @@ var appRouter = router({
     myEvents: protectedProcedure.query(async ({ ctx }) => {
       return getEventsByHostUserId(ctx.user.id);
     }),
-    // イベント作成
-    create: protectedProcedure.input(z2.object({
+    // イベント作成（publicProcedureでフロントエンドのユーザー情報を使用）
+    create: publicProcedure.input(z2.object({
       title: z2.string().min(1).max(255),
       description: z2.string().optional(),
       eventDate: z2.string(),
       venue: z2.string().optional(),
-      hostTwitterId: z2.string().optional(),
+      hostTwitterId: z2.string(),
+      // 必須に変更
       hostName: z2.string(),
       hostUsername: z2.string().optional(),
       hostProfileImage: z2.string().optional(),
       hostFollowersCount: z2.number().optional(),
-      hostDescription: z2.string().optional()
-    })).mutation(async ({ ctx, input }) => {
+      hostDescription: z2.string().optional(),
+      // 追加フィールド
+      goalType: z2.enum(["attendance", "followers", "viewers", "points", "custom"]).optional(),
+      goalValue: z2.number().optional(),
+      goalUnit: z2.string().optional(),
+      eventType: z2.enum(["solo", "group"]).optional(),
+      categoryId: z2.number().optional(),
+      externalUrl: z2.string().optional(),
+      ticketPresale: z2.number().optional(),
+      ticketDoor: z2.number().optional(),
+      ticketUrl: z2.string().optional()
+    })).mutation(async ({ input }) => {
+      if (!input.hostTwitterId) {
+        throw new Error("\u30ED\u30B0\u30A4\u30F3\u304C\u5FC5\u8981\u3067\u3059\u3002Twitter\u3067\u30ED\u30B0\u30A4\u30F3\u3057\u3066\u304F\u3060\u3055\u3044\u3002");
+      }
       const eventId = await createEvent({
-        hostUserId: ctx.user.id,
+        hostUserId: null,
+        // セッションに依存しない
         hostTwitterId: input.hostTwitterId,
         hostName: input.hostName,
         hostUsername: input.hostUsername,
@@ -3057,7 +3057,16 @@ var appRouter = router({
         description: input.description,
         eventDate: new Date(input.eventDate),
         venue: input.venue,
-        isPublic: true
+        isPublic: true,
+        goalType: input.goalType || "attendance",
+        goalValue: input.goalValue || 100,
+        goalUnit: input.goalUnit || "\u4EBA",
+        eventType: input.eventType || "solo",
+        categoryId: input.categoryId,
+        externalUrl: input.externalUrl,
+        ticketPresale: input.ticketPresale,
+        ticketDoor: input.ticketDoor,
+        ticketUrl: input.ticketUrl
       });
       return { id: eventId };
     }),

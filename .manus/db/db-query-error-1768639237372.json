@@ -1,8 +1,0 @@
-{
-  "query": "SELECT id, name, isActive, typeof(isActive) FROM categories LIMIT 5;",
-  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway02.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 3YCTtbVp6bbE1oz.aaf91d266729 --database 4EfvvuNg9KRk4UPdFprmBJ --execute SELECT id, name, isActive, typeof(isActive) FROM categories LIMIT 5;",
-  "returncode": 1,
-  "logs": [
-    "ERROR 1305 (42000) at line 1: FUNCTION 4EfvvuNg9KRk4UPdFprmBJ.typeof does not exist"
-  ]
-}

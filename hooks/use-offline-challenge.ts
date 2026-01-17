@@ -9,7 +9,7 @@ interface ChallengeData {
   description?: string;
   eventDate: string;
   venue?: string;
-  hostTwitterId?: string;
+  hostTwitterId: string; // 必須に変更
   hostName: string;
   hostUsername?: string;
   hostProfileImage?: string;

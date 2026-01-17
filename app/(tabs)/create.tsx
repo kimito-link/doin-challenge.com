@@ -140,15 +140,32 @@ export default function CreateChallengeScreen() {
       });
     }
 
+    // ログイン確認
+    if (!user?.twitterId) {
+      showAlert("エラー", "ログインが必要です。Twitterでログインしてください。");
+      return;
+    }
+    
     createChallengeMutation.mutate({
       title: title.trim(),
       description: description.trim() || undefined,
       venue: venue.trim() || undefined,
       eventDate: eventDate.toISOString(),
-      hostName: user?.name || hostName.trim(),
-      hostUsername: user?.username || undefined,
-      hostProfileImage: user?.profileImage || undefined,
-      hostFollowersCount: user?.followersCount || undefined,
+      hostTwitterId: user.twitterId, // Twitter IDを送信
+      hostName: user.name || hostName.trim(),
+      hostUsername: user.username || undefined,
+      hostProfileImage: user.profileImage || undefined,
+      hostFollowersCount: user.followersCount || undefined,
+      hostDescription: user.description || undefined,
+      goalType: goalType as "attendance" | "followers" | "viewers" | "points" | "custom",
+      goalValue: parseInt(goalValue) || 100,
+      goalUnit: goalUnit || "人",
+      eventType: eventType as "solo" | "group",
+      categoryId: categoryId || undefined,
+      externalUrl: externalUrl.trim() || undefined,
+      ticketPresale: ticketPresale ? parseInt(ticketPresale) : undefined,
+      ticketDoor: ticketDoor ? parseInt(ticketDoor) : undefined,
+      ticketUrl: ticketUrl.trim() || undefined,
     });
   };
 

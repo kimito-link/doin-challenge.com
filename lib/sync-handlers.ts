@@ -68,7 +68,7 @@ export function initSyncHandlers(): void {
       title: payload.title as string,
       description: payload.description as string | undefined,
       hostName: payload.hostName as string,
-      hostTwitterId: payload.hostTwitterId as string | undefined,
+      hostTwitterId: payload.hostTwitterId as string,
       hostUsername: payload.hostUsername as string | undefined,
       hostProfileImage: payload.hostProfileImage as string | undefined,
       hostFollowersCount: payload.hostFollowersCount as number | undefined,

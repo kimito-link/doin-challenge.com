@@ -67,23 +67,38 @@ export const appRouter = router({
       return db.getEventsByHostUserId(ctx.user.id);
     }),
 
-    // イベント作成
-    create: protectedProcedure
+    // イベント作成（publicProcedureでフロントエンドのユーザー情報を使用）
+    create: publicProcedure
       .input(z.object({
         title: z.string().min(1).max(255),
         description: z.string().optional(),
         eventDate: z.string(),
         venue: z.string().optional(),
-        hostTwitterId: z.string().optional(),
+        hostTwitterId: z.string(), // 必須に変更
         hostName: z.string(),
         hostUsername: z.string().optional(),
         hostProfileImage: z.string().optional(),
         hostFollowersCount: z.number().optional(),
         hostDescription: z.string().optional(),
+        // 追加フィールド
+        goalType: z.enum(["attendance", "followers", "viewers", "points", "custom"]).optional(),
+        goalValue: z.number().optional(),
+        goalUnit: z.string().optional(),
+        eventType: z.enum(["solo", "group"]).optional(),
+        categoryId: z.number().optional(),
+        externalUrl: z.string().optional(),
+        ticketPresale: z.number().optional(),
+        ticketDoor: z.number().optional(),
+        ticketUrl: z.string().optional(),
       }))
-      .mutation(async ({ ctx, input }) => {
+      .mutation(async ({ input }) => {
+        // フロントエンドから送信されたTwitter IDを使用（セッション認証に依存しない）
+        if (!input.hostTwitterId) {
+          throw new Error("ログインが必要です。Twitterでログインしてください。");
+        }
+        
         const eventId = await db.createEvent({
-          hostUserId: ctx.user.id,
+          hostUserId: null, // セッションに依存しない
           hostTwitterId: input.hostTwitterId,
           hostName: input.hostName,
           hostUsername: input.hostUsername,
@@ -95,6 +110,15 @@ export const appRouter = router({
           eventDate: new Date(input.eventDate),
           venue: input.venue,
           isPublic: true,
+          goalType: input.goalType || "attendance",
+          goalValue: input.goalValue || 100,
+          goalUnit: input.goalUnit || "人",
+          eventType: input.eventType || "solo",
+          categoryId: input.categoryId,
+          externalUrl: input.externalUrl,
+          ticketPresale: input.ticketPresale,
+          ticketDoor: input.ticketDoor,
+          ticketUrl: input.ticketUrl,
         });
         return { id: eventId };
       }),

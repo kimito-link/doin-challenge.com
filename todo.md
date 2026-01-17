@@ -216,7 +216,6 @@
 
 - [x] Twitterログインボタンが灰色になって反応しない問題
 - [x] Twitter認証をOAuth 2.0に書き換え
-- [x] Twitter descriptionがマイページに表示されない問題を修正（setUserInfoのマージ処理改善）
 
 
 ## Twitterフォロー確認機能
@@ -1896,18 +1895,14 @@
 - [x] Twitter固有フィールド（description, username, profileImage等）を明示的に保持するように変更
 - [x] テストで修正を確認
 
-## v5.45 ジャンル選択問題の修正
-- [x] ジャンル（カテゴリ）が選べなくなる問題の調査
-- [x] 原因特定: categoriesテーブルにデータが0件だった
-- [x] 初期カテゴリデータを投入（アイドル、VTuber、バンド、シンガー、ダンス、声優、お笑い、その他）
-- [x] MySQL/TiDBのboolean比較問題を修正（`eq(isActive, true)` → `sql\`isActive = 1\``）
 
-## v5.46 チャレンジ作成時の認証エラー修正
-- [ ] ログイン済みでも「Please login (10001)」エラーが出る問題の調査
-- [ ] チャレンジ作成APIの認証処理の修正
+## v5.42ロールバック後の修正（v5.51）
+- [ ] カテゴリデータをデータベースに追加
+- [ ] プロフィールのdescription表示を修正
+- [ ] チャレンジ作成時の認証（JWTトークン）を修正
 
 
-## v5.46 チャレンジ作成時の認証エラー修正
-- [x] ログイン済みでも「Please login (10001)」エラーが出る問題の調査
-- [x] Twitter OAuth後にセッショントークン（JWT）を生成してlocalStorageに保存
-- [x] tRPCクライアントがAuthorizationヘッダーでトークンを送信するよう修正
+## v5.42ロールバック後の修正（v5.51）
+- [x] カテゴリデータをデータベースに追加（8カテゴリ）
+- [x] チャレンジ作成APIをpublicProcedureに変更（Twitter IDで識別）
+- [ ] プロフィールのdescription表示を修正
