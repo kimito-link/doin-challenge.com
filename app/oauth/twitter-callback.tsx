@@ -134,8 +134,16 @@ export default function TwitterOAuthCallback() {
           };
 
           // Store user info using the Auth module
+          console.log("[Twitter OAuth] About to store userInfo:", JSON.stringify(userInfo));
+          console.log("[Twitter OAuth] userInfo.description value:", userInfo.description);
+          console.log("[Twitter OAuth] typeof userInfo.description:", typeof userInfo.description);
           await Auth.setUserInfo(userInfo);
           console.log("[Twitter OAuth] User info stored successfully via Auth module");
+          
+          // Verify storage immediately
+          const storedInfo = await Auth.getUserInfo();
+          console.log("[Twitter OAuth] Verification - stored info:", JSON.stringify(storedInfo));
+          console.log("[Twitter OAuth] Verification - description:", storedInfo?.description);
 
           // Store token data for auto-refresh (if available)
           if (userData.accessToken) {
