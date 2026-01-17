@@ -33,6 +33,7 @@ export { NotificationSettingsPanel } from "./notification-settings";
 
 // Auth系
 export { AccountSwitcher } from "./account-switcher";
+export { LoginLoadingScreen } from "./login-loading-screen";
 
 // Onboarding系
 export { OnboardingSteps } from "./onboarding-steps";
