@@ -13,7 +13,7 @@ import { useRouter } from "expo-router";
 import { Link } from "expo-router";
 import MaterialIcons from "@expo/vector-icons/MaterialIcons";
 import { useAuth } from "@/hooks/use-auth";
-import { ConfirmModal } from "@/components/molecules/confirm-modal";
+import { LogoutConfirmModal } from "@/components/molecules/logout-confirm-modal";
 import * as Haptics from "expo-haptics";
 
 // キャラクター画像
@@ -345,17 +345,10 @@ export function GlobalMenu({ isVisible, onClose }: GlobalMenuProps) {
       </Modal>
 
       {/* ログアウト確認モーダル */}
-      <ConfirmModal
+      <LogoutConfirmModal
         visible={showLogoutModal}
         onCancel={() => setShowLogoutModal(false)}
         onConfirm={confirmLogout}
-        title="ログアウト"
-        message="ログアウトしますか？"
-        confirmText="ログアウト"
-        cancelText="キャンセル"
-        confirmStyle="destructive"
-        icon="logout"
-        iconColor="#EF4444"
       />
     </>
   );
