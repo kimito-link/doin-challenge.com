@@ -169,85 +169,85 @@ export async function refreshAccessToken(refreshToken: string): Promise<{
   return response.json();
 }
 
-// Store PKCE data - メモリ優先で高速化
-// メモリに即座に保存し、バックグラウンドでデータベースにも保存
+// Memory fallback store for PKCE data (used when database is unavailable)
+const pkceMemoryStore = new Map<string, { codeVerifier: string; callbackUrl: string }>();
+
+// Store PKCE data - データベース優先で保存（複数インスタンス対応）
+// Railwayなどの複数インスタンス環境では、メモリストアは別インスタンスで参照できないため
+// データベースへの保存を同期的に行い、確実にデータを永続化する
 export async function storePKCEData(state: string, codeVerifier: string, callbackUrl: string): Promise<void> {
-  // メモリに即座に保存（高速）
+  // メモリにも保存（同一インスタンスでの高速アクセス用）
   pkceMemoryStore.set(state, { codeVerifier, callbackUrl });
   setTimeout(() => pkceMemoryStore.delete(state), 10 * 60 * 1000);
-  console.log("[PKCE] Stored PKCE data in memory for state:", state.substring(0, 8) + "...");
   
-  // バックグラウンドでデータベースにも保存（失敗してもメモリがあるのでOK）
-  setImmediate(async () => {
-    try {
-      const db = await getDb();
-      if (!db) {
-        console.log("[PKCE] Database not available, memory-only mode");
-        return;
-      }
-      
-      // Set expiration to 10 minutes from now
-      const expiresAt = new Date(Date.now() + 10 * 60 * 1000);
-      
-      // Clean up expired entries first (non-blocking)
-      await db.delete(oauthPkceData).where(lt(oauthPkceData.expiresAt, new Date())).catch(() => {});
-      
-      // Insert new PKCE data
-      await db.insert(oauthPkceData).values({
-        state,
-        codeVerifier,
-        callbackUrl,
-        expiresAt,
-      });
-      
-      console.log("[PKCE] Also stored PKCE data in database for state:", state.substring(0, 8) + "...");
-    } catch (error) {
-      console.log("[PKCE] Database storage failed (memory fallback active):", error instanceof Error ? error.message : error);
+  // データベースに同期的に保存（複数インスタンス対応のため必須）
+  try {
+    const db = await getDb();
+    if (!db) {
+      console.log("[PKCE] Database not available, using memory-only mode");
+      return;
     }
-  });
+    
+    // Set expiration to 10 minutes from now
+    const expiresAt = new Date(Date.now() + 10 * 60 * 1000);
+    
+    // Clean up expired entries first (non-blocking error handling)
+    await db.delete(oauthPkceData).where(lt(oauthPkceData.expiresAt, new Date())).catch(() => {});
+    
+    // Insert new PKCE data
+    await db.insert(oauthPkceData).values({
+      state,
+      codeVerifier,
+      callbackUrl,
+      expiresAt,
+    });
+    
+    console.log("[PKCE] Stored PKCE data in database for state:", state.substring(0, 8) + "...");
+  } catch (error) {
+    console.error("[PKCE] Database storage failed:", error instanceof Error ? error.message : error);
+    // メモリには保存済みなので、単一インスタンスの場合は動作する
+    console.log("[PKCE] Falling back to memory-only mode for state:", state.substring(0, 8) + "...");
+  }
 }
 
-// Get PKCE data from database
+// Get PKCE data - データベース優先で取得（複数インスタンス対応）
 export async function getPKCEData(state: string): Promise<{ codeVerifier: string; callbackUrl: string } | undefined> {
-  // Check memory store first (fallback)
+  // まずデータベースから取得を試みる（複数インスタンス対応）
+  try {
+    const db = await getDb();
+    if (db) {
+      const result = await db.select().from(oauthPkceData).where(eq(oauthPkceData.state, state)).limit(1);
+      
+      if (result.length > 0) {
+        const data = result[0];
+        
+        // Check if expired
+        if (new Date(data.expiresAt) < new Date()) {
+          console.log("[PKCE] PKCE data expired for state:", state.substring(0, 8) + "...");
+          await deletePKCEData(state);
+          return undefined;
+        }
+        
+        console.log("[PKCE] Retrieved PKCE data from database for state:", state.substring(0, 8) + "...");
+        return {
+          codeVerifier: data.codeVerifier,
+          callbackUrl: data.callbackUrl,
+        };
+      }
+    }
+  } catch (error) {
+    console.error("[PKCE] Failed to get from database:", error);
+  }
+  
+  // データベースにない場合はメモリストアをチェック（フォールバック）
   const memoryData = pkceMemoryStore.get(state);
   if (memoryData) {
     console.log("[PKCE] Retrieved PKCE data from memory for state:", state.substring(0, 8) + "...");
     return memoryData;
   }
   
-  const db = await getDb();
-  if (!db) {
-    console.warn("[PKCE] Database not available");
-    return undefined;
-  }
-  
-  try {
-    const result = await db.select().from(oauthPkceData).where(eq(oauthPkceData.state, state)).limit(1);
-    
-    if (result.length === 0) {
-      console.log("[PKCE] No PKCE data found for state:", state.substring(0, 8) + "...");
-      return undefined;
-    }
-    
-    const data = result[0];
-    
-    // Check if expired
-    if (new Date(data.expiresAt) < new Date()) {
-      console.log("[PKCE] PKCE data expired for state:", state.substring(0, 8) + "...");
-      await deletePKCEData(state);
-      return undefined;
-    }
-    
-    console.log("[PKCE] Retrieved PKCE data for state:", state.substring(0, 8) + "...");
-    return {
-      codeVerifier: data.codeVerifier,
-      callbackUrl: data.callbackUrl,
-    };
-  } catch (error) {
-    console.error("[PKCE] Failed to get from database:", error);
-    return undefined;
-  }
+  console.log("[PKCE] No PKCE data found for state:", state.substring(0, 8) + "...");
+  return undefined;
 }
 
 // Delete PKCE data from database
@@ -268,9 +268,6 @@ export async function deletePKCEData(state: string): Promise<void> {
     console.error("[PKCE] Failed to delete from database:", error);
   }
 }
-
-// Memory fallback store for PKCE data
-const pkceMemoryStore = new Map<string, { codeVerifier: string; callbackUrl: string }>();
 
 // Target account to check follow status (idolfunch)
 const TARGET_TWITTER_USERNAME = "idolfunch";
@@ -336,20 +333,17 @@ export async function checkFollowStatus(
           "Authorization": `Bearer ${accessToken}`,
         },
       },
-      { maxRetries: 2, initialDelayMs: 500, maxDelayMs: 5000 } // リトライを減らして高速化
+      { maxRetries: 2, initialDelayMs: 500, maxDelayMs: 5000 }
     );
     
-    // レート制限情報をログ
-    if (followRateLimitInfo) {
-      console.log(
-        `[Twitter API] Follow check rate limit: ${followRateLimitInfo.remaining}/${followRateLimitInfo.limit} remaining`
-      );
+    // レート制限に近づいている場合はスキップ
+    if (followRateLimitInfo && followRateLimitInfo.remaining <= 0) {
+      console.log("[Twitter API] Rate limit reached during follow check, skipping");
+      return { isFollowing: false, targetUser, skipped: true };
     }
     
     const following = followData.data || [];
-    
-    // Check if target user is in the following list
-    const isFollowing = following.some((user: { id: string }) => user.id === targetUser.id);
+    const isFollowing = following.some(user => user.id === targetUser.id);
     
     return {
       isFollowing,
@@ -360,67 +354,72 @@ export async function checkFollowStatus(
       },
     };
   } catch (error) {
-    // レート制限エラーの場合はスキップして認証を継続
-    const errorMessage = error instanceof Error ? error.message : String(error);
-    if (errorMessage.includes("429") || errorMessage.includes("rate limit")) {
-      console.log("[Twitter API] Rate limit error, skipping follow check");
-      return { isFollowing: false, targetUser: null, skipped: true };
-    }
     console.error("Follow status check error:", error);
-    return { isFollowing: false, targetUser: null };
+    // エラー時はスキップとして扱い、認証は継続
+    return { isFollowing: false, targetUser: null, skipped: true };
   }
 }
 
 // Get target account info
-export function getTargetAccountInfo() {
+export function getTargetAccountInfo(): { username: string; displayName: string; profileUrl: string } {
   return {
     username: TARGET_TWITTER_USERNAME,
-    displayName: "君斗りんく",
+    displayName: "アイドルファンチ",
     profileUrl: `https://twitter.com/${TARGET_TWITTER_USERNAME}`,
   };
 }
 
-
-// ユーザー名からプロフィール情報を取得（Bearer Token認証）
-export async function getUserProfileByUsername(username: string): Promise<{
+// Get user profile by username (supports @username, username, or full URL)
+export async function getUserProfileByUsername(input: string): Promise<{
   id: string;
   name: string;
   username: string;
   profile_image_url: string;
-  description?: string;
-  public_metrics?: {
+  public_metrics: {
     followers_count: number;
     following_count: number;
     tweet_count: number;
   };
+  description: string;
 } | null> {
-  // ユーザー名をクリーンアップ（@を削除、URLからユーザー名を抽出）
-  let cleanUsername = username.trim();
+  // Parse username from various formats
+  let username = input.trim();
   
-  // URL形式の場合（https://x.com/username または https://twitter.com/username）
-  const urlMatch = cleanUsername.match(/(?:https?:\/\/)?(?:x\.com|twitter\.com)\/([a-zA-Z0-9_]+)/i);
-  if (urlMatch) {
-    cleanUsername = urlMatch[1];
+  // Remove @ prefix
+  if (username.startsWith("@")) {
+    username = username.substring(1);
   }
   
-  // @を削除
-  cleanUsername = cleanUsername.replace(/^@/, "");
+  // Extract from Twitter/X URL
+  const urlPatterns = [
+    /(?:https?:\/\/)?(?:www\.)?(?:twitter\.com|x\.com)\/([a-zA-Z0-9_]+)/,
+  ];
   
-  if (!cleanUsername) {
+  for (const pattern of urlPatterns) {
+    const match = username.match(pattern);
+    if (match) {
+      username = match[1];
+      break;
+    }
+  }
+  
+  // Validate username format
+  if (!/^[a-zA-Z0-9_]{1,15}$/.test(username)) {
+    console.error("Invalid Twitter username format:", username);
     return null;
   }
   
   try {
-    // Bearer Token認証を使用（アプリ専用認証）
-    const bearerToken = process.env.TWITTER_BEARER_TOKEN;
-    if (!bearerToken) {
-      console.error("TWITTER_BEARER_TOKEN is not set");
-      return null;
-    }
-    
-    const url = `https://api.twitter.com/2/users/by/username/${cleanUsername}`;
+    const url = `https://api.twitter.com/2/users/by/username/${username}`;
     const params = "user.fields=profile_image_url,public_metrics,description";
     const fullUrl = `${url}?${params}`;
+    
+    // Use app-only auth (Bearer token)
+    const bearerToken = process.env.TWITTER_BEARER_TOKEN;
+    if (!bearerToken) {
+      console.error("TWITTER_BEARER_TOKEN not configured");
+      return null;
+    }
     
     const response = await fetch(fullUrl, {
       method: "GET",
@@ -431,30 +430,14 @@ export async function getUserProfileByUsername(username: string): Promise<{
     
     if (!response.ok) {
       const text = await response.text();
-      console.error("Twitter user lookup error:", response.status, text);
+      console.error("User lookup error:", text);
       return null;
     }
     
-    const data = await response.json();
-    
-    if (!data.data) {
-      console.error("Twitter user not found:", cleanUsername);
-      return null;
-    }
-    
-    // プロフィール画像を高解像度に変換
-    const profileImageUrl = data.data.profile_image_url?.replace("_normal", "_400x400") || "";
-    
-    return {
-      id: data.data.id,
-      name: data.data.name,
-      username: data.data.username,
-      profile_image_url: profileImageUrl,
-      description: data.data.description,
-      public_metrics: data.data.public_metrics,
-    };
+    const json = await response.json();
+    return json.data || null;
   } catch (error) {
-    console.error("Error fetching Twitter user profile:", error);
+    console.error("User lookup error:", error);
     return null;
   }
 }
