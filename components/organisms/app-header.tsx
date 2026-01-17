@@ -12,7 +12,7 @@ import * as Haptics from "expo-haptics";
 const logoImage = require("@/assets/images/logo/logo-color.jpg");
 
 // アプリバージョン（デプロイ確認用）
-const APP_VERSION = "v5.57";
+const APP_VERSION = "v5.58";
 
 // キャラクター画像
 const characterImages = {
@@ -163,7 +163,7 @@ export function AppHeader({
         )}
         
         {subtitle && (
-          <Text style={{ color: "#9CA3AF", fontSize: 14, marginTop: 4 }}>
+          <Text style={{ color: "#D1D5DB", fontSize: 14, marginTop: 4 }}>
             {subtitle}
           </Text>
         )}

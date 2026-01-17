@@ -252,7 +252,7 @@ export default function MyPageScreen() {
               動員ちゃれんじ
             </Text>
             <Text style={{ 
-              color: "#9CA3AF", 
+              color: "#D1D5DB", 
               fontSize: 14,
               marginBottom: 24,
               textAlign: "center",
@@ -555,7 +555,7 @@ export default function MyPageScreen() {
               }}
             >
               <MaterialIcons name="refresh" size={18} color="#6B7280" />
-              <Text style={{ color: "#6B7280", fontSize: 13, marginLeft: 6 }}>
+              <Text style={{ color: "#9CA3AF", fontSize: 13, marginLeft: 6 }}>
                 他のキャラクターのメッセージを見る
               </Text>
             </TouchableOpacity>
@@ -635,7 +635,7 @@ export default function MyPageScreen() {
                   <Text style={{ color: "#EC4899", fontSize: 24, fontWeight: "bold" }}>
                     {totalContribution}
                   </Text>
-                  <Text style={{ color: "#9CA3AF", fontSize: 12 }}>総貢献度</Text>
+                  <Text style={{ color: "#D1D5DB", fontSize: 12 }}>総貢献度</Text>
                 </View>
                 <View
                   style={{
@@ -649,7 +649,7 @@ export default function MyPageScreen() {
                   <Text style={{ color: "#8B5CF6", fontSize: 24, fontWeight: "bold" }}>
                     {myParticipations?.length || 0}
                   </Text>
-                  <Text style={{ color: "#9CA3AF", fontSize: 12 }}>参加チャレンジ</Text>
+                  <Text style={{ color: "#D1D5DB", fontSize: 12 }}>参加チャレンジ</Text>
                 </View>
                 <View
                   style={{
@@ -663,7 +663,7 @@ export default function MyPageScreen() {
                   <Text style={{ color: "#DD6500", fontSize: 24, fontWeight: "bold" }}>
                     {myChallenges?.length || 0}
                   </Text>
-                  <Text style={{ color: "#9CA3AF", fontSize: 12 }}>主催</Text>
+                  <Text style={{ color: "#D1D5DB", fontSize: 12 }}>主催</Text>
                 </View>
               </View>
 
@@ -749,7 +749,7 @@ export default function MyPageScreen() {
               <Text style={{ color: colors.foreground, fontSize: 16, fontWeight: "bold" }}>
                 アチーブメント
               </Text>
-              <Text style={{ color: "#9CA3AF", fontSize: 12 }}>
+              <Text style={{ color: "#D1D5DB", fontSize: 12 }}>
                 実績を解除してポイントを獲得しよう
               </Text>
             </View>
@@ -788,7 +788,7 @@ export default function MyPageScreen() {
               <Text style={{ color: colors.foreground, fontSize: 16, fontWeight: "bold" }}>
                 通知設定
               </Text>
-              <Text style={{ color: "#9CA3AF", fontSize: 12 }}>
+              <Text style={{ color: "#D1D5DB", fontSize: 12 }}>
                 目標達成やマイルストーンの通知を管理
               </Text>
             </View>
@@ -827,7 +827,7 @@ export default function MyPageScreen() {
               <Text style={{ color: colors.foreground, fontSize: 16, fontWeight: "bold" }}>
                 テーマ設定
               </Text>
-              <Text style={{ color: "#9CA3AF", fontSize: 12 }}>
+              <Text style={{ color: "#D1D5DB", fontSize: 12 }}>
                 ライト/ダークモードを切り替え
               </Text>
             </View>
@@ -871,7 +871,7 @@ export default function MyPageScreen() {
               <Text style={{ color: colors.foreground, fontSize: 16, fontWeight: "bold" }}>
                 API使用量
               </Text>
-              <Text style={{ color: "#9CA3AF", fontSize: 12 }}>
+              <Text style={{ color: "#D1D5DB", fontSize: 12 }}>
                 Twitter APIのレート制限状況
               </Text>
             </View>
@@ -925,7 +925,7 @@ export default function MyPageScreen() {
                     <Text style={{ color: colors.foreground, fontSize: 12, fontWeight: "bold", textAlign: "center" }} numberOfLines={2}>
                       {userBadge.badge?.name || "バッジ"}
                     </Text>
-                    <Text style={{ color: "#6B7280", fontSize: 10, marginTop: 4 }}>
+                    <Text style={{ color: "#9CA3AF", fontSize: 10, marginTop: 4 }}>
                       {new Date(userBadge.earnedAt).toLocaleDateString("ja-JP", { month: "short", day: "numeric" })}
                     </Text>
                   </View>
@@ -943,10 +943,10 @@ export default function MyPageScreen() {
                 }}
               >
                 <MaterialIcons name="military-tech" size={48} color="#6B7280" />
-                <Text style={{ color: "#9CA3AF", fontSize: 14, marginTop: 12 }}>
+                <Text style={{ color: "#D1D5DB", fontSize: 14, marginTop: 12 }}>
                   まだバッジを獲得していません
                 </Text>
-                <Text style={{ color: "#6B7280", fontSize: 12, marginTop: 4, textAlign: "center" }}>
+                <Text style={{ color: "#9CA3AF", fontSize: 12, marginTop: 4, textAlign: "center" }}>
                   チャレンジに参加してバッジを集めよう！
                 </Text>
               </View>
@@ -984,7 +984,7 @@ export default function MyPageScreen() {
                         <Text style={{ color: colors.foreground, fontSize: 16, fontWeight: "600" }}>
                           {item.title}
                         </Text>
-                        <Text style={{ color: "#9CA3AF", fontSize: 14, marginTop: 4 }}>
+                        <Text style={{ color: "#D1D5DB", fontSize: 14, marginTop: 4 }}>
                           {formattedDate} {item.venue && `・ ${item.venue}`}
                         </Text>
                       </View>
@@ -1011,7 +1011,7 @@ export default function MyPageScreen() {
                         }}
                       />
                     </View>
-                    <Text style={{ color: "#9CA3AF", fontSize: 12, marginTop: 4 }}>
+                    <Text style={{ color: "#D1D5DB", fontSize: 12, marginTop: 4 }}>
                       {item.currentValue || 0} / {item.goalValue || 100}{item.goalUnit || "人"} ({Math.round(progress)}%)
                     </Text>
                   </TouchableOpacity>
@@ -1029,7 +1029,7 @@ export default function MyPageScreen() {
                 }}
               >
                 <MaterialIcons name="flag" size={48} color="#6B7280" />
-                <Text style={{ color: "#9CA3AF", marginTop: 8, textAlign: "center" }}>
+                <Text style={{ color: "#D1D5DB", marginTop: 8, textAlign: "center" }}>
                   まだチャレンジを作成していません
                 </Text>
               </View>
@@ -1061,7 +1061,7 @@ export default function MyPageScreen() {
                         チャレンジID: {item.challengeId}
                       </Text>
                       {item.message && (
-                        <Text style={{ color: "#9CA3AF", fontSize: 12, marginTop: 4 }} numberOfLines={2}>
+                        <Text style={{ color: "#D1D5DB", fontSize: 12, marginTop: 4 }} numberOfLines={2}>
                           {item.message}
                         </Text>
                       )}
@@ -1070,7 +1070,7 @@ export default function MyPageScreen() {
                       <Text style={{ color: "#EC4899", fontSize: 18, fontWeight: "bold" }}>
                         +{item.contribution || 1}
                       </Text>
-                      <Text style={{ color: "#6B7280", fontSize: 10 }}>貢献度</Text>
+                      <Text style={{ color: "#9CA3AF", fontSize: 10 }}>貢献度</Text>
                     </View>
                   </View>
                 </View>

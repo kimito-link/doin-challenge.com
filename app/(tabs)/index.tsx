@@ -207,15 +207,15 @@ function EngagementSection({ challenges }: { challenges: Challenge[] }) {
         <View style={{ flexDirection: "row", justifyContent: "space-around", marginBottom: 20 }}>
           <View style={{ alignItems: "center" }}>
             <Text style={{ color: colors.foreground, fontSize: 32, fontWeight: "bold" }}>{stats.totalParticipants}</Text>
-            <Text style={{ color: "#9CA3AF", fontSize: 12 }}>総参加表明</Text>
+            <Text style={{ color: "#D1D5DB", fontSize: 12 }}>総参加表明</Text>
           </View>
           <View style={{ alignItems: "center" }}>
             <Text style={{ color: colors.foreground, fontSize: 32, fontWeight: "bold" }}>{stats.activeChallenges}</Text>
-            <Text style={{ color: "#9CA3AF", fontSize: 12 }}>開催中</Text>
+            <Text style={{ color: "#D1D5DB", fontSize: 12 }}>開催中</Text>
           </View>
           <View style={{ alignItems: "center" }}>
             <Text style={{ color: colors.foreground, fontSize: 32, fontWeight: "bold" }}>{stats.totalChallenges}</Text>
-            <Text style={{ color: "#9CA3AF", fontSize: 12 }}>総チャレンジ</Text>
+            <Text style={{ color: "#D1D5DB", fontSize: 12 }}>総チャレンジ</Text>
           </View>
         </View>
 
@@ -233,7 +233,7 @@ function EngagementSection({ challenges }: { challenges: Challenge[] }) {
               <Text style={{ color: "#FFD700", fontSize: 14, fontWeight: "bold" }}>
                 {stats.hotRegion[0]}が熱い！
               </Text>
-              <Text style={{ color: "#9CA3AF", fontSize: 12 }}>
+              <Text style={{ color: "#D1D5DB", fontSize: 12 }}>
                 {stats.hotRegion[1]}人が参加表明中
               </Text>
             </View>
@@ -294,7 +294,7 @@ function RecommendedHostsSection() {
                   {host.name || "ホスト"}
                 </Text>
                 {host.username && (
-                  <Text style={{ color: "#9CA3AF", fontSize: 10 }} numberOfLines={1}>
+                  <Text style={{ color: "#D1D5DB", fontSize: 10 }} numberOfLines={1}>
                     @{host.username}
                   </Text>
                 )}
@@ -361,7 +361,7 @@ function CatchCopySection() {
         {/* メインメッセージ */}
         <View style={{ marginBottom: 20 }}>
           <Text style={{ 
-            color: "#9CA3AF", 
+            color: "#D1D5DB", 
             fontSize: 14, 
             lineHeight: 24,
             marginBottom: 16,
@@ -382,7 +382,7 @@ function CatchCopySection() {
           </Text>
 
           <Text style={{ 
-            color: "#9CA3AF", 
+            color: "#D1D5DB", 
             fontSize: 14, 
             lineHeight: 24,
           }}>
@@ -440,7 +440,7 @@ function CatchCopySection() {
             さあ、一緒に推しの未来を作ろう！🙌
           </Text>
           <Text style={{ 
-            color: "#9CA3AF", 
+            color: "#D1D5DB", 
             fontSize: 12,
           }}>
             下のチャレンジから参加表明してみてね
@@ -619,7 +619,7 @@ function ChallengeCard({ challenge, onPress, numColumns = 2 }: { challenge: Chal
         </Text>
 
         {/* ホスト名 */}
-        <Text style={{ color: "#9CA3AF", fontSize: 12, marginBottom: 8 }}>
+        <Text style={{ color: "#D1D5DB", fontSize: 12, marginBottom: 8 }}>
           {challenge.hostName}
         </Text>
 
@@ -628,7 +628,7 @@ function ChallengeCard({ challenge, onPress, numColumns = 2 }: { challenge: Chal
           <View style={{ flexDirection: "row", justifyContent: "space-between", marginBottom: 4 }}>
             <Text style={{ color: colors.foreground, fontSize: 18, fontWeight: "bold" }}>
               {challenge.currentValue}
-              <Text style={{ fontSize: 12, color: "#9CA3AF" }}> / {challenge.goalValue}{unit}</Text>
+              <Text style={{ fontSize: 12, color: "#D1D5DB" }}> / {challenge.goalValue}{unit}</Text>
             </Text>
           </View>
           
@@ -653,7 +653,7 @@ function ChallengeCard({ challenge, onPress, numColumns = 2 }: { challenge: Chal
             />
           </View>
           
-          <Text style={{ color: "#9CA3AF", fontSize: 10, marginTop: 4 }}>
+          <Text style={{ color: "#D1D5DB", fontSize: 10, marginTop: 4 }}>
             あと{remaining}{unit}で目標達成！
           </Text>
         </View>
@@ -1017,7 +1017,7 @@ export default function HomeScreen() {
       {/* データ読み込み中のインジケーター */}
       {isDataLoading && (
         <View style={{ padding: 20, alignItems: "center" }}>
-          <Text style={{ color: "#9CA3AF" }}>読み込み中...</Text>
+          <Text style={{ color: "#D1D5DB" }}>読み込み中...</Text>
         </View>
       )}
     </>
@@ -1110,11 +1110,11 @@ export default function HomeScreen() {
               {/* ページネーションインジケーター */}
               {(isSearching ? isFetchingNextSearchPage : isFetchingNextPage) ? (
                 <View style={{ padding: 20, alignItems: "center" }}>
-                  <Text style={{ color: "#9CA3AF" }}>読み込み中...</Text>
+                  <Text style={{ color: "#D1D5DB" }}>読み込み中...</Text>
                 </View>
               ) : (isSearching ? hasNextSearchPage : hasNextPage) ? (
                 <View style={{ padding: 20, alignItems: "center" }}>
-                  <Text style={{ color: "#6B7280" }}>スクロールしてもっと見る</Text>
+                  <Text style={{ color: "#9CA3AF" }}>スクロールしてもっと見る</Text>
                 </View>
               ) : null}
               {/* 追加セクション（チャレンジ一覧の後に表示） */}
