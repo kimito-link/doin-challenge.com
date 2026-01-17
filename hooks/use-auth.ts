@@ -9,6 +9,7 @@ import {
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { Platform, Linking } from "react-native";
 import Constants from "expo-constants";
+import { USER_INFO_KEY } from "@/constants/oauth";
 
 type UseAuthOptions = {
   autoFetch?: boolean;
@@ -47,12 +48,39 @@ function getApiBaseUrl(): string {
 let cachedAuthState: { user: Auth.User | null; timestamp: number } | null = null;
 const AUTH_CACHE_TTL = 5 * 60 * 1000; // 5分
 
+// Webの場合、初期化時にlocalStorageから同期的にユーザー情報を読み込む
+function getInitialUserFromLocalStorage(): Auth.User | null {
+  if (Platform.OS === "web" && typeof window !== "undefined") {
+    try {
+      const info = window.localStorage.getItem(USER_INFO_KEY);
+      if (info) {
+        const user = JSON.parse(info);
+        console.log("[useAuth] Initial user loaded from localStorage:", user?.name);
+        return user;
+      }
+    } catch (e) {
+      console.error("[useAuth] Failed to parse localStorage user:", e);
+    }
+  }
+  return null;
+}
+
+// モジュール初期化時にlocalStorageからキャッシュを設定
+if (!cachedAuthState) {
+  const initialUser = getInitialUserFromLocalStorage();
+  if (initialUser) {
+    cachedAuthState = { user: initialUser, timestamp: Date.now() };
+    console.log("[useAuth] Cache initialized from localStorage");
+  }
+}
+
 export function useAuth(options?: UseAuthOptions) {
   const { autoFetch = true } = options ?? {};
   
   // キャッシュが有効な場合は即座に表示（loading=false）
   const hasCachedAuth = cachedAuthState !== null && (Date.now() - cachedAuthState.timestamp) < AUTH_CACHE_TTL;
   const [user, setUser] = useState<Auth.User | null>(hasCachedAuth && cachedAuthState ? cachedAuthState.user : null);
+  // キャッシュがあればloading=falseで開始（スケルトン表示をスキップ）
   const [loading, setLoading] = useState(!hasCachedAuth);
   const [error, setError] = useState<Error | null>(null);
 
