@@ -216,6 +216,7 @@
 
 - [x] Twitterログインボタンが灰色になって反応しない問題
 - [x] Twitter認証をOAuth 2.0に書き換え
+- [x] Twitter descriptionがマイページに表示されない問題を修正（setUserInfoのマージ処理改善）
 
 
 ## Twitterフォロー確認機能
