@@ -22,9 +22,19 @@ function getApiBaseUrl(): string {
     return envApiUrl;
   }
   
-  // Development: derive from hostname
-  if (Platform.OS === "web" && typeof window !== "undefined") {
-    const { protocol, hostname } = window.location;
+  // On web, derive from current hostname
+  // Note: Use global `location` directly instead of `window.location` for Expo Web compatibility
+  // window.location.hostname returns undefined in Expo Web, but location.hostname works
+  if (Platform.OS === "web" && typeof location !== "undefined") {
+    const protocol = location.protocol;
+    const hostname = location.hostname;
+    
+    // Production: doin-challenge.com -> Railway backend
+    if (hostname.includes("doin-challenge.com") || hostname.includes("doin-challengecom.vercel.app")) {
+      return "https://doin-challengecom-production.up.railway.app";
+    }
+    
+    // Development: Pattern: 8081-sandboxid.region.domain -> 3000-sandboxid.region.domain
     const apiHostname = hostname.replace(/^8081-/, "3000-");
     return `${protocol}//${apiHostname}`;
   }
