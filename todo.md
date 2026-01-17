@@ -1895,3 +1895,9 @@
 - [x] lib/_core/auth.tsのsetUserInfo関数を修正（既存のユーザー情報を保持しながら新しいデータをマージ）
 - [x] Twitter固有フィールド（description, username, profileImage等）を明示的に保持するように変更
 - [x] テストで修正を確認
+
+## v5.45 ジャンル選択問題の修正
+- [x] ジャンル（カテゴリ）が選べなくなる問題の調査
+- [x] 原因特定: categoriesテーブルにデータが0件だった
+- [x] 初期カテゴリデータを投入（アイドル、VTuber、バンド、シンガー、ダンス、声優、お笑い、その他）
+- [x] MySQL/TiDBのboolean比較問題を修正（`eq(isActive, true)` → `sql\`isActive = 1\``）

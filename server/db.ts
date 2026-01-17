@@ -1016,7 +1016,8 @@ export async function getAllCategories() {
   const db = await getDb();
   if (!db) return categoriesCache.data ?? [];
   
-  const result = await db.select().from(categories).where(eq(categories.isActive, true)).orderBy(categories.sortOrder);
+  // MySQL/TiDBではbooleanは1/0で扱われるため、明示的に1と比較
+  const result = await db.select().from(categories).where(sql`${categories.isActive} = 1`).orderBy(categories.sortOrder);
   
   // キャッシュを更新
   categoriesCache = { data: result, timestamp: now };

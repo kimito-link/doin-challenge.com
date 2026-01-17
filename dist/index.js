@@ -1164,7 +1164,7 @@ async function getAllCategories() {
   }
   const db = await getDb();
   if (!db) return categoriesCache.data ?? [];
-  const result = await db.select().from(categories).where(eq(categories.isActive, true)).orderBy(categories.sortOrder);
+  const result = await db.select().from(categories).where(sql`${categories.isActive} = 1`).orderBy(categories.sortOrder);
   categoriesCache = { data: result, timestamp: now };
   return result;
 }

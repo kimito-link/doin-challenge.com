@@ -1,0 +1,27 @@
+{
+  "query": "SHOW CREATE TABLE categories;",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway02.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 3YCTtbVp6bbE1oz.aaf91d266729 --database 4EfvvuNg9KRk4UPdFprmBJ --execute SHOW CREATE TABLE categories;",
+  "rows": [
+    {
+      "Table": "categories",
+      "Create Table": "CREATE TABLE `categories` ("
+    }
+  ],
+  "messages": [
+    "  `id` int(11) NOT NULL AUTO_INCREMENT,",
+    "  `name` varchar(64) COLLATE utf8mb4_unicode_ci NOT NULL,",
+    "  `slug` varchar(64) COLLATE utf8mb4_unicode_ci NOT NULL,",
+    "  `icon` varchar(32) COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT '🎤',",
+    "  `color` varchar(16) COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT '#EC4899',",
+    "  `description` text COLLATE utf8mb4_unicode_ci DEFAULT NULL,",
+    "  `sortOrder` int(11) NOT NULL DEFAULT '0',",
+    "  `isActive` tinyint(1) NOT NULL DEFAULT '1',",
+    "  `createdAt` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,",
+    "  PRIMARY KEY (`id`) /*T![clustered_index] CLUSTERED */,",
+    "  UNIQUE KEY `categories_slug_unique` (`slug`)",
+    ") ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci AUTO_INCREMENT=30001"
+  ],
+  "stdout": "Table\tCreate Table\ncategories\tCREATE TABLE `categories` (\n  `id` int(11) NOT NULL AUTO_INCREMENT,\n  `name` varchar(64) COLLATE utf8mb4_unicode_ci NOT NULL,\n  `slug` varchar(64) COLLATE utf8mb4_unicode_ci NOT NULL,\n  `icon` varchar(32) COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT '🎤',\n  `color` varchar(16) COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT '#EC4899',\n  `description` text COLLATE utf8mb4_unicode_ci DEFAULT NULL,\n  `sortOrder` int(11) NOT NULL DEFAULT '0',\n  `isActive` tinyint(1) NOT NULL DEFAULT '1',\n  `createdAt` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,\n  PRIMARY KEY (`id`) /*T![clustered_index] CLUSTERED */,\n  UNIQUE KEY `categories_slug_unique` (`slug`)\n) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci AUTO_INCREMENT=30001\n",
+  "stderr": "",
+  "execution_time_ms": 1628
+}
