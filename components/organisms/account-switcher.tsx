@@ -69,11 +69,26 @@ export function AccountSwitcher({ visible, onClose }: AccountSwitcherProps) {
       onClose();
       
       // 5. forceSwitch=trueで別のアカウントでログイン
-      setTimeout(async () => {
+      // 直接API URLを構築してリダイレクト（login関数のタイミング問題を回避）
+      setTimeout(() => {
         try {
-          await login(undefined, true);
+          // 本番環境の場合はRailwayバックエンドを使用
+          const hostname = typeof location !== "undefined" ? location.hostname : "";
+          let apiBaseUrl = "";
+          if (hostname.includes("doin-challenge.com") || hostname.includes("doin-challengecom.vercel.app")) {
+            apiBaseUrl = "https://doin-challengecom-production.up.railway.app";
+          } else if (hostname.includes("-")) {
+            // 開発環境: 8081-xxx -> 3000-xxx
+            const protocol = typeof location !== "undefined" ? location.protocol : "https:";
+            const apiHostname = hostname.replace(/^8081-/, "3000-");
+            apiBaseUrl = `${protocol}//${apiHostname}`;
+          }
+          
+          const loginUrl = `${apiBaseUrl}/api/twitter/auth?switch=true`;
+          console.log("[AccountSwitcher] Redirecting to:", loginUrl);
+          window.location.href = loginUrl;
         } catch (e) {
-          console.log("Login failed:", e);
+          console.log("Login redirect failed:", e);
         }
       }, 300);
     } catch (error) {
