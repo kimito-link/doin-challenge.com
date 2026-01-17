@@ -6,18 +6,21 @@ import {
   ScrollView,
   StyleSheet,
   Platform,
+  Linking,
 } from "react-native";
 import { useRouter } from "expo-router";
 import { Image } from "expo-image";
 import MaterialIcons from "@expo/vector-icons/MaterialIcons";
 import * as Haptics from "expo-haptics";
 import { ScreenContainer } from "@/components/organisms/screen-container";
+import { AppHeader } from "@/components/organisms/app-header";
 import { useAuth } from "@/hooks/use-auth";
 import { useAccounts } from "@/hooks/use-accounts";
 import { useThemeContext, getThemeModeLabel, getThemeModeIcon } from "@/lib/theme-provider";
 import { AccountSwitcher } from "@/components/organisms/account-switcher";
 import { getSessionExpiryInfo, SessionExpiryInfo } from "@/lib/token-manager";
 import { useTutorial } from "@/lib/tutorial-context";
+import { useResponsive } from "@/hooks/use-responsive";
 
 /**
  * 総合設定画面
@@ -31,6 +34,7 @@ export default function SettingsScreen() {
   const [showAccountSwitcher, setShowAccountSwitcher] = useState(false);
   const [sessionExpiry, setSessionExpiry] = useState<SessionExpiryInfo | null>(null);
   const { resetTutorial } = useTutorial();
+  const { isDesktop } = useResponsive();
 
   // セッション有効期限を取得・更新
   useEffect(() => {
@@ -94,16 +98,22 @@ export default function SettingsScreen() {
   // 他のアカウント（現在のアカウント以外）
   const otherAccounts = accounts.filter((a) => a.id !== currentAccountId);
 
+  const handleTwitter = useCallback(() => {
+    handleHaptic();
+    Linking.openURL("https://twitter.com/doin_challenge");
+  }, [handleHaptic]);
+
   return (
     <ScreenContainer containerClassName="bg-background">
       {/* ヘッダー */}
-      <View style={styles.header}>
-        <TouchableOpacity onPress={handleBack} style={styles.backButton}>
-          <MaterialIcons name="arrow-back" size={24} color="#fff" />
-        </TouchableOpacity>
-        <Text style={styles.headerTitle}>設定</Text>
-        <View style={styles.headerSpacer} />
-      </View>
+      <AppHeader
+        title="設定"
+        showCharacters={true}
+        showLogo={true}
+        isDesktop={isDesktop}
+        showLoginStatus={false}
+        showMenu={true}
+      />
 
       <ScrollView style={styles.content} contentContainerStyle={styles.contentContainer}>
         {/* アカウント管理セクション */}
@@ -318,10 +328,29 @@ export default function SettingsScreen() {
           </TouchableOpacity>
         </View>
 
-        {/* アプリ情報 */}
+        {/* フッター */}
         <View style={styles.footer}>
-          <Text style={styles.footerText}>動員ちゃれんじ v1.0.0</Text>
+          <View style={styles.footerLogoContainer}>
+            <Image
+              source={require("@/assets/images/logo/logo-color.jpg")}
+              style={styles.footerLogo}
+              contentFit="contain"
+            />
+            <Text style={styles.footerAppName}>動員ちゃれんじ</Text>
+          </View>
+          <Text style={styles.footerVersion}>v1.0.0</Text>
           <Text style={styles.footerSubtext}>設定はこのデバイスに保存されます</Text>
+          
+          <View style={styles.footerLinks}>
+            <TouchableOpacity onPress={handleTwitter} style={styles.footerLink}>
+              <MaterialIcons name="alternate-email" size={16} color="#1DA1F2" />
+              <Text style={styles.footerLinkText}>@doin_challenge</Text>
+            </TouchableOpacity>
+          </View>
+          
+          <Text style={styles.footerCopyright}>
+            © 2024 KimitoLink. All rights reserved.
+          </Text>
         </View>
       </ScrollView>
 
@@ -532,7 +561,32 @@ const styles = StyleSheet.create({
   },
   footer: {
     padding: 24,
+    paddingTop: 32,
     alignItems: "center",
+    borderTopWidth: 1,
+    borderTopColor: "#2D3139",
+    marginTop: 16,
+  },
+  footerLogoContainer: {
+    flexDirection: "row",
+    alignItems: "center",
+    marginBottom: 8,
+  },
+  footerLogo: {
+    width: 40,
+    height: 40,
+    borderRadius: 8,
+  },
+  footerAppName: {
+    color: "#fff",
+    fontSize: 16,
+    fontWeight: "bold",
+    marginLeft: 8,
+  },
+  footerVersion: {
+    color: "#9CA3AF",
+    fontSize: 12,
+    marginBottom: 4,
   },
   footerText: {
     color: "#6B7280",
@@ -542,5 +596,28 @@ const styles = StyleSheet.create({
     color: "#4B5563",
     fontSize: 12,
     marginTop: 4,
+  },
+  footerLinks: {
+    flexDirection: "row",
+    alignItems: "center",
+    marginTop: 16,
+    gap: 16,
+  },
+  footerLink: {
+    flexDirection: "row",
+    alignItems: "center",
+    padding: 8,
+    borderRadius: 8,
+    backgroundColor: "rgba(29, 161, 242, 0.1)",
+  },
+  footerLinkText: {
+    color: "#1DA1F2",
+    fontSize: 13,
+    marginLeft: 4,
+  },
+  footerCopyright: {
+    color: "#4B5563",
+    fontSize: 11,
+    marginTop: 16,
   },
 });
