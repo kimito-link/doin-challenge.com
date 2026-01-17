@@ -579,10 +579,16 @@ async function upsertUser(user) {
     return;
   }
   try {
+    const now = /* @__PURE__ */ new Date();
     const values = {
-      openId: user.openId
+      openId: user.openId,
+      createdAt: now,
+      updatedAt: now,
+      lastSignedIn: now
     };
-    const updateSet = {};
+    const updateSet = {
+      updatedAt: now
+    };
     const textFields = ["name", "email", "loginMethod"];
     const assignNullable = (field) => {
       const value = user[field];
@@ -595,6 +601,8 @@ async function upsertUser(user) {
     if (user.lastSignedIn !== void 0) {
       values.lastSignedIn = user.lastSignedIn;
       updateSet.lastSignedIn = user.lastSignedIn;
+    } else {
+      updateSet.lastSignedIn = now;
     }
     if (user.role !== void 0) {
       values.role = user.role;
@@ -602,12 +610,6 @@ async function upsertUser(user) {
     } else if (user.openId === ENV.ownerOpenId) {
       values.role = "admin";
       updateSet.role = "admin";
-    }
-    if (!values.lastSignedIn) {
-      values.lastSignedIn = /* @__PURE__ */ new Date();
-    }
-    if (Object.keys(updateSet).length === 0) {
-      updateSet.lastSignedIn = /* @__PURE__ */ new Date();
     }
     await db.insert(users).values(values).onDuplicateKeyUpdate({
       set: updateSet
