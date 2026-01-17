@@ -1794,3 +1794,11 @@
 
 - [x] Vercelデプロイの状況を確認（GitHubリポジトリにプッシュされていなかった）
 - [x] 同じアカウントで再ログイン時の404エラーを修正（getApiBaseUrl関数をより堅牢に修正、Railway API URLをハードコード）
+
+- [ ] ログアウト後の再ログインで404エラー（doin-challenge.com/api/twitter/auth）が発生する問題を修正
+
+## API呼び出しの一元管理（v5.28）
+- [ ] lib/api/ディレクトリを作成してAPI設定を一元化
+- [ ] Twitter認証URLユーティリティ（getTwitterAuthUrl, getTwitterSwitchUrl）を作成
+- [ ] 既存コンポーネントをリファクタリングして新ユーティリティを使用
+- [ ] API-ARCHITECTURE.md設計ドキュメントを作成
