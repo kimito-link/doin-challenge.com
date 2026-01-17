@@ -27,8 +27,18 @@ export {
   getErrorMessage,
   isApiSuccess,
   ApiError,
+  // キャッシュ機能
+  clearApiCache,
+  // オフラインサポート
+  startNetworkMonitoring,
+  stopNetworkMonitoring,
+  getQueueSize,
+  clearQueue,
+  // 型定義
   type ApiResponse,
   type ApiRequestOptions,
+  type RetryConfig,
+  type CacheConfig,
 } from "./client";
 
 // APIエンドポイント

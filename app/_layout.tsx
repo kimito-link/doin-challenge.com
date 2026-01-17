@@ -25,6 +25,7 @@ import { initManusRuntime, subscribeSafeAreaInsets } from "@/lib/_core/manus-run
 import { preloadCriticalImages } from "@/lib/image-preload";
 import { registerServiceWorker } from "@/lib/service-worker";
 import { initAutoSync } from "@/lib/offline-sync";
+import { startNetworkMonitoring, stopNetworkMonitoring } from "@/lib/api";
 import { initSyncHandlers } from "@/lib/sync-handlers";
 import { AutoLoginProvider } from "@/lib/auto-login-provider";
 import { TutorialProvider, useTutorial } from "@/lib/tutorial-context";
@@ -94,7 +95,12 @@ export default function RootLayout() {
     initSyncHandlers();
     // オンライン復帰時の自動同期を初期化
     const unsubscribeSync = initAutoSync();
-    return () => unsubscribeSync();
+    // APIオフラインキューのネットワーク監視を開始
+    startNetworkMonitoring();
+    return () => {
+      unsubscribeSync();
+      stopNetworkMonitoring();
+    };
   }, []);
 
   const handleSafeAreaUpdate = useCallback((metrics: Metrics) => {

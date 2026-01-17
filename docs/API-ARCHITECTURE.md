@@ -1,7 +1,7 @@
 # API アーキテクチャ設計書
 
 **最終更新日**: 2025年1月17日  
-**バージョン**: v5.31  
+**バージョン**: v5.32  
 **作成者**: Manus AI
 
 ---
@@ -53,7 +53,7 @@ lib/
 └── api/
     ├── index.ts          # エクスポート集約（エントリーポイント）
     ├── config.ts         # API設定・Base URL取得
-    ├── client.ts         # APIクライアント（fetch wrapper、エラーハンドリング、ログ）
+    ├── client.ts         # APIクライアント（リトライ、キャッシュ、オフラインサポート）
     ├── endpoints.ts      # 各APIエンドポイントへのアクセス関数
     └── twitter-auth.ts   # Twitter認証URL生成
 ```
@@ -71,6 +71,10 @@ import {
   apiPost,
   lookupTwitterUser,
   getErrorMessage,
+  // v5.32で追加
+  clearApiCache,
+  startNetworkMonitoring,
+  getQueueSize,
 } from "@/lib/api";
 
 // ❌ 非推奨：個別ファイルから直接インポート
@@ -83,7 +87,7 @@ import { getApiBaseUrl } from "@/lib/api/config";
 
 ### lib/api/client.ts
 
-このファイルはfetch呼び出しのラッパーを提供し、エラーハンドリングとログ機能を一元管理します。すべてのAPI呼び出しはこのファイルの関数を通じて行うことで、一貫した動作を保証します。
+このファイルはfetch呼び出しのラッパーを提供し、エラーハンドリング、ログ機能、リトライ、キャッシュ、オフラインサポートを一元管理します。すべてのAPI呼び出しはこのファイルの関数を通じて行うことで、一貫した動作を保証します。
 
 **主要な関数:**
 
@@ -97,6 +101,11 @@ import { getApiBaseUrl } from "@/lib/api/config";
 | `setApiLogging(enabled)` | ログ機能の有効/無効切り替え | デバッグ |
 | `getErrorMessage(response)` | ユーザー向けエラーメッセージ取得 | エラー表示 |
 | `isApiSuccess<T>(response)` | 成功レスポンスの型ガード | 型安全なデータアクセス |
+| `clearApiCache()` | キャッシュをクリア | キャッシュ管理 |
+| `startNetworkMonitoring()` | ネットワーク監視を開始 | オフラインサポート |
+| `stopNetworkMonitoring()` | ネットワーク監視を停止 | クリーンアップ |
+| `getQueueSize()` | オフラインキューのサイズを取得 | 状態確認 |
+| `clearQueue()` | オフラインキューをクリア | キュー管理 |
 
 **ApiResponse型:**
 
@@ -106,58 +115,186 @@ interface ApiResponse<T = unknown> {
   status: number;     // HTTPステータスコード
   data: T | null;     // レスポンスデータ
   error: string | null; // エラーメッセージ
+  fromCache?: boolean; // キャッシュから取得したかどうか
+  queued?: boolean;    // オフラインキューに追加されたかどうか
 }
 ```
 
-**使用例:**
+---
+
+## リトライ機能（v5.32追加）
+
+ネットワークエラーやサーバーエラー時に、指数バックオフ付きで自動リトライを行います。
+
+### リトライ設定
 
 ```tsx
-import { apiGet, apiPost, getErrorMessage, isApiSuccess } from "@/lib/api";
-
-// GETリクエスト
-const fetchUsers = async () => {
-  const result = await apiGet<User[]>("/api/users");
-  
-  if (isApiSuccess(result)) {
-    console.log(result.data); // 型安全にアクセス
-  } else {
-    console.error(getErrorMessage(result)); // 日本語エラーメッセージ
-  }
-};
-
-// POSTリクエスト
-const createUser = async (name: string) => {
-  const result = await apiPost<User>("/api/users", {
-    body: { name },
-  });
-  
-  if (!result.ok) {
-    Alert.alert("エラー", getErrorMessage(result));
-  }
-};
+interface RetryConfig {
+  maxRetries?: number;      // 最大リトライ回数（デフォルト: 3）
+  initialDelay?: number;    // 初期遅延（ミリ秒、デフォルト: 1000）
+  maxDelay?: number;        // 最大遅延（ミリ秒、デフォルト: 10000）
+  backoffFactor?: number;   // バックオフ係数（デフォルト: 2）
+  retryableStatuses?: number[]; // リトライ対象ステータス
+}
 ```
 
-**エラーメッセージの自動変換:**
+### リトライ対象のステータスコード
 
-`getErrorMessage()` 関数は、HTTPステータスコードに応じた日本語メッセージを返します。
+| ステータス | 説明 | リトライ |
+|-----------|------|----------|
+| 0 | ネットワークエラー | ✅ |
+| 408 | Request Timeout | ✅ |
+| 429 | Too Many Requests | ✅ |
+| 500 | Internal Server Error | ✅ |
+| 502 | Bad Gateway | ✅ |
+| 503 | Service Unavailable | ✅ |
+| 504 | Gateway Timeout | ✅ |
+| その他 | - | ❌ |
 
-| ステータス | メッセージ |
-|-----------|-----------|
-| 0 | ネットワークエラーが発生しました。インターネット接続を確認してください。 |
-| 400 | リクエストが不正です。入力内容を確認してください。 |
-| 401 | 認証が必要です。再度ログインしてください。 |
-| 403 | アクセスが拒否されました。 |
-| 404 | リソースが見つかりませんでした。 |
-| 429 | リクエストが多すぎます。しばらく待ってから再試行してください。 |
-| 500/502/503 | サーバーエラーが発生しました。しばらく待ってから再試行してください。 |
+### 指数バックオフの計算
 
-**ログ機能:**
-
-開発環境では自動的にAPIログが有効になります。リクエスト/レスポンスの詳細がコンソールに出力されます。
+リトライ間隔は以下の式で計算されます（ジッター付き）：
 
 ```
-[API] POST /api/twitter/lookup { headers: {...}, body: {...}, timestamp: "..." }
-[API] POST /api/twitter/lookup → 200 { ok: true, data: {...}, duration: "123ms" }
+遅延 = min(initialDelay × backoffFactor^attempt + jitter, maxDelay)
+```
+
+例（デフォルト設定）：
+- 1回目のリトライ: 約1秒後
+- 2回目のリトライ: 約2秒後
+- 3回目のリトライ: 約4秒後
+
+### 使用例
+
+```tsx
+import { apiGet } from "@/lib/api";
+
+// リトライ付きGETリクエスト
+const response = await apiGet<User[]>("/api/users", {
+  retry: {
+    maxRetries: 5,
+    initialDelay: 500,
+  },
+});
+```
+
+---
+
+## キャッシュ機能（v5.32追加）
+
+GETリクエストのレスポンスをメモリとAsyncStorageにキャッシュし、パフォーマンスを向上させます。
+
+### キャッシュ設定
+
+```tsx
+interface CacheConfig {
+  enabled?: boolean;       // キャッシュを有効にするか（デフォルト: false）
+  ttl?: number;            // 有効期限（ミリ秒、デフォルト: 300000 = 5分）
+  key?: string;            // カスタムキャッシュキー
+  useWhenOffline?: boolean; // オフライン時にキャッシュを使用するか（デフォルト: true）
+}
+```
+
+### キャッシュの階層構造
+
+```
+┌─────────────────────────────────────────────────────────────┐
+│                    キャッシュ階層                            │
+├─────────────────────────────────────────────────────────────┤
+│  1. メモリキャッシュ（Map）                                  │
+│     - 最速アクセス                                          │
+│     - アプリ再起動で消失                                    │
+├─────────────────────────────────────────────────────────────┤
+│  2. AsyncStorage                                            │
+│     - 永続化                                                │
+│     - アプリ再起動後も有効                                  │
+├─────────────────────────────────────────────────────────────┤
+│  3. ネットワークリクエスト                                  │
+│     - 最新データ                                            │
+│     - キャッシュ更新                                        │
+└─────────────────────────────────────────────────────────────┘
+```
+
+### 使用例
+
+```tsx
+import { apiGet, clearApiCache } from "@/lib/api";
+
+// キャッシュ付きGETリクエスト
+const response = await apiGet<User[]>("/api/users", {
+  apiCache: {
+    enabled: true,
+    ttl: 60000, // 1分間キャッシュ
+  },
+});
+
+// キャッシュから取得したかどうかを確認
+if (response.fromCache) {
+  console.log("キャッシュから取得しました");
+}
+
+// キャッシュをクリア
+await clearApiCache();
+```
+
+---
+
+## オフラインサポート（v5.32追加）
+
+ネットワーク切断時にリクエストをキューイングし、復帰後に自動的に再送信します。
+
+### オフラインキューの動作
+
+```
+┌─────────────────────────────────────────────────────────────┐
+│                    オフライン時の動作                        │
+├─────────────────────────────────────────────────────────────┤
+│  1. GETリクエスト                                           │
+│     - キャッシュがあれば返す                                │
+│     - なければエラーを返す                                  │
+├─────────────────────────────────────────────────────────────┤
+│  2. POST/PUT/DELETEリクエスト（queueWhenOffline: true）     │
+│     - AsyncStorageのキューに追加                            │
+│     - queued: true を返す                                   │
+│     - オンライン復帰時に自動再送信                          │
+└─────────────────────────────────────────────────────────────┘
+```
+
+### ネットワーク監視の初期化
+
+アプリ起動時に `startNetworkMonitoring()` を呼び出すことで、ネットワーク状態の監視を開始します。オンライン復帰時に自動的にキューを処理します。
+
+```tsx
+// app/_layout.tsx
+import { startNetworkMonitoring, stopNetworkMonitoring } from "@/lib/api";
+
+useEffect(() => {
+  startNetworkMonitoring();
+  return () => stopNetworkMonitoring();
+}, []);
+```
+
+### 使用例
+
+```tsx
+import { apiPost, getQueueSize, clearQueue } from "@/lib/api";
+
+// オフライン時にキューイングするPOSTリクエスト
+const response = await apiPost("/api/events", {
+  body: { name: "新規イベント" },
+  queueWhenOffline: true,
+});
+
+if (response.queued) {
+  console.log("オフラインのためキューに追加されました");
+}
+
+// キューのサイズを確認
+const queueSize = await getQueueSize();
+console.log(`${queueSize}件のリクエストが待機中`);
+
+// キューをクリア（必要に応じて）
+await clearQueue();
 ```
 
 ---
@@ -189,22 +326,6 @@ const createUser = async (name: string) => {
 |--------|---------------|------|
 | `getApiUsage()` | GET /api/admin/api-usage | API使用状況を取得 |
 
-**使用例:**
-
-```tsx
-import { lookupTwitterUser, getErrorMessage } from "@/lib/api";
-
-const searchUser = async (username: string) => {
-  const result = await lookupTwitterUser(username);
-  
-  if (result.ok && result.data) {
-    console.log(`Found: ${result.data.name} (@${result.data.username})`);
-  } else {
-    console.error(getErrorMessage(result));
-  }
-};
-```
-
 ---
 
 ## API設定モジュール
@@ -222,13 +343,6 @@ const searchUser = async (username: string) => {
 | `getApiBaseUrl()` | 関数 | 環境に応じたAPI Base URLを取得 |
 | `isProductionDomain(hostname)` | 関数 | 本番環境ドメインかどうかを判定 |
 | `logApiConfig()` | 関数 | デバッグ用にAPI設定をログ出力 |
-
-**URL解決の優先順位:**
-
-1. 環境変数 `EXPO_PUBLIC_API_BASE_URL` が設定されている場合はそれを使用
-2. 本番環境ドメイン（`doin-challenge.com`）の場合は Railway URL を返す
-3. 開発環境の場合はポート番号を変換（8081 → 3000）
-4. フォールバック: 空文字列（相対URL）
 
 ---
 
@@ -256,13 +370,31 @@ export const TWITTER_AUTH_ENDPOINTS = {
 | `getTwitterSwitchAccountUrl()` | アカウント切り替え用URL | 別アカウントでログイン |
 | `redirectToTwitterAuth()` | 認証ページにリダイレクト | ログイン処理 |
 | `redirectToTwitterSwitchAccount()` | 切り替え認証ページにリダイレクト | アカウント切り替え |
-| `logTwitterAuthUrls()` | デバッグ用にURLをログ出力 | トラブルシューティング |
+
+---
+
+## エラーハンドリング
+
+### getErrorMessage関数
+
+`getErrorMessage()` 関数は、HTTPステータスコードに応じた日本語メッセージを返します。
+
+| ステータス | メッセージ |
+|-----------|-----------|
+| 0 | ネットワークエラーが発生しました。インターネット接続を確認してください。 |
+| 400 | リクエストが不正です。入力内容を確認してください。 |
+| 401 | 認証が必要です。再度ログインしてください。 |
+| 403 | アクセスが拒否されました。 |
+| 404 | リソースが見つかりませんでした。 |
+| 429 | リクエストが多すぎます。しばらく待ってから再試行してください。 |
+| 500/502/503 | サーバーエラーが発生しました。しばらく待ってから再試行してください。 |
+| queued | オフラインです。ネットワーク復帰後に自動的に送信されます。 |
 
 ---
 
 ## API呼び出し箇所一覧
 
-以下は、アプリケーション内でAPIを呼び出している主要な箇所の一覧です。この一覧を維持することで、API呼び出しの全体像を1ホップで把握できます。
+以下は、アプリケーション内でAPIを呼び出している主要な箇所の一覧です。
 
 ### fetch呼び出し（lib/api/client.ts経由）
 
@@ -283,37 +415,6 @@ export const TWITTER_AUTH_ENDPOINTS = {
 | `app/logout.tsx` | `handleDifferentAccountLogin` | `redirectToTwitterSwitchAccount()` | 別のアカウントでログイン |
 | `components/organisms/account-switcher.tsx` | `handleAddNewAccount` | `redirectToTwitterSwitchAccount()` | 新規アカウント追加 |
 
-### tRPC API呼び出し
-
-tRPCを使用したAPI呼び出しは `lib/trpc.ts` で設定されており、各コンポーネントで `trpc.xxx.useQuery()` や `trpc.xxx.useMutation()` を通じて呼び出されます。tRPCはBase URLを自動的に解決するため、個別のURL構築は不要です。
-
----
-
-## ハイブリッド構成：書き込みと読み取りの分離
-
-生成AI時代のDB設計で推奨される「ハイブリッド構成（CQRS応用）」の考え方をAPI設計にも適用しています。
-
-### 書き込み用（実装コード）
-
-`lib/api/` ディレクトリ内のTypeScriptファイルが「書き込み用」の正規化されたコードです。実際のAPI呼び出しロジックはここに集約されています。
-
-### 読み取り用（設計ドキュメント）
-
-本ドキュメント（`docs/API-ARCHITECTURE.md`）が「読み取り用」の非正規化ビューです。開発者やAIがAPI設計を理解するために必要な情報を、冗長であっても分かりやすく記述しています。
-
-```
-┌─────────────────────────────────────────────────────────────┐
-│                    同期パイプライン                          │
-│  コード変更 → ドキュメント更新 → 常に最新                    │
-└─────────────────────────────────────────────────────────────┘
-        ↓                                    ↓
-┌───────────────────┐              ┌───────────────────┐
-│  lib/api/         │              │  docs/            │
-│  (書き込み用)      │              │  (読み取り用)      │
-│  正規化コード      │              │  非正規化ドキュメント│
-└───────────────────┘              └───────────────────┘
-```
-
 ---
 
 ## 新しいAPI呼び出しを追加する際のガイドライン
@@ -327,94 +428,20 @@ tRPCを使用したAPI呼び出しは `lib/trpc.ts` で設定されており、�
 3. `lib/api/index.ts` でエクスポート
 4. 本ドキュメントの「API呼び出し箇所一覧」を更新
 
-**例：新しいエンドポイントの追加**
+### 2. リトライ・キャッシュ・オフラインサポートの活用
 
 ```tsx
-// lib/api/endpoints.ts に追加
-export interface NewFeatureResult {
-  id: string;
-  name: string;
-}
+// 推奨パターン：重要なデータ取得
+const response = await apiGet<Data>("/api/important-data", {
+  retry: { maxRetries: 3 },
+  apiCache: { enabled: true, ttl: 60000 },
+});
 
-export async function getNewFeature(id: string): Promise<ApiResponse<NewFeatureResult>> {
-  return apiGet<NewFeatureResult>(`/api/new-feature/${id}`);
-}
-
-// lib/api/index.ts でエクスポート
-export {
-  // ... 既存のエクスポート
-  getNewFeature,
-  type NewFeatureResult,
-} from "./endpoints";
-```
-
-### 2. Twitter認証関連のURL生成
-
-Twitter認証に関連するURLを生成する場合は、必ず `lib/api/twitter-auth.ts` の関数を使用してください。
-
-**NG例（直接URL構築）:**
-```tsx
-// ❌ 直接URLを構築しない
-const loginUrl = `${window.location.origin}/api/twitter/auth`;
-window.location.href = loginUrl;
-```
-
-**OK例（ユーティリティ関数使用）:**
-```tsx
-// ✅ ユーティリティ関数を使用
-import { redirectToTwitterAuth } from "@/lib/api";
-redirectToTwitterAuth();
-```
-
-### 3. エラーハンドリング
-
-すべてのAPI呼び出しでは、`getErrorMessage()` を使用してユーザーフレンドリーなエラーメッセージを表示してください。
-
-```tsx
-import { apiGet, getErrorMessage } from "@/lib/api";
-
-const fetchData = async () => {
-  const result = await apiGet("/api/data");
-  
-  if (!result.ok) {
-    // ユーザーに表示するエラーメッセージ
-    Alert.alert("エラー", getErrorMessage(result));
-    return;
-  }
-  
-  // 成功時の処理
-};
-```
-
----
-
-## トラブルシューティング
-
-### 404エラーが発生する場合
-
-API呼び出しで404エラーが発生する場合、以下を確認してください。
-
-1. **URL構築の確認**: `getApiBaseUrl()` が正しいURLを返しているか確認
-   ```tsx
-   import { logApiConfig } from "@/lib/api";
-   logApiConfig(); // コンソールにAPI設定を出力
-   ```
-
-2. **本番環境の確認**: 本番環境（doin-challenge.com）では、Railway URLが使用されているか確認
-
-3. **環境変数の確認**: `EXPO_PUBLIC_API_BASE_URL` が正しく設定されているか確認
-
-### CORSエラーが発生する場合
-
-CORSエラーが発生する場合は、Railway バックエンドの CORS 設定を確認してください。フロントエンドのドメイン（`doin-challenge.com`）が許可リストに含まれている必要があります。
-
-### APIログの確認
-
-開発環境では自動的にAPIログが有効になります。本番環境でログを有効にする場合：
-
-```tsx
-import { setApiLogging } from "@/lib/api";
-setApiLogging(true); // ログを有効化
+// 推奨パターン：オフライン対応の書き込み
+const response = await apiPost("/api/create", {
+  body: data,
+  queueWhenOffline: true,
+});
 ```
 
 ---
@@ -423,6 +450,7 @@ setApiLogging(true); // ログを有効化
 
 | バージョン | 日付 | 変更内容 |
 |-----------|------|----------|
+| v5.32 | 2025-01-17 | リトライ機能（指数バックオフ）、キャッシュ機能（メモリ/AsyncStorage）、オフラインサポート（リクエストキューイング）を追加 |
 | v5.31 | 2025-01-17 | APIクライアントモジュール（client.ts）とエンドポイントモジュール（endpoints.ts）を追加。fetch呼び出しの一元化、エラーハンドリング統一、ログ機能を実装 |
 | v5.29 | 2025-01-17 | 生成AI時代の設計思想を反映。1ホップ理解、コンテキストドキュメント、ハイブリッド構成の概念を追加 |
 | v5.28 | 2025-01-17 | 初版作成。API一元管理アーキテクチャを導入 |
