@@ -2,8 +2,9 @@
 @tailwind components;
 @tailwind utilities;
 
-/* 水平スクロールを防止（iOS Safari/Chrome対応） */
+/* v5.35: ハイドレーション時の白い画面を防止 + 水平スクロール防止 */
 html, body, #root {
+  background-color: #0D1117;
   overflow-x: hidden;
   max-width: 100vw;
   position: relative;
