@@ -1802,3 +1802,4 @@
 - [ ] Twitter認証URLユーティリティ（getTwitterAuthUrl, getTwitterSwitchUrl）を作成
 - [ ] 既存コンポーネントをリファクタリングして新ユーティリティを使用
 - [ ] API-ARCHITECTURE.md設計ドキュメントを作成
+- [ ] 生成AI時代の設計思想をAPI-ARCHITECTURE.mdに反映（1ホップ理解、コンテキストドキュメント、ハイブリッド構成）

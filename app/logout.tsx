@@ -6,7 +6,7 @@ import { ScreenContainer } from "@/components/organisms/screen-container";
 import { useAuth } from "@/hooks/use-auth";
 import MaterialIcons from "@expo/vector-icons/MaterialIcons";
 import { LinearGradient } from "expo-linear-gradient";
-import { getApiBaseUrl } from "@/constants/oauth";
+import { redirectToTwitterAuth, redirectToTwitterSwitchAccount } from "@/lib/api";
 
 // キャラクター画像
 const characterImages = {
@@ -55,13 +55,11 @@ export default function LogoutScreen() {
   }, [isAuthenticated]);
 
   const handleSameAccountLogin = () => {
-    const apiBaseUrl = getApiBaseUrl();
-    window.location.href = `${apiBaseUrl}/api/twitter/auth`;
+    redirectToTwitterAuth();
   };
 
   const handleDifferentAccountLogin = () => {
-    const apiBaseUrl = getApiBaseUrl();
-    window.location.href = `${apiBaseUrl}/api/twitter/auth?switch=true`;
+    redirectToTwitterSwitchAccount();
   };
 
   return (

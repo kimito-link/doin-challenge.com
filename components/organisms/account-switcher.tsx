@@ -27,6 +27,7 @@ import AsyncStorage from "@react-native-async-storage/async-storage";
 import MaterialIcons from "@expo/vector-icons/MaterialIcons";
 import * as Auth from "@/lib/_core/auth";
 import { saveTokenData } from "@/lib/token-manager";
+import { redirectToTwitterSwitchAccount } from "@/lib/api";
 
 interface AccountSwitcherProps {
   visible: boolean;
@@ -69,24 +70,11 @@ export function AccountSwitcher({ visible, onClose }: AccountSwitcherProps) {
       onClose();
       
       // 5. forceSwitch=trueで別のアカウントでログイン
-      // 直接API URLを構築してリダイレクト（login関数のタイミング問題を回避）
+      // lib/api/twitter-auth.tsの関数を使用（URL構築を一元管理）
       setTimeout(() => {
         try {
-          // 本番環境の場合はRailwayバックエンドを使用
-          const hostname = typeof location !== "undefined" ? location.hostname : "";
-          let apiBaseUrl = "";
-          if (hostname.includes("doin-challenge.com") || hostname.includes("doin-challengecom.vercel.app")) {
-            apiBaseUrl = "https://doin-challengecom-production.up.railway.app";
-          } else if (hostname.includes("-")) {
-            // 開発環境: 8081-xxx -> 3000-xxx
-            const protocol = typeof location !== "undefined" ? location.protocol : "https:";
-            const apiHostname = hostname.replace(/^8081-/, "3000-");
-            apiBaseUrl = `${protocol}//${apiHostname}`;
-          }
-          
-          const loginUrl = `${apiBaseUrl}/api/twitter/auth?switch=true`;
-          console.log("[AccountSwitcher] Redirecting to:", loginUrl);
-          window.location.href = loginUrl;
+          console.log("[AccountSwitcher] Redirecting to Twitter auth with switch=true");
+          redirectToTwitterSwitchAccount();
         } catch (e) {
           console.log("Login redirect failed:", e);
         }
