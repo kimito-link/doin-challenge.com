@@ -2469,7 +2469,8 @@ function registerTwitterRoutes(app) {
       const { codeVerifier, callbackUrl } = pkceData;
       const tokens = await exchangeCodeForTokens(code, callbackUrl, codeVerifier);
       console.log("[Twitter OAuth 2.0] Token exchange successful");
-      await deletePKCEData(state);
+      setImmediate(() => deletePKCEData(state).catch(() => {
+      }));
       const userProfile = await getUserProfile(tokens.access_token);
       console.log("[Twitter OAuth 2.0] User profile retrieved:", userProfile.username);
       const isFollowingTarget = false;
