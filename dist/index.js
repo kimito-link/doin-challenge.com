@@ -1875,14 +1875,15 @@ var SDKServer = class {
         algorithms: ["HS256"]
       });
       const { openId, appId, name } = payload;
-      if (!isNonEmptyString(openId) || !isNonEmptyString(appId) || !isNonEmptyString(name)) {
-        console.warn("[Auth] Session payload missing required fields");
+      if (!isNonEmptyString(openId) || !isNonEmptyString(appId)) {
+        console.warn("[Auth] Session payload missing required fields (openId or appId)");
         return null;
       }
+      const nameStr = typeof name === "string" ? name : "";
       return {
         openId,
         appId,
-        name
+        name: nameStr
       };
     } catch (error) {
       console.warn("[Auth] Session verification failed", String(error));

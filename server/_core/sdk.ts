@@ -193,15 +193,19 @@ class SDKServer {
       });
       const { openId, appId, name } = payload as Record<string, unknown>;
 
-      if (!isNonEmptyString(openId) || !isNonEmptyString(appId) || !isNonEmptyString(name)) {
-        console.warn("[Auth] Session payload missing required fields");
+      // openIdとappIdは必須、nameは空文字列でもOK
+      if (!isNonEmptyString(openId) || !isNonEmptyString(appId)) {
+        console.warn("[Auth] Session payload missing required fields (openId or appId)");
         return null;
       }
+      
+      // nameは文字列であればOK（空文字列も許可）
+      const nameStr = typeof name === "string" ? name : "";
 
       return {
         openId,
         appId,
-        name,
+        name: nameStr,
       };
     } catch (error) {
       console.warn("[Auth] Session verification failed", String(error));
