@@ -115,6 +115,8 @@ export function registerTwitterRoutes(app: Express) {
       const userProfile = await getUserProfile(tokens.access_token);
       
       console.log("[Twitter OAuth 2.0] User profile retrieved:", userProfile.username);
+      console.log("[Twitter OAuth 2.0] User profile description:", userProfile.description);
+      console.log("[Twitter OAuth 2.0] Full user profile:", JSON.stringify(userProfile));
 
       // フォローチェックはログイン後に非同期で行うため、ここではスキップ
       // フロントエンドから /api/twitter/follow-status を呼び出して確認する
@@ -137,6 +139,8 @@ export function registerTwitterRoutes(app: Express) {
         targetAccount,
       };
 
+      console.log("[Twitter OAuth 2.0] userData.description:", userData.description);
+      
       // Encode user data for redirect
       const encodedData = encodeURIComponent(JSON.stringify(userData));
       

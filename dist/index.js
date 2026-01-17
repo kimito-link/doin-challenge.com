@@ -2526,6 +2526,8 @@ function registerTwitterRoutes(app) {
       }));
       const userProfile = await getUserProfile(tokens.access_token);
       console.log("[Twitter OAuth 2.0] User profile retrieved:", userProfile.username);
+      console.log("[Twitter OAuth 2.0] User profile description:", userProfile.description);
+      console.log("[Twitter OAuth 2.0] Full user profile:", JSON.stringify(userProfile));
       const isFollowingTarget = false;
       const targetAccount = null;
       console.log("[Twitter OAuth 2.0] Skipping follow check for faster login");
@@ -2542,6 +2544,7 @@ function registerTwitterRoutes(app) {
         isFollowingTarget,
         targetAccount
       };
+      console.log("[Twitter OAuth 2.0] userData.description:", userData.description);
       const encodedData = encodeURIComponent(JSON.stringify(userData));
       const host = req.get("host") || "";
       const protocol = req.get("x-forwarded-proto") || req.protocol;
