@@ -110,17 +110,41 @@ export async function getUserInfo(): Promise<User | null> {
 
 export async function setUserInfo(user: User): Promise<void> {
   try {
-    console.log("[Auth] Setting user info...", user);
+    // Get existing user info to preserve fields that might not be in the new user object
+    const existingUser = await getUserInfo();
+    
+    // Merge existing user with new user, preserving Twitter-specific fields
+    // New user data takes precedence, but existing fields are preserved if not present in new data
+    const mergedUser: User = existingUser ? {
+      ...existingUser,
+      ...user,
+      // Explicitly preserve Twitter-specific fields if they exist in either object
+      description: user.description ?? existingUser.description,
+      username: user.username ?? existingUser.username,
+      profileImage: user.profileImage ?? existingUser.profileImage,
+      followersCount: user.followersCount ?? existingUser.followersCount,
+      twitterId: user.twitterId ?? existingUser.twitterId,
+      twitterAccessToken: user.twitterAccessToken ?? existingUser.twitterAccessToken,
+      isFollowingTarget: user.isFollowingTarget ?? existingUser.isFollowingTarget,
+      targetAccount: user.targetAccount ?? existingUser.targetAccount,
+    } : user;
+    
+    console.log("[Auth] Setting user info...", {
+      id: mergedUser.id,
+      name: mergedUser.name,
+      hasDescription: !!mergedUser.description,
+      descriptionPreview: mergedUser.description?.substring(0, 30),
+    });
 
     if (Platform.OS === "web") {
       // Use localStorage for web
-      window.localStorage.setItem(USER_INFO_KEY, JSON.stringify(user));
+      window.localStorage.setItem(USER_INFO_KEY, JSON.stringify(mergedUser));
       console.log("[Auth] User info stored in localStorage successfully");
       return;
     }
 
     // Use SecureStore for native
-    await SecureStore.setItemAsync(USER_INFO_KEY, JSON.stringify(user));
+    await SecureStore.setItemAsync(USER_INFO_KEY, JSON.stringify(mergedUser));
     console.log("[Auth] User info stored in SecureStore successfully");
   } catch (error) {
     console.error("[Auth] Failed to set user info:", error);

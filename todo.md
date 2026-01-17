@@ -1888,3 +1888,9 @@
 - [x] Twitter callbackページにデバッグログを追加
 - [ ] デバッグログで問題箇所を特定
 - [ ] description保存問題を修正
+
+## Twitter description保存問題の修正（v5.42）
+- [x] Playwrightテストで問題を特定（localStorageには正しく保存されているが、後続の処理で上書きされる可能性）
+- [x] lib/_core/auth.tsのsetUserInfo関数を修正（既存のユーザー情報を保持しながら新しいデータをマージ）
+- [x] Twitter固有フィールド（description, username, profileImage等）を明示的に保持するように変更
+- [x] テストで修正を確認
