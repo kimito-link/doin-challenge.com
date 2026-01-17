@@ -7,7 +7,7 @@
 
 import { ScreenContainer } from "@/components/organisms/screen-container";
 import { useColors } from "@/hooks/use-colors";
-import { getApiBaseUrl } from "@/constants/oauth";
+import { apiGet, getErrorMessage } from "@/lib/api";
 import { useRouter } from "expo-router";
 import { useEffect, useState, useCallback } from "react";
 import {
@@ -64,15 +64,13 @@ export default function ApiUsageDashboard() {
 
   const fetchData = useCallback(async () => {
     try {
-      const apiBaseUrl = getApiBaseUrl();
-      const response = await fetch(`${apiBaseUrl}/api/admin/api-usage`);
+      const result = await apiGet<DashboardData>("/api/admin/api-usage");
       
-      if (!response.ok) {
-        throw new Error("Failed to fetch API usage data");
+      if (!result.ok) {
+        throw new Error(getErrorMessage(result));
       }
       
-      const result = await response.json();
-      setData(result);
+      setData(result.data);
       setError(null);
     } catch (err) {
       console.error("Failed to fetch API usage:", err);

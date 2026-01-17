@@ -27,7 +27,7 @@ import AsyncStorage from "@react-native-async-storage/async-storage";
 import MaterialIcons from "@expo/vector-icons/MaterialIcons";
 import * as Auth from "@/lib/_core/auth";
 import { saveTokenData } from "@/lib/token-manager";
-import { redirectToTwitterSwitchAccount } from "@/lib/api";
+import { redirectToTwitterSwitchAccount, clearSession } from "@/lib/api";
 
 interface AccountSwitcherProps {
   visible: boolean;
@@ -56,13 +56,9 @@ export function AccountSwitcher({ visible, onClose }: AccountSwitcherProps) {
       
       // 3. ブラウザのクッキーをクリア（Web環境の場合）
       if (Platform.OS === "web") {
-        try {
-          await fetch("/api/auth/clear-session", {
-            method: "POST",
-            credentials: "include",
-          });
-        } catch (e) {
-          console.log("Session clear request failed:", e);
+        const result = await clearSession();
+        if (!result.ok) {
+          console.log("Session clear request failed:", result.error);
         }
       }
       

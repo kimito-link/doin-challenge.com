@@ -13,8 +13,8 @@ import {
   SESSION_TOKEN_KEY,
   REFRESH_TOKEN_KEY,
   TOKEN_EXPIRES_AT_KEY,
-  getApiBaseUrl,
 } from "@/constants/oauth";
+import { apiPost } from "@/lib/api";
 
 // アクセストークンの有効期限（2時間 = 7200秒）
 const ACCESS_TOKEN_EXPIRES_IN = 7200;
@@ -202,42 +202,43 @@ export async function refreshAccessToken(): Promise<{
   }
   
   try {
-    const apiBaseUrl = getApiBaseUrl();
-    const response = await fetch(`${apiBaseUrl}/api/twitter/refresh`, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({ refreshToken }),
+    const result = await apiPost<{
+      access_token: string;
+      refresh_token: string;
+      expires_in: number;
+    }>("/api/twitter/refresh", {
+      body: { refreshToken },
     });
     
-    if (!response.ok) {
-      const errorText = await response.text();
-      console.error("[TokenManager] Token refresh failed:", errorText);
+    if (!result.ok) {
+      console.error("[TokenManager] Token refresh failed:", result.error);
       
       // リフレッシュトークンが無効な場合はクリア
-      if (response.status === 401 || response.status === 400) {
+      if (result.status === 401 || result.status === 400) {
         await clearAllTokenData();
       }
       
       return null;
     }
     
-    const data = await response.json();
+    if (!result.data) {
+      console.error("[TokenManager] No data in response");
+      return null;
+    }
     
     // 新しいトークンデータを保存
     await saveTokenData({
-      accessToken: data.access_token,
-      refreshToken: data.refresh_token,
-      expiresIn: data.expires_in,
+      accessToken: result.data.access_token,
+      refreshToken: result.data.refresh_token,
+      expiresIn: result.data.expires_in,
     });
     
     console.log("[TokenManager] Token refreshed successfully");
     
     return {
-      accessToken: data.access_token,
-      refreshToken: data.refresh_token,
-      expiresIn: data.expires_in,
+      accessToken: result.data.access_token,
+      refreshToken: result.data.refresh_token,
+      expiresIn: result.data.expires_in,
     };
   } catch (error) {
     console.error("[TokenManager] Token refresh error:", error);

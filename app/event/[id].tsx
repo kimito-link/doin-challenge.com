@@ -6,6 +6,7 @@ import { ScreenContainer } from "@/components/organisms/screen-container";
 import { trpc } from "@/lib/trpc";
 import { useAuth } from "@/hooks/use-auth";
 import { useColors } from "@/hooks/use-colors";
+import { lookupTwitterUser, getErrorMessage } from "@/lib/api";
 import MaterialIcons from "@expo/vector-icons/MaterialIcons";
 import { LinearGradient } from "expo-linear-gradient";
 import { Countdown } from "@/components/atoms/countdown";
@@ -740,32 +741,29 @@ export default function ChallengeDetailScreen() {
     setLookupError(null);
     
     try {
-      const response = await fetch(`/api/twitter/lookup`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ input: input.trim() }),
-      });
+      const result = await lookupTwitterUser(input.trim());
       
-      if (!response.ok) {
-        if (response.status === 404) {
+      if (!result.ok) {
+        if (result.status === 404) {
           setLookupError("ユーザーが見つかりません");
         } else {
-          setLookupError("検索に失敗しました");
+          setLookupError(getErrorMessage(result));
         }
         setLookedUpProfile(null);
         return;
       }
       
-      const data = await response.json();
-      setLookedUpProfile({
-        id: data.id,
-        name: data.name,
-        username: data.username,
-        profileImage: data.profileImage,
-      });
-      // 名前を自動入力
-      if (!newCompanionName.trim()) {
-        setNewCompanionName(data.name);
+      if (result.data) {
+        setLookedUpProfile({
+          id: result.data.id,
+          name: result.data.name,
+          username: result.data.username,
+          profileImage: result.data.profile_image_url || "",
+        });
+        // 名前を自動入力
+        if (!newCompanionName.trim()) {
+          setNewCompanionName(result.data.name);
+        }
       }
     } catch (error) {
       console.error("Twitter lookup error:", error);

@@ -1,6 +1,7 @@
 import { Platform } from "react-native";
 import { getApiBaseUrl } from "@/constants/oauth";
 import * as Auth from "./auth";
+import { apiPost, apiGet } from "@/lib/api";
 
 type ApiResponse<T> = {
   data?: T;
@@ -146,20 +147,15 @@ export async function getMe(): Promise<{
 export async function establishSession(token: string): Promise<boolean> {
   try {
     console.log("[API] establishSession: setting cookie on backend...");
-    const baseUrl = getApiBaseUrl();
-    const url = `${baseUrl}/api/auth/session`;
-
-    const response = await fetch(url, {
-      method: "POST",
+    
+    const result = await apiPost("/api/auth/session", {
       headers: {
-        "Content-Type": "application/json",
         Authorization: `Bearer ${token}`,
       },
-      credentials: "include", // Important: allows Set-Cookie to be stored
     });
 
-    if (!response.ok) {
-      console.error("[API] establishSession failed:", response.status);
+    if (!result.ok) {
+      console.error("[API] establishSession failed:", result.status, result.error);
       return false;
     }
 
@@ -186,28 +182,29 @@ export async function checkFollowStatus(
 }> {
   try {
     console.log("[API] checkFollowStatus: checking follow status...");
-    const baseUrl = getApiBaseUrl();
-    const url = `${baseUrl}/api/twitter/follow-status?userId=${encodeURIComponent(userId)}`;
-
-    const response = await fetch(url, {
-      method: "GET",
+    
+    const result = await apiGet<{
+      isFollowing: boolean;
+      targetAccount: {
+        id: string;
+        name: string;
+        username: string;
+      } | null;
+    }>(`/api/twitter/follow-status?userId=${encodeURIComponent(userId)}`, {
       headers: {
-        "Content-Type": "application/json",
         Authorization: `Bearer ${accessToken}`,
       },
-      credentials: "include",
     });
 
-    if (!response.ok) {
-      console.error("[API] checkFollowStatus failed:", response.status);
+    if (!result.ok || !result.data) {
+      console.error("[API] checkFollowStatus failed:", result.status, result.error);
       return { isFollowing: false, targetAccount: null };
     }
 
-    const result = await response.json();
-    console.log("[API] checkFollowStatus result:", result);
+    console.log("[API] checkFollowStatus result:", result.data);
     return {
-      isFollowing: result.isFollowing || false,
-      targetAccount: result.targetAccount || null,
+      isFollowing: result.data.isFollowing || false,
+      targetAccount: result.data.targetAccount || null,
     };
   } catch (error) {
     console.error("[API] checkFollowStatus error:", error);

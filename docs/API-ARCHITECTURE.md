@@ -1,7 +1,7 @@
 # API アーキテクチャ設計書
 
 **最終更新日**: 2025年1月17日  
-**バージョン**: v5.29  
+**バージョン**: v5.31  
 **作成者**: Manus AI
 
 ---
@@ -53,6 +53,8 @@ lib/
 └── api/
     ├── index.ts          # エクスポート集約（エントリーポイント）
     ├── config.ts         # API設定・Base URL取得
+    ├── client.ts         # APIクライアント（fetch wrapper、エラーハンドリング、ログ）
+    ├── endpoints.ts      # 各APIエンドポイントへのアクセス関数
     └── twitter-auth.ts   # Twitter認証URL生成
 ```
 
@@ -62,10 +64,145 @@ lib/
 
 ```tsx
 // ✅ 推奨：index.tsからインポート
-import { getApiBaseUrl, redirectToTwitterAuth } from "@/lib/api";
+import { 
+  getApiBaseUrl, 
+  redirectToTwitterAuth,
+  apiGet,
+  apiPost,
+  lookupTwitterUser,
+  getErrorMessage,
+} from "@/lib/api";
 
 // ❌ 非推奨：個別ファイルから直接インポート
 import { getApiBaseUrl } from "@/lib/api/config";
+```
+
+---
+
+## APIクライアントモジュール
+
+### lib/api/client.ts
+
+このファイルはfetch呼び出しのラッパーを提供し、エラーハンドリングとログ機能を一元管理します。すべてのAPI呼び出しはこのファイルの関数を通じて行うことで、一貫した動作を保証します。
+
+**主要な関数:**
+
+| 関数名 | 説明 | 用途 |
+|--------|------|------|
+| `apiRequest<T>(endpoint, options)` | 汎用APIリクエスト関数 | すべてのAPI呼び出しの基盤 |
+| `apiGet<T>(endpoint, options)` | GETリクエスト | データ取得 |
+| `apiPost<T>(endpoint, options)` | POSTリクエスト | データ送信 |
+| `apiPut<T>(endpoint, options)` | PUTリクエスト | データ更新 |
+| `apiDelete<T>(endpoint, options)` | DELETEリクエスト | データ削除 |
+| `setApiLogging(enabled)` | ログ機能の有効/無効切り替え | デバッグ |
+| `getErrorMessage(response)` | ユーザー向けエラーメッセージ取得 | エラー表示 |
+| `isApiSuccess<T>(response)` | 成功レスポンスの型ガード | 型安全なデータアクセス |
+
+**ApiResponse型:**
+
+```tsx
+interface ApiResponse<T = unknown> {
+  ok: boolean;        // レスポンスが成功したかどうか
+  status: number;     // HTTPステータスコード
+  data: T | null;     // レスポンスデータ
+  error: string | null; // エラーメッセージ
+}
+```
+
+**使用例:**
+
+```tsx
+import { apiGet, apiPost, getErrorMessage, isApiSuccess } from "@/lib/api";
+
+// GETリクエスト
+const fetchUsers = async () => {
+  const result = await apiGet<User[]>("/api/users");
+  
+  if (isApiSuccess(result)) {
+    console.log(result.data); // 型安全にアクセス
+  } else {
+    console.error(getErrorMessage(result)); // 日本語エラーメッセージ
+  }
+};
+
+// POSTリクエスト
+const createUser = async (name: string) => {
+  const result = await apiPost<User>("/api/users", {
+    body: { name },
+  });
+  
+  if (!result.ok) {
+    Alert.alert("エラー", getErrorMessage(result));
+  }
+};
+```
+
+**エラーメッセージの自動変換:**
+
+`getErrorMessage()` 関数は、HTTPステータスコードに応じた日本語メッセージを返します。
+
+| ステータス | メッセージ |
+|-----------|-----------|
+| 0 | ネットワークエラーが発生しました。インターネット接続を確認してください。 |
+| 400 | リクエストが不正です。入力内容を確認してください。 |
+| 401 | 認証が必要です。再度ログインしてください。 |
+| 403 | アクセスが拒否されました。 |
+| 404 | リソースが見つかりませんでした。 |
+| 429 | リクエストが多すぎます。しばらく待ってから再試行してください。 |
+| 500/502/503 | サーバーエラーが発生しました。しばらく待ってから再試行してください。 |
+
+**ログ機能:**
+
+開発環境では自動的にAPIログが有効になります。リクエスト/レスポンスの詳細がコンソールに出力されます。
+
+```
+[API] POST /api/twitter/lookup { headers: {...}, body: {...}, timestamp: "..." }
+[API] POST /api/twitter/lookup → 200 { ok: true, data: {...}, duration: "123ms" }
+```
+
+---
+
+## APIエンドポイントモジュール
+
+### lib/api/endpoints.ts
+
+このファイルは各APIエンドポイントへのアクセス関数を提供します。すべてのAPI呼び出しはこのファイルの関数を通じて行います。
+
+**認証関連API:**
+
+| 関数名 | エンドポイント | 説明 |
+|--------|---------------|------|
+| `clearSession()` | POST /api/auth/clear-session | セッションをクリア |
+| `validateSession(token)` | POST /api/auth/session | セッションを検証 |
+| `refreshToken(token)` | POST /api/twitter/refresh | トークンをリフレッシュ |
+
+**Twitter関連API:**
+
+| 関数名 | エンドポイント | 説明 |
+|--------|---------------|------|
+| `lookupTwitterUser(input)` | POST /api/twitter/lookup | Twitterユーザーを検索 |
+| `getFollowStatus(userId)` | GET /api/twitter/follow-status | フォローステータスを取得 |
+
+**管理者API:**
+
+| 関数名 | エンドポイント | 説明 |
+|--------|---------------|------|
+| `getApiUsage()` | GET /api/admin/api-usage | API使用状況を取得 |
+
+**使用例:**
+
+```tsx
+import { lookupTwitterUser, getErrorMessage } from "@/lib/api";
+
+const searchUser = async (username: string) => {
+  const result = await lookupTwitterUser(username);
+  
+  if (result.ok && result.data) {
+    console.log(`Found: ${result.data.name} (@${result.data.username})`);
+  } else {
+    console.error(getErrorMessage(result));
+  }
+};
 ```
 
 ---
@@ -87,8 +224,6 @@ import { getApiBaseUrl } from "@/lib/api/config";
 | `logApiConfig()` | 関数 | デバッグ用にAPI設定をログ出力 |
 
 **URL解決の優先順位:**
-
-URL解決は以下の優先順位で行われます。これにより、環境変数による明示的な設定、本番環境の自動検出、開発環境のポート変換がすべてカバーされます。
 
 1. 環境変数 `EXPO_PUBLIC_API_BASE_URL` が設定されている場合はそれを使用
 2. 本番環境ドメイン（`doin-challenge.com`）の場合は Railway URL を返す
@@ -123,29 +258,24 @@ export const TWITTER_AUTH_ENDPOINTS = {
 | `redirectToTwitterSwitchAccount()` | 切り替え認証ページにリダイレクト | アカウント切り替え |
 | `logTwitterAuthUrls()` | デバッグ用にURLをログ出力 | トラブルシューティング |
 
-**使用例:**
-
-```tsx
-import { redirectToTwitterAuth, redirectToTwitterSwitchAccount } from "@/lib/api";
-
-// 通常ログイン
-const handleLogin = () => {
-  redirectToTwitterAuth();
-};
-
-// 別のアカウントでログイン（switch=trueパラメータ付き）
-const handleSwitchAccount = () => {
-  redirectToTwitterSwitchAccount();
-};
-```
-
 ---
 
 ## API呼び出し箇所一覧
 
 以下は、アプリケーション内でAPIを呼び出している主要な箇所の一覧です。この一覧を維持することで、API呼び出しの全体像を1ホップで把握できます。
 
-### Twitter認証関連
+### fetch呼び出し（lib/api/client.ts経由）
+
+| ファイル | 関数/コンポーネント | 使用するAPI関数 | 用途 |
+|----------|---------------------|-----------------|------|
+| `app/event/[id].tsx` | `handleTwitterLookup` | `lookupTwitterUser()` | 友人のTwitterユーザー検索 |
+| `app/admin/api-usage.tsx` | `fetchData` | `apiGet()` | API使用状況の取得 |
+| `components/organisms/account-switcher.tsx` | `handleLogout` | `clearSession()` | セッションクリア |
+| `lib/token-manager.ts` | `refreshAccessToken` | `apiPost()` | トークンリフレッシュ |
+| `lib/_core/api.ts` | `establishSession` | `apiPost()` | セッション確立 |
+| `lib/_core/api.ts` | `checkFollowStatus` | `apiGet()` | フォローステータス確認 |
+
+### Twitter認証関連（lib/api/twitter-auth.ts経由）
 
 | ファイル | 関数/コンポーネント | 使用するAPI関数 | 用途 |
 |----------|---------------------|-----------------|------|
@@ -188,9 +318,39 @@ tRPCを使用したAPI呼び出しは `lib/trpc.ts` で設定されており、�
 
 ## 新しいAPI呼び出しを追加する際のガイドライン
 
-### 1. Twitter認証関連のURL生成
+### 1. 新しいAPIエンドポイントの追加
 
-Twitter認証に関連するURLを生成する場合は、必ず `lib/api/twitter-auth.ts` の関数を使用してください。直接URLを構築すると、環境間の差異によるエラーの原因になります。
+新しいAPIエンドポイントを追加する場合は、以下の手順に従ってください。
+
+1. `lib/api/endpoints.ts` に新しい関数を追加
+2. 必要に応じて型定義を追加
+3. `lib/api/index.ts` でエクスポート
+4. 本ドキュメントの「API呼び出し箇所一覧」を更新
+
+**例：新しいエンドポイントの追加**
+
+```tsx
+// lib/api/endpoints.ts に追加
+export interface NewFeatureResult {
+  id: string;
+  name: string;
+}
+
+export async function getNewFeature(id: string): Promise<ApiResponse<NewFeatureResult>> {
+  return apiGet<NewFeatureResult>(`/api/new-feature/${id}`);
+}
+
+// lib/api/index.ts でエクスポート
+export {
+  // ... 既存のエクスポート
+  getNewFeature,
+  type NewFeatureResult,
+} from "./endpoints";
+```
+
+### 2. Twitter認証関連のURL生成
+
+Twitter認証に関連するURLを生成する場合は、必ず `lib/api/twitter-auth.ts` の関数を使用してください。
 
 **NG例（直接URL構築）:**
 ```tsx
@@ -206,18 +366,25 @@ import { redirectToTwitterAuth } from "@/lib/api";
 redirectToTwitterAuth();
 ```
 
-### 2. 新しいAPIエンドポイントの追加
+### 3. エラーハンドリング
 
-新しいAPIエンドポイントを追加する場合は、以下の手順に従ってください。
+すべてのAPI呼び出しでは、`getErrorMessage()` を使用してユーザーフレンドリーなエラーメッセージを表示してください。
 
-1. `lib/api/` ディレクトリに新しいファイルを作成（または既存ファイルに追加）
-2. エンドポイント定数とURL生成関数を定義
-3. `lib/api/index.ts` でエクスポート
-4. 本ドキュメントの「API呼び出し箇所一覧」を更新
+```tsx
+import { apiGet, getErrorMessage } from "@/lib/api";
 
-### 3. 環境変数の追加
-
-新しい環境変数を追加する場合は、`lib/api/config.ts` の `env` オブジェクトに追加し、適切なフォールバック値を設定してください。
+const fetchData = async () => {
+  const result = await apiGet("/api/data");
+  
+  if (!result.ok) {
+    // ユーザーに表示するエラーメッセージ
+    Alert.alert("エラー", getErrorMessage(result));
+    return;
+  }
+  
+  // 成功時の処理
+};
+```
 
 ---
 
@@ -241,12 +408,22 @@ API呼び出しで404エラーが発生する場合、以下を確認してく�
 
 CORSエラーが発生する場合は、Railway バックエンドの CORS 設定を確認してください。フロントエンドのドメイン（`doin-challenge.com`）が許可リストに含まれている必要があります。
 
+### APIログの確認
+
+開発環境では自動的にAPIログが有効になります。本番環境でログを有効にする場合：
+
+```tsx
+import { setApiLogging } from "@/lib/api";
+setApiLogging(true); // ログを有効化
+```
+
 ---
 
 ## 変更履歴
 
 | バージョン | 日付 | 変更内容 |
 |-----------|------|----------|
+| v5.31 | 2025-01-17 | APIクライアントモジュール（client.ts）とエンドポイントモジュール（endpoints.ts）を追加。fetch呼び出しの一元化、エラーハンドリング統一、ログ機能を実装 |
 | v5.29 | 2025-01-17 | 生成AI時代の設計思想を反映。1ホップ理解、コンテキストドキュメント、ハイブリッド構成の概念を追加 |
 | v5.28 | 2025-01-17 | 初版作成。API一元管理アーキテクチャを導入 |
 
