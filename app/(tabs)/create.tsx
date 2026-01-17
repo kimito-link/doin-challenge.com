@@ -14,6 +14,7 @@ import MaterialIcons from "@expo/vector-icons/MaterialIcons";
 import { LinearGradient } from "expo-linear-gradient";
 import { AppHeader } from "@/components/organisms/app-header";
 import { DatePicker } from "@/components/molecules/date-picker";
+import { NumberStepper } from "@/components/molecules/number-stepper";
 import { showAlert } from "@/lib/web-alert";
 import { TwitterUserCard } from "@/components/molecules/twitter-user-card";
 
@@ -64,7 +65,7 @@ export default function CreateChallengeScreen() {
   const [eventDateStr, setEventDateStr] = useState("");
   const [hostName, setHostName] = useState("");
   const [goalType, setGoalType] = useState("attendance");
-  const [goalValue, setGoalValue] = useState("100");
+  const [goalValue, setGoalValue] = useState(100);
   const [goalUnit, setGoalUnit] = useState("人");
   const [eventType, setEventType] = useState("solo");
   const [ticketPresale, setTicketPresale] = useState("");
@@ -132,7 +133,7 @@ export default function CreateChallengeScreen() {
         name: templateName.trim(),
         description: description.trim() || undefined,
         goalType: goalType as "attendance" | "followers" | "viewers" | "points" | "custom",
-        goalValue: parseInt(goalValue) || 100,
+        goalValue: goalValue || 100,
         goalUnit: goalUnit || "人",
         eventType: eventType as "solo" | "group",
         ticketPresale: ticketPresale ? parseInt(ticketPresale) : undefined,
@@ -159,7 +160,7 @@ export default function CreateChallengeScreen() {
       hostFollowersCount: user.followersCount || undefined,
       hostDescription: user.description || undefined,
       goalType: goalType as "attendance" | "followers" | "viewers" | "points" | "custom",
-      goalValue: parseInt(goalValue) || 100,
+      goalValue: goalValue || 100,
       goalUnit: goalUnit || "人",
       eventType: eventType as "solo" | "group",
       categoryId: categoryId || undefined,
@@ -506,32 +507,16 @@ export default function CreateChallengeScreen() {
               </View>
 
               {/* 目標数値 */}
-              <View style={{ marginBottom: 16 }}>
-                <Text style={{ color: colors.muted, fontSize: 14, marginBottom: 8 }}>
-                  目標数値 *
-                </Text>
-                <View style={{ flexDirection: "row", alignItems: "center" }}>
-                  <TextInput
-                    value={goalValue}
-                    onChangeText={setGoalValue}
-                    placeholder="100"
-                    placeholderTextColor="#6B7280"
-                    keyboardType="numeric"
-                    style={{
-                      backgroundColor: colors.background,
-                      borderRadius: 8,
-                      padding: 12,
-                      color: colors.foreground,
-                      borderWidth: 1,
-                      borderColor: "#2D3139",
-                      flex: 1,
-                    }}
-                  />
-                  <Text style={{ color: colors.foreground, fontSize: 16, marginLeft: 12 }}>
-                    {goalUnit || "人"}
-                  </Text>
-                </View>
-              </View>
+              <NumberStepper
+                value={goalValue}
+                onChange={setGoalValue}
+                min={1}
+                max={100000}
+                step={10}
+                unit={goalUnit || "人"}
+                label="目標数値 *"
+                presets={goalType === "attendance" ? [50, 100, 200, 500, 1000] : goalType === "viewers" ? [100, 500, 1000, 5000, 10000] : [50, 100, 500, 1000, 5000]}
+              />
 
               <View style={{ marginBottom: 16 }}>
                 <Text style={{ color: colors.muted, fontSize: 14, marginBottom: 8 }}>
