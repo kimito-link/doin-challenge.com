@@ -1869,7 +1869,12 @@
 
 ## プロフィール表示改善（v5.38）
 
-### マイページのTwitter自己紹介表示
+### マイページの## Twitter自己紹介（description）表示機能（v5.38）
 - [x] User型にdescriptionフィールドを追加
 - [x] Twitter認証コールバックでdescriptionを保存
 - [x] マイページのプロフィールカードにdescription表示を追加
+
+## Vercelビルドエラー修正（v5.40）
+- [x] react-native-css-interopキャッシュ問題の修正
+- [x] metro.config.jsのキャッシュ設定確認・修正
+- [x] Vercelビルド設定の最適化（tailwindcssでCSS事前生成）
