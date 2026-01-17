@@ -1,4 +1,5 @@
 import { ThemedView } from "@/components/atoms/themed-view";
+// v5.39: description field support
 import { FollowSuccessModal } from "@/components/molecules/follow-success-modal";
 import * as Auth from "@/lib/_core/auth";
 import { saveTokenData } from "@/lib/token-manager";
