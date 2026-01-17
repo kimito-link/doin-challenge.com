@@ -579,31 +579,36 @@ async function upsertUser(user) {
     return;
   }
   try {
+    const existingUser = await db.select().from(users).where(eq(users.openId, user.openId)).limit(1);
     const now = /* @__PURE__ */ new Date();
     const nowStr = now.toISOString().slice(0, 19).replace("T", " ");
     let role = user.role || "user";
     if (user.openId === ENV.ownerOpenId) {
       role = "admin";
     }
-    await db.execute(sql`
-      INSERT INTO users (openId, name, email, loginMethod, role, createdAt, updatedAt, lastSignedIn)
-      VALUES (
-        ${user.openId},
-        ${user.name || null},
-        ${user.email || null},
-        ${user.loginMethod || null},
-        ${role},
-        ${nowStr},
-        ${nowStr},
-        ${nowStr}
-      )
-      ON DUPLICATE KEY UPDATE
-        name = ${user.name || null},
-        loginMethod = ${user.loginMethod || null},
-        role = ${role},
-        updatedAt = ${nowStr},
-        lastSignedIn = ${nowStr}
-    `);
+    if (existingUser.length > 0) {
+      await db.update(users).set({
+        name: user.name || existingUser[0].name,
+        loginMethod: user.loginMethod || existingUser[0].loginMethod,
+        role,
+        updatedAt: now,
+        lastSignedIn: now
+      }).where(eq(users.openId, user.openId));
+    } else {
+      await db.execute(sql`
+        INSERT INTO users (openId, name, email, loginMethod, role, createdAt, updatedAt, lastSignedIn)
+        VALUES (
+          ${user.openId},
+          ${user.name || null},
+          ${user.email || null},
+          ${user.loginMethod || null},
+          ${role},
+          ${nowStr},
+          ${nowStr},
+          ${nowStr}
+        )
+      `);
+    }
   } catch (error) {
     console.error("[Database] Failed to upsert user:", error);
     throw error;
@@ -1156,7 +1161,7 @@ async function getAllCategories() {
   }
   const db = await getDb();
   if (!db) return categoriesCache.data ?? [];
-  const result = await db.select().from(categories).where(sql`${categories.isActive} = 1`).orderBy(categories.sortOrder);
+  const result = await db.select().from(categories).where(eq(categories.isActive, true)).orderBy(categories.sortOrder);
   categoriesCache = { data: result, timestamp: now };
   return result;
 }

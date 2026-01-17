@@ -34,6 +34,9 @@ export async function upsertUser(user: InsertUser): Promise<void> {
   }
 
   try {
+    // First, check if user exists
+    const existingUser = await db.select().from(users).where(eq(users.openId, user.openId)).limit(1);
+    
     const now = new Date();
     const nowStr = now.toISOString().slice(0, 19).replace('T', ' ');
     
@@ -43,26 +46,33 @@ export async function upsertUser(user: InsertUser): Promise<void> {
       role = 'admin';
     }
     
-    // Use raw SQL to avoid Drizzle's default keyword issues with TiDB
-    await db.execute(sql`
-      INSERT INTO users (openId, name, email, loginMethod, role, createdAt, updatedAt, lastSignedIn)
-      VALUES (
-        ${user.openId},
-        ${user.name || null},
-        ${user.email || null},
-        ${user.loginMethod || null},
-        ${role},
-        ${nowStr},
-        ${nowStr},
-        ${nowStr}
-      )
-      ON DUPLICATE KEY UPDATE
-        name = ${user.name || null},
-        loginMethod = ${user.loginMethod || null},
-        role = ${role},
-        updatedAt = ${nowStr},
-        lastSignedIn = ${nowStr}
-    `);
+    if (existingUser.length > 0) {
+      // User exists, use UPDATE
+      await db.update(users)
+        .set({
+          name: user.name || existingUser[0].name,
+          loginMethod: user.loginMethod || existingUser[0].loginMethod,
+          role: role as "user" | "admin",
+          updatedAt: now,
+          lastSignedIn: now,
+        })
+        .where(eq(users.openId, user.openId));
+    } else {
+      // User doesn't exist, use raw SQL INSERT to avoid 'default' keyword issues with TiDB
+      await db.execute(sql`
+        INSERT INTO users (openId, name, email, loginMethod, role, createdAt, updatedAt, lastSignedIn)
+        VALUES (
+          ${user.openId},
+          ${user.name || null},
+          ${user.email || null},
+          ${user.loginMethod || null},
+          ${role},
+          ${nowStr},
+          ${nowStr},
+          ${nowStr}
+        )
+      `);
+    }
   } catch (error) {
     console.error("[Database] Failed to upsert user:", error);
     throw error;
@@ -1004,8 +1014,7 @@ export async function getAllCategories() {
   const db = await getDb();
   if (!db) return categoriesCache.data ?? [];
   
-  // MySQL/TiDBではbooleanは1/0で扱われるため、明示的に1と比較
-  const result = await db.select().from(categories).where(sql`${categories.isActive} = 1`).orderBy(categories.sortOrder);
+  const result = await db.select().from(categories).where(eq(categories.isActive, true)).orderBy(categories.sortOrder);
   
   // キャッシュを更新
   categoriesCache = { data: result, timestamp: now };
