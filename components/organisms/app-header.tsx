@@ -11,6 +11,9 @@ import * as Haptics from "expo-haptics";
 // ロゴ画像
 const logoImage = require("@/assets/images/logo/logo-color.jpg");
 
+// アプリバージョン（デプロイ確認用）
+const APP_VERSION = "v5.52";
+
 // キャラクター画像
 const characterImages = {
   linkYukkuri: require("@/assets/images/characters/link/link-yukkuri-normal-mouth-open.png"),
@@ -76,7 +79,7 @@ export function AppHeader({
                 fontSize: isDesktop ? 16 : 13, 
                 fontWeight: "bold",
               }}>
-                {title || "君斗りんくの動員ちゃれんじ"}
+                {title || `君斗りんくの動員ちゃれんじ-${APP_VERSION}`}
               </Text>
             </View>
           </TouchableOpacity>
