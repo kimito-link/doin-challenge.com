@@ -76,6 +76,29 @@ export const FAN_TUTORIAL_STEPS: TutorialStep[] = [
     previewType: "participants",
   },
   // ========================================
+  // 感情ベネフィット2.5：状況共有でワクワク
+  // ========================================
+  {
+    message: "「今向かってる！」って伝えたいとき、あるよね？",
+    subMessage: "「もうすぐつくね！」ってワクワク感",
+    character: "rinku_smile",
+    speech: "イベント当日、みんなどこにいるか気になるよね！",
+    messagePosition: "center",
+    tapToContinue: true,
+    successAnimation: "none",
+    previewType: "none",
+  },
+  {
+    message: "参加者の状況が見えるよ",
+    subMessage: "「向かってる」「到着！」ってリアルタイムでわかる",
+    character: "konta_smile",
+    speech: "みんなの状況がわかると、一体感が生まれるよね！",
+    messagePosition: "center",
+    tapToContinue: true,
+    successAnimation: "sparkle",
+    previewType: "participants",
+  },
+  // ========================================
   // 感情ベネフィット3：認められたい（承認欲求・でも押し付けない）
   // ========================================
   {
@@ -203,6 +226,29 @@ export const HOST_TUTORIAL_STEPS: TutorialStep[] = [
     tapToContinue: true,
     successAnimation: "sparkle",
     previewType: "notification",
+  },
+  // ========================================
+  // 感情ベネフィット3.5：ファンの状況がわかる安心感
+  // ========================================
+  {
+    message: "当日、ファンの状況が気になるよね",
+    subMessage: "「あー、急に仕事が...」って人もいるし",
+    character: "tanune_normal",
+    speech: "「今向かってる」「もうすぐつくね」ってわかると安心よね",
+    messagePosition: "center",
+    tapToContinue: true,
+    successAnimation: "none",
+    previewType: "none",
+  },
+  {
+    message: "参加者の状況がリアルタイムで見える",
+    subMessage: "「向かってる」「到着！」って状況がわかる",
+    character: "konta_smile",
+    speech: "「あと何人くるかな」って把握できるから安心！",
+    messagePosition: "center",
+    tapToContinue: true,
+    successAnimation: "sparkle",
+    previewType: "participants",
   },
   // ========================================
   // 感情ベネフィット4：ファンを大切にしたい（自己実現）
