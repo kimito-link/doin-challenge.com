@@ -16,32 +16,59 @@ type UseAuthOptions = {
 };
 
 // Get API base URL from environment variable or derive from hostname
+// Railway APIのベースURL（ハードコード）
+const RAILWAY_API_URL = "https://doin-challengecom-production.up.railway.app";
+
 function getApiBaseUrl(): string {
   // Check for environment variable first (production)
   const envApiUrl = process.env.EXPO_PUBLIC_API_BASE_URL;
   if (envApiUrl) {
+    console.log("[getApiBaseUrl] Using env var:", envApiUrl);
     return envApiUrl;
   }
   
   // On web, derive from current hostname
-  // Note: Use global `location` directly instead of `window.location` for Expo Web compatibility
-  // window.location.hostname returns undefined in Expo Web, but location.hostname works
-  if (Platform.OS === "web" && typeof location !== "undefined") {
-    const protocol = location.protocol;
-    const hostname = location.hostname;
+  if (Platform.OS === "web") {
+    // Try multiple ways to get hostname
+    let hostname = "";
+    let protocol = "https:";
+    
+    // Try window.location first
+    if (typeof window !== "undefined" && window.location) {
+      hostname = window.location.hostname || "";
+      protocol = window.location.protocol || "https:";
+    }
+    // Fallback to global location
+    else if (typeof location !== "undefined") {
+      hostname = location.hostname || "";
+      protocol = location.protocol || "https:";
+    }
+    
+    console.log("[getApiBaseUrl] Web hostname:", hostname, "protocol:", protocol);
     
     // Production: doin-challenge.com -> Railway backend
     if (hostname.includes("doin-challenge.com") || hostname.includes("doin-challengecom.vercel.app")) {
-      return "https://doin-challengecom-production.up.railway.app";
+      console.log("[getApiBaseUrl] Production detected, using Railway API");
+      return RAILWAY_API_URL;
+    }
+    
+    // If hostname is empty or localhost, use Railway API for production
+    if (!hostname || hostname === "localhost" || hostname === "127.0.0.1") {
+      console.log("[getApiBaseUrl] No hostname or localhost, using Railway API");
+      return RAILWAY_API_URL;
     }
     
     // Development: Pattern: 8081-sandboxid.region.domain -> 3000-sandboxid.region.domain
     const apiHostname = hostname.replace(/^8081-/, "3000-");
-    return `${protocol}//${apiHostname}`;
+    const url = `${protocol}//${apiHostname}`;
+    console.log("[getApiBaseUrl] Development URL:", url);
+    return url;
   }
   
   // Native fallback
-  return Constants.expoConfig?.extra?.apiUrl || "http://localhost:3000";
+  const nativeUrl = Constants.expoConfig?.extra?.apiUrl || RAILWAY_API_URL;
+  console.log("[getApiBaseUrl] Native URL:", nativeUrl);
+  return nativeUrl;
 }
 
 // 認証状態のキャッシュ（メモリ内）
