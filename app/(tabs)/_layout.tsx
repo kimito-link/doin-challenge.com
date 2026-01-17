@@ -38,6 +38,10 @@ export default function TabLayout() {
         tabBarInactiveTintColor: colors.muted,
         headerShown: false,
         tabBarButton: HapticTab,
+        // v5.36: タブ切り替え時の白い画面を防止
+        sceneStyle: {
+          backgroundColor: colors.background,
+        },
         tabBarStyle: {
           paddingTop: 8,
           paddingBottom: bottomPadding,

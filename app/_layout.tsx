@@ -124,10 +124,11 @@ export default function RootLayout() {
             refetchOnWindowFocus: false,
             // Retry failed requests once
             retry: 1,
-            // Cache data for 5 minutes to reduce API calls
-            staleTime: 5 * 60 * 1000,
-            // Keep cached data for 30 minutes
-            gcTime: 30 * 60 * 1000,
+            // v5.36: キャッシュ期間を延長。2回目以降の表示を瞬時に
+            // Cache data for 30 minutes (stale-while-revalidate)
+            staleTime: 30 * 60 * 1000,
+            // Keep cached data for 2 hours
+            gcTime: 2 * 60 * 60 * 1000,
           },
         },
       }),

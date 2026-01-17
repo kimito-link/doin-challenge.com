@@ -17,11 +17,12 @@ export const PREFETCH_KEYS = {
   CATEGORIES: "prefetch:categories",
 } as const;
 
-// キャッシュの有効期限（5分）
-const CACHE_TTL = 5 * 60 * 1000;
+// v5.36: キャッシュ期間を延長。2回目以降の表示を瞬時に
+// キャッシュの有効期限（30分）
+const CACHE_TTL = 30 * 60 * 1000;
 
-// 軽量キャッシュの有効期限（30秒）- 即座に表示するため
-const STALE_WHILE_REVALIDATE_TTL = 30 * 1000;
+// 軽量キャッシュの有効期限（5分）- 即座に表示しつつバックグラウンドで更新
+const STALE_WHILE_REVALIDATE_TTL = 5 * 60 * 1000;
 
 export interface CachedData<T> {
   data: T;

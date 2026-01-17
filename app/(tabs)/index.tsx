@@ -966,18 +966,22 @@ export default function HomeScreen() {
         <ScrollView 
           horizontal 
           showsHorizontalScrollIndicator={false}
+          nestedScrollEnabled={true}
           style={{ marginTop: 8, marginHorizontal: 16 }}
+          contentContainerStyle={{ paddingRight: 16 }}
         >
           <TouchableOpacity
             onPress={() => setCategoryFilter(null)}
+            activeOpacity={0.7}
             style={{
               paddingHorizontal: 12,
-              paddingVertical: 6,
+              paddingVertical: 8,
               borderRadius: 16,
               backgroundColor: categoryFilter === null ? "#8B5CF6" : "#1E293B",
               marginRight: 8,
               flexDirection: "row",
               alignItems: "center",
+              minHeight: 36,
             }}
           >
             <Text style={{ color: colors.foreground, fontSize: 12 }}>全カテゴリ</Text>
@@ -986,14 +990,16 @@ export default function HomeScreen() {
             <TouchableOpacity
               key={cat.id}
               onPress={() => setCategoryFilter(cat.id)}
+              activeOpacity={0.7}
               style={{
                 paddingHorizontal: 12,
-                paddingVertical: 6,
+                paddingVertical: 8,
                 borderRadius: 16,
                 backgroundColor: categoryFilter === cat.id ? "#8B5CF6" : "#1E293B",
                 marginRight: 8,
                 flexDirection: "row",
                 alignItems: "center",
+                minHeight: 36,
               }}
             >
               <Text style={{ marginRight: 4 }}>{cat.icon}</Text>

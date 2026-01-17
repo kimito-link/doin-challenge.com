@@ -1834,3 +1834,10 @@
 ## 一瞬白くなる問題の修正（v5.35）
 - [x] HTMLの背景色を事前に設定（global.cssでhtml, body, #rootに#0D1117を指定）
 - [x] スプラッシュ画面の延長は不要（一瞬なので背景色設定のみで十分）
+
+## キャッシュ期間の延長（v5.36）
+- [x] 現在のキャッシュ設定を調査
+- [x] React Queryのキャッシュ期間を延長（staleTime: 30分, gcTime: 2時間）
+- [x] AsyncStorageキャッシュのTTLを延長（CACHE_TTL: 30分, STALE_WHILE_REVALIDATE: 5分）
+- [x] タブ切り替え時の白い画面を修正（sceneStyleに背景色設定）
+- [x] カテゴリが選択できない問題を修正（nestedScrollEnabled、activeOpacity、minHeight追加）
