@@ -35,47 +35,34 @@ export async function upsertUser(user: InsertUser): Promise<void> {
 
   try {
     const now = new Date();
-    const values: InsertUser = {
-      openId: user.openId,
-      createdAt: now,
-      updatedAt: now,
-      lastSignedIn: now,
-    };
-    const updateSet: Record<string, unknown> = {
-      updatedAt: now,
-    };
-
-    const textFields = ["name", "email", "loginMethod"] as const;
-    type TextField = (typeof textFields)[number];
-
-    const assignNullable = (field: TextField) => {
-      const value = user[field];
-      if (value === undefined) return;
-      const normalized = value ?? null;
-      values[field] = normalized;
-      updateSet[field] = normalized;
-    };
-
-    textFields.forEach(assignNullable);
-
-    if (user.lastSignedIn !== undefined) {
-      values.lastSignedIn = user.lastSignedIn;
-      updateSet.lastSignedIn = user.lastSignedIn;
-    } else {
-      updateSet.lastSignedIn = now;
+    const nowStr = now.toISOString().slice(0, 19).replace('T', ' ');
+    
+    // Determine role
+    let role = user.role || 'user';
+    if (user.openId === ENV.ownerOpenId) {
+      role = 'admin';
     }
     
-    if (user.role !== undefined) {
-      values.role = user.role;
-      updateSet.role = user.role;
-    } else if (user.openId === ENV.ownerOpenId) {
-      values.role = "admin";
-      updateSet.role = "admin";
-    }
-
-    await db.insert(users).values(values).onDuplicateKeyUpdate({
-      set: updateSet,
-    });
+    // Use raw SQL to avoid Drizzle's default keyword issues with TiDB
+    await db.execute(sql`
+      INSERT INTO users (openId, name, email, loginMethod, role, createdAt, updatedAt, lastSignedIn)
+      VALUES (
+        ${user.openId},
+        ${user.name || null},
+        ${user.email || null},
+        ${user.loginMethod || null},
+        ${role},
+        ${nowStr},
+        ${nowStr},
+        ${nowStr}
+      )
+      ON DUPLICATE KEY UPDATE
+        name = ${user.name || null},
+        loginMethod = ${user.loginMethod || null},
+        role = ${role},
+        updatedAt = ${nowStr},
+        lastSignedIn = ${nowStr}
+    `);
   } catch (error) {
     console.error("[Database] Failed to upsert user:", error);
     throw error;
