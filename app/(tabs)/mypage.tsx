@@ -103,7 +103,7 @@ export default function MyPageScreen() {
   const colors = useColors();
   const router = useRouter();
   const { user, loading, login, logout, isAuthenticated } = useAuth();
-  const { isFollowing, targetUsername, targetDisplayName, updateFollowStatus, refreshFromServer, refreshing } = useFollowStatus();
+  const { isFollowing, targetUsername, targetDisplayName, updateFollowStatus, refreshFromServer, refreshing, checkFollowStatusFromServer, checkingFollowStatus } = useFollowStatus();
   const { isDesktop, isTablet } = useResponsive();
   const [isLoggingIn, setIsLoggingIn] = useState(false);
   const [loginPattern, setLoginPattern] = useState(() => getRandomPattern());
@@ -116,6 +116,15 @@ export default function MyPageScreen() {
       updateFollowStatus(user.isFollowingTarget, user.targetAccount);
     }
   }, [user?.isFollowingTarget, user?.targetAccount, updateFollowStatus]);
+
+  // ログイン後に非同期でフォローステータスを確認（ログイン高速化のため）
+  useEffect(() => {
+    if (isAuthenticated && user && !user.isFollowingTarget && !checkingFollowStatus) {
+      // フォローステータスが未確認の場合、バックグラウンドで確認
+      console.log("[MyPage] Checking follow status in background...");
+      checkFollowStatusFromServer();
+    }
+  }, [isAuthenticated, user, checkingFollowStatus, checkFollowStatusFromServer]);
 
   const handleLogin = async () => {
     setIsLoggingIn(true);

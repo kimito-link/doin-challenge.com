@@ -170,3 +170,47 @@ export async function establishSession(token: string): Promise<boolean> {
     return false;
   }
 }
+
+
+// Check Twitter follow status (called after login)
+export async function checkFollowStatus(
+  accessToken: string,
+  userId: string
+): Promise<{
+  isFollowing: boolean;
+  targetAccount: {
+    id: string;
+    name: string;
+    username: string;
+  } | null;
+}> {
+  try {
+    console.log("[API] checkFollowStatus: checking follow status...");
+    const baseUrl = getApiBaseUrl();
+    const url = `${baseUrl}/api/twitter/follow-status?userId=${encodeURIComponent(userId)}`;
+
+    const response = await fetch(url, {
+      method: "GET",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${accessToken}`,
+      },
+      credentials: "include",
+    });
+
+    if (!response.ok) {
+      console.error("[API] checkFollowStatus failed:", response.status);
+      return { isFollowing: false, targetAccount: null };
+    }
+
+    const result = await response.json();
+    console.log("[API] checkFollowStatus result:", result);
+    return {
+      isFollowing: result.isFollowing || false,
+      targetAccount: result.targetAccount || null,
+    };
+  } catch (error) {
+    console.error("[API] checkFollowStatus error:", error);
+    return { isFollowing: false, targetAccount: null };
+  }
+}

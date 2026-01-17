@@ -13,6 +13,8 @@ export type User = {
   username?: string;
   profileImage?: string;
   followersCount?: number;
+  twitterId?: string;
+  twitterAccessToken?: string;
   // Follow status for premium features
   isFollowingTarget?: boolean;
   targetAccount?: {

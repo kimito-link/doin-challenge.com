@@ -116,30 +116,11 @@ export function registerTwitterRoutes(app: Express) {
       
       console.log("[Twitter OAuth 2.0] User profile retrieved:", userProfile.username);
 
-      // Check follow status for premium features
-      let isFollowingTarget = false;
-      let targetAccount = null;
-      
-      try {
-        // Check if user follows @idolfunch
-        const followStatus = await checkFollowStatus(tokens.access_token, userProfile.id, "idolfunch");
-        isFollowingTarget = followStatus.isFollowing;
-        targetAccount = followStatus.targetUser;
-        console.log("[Twitter OAuth 2.0] Follow status for @idolfunch:", isFollowingTarget);
-        
-        // If not following @idolfunch, also check @streamerfunch
-        if (!isFollowingTarget) {
-          const followStatus2 = await checkFollowStatus(tokens.access_token, userProfile.id, "streamerfunch");
-          isFollowingTarget = followStatus2.isFollowing;
-          if (isFollowingTarget) {
-            targetAccount = followStatus2.targetUser;
-          }
-          console.log("[Twitter OAuth 2.0] Follow status for @streamerfunch:", followStatus2.isFollowing);
-        }
-      } catch (followError) {
-        console.error("[Twitter OAuth 2.0] Follow check error (non-fatal):", followError);
-        // Continue without follow status - user can still login
-      }
+      // フォローチェックはログイン後に非同期で行うため、ここではスキップ
+      // フロントエンドから /api/twitter/follow-status を呼び出して確認する
+      const isFollowingTarget = false; // 後で確認
+      const targetAccount = null; // 後で確認
+      console.log("[Twitter OAuth 2.0] Skipping follow check for faster login");
       
       // Build user data object
       const userData = {

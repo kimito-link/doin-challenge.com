@@ -2,6 +2,7 @@ import { useState, useEffect, useCallback, useRef } from "react";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { AppState, type AppStateStatus } from "react-native";
 import * as Auth from "@/lib/_core/auth";
+import * as Api from "@/lib/_core/api";
 
 const FOLLOW_STATUS_KEY = "twitter_follow_status";
 const TARGET_USERNAME = "idolfunch";
@@ -17,6 +18,7 @@ interface FollowStatusData {
 
 /**
  * Twitterフォロー状態を管理するカスタムフック
+ * ログイン後に非同期でフォローステータスを確認する
  */
 export function useFollowStatus() {
   const [followStatus, setFollowStatus] = useState<FollowStatusData>({
@@ -26,7 +28,9 @@ export function useFollowStatus() {
   });
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
+  const [checkingFollowStatus, setCheckingFollowStatus] = useState(false);
   const appState = useRef(AppState.currentState);
+  const hasCheckedAfterLogin = useRef(false);
 
   // ローカルストレージからフォロー状態を読み込む
   const loadFollowStatus = useCallback(async () => {
@@ -81,6 +85,66 @@ export function useFollowStatus() {
     [saveFollowStatus]
   );
 
+  // サーバーからフォロー状態を非同期で確認する（ログイン後に呼び出す）
+  const checkFollowStatusFromServer = useCallback(async () => {
+    if (checkingFollowStatus) {
+      console.log("[useFollowStatus] Already checking follow status, skipping...");
+      return false;
+    }
+
+    setCheckingFollowStatus(true);
+    try {
+      console.log("[useFollowStatus] Checking follow status from server...");
+      
+      // ユーザー情報を取得
+      const userInfo = await Auth.getUserInfo();
+      if (!userInfo) {
+        console.log("[useFollowStatus] No user info, cannot check follow status");
+        return false;
+      }
+
+      // Twitterアクセストークンとユーザー情報を取得
+      const twitterAccessToken = userInfo.twitterAccessToken;
+      const twitterId = userInfo.twitterId;
+
+      if (!twitterAccessToken || !twitterId) {
+        console.log("[useFollowStatus] No Twitter credentials, cannot check follow status");
+        return false;
+      }
+
+      // APIを呼び出してフォローステータスを確認
+      const result = await Api.checkFollowStatus(twitterAccessToken, twitterId);
+      
+      if (result.isFollowing !== undefined) {
+        const data: FollowStatusData = {
+          isFollowing: result.isFollowing,
+          targetUsername: result.targetAccount?.username || TARGET_USERNAME,
+          targetDisplayName: result.targetAccount?.name || TARGET_DISPLAY_NAME,
+          targetTwitterId: result.targetAccount?.id,
+          lastCheckedAt: new Date().toISOString(),
+        };
+        await saveFollowStatus(data);
+        
+        // ユーザー情報も更新
+        await Auth.setUserInfo({
+          ...userInfo,
+          isFollowingTarget: result.isFollowing,
+          targetAccount: result.targetAccount || undefined,
+        });
+        
+        console.log("[useFollowStatus] Follow status checked:", result.isFollowing);
+        return result.isFollowing;
+      }
+      
+      return false;
+    } catch (error) {
+      console.error("[useFollowStatus] Failed to check follow status:", error);
+      return false;
+    } finally {
+      setCheckingFollowStatus(false);
+    }
+  }, [checkingFollowStatus, saveFollowStatus]);
+
   // サーバーからフォロー状態を再確認する（再ログインを促す）
   const refreshFollowStatusFromServer = useCallback(async () => {
     setRefreshing(true);
@@ -108,14 +172,15 @@ export function useFollowStatus() {
         return data.isFollowing;
       }
       
-      return false;
+      // ユーザー情報にフォローステータスがない場合は、サーバーから確認
+      return await checkFollowStatusFromServer();
     } catch (error) {
       console.error("[useFollowStatus] Failed to refresh follow status:", error);
       return false;
     } finally {
       setRefreshing(false);
     }
-  }, [saveFollowStatus]);
+  }, [saveFollowStatus, checkFollowStatusFromServer]);
 
   // フォロー状態をクリアする（ログアウト時）
   const clearFollowStatus = useCallback(async () => {
@@ -126,6 +191,7 @@ export function useFollowStatus() {
         targetUsername: TARGET_USERNAME,
         targetDisplayName: TARGET_DISPLAY_NAME,
       });
+      hasCheckedAfterLogin.current = false;
     } catch (error) {
       console.error("[useFollowStatus] Failed to clear follow status:", error);
     }
@@ -159,10 +225,12 @@ export function useFollowStatus() {
     ...followStatus,
     loading,
     refreshing,
+    checkingFollowStatus,
     updateFollowStatus,
     clearFollowStatus,
     refresh: loadFollowStatus,
     refreshFromServer: refreshFollowStatusFromServer,
+    checkFollowStatusFromServer,
   };
 }
 

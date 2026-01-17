@@ -124,6 +124,8 @@ export default function TwitterOAuthCallback() {
             username: userData.username,
             profileImage: userData.profileImage,
             followersCount: userData.followersCount,
+            twitterId: userData.twitterId,
+            twitterAccessToken: userData.accessToken,
             isFollowingTarget: userData.isFollowingTarget,
             targetAccount: userData.targetAccount,
           };
