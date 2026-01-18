@@ -5,6 +5,7 @@
   "engines": {
     "node": "18.x"
   },
+  "type": "module",
   "main": "expo-router/entry",
   "scripts": {
     "dev": "concurrently -k \"pnpm dev:server\" \"pnpm dev:metro\"",
