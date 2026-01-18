@@ -343,7 +343,7 @@ export default function CreateChallengeScreen() {
                       description: user.description,
                     }}
                     showFollowers={true}
-                    showDescription={false}
+                    showDescription={true}
                   />
                 </View>
               )}

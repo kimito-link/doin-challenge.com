@@ -55,44 +55,12 @@ export function UserTypeSelector({ visible, onSelect, onSkip }: UserTypeSelector
 
   useEffect(() => {
     if (visible) {
-      // メインキャラクターのバウンス
-      mainCharacterY.value = withRepeat(
-        withSequence(
-          withTiming(-10, { duration: 800, easing: Easing.inOut(Easing.ease) }),
-          withTiming(0, { duration: 800, easing: Easing.inOut(Easing.ease) })
-        ),
-        -1,
-        true
-      );
-
-      // キラキラエフェクト
-      sparkle1Opacity.value = withDelay(0, withRepeat(
-        withSequence(
-          withTiming(1, { duration: 400 }),
-          withTiming(0, { duration: 400 })
-        ),
-        -1,
-        false
-      ));
-      sparkle2Opacity.value = withDelay(200, withRepeat(
-        withSequence(
-          withTiming(1, { duration: 400 }),
-          withTiming(0, { duration: 400 })
-        ),
-        -1,
-        false
-      ));
-      sparkle3Opacity.value = withDelay(400, withRepeat(
-        withSequence(
-          withTiming(1, { duration: 400 }),
-          withTiming(0, { duration: 400 })
-        ),
-        -1,
-        false
-      ));
-
-      // タイトルのスケールイン
-      titleScale.value = withSpring(1, { damping: 10 });
+      // 静的な表示（ちかちかアニメーション削除）
+      mainCharacterY.value = withTiming(0, { duration: 300 });
+      sparkle1Opacity.value = withTiming(1, { duration: 300 });
+      sparkle2Opacity.value = withTiming(1, { duration: 300 });
+      sparkle3Opacity.value = withTiming(1, { duration: 300 });
+      titleScale.value = withTiming(1, { duration: 300 });
     }
   }, [visible]);
 
