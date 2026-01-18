@@ -322,7 +322,7 @@ export function FollowPromptBanner({
             <Text style={{ color: "#fff", fontSize: 14, fontWeight: "bold" }}>
               フォローで特典をゲット！
             </Text>
-            <Text style={{ color: "#9CA3AF", fontSize: 12, marginTop: 2 }}>
+            <Text style={{ color: "#D1D5DB", fontSize: 12, marginTop: 2 }}>
               @{targetUsername}をフォローすると特別な特典がもらえるかも？
             </Text>
           </View>
@@ -349,7 +349,7 @@ export function FollowPromptBanner({
           }}
         >
           <MaterialIcons name="refresh" size={16} color="#fff" />
-          <Text style={{ color: "#fff", fontSize: 13, marginLeft: 6 }}>
+          <Text style={{ color: "#E5E7EB", fontSize: 13, marginLeft: 6 }}>
             {refreshing ? "確認中..." : "フォロー済みの方はタップして再確認"}
           </Text>
         </TouchableOpacity>
