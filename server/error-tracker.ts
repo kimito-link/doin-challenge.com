@@ -20,13 +20,59 @@ export interface ErrorLog {
     headers?: Record<string, string | undefined>;
   };
   resolved: boolean;
+  // AI分析結果
+  aiAnalysis?: {
+    cause: string;
+    solution: string;
+    codeExample?: string;
+    severity: "low" | "medium" | "high" | "critical";
+    category: string;
+    confidence: number;
+    model: string;
+    analyzedAt: Date;
+  };
+  aiAnalyzing?: boolean;  // AI分析中フラグ
 }
+
+import { analyzeErrorWithCache, type ErrorAnalysis } from "./ai-error-analyzer";
 
 // エラーログの最大保存件数
 const MAX_ERROR_LOGS = 100;
 
 // メモリ内エラーログストレージ
 let errorLogs: ErrorLog[] = [];
+
+// AI分析をバックグラウンドで実行
+async function triggerAiAnalysis(errorId: string): Promise<void> {
+  const errorLog = errorLogs.find(l => l.id === errorId);
+  if (!errorLog) return;
+  
+  // 既に分析済みまたは分析中ならスキップ
+  if (errorLog.aiAnalysis || errorLog.aiAnalyzing) return;
+  
+  // 分析中フラグをセット
+  errorLog.aiAnalyzing = true;
+  
+  try {
+    const analysis = await analyzeErrorWithCache({
+      message: errorLog.message,
+      stack: errorLog.stack,
+      category: errorLog.category,
+      context: errorLog.context as Record<string, unknown> | undefined,
+    });
+    
+    if (analysis) {
+      errorLog.aiAnalysis = analysis;
+      console.log(`[ErrorTracker] AI分析完了: ${errorId}`);
+      console.log(`  原因: ${analysis.cause}`);
+      console.log(`  解決策: ${analysis.solution}`);
+    }
+  } catch (err) {
+    console.error(`[ErrorTracker] AI分析失敗: ${errorId}`, err);
+  } finally {
+    errorLog.aiAnalyzing = false;
+  }
+}
 
 // エラーIDを生成
 function generateErrorId(): string {
@@ -137,6 +183,9 @@ export function logError(
   if (errorLog.context?.endpoint) {
     console.error(`  Endpoint: ${errorLog.context.method || "GET"} ${errorLog.context.endpoint}`);
   }
+  
+  // AI分析をバックグラウンドで実行
+  triggerAiAnalysis(errorLog.id);
   
   return errorLog;
 }

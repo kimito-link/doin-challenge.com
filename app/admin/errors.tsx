@@ -2,6 +2,7 @@
  * エラーログ閲覧画面
  * 
  * アプリケーションで発生したエラーを確認・管理
+ * AI分析結果も表示
  */
 
 import { ScreenContainer } from "@/components/organisms/screen-container";
@@ -20,6 +21,17 @@ import {
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 
+interface AiAnalysis {
+  cause: string;
+  solution: string;
+  codeExample?: string;
+  severity: "low" | "medium" | "high" | "critical";
+  category: string;
+  confidence: number;
+  model: string;
+  analyzedAt: string;
+}
+
 interface ErrorLog {
   id: string;
   timestamp: string;
@@ -34,6 +46,8 @@ interface ErrorLog {
     query?: any;
   };
   resolved: boolean;
+  aiAnalysis?: AiAnalysis;
+  aiAnalyzing?: boolean;
 }
 
 interface ErrorStats {
@@ -50,6 +64,20 @@ const categoryLabels: Record<string, { label: string; icon: keyof typeof Ionicon
   twitter: { label: "Twitter", icon: "logo-twitter", color: "#1DA1F2" },
   validation: { label: "バリデーション", icon: "alert-circle-outline", color: "#EC4899" },
   unknown: { label: "その他", icon: "help-circle-outline", color: "#6B7280" },
+};
+
+const severityColors: Record<string, string> = {
+  low: "#22C55E",
+  medium: "#F59E0B",
+  high: "#EF4444",
+  critical: "#DC2626",
+};
+
+const severityLabels: Record<string, string> = {
+  low: "低",
+  medium: "中",
+  high: "高",
+  critical: "緊急",
 };
 
 export default function ErrorLogsScreen() {
@@ -88,6 +116,16 @@ export default function ErrorLogsScreen() {
     fetchLogs();
   }, [fetchLogs]);
 
+  // 定期的に更新（AI分析結果を取得するため）
+  useEffect(() => {
+    const interval = setInterval(() => {
+      if (logs.some(log => log.aiAnalyzing)) {
+        fetchLogs();
+      }
+    }, 5000);
+    return () => clearInterval(interval);
+  }, [logs, fetchLogs]);
+
   const onRefresh = useCallback(() => {
     setRefreshing(true);
     fetchLogs();
@@ -107,7 +145,7 @@ export default function ErrorLogsScreen() {
   const handleResolveAll = async () => {
     const confirm = Platform.OS === "web"
       ? window.confirm("すべてのエラーを解決済みにしますか？")
-      : true; // Native uses Alert
+      : true;
     
     if (Platform.OS !== "web") {
       Alert.alert(
@@ -204,7 +242,7 @@ export default function ErrorLogsScreen() {
         <View className="mb-6">
           <Text className="text-2xl font-bold text-foreground">エラーログ</Text>
           <Text className="text-sm text-muted mt-1">
-            アプリケーションで発生したエラーを確認
+            アプリケーションで発生したエラーを確認（AI分析付き）
           </Text>
         </View>
 
@@ -349,21 +387,45 @@ export default function ErrorLogsScreen() {
                   <View className="p-4">
                     {/* ヘッダー */}
                     <View className="flex-row items-center justify-between mb-2">
-                      <View className="flex-row items-center">
-                        <Ionicons name={category.icon} size={16} color={category.color} />
-                        <Text
-                          className="ml-2 text-xs font-medium"
-                          style={{ color: category.color }}
-                        >
-                          {category.label}
-                        </Text>
+                      <View className="flex-row items-center flex-wrap gap-2">
+                        <View className="flex-row items-center">
+                          <Ionicons name={category.icon} size={16} color={category.color} />
+                          <Text
+                            className="ml-1 text-xs font-medium"
+                            style={{ color: category.color }}
+                          >
+                            {category.label}
+                          </Text>
+                        </View>
                         {log.resolved && (
                           <View
-                            className="ml-2 px-2 py-0.5 rounded"
+                            className="px-2 py-0.5 rounded"
                             style={{ backgroundColor: colors.success + "20" }}
                           >
                             <Text className="text-xs" style={{ color: colors.success }}>
                               解決済み
+                            </Text>
+                          </View>
+                        )}
+                        {log.aiAnalysis && (
+                          <View
+                            className="px-2 py-0.5 rounded flex-row items-center"
+                            style={{ backgroundColor: severityColors[log.aiAnalysis.severity] + "20" }}
+                          >
+                            <Ionicons name="sparkles" size={10} color={severityColors[log.aiAnalysis.severity]} />
+                            <Text className="text-xs ml-1" style={{ color: severityColors[log.aiAnalysis.severity] }}>
+                              AI分析済み
+                            </Text>
+                          </View>
+                        )}
+                        {log.aiAnalyzing && (
+                          <View
+                            className="px-2 py-0.5 rounded flex-row items-center"
+                            style={{ backgroundColor: colors.primary + "20" }}
+                          >
+                            <ActivityIndicator size={10} color={colors.primary} />
+                            <Text className="text-xs ml-1" style={{ color: colors.primary }}>
+                              分析中...
                             </Text>
                           </View>
                         )}
@@ -386,9 +448,117 @@ export default function ErrorLogsScreen() {
                       </Text>
                     )}
 
+                    {/* AI分析結果のサマリー（折りたたみ時） */}
+                    {!isExpanded && log.aiAnalysis && (
+                      <View 
+                        className="mt-3 p-3 rounded-lg"
+                        style={{ backgroundColor: severityColors[log.aiAnalysis.severity] + "10" }}
+                      >
+                        <View className="flex-row items-center mb-1">
+                          <Ionicons name="sparkles" size={14} color={severityColors[log.aiAnalysis.severity]} />
+                          <Text className="text-xs font-semibold ml-1" style={{ color: severityColors[log.aiAnalysis.severity] }}>
+                            AI分析: {severityLabels[log.aiAnalysis.severity]}レベル（確信度 {log.aiAnalysis.confidence}%）
+                          </Text>
+                        </View>
+                        <Text className="text-sm text-foreground" numberOfLines={2}>
+                          {log.aiAnalysis.cause}
+                        </Text>
+                      </View>
+                    )}
+
                     {/* 展開時の詳細 */}
                     {isExpanded && (
                       <View className="mt-4 pt-4 border-t border-border">
+                        {/* AI分析結果 */}
+                        {log.aiAnalysis && (
+                          <View 
+                            className="mb-4 p-4 rounded-lg"
+                            style={{ backgroundColor: severityColors[log.aiAnalysis.severity] + "10" }}
+                          >
+                            <View className="flex-row items-center justify-between mb-3">
+                              <View className="flex-row items-center">
+                                <Ionicons name="sparkles" size={18} color={severityColors[log.aiAnalysis.severity]} />
+                                <Text className="text-base font-bold ml-2" style={{ color: severityColors[log.aiAnalysis.severity] }}>
+                                  AI分析結果
+                                </Text>
+                              </View>
+                              <View className="flex-row items-center gap-2">
+                                <View 
+                                  className="px-2 py-1 rounded"
+                                  style={{ backgroundColor: severityColors[log.aiAnalysis.severity] + "30" }}
+                                >
+                                  <Text className="text-xs font-medium" style={{ color: severityColors[log.aiAnalysis.severity] }}>
+                                    {severityLabels[log.aiAnalysis.severity]}
+                                  </Text>
+                                </View>
+                                <Text className="text-xs text-muted">
+                                  確信度 {log.aiAnalysis.confidence}%
+                                </Text>
+                              </View>
+                            </View>
+
+                            {/* 原因 */}
+                            <View className="mb-3">
+                              <Text className="text-xs font-semibold text-muted mb-1">
+                                🔍 原因
+                              </Text>
+                              <Text className="text-foreground">
+                                {log.aiAnalysis.cause}
+                              </Text>
+                            </View>
+
+                            {/* 解決策 */}
+                            <View className="mb-3">
+                              <Text className="text-xs font-semibold text-muted mb-1">
+                                💡 解決策
+                              </Text>
+                              <Text className="text-foreground">
+                                {log.aiAnalysis.solution}
+                              </Text>
+                            </View>
+
+                            {/* コード例 */}
+                            {log.aiAnalysis.codeExample && (
+                              <View className="mb-3">
+                                <Text className="text-xs font-semibold text-muted mb-1">
+                                  📝 コード例
+                                </Text>
+                                <View 
+                                  className="p-3 rounded"
+                                  style={{ backgroundColor: colors.background }}
+                                >
+                                  <Text className="text-xs font-mono text-foreground">
+                                    {log.aiAnalysis.codeExample}
+                                  </Text>
+                                </View>
+                              </View>
+                            )}
+
+                            {/* メタ情報 */}
+                            <View className="flex-row items-center justify-between pt-2 border-t border-border/30">
+                              <Text className="text-xs text-muted">
+                                モデル: {log.aiAnalysis.model}
+                              </Text>
+                              <Text className="text-xs text-muted">
+                                {formatDate(log.aiAnalysis.analyzedAt)}
+                              </Text>
+                            </View>
+                          </View>
+                        )}
+
+                        {/* AI分析中 */}
+                        {log.aiAnalyzing && (
+                          <View 
+                            className="mb-4 p-4 rounded-lg items-center"
+                            style={{ backgroundColor: colors.primary + "10" }}
+                          >
+                            <ActivityIndicator size="small" color={colors.primary} />
+                            <Text className="text-sm text-muted mt-2">
+                              AIがエラーを分析中...
+                            </Text>
+                          </View>
+                        )}
+
                         {/* スタックトレース */}
                         {log.stack && (
                           <View className="mb-4">
@@ -444,6 +614,38 @@ export default function ErrorLogsScreen() {
             })}
           </View>
         )}
+
+        {/* AI分析の説明 */}
+        <View className="mt-6 p-4 bg-surface rounded-xl border border-border">
+          <View className="flex-row items-center mb-2">
+            <Ionicons name="sparkles" size={18} color={colors.primary} />
+            <Text className="font-semibold text-foreground ml-2">
+              AI自動分析について
+            </Text>
+          </View>
+          <Text className="text-sm text-muted">
+            エラーが発生すると、AIが自動的に原因を分析し、解決策を提案します。
+            OpenRouterの無料モデル（Llama、Mistral等）を使用しています。
+          </Text>
+          <View className="flex-row flex-wrap gap-2 mt-3">
+            <View className="flex-row items-center">
+              <View className="w-3 h-3 rounded-full" style={{ backgroundColor: severityColors.low }} />
+              <Text className="text-xs text-muted ml-1">低</Text>
+            </View>
+            <View className="flex-row items-center">
+              <View className="w-3 h-3 rounded-full" style={{ backgroundColor: severityColors.medium }} />
+              <Text className="text-xs text-muted ml-1">中</Text>
+            </View>
+            <View className="flex-row items-center">
+              <View className="w-3 h-3 rounded-full" style={{ backgroundColor: severityColors.high }} />
+              <Text className="text-xs text-muted ml-1">高</Text>
+            </View>
+            <View className="flex-row items-center">
+              <View className="w-3 h-3 rounded-full" style={{ backgroundColor: severityColors.critical }} />
+              <Text className="text-xs text-muted ml-1">緊急</Text>
+            </View>
+          </View>
+        </View>
       </ScrollView>
     </ScreenContainer>
   );

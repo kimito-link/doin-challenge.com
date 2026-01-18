@@ -1573,6 +1573,42 @@ Design requirements:
         return db.isUserInWaitlist(input.challengeId, ctx.user.id);
       }),
   }),
+
+  // 管理者用ユーザー管理API
+  admin: router({
+    // ユーザー一覧取得
+    users: protectedProcedure
+      .query(async ({ ctx }) => {
+        if (ctx.user.role !== "admin") {
+          throw new Error("管理者権限が必要です");
+        }
+        return db.getAllUsers();
+      }),
+
+    // ユーザー権限変更
+    updateUserRole: protectedProcedure
+      .input(z.object({
+        userId: z.number(),
+        role: z.enum(["user", "admin"]),
+      }))
+      .mutation(async ({ ctx, input }) => {
+        if (ctx.user.role !== "admin") {
+          throw new Error("管理者権限が必要です");
+        }
+        await db.updateUserRole(input.userId, input.role);
+        return { success: true };
+      }),
+
+    // ユーザー詳細取得
+    getUser: protectedProcedure
+      .input(z.object({ userId: z.number() }))
+      .query(async ({ ctx, input }) => {
+        if (ctx.user.role !== "admin") {
+          throw new Error("管理者権限が必要です");
+        }
+        return db.getUserById(input.userId);
+      }),
+  }),
 });
 
 export type AppRouter = typeof appRouter;

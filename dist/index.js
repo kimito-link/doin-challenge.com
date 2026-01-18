@@ -594,6 +594,7 @@ __export(db_exports, {
   getAllBadges: () => getAllBadges,
   getAllCategories: () => getAllCategories,
   getAllEvents: () => getAllEvents,
+  getAllUsers: () => getAllUsers,
   getBadgeById: () => getBadgeById,
   getCategoryById: () => getCategoryById,
   getCategoryBySlug: () => getCategoryBySlug,
@@ -695,6 +696,7 @@ __export(db_exports, {
   updateParticipation: () => updateParticipation,
   updateReminder: () => updateReminder,
   updateTicketTransferStatus: () => updateTicketTransferStatus,
+  updateUserRole: () => updateUserRole,
   upsertNotificationSettings: () => upsertNotificationSettings,
   upsertUser: () => upsertUser
 });
@@ -772,6 +774,23 @@ async function getUserByOpenId(openId) {
   }
   const result = await db.select().from(users).where(eq(users.openId, openId)).limit(1);
   return result.length > 0 ? result[0] : void 0;
+}
+async function getAllUsers() {
+  const db = await getDb();
+  if (!db) return [];
+  return db.select().from(users).orderBy(desc(users.lastSignedIn));
+}
+async function getUserById(id) {
+  const db = await getDb();
+  if (!db) return null;
+  const result = await db.select().from(users).where(eq(users.id, id)).limit(1);
+  return result.length > 0 ? result[0] : null;
+}
+async function updateUserRole(userId, role) {
+  const db = await getDb();
+  if (!db) return false;
+  await db.update(users).set({ role }).where(eq(users.id, userId));
+  return true;
 }
 async function getAllEvents() {
   const now = Date.now();
@@ -1868,12 +1887,6 @@ async function refreshAllChallengeSummaries() {
     }
   }
   return { updated, total: allChallenges.length };
-}
-async function getUserById(userId) {
-  const db = await getDb();
-  if (!db) return null;
-  const result = await db.select().from(users).where(eq(users.id, userId)).limit(1);
-  return result[0] || null;
 }
 async function createTicketTransfer(transfer) {
   const db = await getDb();
@@ -4559,6 +4572,34 @@ Design requirements:
     isInWaitlist: protectedProcedure.input(z2.object({ challengeId: z2.number() })).query(async ({ ctx, input }) => {
       return isUserInWaitlist(input.challengeId, ctx.user.id);
     })
+  }),
+  // 管理者用ユーザー管理API
+  admin: router({
+    // ユーザー一覧取得
+    users: protectedProcedure.query(async ({ ctx }) => {
+      if (ctx.user.role !== "admin") {
+        throw new Error("\u7BA1\u7406\u8005\u6A29\u9650\u304C\u5FC5\u8981\u3067\u3059");
+      }
+      return getAllUsers();
+    }),
+    // ユーザー権限変更
+    updateUserRole: protectedProcedure.input(z2.object({
+      userId: z2.number(),
+      role: z2.enum(["user", "admin"])
+    })).mutation(async ({ ctx, input }) => {
+      if (ctx.user.role !== "admin") {
+        throw new Error("\u7BA1\u7406\u8005\u6A29\u9650\u304C\u5FC5\u8981\u3067\u3059");
+      }
+      await updateUserRole(input.userId, input.role);
+      return { success: true };
+    }),
+    // ユーザー詳細取得
+    getUser: protectedProcedure.input(z2.object({ userId: z2.number() })).query(async ({ ctx, input }) => {
+      if (ctx.user.role !== "admin") {
+        throw new Error("\u7BA1\u7406\u8005\u6A29\u9650\u304C\u5FC5\u8981\u3067\u3059");
+      }
+      return getUserById(input.userId);
+    })
   })
 });
 
@@ -4627,6 +4668,10 @@ function getDashboardSummary() {
     recentHistory: getRecentUsageHistory(20)
   };
 }
+
+// server/ai-error-analyzer.ts
+import axios2 from "axios";
+var CACHE_TTL = 60 * 60 * 1e3;
 
 // server/error-tracker.ts
 var errorLogs = [];

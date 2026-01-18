@@ -100,6 +100,26 @@ export async function getUserByOpenId(openId: string) {
   return result.length > 0 ? result[0] : undefined;
 }
 
+export async function getAllUsers() {
+  const db = await getDb();
+  if (!db) return [];
+  return db.select().from(users).orderBy(desc(users.lastSignedIn));
+}
+
+export async function getUserById(id: number) {
+  const db = await getDb();
+  if (!db) return null;
+  const result = await db.select().from(users).where(eq(users.id, id)).limit(1);
+  return result.length > 0 ? result[0] : null;
+}
+
+export async function updateUserRole(userId: number, role: "user" | "admin") {
+  const db = await getDb();
+  if (!db) return false;
+  await db.update(users).set({ role }).where(eq(users.id, userId));
+  return true;
+}
+
 // ========== Events ==========
 
 // サーバーサイドメモリキャッシュ（パフォーマンス最適化）
@@ -1627,15 +1647,6 @@ export async function refreshAllChallengeSummaries() {
   return { updated, total: allChallenges.length };
 }
 
-
-// ========== User Profile (ユーザープロフィール) ==========
-
-export async function getUserById(userId: number) {
-  const db = await getDb();
-  if (!db) return null;
-  const result = await db.select().from(users).where(eq(users.id, userId)).limit(1);
-  return result[0] || null;
-}
 
 
 // ========== Ticket Transfers (チケット譲渡) ==========
