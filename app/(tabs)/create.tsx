@@ -18,6 +18,7 @@ import { NumberStepper } from "@/components/molecules/number-stepper";
 import { showAlert } from "@/lib/web-alert";
 import { TwitterUserCard } from "@/components/molecules/twitter-user-card";
 import { CharacterGroupValidationError } from "@/components/molecules/character-validation-error";
+import { InlineValidationError } from "@/components/molecules/inline-validation-error";
 
 // キャラクター画像
 const characterImages = {
@@ -84,12 +85,9 @@ export default function CreateChallengeScreen() {
   // ScrollViewのref（バリデーションエラー時にスクロールするため）
   const scrollViewRef = useRef<ScrollView>(null);
   
-  // バリデーションエラー表示時にトップにスクロール
-  useEffect(() => {
-    if (showValidationError && scrollViewRef.current) {
-      scrollViewRef.current.scrollTo({ y: 0, animated: true });
-    }
-  }, [showValidationError]);
+  // 各フィールドのref
+  const titleInputRef = useRef<View>(null);
+  const dateInputRef = useRef<View>(null);
 
   // カテゴリ一覧を取得
   const { data: categoriesData } = trpc.categories.list.useQuery();
@@ -110,6 +108,33 @@ export default function CreateChallengeScreen() {
     
     return errors;
   }, [title, eventDateStr, user]);
+  
+  // バリデーションエラー表示時にエラーのあるフィールドにスクロール
+  useEffect(() => {
+    if (showValidationError && scrollViewRef.current) {
+      // 最初のエラーのあるフィールドにスクロール
+      const firstError = validationErrors[0];
+      if (firstError?.field === "title" && titleInputRef.current) {
+        // タイトル入力欄にスクロール
+        titleInputRef.current.measureLayout(
+          scrollViewRef.current as any,
+          (x, y) => {
+            scrollViewRef.current?.scrollTo({ y: Math.max(0, y - 100), animated: true });
+          },
+          () => {}
+        );
+      } else if (firstError?.field === "date" && dateInputRef.current) {
+        // 日付入力欄にスクロール
+        dateInputRef.current.measureLayout(
+          scrollViewRef.current as any,
+          (x, y) => {
+            scrollViewRef.current?.scrollTo({ y: Math.max(0, y - 100), animated: true });
+          },
+          () => {}
+        );
+      }
+    }
+  }, [showValidationError, validationErrors]);
 
   const createTemplateMutation = trpc.templates.create.useMutation({
     onSuccess: () => {
@@ -275,12 +300,6 @@ export default function CreateChallengeScreen() {
               style={{ height: 4 }}
             />
             <View style={{ padding: 16 }}>
-              {/* キャラクターバリデーションエラー */}
-              <CharacterGroupValidationError
-                errors={validationErrors}
-                visible={showValidationError}
-              />
-
               {/* Twitterログインボタン */}
               {!user && (
                 <TouchableOpacity
@@ -436,7 +455,7 @@ export default function CreateChallengeScreen() {
               </View>
 
               {/* チャレンジ名 */}
-              <View style={{ marginBottom: 16 }}>
+              <View ref={titleInputRef} style={{ marginBottom: 16 }}>
                 <Text style={{ color: colors.muted, fontSize: 14, marginBottom: 8 }}>
                   チャレンジ名 *
                 </Text>
@@ -453,6 +472,11 @@ export default function CreateChallengeScreen() {
                     borderWidth: 1,
                     borderColor: !title.trim() && showValidationError ? "#EC4899" : "#2D3139",
                   }}
+                />
+                <InlineValidationError
+                  message="チャレンジ名を入れてね！"
+                  visible={showValidationError && !title.trim()}
+                  character="rinku"
                 />
               </View>
 
@@ -544,7 +568,7 @@ export default function CreateChallengeScreen() {
                 presets={goalType === "attendance" ? [50, 100, 200, 500, 1000] : goalType === "viewers" ? [100, 500, 1000, 5000, 10000] : [50, 100, 500, 1000, 5000]}
               />
 
-              <View style={{ marginBottom: 16 }}>
+              <View ref={dateInputRef} style={{ marginBottom: 16 }}>
                 <Text style={{ color: colors.muted, fontSize: 14, marginBottom: 8 }}>
                   開催日 *
                 </Text>
@@ -555,6 +579,11 @@ export default function CreateChallengeScreen() {
                     placeholder="日付を選択"
                   />
                 </View>
+                <InlineValidationError
+                  message="日程が決まってないと参加できないよ〜"
+                  visible={showValidationError && !eventDateStr.trim()}
+                  character="tanune"
+                />
               </View>
 
               <View style={{ marginBottom: 16 }}>
