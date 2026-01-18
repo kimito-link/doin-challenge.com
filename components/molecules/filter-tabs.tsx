@@ -75,7 +75,7 @@ export function FilterTabs({
                 style={[
                   styles.shabettaTabText,
                   {
-                    color: isActive ? "#fff" : "#6B7280",
+                    color: isActive ? "#fff" : "#D1D5DB",
                     fontSize: sizeStyles.fontSize,
                     fontWeight: isActive ? "600" : "400",
                   },
@@ -119,7 +119,7 @@ export function FilterTabs({
                 style={[
                   styles.pillTabText,
                   {
-                    color: isActive ? "#fff" : "#9CA3AF",
+                    color: isActive ? "#fff" : "#E5E7EB",
                     fontSize: sizeStyles.fontSize,
                     fontWeight: isActive ? "600" : "400",
                   },
@@ -157,7 +157,7 @@ export function FilterTabs({
               style={[
                 styles.underlineTabText,
                 {
-                  color: isActive ? "#EC4899" : "#9CA3AF",
+                  color: isActive ? "#EC4899" : "#D1D5DB",
                   fontSize: sizeStyles.fontSize,
                   fontWeight: isActive ? "600" : "400",
                 },

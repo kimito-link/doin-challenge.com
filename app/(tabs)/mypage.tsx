@@ -399,7 +399,7 @@ export default function MyPageScreen() {
                       </Text>
                       <Text style={{ color: "#1DA1F2", fontSize: 12 }}>@streamerfunch</Text>
                     </View>
-                    <MaterialIcons name="open-in-new" size={18} color="#6B7280" />
+                    <MaterialIcons name="open-in-new" size={18} color="#9CA3AF" />
                   </TouchableOpacity>
                   
                   <TouchableOpacity
@@ -424,7 +424,7 @@ export default function MyPageScreen() {
                       </Text>
                       <Text style={{ color: "#1DA1F2", fontSize: 12 }}>@idolfunch</Text>
                     </View>
-                    <MaterialIcons name="open-in-new" size={18} color="#6B7280" />
+                    <MaterialIcons name="open-in-new" size={18} color="#9CA3AF" />
                   </TouchableOpacity>
                 </View>
               </View>
@@ -554,8 +554,8 @@ export default function MyPageScreen() {
                 marginTop: 16,
               }}
             >
-              <MaterialIcons name="refresh" size={18} color="#6B7280" />
-              <Text style={{ color: "#9CA3AF", fontSize: 13, marginLeft: 6 }}>
+              <MaterialIcons name="refresh" size={18} color="#9CA3AF" />
+              <Text style={{ color: "#D1D5DB", fontSize: 13, marginLeft: 6 }}>
                 他のキャラクターのメッセージを見る
               </Text>
             </TouchableOpacity>
@@ -753,7 +753,7 @@ export default function MyPageScreen() {
                 実績を解除してポイントを獲得しよう
               </Text>
             </View>
-            <MaterialIcons name="chevron-right" size={24} color="#6B7280" />
+            <MaterialIcons name="chevron-right" size={24} color="#9CA3AF" />
           </TouchableOpacity>
 
           {/* 通知設定リンク */}
@@ -792,7 +792,7 @@ export default function MyPageScreen() {
                 目標達成やマイルストーンの通知を管理
               </Text>
             </View>
-            <MaterialIcons name="chevron-right" size={24} color="#6B7280" />
+            <MaterialIcons name="chevron-right" size={24} color="#9CA3AF" />
           </TouchableOpacity>
 
           {/* テーマ設定リンク */}
@@ -831,7 +831,7 @@ export default function MyPageScreen() {
                 ライト/ダークモードを切り替え
               </Text>
             </View>
-            <MaterialIcons name="chevron-right" size={24} color="#6B7280" />
+            <MaterialIcons name="chevron-right" size={24} color="#9CA3AF" />
           </TouchableOpacity>
 
           {/* チュートリアル再表示 */}
@@ -875,7 +875,7 @@ export default function MyPageScreen() {
                 Twitter APIのレート制限状況
               </Text>
             </View>
-            <MaterialIcons name="chevron-right" size={24} color="#6B7280" />
+            <MaterialIcons name="chevron-right" size={24} color="#9CA3AF" />
           </TouchableOpacity>
 
           {/* バッジセクション */}
@@ -925,7 +925,7 @@ export default function MyPageScreen() {
                     <Text style={{ color: colors.foreground, fontSize: 12, fontWeight: "bold", textAlign: "center" }} numberOfLines={2}>
                       {userBadge.badge?.name || "バッジ"}
                     </Text>
-                    <Text style={{ color: "#9CA3AF", fontSize: 10, marginTop: 4 }}>
+                    <Text style={{ color: "#D1D5DB", fontSize: 10, marginTop: 4 }}>
                       {new Date(userBadge.earnedAt).toLocaleDateString("ja-JP", { month: "short", day: "numeric" })}
                     </Text>
                   </View>
@@ -942,11 +942,11 @@ export default function MyPageScreen() {
                   borderColor: "#2D3139",
                 }}
               >
-                <MaterialIcons name="military-tech" size={48} color="#6B7280" />
+                <MaterialIcons name="military-tech" size={48} color="#9CA3AF" />
                 <Text style={{ color: "#D1D5DB", fontSize: 14, marginTop: 12 }}>
                   まだバッジを獲得していません
                 </Text>
-                <Text style={{ color: "#9CA3AF", fontSize: 12, marginTop: 4, textAlign: "center" }}>
+                <Text style={{ color: "#D1D5DB", fontSize: 12, marginTop: 4, textAlign: "center" }}>
                   チャレンジに参加してバッジを集めよう！
                 </Text>
               </View>
@@ -1028,7 +1028,7 @@ export default function MyPageScreen() {
                   borderColor: "#2D3139",
                 }}
               >
-                <MaterialIcons name="flag" size={48} color="#6B7280" />
+                <MaterialIcons name="flag" size={48} color="#9CA3AF" />
                 <Text style={{ color: "#D1D5DB", marginTop: 8, textAlign: "center" }}>
                   まだチャレンジを作成していません
                 </Text>
@@ -1070,7 +1070,7 @@ export default function MyPageScreen() {
                       <Text style={{ color: "#EC4899", fontSize: 18, fontWeight: "bold" }}>
                         +{item.contribution || 1}
                       </Text>
-                      <Text style={{ color: "#9CA3AF", fontSize: 10 }}>貢献度</Text>
+                      <Text style={{ color: "#D1D5DB", fontSize: 10 }}>貢献度</Text>
                     </View>
                   </View>
                 </View>

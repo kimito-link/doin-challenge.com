@@ -583,7 +583,7 @@ function DemoTrialBanner() {
               </View>
             </View>
             <Text style={{ 
-              color: "#9CA3AF", 
+              color: "#D1D5DB", 
               fontSize: 12,
               lineHeight: 18,
             }}>
@@ -1020,7 +1020,7 @@ export default function HomeScreen() {
           borderWidth: 1,
           borderColor: searchQuery ? "#DD6500" : "#2D3139",
         }}>
-          <MaterialIcons name="search" size={20} color="#9CA3AF" />
+          <MaterialIcons name="search" size={20} color="#D1D5DB" />
           <TextInput
             value={searchQuery}
             onChangeText={(text) => {
@@ -1028,7 +1028,7 @@ export default function HomeScreen() {
               setIsSearching(text.length > 0);
             }}
             placeholder="チャレンジを検索..."
-            placeholderTextColor="#6B7280"
+            placeholderTextColor="#9CA3AF"
             style={{
               flex: 1,
               marginLeft: 8,
@@ -1039,7 +1039,7 @@ export default function HomeScreen() {
           />
           {searchQuery.length > 0 && (
             <TouchableOpacity onPress={() => { setSearchQuery(""); setIsSearching(false); }}>
-              <MaterialIcons name="close" size={20} color="#9CA3AF" />
+              <MaterialIcons name="close" size={20} color="#D1D5DB" />
             </TouchableOpacity>
           )}
         </View>
@@ -1225,7 +1225,7 @@ export default function HomeScreen() {
                 </View>
               ) : (isSearching ? hasNextSearchPage : hasNextPage) ? (
                 <View style={{ padding: 20, alignItems: "center" }}>
-                  <Text style={{ color: "#9CA3AF" }}>スクロールしてもっと見る</Text>
+                  <Text style={{ color: "#D1D5DB" }}>スクロールしてもっと見る</Text>
                 </View>
               ) : null}
               {/* 追加セクション（チャレンジ一覧の後に表示） */}
