@@ -561,7 +561,12 @@ var _db = null;
 async function getDb() {
   if (!_db && process.env.DATABASE_URL) {
     try {
-      _db = drizzle(process.env.DATABASE_URL);
+      let connectionUrl = process.env.DATABASE_URL;
+      if (connectionUrl && !connectionUrl.includes("ssl=")) {
+        const separator = connectionUrl.includes("?") ? "&" : "?";
+        connectionUrl = `${connectionUrl}${separator}ssl={"rejectUnauthorized":true}`;
+      }
+      _db = drizzle(connectionUrl);
     } catch (error) {
       console.warn("[Database] Failed to connect:", error);
       _db = null;

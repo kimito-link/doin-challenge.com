@@ -31,6 +31,7 @@ import { HostProfileModal } from "@/components/organisms/host-profile-modal";
 import { FanProfileModal } from "@/components/organisms/fan-profile-modal";
 import { TwitterUserCard } from "@/components/molecules/twitter-user-card";
 import { useFavorites } from "@/hooks/use-favorites";
+import { getChallengeColor } from "@/lib/challenge-colors";
 
 const { width: screenWidth } = Dimensions.get("window");
 

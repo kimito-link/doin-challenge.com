@@ -13,7 +13,14 @@ let _db: ReturnType<typeof drizzle> | null = null;
 export async function getDb() {
   if (!_db && process.env.DATABASE_URL) {
     try {
-      _db = drizzle(process.env.DATABASE_URL);
+      // TiDB CloudはSSL接続が必須
+      // DATABASE_URLにsslパラメータがない場合は自動で追加
+      let connectionUrl = process.env.DATABASE_URL;
+      if (connectionUrl && !connectionUrl.includes('ssl=')) {
+        const separator = connectionUrl.includes('?') ? '&' : '?';
+        connectionUrl = `${connectionUrl}${separator}ssl={"rejectUnauthorized":true}`;
+      }
+      _db = drizzle(connectionUrl);
     } catch (error) {
       console.warn("[Database] Failed to connect:", error);
       _db = null;
