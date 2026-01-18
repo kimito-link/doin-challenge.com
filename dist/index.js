@@ -3248,8 +3248,15 @@ var adminProcedure = t.procedure.use(
   })
 );
 
+// shared/version.ts
+var APP_VERSION = "v5.73";
+
 // server/_core/systemRouter.ts
 var systemRouter = router({
+  // バージョン取得エンドポイント
+  version: publicProcedure.query(() => ({
+    version: APP_VERSION
+  })),
   health: publicProcedure.input(
     z.object({
       timestamp: z.number().min(0, "timestamp cannot be negative")
