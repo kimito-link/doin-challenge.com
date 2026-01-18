@@ -7,12 +7,10 @@ import { useAuth } from "@/hooks/use-auth";
 import { GlobalMenu } from "@/components/organisms/global-menu";
 import { TalkingCharacter } from "@/components/molecules/talking-character";
 import * as Haptics from "expo-haptics";
+import { APP_VERSION } from "@/shared/version";
 
 // ロゴ画像
 const logoImage = require("@/assets/images/logo/logo-color.jpg");
-
-// アプリバージョン（デプロイ確認用）
-const APP_VERSION = "v5.71";
 
 // キャラクター画像
 const characterImages = {
