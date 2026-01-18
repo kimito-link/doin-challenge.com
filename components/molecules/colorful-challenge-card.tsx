@@ -1,4 +1,4 @@
-import { View, Text, StyleSheet, Platform } from "react-native";
+import { View, Text, StyleSheet, TouchableOpacity } from "react-native";
 import { LinearGradient } from "expo-linear-gradient";
 import MaterialIcons from "@expo/vector-icons/MaterialIcons";
 import { useColors } from "@/hooks/use-colors";
@@ -31,6 +31,8 @@ interface ColorfulChallengeCardProps {
   onPress: () => void;
   numColumns?: number;
   colorIndex?: number;
+  isFavorite?: boolean;
+  onToggleFavorite?: (challengeId: number) => void;
 }
 
 // 「しゃべった！」風のカラフルなカラーパレット
@@ -69,6 +71,8 @@ export function ColorfulChallengeCard({
   onPress, 
   numColumns = 2,
   colorIndex,
+  isFavorite = false,
+  onToggleFavorite,
 }: ColorfulChallengeCardProps) {
   const colors = useColors();
   const { isDesktop } = useResponsive();
@@ -113,9 +117,20 @@ export function ColorfulChallengeCard({
         style={styles.cardGradient}
       >
         {/* お気に入りアイコン（左上） */}
-        <View style={styles.favoriteIcon}>
-          <MaterialIcons name="star-outline" size={20} color="rgba(255,255,255,0.6)" />
-        </View>
+        <TouchableOpacity 
+          style={styles.favoriteIcon}
+          onPress={(e) => {
+            e.stopPropagation?.();
+            onToggleFavorite?.(challenge.id);
+          }}
+          hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
+        >
+          <MaterialIcons 
+            name={isFavorite ? "star" : "star-outline"} 
+            size={20} 
+            color={isFavorite ? "#FFD700" : "rgba(255,255,255,0.6)"} 
+          />
+        </TouchableOpacity>
 
         {/* メニューアイコン（右上） */}
         <View style={styles.menuIcon}>

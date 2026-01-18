@@ -30,6 +30,7 @@ import { TalkingCharacter, ACHIEVEMENT_MESSAGES } from "@/components/molecules/t
 import { HostProfileModal } from "@/components/organisms/host-profile-modal";
 import { FanProfileModal } from "@/components/organisms/fan-profile-modal";
 import { TwitterUserCard } from "@/components/molecules/twitter-user-card";
+import { useFavorites } from "@/hooks/use-favorites";
 
 const { width: screenWidth } = Dimensions.get("window");
 
@@ -564,6 +565,10 @@ export default function ChallengeDetailScreen() {
 
   const challengeId = parseInt(id || "0", 10);
   
+  // v5.61: お気に入り機能
+  const { isFavorite, toggleFavorite } = useFavorites();
+  const isChallengeFavorite = isFavorite(challengeId);
+  
   const { data: challenge, isLoading: challengeLoading } = trpc.events.getById.useQuery({ id: challengeId });
   const { data: participations, isLoading: participationsLoading, refetch } = trpc.participations.listByEvent.useQuery({ eventId: challengeId });
   
@@ -969,8 +974,30 @@ export default function ChallengeDetailScreen() {
             colors={["#EC4899", "#8B5CF6"]}
             start={{ x: 0, y: 0 }}
             end={{ x: 1, y: 1 }}
-            style={{ marginHorizontal: 16, borderRadius: 16, padding: 20 }}
+            style={{ marginHorizontal: 16, borderRadius: 16, padding: 20, position: "relative" }}
           >
+            {/* v5.61: お気に入りボタン */}
+            <TouchableOpacity
+              onPress={() => toggleFavorite(challengeId)}
+              style={{
+                position: "absolute",
+                top: 12,
+                right: 12,
+                width: 40,
+                height: 40,
+                borderRadius: 20,
+                backgroundColor: "rgba(255,255,255,0.2)",
+                alignItems: "center",
+                justifyContent: "center",
+                zIndex: 10,
+              }}
+            >
+              <MaterialIcons
+                name={isChallengeFavorite ? "star" : "star-outline"}
+                size={24}
+                color={isChallengeFavorite ? "#FFD700" : "#fff"}
+              />
+            </TouchableOpacity>
             {/* ホスト情報（クリックでプロフィールモーダル表示） */}
             <TwitterUserCard
               user={{

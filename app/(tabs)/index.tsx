@@ -33,6 +33,7 @@ import { BlinkingLink } from "@/components/atoms/blinking-character";
 import { HostEmptyState } from "@/components/organisms/host-empty-state";
 import { TutorialHighlightTarget } from "@/components/atoms/tutorial-highlight-target";
 import { useTutorial } from "@/lib/tutorial-context";
+import { useFavorites } from "@/hooks/use-favorites";
 
 // キャラクター画像
 const characterImages = {
@@ -95,7 +96,7 @@ type Challenge = {
   status: string;
 };
 
-type FilterType = "all" | "solo" | "group";
+type FilterType = "all" | "solo" | "group" | "favorites";
 
 // 注目のチャレンジセクション
 function FeaturedChallenge({ challenge, onPress }: { challenge: Challenge; onPress: () => void }) {
@@ -523,7 +524,7 @@ function FeatureListSection() {
   );
 }
 
-function ChallengeCard({ challenge, onPress, numColumns = 2, colorIndex }: { challenge: Challenge; onPress: () => void; numColumns?: number; colorIndex?: number }) {
+function ChallengeCard({ challenge, onPress, numColumns = 2, colorIndex, isFavorite = false, onToggleFavorite }: { challenge: Challenge; onPress: () => void; numColumns?: number; colorIndex?: number; isFavorite?: boolean; onToggleFavorite?: (id: number) => void }) {
   const colors = useColors();
   const { isDesktop } = useResponsive();
   const eventDate = new Date(challenge.eventDate);
@@ -761,6 +762,9 @@ export default function HomeScreen() {
   // v5.60: 励ましメッセージモーダル
   const encouragementModal = useEncouragementModal();
   
+  // v5.61: お気に入り機能
+  const { favorites, toggleFavorite, isFavorite } = useFavorites();
+  
   const { isOffline } = useNetworkStatus();
   
   // v5.34: タブ切り替え前に他のタブのデータをプリフェッチ
@@ -886,14 +890,17 @@ export default function HomeScreen() {
   };
 
   // フィルター適用
+  // v5.61: お気に入りフィルターを追加
   const displayChallenges = isSearching && searchResults 
     ? searchResults.filter((c: Challenge & { categoryId?: number | null }) => {
-        if (filter !== "all" && c.eventType !== filter) return false;
+        if (filter === "favorites" && !isFavorite(c.id)) return false;
+        if (filter !== "all" && filter !== "favorites" && c.eventType !== filter) return false;
         if (categoryFilter && c.categoryId !== categoryFilter) return false;
         return true;
       })
     : (effectiveChallenges?.filter((c: Challenge & { categoryId?: number | null }) => {
-        if (filter !== "all" && c.eventType !== filter) return false;
+        if (filter === "favorites" && !isFavorite(c.id)) return false;
+        if (filter !== "all" && filter !== "favorites" && c.eventType !== filter) return false;
         if (categoryFilter && c.categoryId !== categoryFilter) return false;
         return true;
       }) || []);
@@ -964,8 +971,9 @@ export default function HomeScreen() {
       </View>
       
       {/* タイプフィルター */}
-      <View style={{ flexDirection: "row", marginTop: 16, marginHorizontal: 16 }}>
+      <View style={{ flexDirection: "row", marginTop: 16, marginHorizontal: 16, flexWrap: "wrap", gap: 8 }}>
         <FilterButton label="すべて" active={filter === "all"} onPress={() => setFilter("all")} />
+        <FilterButton label="⭐ お気に入り" active={filter === "favorites"} onPress={() => setFilter("favorites")} />
         <FilterButton label="グループ" active={filter === "group"} onPress={() => setFilter("group")} />
         <FilterButton label="ソロ" active={filter === "solo"} onPress={() => setFilter("solo")} />
       </View>
@@ -1087,17 +1095,31 @@ export default function HomeScreen() {
           ListHeaderComponent={ListHeader}
           renderItem={({ item, index }) => {
             // v5.60: カラフルカードと通常カードの切り替え
-            const CardComponent = useColorfulCards ? ColorfulChallengeCard : ChallengeCard;
+            // v5.61: お気に入り機能を追加
+            const cardProps = {
+              challenge: item as Challenge,
+              onPress: () => handleChallengePress(item.id),
+              numColumns,
+              colorIndex: index,
+              isFavorite: isFavorite(item.id),
+              onToggleFavorite: toggleFavorite,
+            };
             // 最初のアイテムのみチュートリアルハイライト対象
             if (index === 0) {
               return (
                 <TutorialHighlightTarget tutorialStep={1} userType="fan">
-                  <CardComponent challenge={item as Challenge} onPress={() => handleChallengePress(item.id)} numColumns={numColumns} colorIndex={index} />
+                  {useColorfulCards ? (
+                    <ColorfulChallengeCard {...cardProps} />
+                  ) : (
+                    <ChallengeCard {...cardProps} />
+                  )}
                 </TutorialHighlightTarget>
               );
             }
-            return (
-              <CardComponent challenge={item as Challenge} onPress={() => handleChallengePress(item.id)} numColumns={numColumns} colorIndex={index} />
+            return useColorfulCards ? (
+              <ColorfulChallengeCard {...cardProps} />
+            ) : (
+              <ChallengeCard {...cardProps} />
             );
           }}
           refreshControl={
