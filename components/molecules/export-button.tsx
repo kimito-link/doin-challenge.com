@@ -84,7 +84,7 @@ export function ExportButton({ data, disabled = false }: ExportButtonProps) {
         accessibilityRole="button"
         accessibilityLabel="統計データをエクスポート"
       >
-        <MaterialIcons name="file-download" size={20} color={disabled ? "#6B7280" : "#fff"} />
+        <MaterialIcons name="file-download" size={20} color={disabled ? "#9CA3AF" : "#fff"} />
         <Text style={[styles.buttonText, disabled && styles.buttonTextDisabled]}>
           エクスポート
         </Text>
@@ -105,7 +105,7 @@ export function ExportButton({ data, disabled = false }: ExportButtonProps) {
             <View style={styles.modalHeader}>
               <Text style={styles.modalTitle}>エクスポート形式を選択</Text>
               <TouchableOpacity onPress={closeModal} style={styles.closeButton}>
-                <MaterialIcons name="close" size={24} color="#9CA3AF" />
+                <MaterialIcons name="close" size={24} color="#D1D5DB" />
               </TouchableOpacity>
             </View>
 
@@ -125,7 +125,7 @@ export function ExportButton({ data, disabled = false }: ExportButtonProps) {
                     表計算ソフトで開ける形式
                   </Text>
                 </View>
-                <MaterialIcons name="chevron-right" size={24} color="#6B7280" />
+                <MaterialIcons name="chevron-right" size={24} color="#9CA3AF" />
               </TouchableOpacity>
 
               {/* テキストレポート */}
@@ -143,7 +143,7 @@ export function ExportButton({ data, disabled = false }: ExportButtonProps) {
                     SNSでシェアしやすい形式
                   </Text>
                 </View>
-                <MaterialIcons name="chevron-right" size={24} color="#6B7280" />
+                <MaterialIcons name="chevron-right" size={24} color="#9CA3AF" />
               </TouchableOpacity>
 
               {/* クリップボードコピー（Web専用） */}
@@ -162,7 +162,7 @@ export function ExportButton({ data, disabled = false }: ExportButtonProps) {
                       CSVデータをコピー
                     </Text>
                   </View>
-                  <MaterialIcons name="chevron-right" size={24} color="#6B7280" />
+                  <MaterialIcons name="chevron-right" size={24} color="#9CA3AF" />
                 </TouchableOpacity>
               )}
             </View>
@@ -200,7 +200,7 @@ const styles = StyleSheet.create({
     fontWeight: "500",
   },
   buttonTextDisabled: {
-    color: "#6B7280",
+    color: "#9CA3AF",
   },
   modalOverlay: {
     flex: 1,
@@ -260,7 +260,7 @@ const styles = StyleSheet.create({
     marginBottom: 2,
   },
   optionDescription: {
-    color: "#9CA3AF",
+    color: "#D1D5DB",
     fontSize: 13,
   },
   loadingOverlay: {

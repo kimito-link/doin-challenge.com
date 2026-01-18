@@ -233,7 +233,7 @@ export function DatePicker({ value, onChange, placeholder = "日付を選択", m
         <Text style={[styles.inputText, !value && styles.placeholderText]}>
           {displayText}
         </Text>
-        <MaterialIcons name="calendar-today" size={20} color="#9CA3AF" />
+        <MaterialIcons name="calendar-today" size={20} color="#D1D5DB" />
       </TouchableOpacity>
 
       {/* カレンダーモーダル */}
@@ -273,7 +273,7 @@ const styles = StyleSheet.create({
     fontSize: 14,
   },
   placeholderText: {
-    color: "#6B7280",
+    color: "#9CA3AF",
   },
   modalOverlay: {
     flex: 1,
@@ -315,7 +315,7 @@ const styles = StyleSheet.create({
     alignItems: "center",
   },
   weekdayText: {
-    color: "#9CA3AF",
+    color: "#D1D5DB",
     fontSize: 12,
     fontWeight: "500",
   },

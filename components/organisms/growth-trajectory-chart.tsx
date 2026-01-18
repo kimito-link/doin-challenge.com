@@ -404,7 +404,7 @@ export function GrowthTrajectoryChart({ data, targetCount, title = "動員まで
               key={`y-label-${i}`}
               x={paddingLeft - 8}
               y={label.y + 4}
-              fill="#687076"
+              fill="#9CA3AF"
               fontSize={config.fontSize}
               textAnchor="end"
             >
@@ -418,7 +418,7 @@ export function GrowthTrajectoryChart({ data, targetCount, title = "動員まで
               key={`x-label-${i}`}
               x={label.x}
               y={chartHeight - paddingBottom + 20}
-              fill="#687076"
+              fill="#9CA3AF"
               fontSize={config.fontSize}
               textAnchor="middle"
             >

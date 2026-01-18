@@ -199,7 +199,7 @@ export function ExpandableFAB({
             </View>
             <TouchableOpacity
               onPress={() => handleActionPress(action)}
-              style={[styles.actionButton, { backgroundColor: action.color || "#6B7280" }]}
+              style={[styles.actionButton, { backgroundColor: action.color || "#9CA3AF" }]}
               activeOpacity={0.8}
             >
               <MaterialIcons name={action.icon as any} size={20} color="#fff" />

@@ -74,7 +74,7 @@ function TimeHeatmap({ participations }: { participations: Participation[] }) {
                 justifyContent: "center",
               }}
             >
-              <Text style={{ color: count > 0 ? "#fff" : "#6B7280", fontSize: 10 }}>
+              <Text style={{ color: count > 0 ? "#fff" : "#9CA3AF", fontSize: 10 }}>
                 {hour}時
               </Text>
               {count > 0 && (
@@ -86,7 +86,7 @@ function TimeHeatmap({ participations }: { participations: Participation[] }) {
           );
         })}
       </View>
-      <Text style={{ color: "#9CA3AF", fontSize: 12, textAlign: "center", marginTop: 8 }}>
+      <Text style={{ color: "#D1D5DB", fontSize: 12, textAlign: "center", marginTop: 8 }}>
         参加登録が多い時間帯ほど濃いピンクで表示
       </Text>
     </View>
@@ -129,7 +129,7 @@ function DailyTrendChart({ participations }: { participations: Participation[] }
           📈 参加者数推移
         </Text>
         <View style={{ backgroundColor: "#1A1D21", borderRadius: 8, padding: 24, alignItems: "center" }}>
-          <Text style={{ color: "#6B7280" }}>まだ参加者がいません</Text>
+          <Text style={{ color: "#9CA3AF" }}>まだ参加者がいません</Text>
         </View>
       </View>
     );
@@ -171,17 +171,17 @@ function DailyTrendChart({ participations }: { participations: Participation[] }
           {dailyData.length <= 7 ? (
             dailyData.map((d, index) => (
               <View key={d.date} style={{ flex: 1, alignItems: "center" }}>
-                <Text style={{ color: "#6B7280", fontSize: 8 }}>
+                <Text style={{ color: "#9CA3AF", fontSize: 8 }}>
                   {d.date.slice(5)}
                 </Text>
               </View>
             ))
           ) : (
             <>
-              <Text style={{ color: "#6B7280", fontSize: 10, flex: 1 }}>
+              <Text style={{ color: "#9CA3AF", fontSize: 10, flex: 1 }}>
                 {dailyData[0]?.date.slice(5)}
               </Text>
-              <Text style={{ color: "#6B7280", fontSize: 10, flex: 1, textAlign: "right" }}>
+              <Text style={{ color: "#9CA3AF", fontSize: 10, flex: 1, textAlign: "right" }}>
                 {dailyData[dailyData.length - 1]?.date.slice(5)}
               </Text>
             </>
@@ -190,15 +190,15 @@ function DailyTrendChart({ participations }: { participations: Participation[] }
         {/* 統計サマリー */}
         <View style={{ flexDirection: "row", marginTop: 16, justifyContent: "space-around" }}>
           <View style={{ alignItems: "center" }}>
-            <Text style={{ color: "#6B7280", fontSize: 12 }}>合計</Text>
+            <Text style={{ color: "#9CA3AF", fontSize: 12 }}>合計</Text>
             <Text style={{ color: "#EC4899", fontSize: 20, fontWeight: "bold" }}>{cumulative}人</Text>
           </View>
           <View style={{ alignItems: "center" }}>
-            <Text style={{ color: "#6B7280", fontSize: 12 }}>日数</Text>
+            <Text style={{ color: "#9CA3AF", fontSize: 12 }}>日数</Text>
             <Text style={{ color: "#fff", fontSize: 20, fontWeight: "bold" }}>{dailyData.length}日</Text>
           </View>
           <View style={{ alignItems: "center" }}>
-            <Text style={{ color: "#6B7280", fontSize: 12 }}>平均/日</Text>
+            <Text style={{ color: "#9CA3AF", fontSize: 12 }}>平均/日</Text>
             <Text style={{ color: "#fff", fontSize: 20, fontWeight: "bold" }}>
               {(cumulative / dailyData.length).toFixed(1)}人
             </Text>
@@ -243,7 +243,7 @@ function RegionPieChart({ participations }: { participations: Participation[] })
           🗾 地域分布
         </Text>
         <View style={{ backgroundColor: "#1A1D21", borderRadius: 8, padding: 24, alignItems: "center" }}>
-          <Text style={{ color: "#6B7280" }}>地域データがありません</Text>
+          <Text style={{ color: "#9CA3AF" }}>地域データがありません</Text>
         </View>
       </View>
     );
@@ -260,7 +260,7 @@ function RegionPieChart({ participations }: { participations: Participation[] })
           <View key={region.name} style={{ marginBottom: 12 }}>
             <View style={{ flexDirection: "row", justifyContent: "space-between", marginBottom: 4 }}>
               <Text style={{ color: "#fff", fontSize: 14 }}>{region.name}</Text>
-              <Text style={{ color: "#9CA3AF", fontSize: 14 }}>
+              <Text style={{ color: "#D1D5DB", fontSize: 14 }}>
                 {region.count}人 ({region.percentage}%)
               </Text>
             </View>
@@ -279,7 +279,7 @@ function RegionPieChart({ participations }: { participations: Participation[] })
         {/* 合計 */}
         <View style={{ borderTopWidth: 1, borderTopColor: "#2D3139", paddingTop: 12, marginTop: 8 }}>
           <View style={{ flexDirection: "row", justifyContent: "space-between" }}>
-            <Text style={{ color: "#9CA3AF", fontSize: 14 }}>合計</Text>
+            <Text style={{ color: "#D1D5DB", fontSize: 14 }}>合計</Text>
             <Text style={{ color: "#EC4899", fontSize: 16, fontWeight: "bold" }}>{total}人</Text>
           </View>
         </View>
@@ -375,24 +375,24 @@ function StatsSummary({ challenge, participations }: { challenge: any; participa
       </Text>
       <View style={{ flexDirection: "row", flexWrap: "wrap", justifyContent: "space-between" }}>
         <View style={{ width: "48%", backgroundColor: "#1A1D21", borderRadius: 8, padding: 16, marginBottom: 8 }}>
-          <Text style={{ color: "#6B7280", fontSize: 12 }}>総動員数</Text>
+          <Text style={{ color: "#9CA3AF", fontSize: 12 }}>総動員数</Text>
           <Text style={{ color: "#EC4899", fontSize: 24, fontWeight: "bold" }}>{stats.total}人</Text>
         </View>
         <View style={{ width: "48%", backgroundColor: "#1A1D21", borderRadius: 8, padding: 16, marginBottom: 8 }}>
-          <Text style={{ color: "#6B7280", fontSize: 12 }}>参加者数</Text>
+          <Text style={{ color: "#9CA3AF", fontSize: 12 }}>参加者数</Text>
           <Text style={{ color: "#fff", fontSize: 24, fontWeight: "bold" }}>{stats.uniqueParticipants}人</Text>
         </View>
         <View style={{ width: "48%", backgroundColor: "#1A1D21", borderRadius: 8, padding: 16, marginBottom: 8 }}>
-          <Text style={{ color: "#6B7280", fontSize: 12 }}>平均貢献度</Text>
+          <Text style={{ color: "#9CA3AF", fontSize: 12 }}>平均貢献度</Text>
           <Text style={{ color: "#fff", fontSize: 24, fontWeight: "bold" }}>{stats.avgContribution.toFixed(1)}人</Text>
         </View>
         <View style={{ width: "48%", backgroundColor: "#1A1D21", borderRadius: 8, padding: 16, marginBottom: 8 }}>
-          <Text style={{ color: "#6B7280", fontSize: 12 }}>同伴率</Text>
+          <Text style={{ color: "#9CA3AF", fontSize: 12 }}>同伴率</Text>
           <Text style={{ color: "#fff", fontSize: 24, fontWeight: "bold" }}>{stats.companionRate.toFixed(0)}%</Text>
         </View>
         <View style={{ width: "100%", backgroundColor: "#1A1D21", borderRadius: 8, padding: 16 }}>
           <View style={{ flexDirection: "row", justifyContent: "space-between", marginBottom: 8 }}>
-            <Text style={{ color: "#6B7280", fontSize: 12 }}>目標達成率</Text>
+            <Text style={{ color: "#9CA3AF", fontSize: 12 }}>目標達成率</Text>
             <Text style={{ color: "#EC4899", fontSize: 14, fontWeight: "bold" }}>
               {stats.progressRate.toFixed(1)}%
             </Text>
@@ -409,7 +409,7 @@ function StatsSummary({ challenge, participations }: { challenge: any; participa
               }}
             />
           </View>
-          <Text style={{ color: "#9CA3AF", fontSize: 12, textAlign: "center", marginTop: 4 }}>
+          <Text style={{ color: "#D1D5DB", fontSize: 12, textAlign: "center", marginTop: 4 }}>
             {stats.total} / {challenge?.goalValue || 0} {challenge?.goalUnit || "人"}
           </Text>
         </View>
@@ -444,7 +444,7 @@ export default function DashboardScreen() {
     return (
       <ScreenContainer className="p-4">
         <View style={{ flex: 1, alignItems: "center", justifyContent: "center" }}>
-          <Text style={{ color: "#9CA3AF" }}>読み込み中...</Text>
+          <Text style={{ color: "#D1D5DB" }}>読み込み中...</Text>
         </View>
       </ScreenContainer>
     );
@@ -454,7 +454,7 @@ export default function DashboardScreen() {
     return (
       <ScreenContainer className="p-4">
         <View style={{ flex: 1, alignItems: "center", justifyContent: "center" }}>
-          <Text style={{ color: "#9CA3AF" }}>チャレンジが見つかりません</Text>
+          <Text style={{ color: "#D1D5DB" }}>チャレンジが見つかりません</Text>
           <TouchableOpacity
             onPress={() => router.back()}
             style={{ marginTop: 16, padding: 12 }}
@@ -489,7 +489,7 @@ export default function DashboardScreen() {
               <Text style={{ color: "#fff", fontSize: 18, fontWeight: "bold" }}>
                 統計ダッシュボード
               </Text>
-              <Text style={{ color: "#9CA3AF", fontSize: 14 }} numberOfLines={1}>
+              <Text style={{ color: "#D1D5DB", fontSize: 14 }} numberOfLines={1}>
                 {challenge.title}
               </Text>
             </View>

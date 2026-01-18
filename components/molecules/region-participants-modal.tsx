@@ -161,7 +161,7 @@ export function RegionParticipantsModal({
               </Text>
             </View>
             <TouchableOpacity onPress={handleClose} style={styles.closeButton}>
-              <MaterialIcons name="close" size={24} color="#9CA3AF" />
+              <MaterialIcons name="close" size={24} color="#D1D5DB" />
             </TouchableOpacity>
           </View>
 
@@ -233,7 +233,7 @@ const styles = StyleSheet.create({
     fontWeight: "bold",
   },
   participantCount: {
-    color: "#9CA3AF",
+    color: "#D1D5DB",
     fontSize: 13,
     marginTop: 4,
   },
@@ -277,10 +277,10 @@ const styles = StyleSheet.create({
     color: "#fff",
   },
   prefectureNameEmpty: {
-    color: "#6B7280",
+    color: "#9CA3AF",
   },
   prefectureCount: {
-    color: "#9CA3AF",
+    color: "#D1D5DB",
     fontSize: 11,
     marginLeft: 6,
   },
@@ -288,7 +288,7 @@ const styles = StyleSheet.create({
     color: "rgba(255, 255, 255, 0.8)",
   },
   prefectureCountEmpty: {
-    color: "#4B5563",
+    color: "#9CA3AF",
   },
   listContent: {
     padding: 16,
@@ -331,12 +331,12 @@ const styles = StyleSheet.create({
     fontWeight: "bold",
   },
   participantUsername: {
-    color: "#9CA3AF",
+    color: "#D1D5DB",
     fontSize: 12,
     marginTop: 2,
   },
   participantPrefecture: {
-    color: "#6B7280",
+    color: "#9CA3AF",
     fontSize: 11,
     marginTop: 2,
   },
@@ -363,7 +363,7 @@ const styles = StyleSheet.create({
     marginBottom: 16,
   },
   emptyText: {
-    color: "#9CA3AF",
+    color: "#D1D5DB",
     fontSize: 14,
     textAlign: "center",
   },

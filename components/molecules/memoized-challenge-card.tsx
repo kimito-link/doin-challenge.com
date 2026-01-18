@@ -144,14 +144,14 @@ export const MemoizedChallengeCard = memo<MemoizedChallengeCardProps>(
           {/* フッター */}
           <View style={styles.footer}>
             <View style={styles.footerItem}>
-              <MaterialIcons name="event" size={14} color="#9CA3AF" />
+              <MaterialIcons name="event" size={14} color="#D1D5DB" />
               <Text style={styles.footerText}>
                 {eventDate.toLocaleDateString("ja-JP", { month: "short", day: "numeric" })}
               </Text>
             </View>
             {challenge.venue && (
               <View style={styles.footerItem}>
-                <MaterialIcons name="place" size={14} color="#9CA3AF" />
+                <MaterialIcons name="place" size={14} color="#D1D5DB" />
                 <Text style={styles.footerText} numberOfLines={1}>
                   {challenge.venue}
                 </Text>
@@ -220,7 +220,7 @@ const styles = StyleSheet.create({
     fontWeight: "600",
   },
   hostUsername: {
-    color: "#9CA3AF",
+    color: "#D1D5DB",
     fontSize: 12,
   },
   badge: {
@@ -260,7 +260,7 @@ const styles = StyleSheet.create({
     justifyContent: "space-between",
   },
   progressText: {
-    color: "#9CA3AF",
+    color: "#D1D5DB",
     fontSize: 12,
   },
   progressPercent: {
@@ -278,7 +278,7 @@ const styles = StyleSheet.create({
     gap: 4,
   },
   footerText: {
-    color: "#9CA3AF",
+    color: "#D1D5DB",
     fontSize: 12,
   },
 });

@@ -88,7 +88,7 @@ export function FollowGate({
           </Text>
           <Text
             style={{
-              color: "#9CA3AF",
+              color: "#D1D5DB",
               fontSize: 14,
               marginTop: 8,
               textAlign: "center",
@@ -158,7 +158,7 @@ export function FollowGate({
 
             <Text
               style={{
-                color: "#9CA3AF",
+                color: "#D1D5DB",
                 fontSize: 14,
                 textAlign: "center",
                 marginTop: 12,
@@ -234,7 +234,7 @@ export function FollowGate({
                 paddingHorizontal: 24,
               }}
             >
-              <Text style={{ color: "#9CA3AF", fontSize: 14 }}>
+              <Text style={{ color: "#D1D5DB", fontSize: 14 }}>
                 フォロー済みの方はタップして更新
               </Text>
             </TouchableOpacity>
@@ -248,7 +248,7 @@ export function FollowGate({
                 padding: 8,
               }}
             >
-              <MaterialIcons name="close" size={24} color="#6B7280" />
+              <MaterialIcons name="close" size={24} color="#9CA3AF" />
             </TouchableOpacity>
           </View>
         </View>

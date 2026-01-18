@@ -68,7 +68,7 @@ export function OfflineBanner() {
 export function OfflinePlaceholder({ message }: { message?: string }) {
   return (
     <View style={styles.placeholder}>
-      <MaterialIcons name="cloud-off" size={48} color="#6B7280" />
+      <MaterialIcons name="cloud-off" size={48} color="#9CA3AF" />
       <Text style={styles.placeholderTitle}>オフラインです</Text>
       <Text style={styles.placeholderText}>
         {message || "インターネット接続を確認してください"}
@@ -124,7 +124,7 @@ const styles = StyleSheet.create({
     marginTop: 16,
   },
   placeholderText: {
-    color: "#9CA3AF",
+    color: "#D1D5DB",
     fontSize: 14,
     marginTop: 8,
     textAlign: "center",

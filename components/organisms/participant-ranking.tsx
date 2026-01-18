@@ -93,7 +93,7 @@ function RankItem({ participant, rank, showBadge }: RankItemProps) {
             <MaterialIcons
               name={participant.isAnonymous ? "person-off" : "person"}
               size={isTopThree ? 24 : 20}
-              color="#6B7280"
+              color="#9CA3AF"
             />
           </View>
         )}
@@ -176,7 +176,7 @@ export function ParticipantRanking({
       <View style={styles.container}>
         <Text style={styles.title}>{title}</Text>
         <View style={styles.emptyState}>
-          <MaterialIcons name="emoji-events" size={48} color="#4B5563" />
+          <MaterialIcons name="emoji-events" size={48} color="#9CA3AF" />
           <Text style={styles.emptyText}>まだ参加者がいません</Text>
         </View>
       </View>
@@ -255,7 +255,7 @@ export function TopThreeRanking({ participants }: { participants: Participant[] 
                 contentFit="cover"
               />
             ) : (
-              <MaterialIcons name="person" size={24} color="#6B7280" />
+              <MaterialIcons name="person" size={24} color="#9CA3AF" />
             )}
           </View>
           <Text style={styles.topThreeName} numberOfLines={1}>
@@ -279,7 +279,7 @@ export function TopThreeRanking({ participants }: { participants: Participant[] 
                 contentFit="cover"
               />
             ) : (
-              <MaterialIcons name="person" size={32} color="#6B7280" />
+              <MaterialIcons name="person" size={32} color="#9CA3AF" />
             )}
           </View>
           <Text style={[styles.topThreeName, styles.topThreeNameFirst]} numberOfLines={1}>
@@ -305,7 +305,7 @@ export function TopThreeRanking({ participants }: { participants: Participant[] 
                 contentFit="cover"
               />
             ) : (
-              <MaterialIcons name="person" size={24} color="#6B7280" />
+              <MaterialIcons name="person" size={24} color="#9CA3AF" />
             )}
           </View>
           <Text style={styles.topThreeName} numberOfLines={1}>
@@ -343,7 +343,7 @@ const styles = StyleSheet.create({
     borderRadius: 12,
   },
   statText: {
-    color: "#9CA3AF",
+    color: "#D1D5DB",
     fontSize: 12,
   },
   title: {
@@ -386,7 +386,7 @@ const styles = StyleSheet.create({
     justifyContent: "center",
   },
   rankText: {
-    color: "#9CA3AF",
+    color: "#D1D5DB",
     fontSize: 14,
     fontWeight: "bold",
   },
@@ -428,7 +428,7 @@ const styles = StyleSheet.create({
     fontSize: 15,
   },
   userHandle: {
-    color: "#6B7280",
+    color: "#9CA3AF",
     fontSize: 12,
   },
   contributionContainer: {
@@ -443,7 +443,7 @@ const styles = StyleSheet.create({
     fontSize: 20,
   },
   contributionLabel: {
-    color: "#6B7280",
+    color: "#9CA3AF",
     fontSize: 11,
   },
   achievementBadge: {
@@ -460,7 +460,7 @@ const styles = StyleSheet.create({
     gap: 12,
   },
   emptyText: {
-    color: "#6B7280",
+    color: "#9CA3AF",
     fontSize: 14,
   },
   moreIndicator: {
@@ -471,7 +471,7 @@ const styles = StyleSheet.create({
     marginTop: 8,
   },
   moreText: {
-    color: "#6B7280",
+    color: "#9CA3AF",
     fontSize: 13,
   },
   // トップ3表示用スタイル

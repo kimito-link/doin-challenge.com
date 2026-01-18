@@ -1031,7 +1031,7 @@ export default function HomeScreen() {
               setIsSearching(text.length > 0);
             }}
             placeholder="チャレンジを検索..."
-            placeholderTextColor="#9CA3AF"
+            placeholderTextColor="#D1D5DB"
             style={{
               flex: 1,
               marginLeft: 8,

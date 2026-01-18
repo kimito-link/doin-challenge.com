@@ -39,7 +39,7 @@ function ThemeModeOption({ mode, currentMode, onSelect }: ThemeModeOptionProps) 
         <MaterialIcons
           name={iconName as any}
           size={24}
-          color={isSelected ? "#DD6500" : "#9CA3AF"}
+          color={isSelected ? "#DD6500" : "#D1D5DB"}
         />
       </View>
       <View style={styles.optionInfo}>
@@ -84,7 +84,7 @@ export function ThemeSettingsPanel({ onClose }: ThemeSettingsProps) {
         <Text style={styles.headerTitle}>テーマ設定</Text>
         {onClose && (
           <TouchableOpacity onPress={onClose} style={styles.closeButton}>
-            <MaterialIcons name="close" size={24} color="#9CA3AF" />
+            <MaterialIcons name="close" size={24} color="#D1D5DB" />
           </TouchableOpacity>
         )}
       </View>
@@ -162,7 +162,7 @@ export function ThemeToggleButton() {
       <MaterialIcons
         name={iconName as any}
         size={24}
-        color={colorScheme === "dark" ? "#F59E0B" : "#6B7280"}
+        color={colorScheme === "dark" ? "#F59E0B" : "#9CA3AF"}
       />
     </TouchableOpacity>
   );
@@ -203,14 +203,14 @@ const styles = StyleSheet.create({
     justifyContent: "center",
   },
   currentThemeText: {
-    color: "#9CA3AF",
+    color: "#D1D5DB",
     fontSize: 14,
   },
   optionList: {
     padding: 16,
   },
   sectionTitle: {
-    color: "#9CA3AF",
+    color: "#D1D5DB",
     fontSize: 13,
     fontWeight: "600",
     textTransform: "uppercase",
@@ -255,7 +255,7 @@ const styles = StyleSheet.create({
     color: "#DD6500",
   },
   optionDescription: {
-    color: "#9CA3AF",
+    color: "#D1D5DB",
     fontSize: 13,
   },
   footer: {
@@ -263,7 +263,7 @@ const styles = StyleSheet.create({
     marginTop: "auto",
   },
   footerText: {
-    color: "#6B7280",
+    color: "#9CA3AF",
     fontSize: 13,
     textAlign: "center",
   },

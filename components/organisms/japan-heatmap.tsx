@@ -398,7 +398,7 @@ export function JapanHeatmap({ prefectureCounts, onPrefecturePress, onRegionPres
                 <Text style={styles.regionName}>{region.name}</Text>
                 {isHot && <Text style={styles.hotEmoji}>🔥</Text>}
               </View>
-              <Text style={[styles.regionCount, { color: count > 0 ? "#333" : "#6B7280" }]}>
+              <Text style={[styles.regionCount, { color: count > 0 ? "#333" : "#9CA3AF" }]}>
                 {count.toLocaleString()}<Text style={styles.regionUnit}>人</Text>
               </Text>
               <View style={styles.progressBar}>
@@ -427,7 +427,7 @@ const styles = StyleSheet.create({
     fontWeight: "bold",
   },
   subtitle: {
-    color: "#9CA3AF",
+    color: "#D1D5DB",
     fontSize: 12,
     marginLeft: 8,
   },
@@ -439,7 +439,7 @@ const styles = StyleSheet.create({
     fontSize: 48,
   },
   emptyText: {
-    color: "#9CA3AF",
+    color: "#D1D5DB",
     fontSize: 14,
     marginTop: 8,
     textAlign: "center",
@@ -472,7 +472,7 @@ const styles = StyleSheet.create({
     borderColor: "#666",
   },
   legendText: {
-    color: "#9CA3AF",
+    color: "#D1D5DB",
     fontSize: 11,
     marginHorizontal: 4,
   },
@@ -495,7 +495,7 @@ const styles = StyleSheet.create({
     fontWeight: "bold",
   },
   statLabel: {
-    color: "#9CA3AF",
+    color: "#D1D5DB",
     fontSize: 11,
     marginTop: 2,
   },
@@ -527,7 +527,7 @@ const styles = StyleSheet.create({
     fontWeight: "bold",
   },
   hotSubtitle: {
-    color: "#9CA3AF",
+    color: "#D1D5DB",
     fontSize: 12,
     marginTop: 2,
   },

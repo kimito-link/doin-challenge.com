@@ -132,7 +132,7 @@ const styles = StyleSheet.create({
     padding: 16,
   },
   label: {
-    color: "#9CA3AF",
+    color: "#D1D5DB",
     fontSize: 14,
     marginBottom: 12,
   },
@@ -158,7 +158,7 @@ const styles = StyleSheet.create({
     fontWeight: "bold",
   },
   timeLabel: {
-    color: "#6B7280",
+    color: "#9CA3AF",
     fontSize: 11,
     marginTop: 4,
   },

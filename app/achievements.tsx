@@ -46,7 +46,7 @@ const ACHIEVEMENTS = [
 
 // レアリティの色
 const RARITY_COLORS: Record<string, { bg: string; border: string; text: string }> = {
-  common: { bg: "#374151", border: "#6B7280", text: "#9CA3AF" },
+  common: { bg: "#374151", border: "#9CA3AF", text: "#D1D5DB" },
   uncommon: { bg: "#065F46", border: "#10B981", text: "#34D399" },
   rare: { bg: "#1E3A8A", border: "#3B82F6", text: "#60A5FA" },
   epic: { bg: "#581C87", border: "#A855F7", text: "#C084FC" },
@@ -114,7 +114,7 @@ function AchievementCard({
         </View>
         <View style={{ flex: 1 }}>
           <View style={{ flexDirection: "row", alignItems: "center", marginBottom: 4 }}>
-            <Text style={{ color: isUnlocked ? colors.text : "#6B7280", fontSize: 16, fontWeight: "bold" }}>
+            <Text style={{ color: isUnlocked ? colors.text : "#9CA3AF", fontSize: 16, fontWeight: "bold" }}>
               {achievement.name}
             </Text>
             <View
@@ -131,7 +131,7 @@ function AchievementCard({
               </Text>
             </View>
           </View>
-          <Text style={{ color: "#9CA3AF", fontSize: 13 }}>
+          <Text style={{ color: "#D1D5DB", fontSize: 13 }}>
             {achievement.description}
           </Text>
           {/* 進捗バー（未解除の場合） */}
@@ -147,17 +147,17 @@ function AchievementCard({
                   }}
                 />
               </View>
-              <Text style={{ color: "#6B7280", fontSize: 11, marginTop: 4 }}>
+              <Text style={{ color: "#9CA3AF", fontSize: 11, marginTop: 4 }}>
                 {progress} / {maxProgress}
               </Text>
             </View>
           )}
         </View>
         <View style={{ alignItems: "flex-end" }}>
-          <Text style={{ color: isUnlocked ? "#FFD700" : "#6B7280", fontSize: 14, fontWeight: "bold" }}>
+          <Text style={{ color: isUnlocked ? "#FFD700" : "#9CA3AF", fontSize: 14, fontWeight: "bold" }}>
             +{achievement.points}
           </Text>
-          <Text style={{ color: "#6B7280", fontSize: 10 }}>ポイント</Text>
+          <Text style={{ color: "#9CA3AF", fontSize: 10 }}>ポイント</Text>
         </View>
       </View>
     </View>
@@ -326,7 +326,7 @@ export default function AchievementsScreen() {
     return (
       <ScreenContainer className="p-4">
         <View style={{ flex: 1, alignItems: "center", justifyContent: "center" }}>
-          <Text style={{ color: "#9CA3AF", fontSize: 16 }}>ログインしてください</Text>
+          <Text style={{ color: "#D1D5DB", fontSize: 16 }}>ログインしてください</Text>
           <TouchableOpacity
             onPress={() => router.push("/mypage")}
             style={{ marginTop: 16, padding: 12 }}

@@ -93,7 +93,7 @@ export default function NotificationsScreen() {
       case "new_participant":
         return "#EC4899";
       default:
-        return "#9CA3AF";
+        return "#D1D5DB";
     }
   };
 
@@ -101,8 +101,8 @@ export default function NotificationsScreen() {
     return (
       <ScreenContainer edges={["top", "left", "right"]} containerClassName="bg-background">
         <View style={{ flex: 1, alignItems: "center", justifyContent: "center", padding: 24 }}>
-          <MaterialIcons name="notifications-off" size={64} color="#6B7280" />
-          <Text style={{ color: "#9CA3AF", fontSize: 16, marginTop: 16, textAlign: "center" }}>
+          <MaterialIcons name="notifications-off" size={64} color="#9CA3AF" />
+          <Text style={{ color: "#D1D5DB", fontSize: 16, marginTop: 16, textAlign: "center" }}>
             通知を受け取るにはログインが必要です
           </Text>
         </View>
@@ -183,7 +183,7 @@ export default function NotificationsScreen() {
                 <Text style={{ color: colors.foreground, fontSize: 14, fontWeight: "bold" }}>
                   プッシュ通知が無効です
                 </Text>
-                <Text style={{ color: "#9CA3AF", fontSize: 12, marginTop: 4 }}>
+                <Text style={{ color: "#D1D5DB", fontSize: 12, marginTop: 4 }}>
                   設定からプッシュ通知を有効にしてください
                 </Text>
               </View>
@@ -237,10 +237,10 @@ export default function NotificationsScreen() {
                     <Text style={{ color: colors.foreground, fontSize: 14, fontWeight: "bold" }}>
                       {notification.title}
                     </Text>
-                    <Text style={{ color: "#9CA3AF", fontSize: 13, marginTop: 4, lineHeight: 18 }}>
+                    <Text style={{ color: "#D1D5DB", fontSize: 13, marginTop: 4, lineHeight: 18 }}>
                       {notification.body}
                     </Text>
-                    <Text style={{ color: "#6B7280", fontSize: 11, marginTop: 8 }}>
+                    <Text style={{ color: "#9CA3AF", fontSize: 11, marginTop: 8 }}>
                       {new Date(notification.sentAt).toLocaleString("ja-JP")}
                     </Text>
                   </View>
@@ -259,8 +259,8 @@ export default function NotificationsScreen() {
             ))
           ) : (
             <View style={{ alignItems: "center", paddingVertical: 40 }}>
-              <MaterialIcons name="notifications-none" size={64} color="#6B7280" />
-              <Text style={{ color: "#9CA3AF", fontSize: 16, marginTop: 16 }}>
+              <MaterialIcons name="notifications-none" size={64} color="#9CA3AF" />
+              <Text style={{ color: "#D1D5DB", fontSize: 16, marginTop: 16 }}>
                 通知はありません
               </Text>
             </View>

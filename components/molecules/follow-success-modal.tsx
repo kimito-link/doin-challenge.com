@@ -256,7 +256,7 @@ const styles = StyleSheet.create({
     padding: 12,
   },
   featureTitle: {
-    color: "#9CA3AF",
+    color: "#D1D5DB",
     fontSize: 12,
     marginBottom: 8,
   },

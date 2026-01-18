@@ -40,7 +40,7 @@ export function LoadingScreen({
       <ActivityIndicator size={indicatorSize} color="#EC4899" />
       <Text 
         style={{ 
-          color: "#9CA3AF", 
+          color: "#D1D5DB", 
           fontSize, 
           marginTop: 12,
           textAlign: "center",
@@ -66,7 +66,7 @@ export function LoadingIndicator({
     <View className="flex-row items-center justify-center py-4">
       <ActivityIndicator size="small" color={color} />
       {message && (
-        <Text style={{ color: "#9CA3AF", fontSize: 12, marginLeft: 8 }}>
+        <Text style={{ color: "#D1D5DB", fontSize: 12, marginLeft: 8 }}>
           {message}
         </Text>
       )}

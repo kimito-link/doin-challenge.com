@@ -109,7 +109,7 @@ export default function ProfileScreen() {
     return (
       <ScreenContainer containerClassName="bg-background">
         <View style={{ flex: 1, alignItems: "center", justifyContent: "center" }}>
-          <Text style={{ color: "#9CA3AF" }}>読み込み中...</Text>
+          <Text style={{ color: "#D1D5DB" }}>読み込み中...</Text>
         </View>
       </ScreenContainer>
     );
@@ -119,7 +119,7 @@ export default function ProfileScreen() {
     return (
       <ScreenContainer containerClassName="bg-background">
         <View style={{ flex: 1, alignItems: "center", justifyContent: "center" }}>
-          <Text style={{ color: "#9CA3AF" }}>プロフィールが見つかりません</Text>
+          <Text style={{ color: "#D1D5DB" }}>プロフィールが見つかりません</Text>
           <TouchableOpacity
             onPress={() => router.back()}
             style={{ marginTop: 16, padding: 12 }}
@@ -259,7 +259,7 @@ export default function ProfileScreen() {
             <Text style={{ color: colors.foreground, fontSize: 18, fontWeight: "bold" }}>
               {followingCount || 0}
             </Text>
-            <Text style={{ color: "#9CA3AF", fontSize: 14, marginLeft: 6 }}>
+            <Text style={{ color: "#D1D5DB", fontSize: 14, marginLeft: 6 }}>
               フォロー中
             </Text>
           </TouchableOpacity>
@@ -277,7 +277,7 @@ export default function ProfileScreen() {
             <Text style={{ color: colors.foreground, fontSize: 18, fontWeight: "bold" }}>
               {followerCount || 0}
             </Text>
-            <Text style={{ color: "#9CA3AF", fontSize: 14, marginLeft: 6 }}>
+            <Text style={{ color: "#D1D5DB", fontSize: 14, marginLeft: 6 }}>
               フォロワー
             </Text>
           </TouchableOpacity>
@@ -289,21 +289,21 @@ export default function ProfileScreen() {
             <Text style={{ color: "#DD6500", fontSize: 24, fontWeight: "bold" }}>
               {profile.stats?.totalContribution || 0}
             </Text>
-            <Text style={{ color: "#9CA3AF", fontSize: 12 }}>総貢献度</Text>
+            <Text style={{ color: "#D1D5DB", fontSize: 12 }}>総貢献度</Text>
           </View>
           <View style={{ width: 1, backgroundColor: "#2D3139" }} />
           <View style={{ flex: 1, alignItems: "center" }}>
             <Text style={{ color: "#EC4899", fontSize: 24, fontWeight: "bold" }}>
               {profile.stats?.participationCount || 0}
             </Text>
-            <Text style={{ color: "#9CA3AF", fontSize: 12 }}>参加チャレンジ</Text>
+            <Text style={{ color: "#D1D5DB", fontSize: 12 }}>参加チャレンジ</Text>
           </View>
           <View style={{ width: 1, backgroundColor: "#2D3139" }} />
           <View style={{ flex: 1, alignItems: "center" }}>
             <Text style={{ color: "#8B5CF6", fontSize: 24, fontWeight: "bold" }}>
               {profile.stats?.hostedCount || 0}
             </Text>
-            <Text style={{ color: "#9CA3AF", fontSize: 12 }}>主催数</Text>
+            <Text style={{ color: "#D1D5DB", fontSize: 12 }}>主催数</Text>
           </View>
         </View>
 
@@ -319,7 +319,7 @@ export default function ProfileScreen() {
               borderBottomColor: activeTab === "challenges" ? "#DD6500" : "transparent",
             }}
           >
-            <Text style={{ color: activeTab === "challenges" ? "#DD6500" : "#9CA3AF", fontWeight: "600" }}>
+            <Text style={{ color: activeTab === "challenges" ? "#DD6500" : "#D1D5DB", fontWeight: "600" }}>
               参加履歴
             </Text>
           </TouchableOpacity>
@@ -333,7 +333,7 @@ export default function ProfileScreen() {
               borderBottomColor: activeTab === "badges" ? "#DD6500" : "transparent",
             }}
           >
-            <Text style={{ color: activeTab === "badges" ? "#DD6500" : "#9CA3AF", fontWeight: "600" }}>
+            <Text style={{ color: activeTab === "badges" ? "#DD6500" : "#D1D5DB", fontWeight: "600" }}>
               バッジ
             </Text>
           </TouchableOpacity>
@@ -363,14 +363,14 @@ export default function ProfileScreen() {
                     {participation.challengeTitle || "チャレンジ"}
                   </Text>
                   <View style={{ flexDirection: "row", alignItems: "center", marginTop: 8 }}>
-                    <MaterialIcons name="people" size={16} color="#9CA3AF" />
-                    <Text style={{ color: "#9CA3AF", fontSize: 12, marginLeft: 4 }}>
+                    <MaterialIcons name="people" size={16} color="#D1D5DB" />
+                    <Text style={{ color: "#D1D5DB", fontSize: 12, marginLeft: 4 }}>
                       貢献度: {participation.contribution || 0}
                     </Text>
                     {participation.friendsCount > 0 && (
                       <>
-                        <Text style={{ color: "#6B7280", marginHorizontal: 8 }}>•</Text>
-                        <Text style={{ color: "#9CA3AF", fontSize: 12 }}>
+                        <Text style={{ color: "#9CA3AF", marginHorizontal: 8 }}>•</Text>
+                        <Text style={{ color: "#D1D5DB", fontSize: 12 }}>
                           +{participation.friendsCount}人連れ
                         </Text>
                       </>
@@ -380,8 +380,8 @@ export default function ProfileScreen() {
               ))
             ) : (
               <View style={{ alignItems: "center", padding: 32 }}>
-                <MaterialIcons name="event-busy" size={48} color="#4B5563" />
-                <Text style={{ color: "#9CA3AF", marginTop: 12 }}>参加履歴がありません</Text>
+                <MaterialIcons name="event-busy" size={48} color="#9CA3AF" />
+                <Text style={{ color: "#D1D5DB", marginTop: 12 }}>参加履歴がありません</Text>
               </View>
             )
           ) : (
@@ -412,7 +412,7 @@ export default function ProfileScreen() {
                     <Text style={{ color: colors.foreground, fontSize: 12, fontWeight: "600", textAlign: "center" }}>
                       {badge.name}
                     </Text>
-                    <Text style={{ color: "#9CA3AF", fontSize: 10, textAlign: "center", marginTop: 2 }}>
+                    <Text style={{ color: "#D1D5DB", fontSize: 10, textAlign: "center", marginTop: 2 }}>
                       {new Date(badge.earnedAt).toLocaleDateString("ja-JP")}
                     </Text>
                   </View>
@@ -420,8 +420,8 @@ export default function ProfileScreen() {
               </View>
             ) : (
               <View style={{ alignItems: "center", padding: 32 }}>
-                <MaterialIcons name="emoji-events" size={48} color="#4B5563" />
-                <Text style={{ color: "#9CA3AF", marginTop: 12 }}>バッジがありません</Text>
+                <MaterialIcons name="emoji-events" size={48} color="#9CA3AF" />
+                <Text style={{ color: "#D1D5DB", marginTop: 12 }}>バッジがありません</Text>
               </View>
             )
           )}

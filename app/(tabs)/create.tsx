@@ -400,7 +400,7 @@ export default function CreateChallengeScreen() {
                     alignItems: "center",
                   }}
                 >
-                  <Text style={{ color: categoryId ? colors.foreground : "#9CA3AF", fontSize: 14 }}>
+                  <Text style={{ color: categoryId ? colors.foreground : "#D1D5DB", fontSize: 14 }}>
                     {categoryId
                       ? categoriesData?.find((c) => c.id === categoryId)?.name || "カテゴリを選択"
                       : "カテゴリを選択"}
@@ -463,7 +463,7 @@ export default function CreateChallengeScreen() {
                   value={title}
                   onChangeText={handleTitleChange}
                   placeholder="例: ○○ワンマンライブ動員チャレンジ"
-                  placeholderTextColor="#9CA3AF"
+                  placeholderTextColor="#D1D5DB"
                   style={{
                     backgroundColor: colors.background,
                     borderRadius: 8,
@@ -543,7 +543,7 @@ export default function CreateChallengeScreen() {
                     value={goalUnit}
                     onChangeText={setGoalUnit}
                     placeholder="例: 人、pt、回"
-                    placeholderTextColor="#9CA3AF"
+                    placeholderTextColor="#D1D5DB"
                     style={{
                       backgroundColor: colors.background,
                       borderRadius: 8,
@@ -594,7 +594,7 @@ export default function CreateChallengeScreen() {
                   value={venue}
                   onChangeText={setVenue}
                   placeholder="例: 渋谷○○ホール / YouTube / ミクチャ"
-                  placeholderTextColor="#9CA3AF"
+                  placeholderTextColor="#D1D5DB"
                   style={{
                     backgroundColor: colors.background,
                     borderRadius: 8,
@@ -614,7 +614,7 @@ export default function CreateChallengeScreen() {
                   value={externalUrl}
                   onChangeText={setExternalUrl}
                   placeholder="YouTubeプレミア公開URL等"
-                  placeholderTextColor="#9CA3AF"
+                  placeholderTextColor="#D1D5DB"
                   style={{
                     backgroundColor: colors.background,
                     borderRadius: 8,
@@ -655,7 +655,7 @@ export default function CreateChallengeScreen() {
                           value={ticketPresale}
                           onChangeText={setTicketPresale}
                           placeholder="3000"
-                          placeholderTextColor="#9CA3AF"
+                          placeholderTextColor="#D1D5DB"
                           keyboardType="numeric"
                           style={{
                             backgroundColor: "#1A1D21",
@@ -679,7 +679,7 @@ export default function CreateChallengeScreen() {
                           value={ticketDoor}
                           onChangeText={setTicketDoor}
                           placeholder="3500"
-                          placeholderTextColor="#9CA3AF"
+                          placeholderTextColor="#D1D5DB"
                           keyboardType="numeric"
                           style={{
                             backgroundColor: "#1A1D21",
@@ -704,7 +704,7 @@ export default function CreateChallengeScreen() {
                       value={ticketUrl}
                       onChangeText={setTicketUrl}
                       placeholder="https://tiget.net/events/..."
-                      placeholderTextColor="#9CA3AF"
+                      placeholderTextColor="#D1D5DB"
                       style={{
                         backgroundColor: "#1A1D21",
                         borderRadius: 8,
@@ -726,7 +726,7 @@ export default function CreateChallengeScreen() {
                   value={description}
                   onChangeText={setDescription}
                   placeholder="チャレンジの詳細を書いてね"
-                  placeholderTextColor="#9CA3AF"
+                  placeholderTextColor="#D1D5DB"
                   multiline
                   numberOfLines={4}
                   style={{
@@ -760,7 +760,7 @@ export default function CreateChallengeScreen() {
                       height: 24,
                       borderRadius: 4,
                       borderWidth: 2,
-                      borderColor: saveAsTemplate ? "#8B5CF6" : "#6B7280",
+                      borderColor: saveAsTemplate ? "#8B5CF6" : "#9CA3AF",
                       backgroundColor: saveAsTemplate ? "#8B5CF6" : "transparent",
                       alignItems: "center",
                       justifyContent: "center",
@@ -775,7 +775,7 @@ export default function CreateChallengeScreen() {
                         value={templateName}
                         onChangeText={setTemplateName}
                         placeholder="テンプレート名"
-                        placeholderTextColor="#9CA3AF"
+                        placeholderTextColor="#D1D5DB"
                         style={{
                           backgroundColor: colors.background,
                           borderRadius: 8,
@@ -795,7 +795,7 @@ export default function CreateChallengeScreen() {
                           height: 20,
                           borderRadius: 4,
                           borderWidth: 2,
-                          borderColor: templateIsPublic ? "#22C55E" : "#6B7280",
+                          borderColor: templateIsPublic ? "#22C55E" : "#9CA3AF",
                           backgroundColor: templateIsPublic ? "#22C55E" : "transparent",
                           alignItems: "center",
                           justifyContent: "center",
@@ -823,7 +823,7 @@ export default function CreateChallengeScreen() {
                 }}
               >
                 <LinearGradient
-                  colors={createChallengeMutation.isPending ? ["#6B7280", "#6B7280"] : ["#EC4899", "#8B5CF6"]}
+                  colors={createChallengeMutation.isPending ? ["#9CA3AF", "#9CA3AF"] : ["#EC4899", "#8B5CF6"]}
                   start={{ x: 0, y: 0 }}
                   end={{ x: 1, y: 0 }}
                   style={{

@@ -83,23 +83,9 @@ export function CharacterValidationError({ errors, visible }: CharacterValidatio
       const randomIndex = Math.floor(Math.random() * messages.length);
       setCurrentMessage(messages[randomIndex] as { character: CharacterType; text: string; expression: string });
       
-      // アニメーション
-      bounceY.value = withRepeat(
-        withSequence(
-          withTiming(-8, { duration: 300 }),
-          withTiming(0, { duration: 300 })
-        ),
-        3,
-        false
-      );
-      
-      shake.value = withSequence(
-        withTiming(-5, { duration: 50 }),
-        withTiming(5, { duration: 50 }),
-        withTiming(-5, { duration: 50 }),
-        withTiming(5, { duration: 50 }),
-        withTiming(0, { duration: 50 })
-      );
+      // 静的な表示（ちかちかアニメーション削除）
+      bounceY.value = withTiming(0, { duration: 200 });
+      shake.value = withTiming(0, { duration: 200 });
       
       triggerHaptic();
     } else {
@@ -193,15 +179,8 @@ export function CharacterGroupValidationError({ errors, visible }: CharacterGrou
       const charMessage = messages.find(m => m.character === randomChar) || messages[0];
       setMessage(charMessage.text);
       
-      // アニメーション
-      bounceY.value = withRepeat(
-        withSequence(
-          withTiming(-6, { duration: 250 }),
-          withTiming(0, { duration: 250 })
-        ),
-        2,
-        false
-      );
+      // 静的な表示（ちかちかアニメーション削除）
+      bounceY.value = withTiming(0, { duration: 200 });
       
       triggerHaptic();
     }

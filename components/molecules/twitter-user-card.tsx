@@ -113,8 +113,8 @@ export function TwitterUserCard({
       <View className="flex-1" style={{ gap: 2 }}>
         {/* 名前 */}
         <Text
-          className="font-bold text-foreground"
-          style={{ fontSize: config.nameSize, lineHeight: config.nameSize * 1.3 }}
+          className="font-bold"
+          style={{ fontSize: config.nameSize, lineHeight: config.nameSize * 1.3, color: '#FFFFFF' }}
           numberOfLines={1}
         >
           {user.name || "名前未設定"}
@@ -124,15 +124,14 @@ export function TwitterUserCard({
         <View className="flex-row items-center" style={{ gap: 8 }}>
           {user.username && (
             <Text
-              style={{ fontSize: config.usernameSize, color: '#EC4899' }}
+              style={{ fontSize: config.usernameSize, color: '#93C5FD' }}
             >
               @{user.username}
             </Text>
           )}
           {showFollowers && user.followersCount !== undefined && (
             <Text
-              className="text-muted"
-              style={{ fontSize: config.followersSize }}
+              style={{ fontSize: config.followersSize, color: '#D1D5DB' }}
             >
               {user.followersCount.toLocaleString()} フォロワー
             </Text>
@@ -142,8 +141,8 @@ export function TwitterUserCard({
         {/* description */}
         {showDescription && user.description && (
           <Text
-            className="text-muted mt-1"
-            style={{ fontSize: config.descriptionSize, lineHeight: config.descriptionSize * 1.5 }}
+            className="mt-1"
+            style={{ fontSize: config.descriptionSize, lineHeight: config.descriptionSize * 1.5, color: '#E5E7EB' }}
             numberOfLines={2}
           >
             {user.description}

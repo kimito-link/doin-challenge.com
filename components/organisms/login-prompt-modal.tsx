@@ -48,25 +48,9 @@ export function LoginPromptModal({ visible, onLogin, onSkip }: LoginPromptModalP
   
   useEffect(() => {
     if (visible) {
-      // ぴょんぴょんアニメーション
-      bounce.value = withRepeat(
-        withSequence(
-          withTiming(-10, { duration: 400, easing: Easing.out(Easing.ease) }),
-          withTiming(0, { duration: 400, easing: Easing.in(Easing.ease) }),
-        ),
-        -1,
-        true
-      );
-      
-      // キラキラアニメーション
-      sparkle.value = withRepeat(
-        withSequence(
-          withTiming(1, { duration: 1000 }),
-          withTiming(0.5, { duration: 1000 }),
-        ),
-        -1,
-        true
-      );
+      // 静的な表示（ちかちかアニメーション削除）
+      bounce.value = withTiming(0, { duration: 300 });
+      sparkle.value = withTiming(1, { duration: 300 });
     }
   }, [visible]);
   

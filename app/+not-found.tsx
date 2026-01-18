@@ -85,7 +85,7 @@ export default function NotFoundScreen() {
             className="bg-surface rounded-xl py-4 px-6 flex-row items-center justify-center border border-border"
             activeOpacity={0.8}
           >
-            <MaterialIcons name="arrow-back" size={20} color="#687076" />
+            <MaterialIcons name="arrow-back" size={20} color="#9CA3AF" />
             <Text className="text-muted text-base font-bold ml-2">
               前のページに戻る
             </Text>

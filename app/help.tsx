@@ -126,7 +126,7 @@ export default function HelpScreen() {
                 はじめの説明をもう一度見る
               </Text>
             </View>
-            <MaterialIcons name="chevron-right" size={24} color="#6B7280" />
+            <MaterialIcons name="chevron-right" size={24} color="#9CA3AF" />
           </TouchableOpacity>
         </Animated.View>
 
@@ -149,7 +149,7 @@ export default function HelpScreen() {
                 <MaterialIcons 
                   name={expandedIndex === index ? "expand-less" : "expand-more"} 
                   size={24} 
-                  color="#6B7280" 
+                  color="#9CA3AF" 
                 />
               </View>
               {expandedIndex === index && (
@@ -279,12 +279,12 @@ const styles = StyleSheet.create({
     fontWeight: "600",
   },
   tutorialButtonDescription: {
-    color: "#9CA3AF",
+    color: "#D1D5DB",
     fontSize: 13,
     marginTop: 2,
   },
   sectionTitle: {
-    color: "#9CA3AF",
+    color: "#D1D5DB",
     fontSize: 13,
     fontWeight: "600",
     textTransform: "uppercase",
@@ -344,7 +344,7 @@ const styles = StyleSheet.create({
   },
   faqAnswerText: {
     flex: 1,
-    color: "#9CA3AF",
+    color: "#D1D5DB",
     fontSize: 14,
     lineHeight: 22,
   },
@@ -374,7 +374,7 @@ const styles = StyleSheet.create({
     marginBottom: 4,
   },
   tipText: {
-    color: "#9CA3AF",
+    color: "#D1D5DB",
     fontSize: 13,
     lineHeight: 20,
   },
@@ -383,7 +383,7 @@ const styles = StyleSheet.create({
     alignItems: "center",
   },
   footerText: {
-    color: "#6B7280",
+    color: "#9CA3AF",
     fontSize: 13,
     textAlign: "center",
     lineHeight: 20,

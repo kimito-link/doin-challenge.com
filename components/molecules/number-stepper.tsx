@@ -89,7 +89,7 @@ export function NumberStepper({
           <MaterialIcons 
             name="keyboard-double-arrow-down" 
             size={24} 
-            color={value <= min ? "#4B5563" : "#EC4899"} 
+            color={value <= min ? "#9CA3AF" : "#EC4899"} 
           />
         </TouchableOpacity>
 
@@ -103,7 +103,7 @@ export function NumberStepper({
           <MaterialIcons 
             name="remove" 
             size={28} 
-            color={value <= min ? "#4B5563" : colors.foreground} 
+            color={value <= min ? "#9CA3AF" : colors.foreground} 
           />
         </TouchableOpacity>
 
@@ -125,7 +125,7 @@ export function NumberStepper({
           <MaterialIcons 
             name="add" 
             size={28} 
-            color={value >= max ? "#4B5563" : colors.foreground} 
+            color={value >= max ? "#9CA3AF" : colors.foreground} 
           />
         </TouchableOpacity>
 
@@ -139,7 +139,7 @@ export function NumberStepper({
           <MaterialIcons 
             name="keyboard-double-arrow-up" 
             size={24} 
-            color={value >= max ? "#4B5563" : "#EC4899"} 
+            color={value >= max ? "#9CA3AF" : "#EC4899"} 
           />
         </TouchableOpacity>
       </View>

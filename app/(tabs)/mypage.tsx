@@ -399,7 +399,7 @@ export default function MyPageScreen() {
                       </Text>
                       <Text style={{ color: "#1DA1F2", fontSize: 12 }}>@streamerfunch</Text>
                     </View>
-                    <MaterialIcons name="open-in-new" size={18} color="#9CA3AF" />
+                    <MaterialIcons name="open-in-new" size={18} color="#D1D5DB" />
                   </TouchableOpacity>
                   
                   <TouchableOpacity
@@ -424,7 +424,7 @@ export default function MyPageScreen() {
                       </Text>
                       <Text style={{ color: "#1DA1F2", fontSize: 12 }}>@idolfunch</Text>
                     </View>
-                    <MaterialIcons name="open-in-new" size={18} color="#9CA3AF" />
+                    <MaterialIcons name="open-in-new" size={18} color="#D1D5DB" />
                   </TouchableOpacity>
                 </View>
               </View>
@@ -480,7 +480,7 @@ export default function MyPageScreen() {
               disabled={isLoggingIn}
               style={{
                 minHeight: 52,
-                backgroundColor: isLoggingIn ? "#6B7280" : "#1DA1F2",
+                backgroundColor: isLoggingIn ? "#9CA3AF" : "#1DA1F2",
                 borderRadius: 26,
                 paddingVertical: 14,
                 paddingHorizontal: 32,
@@ -554,7 +554,7 @@ export default function MyPageScreen() {
                 marginTop: 16,
               }}
             >
-              <MaterialIcons name="refresh" size={18} color="#9CA3AF" />
+              <MaterialIcons name="refresh" size={18} color="#D1D5DB" />
               <Text style={{ color: "#D1D5DB", fontSize: 13, marginLeft: 6 }}>
                 他のキャラクターのメッセージを見る
               </Text>
@@ -753,7 +753,7 @@ export default function MyPageScreen() {
                 実績を解除してポイントを獲得しよう
               </Text>
             </View>
-            <MaterialIcons name="chevron-right" size={24} color="#9CA3AF" />
+            <MaterialIcons name="chevron-right" size={24} color="#D1D5DB" />
           </TouchableOpacity>
 
           {/* 通知設定リンク */}
@@ -792,7 +792,7 @@ export default function MyPageScreen() {
                 目標達成やマイルストーンの通知を管理
               </Text>
             </View>
-            <MaterialIcons name="chevron-right" size={24} color="#9CA3AF" />
+            <MaterialIcons name="chevron-right" size={24} color="#D1D5DB" />
           </TouchableOpacity>
 
           {/* テーマ設定リンク */}
@@ -831,7 +831,7 @@ export default function MyPageScreen() {
                 ライト/ダークモードを切り替え
               </Text>
             </View>
-            <MaterialIcons name="chevron-right" size={24} color="#9CA3AF" />
+            <MaterialIcons name="chevron-right" size={24} color="#D1D5DB" />
           </TouchableOpacity>
 
           {/* チュートリアル再表示 */}
@@ -875,7 +875,7 @@ export default function MyPageScreen() {
                 Twitter APIのレート制限状況
               </Text>
             </View>
-            <MaterialIcons name="chevron-right" size={24} color="#9CA3AF" />
+            <MaterialIcons name="chevron-right" size={24} color="#D1D5DB" />
           </TouchableOpacity>
 
           {/* バッジセクション */}
@@ -942,7 +942,7 @@ export default function MyPageScreen() {
                   borderColor: "#2D3139",
                 }}
               >
-                <MaterialIcons name="military-tech" size={48} color="#9CA3AF" />
+                <MaterialIcons name="military-tech" size={48} color="#D1D5DB" />
                 <Text style={{ color: "#D1D5DB", fontSize: 14, marginTop: 12 }}>
                   まだバッジを獲得していません
                 </Text>
@@ -988,7 +988,7 @@ export default function MyPageScreen() {
                           {formattedDate} {item.venue && `・ ${item.venue}`}
                         </Text>
                       </View>
-                      <MaterialIcons name="chevron-right" size={24} color="#9CA3AF" />
+                      <MaterialIcons name="chevron-right" size={24} color="#D1D5DB" />
                     </View>
                     
                     {/* 進捗バー */}
@@ -1028,7 +1028,7 @@ export default function MyPageScreen() {
                   borderColor: "#2D3139",
                 }}
               >
-                <MaterialIcons name="flag" size={48} color="#9CA3AF" />
+                <MaterialIcons name="flag" size={48} color="#D1D5DB" />
                 <Text style={{ color: "#D1D5DB", marginTop: 8, textAlign: "center" }}>
                   まだチャレンジを作成していません
                 </Text>

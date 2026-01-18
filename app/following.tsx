@@ -55,7 +55,7 @@ export default function FollowingScreen() {
 
       {isLoading ? (
         <View style={{ flex: 1, alignItems: "center", justifyContent: "center" }}>
-          <Text style={{ color: "#9CA3AF" }}>読み込み中...</Text>
+          <Text style={{ color: "#D1D5DB" }}>読み込み中...</Text>
         </View>
       ) : following && following.length > 0 ? (
         <FlatList
@@ -93,7 +93,7 @@ export default function FollowingScreen() {
                 <Text style={{ color: "#fff", fontSize: 16, fontWeight: "600" }}>
                   {item.followeeName || "不明なユーザー"}
                 </Text>
-                <Text style={{ color: "#9CA3AF", fontSize: 12, marginTop: 2 }}>
+                <Text style={{ color: "#D1D5DB", fontSize: 12, marginTop: 2 }}>
                   {new Date(item.createdAt).toLocaleDateString("ja-JP")} からフォロー中
                 </Text>
               </View>
@@ -128,11 +128,11 @@ export default function FollowingScreen() {
         />
       ) : (
         <View style={{ flex: 1, alignItems: "center", justifyContent: "center", padding: 32 }}>
-          <MaterialIcons name="person-add" size={64} color="#4B5563" />
+          <MaterialIcons name="person-add" size={64} color="#9CA3AF" />
           <Text style={{ color: "#fff", fontSize: 18, fontWeight: "bold", marginTop: 16, marginBottom: 8 }}>
             まだ誰もフォローしていません
           </Text>
-          <Text style={{ color: "#9CA3AF", fontSize: 14, textAlign: "center" }}>
+          <Text style={{ color: "#D1D5DB", fontSize: 14, textAlign: "center" }}>
             チャレンジ詳細画面からホストをフォローすると{"\n"}新着チャレンジの通知を受け取れます
           </Text>
         </View>

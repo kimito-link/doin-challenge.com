@@ -158,7 +158,7 @@ export default function SettingsScreen() {
                   />
                 ) : (
                   <View style={[styles.avatar, styles.avatarPlaceholder]}>
-                    <MaterialIcons name="person" size={24} color="#9CA3AF" />
+                    <MaterialIcons name="person" size={24} color="#D1D5DB" />
                   </View>
                 )}
                 <View style={styles.accountInfo}>
@@ -182,7 +182,7 @@ export default function SettingsScreen() {
                   <MaterialIcons 
                     name={sessionExpiry.isExpired ? "warning" : "schedule"} 
                     size={14} 
-                    color={sessionExpiry.isExpired ? "#EF4444" : "#9CA3AF"} 
+                    color={sessionExpiry.isExpired ? "#EF4444" : "#D1D5DB"} 
                   />
                   <Text style={[
                     styles.sessionExpiryText,
@@ -195,7 +195,7 @@ export default function SettingsScreen() {
             </View>
           ) : (
             <View style={styles.notLoggedIn}>
-              <MaterialIcons name="person-outline" size={32} color="#6B7280" />
+              <MaterialIcons name="person-outline" size={32} color="#9CA3AF" />
               <Text style={styles.notLoggedInText}>ログインしていません</Text>
             </View>
           )}
@@ -217,7 +217,7 @@ export default function SettingsScreen() {
                   : "別のアカウントでログイン"}
               </Text>
             </View>
-            <MaterialIcons name="chevron-right" size={24} color="#6B7280" />
+            <MaterialIcons name="chevron-right" size={24} color="#9CA3AF" />
           </TouchableOpacity>
 
           {/* 保存済みアカウント一覧（簡易表示） */}
@@ -235,7 +235,7 @@ export default function SettingsScreen() {
                       />
                     ) : (
                       <View style={[styles.savedAccountAvatarImage, styles.avatarPlaceholder]}>
-                        <MaterialIcons name="person" size={12} color="#9CA3AF" />
+                        <MaterialIcons name="person" size={12} color="#D1D5DB" />
                       </View>
                     )}
                   </View>
@@ -262,7 +262,7 @@ export default function SettingsScreen() {
               <View style={styles.menuItemContent}>
                 <Text style={[styles.menuItemTitle, styles.logoutText]}>ログアウト</Text>
               </View>
-              <MaterialIcons name="chevron-right" size={24} color="#6B7280" />
+              <MaterialIcons name="chevron-right" size={24} color="#9CA3AF" />
             </TouchableOpacity>
           )}
         </View>
@@ -289,7 +289,7 @@ export default function SettingsScreen() {
                 {getThemeModeLabel(themeMode)} ({colorScheme === "dark" ? "ダーク" : "ライト"})
               </Text>
             </View>
-            <MaterialIcons name="chevron-right" size={24} color="#6B7280" />
+            <MaterialIcons name="chevron-right" size={24} color="#9CA3AF" />
           </TouchableOpacity>
         </View>
 
@@ -311,7 +311,7 @@ export default function SettingsScreen() {
                 プッシュ通知やリマインダーの設定
               </Text>
             </View>
-            <MaterialIcons name="chevron-right" size={24} color="#6B7280" />
+            <MaterialIcons name="chevron-right" size={24} color="#9CA3AF" />
           </TouchableOpacity>
         </View>
 
@@ -333,7 +333,7 @@ export default function SettingsScreen() {
                 アプリの使い方とよくある質問
               </Text>
             </View>
-            <MaterialIcons name="chevron-right" size={24} color="#6B7280" />
+            <MaterialIcons name="chevron-right" size={24} color="#9CA3AF" />
           </TouchableOpacity>
 
           <TouchableOpacity
@@ -350,7 +350,7 @@ export default function SettingsScreen() {
                 はじめの説明をもう一度見る
               </Text>
             </View>
-            <MaterialIcons name="chevron-right" size={24} color="#6B7280" />
+            <MaterialIcons name="chevron-right" size={24} color="#9CA3AF" />
           </TouchableOpacity>
 
           {/* v5.37: キャッシュクリアボタン */}
@@ -368,7 +368,7 @@ export default function SettingsScreen() {
                 古いデータを削除して最新の情報を取得
               </Text>
             </View>
-            <MaterialIcons name="chevron-right" size={24} color="#6B7280" />
+            <MaterialIcons name="chevron-right" size={24} color="#9CA3AF" />
           </TouchableOpacity>
         </View>
 
@@ -443,7 +443,7 @@ const styles = StyleSheet.create({
     borderBottomColor: "#2D3139",
   },
   sectionTitle: {
-    color: "#9CA3AF",
+    color: "#D1D5DB",
     fontSize: 13,
     fontWeight: "600",
     textTransform: "uppercase",
@@ -479,7 +479,7 @@ const styles = StyleSheet.create({
     fontWeight: "600",
   },
   accountUsername: {
-    color: "#9CA3AF",
+    color: "#D1D5DB",
     fontSize: 14,
     marginTop: 2,
   },
@@ -502,7 +502,7 @@ const styles = StyleSheet.create({
     marginBottom: 12,
   },
   notLoggedInText: {
-    color: "#6B7280",
+    color: "#9CA3AF",
     fontSize: 14,
     marginTop: 8,
   },
@@ -532,7 +532,7 @@ const styles = StyleSheet.create({
     fontWeight: "500",
   },
   menuItemDescription: {
-    color: "#9CA3AF",
+    color: "#D1D5DB",
     fontSize: 13,
     marginTop: 2,
   },
@@ -544,7 +544,7 @@ const styles = StyleSheet.create({
     marginBottom: 8,
   },
   savedAccountsLabel: {
-    color: "#6B7280",
+    color: "#9CA3AF",
     fontSize: 12,
     marginRight: 8,
   },
@@ -574,7 +574,7 @@ const styles = StyleSheet.create({
     borderColor: "#151718",
   },
   moreAccountsText: {
-    color: "#9CA3AF",
+    color: "#D1D5DB",
     fontSize: 10,
     fontWeight: "600",
   },
@@ -596,7 +596,7 @@ const styles = StyleSheet.create({
     borderTopColor: "#2D3139",
   },
   sessionExpiryText: {
-    color: "#9CA3AF",
+    color: "#D1D5DB",
     fontSize: 12,
     marginLeft: 6,
   },
@@ -628,16 +628,16 @@ const styles = StyleSheet.create({
     marginLeft: 8,
   },
   footerVersion: {
-    color: "#9CA3AF",
+    color: "#D1D5DB",
     fontSize: 12,
     marginBottom: 4,
   },
   footerText: {
-    color: "#6B7280",
+    color: "#9CA3AF",
     fontSize: 14,
   },
   footerSubtext: {
-    color: "#4B5563",
+    color: "#9CA3AF",
     fontSize: 12,
     marginTop: 4,
   },
@@ -660,7 +660,7 @@ const styles = StyleSheet.create({
     marginLeft: 4,
   },
   footerCopyright: {
-    color: "#4B5563",
+    color: "#9CA3AF",
     fontSize: 11,
     marginTop: 16,
   },

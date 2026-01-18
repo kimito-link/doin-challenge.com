@@ -84,7 +84,7 @@ export default function InviteScreen() {
     return (
       <ScreenContainer containerClassName="bg-background">
         <View style={{ flex: 1, alignItems: "center", justifyContent: "center" }}>
-          <Text style={{ color: "#9CA3AF" }}>読み込み中...</Text>
+          <Text style={{ color: "#D1D5DB" }}>読み込み中...</Text>
         </View>
       </ScreenContainer>
     );
@@ -94,7 +94,7 @@ export default function InviteScreen() {
     return (
       <ScreenContainer containerClassName="bg-background">
         <View style={{ flex: 1, alignItems: "center", justifyContent: "center" }}>
-          <Text style={{ color: "#9CA3AF" }}>チャレンジが見つかりません</Text>
+          <Text style={{ color: "#D1D5DB" }}>チャレンジが見つかりません</Text>
           <TouchableOpacity
             onPress={() => router.back()}
             style={{ marginTop: 16, padding: 12 }}
@@ -155,15 +155,15 @@ export default function InviteScreen() {
               {challenge.title}
             </Text>
             <View style={{ flexDirection: "row", alignItems: "center" }}>
-              <MaterialIcons name="people" size={16} color="#9CA3AF" />
-              <Text style={{ color: "#9CA3AF", fontSize: 14, marginLeft: 4 }}>
+              <MaterialIcons name="people" size={16} color="#D1D5DB" />
+              <Text style={{ color: "#D1D5DB", fontSize: 14, marginLeft: 4 }}>
                 目標: {challenge.targetCount}人
               </Text>
             </View>
             {challenge.venue && (
               <View style={{ flexDirection: "row", alignItems: "center", marginTop: 4 }}>
-                <MaterialIcons name="location-on" size={16} color="#9CA3AF" />
-                <Text style={{ color: "#9CA3AF", fontSize: 14, marginLeft: 4 }}>
+                <MaterialIcons name="location-on" size={16} color="#D1D5DB" />
+                <Text style={{ color: "#D1D5DB", fontSize: 14, marginLeft: 4 }}>
                   {challenge.venue}
                 </Text>
               </View>
@@ -189,7 +189,7 @@ export default function InviteScreen() {
                   marginBottom: 12,
                 }}
               >
-                <Text style={{ color: "#9CA3AF", fontSize: 12 }} numberOfLines={1}>
+                <Text style={{ color: "#D1D5DB", fontSize: 12 }} numberOfLines={1}>
                   {inviteUrl}
                 </Text>
               </View>
@@ -253,7 +253,7 @@ export default function InviteScreen() {
             </>
           ) : (
             <View style={{ alignItems: "center", padding: 20 }}>
-              <Text style={{ color: "#9CA3AF" }}>招待リンクを生成中...</Text>
+              <Text style={{ color: "#D1D5DB" }}>招待リンクを生成中...</Text>
             </View>
           )}
         </View>
@@ -307,7 +307,7 @@ export default function InviteScreen() {
                 招待特典
               </Text>
             </View>
-            <Text style={{ color: "#9CA3AF", fontSize: 14, lineHeight: 20 }}>
+            <Text style={{ color: "#D1D5DB", fontSize: 14, lineHeight: 20 }}>
               友達を招待すると、あなたの貢献度が+1されます！{"\n"}
               たくさん招待して、チャレンジを盛り上げよう！
             </Text>

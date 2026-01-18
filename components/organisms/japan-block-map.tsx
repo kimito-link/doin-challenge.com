@@ -295,7 +295,7 @@ const styles = StyleSheet.create({
   statDivider: {
     width: 1,
     height: 40,
-    backgroundColor: "#4B5563",
+    backgroundColor: "#9CA3AF",
   },
   hotHighlight: {
     flexDirection: "row",

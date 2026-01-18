@@ -39,7 +39,7 @@ const variantStyles = {
   },
   ghost: {
     bg: "transparent",
-    text: "#9CA3AF",
+    text: "#D1D5DB",
     border: "transparent",
     activeBg: "rgba(255, 255, 255, 0.1)",
   },

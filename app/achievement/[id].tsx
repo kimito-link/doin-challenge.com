@@ -52,7 +52,7 @@ export default function AchievementPage() {
     return (
       <ScreenContainer containerClassName="bg-background">
         <View style={{ flex: 1, alignItems: "center", justifyContent: "center", backgroundColor: colors.background }}>
-          <Text style={{ color: "#9CA3AF" }}>読み込み中...</Text>
+          <Text style={{ color: "#D1D5DB" }}>読み込み中...</Text>
         </View>
       </ScreenContainer>
     );
@@ -62,7 +62,7 @@ export default function AchievementPage() {
     return (
       <ScreenContainer containerClassName="bg-background">
         <View style={{ flex: 1, alignItems: "center", justifyContent: "center", backgroundColor: colors.background }}>
-          <Text style={{ color: "#9CA3AF" }}>チャレンジが見つかりません</Text>
+          <Text style={{ color: "#D1D5DB" }}>チャレンジが見つかりません</Text>
         </View>
       </ScreenContainer>
     );
@@ -72,7 +72,7 @@ export default function AchievementPage() {
     return (
       <ScreenContainer containerClassName="bg-background">
         <View style={{ flex: 1, alignItems: "center", justifyContent: "center", backgroundColor: colors.background }}>
-          <Text style={{ color: "#9CA3AF" }}>達成記念ページはまだ作成されていません</Text>
+          <Text style={{ color: "#D1D5DB" }}>達成記念ページはまだ作成されていません</Text>
           <TouchableOpacity
             onPress={() => router.back()}
             style={{ marginTop: 16, paddingHorizontal: 24, paddingVertical: 12, backgroundColor: "#EC4899", borderRadius: 24 }}
@@ -148,7 +148,7 @@ export default function AchievementPage() {
                 <Text style={{ color: "#EC4899", fontSize: 36, fontWeight: "bold" }}>
                   {achievementPage.finalValue}
                 </Text>
-                <Text style={{ color: "#9CA3AF", fontSize: 12 }}>
+                <Text style={{ color: "#D1D5DB", fontSize: 12 }}>
                   達成{challenge.goalUnit || "人"}数
                 </Text>
               </View>
@@ -157,7 +157,7 @@ export default function AchievementPage() {
                 <Text style={{ color: "#8B5CF6", fontSize: 36, fontWeight: "bold" }}>
                   {achievementPage.totalParticipants}
                 </Text>
-                <Text style={{ color: "#9CA3AF", fontSize: 12 }}>
+                <Text style={{ color: "#D1D5DB", fontSize: 12 }}>
                   参加者数
                 </Text>
               </View>
@@ -166,7 +166,7 @@ export default function AchievementPage() {
                 <Text style={{ color: "#6366F1", fontSize: 36, fontWeight: "bold" }}>
                   {Math.round((achievementPage.finalValue / achievementPage.goalValue) * 100)}%
                 </Text>
-                <Text style={{ color: "#9CA3AF", fontSize: 12 }}>
+                <Text style={{ color: "#D1D5DB", fontSize: 12 }}>
                   達成率
                 </Text>
               </View>
@@ -175,14 +175,14 @@ export default function AchievementPage() {
             <View style={{ borderTopWidth: 1, borderTopColor: "#2D3139", paddingTop: 16 }}>
               <View style={{ flexDirection: "row", alignItems: "center", marginBottom: 8 }}>
                 <MaterialIcons name="event" size={16} color="#DD6500" />
-                <Text style={{ color: "#9CA3AF", fontSize: 14, marginLeft: 8 }}>
+                <Text style={{ color: "#D1D5DB", fontSize: 14, marginLeft: 8 }}>
                   達成日: {formattedDate}
                 </Text>
               </View>
               {challenge.venue && (
                 <View style={{ flexDirection: "row", alignItems: "center" }}>
-                  <MaterialIcons name="place" size={16} color="#9CA3AF" />
-                  <Text style={{ color: "#9CA3AF", fontSize: 14, marginLeft: 8 }}>
+                  <MaterialIcons name="place" size={16} color="#D1D5DB" />
+                  <Text style={{ color: "#D1D5DB", fontSize: 14, marginLeft: 8 }}>
                     {challenge.venue}
                   </Text>
                 </View>
@@ -227,7 +227,7 @@ export default function AchievementPage() {
                 参加者の皆さん
               </Text>
               <View style={{ flex: 1 }} />
-              <Text style={{ color: "#9CA3AF", fontSize: 14 }}>
+              <Text style={{ color: "#D1D5DB", fontSize: 14 }}>
                 {participations?.length || 0}人
               </Text>
             </View>
@@ -266,7 +266,7 @@ export default function AchievementPage() {
                     </View>
                   )}
                   <Text
-                    style={{ color: "#9CA3AF", fontSize: 10, textAlign: "center" }}
+                    style={{ color: "#D1D5DB", fontSize: 10, textAlign: "center" }}
                     numberOfLines={1}
                   >
                     {p.isAnonymous ? "匿名" : p.displayName}
@@ -312,7 +312,7 @@ export default function AchievementPage() {
             <Text style={{ color: colors.foreground, fontSize: 18, fontWeight: "bold", textAlign: "center", marginBottom: 8 }}>
               ありがとうございました！
             </Text>
-            <Text style={{ color: "#9CA3AF", fontSize: 14, textAlign: "center", lineHeight: 22 }}>
+            <Text style={{ color: "#D1D5DB", fontSize: 14, textAlign: "center", lineHeight: 22 }}>
               皆さんの応援のおかげで目標を達成することができました。{"\n"}
               これからも一緒に応援していきましょう！
             </Text>

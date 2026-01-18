@@ -13,8 +13,8 @@ interface BadgeProps {
 const variantStyles = {
   default: {
     bg: "rgba(156, 163, 175, 0.2)",
-    text: "#9CA3AF",
-    border: "#4B5563",
+    text: "#D1D5DB",
+    border: "#9CA3AF",
   },
   success: {
     bg: "rgba(34, 197, 94, 0.2)",

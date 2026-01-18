@@ -270,7 +270,7 @@ const styles = StyleSheet.create({
     fontWeight: "bold",
   },
   contributionLabel: {
-    color: "#6B7280",
+    color: "#9CA3AF",
     fontSize: 11,
   },
   messageBox: {
@@ -301,7 +301,7 @@ const styles = StyleSheet.create({
     marginBottom: 8,
   },
   subtitle: {
-    color: "#9CA3AF",
+    color: "#D1D5DB",
     fontSize: 14,
     textAlign: "center",
     marginBottom: 20,
@@ -321,7 +321,7 @@ const styles = StyleSheet.create({
     marginBottom: 4,
   },
   subMessage: {
-    color: "#9CA3AF",
+    color: "#D1D5DB",
     fontSize: 13,
     textAlign: "center",
   },
@@ -356,7 +356,7 @@ const styles = StyleSheet.create({
     alignItems: "center",
   },
   skipButtonText: {
-    color: "#6B7280",
+    color: "#9CA3AF",
     fontSize: 14,
   },
 });
