@@ -124,8 +124,7 @@ export function TwitterUserCard({
         <View className="flex-row items-center" style={{ gap: 8 }}>
           {user.username && (
             <Text
-              className="text-primary"
-              style={{ fontSize: config.usernameSize }}
+              style={{ fontSize: config.usernameSize, color: '#EC4899' }}
             >
               @{user.username}
             </Text>

@@ -377,15 +377,8 @@ export function TutorialOverlay({
       // メッセージのフェードイン
       messageOpacity.value = withTiming(1, { duration: 300 });
       
-      // キャラクターのバウンスアニメーション
-      characterBounce.value = withRepeat(
-        withSequence(
-          withTiming(-8, { duration: 600, easing: Easing.out(Easing.ease) }),
-          withTiming(0, { duration: 600, easing: Easing.in(Easing.ease) })
-        ),
-        -1,
-        true
-      );
+      // キャラクターのバウンスアニメーション（削除：ちかちかしすぎるため）
+      characterBounce.value = 0;
 
       // プレビューのスケールイン
       previewScale.value = withDelay(200, withSpring(1, { damping: 12 }));

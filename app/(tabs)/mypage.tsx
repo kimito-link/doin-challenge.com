@@ -680,8 +680,8 @@ export default function MyPageScreen() {
                   justifyContent: "center",
                 }}
               >
-                <MaterialIcons name="swap-horiz" size={20} color="#60A5FA" />
-                <Text style={{ color: "#60A5FA", fontSize: 14, marginLeft: 8 }}>
+                <MaterialIcons name="swap-horiz" size={20} color="#93C5FD" />
+                <Text style={{ color: "#93C5FD", fontSize: 14, marginLeft: 8 }}>
                   別のアカウントでログイン
                 </Text>
               </TouchableOpacity>
