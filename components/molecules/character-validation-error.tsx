@@ -1,0 +1,418 @@
+import { useState, useEffect, useCallback, useRef } from "react";
+import { View, Text, StyleSheet, Platform } from "react-native";
+import { Image } from "expo-image";
+import Animated, {
+  useSharedValue,
+  useAnimatedStyle,
+  withSequence,
+  withTiming,
+  withRepeat,
+  FadeIn,
+  FadeOut,
+} from "react-native-reanimated";
+import * as Haptics from "expo-haptics";
+
+// キャラクター画像
+const CHARACTER_IMAGES = {
+  rinku: {
+    normal: require("@/assets/images/characters/link/link-yukkuri-normal-mouth-closed.png"),
+    sad: require("@/assets/images/characters/link/link-yukkuri-half-eyes-mouth-closed.png"),
+    worried: require("@/assets/images/characters/link/link-yukkuri-half-eyes-mouth-open.png"),
+  },
+  konta: require("@/assets/images/characters/konta.png"),
+  tanune: require("@/assets/images/characters/tanune.png"),
+};
+
+// バリデーションエラーメッセージ
+const VALIDATION_MESSAGES = {
+  title: [
+    { character: "rinku", text: "チャレンジ名を入れてね！", expression: "worried" },
+    { character: "konta", text: "名前がないと始まらないよ〜", expression: "normal" },
+    { character: "tanune", text: "まずはタイトルを決めよう！", expression: "normal" },
+  ],
+  date: [
+    { character: "rinku", text: "開催日を選んでね！", expression: "worried" },
+    { character: "konta", text: "いつやるの？日付を教えて！", expression: "normal" },
+    { character: "tanune", text: "日程が決まってないと参加できないよ〜", expression: "normal" },
+  ],
+  host: [
+    { character: "rinku", text: "ログインしてね！", expression: "sad" },
+    { character: "konta", text: "誰が主催するの？", expression: "normal" },
+    { character: "tanune", text: "Twitterでログインしよう！", expression: "normal" },
+  ],
+  general: [
+    { character: "rinku", text: "まだ必要項目が入ってないよ！", expression: "worried" },
+    { character: "konta", text: "あれ？何か足りないみたい...", expression: "normal" },
+    { character: "tanune", text: "もう少し入力してね！", expression: "normal" },
+  ],
+};
+
+type ValidationField = keyof typeof VALIDATION_MESSAGES;
+type CharacterType = "rinku" | "konta" | "tanune";
+
+interface ValidationError {
+  field: ValidationField;
+  message?: string;
+}
+
+interface CharacterValidationErrorProps {
+  errors: ValidationError[];
+  visible: boolean;
+}
+
+export function CharacterValidationError({ errors, visible }: CharacterValidationErrorProps) {
+  const [currentError, setCurrentError] = useState<ValidationError | null>(null);
+  const [currentMessage, setCurrentMessage] = useState<{ character: CharacterType; text: string; expression: string } | null>(null);
+  const messageIndex = useRef(0);
+  
+  const bounceY = useSharedValue(0);
+  const shake = useSharedValue(0);
+
+  const triggerHaptic = useCallback(() => {
+    if (Platform.OS !== "web") {
+      Haptics.notificationAsync(Haptics.NotificationFeedbackType.Warning);
+    }
+  }, []);
+
+  useEffect(() => {
+    if (visible && errors.length > 0) {
+      const error = errors[0];
+      setCurrentError(error);
+      
+      const messages = VALIDATION_MESSAGES[error.field] || VALIDATION_MESSAGES.general;
+      const randomIndex = Math.floor(Math.random() * messages.length);
+      setCurrentMessage(messages[randomIndex] as { character: CharacterType; text: string; expression: string });
+      
+      // アニメーション
+      bounceY.value = withRepeat(
+        withSequence(
+          withTiming(-8, { duration: 300 }),
+          withTiming(0, { duration: 300 })
+        ),
+        3,
+        false
+      );
+      
+      shake.value = withSequence(
+        withTiming(-5, { duration: 50 }),
+        withTiming(5, { duration: 50 }),
+        withTiming(-5, { duration: 50 }),
+        withTiming(5, { duration: 50 }),
+        withTiming(0, { duration: 50 })
+      );
+      
+      triggerHaptic();
+    } else {
+      setCurrentError(null);
+      setCurrentMessage(null);
+    }
+  }, [visible, errors, bounceY, shake, triggerHaptic]);
+
+  const animatedStyle = useAnimatedStyle(() => ({
+    transform: [
+      { translateY: bounceY.value },
+      { translateX: shake.value },
+    ],
+  }));
+
+  if (!visible || !currentMessage) {
+    return null;
+  }
+
+  const getCharacterImage = () => {
+    if (currentMessage.character === "rinku") {
+      const expression = currentMessage.expression as keyof typeof CHARACTER_IMAGES.rinku;
+      return CHARACTER_IMAGES.rinku[expression] || CHARACTER_IMAGES.rinku.normal;
+    }
+    return CHARACTER_IMAGES[currentMessage.character];
+  };
+
+  return (
+    <Animated.View
+      entering={FadeIn.duration(300)}
+      exiting={FadeOut.duration(200)}
+      style={styles.container}
+    >
+      <View style={styles.content}>
+        <Animated.View style={[styles.characterContainer, animatedStyle]}>
+          <Image
+            source={getCharacterImage()}
+            style={styles.character}
+            contentFit="contain"
+          />
+        </Animated.View>
+        
+        <View style={styles.bubbleContainer}>
+          <View style={styles.bubble}>
+            <View style={styles.bubbleArrow} />
+            <Text style={styles.bubbleText}>{currentMessage.text}</Text>
+          </View>
+          <Text style={styles.characterName}>
+            {currentMessage.character === "rinku" ? "りんく" : 
+             currentMessage.character === "konta" ? "こん太" : "たぬ姉"}
+          </Text>
+        </View>
+      </View>
+      
+      {errors.length > 1 && (
+        <Text style={styles.moreErrors}>
+          他にも{errors.length - 1}件の入力が必要です
+        </Text>
+      )}
+    </Animated.View>
+  );
+}
+
+// 複数キャラクターが一緒にエラーを表示するバージョン
+interface CharacterGroupValidationErrorProps {
+  errors: ValidationError[];
+  visible: boolean;
+}
+
+export function CharacterGroupValidationError({ errors, visible }: CharacterGroupValidationErrorProps) {
+  const bounceY = useSharedValue(0);
+  const [selectedCharacter, setSelectedCharacter] = useState<CharacterType>("rinku");
+  const [message, setMessage] = useState("まだ必要項目が入ってないよ！");
+
+  const triggerHaptic = useCallback(() => {
+    if (Platform.OS !== "web") {
+      Haptics.notificationAsync(Haptics.NotificationFeedbackType.Warning);
+    }
+  }, []);
+
+  useEffect(() => {
+    if (visible && errors.length > 0) {
+      // ランダムにキャラクターを選択
+      const characters: CharacterType[] = ["rinku", "konta", "tanune"];
+      const randomChar = characters[Math.floor(Math.random() * characters.length)];
+      setSelectedCharacter(randomChar);
+      
+      // エラーに応じたメッセージを選択
+      const error = errors[0];
+      const messages = VALIDATION_MESSAGES[error.field] || VALIDATION_MESSAGES.general;
+      const charMessage = messages.find(m => m.character === randomChar) || messages[0];
+      setMessage(charMessage.text);
+      
+      // アニメーション
+      bounceY.value = withRepeat(
+        withSequence(
+          withTiming(-6, { duration: 250 }),
+          withTiming(0, { duration: 250 })
+        ),
+        2,
+        false
+      );
+      
+      triggerHaptic();
+    }
+  }, [visible, errors, bounceY, triggerHaptic]);
+
+  const animatedStyle = useAnimatedStyle(() => ({
+    transform: [{ translateY: bounceY.value }],
+  }));
+
+  if (!visible) {
+    return null;
+  }
+
+  return (
+    <Animated.View
+      entering={FadeIn.duration(300)}
+      exiting={FadeOut.duration(200)}
+      style={styles.groupContainer}
+    >
+      {/* 3キャラクター表示 */}
+      <View style={styles.charactersRow}>
+        <View style={[styles.sideCharacter, selectedCharacter !== "konta" && styles.dimmed]}>
+          <Image
+            source={CHARACTER_IMAGES.konta}
+            style={styles.smallCharacter}
+            contentFit="contain"
+          />
+        </View>
+        
+        <Animated.View style={[styles.mainCharacter, animatedStyle]}>
+          {/* 吹き出し */}
+          <View style={styles.groupBubble}>
+            <Text style={styles.groupBubbleText}>{message}</Text>
+            <View style={styles.groupBubbleArrow} />
+          </View>
+          <Image
+            source={selectedCharacter === "rinku" 
+              ? CHARACTER_IMAGES.rinku.worried 
+              : CHARACTER_IMAGES[selectedCharacter]}
+            style={styles.centerCharacter}
+            contentFit="contain"
+          />
+        </Animated.View>
+        
+        <View style={[styles.sideCharacter, selectedCharacter !== "tanune" && styles.dimmed]}>
+          <Image
+            source={CHARACTER_IMAGES.tanune}
+            style={styles.smallCharacter}
+            contentFit="contain"
+          />
+        </View>
+      </View>
+      
+      {/* エラー一覧 */}
+      <View style={styles.errorList}>
+        {errors.map((error, index) => (
+          <View key={index} style={styles.errorItem}>
+            <Text style={styles.errorDot}>•</Text>
+            <Text style={styles.errorText}>
+              {error.field === "title" && "チャレンジ名"}
+              {error.field === "date" && "開催日"}
+              {error.field === "host" && "ログイン"}
+              {error.field === "general" && "必須項目"}
+              が必要です
+            </Text>
+          </View>
+        ))}
+      </View>
+    </Animated.View>
+  );
+}
+
+const styles = StyleSheet.create({
+  container: {
+    backgroundColor: "rgba(236, 72, 153, 0.15)",
+    borderRadius: 16,
+    padding: 16,
+    marginBottom: 16,
+    borderWidth: 1,
+    borderColor: "rgba(236, 72, 153, 0.3)",
+  },
+  content: {
+    flexDirection: "row",
+    alignItems: "center",
+  },
+  characterContainer: {
+    marginRight: 12,
+  },
+  character: {
+    width: 60,
+    height: 60,
+  },
+  bubbleContainer: {
+    flex: 1,
+  },
+  bubble: {
+    backgroundColor: "#EC4899",
+    borderRadius: 12,
+    padding: 12,
+    position: "relative",
+  },
+  bubbleArrow: {
+    position: "absolute",
+    left: -8,
+    top: "50%",
+    marginTop: -6,
+    width: 0,
+    height: 0,
+    borderTopWidth: 6,
+    borderBottomWidth: 6,
+    borderRightWidth: 8,
+    borderTopColor: "transparent",
+    borderBottomColor: "transparent",
+    borderRightColor: "#EC4899",
+  },
+  bubbleText: {
+    color: "#fff",
+    fontSize: 14,
+    fontWeight: "600",
+  },
+  characterName: {
+    color: "#EC4899",
+    fontSize: 11,
+    marginTop: 4,
+    marginLeft: 4,
+  },
+  moreErrors: {
+    color: "#EC4899",
+    fontSize: 12,
+    marginTop: 8,
+    textAlign: "center",
+  },
+  
+  // グループバージョンのスタイル
+  groupContainer: {
+    backgroundColor: "rgba(236, 72, 153, 0.1)",
+    borderRadius: 16,
+    padding: 16,
+    marginBottom: 16,
+    borderWidth: 1,
+    borderColor: "rgba(236, 72, 153, 0.25)",
+  },
+  charactersRow: {
+    flexDirection: "row",
+    alignItems: "flex-end",
+    justifyContent: "center",
+    marginBottom: 12,
+  },
+  sideCharacter: {
+    marginHorizontal: 4,
+  },
+  mainCharacter: {
+    alignItems: "center",
+    marginHorizontal: 8,
+  },
+  smallCharacter: {
+    width: 40,
+    height: 40,
+  },
+  centerCharacter: {
+    width: 70,
+    height: 70,
+  },
+  dimmed: {
+    opacity: 0.5,
+  },
+  groupBubble: {
+    backgroundColor: "#EC4899",
+    borderRadius: 12,
+    paddingHorizontal: 14,
+    paddingVertical: 10,
+    marginBottom: 8,
+    position: "relative",
+  },
+  groupBubbleText: {
+    color: "#fff",
+    fontSize: 14,
+    fontWeight: "600",
+    textAlign: "center",
+  },
+  groupBubbleArrow: {
+    position: "absolute",
+    bottom: -8,
+    left: "50%",
+    marginLeft: -6,
+    width: 0,
+    height: 0,
+    borderLeftWidth: 6,
+    borderRightWidth: 6,
+    borderTopWidth: 8,
+    borderLeftColor: "transparent",
+    borderRightColor: "transparent",
+    borderTopColor: "#EC4899",
+  },
+  errorList: {
+    backgroundColor: "rgba(0, 0, 0, 0.2)",
+    borderRadius: 8,
+    padding: 12,
+  },
+  errorItem: {
+    flexDirection: "row",
+    alignItems: "center",
+    marginVertical: 2,
+  },
+  errorDot: {
+    color: "#EC4899",
+    fontSize: 16,
+    marginRight: 8,
+  },
+  errorText: {
+    color: "#D1D5DB",
+    fontSize: 13,
+  },
+});

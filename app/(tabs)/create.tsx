@@ -1,7 +1,7 @@
 import { Text, View, TouchableOpacity, TextInput, ScrollView, KeyboardAvoidingView, Platform, Linking } from "react-native";
 import { Image } from "expo-image";
 import { useRouter } from "expo-router";
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import { ScreenContainer } from "@/components/organisms/screen-container";
 import { ResponsiveContainer } from "@/components/molecules/responsive-container";
 import { trpc } from "@/lib/trpc";
@@ -17,6 +17,7 @@ import { DatePicker } from "@/components/molecules/date-picker";
 import { NumberStepper } from "@/components/molecules/number-stepper";
 import { showAlert } from "@/lib/web-alert";
 import { TwitterUserCard } from "@/components/molecules/twitter-user-card";
+import { CharacterGroupValidationError } from "@/components/molecules/character-validation-error";
 
 // キャラクター画像
 const characterImages = {
@@ -78,9 +79,27 @@ export default function CreateChallengeScreen() {
   const [templateIsPublic, setTemplateIsPublic] = useState(false);
   const [categoryId, setCategoryId] = useState<number | null>(null);
   const [showCategoryList, setShowCategoryList] = useState(false);
+  const [showValidationError, setShowValidationError] = useState(false);
 
   // カテゴリ一覧を取得
   const { data: categoriesData } = trpc.categories.list.useQuery();
+
+  // バリデーションエラーを計算
+  const validationErrors = useMemo(() => {
+    const errors: Array<{ field: "title" | "date" | "host" | "general"; message?: string }> = [];
+    
+    if (!title.trim()) {
+      errors.push({ field: "title" });
+    }
+    if (!eventDateStr.trim()) {
+      errors.push({ field: "date" });
+    }
+    if (!user?.twitterId) {
+      errors.push({ field: "host" });
+    }
+    
+    return errors;
+  }, [title, eventDateStr, user]);
 
   const createTemplateMutation = trpc.templates.create.useMutation({
     onSuccess: () => {
@@ -90,6 +109,7 @@ export default function CreateChallengeScreen() {
 
   const createChallengeMutation = trpc.events.create.useMutation({
     onSuccess: (newChallenge) => {
+      setShowValidationError(false);
       showAlert("成功", "チャレンジを作成しました！", [
         {
           text: "OK",
@@ -108,16 +128,9 @@ export default function CreateChallengeScreen() {
   });
 
   const handleCreate = () => {
-    if (!title.trim()) {
-      showAlert("エラー", "チャレンジ名を入力してください");
-      return;
-    }
-    if (!eventDateStr.trim()) {
-      showAlert("エラー", "開催日を選択してください");
-      return;
-    }
-    if (!hostName.trim() && !user) {
-      showAlert("エラー", "ホスト名を入力してください");
+    // バリデーションエラーがある場合はキャラクターエラーを表示
+    if (validationErrors.length > 0) {
+      setShowValidationError(true);
       return;
     }
 
@@ -142,23 +155,19 @@ export default function CreateChallengeScreen() {
       });
     }
 
-    // ログイン確認
-    if (!user?.twitterId) {
-      showAlert("エラー", "ログインが必要です。Twitterでログインしてください。");
-      return;
-    }
+    setShowValidationError(false);
     
     createChallengeMutation.mutate({
       title: title.trim(),
       description: description.trim() || undefined,
       venue: venue.trim() || undefined,
       eventDate: eventDate.toISOString(),
-      hostTwitterId: user.twitterId, // Twitter IDを送信
-      hostName: user.name || hostName.trim(),
-      hostUsername: user.username || undefined,
-      hostProfileImage: user.profileImage || undefined,
-      hostFollowersCount: user.followersCount || undefined,
-      hostDescription: user.description || undefined,
+      hostTwitterId: user!.twitterId!, // Twitter IDを送信
+      hostName: user!.name || hostName.trim(),
+      hostUsername: user!.username || undefined,
+      hostProfileImage: user!.profileImage || undefined,
+      hostFollowersCount: user!.followersCount || undefined,
+      hostDescription: user!.description || undefined,
       goalType: goalType as "attendance" | "followers" | "viewers" | "points" | "custom",
       goalValue: goalValue || 100,
       goalUnit: goalUnit || "人",
@@ -169,6 +178,21 @@ export default function CreateChallengeScreen() {
       ticketDoor: ticketDoor ? parseInt(ticketDoor) : undefined,
       ticketUrl: ticketUrl.trim() || undefined,
     });
+  };
+
+  // 入力が変更されたらバリデーションエラーを非表示にする
+  const handleTitleChange = (text: string) => {
+    setTitle(text);
+    if (showValidationError && text.trim()) {
+      setShowValidationError(false);
+    }
+  };
+
+  const handleDateChange = (date: string) => {
+    setEventDateStr(date);
+    if (showValidationError && date.trim()) {
+      setShowValidationError(false);
+    }
   };
 
   const selectedGoalType = goalTypes.find(g => g.id === goalType);
@@ -240,6 +264,12 @@ export default function CreateChallengeScreen() {
               style={{ height: 4 }}
             />
             <View style={{ padding: 16 }}>
+              {/* キャラクターバリデーションエラー */}
+              <CharacterGroupValidationError
+                errors={validationErrors}
+                visible={showValidationError}
+              />
+
               {/* Twitterログインボタン */}
               {!user && (
                 <TouchableOpacity
@@ -270,126 +300,51 @@ export default function CreateChallengeScreen() {
                     flexDirection: "row",
                     alignItems: "center",
                     marginBottom: 16,
+                    borderWidth: 1,
+                    borderColor: "#2D3139",
                   }}
                 >
                   <TwitterUserCard
                     user={{
-                      twitterId: user.twitterId,
                       name: user.name || "",
-                      username: user.username,
-                      profileImage: user.profileImage,
+                      username: user.username || "",
+                      profileImage: user.profileImage || "",
                       followersCount: user.followersCount,
                       description: user.description,
                     }}
-                    size="medium"
-                    showFollowers
-                    showDescription
+                    showFollowers={true}
+                    showDescription={false}
                   />
-                  <MaterialIcons name="check-circle" size={24} color="#22C55E" style={{ marginLeft: 8 }} />
                 </View>
               )}
-
-              {!user && (
-                <>
-                  <View style={{ flexDirection: "row", alignItems: "center", marginBottom: 16 }}>
-                    <View style={{ flex: 1, height: 1, backgroundColor: "#2D3139" }} />
-                    <Text style={{ color: "#6B7280", marginHorizontal: 16 }}>または</Text>
-                    <View style={{ flex: 1, height: 1, backgroundColor: "#2D3139" }} />
-                  </View>
-
-                  <View style={{ marginBottom: 16 }}>
-                    <Text style={{ color: colors.muted, fontSize: 14, marginBottom: 8 }}>
-                      ホスト名 *
-                    </Text>
-                    <TextInput
-                      value={hostName}
-                      onChangeText={setHostName}
-                      placeholder="あなたの名前・アーティスト名"
-                      placeholderTextColor="#6B7280"
-                      style={{
-                        backgroundColor: colors.background,
-                        borderRadius: 8,
-                        padding: 12,
-                        color: colors.foreground,
-                        borderWidth: 1,
-                        borderColor: "#2D3139",
-                      }}
-                    />
-                  </View>
-                </>
-              )}
-
-              {/* 目標タイプ選択 */}
-              <View style={{ marginBottom: 16 }}>
-                <Text style={{ color: colors.muted, fontSize: 14, marginBottom: 8 }}>
-                  目標タイプ *
-                </Text>
-                <ScrollView horizontal showsHorizontalScrollIndicator={false}>
-                  {goalTypes.map((type) => (
-                    <TouchableOpacity
-                      key={type.id}
-                      onPress={() => {
-                        setGoalType(type.id);
-                        setGoalUnit(type.unit);
-                      }}
-                      style={{
-                        backgroundColor: goalType === type.id ? "#DD6500" : "#0D1117",
-                        borderRadius: 8,
-                        padding: 12,
-                        marginRight: 8,
-                        alignItems: "center",
-                        minWidth: 80,
-                        borderWidth: 1,
-                        borderColor: goalType === type.id ? "#DD6500" : "#2D3139",
-                      }}
-                    >
-                      <MaterialIcons 
-                        name={type.icon as any} 
-                        size={24} 
-                        color={goalType === type.id ? "#fff" : "#9CA3AF"} 
-                      />
-                      <Text style={{ 
-                        color: goalType === type.id ? "#fff" : "#9CA3AF", 
-                        fontSize: 12, 
-                        marginTop: 4 
-                      }}>
-                        {type.label}
-                      </Text>
-                    </TouchableOpacity>
-                  ))}
-                </ScrollView>
-                {selectedGoalType && (
-                  <Text style={{ color: "#6B7280", fontSize: 12, marginTop: 8 }}>
-                    {selectedGoalType.description}
-                  </Text>
-                )}
-              </View>
 
               {/* イベントタイプ選択 */}
               <View style={{ marginBottom: 16 }}>
                 <Text style={{ color: colors.muted, fontSize: 14, marginBottom: 8 }}>
-                  イベントタイプ *
+                  イベントタイプ
                 </Text>
-                <View style={{ flexDirection: "row" }}>
+                <View style={{ flexDirection: "row", gap: 12 }}>
                   {eventTypes.map((type) => (
                     <TouchableOpacity
                       key={type.id}
                       onPress={() => setEventType(type.id)}
                       style={{
-                        backgroundColor: eventType === type.id ? type.color : "#0D1117",
-                        borderRadius: 8,
-                        paddingVertical: 12,
-                        paddingHorizontal: 24,
-                        marginRight: 12,
-                        borderWidth: 1,
+                        flex: 1,
+                        backgroundColor: eventType === type.id ? type.color : colors.background,
+                        borderRadius: 12,
+                        padding: 12,
+                        alignItems: "center",
+                        borderWidth: 2,
                         borderColor: eventType === type.id ? type.color : "#2D3139",
                       }}
                     >
-                      <Text style={{ 
-                        color: colors.foreground, 
-                        fontSize: 14, 
-                        fontWeight: eventType === type.id ? "bold" : "normal" 
-                      }}>
+                      <Text
+                        style={{
+                          color: eventType === type.id ? "#fff" : colors.muted,
+                          fontSize: 14,
+                          fontWeight: "600",
+                        }}
+                      >
                         {type.label}
                       </Text>
                     </TouchableOpacity>
@@ -411,74 +366,57 @@ export default function CreateChallengeScreen() {
                     borderWidth: 1,
                     borderColor: "#2D3139",
                     flexDirection: "row",
-                    alignItems: "center",
                     justifyContent: "space-between",
+                    alignItems: "center",
                   }}
                 >
-                  <View style={{ flexDirection: "row", alignItems: "center" }}>
-                    {categoryId && categoriesData ? (
-                      <>
-                        <Text style={{ fontSize: 18, marginRight: 8 }}>
-                          {categoriesData.find(c => c.id === categoryId)?.icon || "🎵"}
-                        </Text>
-                        <Text style={{ color: colors.foreground }}>
-                          {categoriesData.find(c => c.id === categoryId)?.name || "選択してください"}
-                        </Text>
-                      </>
-                    ) : (
-                      <Text style={{ color: "#6B7280" }}>カテゴリを選択（任意）</Text>
-                    )}
-                  </View>
-                  <MaterialIcons name={showCategoryList ? "expand-less" : "expand-more"} size={24} color="#9CA3AF" />
+                  <Text style={{ color: categoryId ? colors.foreground : "#6B7280", fontSize: 14 }}>
+                    {categoryId
+                      ? categoriesData?.find((c) => c.id === categoryId)?.name || "カテゴリを選択"
+                      : "カテゴリを選択"}
+                  </Text>
+                  <MaterialIcons
+                    name={showCategoryList ? "keyboard-arrow-up" : "keyboard-arrow-down"}
+                    size={24}
+                    color={colors.muted}
+                  />
                 </TouchableOpacity>
                 {showCategoryList && categoriesData && (
-                  <View style={{
-                    backgroundColor: colors.background,
-                    borderRadius: 8,
-                    marginTop: 4,
-                    borderWidth: 1,
-                    borderColor: "#2D3139",
-                    maxHeight: 200,
-                  }}>
-                    <ScrollView nestedScrollEnabled>
-                      <TouchableOpacity
-                        onPress={() => {
-                          setCategoryId(null);
-                          setShowCategoryList(false);
-                        }}
-                        style={{
-                          padding: 12,
-                          borderBottomWidth: 1,
-                          borderBottomColor: "#2D3139",
-                          flexDirection: "row",
-                          alignItems: "center",
-                        }}
-                      >
-                        <Text style={{ color: colors.muted }}>指定なし</Text>
-                      </TouchableOpacity>
-                      {categoriesData.map((cat) => (
+                  <View
+                    style={{
+                      backgroundColor: colors.background,
+                      borderRadius: 8,
+                      marginTop: 4,
+                      borderWidth: 1,
+                      borderColor: "#2D3139",
+                      maxHeight: 200,
+                    }}
+                  >
+                    <ScrollView nestedScrollEnabled={true}>
+                      {categoriesData.map((category) => (
                         <TouchableOpacity
-                          key={cat.id}
+                          key={category.id}
                           onPress={() => {
-                            setCategoryId(cat.id);
+                            setCategoryId(category.id);
                             setShowCategoryList(false);
                           }}
+                          activeOpacity={0.7}
                           style={{
                             padding: 12,
                             borderBottomWidth: 1,
                             borderBottomColor: "#2D3139",
-                            flexDirection: "row",
-                            alignItems: "center",
-                            backgroundColor: categoryId === cat.id ? "#1E293B" : "transparent",
+                            minHeight: 44,
+                            justifyContent: "center",
                           }}
                         >
-                          <Text style={{ fontSize: 18, marginRight: 8 }}>{cat.icon}</Text>
-                          <View style={{ flex: 1 }}>
-                            <Text style={{ color: colors.foreground, fontWeight: "500" }}>{cat.name}</Text>
-                            {cat.description && (
-                              <Text style={{ color: "#6B7280", fontSize: 12 }}>{cat.description}</Text>
-                            )}
-                          </View>
+                          <Text
+                            style={{
+                              color: categoryId === category.id ? "#EC4899" : colors.foreground,
+                              fontSize: 14,
+                            }}
+                          >
+                            {category.name}
+                          </Text>
                         </TouchableOpacity>
                       ))}
                     </ScrollView>
@@ -486,14 +424,15 @@ export default function CreateChallengeScreen() {
                 )}
               </View>
 
+              {/* チャレンジ名 */}
               <View style={{ marginBottom: 16 }}>
                 <Text style={{ color: colors.muted, fontSize: 14, marginBottom: 8 }}>
                   チャレンジ名 *
                 </Text>
                 <TextInput
                   value={title}
-                  onChangeText={setTitle}
-                  placeholder="例: ○○ ワンマンライブ 動員100人チャレンジ"
+                  onChangeText={handleTitleChange}
+                  placeholder="例: ○○ワンマンライブ動員チャレンジ"
                   placeholderTextColor="#6B7280"
                   style={{
                     backgroundColor: colors.background,
@@ -501,10 +440,86 @@ export default function CreateChallengeScreen() {
                     padding: 12,
                     color: colors.foreground,
                     borderWidth: 1,
-                    borderColor: "#2D3139",
+                    borderColor: !title.trim() && showValidationError ? "#EC4899" : "#2D3139",
                   }}
                 />
               </View>
+
+              {/* 目標タイプ選択 */}
+              <View style={{ marginBottom: 16 }}>
+                <Text style={{ color: colors.muted, fontSize: 14, marginBottom: 8 }}>
+                  目標タイプ
+                </Text>
+                <ScrollView
+                  horizontal
+                  showsHorizontalScrollIndicator={false}
+                  style={{ marginHorizontal: -4 }}
+                >
+                  {goalTypes.map((type) => (
+                    <TouchableOpacity
+                      key={type.id}
+                      onPress={() => {
+                        setGoalType(type.id);
+                        setGoalUnit(type.unit);
+                      }}
+                      style={{
+                        backgroundColor: goalType === type.id ? "#EC4899" : colors.background,
+                        borderRadius: 20,
+                        paddingHorizontal: 16,
+                        paddingVertical: 8,
+                        marginHorizontal: 4,
+                        flexDirection: "row",
+                        alignItems: "center",
+                        borderWidth: 1,
+                        borderColor: goalType === type.id ? "#EC4899" : "#2D3139",
+                      }}
+                    >
+                      <MaterialIcons
+                        name={type.icon as any}
+                        size={16}
+                        color={goalType === type.id ? "#fff" : colors.muted}
+                      />
+                      <Text
+                        style={{
+                          color: goalType === type.id ? "#fff" : colors.muted,
+                          fontSize: 13,
+                          marginLeft: 4,
+                        }}
+                      >
+                        {type.label}
+                      </Text>
+                    </TouchableOpacity>
+                  ))}
+                </ScrollView>
+                {selectedGoalType && (
+                  <Text style={{ color: colors.muted, fontSize: 12, marginTop: 8 }}>
+                    {selectedGoalType.description}
+                  </Text>
+                )}
+              </View>
+
+              {/* カスタム単位入力 */}
+              {goalType === "custom" && (
+                <View style={{ marginBottom: 16 }}>
+                  <Text style={{ color: colors.muted, fontSize: 14, marginBottom: 8 }}>
+                    単位
+                  </Text>
+                  <TextInput
+                    value={goalUnit}
+                    onChangeText={setGoalUnit}
+                    placeholder="例: 人、pt、回"
+                    placeholderTextColor="#6B7280"
+                    style={{
+                      backgroundColor: colors.background,
+                      borderRadius: 8,
+                      padding: 12,
+                      color: colors.foreground,
+                      borderWidth: 1,
+                      borderColor: "#2D3139",
+                    }}
+                  />
+                </View>
+              )}
 
               {/* 目標数値 */}
               <NumberStepper
@@ -522,11 +537,13 @@ export default function CreateChallengeScreen() {
                 <Text style={{ color: colors.muted, fontSize: 14, marginBottom: 8 }}>
                   開催日 *
                 </Text>
-                <DatePicker
-                  value={eventDateStr}
-                  onChange={setEventDateStr}
-                  placeholder="日付を選択"
-                />
+                <View style={{ borderWidth: !eventDateStr.trim() && showValidationError ? 1 : 0, borderColor: "#EC4899", borderRadius: 8 }}>
+                  <DatePicker
+                    value={eventDateStr}
+                    onChange={handleDateChange}
+                    placeholder="日付を選択"
+                  />
+                </View>
               </View>
 
               <View style={{ marginBottom: 16 }}>

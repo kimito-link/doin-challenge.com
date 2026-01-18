@@ -39,6 +39,7 @@ export { BlinkingCharacter, BlinkingLink } from "./blinking-character";
 export { CelebrationAnimation } from "./celebration-animation";
 export { InteractiveCharacter, TappableLink, LongPressCharacter } from "./interactive-character";
 export { TalkingCharacter } from "./talking-character";
+export { CharacterValidationError, CharacterGroupValidationError } from "./character-validation-error";
 
 // Animation系
 export { AnimatedListItem } from "./animated-list-item";
