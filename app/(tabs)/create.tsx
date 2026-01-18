@@ -1,7 +1,7 @@
 import { Text, View, TouchableOpacity, TextInput, ScrollView, KeyboardAvoidingView, Platform, Linking } from "react-native";
 import { Image } from "expo-image";
 import { useRouter } from "expo-router";
-import { useState, useMemo } from "react";
+import { useState, useMemo, useRef, useEffect } from "react";
 import { ScreenContainer } from "@/components/organisms/screen-container";
 import { ResponsiveContainer } from "@/components/molecules/responsive-container";
 import { trpc } from "@/lib/trpc";
@@ -80,6 +80,16 @@ export default function CreateChallengeScreen() {
   const [categoryId, setCategoryId] = useState<number | null>(null);
   const [showCategoryList, setShowCategoryList] = useState(false);
   const [showValidationError, setShowValidationError] = useState(false);
+  
+  // ScrollViewのref（バリデーションエラー時にスクロールするため）
+  const scrollViewRef = useRef<ScrollView>(null);
+  
+  // バリデーションエラー表示時にトップにスクロール
+  useEffect(() => {
+    if (showValidationError && scrollViewRef.current) {
+      scrollViewRef.current.scrollTo({ y: 0, animated: true });
+    }
+  }, [showValidationError]);
 
   // カテゴリ一覧を取得
   const { data: categoriesData } = trpc.categories.list.useQuery();
@@ -204,6 +214,7 @@ export default function CreateChallengeScreen() {
         style={{ flex: 1 }}
       >
         <ScrollView 
+            ref={scrollViewRef}
             style={{ flex: 1, backgroundColor: colors.background }}
             showsHorizontalScrollIndicator={false}
             horizontal={false}

@@ -789,6 +789,9 @@ function FilterButton({
 function EmptyState({ onGenerateSamples: _onGenerateSamples }: { onGenerateSamples: () => void }) {
   return (
     <ScrollView style={{ flex: 1, backgroundColor: "#0D1117" }}>
+      {/* デモ体験バナー（ログインなしでお試し） */}
+      <DemoTrialBanner />
+      
       {/* LP風キャッチコピー（チャレンジがない時も表示） */}
       <CatchCopySection />
       
