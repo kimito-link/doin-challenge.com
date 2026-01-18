@@ -326,9 +326,7 @@ export default function CreateChallengeScreen() {
                   style={{
                     backgroundColor: colors.background,
                     borderRadius: 12,
-                    padding: 12,
-                    flexDirection: "row",
-                    alignItems: "center",
+                    padding: 16,
                     marginBottom: 16,
                     borderWidth: 1,
                     borderColor: "#2D3139",
@@ -342,6 +340,7 @@ export default function CreateChallengeScreen() {
                       followersCount: user.followersCount,
                       description: user.description,
                     }}
+                    size="large"
                     showFollowers={true}
                     showDescription={true}
                   />

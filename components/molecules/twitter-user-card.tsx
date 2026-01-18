@@ -143,7 +143,7 @@ export function TwitterUserCard({
           <Text
             className="mt-1"
             style={{ fontSize: config.descriptionSize, lineHeight: config.descriptionSize * 1.5, color: '#E5E7EB' }}
-            numberOfLines={2}
+            numberOfLines={3}
           >
             {user.description}
           </Text>
