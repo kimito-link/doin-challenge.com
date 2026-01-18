@@ -524,6 +524,81 @@ function FeatureListSection() {
   );
 }
 
+// デモ体験バナー（ログインなしでお試し）
+function DemoTrialBanner() {
+  const colors = useColors();
+  const router = useRouter();
+  const { isDesktop } = useResponsive();
+
+  const handlePress = () => {
+    router.push("/demo");
+  };
+
+  return (
+    <View style={{ marginHorizontal: isDesktop ? 24 : 16, marginTop: 16, marginBottom: 8 }}>
+      <TouchableOpacity
+        onPress={handlePress}
+        activeOpacity={0.8}
+        style={{
+          backgroundColor: "#1A1D21",
+          borderRadius: 16,
+          padding: 16,
+          borderWidth: 2,
+          borderColor: "#DD6500",
+          borderStyle: "dashed",
+        }}
+      >
+        <View style={{ flexDirection: "row", alignItems: "center" }}>
+          {/* キャラクター */}
+          <View style={{
+            width: 48,
+            height: 48,
+            borderRadius: 24,
+            backgroundColor: "#DD6500",
+            alignItems: "center",
+            justifyContent: "center",
+            marginRight: 12,
+          }}>
+            <MaterialIcons name="play-arrow" size={28} color="#fff" />
+          </View>
+          
+          {/* テキスト */}
+          <View style={{ flex: 1 }}>
+            <View style={{ flexDirection: "row", alignItems: "center", marginBottom: 4 }}>
+              <Text style={{ 
+                color: "#DD6500", 
+                fontSize: 14, 
+                fontWeight: "bold",
+              }}>
+                🎮 ログインなしでお試し
+              </Text>
+              <View style={{
+                backgroundColor: "#DD6500",
+                paddingHorizontal: 8,
+                paddingVertical: 2,
+                borderRadius: 8,
+                marginLeft: 8,
+              }}>
+                <Text style={{ color: "#fff", fontSize: 10, fontWeight: "bold" }}>NEW</Text>
+              </View>
+            </View>
+            <Text style={{ 
+              color: "#9CA3AF", 
+              fontSize: 12,
+              lineHeight: 18,
+            }}>
+              デモチャレンジに参加して、アプリの使い方を体験してみよう！
+            </Text>
+          </View>
+          
+          {/* 矢印 */}
+          <MaterialIcons name="chevron-right" size={24} color="#DD6500" />
+        </View>
+      </TouchableOpacity>
+    </View>
+  );
+}
+
 function ChallengeCard({ challenge, onPress, numColumns = 2, colorIndex, isFavorite = false, onToggleFavorite }: { challenge: Challenge; onPress: () => void; numColumns?: number; colorIndex?: number; isFavorite?: boolean; onToggleFavorite?: (id: number) => void }) {
   const colors = useColors();
   const { isDesktop } = useResponsive();
@@ -1030,6 +1105,9 @@ export default function HomeScreen() {
       {!isLoading && displayChallenges.length === 0 && (
         <OnboardingSteps />
       )}
+
+      {/* デモ体験ボタン（常に表示） */}
+      <DemoTrialBanner />
       
       {/* データ読み込み中のインジケーター */}
       {isDataLoading && (
