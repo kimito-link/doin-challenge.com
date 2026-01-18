@@ -1089,6 +1089,52 @@ Design requirements:
       .query(async ({ input }) => {
         return db.getChallengesByCategory(input.categoryId);
       }),
+
+    // カテゴリ作成（管理者のみ）
+    create: protectedProcedure
+      .input(z.object({
+        name: z.string().min(1).max(100),
+        slug: z.string().min(1).max(100),
+        description: z.string().optional(),
+        icon: z.string().optional(),
+        sortOrder: z.number().optional(),
+      }))
+      .mutation(async ({ input, ctx }) => {
+        // 管理者チェック
+        if (ctx.user.role !== "admin") {
+          throw new Error("管理者権限が必要です");
+        }
+        return db.createCategory(input);
+      }),
+
+    // カテゴリ更新（管理者のみ）
+    update: protectedProcedure
+      .input(z.object({
+        id: z.number(),
+        name: z.string().min(1).max(100).optional(),
+        slug: z.string().min(1).max(100).optional(),
+        description: z.string().optional(),
+        icon: z.string().optional(),
+        sortOrder: z.number().optional(),
+        isActive: z.boolean().optional(),
+      }))
+      .mutation(async ({ input, ctx }) => {
+        if (ctx.user.role !== "admin") {
+          throw new Error("管理者権限が必要です");
+        }
+        const { id, ...data } = input;
+        return db.updateCategory(id, data);
+      }),
+
+    // カテゴリ削除（管理者のみ）
+    delete: protectedProcedure
+      .input(z.object({ id: z.number() }))
+      .mutation(async ({ input, ctx }) => {
+        if (ctx.user.role !== "admin") {
+          throw new Error("管理者権限が必要です");
+        }
+        return db.deleteCategory(input.id);
+      }),
   }),
 
   // 招待関連

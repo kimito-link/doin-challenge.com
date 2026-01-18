@@ -1,563 +1,705 @@
-// server/_core/index.ts
-import "dotenv/config";
-import express from "express";
-import { createServer } from "http";
-import net from "net";
-import { createExpressMiddleware } from "@trpc/server/adapters/express";
-
-// shared/const.ts
-var COOKIE_NAME = "app_session_id";
-var ONE_YEAR_MS = 1e3 * 60 * 60 * 24 * 365;
-var AXIOS_TIMEOUT_MS = 3e4;
-var UNAUTHED_ERR_MSG = "Please login (10001)";
-var NOT_ADMIN_ERR_MSG = "You do not have required permission (10002)";
-
-// server/db.ts
-import { eq, desc, and, sql, ne } from "drizzle-orm";
-import { drizzle } from "drizzle-orm/mysql2";
+var __defProp = Object.defineProperty;
+var __getOwnPropNames = Object.getOwnPropertyNames;
+var __esm = (fn, res) => function __init() {
+  return fn && (res = (0, fn[__getOwnPropNames(fn)[0]])(fn = 0)), res;
+};
+var __export = (target, all) => {
+  for (var name in all)
+    __defProp(target, name, { get: all[name], enumerable: true });
+};
 
 // drizzle/schema.ts
 import { int, mysqlEnum, mysqlTable, text, timestamp, varchar, boolean, json } from "drizzle-orm/mysql-core";
-var users = mysqlTable("users", {
-  id: int("id").autoincrement().primaryKey(),
-  openId: varchar("openId", { length: 64 }).notNull().unique(),
-  name: text("name"),
-  email: varchar("email", { length: 320 }),
-  loginMethod: varchar("loginMethod", { length: 64 }),
-  role: mysqlEnum("role", ["user", "admin"]).default("user").notNull(),
-  createdAt: timestamp("createdAt").defaultNow().notNull(),
-  updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
-  lastSignedIn: timestamp("lastSignedIn").defaultNow().notNull()
-});
-var challenges = mysqlTable("challenges", {
-  id: int("id").autoincrement().primaryKey(),
-  // ホスト（主催者）の情報
-  hostUserId: int("hostUserId"),
-  hostTwitterId: varchar("hostTwitterId", { length: 64 }),
-  hostName: varchar("hostName", { length: 255 }).notNull(),
-  hostUsername: varchar("hostUsername", { length: 255 }),
-  hostProfileImage: text("hostProfileImage"),
-  hostFollowersCount: int("hostFollowersCount").default(0),
-  hostDescription: text("hostDescription"),
-  // チャレンジ情報
-  title: varchar("title", { length: 255 }).notNull(),
-  description: text("description"),
-  // 目標設定
-  goalType: mysqlEnum("goalType", ["attendance", "followers", "viewers", "points", "custom"]).default("attendance").notNull(),
-  goalValue: int("goalValue").default(100).notNull(),
-  goalUnit: varchar("goalUnit", { length: 32 }).default("\u4EBA").notNull(),
-  currentValue: int("currentValue").default(0).notNull(),
-  // イベント種別
-  eventType: mysqlEnum("eventType", ["solo", "group"]).default("solo").notNull(),
-  // カテゴリ
-  categoryId: int("categoryId"),
-  // 日時・場所
-  eventDate: timestamp("eventDate").notNull(),
-  venue: varchar("venue", { length: 255 }),
-  prefecture: varchar("prefecture", { length: 32 }),
-  // チケット情報
-  ticketPresale: int("ticketPresale"),
-  ticketDoor: int("ticketDoor"),
-  ticketSaleStart: timestamp("ticketSaleStart"),
-  ticketUrl: text("ticketUrl"),
-  // 外部リンク（YouTube, ミクチャなど）
-  externalUrl: text("externalUrl"),
-  // ステータス
-  status: mysqlEnum("status", ["upcoming", "active", "ended"]).default("active").notNull(),
-  isPublic: boolean("isPublic").default(true).notNull(),
-  // メタデータ
-  createdAt: timestamp("createdAt").defaultNow().notNull(),
-  updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
-  // === AI向け最適化カラム（非正規化・1ホップ取得用） ===
-  // AIサマリー（チャレンジの盛り上がり状況をAIが要約）
-  aiSummary: text("aiSummary"),
-  // 意図タグ（チャレンジのカテゴリ・意図をタグ化）
-  intentTags: json("intentTags").$type(),
-  // 地域サマリー（都道府県別参加者数の事前集計）
-  regionSummary: json("regionSummary").$type(),
-  // 参加者サマリー（上位貢献者・最新メッセージなどを埋め込み）
-  participantSummary: json("participantSummary").$type(),
-  // AIサマリーの最終更新日時
-  aiSummaryUpdatedAt: timestamp("aiSummaryUpdatedAt")
-});
-var participations = mysqlTable("participations", {
-  id: int("id").autoincrement().primaryKey(),
-  challengeId: int("challengeId").notNull(),
-  // 参加者の情報（Twitterログインまたは匿名）
-  userId: int("userId"),
-  twitterId: varchar("twitterId", { length: 64 }),
-  displayName: varchar("displayName", { length: 255 }).notNull(),
-  username: varchar("username", { length: 255 }),
-  profileImage: text("profileImage"),
-  // 参加者のTwitterフォロワー数
-  followersCount: int("followersCount").default(0),
-  // 参加情報
-  message: text("message"),
-  companionCount: int("companionCount").default(0).notNull(),
-  // 地域情報
-  prefecture: varchar("prefecture", { length: 32 }),
-  // 性別（male/female/unspecified）
-  gender: mysqlEnum("gender", ["male", "female", "unspecified"]).default("unspecified").notNull(),
-  // 貢献度（自分 + 同伴者数）
-  contribution: int("contribution").default(1).notNull(),
-  isAnonymous: boolean("isAnonymous").default(false).notNull(),
-  // メタデータ
-  createdAt: timestamp("createdAt").defaultNow().notNull(),
-  updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull()
-});
-var notificationSettings = mysqlTable("notification_settings", {
-  id: int("id").autoincrement().primaryKey(),
-  userId: int("userId").notNull(),
-  challengeId: int("challengeId").notNull(),
-  // 通知設定
-  onGoalReached: boolean("onGoalReached").default(true).notNull(),
-  onMilestone25: boolean("onMilestone25").default(true).notNull(),
-  onMilestone50: boolean("onMilestone50").default(true).notNull(),
-  onMilestone75: boolean("onMilestone75").default(true).notNull(),
-  onNewParticipant: boolean("onNewParticipant").default(false).notNull(),
-  // Expoプッシュトークン
-  expoPushToken: text("expoPushToken"),
-  // メタデータ
-  createdAt: timestamp("createdAt").defaultNow().notNull(),
-  updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull()
-});
-var notifications = mysqlTable("notifications", {
-  id: int("id").autoincrement().primaryKey(),
-  userId: int("userId").notNull(),
-  challengeId: int("challengeId").notNull(),
-  // 通知内容
-  type: mysqlEnum("type", ["goal_reached", "milestone_25", "milestone_50", "milestone_75", "new_participant"]).notNull(),
-  title: varchar("title", { length: 255 }).notNull(),
-  body: text("body").notNull(),
-  // ステータス
-  isRead: boolean("isRead").default(false).notNull(),
-  sentAt: timestamp("sentAt").defaultNow().notNull(),
-  // メタデータ
-  createdAt: timestamp("createdAt").defaultNow().notNull()
-});
-var badges = mysqlTable("badges", {
-  id: int("id").autoincrement().primaryKey(),
-  // バッジ情報
-  name: varchar("name", { length: 100 }).notNull(),
-  description: text("description"),
-  iconUrl: text("iconUrl"),
-  // バッジ種別
-  type: mysqlEnum("type", ["participation", "achievement", "milestone", "special"]).default("participation").notNull(),
-  // 取得条件
-  conditionType: mysqlEnum("conditionType", ["first_participation", "goal_reached", "milestone_25", "milestone_50", "milestone_75", "contribution_5", "contribution_10", "contribution_20", "host_challenge", "special", "follower_badge"]).notNull(),
-  // メタデータ
-  createdAt: timestamp("createdAt").defaultNow().notNull()
-});
-var userBadges = mysqlTable("user_badges", {
-  id: int("id").autoincrement().primaryKey(),
-  userId: int("userId").notNull(),
-  badgeId: int("badgeId").notNull(),
-  challengeId: int("challengeId"),
-  // 取得日時
-  earnedAt: timestamp("earnedAt").defaultNow().notNull()
-});
-var pickedComments = mysqlTable("picked_comments", {
-  id: int("id").autoincrement().primaryKey(),
-  participationId: int("participationId").notNull(),
-  challengeId: int("challengeId").notNull(),
-  // ピックアップ情報
-  pickedBy: int("pickedBy").notNull(),
-  // 管理者のuserId
-  reason: text("reason"),
-  // ピックアップ理由
-  isUsedInVideo: boolean("isUsedInVideo").default(false).notNull(),
-  // メタデータ
-  pickedAt: timestamp("pickedAt").defaultNow().notNull()
-});
-var cheers = mysqlTable("cheers", {
-  id: int("id").autoincrement().primaryKey(),
-  // エールを送る人
-  fromUserId: int("fromUserId").notNull(),
-  fromUserName: varchar("fromUserName", { length: 255 }).notNull(),
-  fromUserImage: text("fromUserImage"),
-  // エールを受ける人
-  toParticipationId: int("toParticipationId").notNull(),
-  toUserId: int("toUserId"),
-  // エール内容
-  message: text("message"),
-  emoji: varchar("emoji", { length: 32 }).default("\u{1F44F}").notNull(),
-  // チャレンジ情報
-  challengeId: int("challengeId").notNull(),
-  // メタデータ
-  createdAt: timestamp("createdAt").defaultNow().notNull()
-});
-var achievementPages = mysqlTable("achievement_pages", {
-  id: int("id").autoincrement().primaryKey(),
-  challengeId: int("challengeId").notNull(),
-  // 達成情報
-  achievedAt: timestamp("achievedAt").notNull(),
-  finalValue: int("finalValue").notNull(),
-  goalValue: int("goalValue").notNull(),
-  totalParticipants: int("totalParticipants").notNull(),
-  // ページ設定
-  title: varchar("title", { length: 255 }).notNull(),
-  message: text("message"),
-  isPublic: boolean("isPublic").default(true).notNull(),
-  // メタデータ
-  createdAt: timestamp("createdAt").defaultNow().notNull()
-});
-var reminders = mysqlTable("reminders", {
-  id: int("id").autoincrement().primaryKey(),
-  challengeId: int("challengeId").notNull(),
-  userId: int("userId").notNull(),
-  // リマインダー設定
-  reminderType: mysqlEnum("reminderType", ["day_before", "day_of", "hour_before", "custom"]).default("day_before").notNull(),
-  customTime: timestamp("customTime"),
-  // ステータス
-  isSent: boolean("isSent").default(false).notNull(),
-  sentAt: timestamp("sentAt"),
-  // メタデータ
-  createdAt: timestamp("createdAt").defaultNow().notNull()
-});
-var directMessages = mysqlTable("direct_messages", {
-  id: int("id").autoincrement().primaryKey(),
-  // 送信者
-  fromUserId: int("fromUserId").notNull(),
-  fromUserName: varchar("fromUserName", { length: 255 }).notNull(),
-  fromUserImage: text("fromUserImage"),
-  // 受信者
-  toUserId: int("toUserId").notNull(),
-  // メッセージ内容
-  message: text("message").notNull(),
-  // チャレンジ情報（同じチャレンジの参加者同士のみ）
-  challengeId: int("challengeId").notNull(),
-  // ステータス
-  isRead: boolean("isRead").default(false).notNull(),
-  readAt: timestamp("readAt"),
-  // メタデータ
-  createdAt: timestamp("createdAt").defaultNow().notNull()
-});
-var challengeTemplates = mysqlTable("challenge_templates", {
-  id: int("id").autoincrement().primaryKey(),
-  userId: int("userId").notNull(),
-  // テンプレート情報
-  name: varchar("name", { length: 255 }).notNull(),
-  description: text("description"),
-  // チャレンジ設定
-  goalType: mysqlEnum("goalType", ["attendance", "followers", "viewers", "points", "custom"]).default("attendance").notNull(),
-  goalValue: int("goalValue").default(100).notNull(),
-  goalUnit: varchar("goalUnit", { length: 32 }).default("\u4EBA").notNull(),
-  eventType: mysqlEnum("eventType", ["solo", "group"]).default("solo").notNull(),
-  // チケット情報
-  ticketPresale: int("ticketPresale"),
-  ticketDoor: int("ticketDoor"),
-  // 公開設定
-  isPublic: boolean("isPublic").default(false).notNull(),
-  // 使用回数
-  useCount: int("useCount").default(0).notNull(),
-  // メタデータ
-  createdAt: timestamp("createdAt").defaultNow().notNull(),
-  updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull()
-});
-var follows = mysqlTable("follows", {
-  id: int("id").autoincrement().primaryKey(),
-  // フォローする人
-  followerId: int("followerId").notNull(),
-  followerName: varchar("followerName", { length: 255 }),
-  // フォローされる人（ホスト）
-  followeeId: int("followeeId").notNull(),
-  followeeName: varchar("followeeName", { length: 255 }),
-  followeeImage: text("followeeImage"),
-  // 通知設定
-  notifyNewChallenge: boolean("notifyNewChallenge").default(true).notNull(),
-  // メタデータ
-  createdAt: timestamp("createdAt").defaultNow().notNull()
-});
-var searchHistory = mysqlTable("search_history", {
-  id: int("id").autoincrement().primaryKey(),
-  userId: int("userId").notNull(),
-  query: varchar("query", { length: 255 }).notNull(),
-  resultCount: int("resultCount").default(0).notNull(),
-  createdAt: timestamp("createdAt").defaultNow().notNull()
-});
-var categories = mysqlTable("categories", {
-  id: int("id").autoincrement().primaryKey(),
-  name: varchar("name", { length: 64 }).notNull(),
-  slug: varchar("slug", { length: 64 }).notNull().unique(),
-  icon: varchar("icon", { length: 32 }).default("\u{1F3A4}").notNull(),
-  color: varchar("color", { length: 16 }).default("#EC4899").notNull(),
-  description: text("description"),
-  sortOrder: int("sortOrder").default(0).notNull(),
-  isActive: boolean("isActive").default(true).notNull(),
-  createdAt: timestamp("createdAt").defaultNow().notNull()
-});
-var invitations = mysqlTable("invitations", {
-  id: int("id").autoincrement().primaryKey(),
-  challengeId: int("challengeId").notNull(),
-  // 招待者
-  inviterId: int("inviterId").notNull(),
-  inviterName: varchar("inviterName", { length: 255 }),
-  // 招待コード
-  code: varchar("code", { length: 32 }).notNull().unique(),
-  // 使用制限
-  maxUses: int("maxUses").default(0),
-  // 0 = 無制限
-  useCount: int("useCount").default(0).notNull(),
-  // 有効期限
-  expiresAt: timestamp("expiresAt"),
-  // ステータス
-  isActive: boolean("isActive").default(true).notNull(),
-  // メタデータ
-  createdAt: timestamp("createdAt").defaultNow().notNull()
-});
-var invitationUses = mysqlTable("invitation_uses", {
-  id: int("id").autoincrement().primaryKey(),
-  invitationId: int("invitationId").notNull(),
-  // 招待された人
-  userId: int("userId"),
-  displayName: varchar("displayName", { length: 255 }),
-  // 参加情報
-  participationId: int("participationId"),
-  // メタデータ
-  createdAt: timestamp("createdAt").defaultNow().notNull()
-});
-var challengeStats = mysqlTable("challenge_stats", {
-  id: int("id").autoincrement().primaryKey(),
-  challengeId: int("challengeId").notNull(),
-  // 日時
-  recordedAt: timestamp("recordedAt").defaultNow().notNull(),
-  recordDate: varchar("recordDate", { length: 10 }).notNull(),
-  // YYYY-MM-DD
-  recordHour: int("recordHour").default(0).notNull(),
-  // 0-23
-  // 統計データ
-  participantCount: int("participantCount").default(0).notNull(),
-  totalContribution: int("totalContribution").default(0).notNull(),
-  newParticipants: int("newParticipants").default(0).notNull(),
-  // 地域別データ（JSON形式）
-  prefectureData: text("prefectureData"),
-  // JSON: { "東京都": 10, "大阪府": 5, ... }
-  // メタデータ
-  createdAt: timestamp("createdAt").defaultNow().notNull()
-});
-var achievements = mysqlTable("achievements", {
-  id: int("id").autoincrement().primaryKey(),
-  // アチーブメント情報
-  name: varchar("name", { length: 100 }).notNull(),
-  description: text("description"),
-  iconUrl: text("iconUrl"),
-  icon: varchar("icon", { length: 32 }).default("\u{1F3C6}").notNull(),
-  // アチーブメント種別
-  type: mysqlEnum("type", ["participation", "hosting", "invitation", "contribution", "streak", "special"]).default("participation").notNull(),
-  // 取得条件
-  conditionType: mysqlEnum("conditionType", [
-    "first_participation",
-    "participate_5",
-    "participate_10",
-    "participate_25",
-    "participate_50",
-    "first_host",
-    "host_5",
-    "host_10",
-    "invite_1",
-    "invite_5",
-    "invite_10",
-    "invite_25",
-    "contribution_10",
-    "contribution_50",
-    "contribution_100",
-    "streak_3",
-    "streak_7",
-    "streak_30",
-    "goal_reached",
-    "special"
-  ]).notNull(),
-  conditionValue: int("conditionValue").default(1).notNull(),
-  // ポイント・レアリティ
-  points: int("points").default(10).notNull(),
-  rarity: mysqlEnum("rarity", ["common", "uncommon", "rare", "epic", "legendary"]).default("common").notNull(),
-  // メタデータ
-  isActive: boolean("isActive").default(true).notNull(),
-  createdAt: timestamp("createdAt").defaultNow().notNull()
-});
-var userAchievements = mysqlTable("user_achievements", {
-  id: int("id").autoincrement().primaryKey(),
-  userId: int("userId").notNull(),
-  achievementId: int("achievementId").notNull(),
-  // 進捗（条件が数値の場合）
-  progress: int("progress").default(0).notNull(),
-  isCompleted: boolean("isCompleted").default(false).notNull(),
-  // 取得日時
-  completedAt: timestamp("completedAt"),
-  // メタデータ
-  createdAt: timestamp("createdAt").defaultNow().notNull(),
-  updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull()
-});
-var collaborators = mysqlTable("collaborators", {
-  id: int("id").autoincrement().primaryKey(),
-  challengeId: int("challengeId").notNull(),
-  // コラボホストの情報
-  userId: int("userId").notNull(),
-  userName: varchar("userName", { length: 255 }).notNull(),
-  userImage: text("userImage"),
-  // 権限
-  role: mysqlEnum("role", ["owner", "co-host", "moderator"]).default("co-host").notNull(),
-  canEdit: boolean("canEdit").default(true).notNull(),
-  canManageParticipants: boolean("canManageParticipants").default(true).notNull(),
-  canInvite: boolean("canInvite").default(true).notNull(),
-  // ステータス
-  status: mysqlEnum("status", ["pending", "accepted", "declined"]).default("pending").notNull(),
-  invitedAt: timestamp("invitedAt").defaultNow().notNull(),
-  respondedAt: timestamp("respondedAt"),
-  // メタデータ
-  createdAt: timestamp("createdAt").defaultNow().notNull(),
-  updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull()
-});
-var collaboratorInvitations = mysqlTable("collaborator_invitations", {
-  id: int("id").autoincrement().primaryKey(),
-  challengeId: int("challengeId").notNull(),
-  // 招待者（オーナー）
-  inviterId: int("inviterId").notNull(),
-  inviterName: varchar("inviterName", { length: 255 }),
-  // 被招待者
-  inviteeId: int("inviteeId"),
-  inviteeEmail: varchar("inviteeEmail", { length: 320 }),
-  inviteeTwitterId: varchar("inviteeTwitterId", { length: 64 }),
-  // 招待コード
-  code: varchar("code", { length: 32 }).notNull().unique(),
-  // 権限設定
-  role: mysqlEnum("role", ["co-host", "moderator"]).default("co-host").notNull(),
-  // ステータス
-  status: mysqlEnum("status", ["pending", "accepted", "declined", "expired"]).default("pending").notNull(),
-  expiresAt: timestamp("expiresAt"),
-  // メタデータ
-  createdAt: timestamp("createdAt").defaultNow().notNull()
-});
-var twitterFollowStatus = mysqlTable("twitter_follow_status", {
-  id: int("id").autoincrement().primaryKey(),
-  userId: int("userId").notNull(),
-  // Twitter情報
-  twitterId: varchar("twitterId", { length: 64 }).notNull(),
-  twitterUsername: varchar("twitterUsername", { length: 255 }),
-  // フォロー対象アカウント
-  targetTwitterId: varchar("targetTwitterId", { length: 64 }).notNull(),
-  targetUsername: varchar("targetUsername", { length: 255 }).notNull(),
-  // フォロー状態
-  isFollowing: boolean("isFollowing").default(false).notNull(),
-  // 最終確認日時
-  lastCheckedAt: timestamp("lastCheckedAt").defaultNow().notNull(),
-  // メタデータ
-  createdAt: timestamp("createdAt").defaultNow().notNull(),
-  updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull()
-});
-var oauthPkceData = mysqlTable("oauth_pkce_data", {
-  id: int("id").autoincrement().primaryKey(),
-  // state パラメータ（一意識別子）
-  state: varchar("state", { length: 64 }).notNull().unique(),
-  // PKCE code verifier
-  codeVerifier: varchar("codeVerifier", { length: 128 }).notNull(),
-  // コールバックURL
-  callbackUrl: text("callbackUrl").notNull(),
-  // 有効期限（10分後）
-  expiresAt: timestamp("expiresAt").notNull(),
-  // メタデータ
-  createdAt: timestamp("createdAt").defaultNow().notNull()
-});
-var participationCompanions = mysqlTable("participation_companions", {
-  id: int("id").autoincrement().primaryKey(),
-  // 参加登録への紐付け
-  participationId: int("participationId").notNull(),
-  challengeId: int("challengeId").notNull(),
-  // 友人の情報
-  displayName: varchar("displayName", { length: 255 }).notNull(),
-  twitterUsername: varchar("twitterUsername", { length: 255 }),
-  twitterId: varchar("twitterId", { length: 64 }),
-  profileImage: text("profileImage"),
-  // 招待した人のユーザーID
-  invitedByUserId: int("invitedByUserId"),
-  // メタデータ
-  createdAt: timestamp("createdAt").defaultNow().notNull()
-});
-var challengeMembers = mysqlTable("challenge_members", {
-  id: int("id").autoincrement().primaryKey(),
-  challengeId: int("challengeId").notNull(),
-  // メンバーの情報
-  twitterUsername: varchar("twitterUsername", { length: 255 }).notNull(),
-  twitterId: varchar("twitterId", { length: 64 }),
-  displayName: varchar("displayName", { length: 255 }),
-  profileImage: text("profileImage"),
-  followersCount: int("followersCount").default(0),
-  // 並び順
-  sortOrder: int("sortOrder").default(0).notNull(),
-  // メタデータ
-  createdAt: timestamp("createdAt").defaultNow().notNull(),
-  updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull()
-});
-var twitterUserCache = mysqlTable("twitter_user_cache", {
-  id: int("id").autoincrement().primaryKey(),
-  // Twitterユーザー情報
-  twitterUsername: varchar("twitterUsername", { length: 255 }).notNull().unique(),
-  twitterId: varchar("twitterId", { length: 64 }),
-  displayName: varchar("displayName", { length: 255 }),
-  profileImage: text("profileImage"),
-  followersCount: int("followersCount").default(0),
-  description: text("description"),
-  // キャッシュ有効期限（24時間）
-  cachedAt: timestamp("cachedAt").defaultNow().notNull(),
-  expiresAt: timestamp("expiresAt").notNull(),
-  // メタデータ
-  createdAt: timestamp("createdAt").defaultNow().notNull(),
-  updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull()
-});
-var ticketTransfers = mysqlTable("ticket_transfers", {
-  id: int("id").autoincrement().primaryKey(),
-  challengeId: int("challengeId").notNull(),
-  // 譲渡者の情報
-  userId: int("userId").notNull(),
-  userName: varchar("userName", { length: 255 }).notNull(),
-  userUsername: varchar("userUsername", { length: 255 }),
-  // Xのユーザー名（DM用）
-  userImage: text("userImage"),
-  // 譲渡情報
-  ticketCount: int("ticketCount").default(1).notNull(),
-  priceType: mysqlEnum("priceType", ["face_value", "negotiable", "free"]).default("face_value").notNull(),
-  comment: text("comment"),
-  // ステータス
-  status: mysqlEnum("status", ["available", "reserved", "completed", "cancelled"]).default("available").notNull(),
-  // メタデータ
-  createdAt: timestamp("createdAt").defaultNow().notNull(),
-  updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull()
-});
-var ticketWaitlist = mysqlTable("ticket_waitlist", {
-  id: int("id").autoincrement().primaryKey(),
-  challengeId: int("challengeId").notNull(),
-  // 待機者の情報
-  userId: int("userId").notNull(),
-  userName: varchar("userName", { length: 255 }).notNull(),
-  userUsername: varchar("userUsername", { length: 255 }),
-  // Xのユーザー名（DM用）
-  userImage: text("userImage"),
-  // 希望枚数
-  desiredCount: int("desiredCount").default(1).notNull(),
-  // 通知設定
-  notifyOnNew: boolean("notifyOnNew").default(true).notNull(),
-  // ステータス
-  isActive: boolean("isActive").default(true).notNull(),
-  // メタデータ
-  createdAt: timestamp("createdAt").defaultNow().notNull(),
-  updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull()
+var users, challenges, participations, notificationSettings, notifications, badges, userBadges, pickedComments, cheers, achievementPages, reminders, directMessages, challengeTemplates, follows, searchHistory, categories, invitations, invitationUses, challengeStats, achievements, userAchievements, collaborators, collaboratorInvitations, twitterFollowStatus, oauthPkceData, participationCompanions, challengeMembers, twitterUserCache, ticketTransfers, ticketWaitlist;
+var init_schema = __esm({
+  "drizzle/schema.ts"() {
+    "use strict";
+    users = mysqlTable("users", {
+      id: int("id").autoincrement().primaryKey(),
+      openId: varchar("openId", { length: 64 }).notNull().unique(),
+      name: text("name"),
+      email: varchar("email", { length: 320 }),
+      loginMethod: varchar("loginMethod", { length: 64 }),
+      role: mysqlEnum("role", ["user", "admin"]).default("user").notNull(),
+      createdAt: timestamp("createdAt").defaultNow().notNull(),
+      updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
+      lastSignedIn: timestamp("lastSignedIn").defaultNow().notNull()
+    });
+    challenges = mysqlTable("challenges", {
+      id: int("id").autoincrement().primaryKey(),
+      // ホスト（主催者）の情報
+      hostUserId: int("hostUserId"),
+      hostTwitterId: varchar("hostTwitterId", { length: 64 }),
+      hostName: varchar("hostName", { length: 255 }).notNull(),
+      hostUsername: varchar("hostUsername", { length: 255 }),
+      hostProfileImage: text("hostProfileImage"),
+      hostFollowersCount: int("hostFollowersCount").default(0),
+      hostDescription: text("hostDescription"),
+      // チャレンジ情報
+      title: varchar("title", { length: 255 }).notNull(),
+      description: text("description"),
+      // 目標設定
+      goalType: mysqlEnum("goalType", ["attendance", "followers", "viewers", "points", "custom"]).default("attendance").notNull(),
+      goalValue: int("goalValue").default(100).notNull(),
+      goalUnit: varchar("goalUnit", { length: 32 }).default("\u4EBA").notNull(),
+      currentValue: int("currentValue").default(0).notNull(),
+      // イベント種別
+      eventType: mysqlEnum("eventType", ["solo", "group"]).default("solo").notNull(),
+      // カテゴリ
+      categoryId: int("categoryId"),
+      // 日時・場所
+      eventDate: timestamp("eventDate").notNull(),
+      venue: varchar("venue", { length: 255 }),
+      prefecture: varchar("prefecture", { length: 32 }),
+      // チケット情報
+      ticketPresale: int("ticketPresale"),
+      ticketDoor: int("ticketDoor"),
+      ticketSaleStart: timestamp("ticketSaleStart"),
+      ticketUrl: text("ticketUrl"),
+      // 外部リンク（YouTube, ミクチャなど）
+      externalUrl: text("externalUrl"),
+      // ステータス
+      status: mysqlEnum("status", ["upcoming", "active", "ended"]).default("active").notNull(),
+      isPublic: boolean("isPublic").default(true).notNull(),
+      // メタデータ
+      createdAt: timestamp("createdAt").defaultNow().notNull(),
+      updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
+      // === AI向け最適化カラム（非正規化・1ホップ取得用） ===
+      // AIサマリー（チャレンジの盛り上がり状況をAIが要約）
+      aiSummary: text("aiSummary"),
+      // 意図タグ（チャレンジのカテゴリ・意図をタグ化）
+      intentTags: json("intentTags").$type(),
+      // 地域サマリー（都道府県別参加者数の事前集計）
+      regionSummary: json("regionSummary").$type(),
+      // 参加者サマリー（上位貢献者・最新メッセージなどを埋め込み）
+      participantSummary: json("participantSummary").$type(),
+      // AIサマリーの最終更新日時
+      aiSummaryUpdatedAt: timestamp("aiSummaryUpdatedAt")
+    });
+    participations = mysqlTable("participations", {
+      id: int("id").autoincrement().primaryKey(),
+      challengeId: int("challengeId").notNull(),
+      // 参加者の情報（Twitterログインまたは匿名）
+      userId: int("userId"),
+      twitterId: varchar("twitterId", { length: 64 }),
+      displayName: varchar("displayName", { length: 255 }).notNull(),
+      username: varchar("username", { length: 255 }),
+      profileImage: text("profileImage"),
+      // 参加者のTwitterフォロワー数
+      followersCount: int("followersCount").default(0),
+      // 参加情報
+      message: text("message"),
+      companionCount: int("companionCount").default(0).notNull(),
+      // 地域情報
+      prefecture: varchar("prefecture", { length: 32 }),
+      // 性別（male/female/unspecified）
+      gender: mysqlEnum("gender", ["male", "female", "unspecified"]).default("unspecified").notNull(),
+      // 貢献度（自分 + 同伴者数）
+      contribution: int("contribution").default(1).notNull(),
+      isAnonymous: boolean("isAnonymous").default(false).notNull(),
+      // メタデータ
+      createdAt: timestamp("createdAt").defaultNow().notNull(),
+      updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull()
+    });
+    notificationSettings = mysqlTable("notification_settings", {
+      id: int("id").autoincrement().primaryKey(),
+      userId: int("userId").notNull(),
+      challengeId: int("challengeId").notNull(),
+      // 通知設定
+      onGoalReached: boolean("onGoalReached").default(true).notNull(),
+      onMilestone25: boolean("onMilestone25").default(true).notNull(),
+      onMilestone50: boolean("onMilestone50").default(true).notNull(),
+      onMilestone75: boolean("onMilestone75").default(true).notNull(),
+      onNewParticipant: boolean("onNewParticipant").default(false).notNull(),
+      // Expoプッシュトークン
+      expoPushToken: text("expoPushToken"),
+      // メタデータ
+      createdAt: timestamp("createdAt").defaultNow().notNull(),
+      updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull()
+    });
+    notifications = mysqlTable("notifications", {
+      id: int("id").autoincrement().primaryKey(),
+      userId: int("userId").notNull(),
+      challengeId: int("challengeId").notNull(),
+      // 通知内容
+      type: mysqlEnum("type", ["goal_reached", "milestone_25", "milestone_50", "milestone_75", "new_participant"]).notNull(),
+      title: varchar("title", { length: 255 }).notNull(),
+      body: text("body").notNull(),
+      // ステータス
+      isRead: boolean("isRead").default(false).notNull(),
+      sentAt: timestamp("sentAt").defaultNow().notNull(),
+      // メタデータ
+      createdAt: timestamp("createdAt").defaultNow().notNull()
+    });
+    badges = mysqlTable("badges", {
+      id: int("id").autoincrement().primaryKey(),
+      // バッジ情報
+      name: varchar("name", { length: 100 }).notNull(),
+      description: text("description"),
+      iconUrl: text("iconUrl"),
+      // バッジ種別
+      type: mysqlEnum("type", ["participation", "achievement", "milestone", "special"]).default("participation").notNull(),
+      // 取得条件
+      conditionType: mysqlEnum("conditionType", ["first_participation", "goal_reached", "milestone_25", "milestone_50", "milestone_75", "contribution_5", "contribution_10", "contribution_20", "host_challenge", "special", "follower_badge"]).notNull(),
+      // メタデータ
+      createdAt: timestamp("createdAt").defaultNow().notNull()
+    });
+    userBadges = mysqlTable("user_badges", {
+      id: int("id").autoincrement().primaryKey(),
+      userId: int("userId").notNull(),
+      badgeId: int("badgeId").notNull(),
+      challengeId: int("challengeId"),
+      // 取得日時
+      earnedAt: timestamp("earnedAt").defaultNow().notNull()
+    });
+    pickedComments = mysqlTable("picked_comments", {
+      id: int("id").autoincrement().primaryKey(),
+      participationId: int("participationId").notNull(),
+      challengeId: int("challengeId").notNull(),
+      // ピックアップ情報
+      pickedBy: int("pickedBy").notNull(),
+      // 管理者のuserId
+      reason: text("reason"),
+      // ピックアップ理由
+      isUsedInVideo: boolean("isUsedInVideo").default(false).notNull(),
+      // メタデータ
+      pickedAt: timestamp("pickedAt").defaultNow().notNull()
+    });
+    cheers = mysqlTable("cheers", {
+      id: int("id").autoincrement().primaryKey(),
+      // エールを送る人
+      fromUserId: int("fromUserId").notNull(),
+      fromUserName: varchar("fromUserName", { length: 255 }).notNull(),
+      fromUserImage: text("fromUserImage"),
+      // エールを受ける人
+      toParticipationId: int("toParticipationId").notNull(),
+      toUserId: int("toUserId"),
+      // エール内容
+      message: text("message"),
+      emoji: varchar("emoji", { length: 32 }).default("\u{1F44F}").notNull(),
+      // チャレンジ情報
+      challengeId: int("challengeId").notNull(),
+      // メタデータ
+      createdAt: timestamp("createdAt").defaultNow().notNull()
+    });
+    achievementPages = mysqlTable("achievement_pages", {
+      id: int("id").autoincrement().primaryKey(),
+      challengeId: int("challengeId").notNull(),
+      // 達成情報
+      achievedAt: timestamp("achievedAt").notNull(),
+      finalValue: int("finalValue").notNull(),
+      goalValue: int("goalValue").notNull(),
+      totalParticipants: int("totalParticipants").notNull(),
+      // ページ設定
+      title: varchar("title", { length: 255 }).notNull(),
+      message: text("message"),
+      isPublic: boolean("isPublic").default(true).notNull(),
+      // メタデータ
+      createdAt: timestamp("createdAt").defaultNow().notNull()
+    });
+    reminders = mysqlTable("reminders", {
+      id: int("id").autoincrement().primaryKey(),
+      challengeId: int("challengeId").notNull(),
+      userId: int("userId").notNull(),
+      // リマインダー設定
+      reminderType: mysqlEnum("reminderType", ["day_before", "day_of", "hour_before", "custom"]).default("day_before").notNull(),
+      customTime: timestamp("customTime"),
+      // ステータス
+      isSent: boolean("isSent").default(false).notNull(),
+      sentAt: timestamp("sentAt"),
+      // メタデータ
+      createdAt: timestamp("createdAt").defaultNow().notNull()
+    });
+    directMessages = mysqlTable("direct_messages", {
+      id: int("id").autoincrement().primaryKey(),
+      // 送信者
+      fromUserId: int("fromUserId").notNull(),
+      fromUserName: varchar("fromUserName", { length: 255 }).notNull(),
+      fromUserImage: text("fromUserImage"),
+      // 受信者
+      toUserId: int("toUserId").notNull(),
+      // メッセージ内容
+      message: text("message").notNull(),
+      // チャレンジ情報（同じチャレンジの参加者同士のみ）
+      challengeId: int("challengeId").notNull(),
+      // ステータス
+      isRead: boolean("isRead").default(false).notNull(),
+      readAt: timestamp("readAt"),
+      // メタデータ
+      createdAt: timestamp("createdAt").defaultNow().notNull()
+    });
+    challengeTemplates = mysqlTable("challenge_templates", {
+      id: int("id").autoincrement().primaryKey(),
+      userId: int("userId").notNull(),
+      // テンプレート情報
+      name: varchar("name", { length: 255 }).notNull(),
+      description: text("description"),
+      // チャレンジ設定
+      goalType: mysqlEnum("goalType", ["attendance", "followers", "viewers", "points", "custom"]).default("attendance").notNull(),
+      goalValue: int("goalValue").default(100).notNull(),
+      goalUnit: varchar("goalUnit", { length: 32 }).default("\u4EBA").notNull(),
+      eventType: mysqlEnum("eventType", ["solo", "group"]).default("solo").notNull(),
+      // チケット情報
+      ticketPresale: int("ticketPresale"),
+      ticketDoor: int("ticketDoor"),
+      // 公開設定
+      isPublic: boolean("isPublic").default(false).notNull(),
+      // 使用回数
+      useCount: int("useCount").default(0).notNull(),
+      // メタデータ
+      createdAt: timestamp("createdAt").defaultNow().notNull(),
+      updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull()
+    });
+    follows = mysqlTable("follows", {
+      id: int("id").autoincrement().primaryKey(),
+      // フォローする人
+      followerId: int("followerId").notNull(),
+      followerName: varchar("followerName", { length: 255 }),
+      // フォローされる人（ホスト）
+      followeeId: int("followeeId").notNull(),
+      followeeName: varchar("followeeName", { length: 255 }),
+      followeeImage: text("followeeImage"),
+      // 通知設定
+      notifyNewChallenge: boolean("notifyNewChallenge").default(true).notNull(),
+      // メタデータ
+      createdAt: timestamp("createdAt").defaultNow().notNull()
+    });
+    searchHistory = mysqlTable("search_history", {
+      id: int("id").autoincrement().primaryKey(),
+      userId: int("userId").notNull(),
+      query: varchar("query", { length: 255 }).notNull(),
+      resultCount: int("resultCount").default(0).notNull(),
+      createdAt: timestamp("createdAt").defaultNow().notNull()
+    });
+    categories = mysqlTable("categories", {
+      id: int("id").autoincrement().primaryKey(),
+      name: varchar("name", { length: 64 }).notNull(),
+      slug: varchar("slug", { length: 64 }).notNull().unique(),
+      icon: varchar("icon", { length: 32 }).default("\u{1F3A4}").notNull(),
+      color: varchar("color", { length: 16 }).default("#EC4899").notNull(),
+      description: text("description"),
+      sortOrder: int("sortOrder").default(0).notNull(),
+      isActive: boolean("isActive").default(true).notNull(),
+      createdAt: timestamp("createdAt").defaultNow().notNull()
+    });
+    invitations = mysqlTable("invitations", {
+      id: int("id").autoincrement().primaryKey(),
+      challengeId: int("challengeId").notNull(),
+      // 招待者
+      inviterId: int("inviterId").notNull(),
+      inviterName: varchar("inviterName", { length: 255 }),
+      // 招待コード
+      code: varchar("code", { length: 32 }).notNull().unique(),
+      // 使用制限
+      maxUses: int("maxUses").default(0),
+      // 0 = 無制限
+      useCount: int("useCount").default(0).notNull(),
+      // 有効期限
+      expiresAt: timestamp("expiresAt"),
+      // ステータス
+      isActive: boolean("isActive").default(true).notNull(),
+      // メタデータ
+      createdAt: timestamp("createdAt").defaultNow().notNull()
+    });
+    invitationUses = mysqlTable("invitation_uses", {
+      id: int("id").autoincrement().primaryKey(),
+      invitationId: int("invitationId").notNull(),
+      // 招待された人
+      userId: int("userId"),
+      displayName: varchar("displayName", { length: 255 }),
+      // 参加情報
+      participationId: int("participationId"),
+      // メタデータ
+      createdAt: timestamp("createdAt").defaultNow().notNull()
+    });
+    challengeStats = mysqlTable("challenge_stats", {
+      id: int("id").autoincrement().primaryKey(),
+      challengeId: int("challengeId").notNull(),
+      // 日時
+      recordedAt: timestamp("recordedAt").defaultNow().notNull(),
+      recordDate: varchar("recordDate", { length: 10 }).notNull(),
+      // YYYY-MM-DD
+      recordHour: int("recordHour").default(0).notNull(),
+      // 0-23
+      // 統計データ
+      participantCount: int("participantCount").default(0).notNull(),
+      totalContribution: int("totalContribution").default(0).notNull(),
+      newParticipants: int("newParticipants").default(0).notNull(),
+      // 地域別データ（JSON形式）
+      prefectureData: text("prefectureData"),
+      // JSON: { "東京都": 10, "大阪府": 5, ... }
+      // メタデータ
+      createdAt: timestamp("createdAt").defaultNow().notNull()
+    });
+    achievements = mysqlTable("achievements", {
+      id: int("id").autoincrement().primaryKey(),
+      // アチーブメント情報
+      name: varchar("name", { length: 100 }).notNull(),
+      description: text("description"),
+      iconUrl: text("iconUrl"),
+      icon: varchar("icon", { length: 32 }).default("\u{1F3C6}").notNull(),
+      // アチーブメント種別
+      type: mysqlEnum("type", ["participation", "hosting", "invitation", "contribution", "streak", "special"]).default("participation").notNull(),
+      // 取得条件
+      conditionType: mysqlEnum("conditionType", [
+        "first_participation",
+        "participate_5",
+        "participate_10",
+        "participate_25",
+        "participate_50",
+        "first_host",
+        "host_5",
+        "host_10",
+        "invite_1",
+        "invite_5",
+        "invite_10",
+        "invite_25",
+        "contribution_10",
+        "contribution_50",
+        "contribution_100",
+        "streak_3",
+        "streak_7",
+        "streak_30",
+        "goal_reached",
+        "special"
+      ]).notNull(),
+      conditionValue: int("conditionValue").default(1).notNull(),
+      // ポイント・レアリティ
+      points: int("points").default(10).notNull(),
+      rarity: mysqlEnum("rarity", ["common", "uncommon", "rare", "epic", "legendary"]).default("common").notNull(),
+      // メタデータ
+      isActive: boolean("isActive").default(true).notNull(),
+      createdAt: timestamp("createdAt").defaultNow().notNull()
+    });
+    userAchievements = mysqlTable("user_achievements", {
+      id: int("id").autoincrement().primaryKey(),
+      userId: int("userId").notNull(),
+      achievementId: int("achievementId").notNull(),
+      // 進捗（条件が数値の場合）
+      progress: int("progress").default(0).notNull(),
+      isCompleted: boolean("isCompleted").default(false).notNull(),
+      // 取得日時
+      completedAt: timestamp("completedAt"),
+      // メタデータ
+      createdAt: timestamp("createdAt").defaultNow().notNull(),
+      updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull()
+    });
+    collaborators = mysqlTable("collaborators", {
+      id: int("id").autoincrement().primaryKey(),
+      challengeId: int("challengeId").notNull(),
+      // コラボホストの情報
+      userId: int("userId").notNull(),
+      userName: varchar("userName", { length: 255 }).notNull(),
+      userImage: text("userImage"),
+      // 権限
+      role: mysqlEnum("role", ["owner", "co-host", "moderator"]).default("co-host").notNull(),
+      canEdit: boolean("canEdit").default(true).notNull(),
+      canManageParticipants: boolean("canManageParticipants").default(true).notNull(),
+      canInvite: boolean("canInvite").default(true).notNull(),
+      // ステータス
+      status: mysqlEnum("status", ["pending", "accepted", "declined"]).default("pending").notNull(),
+      invitedAt: timestamp("invitedAt").defaultNow().notNull(),
+      respondedAt: timestamp("respondedAt"),
+      // メタデータ
+      createdAt: timestamp("createdAt").defaultNow().notNull(),
+      updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull()
+    });
+    collaboratorInvitations = mysqlTable("collaborator_invitations", {
+      id: int("id").autoincrement().primaryKey(),
+      challengeId: int("challengeId").notNull(),
+      // 招待者（オーナー）
+      inviterId: int("inviterId").notNull(),
+      inviterName: varchar("inviterName", { length: 255 }),
+      // 被招待者
+      inviteeId: int("inviteeId"),
+      inviteeEmail: varchar("inviteeEmail", { length: 320 }),
+      inviteeTwitterId: varchar("inviteeTwitterId", { length: 64 }),
+      // 招待コード
+      code: varchar("code", { length: 32 }).notNull().unique(),
+      // 権限設定
+      role: mysqlEnum("role", ["co-host", "moderator"]).default("co-host").notNull(),
+      // ステータス
+      status: mysqlEnum("status", ["pending", "accepted", "declined", "expired"]).default("pending").notNull(),
+      expiresAt: timestamp("expiresAt"),
+      // メタデータ
+      createdAt: timestamp("createdAt").defaultNow().notNull()
+    });
+    twitterFollowStatus = mysqlTable("twitter_follow_status", {
+      id: int("id").autoincrement().primaryKey(),
+      userId: int("userId").notNull(),
+      // Twitter情報
+      twitterId: varchar("twitterId", { length: 64 }).notNull(),
+      twitterUsername: varchar("twitterUsername", { length: 255 }),
+      // フォロー対象アカウント
+      targetTwitterId: varchar("targetTwitterId", { length: 64 }).notNull(),
+      targetUsername: varchar("targetUsername", { length: 255 }).notNull(),
+      // フォロー状態
+      isFollowing: boolean("isFollowing").default(false).notNull(),
+      // 最終確認日時
+      lastCheckedAt: timestamp("lastCheckedAt").defaultNow().notNull(),
+      // メタデータ
+      createdAt: timestamp("createdAt").defaultNow().notNull(),
+      updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull()
+    });
+    oauthPkceData = mysqlTable("oauth_pkce_data", {
+      id: int("id").autoincrement().primaryKey(),
+      // state パラメータ（一意識別子）
+      state: varchar("state", { length: 64 }).notNull().unique(),
+      // PKCE code verifier
+      codeVerifier: varchar("codeVerifier", { length: 128 }).notNull(),
+      // コールバックURL
+      callbackUrl: text("callbackUrl").notNull(),
+      // 有効期限（10分後）
+      expiresAt: timestamp("expiresAt").notNull(),
+      // メタデータ
+      createdAt: timestamp("createdAt").defaultNow().notNull()
+    });
+    participationCompanions = mysqlTable("participation_companions", {
+      id: int("id").autoincrement().primaryKey(),
+      // 参加登録への紐付け
+      participationId: int("participationId").notNull(),
+      challengeId: int("challengeId").notNull(),
+      // 友人の情報
+      displayName: varchar("displayName", { length: 255 }).notNull(),
+      twitterUsername: varchar("twitterUsername", { length: 255 }),
+      twitterId: varchar("twitterId", { length: 64 }),
+      profileImage: text("profileImage"),
+      // 招待した人のユーザーID
+      invitedByUserId: int("invitedByUserId"),
+      // メタデータ
+      createdAt: timestamp("createdAt").defaultNow().notNull()
+    });
+    challengeMembers = mysqlTable("challenge_members", {
+      id: int("id").autoincrement().primaryKey(),
+      challengeId: int("challengeId").notNull(),
+      // メンバーの情報
+      twitterUsername: varchar("twitterUsername", { length: 255 }).notNull(),
+      twitterId: varchar("twitterId", { length: 64 }),
+      displayName: varchar("displayName", { length: 255 }),
+      profileImage: text("profileImage"),
+      followersCount: int("followersCount").default(0),
+      // 並び順
+      sortOrder: int("sortOrder").default(0).notNull(),
+      // メタデータ
+      createdAt: timestamp("createdAt").defaultNow().notNull(),
+      updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull()
+    });
+    twitterUserCache = mysqlTable("twitter_user_cache", {
+      id: int("id").autoincrement().primaryKey(),
+      // Twitterユーザー情報
+      twitterUsername: varchar("twitterUsername", { length: 255 }).notNull().unique(),
+      twitterId: varchar("twitterId", { length: 64 }),
+      displayName: varchar("displayName", { length: 255 }),
+      profileImage: text("profileImage"),
+      followersCount: int("followersCount").default(0),
+      description: text("description"),
+      // キャッシュ有効期限（24時間）
+      cachedAt: timestamp("cachedAt").defaultNow().notNull(),
+      expiresAt: timestamp("expiresAt").notNull(),
+      // メタデータ
+      createdAt: timestamp("createdAt").defaultNow().notNull(),
+      updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull()
+    });
+    ticketTransfers = mysqlTable("ticket_transfers", {
+      id: int("id").autoincrement().primaryKey(),
+      challengeId: int("challengeId").notNull(),
+      // 譲渡者の情報
+      userId: int("userId").notNull(),
+      userName: varchar("userName", { length: 255 }).notNull(),
+      userUsername: varchar("userUsername", { length: 255 }),
+      // Xのユーザー名（DM用）
+      userImage: text("userImage"),
+      // 譲渡情報
+      ticketCount: int("ticketCount").default(1).notNull(),
+      priceType: mysqlEnum("priceType", ["face_value", "negotiable", "free"]).default("face_value").notNull(),
+      comment: text("comment"),
+      // ステータス
+      status: mysqlEnum("status", ["available", "reserved", "completed", "cancelled"]).default("available").notNull(),
+      // メタデータ
+      createdAt: timestamp("createdAt").defaultNow().notNull(),
+      updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull()
+    });
+    ticketWaitlist = mysqlTable("ticket_waitlist", {
+      id: int("id").autoincrement().primaryKey(),
+      challengeId: int("challengeId").notNull(),
+      // 待機者の情報
+      userId: int("userId").notNull(),
+      userName: varchar("userName", { length: 255 }).notNull(),
+      userUsername: varchar("userUsername", { length: 255 }),
+      // Xのユーザー名（DM用）
+      userImage: text("userImage"),
+      // 希望枚数
+      desiredCount: int("desiredCount").default(1).notNull(),
+      // 通知設定
+      notifyOnNew: boolean("notifyOnNew").default(true).notNull(),
+      // ステータス
+      isActive: boolean("isActive").default(true).notNull(),
+      // メタデータ
+      createdAt: timestamp("createdAt").defaultNow().notNull(),
+      updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull()
+    });
+  }
 });
 
 // server/_core/env.ts
-var ENV = {
-  appId: process.env.VITE_APP_ID ?? "",
-  cookieSecret: process.env.JWT_SECRET ?? "",
-  databaseUrl: process.env.DATABASE_URL ?? "",
-  oAuthServerUrl: process.env.OAUTH_SERVER_URL ?? "",
-  ownerOpenId: process.env.OWNER_OPEN_ID ?? "",
-  isProduction: process.env.NODE_ENV === "production",
-  forgeApiUrl: process.env.BUILT_IN_FORGE_API_URL ?? "",
-  forgeApiKey: process.env.BUILT_IN_FORGE_API_KEY ?? ""
-};
+var ENV;
+var init_env = __esm({
+  "server/_core/env.ts"() {
+    "use strict";
+    ENV = {
+      appId: process.env.VITE_APP_ID ?? "",
+      cookieSecret: process.env.JWT_SECRET ?? "",
+      databaseUrl: process.env.DATABASE_URL ?? "",
+      oAuthServerUrl: process.env.OAUTH_SERVER_URL ?? "",
+      ownerOpenId: process.env.OWNER_OPEN_ID ?? "",
+      isProduction: process.env.NODE_ENV === "production",
+      forgeApiUrl: process.env.BUILT_IN_FORGE_API_URL ?? "",
+      forgeApiKey: process.env.BUILT_IN_FORGE_API_KEY ?? ""
+    };
+  }
+});
 
 // server/db.ts
-var events = challenges;
-var _db = null;
+var db_exports = {};
+__export(db_exports, {
+  addToTicketWaitlist: () => addToTicketWaitlist,
+  awardBadge: () => awardBadge,
+  awardFollowerBadge: () => awardFollowerBadge,
+  cancelParticipation: () => cancelParticipation,
+  cancelTicketTransfer: () => cancelTicketTransfer,
+  checkAndAwardBadges: () => checkAndAwardBadges,
+  clearSearchHistoryForUser: () => clearSearchHistoryForUser,
+  createAchievementPage: () => createAchievementPage,
+  createBadge: () => createBadge,
+  createCategory: () => createCategory,
+  createChallengeTemplate: () => createChallengeTemplate,
+  createCompanion: () => createCompanion,
+  createCompanions: () => createCompanions,
+  createEvent: () => createEvent,
+  createInvitation: () => createInvitation,
+  createNotification: () => createNotification,
+  createParticipation: () => createParticipation,
+  createReminder: () => createReminder,
+  createTicketTransfer: () => createTicketTransfer,
+  deactivateInvitation: () => deactivateInvitation,
+  deleteCategory: () => deleteCategory,
+  deleteChallengeTemplate: () => deleteChallengeTemplate,
+  deleteCompanion: () => deleteCompanion,
+  deleteCompanionsForParticipation: () => deleteCompanionsForParticipation,
+  deleteEvent: () => deleteEvent,
+  deleteParticipation: () => deleteParticipation,
+  deleteReminder: () => deleteReminder,
+  followUser: () => followUser,
+  getAchievementPage: () => getAchievementPage,
+  getAllBadges: () => getAllBadges,
+  getAllCategories: () => getAllCategories,
+  getAllEvents: () => getAllEvents,
+  getBadgeById: () => getBadgeById,
+  getCategoryById: () => getCategoryById,
+  getCategoryBySlug: () => getCategoryBySlug,
+  getChallengeAchievementRanking: () => getChallengeAchievementRanking,
+  getChallengeForAI: () => getChallengeForAI,
+  getChallengeTemplateById: () => getChallengeTemplateById,
+  getChallengeTemplatesForUser: () => getChallengeTemplatesForUser,
+  getChallengesByCategory: () => getChallengesByCategory,
+  getCheerCountForParticipation: () => getCheerCountForParticipation,
+  getCheersForChallenge: () => getCheersForChallenge,
+  getCheersForParticipation: () => getCheersForParticipation,
+  getCheersReceivedByUser: () => getCheersReceivedByUser,
+  getCheersSentByUser: () => getCheersSentByUser,
+  getCompanionInviteStats: () => getCompanionInviteStats,
+  getCompanionsForChallenge: () => getCompanionsForChallenge,
+  getCompanionsForParticipation: () => getCompanionsForParticipation,
+  getContributionRanking: () => getContributionRanking,
+  getConversation: () => getConversation,
+  getConversationList: () => getConversationList,
+  getDb: () => getDb,
+  getDirectMessagesForUser: () => getDirectMessagesForUser,
+  getEventById: () => getEventById,
+  getEventsByHostUserId: () => getEventsByHostUserId,
+  getFollowerCount: () => getFollowerCount,
+  getFollowerIdsForUser: () => getFollowerIdsForUser,
+  getFollowersForUser: () => getFollowersForUser,
+  getFollowingCount: () => getFollowingCount,
+  getFollowingForUser: () => getFollowingForUser,
+  getGlobalContributionRanking: () => getGlobalContributionRanking,
+  getHostRanking: () => getHostRanking,
+  getInvitationByCode: () => getInvitationByCode,
+  getInvitationStats: () => getInvitationStats,
+  getInvitationUses: () => getInvitationUses,
+  getInvitationsForChallenge: () => getInvitationsForChallenge,
+  getInvitationsForUser: () => getInvitationsForUser,
+  getNotificationSettings: () => getNotificationSettings,
+  getNotificationsByUserId: () => getNotificationsByUserId,
+  getOshikatsuStats: () => getOshikatsuStats,
+  getParticipationById: () => getParticipationById,
+  getParticipationCountByEventId: () => getParticipationCountByEventId,
+  getParticipationsByEventId: () => getParticipationsByEventId,
+  getParticipationsByPrefecture: () => getParticipationsByPrefecture,
+  getParticipationsByPrefectureFilter: () => getParticipationsByPrefectureFilter,
+  getParticipationsByUserId: () => getParticipationsByUserId,
+  getPendingReminders: () => getPendingReminders,
+  getPickedCommentsByChallengeId: () => getPickedCommentsByChallengeId,
+  getPickedCommentsWithParticipation: () => getPickedCommentsWithParticipation,
+  getPrefectureRanking: () => getPrefectureRanking,
+  getPublicAchievementPages: () => getPublicAchievementPages,
+  getPublicChallengeTemplates: () => getPublicChallengeTemplates,
+  getRecommendedHosts: () => getRecommendedHosts,
+  getRemindersForChallenge: () => getRemindersForChallenge,
+  getRemindersForUser: () => getRemindersForUser,
+  getSearchHistoryForUser: () => getSearchHistoryForUser,
+  getTicketTransfersForChallenge: () => getTicketTransfersForChallenge,
+  getTicketTransfersForUser: () => getTicketTransfersForUser,
+  getTicketWaitlistForChallenge: () => getTicketWaitlistForChallenge,
+  getTicketWaitlistForUser: () => getTicketWaitlistForUser,
+  getTotalCompanionCountByEventId: () => getTotalCompanionCountByEventId,
+  getUnreadMessageCount: () => getUnreadMessageCount,
+  getUserBadges: () => getUserBadges,
+  getUserBadgesWithDetails: () => getUserBadgesWithDetails,
+  getUserById: () => getUserById,
+  getUserByOpenId: () => getUserByOpenId,
+  getUserPublicProfile: () => getUserPublicProfile,
+  getUserRankingPosition: () => getUserRankingPosition,
+  getUserReminderForChallenge: () => getUserReminderForChallenge,
+  getUsersWithNotificationEnabled: () => getUsersWithNotificationEnabled,
+  getWaitlistUsersForNotification: () => getWaitlistUsersForNotification,
+  incrementInvitationUseCount: () => incrementInvitationUseCount,
+  incrementTemplateUseCount: () => incrementTemplateUseCount,
+  invalidateEventsCache: () => invalidateEventsCache,
+  isCommentPicked: () => isCommentPicked,
+  isFollowing: () => isFollowing,
+  isUserInWaitlist: () => isUserInWaitlist,
+  markAllMessagesAsRead: () => markAllMessagesAsRead,
+  markAllNotificationsAsRead: () => markAllNotificationsAsRead,
+  markCommentAsUsedInVideo: () => markCommentAsUsedInVideo,
+  markMessageAsRead: () => markMessageAsRead,
+  markNotificationAsRead: () => markNotificationAsRead,
+  markReminderAsSent: () => markReminderAsSent,
+  pickComment: () => pickComment,
+  recordInvitationUse: () => recordInvitationUse,
+  refreshAllChallengeSummaries: () => refreshAllChallengeSummaries,
+  refreshChallengeSummary: () => refreshChallengeSummary,
+  removeFromTicketWaitlist: () => removeFromTicketWaitlist,
+  saveSearchHistory: () => saveSearchHistory,
+  searchChallenges: () => searchChallenges,
+  searchChallengesForAI: () => searchChallengesForAI,
+  sendCheer: () => sendCheer,
+  sendDirectMessage: () => sendDirectMessage,
+  unfollowUser: () => unfollowUser,
+  unpickComment: () => unpickComment,
+  updateAchievementPage: () => updateAchievementPage,
+  updateCategory: () => updateCategory,
+  updateChallengeTemplate: () => updateChallengeTemplate,
+  updateEvent: () => updateEvent,
+  updateFollowNotification: () => updateFollowNotification,
+  updateParticipation: () => updateParticipation,
+  updateReminder: () => updateReminder,
+  updateTicketTransferStatus: () => updateTicketTransferStatus,
+  upsertNotificationSettings: () => upsertNotificationSettings,
+  upsertUser: () => upsertUser
+});
+import { eq, desc, and, sql, ne } from "drizzle-orm";
+import { drizzle } from "drizzle-orm/mysql2";
 async function getDb() {
   if (!_db && process.env.DATABASE_URL) {
     try {
@@ -631,8 +773,6 @@ async function getUserByOpenId(openId) {
   const result = await db.select().from(users).where(eq(users.openId, openId)).limit(1);
   return result.length > 0 ? result[0] : void 0;
 }
-var eventsCache = { data: null, timestamp: 0 };
-var EVENTS_CACHE_TTL = 30 * 1e3;
 async function getAllEvents() {
   const now = Date.now();
   if (eventsCache.data && now - eventsCache.timestamp < EVENTS_CACHE_TTL) {
@@ -746,11 +886,43 @@ async function deleteParticipation(id) {
   if (!db) throw new Error("Database not available");
   await db.delete(participations).where(eq(participations.id, id));
 }
+async function getParticipationCountByEventId(eventId) {
+  const db = await getDb();
+  if (!db) return 0;
+  const result = await db.select().from(participations).where(eq(participations.challengeId, eventId));
+  return result.length;
+}
 async function getTotalCompanionCountByEventId(eventId) {
   const db = await getDb();
   if (!db) return 0;
   const result = await db.select().from(participations).where(eq(participations.challengeId, eventId));
   return result.reduce((sum, p) => sum + (p.contribution || 1), 0);
+}
+async function getParticipationsByPrefecture(challengeId) {
+  const db = await getDb();
+  if (!db) return {};
+  const result = await db.select().from(participations).where(eq(participations.challengeId, challengeId));
+  const prefectureMap = {};
+  result.forEach((p) => {
+    const pref = p.prefecture || "\u672A\u8A2D\u5B9A";
+    prefectureMap[pref] = (prefectureMap[pref] || 0) + (p.contribution || 1);
+  });
+  return prefectureMap;
+}
+async function getContributionRanking(challengeId, limit = 10) {
+  const db = await getDb();
+  if (!db) return [];
+  const result = await db.select().from(participations).where(eq(participations.challengeId, challengeId)).orderBy(desc(participations.contribution));
+  return result.slice(0, limit).map((p, index) => ({
+    rank: index + 1,
+    userId: p.userId,
+    displayName: p.displayName,
+    username: p.username,
+    profileImage: p.profileImage,
+    contribution: p.contribution || 1,
+    followersCount: p.followersCount || 0,
+    isAnonymous: p.isAnonymous
+  }));
 }
 async function getNotificationSettings(userId) {
   const db = await getDb();
@@ -767,6 +939,23 @@ async function upsertNotificationSettings(userId, challengeId, data) {
   } else {
     await db.insert(notificationSettings).values({ userId, challengeId, ...data });
   }
+}
+async function getUsersWithNotificationEnabled(challengeId, notificationType) {
+  const db = await getDb();
+  if (!db) return [];
+  const settingsList = await db.select().from(notificationSettings).where(eq(notificationSettings.challengeId, challengeId));
+  return settingsList.filter((s) => {
+    if (notificationType === "goal") return s.onGoalReached;
+    if (notificationType === "milestone") return s.onMilestone25 || s.onMilestone50 || s.onMilestone75;
+    if (notificationType === "participant") return s.onNewParticipant;
+    return false;
+  });
+}
+async function createNotification(data) {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+  const result = await db.insert(notifications).values(data);
+  return result[0].insertId;
 }
 async function getNotificationsByUserId(userId, limit = 50) {
   const db = await getDb();
@@ -787,6 +976,23 @@ async function getAllBadges() {
   const db = await getDb();
   if (!db) return [];
   return db.select().from(badges);
+}
+async function getBadgeById(id) {
+  const db = await getDb();
+  if (!db) return null;
+  const result = await db.select().from(badges).where(eq(badges.id, id));
+  return result[0] || null;
+}
+async function createBadge(data) {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+  const result = await db.insert(badges).values(data);
+  return result[0].insertId;
+}
+async function getUserBadges(userId) {
+  const db = await getDb();
+  if (!db) return [];
+  return db.select().from(userBadges).where(eq(userBadges.userId, userId)).orderBy(desc(userBadges.earnedAt));
 }
 async function getUserBadgesWithDetails(userId) {
   const db = await getDb();
@@ -810,6 +1016,35 @@ async function awardBadge(userId, badgeId, challengeId) {
   });
   return result[0].insertId;
 }
+async function checkAndAwardBadges(userId, challengeId, contribution) {
+  const db = await getDb();
+  if (!db) return [];
+  const badgeList = await db.select().from(badges);
+  const awardedBadges = [];
+  const participationCount = await db.select().from(participations).where(eq(participations.userId, userId));
+  for (const badge of badgeList) {
+    let shouldAward = false;
+    switch (badge.conditionType) {
+      case "first_participation":
+        shouldAward = participationCount.length === 1;
+        break;
+      case "contribution_5":
+        shouldAward = contribution >= 5;
+        break;
+      case "contribution_10":
+        shouldAward = contribution >= 10;
+        break;
+      case "contribution_20":
+        shouldAward = contribution >= 20;
+        break;
+    }
+    if (shouldAward) {
+      const awarded = await awardBadge(userId, badge.id, challengeId);
+      if (awarded) awardedBadges.push(badge);
+    }
+  }
+  return awardedBadges;
+}
 async function awardFollowerBadge(userId) {
   const db = await getDb();
   if (!db) return null;
@@ -825,6 +1060,11 @@ async function awardFollowerBadge(userId) {
   }
   if (followerBadge.length === 0) return null;
   return awardBadge(userId, followerBadge[0].id);
+}
+async function getPickedCommentsByChallengeId(challengeId) {
+  const db = await getDb();
+  if (!db) return [];
+  return db.select().from(pickedComments).where(eq(pickedComments.challengeId, challengeId)).orderBy(desc(pickedComments.pickedAt));
 }
 async function getPickedCommentsWithParticipation(challengeId) {
   const db = await getDb();
@@ -957,6 +1197,11 @@ async function getRemindersForUser(userId) {
   if (!db) return [];
   return db.select().from(reminders).where(eq(reminders.userId, userId)).orderBy(desc(reminders.createdAt));
 }
+async function getRemindersForChallenge(challengeId) {
+  const db = await getDb();
+  if (!db) return [];
+  return db.select().from(reminders).where(eq(reminders.challengeId, challengeId)).orderBy(desc(reminders.createdAt));
+}
 async function getUserReminderForChallenge(userId, challengeId) {
   const db = await getDb();
   if (!db) return null;
@@ -973,11 +1218,26 @@ async function deleteReminder(id) {
   if (!db) return;
   await db.delete(reminders).where(eq(reminders.id, id));
 }
+async function getPendingReminders() {
+  const db = await getDb();
+  if (!db) return [];
+  return db.select().from(reminders).where(eq(reminders.isSent, false));
+}
+async function markReminderAsSent(id) {
+  const db = await getDb();
+  if (!db) return;
+  await db.update(reminders).set({ isSent: true, sentAt: /* @__PURE__ */ new Date() }).where(eq(reminders.id, id));
+}
 async function sendDirectMessage(dm) {
   const db = await getDb();
   if (!db) return null;
   const result = await db.insert(directMessages).values(dm);
   return result[0].insertId;
+}
+async function getDirectMessagesForUser(userId) {
+  const db = await getDb();
+  if (!db) return [];
+  return db.select().from(directMessages).where(sql`${directMessages.fromUserId} = ${userId} OR ${directMessages.toUserId} = ${userId}`).orderBy(desc(directMessages.createdAt));
 }
 async function getConversation(userId1, userId2, challengeId) {
   const db = await getDb();
@@ -1197,8 +1457,6 @@ async function getUserRankingPosition(userId, period = "all") {
     participationCount: ranking[position].participationCount
   };
 }
-var categoriesCache = { data: null, timestamp: 0 };
-var CATEGORIES_CACHE_TTL = 5 * 60 * 1e3;
 async function getAllCategories() {
   const now = Date.now();
   if (categoriesCache.data && now - categoriesCache.timestamp < CATEGORIES_CACHE_TTL) {
@@ -1216,10 +1474,34 @@ async function getCategoryById(id) {
   const result = await db.select().from(categories).where(eq(categories.id, id));
   return result[0] || null;
 }
+async function getCategoryBySlug(slug) {
+  const db = await getDb();
+  if (!db) return null;
+  const result = await db.select().from(categories).where(eq(categories.slug, slug));
+  return result[0] || null;
+}
+async function createCategory(category) {
+  const db = await getDb();
+  if (!db) return null;
+  const result = await db.insert(categories).values(category);
+  return result[0].insertId;
+}
 async function getChallengesByCategory(categoryId) {
   const db = await getDb();
   if (!db) return [];
   return db.select().from(challenges).where(eq(challenges.categoryId, categoryId)).orderBy(desc(challenges.eventDate));
+}
+async function updateCategory(id, data) {
+  const db = await getDb();
+  if (!db) return null;
+  await db.update(categories).set(data).where(eq(categories.id, id));
+  return getCategoryById(id);
+}
+async function deleteCategory(id) {
+  const db = await getDb();
+  if (!db) return false;
+  await db.delete(categories).where(eq(categories.id, id));
+  return true;
 }
 async function createInvitation(invitation) {
   const db = await getDb();
@@ -1258,6 +1540,11 @@ async function recordInvitationUse(use) {
   if (!db) return null;
   const result = await db.insert(invitationUses).values(use);
   return result[0].insertId;
+}
+async function getInvitationUses(invitationId) {
+  const db = await getDb();
+  if (!db) return [];
+  return db.select().from(invitationUses).where(eq(invitationUses.invitationId, invitationId)).orderBy(desc(invitationUses.createdAt));
 }
 async function getInvitationStats(invitationId) {
   const db = await getDb();
@@ -1373,6 +1660,12 @@ async function getRecommendedHosts(userId, categoryId, limit = 5) {
     profileImage: h.hostProfileImage,
     challengeCount: h.challengeCount
   }));
+}
+async function createCompanion(companion) {
+  const db = await getDb();
+  if (!db) return null;
+  const result = await db.insert(participationCompanions).values(companion);
+  return result[0].insertId;
 }
 async function createCompanions(companions) {
   const db = await getDb();
@@ -1576,6 +1869,12 @@ async function refreshAllChallengeSummaries() {
   }
   return { updated, total: allChallenges.length };
 }
+async function getUserById(userId) {
+  const db = await getDb();
+  if (!db) return null;
+  const result = await db.select().from(users).where(eq(users.id, userId)).limit(1);
+  return result[0] || null;
+}
 async function createTicketTransfer(transfer) {
   const db = await getDb();
   if (!db) return null;
@@ -1733,6 +2032,38 @@ async function getOshikatsuStats(userId, twitterId) {
     recentChallenges
   };
 }
+var events, _db, eventsCache, EVENTS_CACHE_TTL, categoriesCache, CATEGORIES_CACHE_TTL;
+var init_db = __esm({
+  "server/db.ts"() {
+    "use strict";
+    init_schema();
+    init_env();
+    init_schema();
+    events = challenges;
+    _db = null;
+    eventsCache = { data: null, timestamp: 0 };
+    EVENTS_CACHE_TTL = 30 * 1e3;
+    categoriesCache = { data: null, timestamp: 0 };
+    CATEGORIES_CACHE_TTL = 5 * 60 * 1e3;
+  }
+});
+
+// server/_core/index.ts
+import "dotenv/config";
+import express from "express";
+import { createServer } from "http";
+import net from "net";
+import { createExpressMiddleware } from "@trpc/server/adapters/express";
+
+// shared/const.ts
+var COOKIE_NAME = "app_session_id";
+var ONE_YEAR_MS = 1e3 * 60 * 60 * 24 * 365;
+var AXIOS_TIMEOUT_MS = 3e4;
+var UNAUTHED_ERR_MSG = "Please login (10001)";
+var NOT_ADMIN_ERR_MSG = "You do not have required permission (10002)";
+
+// server/_core/oauth.ts
+init_db();
 
 // server/_core/cookies.ts
 var LOCAL_HOSTS = /* @__PURE__ */ new Set(["localhost", "127.0.0.1", "::1"]);
@@ -1780,6 +2111,8 @@ var HttpError = class extends Error {
 var ForbiddenError = (msg) => new HttpError(403, msg);
 
 // server/_core/sdk.ts
+init_db();
+init_env();
 import axios from "axios";
 import { parse as parseCookieHeader } from "cookie";
 import { SignJWT, jwtVerify } from "jose";
@@ -2118,6 +2451,8 @@ function registerOAuthRoutes(app) {
 }
 
 // server/twitter-oauth2.ts
+init_db();
+init_schema();
 import crypto from "crypto";
 import { eq as eq2, lt } from "drizzle-orm";
 
@@ -2785,6 +3120,7 @@ import { z as z2 } from "zod";
 import { z } from "zod";
 
 // server/_core/notification.ts
+init_env();
 import { TRPCError } from "@trpc/server";
 var TITLE_MAX_LENGTH = 1200;
 var CONTENT_MAX_LENGTH = 2e4;
@@ -2922,6 +3258,7 @@ var systemRouter = router({
 });
 
 // server/storage.ts
+init_env();
 function getStorageConfig() {
   const baseUrl = ENV.forgeApiUrl;
   const apiKey = ENV.forgeApiKey;
@@ -2973,6 +3310,7 @@ async function storagePut(relKey, data, contentType = "application/octet-stream"
 }
 
 // server/_core/imageGeneration.ts
+init_env();
 async function generateImage(options) {
   if (!ENV.forgeApiUrl) {
     throw new Error("BUILT_IN_FORGE_API_URL is not configured");
@@ -3011,6 +3349,7 @@ async function generateImage(options) {
 }
 
 // server/routers.ts
+init_db();
 var appRouter = router({
   system: systemRouter,
   auth: router({
@@ -3843,6 +4182,42 @@ Design requirements:
     // カテゴリ別チャレンジ一覧
     challenges: publicProcedure.input(z2.object({ categoryId: z2.number() })).query(async ({ input }) => {
       return getChallengesByCategory(input.categoryId);
+    }),
+    // カテゴリ作成（管理者のみ）
+    create: protectedProcedure.input(z2.object({
+      name: z2.string().min(1).max(100),
+      slug: z2.string().min(1).max(100),
+      description: z2.string().optional(),
+      icon: z2.string().optional(),
+      sortOrder: z2.number().optional()
+    })).mutation(async ({ input, ctx }) => {
+      if (ctx.user.role !== "admin") {
+        throw new Error("\u7BA1\u7406\u8005\u6A29\u9650\u304C\u5FC5\u8981\u3067\u3059");
+      }
+      return createCategory(input);
+    }),
+    // カテゴリ更新（管理者のみ）
+    update: protectedProcedure.input(z2.object({
+      id: z2.number(),
+      name: z2.string().min(1).max(100).optional(),
+      slug: z2.string().min(1).max(100).optional(),
+      description: z2.string().optional(),
+      icon: z2.string().optional(),
+      sortOrder: z2.number().optional(),
+      isActive: z2.boolean().optional()
+    })).mutation(async ({ input, ctx }) => {
+      if (ctx.user.role !== "admin") {
+        throw new Error("\u7BA1\u7406\u8005\u6A29\u9650\u304C\u5FC5\u8981\u3067\u3059");
+      }
+      const { id, ...data } = input;
+      return updateCategory(id, data);
+    }),
+    // カテゴリ削除（管理者のみ）
+    delete: protectedProcedure.input(z2.object({ id: z2.number() })).mutation(async ({ input, ctx }) => {
+      if (ctx.user.role !== "admin") {
+        throw new Error("\u7BA1\u7406\u8005\u6A29\u9650\u304C\u5FC5\u8981\u3067\u3059");
+      }
+      return deleteCategory(input.id);
     })
   }),
   // 招待関連
@@ -4250,6 +4625,60 @@ function getDashboardSummary() {
     stats: getApiUsageStats(),
     warnings: getWarningsSummary(),
     recentHistory: getRecentUsageHistory(20)
+  };
+}
+
+// server/error-tracker.ts
+var errorLogs = [];
+function getErrorLogs(options) {
+  let logs = [...errorLogs];
+  if (options?.category) {
+    logs = logs.filter((log) => log.category === options.category);
+  }
+  if (options?.resolved !== void 0) {
+    logs = logs.filter((log) => log.resolved === options.resolved);
+  }
+  if (options?.limit) {
+    logs = logs.slice(0, options.limit);
+  }
+  return logs;
+}
+function resolveError(errorId) {
+  const log = errorLogs.find((l) => l.id === errorId);
+  if (log) {
+    log.resolved = true;
+    return true;
+  }
+  return false;
+}
+function resolveAllErrors() {
+  const count = errorLogs.filter((l) => !l.resolved).length;
+  errorLogs.forEach((log) => log.resolved = true);
+  return count;
+}
+function clearErrorLogs() {
+  const count = errorLogs.length;
+  errorLogs = [];
+  return count;
+}
+function getErrorStats() {
+  const oneHourAgo = new Date(Date.now() - 60 * 60 * 1e3);
+  const byCategory = {
+    database: 0,
+    api: 0,
+    auth: 0,
+    twitter: 0,
+    validation: 0,
+    unknown: 0
+  };
+  errorLogs.forEach((log) => {
+    byCategory[log.category]++;
+  });
+  return {
+    total: errorLogs.length,
+    unresolved: errorLogs.filter((l) => !l.resolved).length,
+    byCategory,
+    recentErrors: errorLogs.filter((l) => l.timestamp >= oneHourAgo).length
   };
 }
 
@@ -4802,6 +5231,67 @@ async function startServer() {
     customCss: ".swagger-ui .topbar { display: none }",
     customSiteTitle: "\u52D5\u54E1\u3061\u3083\u308C\u3093\u3058 API \u30C9\u30AD\u30E5\u30E1\u30F3\u30C8"
   }));
+  app.get("/api/admin/system-status", async (_req, res) => {
+    try {
+      const { getDb: getDb2 } = await Promise.resolve().then(() => (init_db(), db_exports));
+      let dbStatus = { connected: false, latency: 0, error: "" };
+      try {
+        const startTime = Date.now();
+        const db = await getDb2();
+        if (db) {
+          await db.execute("SELECT 1");
+          dbStatus = {
+            connected: true,
+            latency: Date.now() - startTime,
+            error: ""
+          };
+        } else {
+          dbStatus.error = "DATABASE_URL\u304C\u8A2D\u5B9A\u3055\u308C\u3066\u3044\u307E\u305B\u3093";
+        }
+      } catch (err) {
+        dbStatus.error = err instanceof Error ? err.message : "\u63A5\u7D9A\u30A8\u30E9\u30FC";
+      }
+      const twitterStatus = {
+        configured: !!(process.env.TWITTER_CLIENT_ID && process.env.TWITTER_CLIENT_SECRET),
+        rateLimitRemaining: void 0,
+        error: ""
+      };
+      if (!twitterStatus.configured) {
+        twitterStatus.error = "Twitter API\u8A8D\u8A3C\u60C5\u5831\u304C\u8A2D\u5B9A\u3055\u308C\u3066\u3044\u307E\u305B\u3093";
+      }
+      const memUsage = process.memoryUsage();
+      const serverInfo = {
+        uptime: process.uptime(),
+        memory: {
+          used: memUsage.heapUsed,
+          total: memUsage.heapTotal
+        },
+        nodeVersion: process.version
+      };
+      const envVars = [
+        { name: "DATABASE_URL", value: process.env.DATABASE_URL },
+        { name: "TWITTER_CLIENT_ID", value: process.env.TWITTER_CLIENT_ID },
+        { name: "TWITTER_CLIENT_SECRET", value: process.env.TWITTER_CLIENT_SECRET },
+        { name: "TWITTER_BEARER_TOKEN", value: process.env.TWITTER_BEARER_TOKEN },
+        { name: "SESSION_SECRET", value: process.env.SESSION_SECRET },
+        { name: "EXPO_PUBLIC_API_BASE_URL", value: process.env.EXPO_PUBLIC_API_BASE_URL }
+      ];
+      const environment = envVars.map((env) => ({
+        name: env.name,
+        masked: env.value ? env.value.substring(0, 4) + "****" : "\u672A\u8A2D\u5B9A",
+        configured: !!env.value
+      }));
+      res.json({
+        database: dbStatus,
+        twitter: twitterStatus,
+        server: serverInfo,
+        environment
+      });
+    } catch (err) {
+      console.error("[Admin] System status error:", err);
+      res.status(500).json({ error: "\u30B7\u30B9\u30C6\u30E0\u72B6\u614B\u306E\u53D6\u5F97\u306B\u5931\u6557\u3057\u307E\u3057\u305F" });
+    }
+  });
   app.get("/api/admin/api-usage", (_req, res) => {
     const summary = getDashboardSummary();
     res.json(summary);
@@ -4809,6 +5299,30 @@ async function startServer() {
   app.get("/api/admin/api-usage/stats", (_req, res) => {
     const stats2 = getApiUsageStats();
     res.json(stats2);
+  });
+  app.get("/api/admin/errors", (req, res) => {
+    const category = req.query.category;
+    const limit = req.query.limit ? parseInt(req.query.limit) : void 0;
+    const resolved = req.query.resolved === "true" ? true : req.query.resolved === "false" ? false : void 0;
+    const logs = getErrorLogs({
+      category,
+      limit,
+      resolved
+    });
+    const stats2 = getErrorStats();
+    res.json({ logs, stats: stats2 });
+  });
+  app.post("/api/admin/errors/:id/resolve", (req, res) => {
+    const success = resolveError(req.params.id);
+    res.json({ success });
+  });
+  app.post("/api/admin/errors/resolve-all", (_req, res) => {
+    const count = resolveAllErrors();
+    res.json({ success: true, count });
+  });
+  app.delete("/api/admin/errors", (_req, res) => {
+    const count = clearErrorLogs();
+    res.json({ success: true, count });
   });
   app.use(
     "/api/trpc",

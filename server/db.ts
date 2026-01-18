@@ -1099,6 +1099,20 @@ export async function getChallengesByCategory(categoryId: number) {
   return db.select().from(challenges).where(eq(challenges.categoryId, categoryId)).orderBy(desc(challenges.eventDate));
 }
 
+export async function updateCategory(id: number, data: Partial<InsertCategory>) {
+  const db = await getDb();
+  if (!db) return null;
+  await db.update(categories).set(data).where(eq(categories.id, id));
+  return getCategoryById(id);
+}
+
+export async function deleteCategory(id: number) {
+  const db = await getDb();
+  if (!db) return false;
+  await db.delete(categories).where(eq(categories.id, id));
+  return true;
+}
+
 // ========== Invitations (招待) ==========
 
 export async function createInvitation(invitation: InsertInvitation) {

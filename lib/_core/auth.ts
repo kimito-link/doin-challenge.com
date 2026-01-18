@@ -23,6 +23,8 @@ export type User = {
     name: string;
     username: string;
   };
+  // Admin role
+  role?: "user" | "admin";
 };
 
 export async function getSessionToken(): Promise<string | null> {
