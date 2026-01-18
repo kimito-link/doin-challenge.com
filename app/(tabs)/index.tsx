@@ -24,6 +24,10 @@ import { LazyAvatar } from "@/components/molecules/lazy-image";
 import { prefetchChallengeImages } from "@/lib/image-prefetch";
 import { SimpleRefreshControl } from "@/components/molecules/enhanced-refresh-control";
 import { AnimatedCard } from "@/components/molecules/animated-pressable";
+import { ColorfulChallengeCard } from "@/components/molecules/colorful-challenge-card";
+import { FloatingActionButton } from "@/components/atoms/floating-action-button";
+import { EncouragementModal, useEncouragementModal } from "@/components/molecules/encouragement-modal";
+import { FilterTabs } from "@/components/molecules/filter-tabs";
 import { SyncStatusIndicator } from "@/components/atoms/sync-status-indicator";
 import { BlinkingLink } from "@/components/atoms/blinking-character";
 import { HostEmptyState } from "@/components/organisms/host-empty-state";
@@ -519,7 +523,7 @@ function FeatureListSection() {
   );
 }
 
-function ChallengeCard({ challenge, onPress, numColumns = 2 }: { challenge: Challenge; onPress: () => void; numColumns?: number }) {
+function ChallengeCard({ challenge, onPress, numColumns = 2, colorIndex }: { challenge: Challenge; onPress: () => void; numColumns?: number; colorIndex?: number }) {
   const colors = useColors();
   const { isDesktop } = useResponsive();
   const eventDate = new Date(challenge.eventDate);
@@ -751,6 +755,11 @@ export default function HomeScreen() {
   const [searchQuery, setSearchQuery] = useState("");
   const [isSearching, setIsSearching] = useState(false);
   const [categoryFilter, setCategoryFilter] = useState<number | null>(null);
+  // v5.60: カラフルカード表示モード（しゃべった！風）
+  const [useColorfulCards, setUseColorfulCards] = useState(true);
+  
+  // v5.60: 励ましメッセージモーダル
+  const encouragementModal = useEncouragementModal();
   
   const { isOffline } = useNetworkStatus();
   
@@ -1077,16 +1086,18 @@ export default function HomeScreen() {
           numColumns={numColumns}
           ListHeaderComponent={ListHeader}
           renderItem={({ item, index }) => {
+            // v5.60: カラフルカードと通常カードの切り替え
+            const CardComponent = useColorfulCards ? ColorfulChallengeCard : ChallengeCard;
             // 最初のアイテムのみチュートリアルハイライト対象
             if (index === 0) {
               return (
                 <TutorialHighlightTarget tutorialStep={1} userType="fan">
-                  <ChallengeCard challenge={item as Challenge} onPress={() => handleChallengePress(item.id)} numColumns={numColumns} />
+                  <CardComponent challenge={item as Challenge} onPress={() => handleChallengePress(item.id)} numColumns={numColumns} colorIndex={index} />
                 </TutorialHighlightTarget>
               );
             }
             return (
-              <ChallengeCard challenge={item as Challenge} onPress={() => handleChallengePress(item.id)} numColumns={numColumns} />
+              <CardComponent challenge={item as Challenge} onPress={() => handleChallengePress(item.id)} numColumns={numColumns} colorIndex={index} />
             );
           }}
           refreshControl={
@@ -1141,6 +1152,23 @@ export default function HomeScreen() {
       ) : (
         <EmptyState onGenerateSamples={refetch} />
       )}
+
+      {/* v5.60: FABボタン（チャレンジ作成へ） */}
+      <FloatingActionButton
+        onPress={() => router.push("/(tabs)/create")}
+        icon="add"
+        gradientColors={["#EC4899", "#8B5CF6"]}
+        size="large"
+      />
+
+      {/* v5.60: 励ましメッセージモーダル */}
+      <EncouragementModal
+        visible={encouragementModal.visible}
+        onClose={encouragementModal.hide}
+        type={encouragementModal.type}
+        customMessage={encouragementModal.customMessage}
+        customEmoji={encouragementModal.customEmoji}
+      />
     </ScreenContainer>
   );
 }
