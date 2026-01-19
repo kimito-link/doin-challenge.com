@@ -1676,6 +1676,24 @@ Design requirements:
         const results = await db.recalculateChallengeCurrentValues();
         return { success: true, fixedCount: results.length, details: results };
       }),
+
+    // DB構造確認API
+    getDbSchema: protectedProcedure
+      .query(async ({ ctx }) => {
+        if (ctx.user.role !== "admin") {
+          throw new Error("管理者権限が必要です");
+        }
+        return db.getDbSchema();
+      }),
+
+    // テーブル構造とコードの比較
+    compareSchemas: protectedProcedure
+      .query(async ({ ctx }) => {
+        if (ctx.user.role !== "admin") {
+          throw new Error("管理者権限が必要です");
+        }
+        return db.compareSchemas();
+      }),
   }),
 });
 

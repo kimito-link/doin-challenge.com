@@ -234,14 +234,16 @@ export async function createEvent(data: InsertEvent) {
   // ticketSaleStartの処理
   const ticketSaleStart = data.ticketSaleStart ? new Date(data.ticketSaleStart).toISOString().slice(0, 19).replace('T', ' ') : null;
   
+  // AI関連カラム（aiSummary, intentTags, regionSummary, participantSummary, aiSummaryUpdatedAt）は
+  // 本番DBに存在しない可能性があるため、INSERTから除外
+  // これらのカラムは後から追加する場合は、マイグレーションを実行してから使用する
   const result = await db.execute(sql`
     INSERT INTO challenges (
       hostUserId, hostTwitterId, hostName, hostUsername, hostProfileImage, hostFollowersCount, hostDescription,
       title, slug, description, goalType, goalValue, goalUnit, currentValue,
       eventType, categoryId, eventDate, venue, prefecture,
       ticketPresale, ticketDoor, ticketSaleStart, ticketUrl, externalUrl,
-      status, isPublic, createdAt, updatedAt,
-      aiSummary, intentTags, regionSummary, participantSummary, aiSummaryUpdatedAt
+      status, isPublic, createdAt, updatedAt
     ) VALUES (
       ${data.hostUserId ?? null},
       ${data.hostTwitterId ?? null},
@@ -270,12 +272,7 @@ export async function createEvent(data: InsertEvent) {
       ${data.status ?? 'active'},
       ${data.isPublic ?? true},
       ${now},
-      ${now},
-      ${null},
-      ${null},
-      ${null},
-      ${null},
-      ${null}
+      ${now}
     )
   `);
   
@@ -2149,4 +2146,70 @@ export async function getDataIntegrityReport() {
   };
   
   return { summary, challenges: report };
+}
+
+
+// ========== DB構造確認 ==========
+
+// 本番DBのテーブル一覧とカラム構造を取得
+export async function getDbSchema() {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+  
+  try {
+    // テーブル一覧を取得
+    const tablesResult = await db.execute(sql`SHOW TABLES`);
+    const tables = (tablesResult[0] as any[]).map((row: any) => Object.values(row)[0] as string);
+    
+    // 各テーブルのカラム構造を取得
+    const schema: Record<string, any[]> = {};
+    for (const tableName of tables) {
+      const columnsResult = await db.execute(sql.raw(`DESCRIBE \`${tableName}\``));
+      schema[tableName] = columnsResult[0] as any[];
+    }
+    
+    return { tables, schema };
+  } catch (error) {
+    console.error("[DB Schema] Error:", error);
+    throw error;
+  }
+}
+
+// コードのスキーマと本番DBの比較
+export async function compareSchemas() {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+  
+  // コードで定義されているchallengesテーブルのカラム
+  const codeColumns = [
+    "id", "hostUserId", "hostTwitterId", "hostName", "hostUsername", "hostProfileImage",
+    "hostFollowersCount", "hostDescription", "title", "slug", "description", "goalType",
+    "goalValue", "goalUnit", "currentValue", "eventType", "categoryId", "eventDate",
+    "venue", "prefecture", "ticketPresale", "ticketDoor", "ticketSaleStart", "ticketUrl",
+    "externalUrl", "status", "isPublic", "createdAt", "updatedAt",
+    "aiSummary", "intentTags", "regionSummary", "participantSummary", "aiSummaryUpdatedAt"
+  ];
+  
+  try {
+    // 本番DBのchallengesテーブルのカラムを取得
+    const columnsResult = await db.execute(sql`DESCRIBE challenges`);
+    const dbColumns = (columnsResult[0] as any[]).map((row: any) => row.Field);
+    
+    // 比較
+    const missingInDb = codeColumns.filter(col => !dbColumns.includes(col));
+    const extraInDb = dbColumns.filter((col: string) => !codeColumns.includes(col));
+    const matching = codeColumns.filter(col => dbColumns.includes(col));
+    
+    return {
+      codeColumns,
+      dbColumns,
+      missingInDb,  // コードにあるがDBにないカラム
+      extraInDb,    // DBにあるがコードにないカラム
+      matching,     // 両方にあるカラム
+      isMatching: missingInDb.length === 0 && extraInDb.length === 0,
+    };
+  } catch (error) {
+    console.error("[Compare Schemas] Error:", error);
+    throw error;
+  }
 }

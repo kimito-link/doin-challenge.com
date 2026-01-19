@@ -589,6 +589,7 @@ __export(db_exports, {
   cancelTicketTransfer: () => cancelTicketTransfer,
   checkAndAwardBadges: () => checkAndAwardBadges,
   clearSearchHistoryForUser: () => clearSearchHistoryForUser,
+  compareSchemas: () => compareSchemas,
   createAchievementPage: () => createAchievementPage,
   createBadge: () => createBadge,
   createCategory: () => createCategory,
@@ -637,6 +638,7 @@ __export(db_exports, {
   getConversationList: () => getConversationList,
   getDataIntegrityReport: () => getDataIntegrityReport,
   getDb: () => getDb,
+  getDbSchema: () => getDbSchema,
   getDirectMessagesForUser: () => getDirectMessagesForUser,
   getEventById: () => getEventById,
   getEventsByHostTwitterId: () => getEventsByHostTwitterId,
@@ -892,8 +894,7 @@ async function createEvent(data) {
       title, slug, description, goalType, goalValue, goalUnit, currentValue,
       eventType, categoryId, eventDate, venue, prefecture,
       ticketPresale, ticketDoor, ticketSaleStart, ticketUrl, externalUrl,
-      status, isPublic, createdAt, updatedAt,
-      aiSummary, intentTags, regionSummary, participantSummary, aiSummaryUpdatedAt
+      status, isPublic, createdAt, updatedAt
     ) VALUES (
       ${data.hostUserId ?? null},
       ${data.hostTwitterId ?? null},
@@ -922,12 +923,7 @@ async function createEvent(data) {
       ${data.status ?? "active"},
       ${data.isPublic ?? true},
       ${now},
-      ${now},
-      ${null},
-      ${null},
-      ${null},
-      ${null},
-      ${null}
+      ${now}
     )
   `);
   invalidateEventsCache();
@@ -2219,6 +2215,84 @@ async function getDataIntegrityReport() {
   };
   return { summary, challenges: report };
 }
+async function getDbSchema() {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+  try {
+    const tablesResult = await db.execute(sql`SHOW TABLES`);
+    const tables = tablesResult[0].map((row) => Object.values(row)[0]);
+    const schema = {};
+    for (const tableName of tables) {
+      const columnsResult = await db.execute(sql.raw(`DESCRIBE \`${tableName}\``));
+      schema[tableName] = columnsResult[0];
+    }
+    return { tables, schema };
+  } catch (error) {
+    console.error("[DB Schema] Error:", error);
+    throw error;
+  }
+}
+async function compareSchemas() {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+  const codeColumns = [
+    "id",
+    "hostUserId",
+    "hostTwitterId",
+    "hostName",
+    "hostUsername",
+    "hostProfileImage",
+    "hostFollowersCount",
+    "hostDescription",
+    "title",
+    "slug",
+    "description",
+    "goalType",
+    "goalValue",
+    "goalUnit",
+    "currentValue",
+    "eventType",
+    "categoryId",
+    "eventDate",
+    "venue",
+    "prefecture",
+    "ticketPresale",
+    "ticketDoor",
+    "ticketSaleStart",
+    "ticketUrl",
+    "externalUrl",
+    "status",
+    "isPublic",
+    "createdAt",
+    "updatedAt",
+    "aiSummary",
+    "intentTags",
+    "regionSummary",
+    "participantSummary",
+    "aiSummaryUpdatedAt"
+  ];
+  try {
+    const columnsResult = await db.execute(sql`DESCRIBE challenges`);
+    const dbColumns = columnsResult[0].map((row) => row.Field);
+    const missingInDb = codeColumns.filter((col) => !dbColumns.includes(col));
+    const extraInDb = dbColumns.filter((col) => !codeColumns.includes(col));
+    const matching = codeColumns.filter((col) => dbColumns.includes(col));
+    return {
+      codeColumns,
+      dbColumns,
+      missingInDb,
+      // コードにあるがDBにないカラム
+      extraInDb,
+      // DBにあるがコードにないカラム
+      matching,
+      // 両方にあるカラム
+      isMatching: missingInDb.length === 0 && extraInDb.length === 0
+    };
+  } catch (error) {
+    console.error("[Compare Schemas] Error:", error);
+    throw error;
+  }
+}
 var events, _db, eventsCache, EVENTS_CACHE_TTL, categoriesCache, CATEGORIES_CACHE_TTL;
 var init_db = __esm({
   "server/db.ts"() {
@@ -3423,7 +3497,7 @@ var adminProcedure = t.procedure.use(
 );
 
 // shared/version.ts
-var APP_VERSION = "v6.02";
+var APP_VERSION = "v6.03";
 
 // server/_core/systemRouter.ts
 var systemRouter = router({
@@ -4834,6 +4908,20 @@ Design requirements:
       }
       const results = await recalculateChallengeCurrentValues();
       return { success: true, fixedCount: results.length, details: results };
+    }),
+    // DB構造確認API
+    getDbSchema: protectedProcedure.query(async ({ ctx }) => {
+      if (ctx.user.role !== "admin") {
+        throw new Error("\u7BA1\u7406\u8005\u6A29\u9650\u304C\u5FC5\u8981\u3067\u3059");
+      }
+      return getDbSchema();
+    }),
+    // テーブル構造とコードの比較
+    compareSchemas: protectedProcedure.query(async ({ ctx }) => {
+      if (ctx.user.role !== "admin") {
+        throw new Error("\u7BA1\u7406\u8005\u6A29\u9650\u304C\u5FC5\u8981\u3067\u3059");
+      }
+      return compareSchemas();
     })
   })
 });
