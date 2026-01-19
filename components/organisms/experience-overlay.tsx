@@ -630,11 +630,15 @@ export function ExperienceOverlay() {
         <Text style={styles.progressText}>{currentSlideIndex + 1} / {totalSlides}</Text>
       </View>
 
-      {/* コンテンツ */}
-      <ScrollView 
-        contentContainerStyle={styles.scrollContent}
-        showsVerticalScrollIndicator={false}
+      {/* コンテンツ - 画面タップで次へ進む */}
+      <Pressable 
+        onPress={nextSlide}
+        style={styles.tapArea}
       >
+        <ScrollView 
+          contentContainerStyle={styles.scrollContent}
+          showsVerticalScrollIndicator={false}
+        >
         <Animated.View 
           key={currentSlide.id}
           entering={SlideInRight.duration(300)}
@@ -727,7 +731,8 @@ export function ExperienceOverlay() {
             />
           </Pressable>
         </View>
-      </ScrollView>
+        </ScrollView>
+      </Pressable>
     </Animated.View>
   );
 }
@@ -741,6 +746,9 @@ const styles = StyleSheet.create({
     bottom: 0,
     zIndex: 1000,
     paddingHorizontal: 20,
+  },
+  tapArea: {
+    flex: 1,
   },
   header: {
     flexDirection: "row",

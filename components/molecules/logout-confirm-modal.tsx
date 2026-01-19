@@ -242,20 +242,21 @@ const styles = StyleSheet.create({
     justifyContent: "center",
   },
   cancelButton: {
-    backgroundColor: "rgba(236, 72, 153, 0.15)",
-    borderWidth: 1,
-    borderColor: "rgba(236, 72, 153, 0.3)",
+    backgroundColor: "#EC4899",
+    borderWidth: 0,
   },
   cancelButtonText: {
-    color: "#EC4899",
+    color: "#ffffff",
     fontSize: 15,
-    fontWeight: "600",
+    fontWeight: "700",
   },
   confirmButton: {
-    backgroundColor: "#CBD5E0",
+    backgroundColor: "#6B7280",
+    borderWidth: 1,
+    borderColor: "#9CA3AF",
   },
   confirmButtonText: {
-    color: "#fff",
+    color: "#ffffff",
     fontSize: 15,
     fontWeight: "600",
   },
