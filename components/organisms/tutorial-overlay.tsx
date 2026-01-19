@@ -506,12 +506,61 @@ export function TutorialOverlay({
             ))}
           </View>
 
-          {/* タップヒント */}
-          {step.tapToContinue !== false && (
-            <Animated.View style={styles.tapHintContainer}>
-              <Text style={styles.tapHint}>タップして続ける</Text>
-            </Animated.View>
-          )}
+          {/* キャラクターナビゲーションボタン */}
+          <View style={styles.characterNavigation}>
+            {/* こん太（戻るボタン） */}
+            <TouchableOpacity
+              onPress={(e) => {
+                e.stopPropagation();
+                // 最初のステップでは戻れない
+              }}
+              disabled={stepNumber <= 1}
+              style={[
+                styles.characterNavButton,
+                stepNumber <= 1 && styles.characterNavButtonDisabled
+              ]}
+              activeOpacity={0.7}
+            >
+              <Image
+                source={CHARACTER_IMAGES.konta_normal}
+                style={styles.navCharacterImage}
+                contentFit="contain"
+              />
+              <View style={[
+                styles.navBubble,
+                styles.navBubbleLeft,
+                stepNumber <= 1 && styles.navBubbleDisabled
+              ]}>
+                <View style={styles.navBubbleTailLeft} />
+                <Text style={[
+                  styles.navBubbleText,
+                  stepNumber <= 1 && styles.navBubbleTextDisabled
+                ]}>← 戻る</Text>
+              </View>
+            </TouchableOpacity>
+
+            {/* たぬ姉（次へボタン） */}
+            <TouchableOpacity
+              onPress={(e) => {
+                e.stopPropagation();
+                handleTap();
+              }}
+              style={styles.characterNavButton}
+              activeOpacity={0.7}
+            >
+              <View style={[styles.navBubble, styles.navBubbleRight, styles.navBubblePrimary]}>
+                <Text style={styles.navBubbleTextPrimary}>
+                  {stepNumber >= totalSteps ? "完了 ✓" : "次へ →"}
+                </Text>
+                <View style={styles.navBubbleTailRight} />
+              </View>
+              <Image
+                source={CHARACTER_IMAGES.tanune_normal}
+                style={styles.navCharacterImage}
+                contentFit="contain"
+              />
+            </TouchableOpacity>
+          </View>
         </Animated.View>
       </TouchableOpacity>
     </Animated.View>
@@ -628,6 +677,84 @@ const styles = StyleSheet.create({
   tapHint: {
     color: "rgba(255, 255, 255, 0.6)",
     fontSize: 12,
+  },
+  // キャラクターナビゲーション
+  characterNavigation: {
+    flexDirection: "row",
+    justifyContent: "center",
+    alignItems: "flex-end",
+    marginTop: 24,
+    gap: 40,
+  },
+  characterNavButton: {
+    flexDirection: "row",
+    alignItems: "flex-end",
+  },
+  characterNavButtonDisabled: {
+    opacity: 0.4,
+  },
+  navCharacterImage: {
+    width: 48,
+    height: 48,
+  },
+  navBubble: {
+    backgroundColor: "rgba(255, 255, 255, 0.15)",
+    borderRadius: 16,
+    paddingHorizontal: 14,
+    paddingVertical: 8,
+    position: "relative",
+    marginBottom: 8,
+  },
+  navBubbleLeft: {
+    marginLeft: -8,
+  },
+  navBubbleRight: {
+    marginRight: -8,
+  },
+  navBubbleDisabled: {
+    backgroundColor: "rgba(255, 255, 255, 0.08)",
+  },
+  navBubblePrimary: {
+    backgroundColor: "#FF6B9D",
+  },
+  navBubbleTailLeft: {
+    position: "absolute",
+    left: -6,
+    bottom: 10,
+    width: 0,
+    height: 0,
+    borderTopWidth: 5,
+    borderTopColor: "transparent",
+    borderBottomWidth: 5,
+    borderBottomColor: "transparent",
+    borderRightWidth: 6,
+    borderRightColor: "rgba(255, 255, 255, 0.15)",
+  },
+  navBubbleTailRight: {
+    position: "absolute",
+    right: -6,
+    bottom: 10,
+    width: 0,
+    height: 0,
+    borderTopWidth: 5,
+    borderTopColor: "transparent",
+    borderBottomWidth: 5,
+    borderBottomColor: "transparent",
+    borderLeftWidth: 6,
+    borderLeftColor: "#FF6B9D",
+  },
+  navBubbleText: {
+    color: "#FFFFFF",
+    fontSize: 13,
+    fontWeight: "600",
+  },
+  navBubbleTextDisabled: {
+    color: "rgba(255, 255, 255, 0.4)",
+  },
+  navBubbleTextPrimary: {
+    color: "#FFFFFF",
+    fontSize: 13,
+    fontWeight: "700",
   },
 });
 

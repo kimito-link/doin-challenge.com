@@ -1905,10 +1905,10 @@ const styles = StyleSheet.create({
   // Navigation
   navigation: {
     flexDirection: "row",
-    justifyContent: "space-between",
+    justifyContent: "center",
     alignItems: "flex-end",
     marginTop: 24,
-    paddingHorizontal: 4,
+    gap: 40,
   },
   
   // キャラクターナビゲーションボタン
