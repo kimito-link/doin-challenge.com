@@ -1,22 +1,8 @@
-import { View, Text, TouchableOpacity, StyleSheet, Dimensions } from "react-native";
-import { useEffect } from "react";
-import Animated, {
-  FadeIn,
-  FadeOut,
-  SlideInUp,
-  useSharedValue,
-  useAnimatedStyle,
-  withSpring,
-  withRepeat,
-  withSequence,
-  withTiming,
-  withDelay,
-  Easing,
-} from "react-native-reanimated";
+import { View, Text, TouchableOpacity, StyleSheet, Dimensions, Platform } from "react-native";
+import { useEffect, useState } from "react";
 import { Image } from "expo-image";
 import { useColors } from "@/hooks/use-colors";
 import * as Haptics from "expo-haptics";
-import { Platform } from "react-native";
 import type { UserType } from "@/lib/tutorial-context";
 
 const { width: SCREEN_WIDTH } = Dimensions.get("window");
@@ -35,50 +21,32 @@ type UserTypeSelectorProps = {
 };
 
 /**
- * 強化版ユーザータイプ選択画面
+ * ユーザータイプ選択画面（Web互換版）
  * 
- * - キャラクターのアニメーション
- * - キラキラエフェクト
- * - より魅力的なデザイン
+ * - Web環境ではreact-native-reanimatedを使用しない
+ * - シンプルなフェードイン/アウトで表示
  */
 export function UserTypeSelector({ visible, onSelect, onSkip }: UserTypeSelectorProps) {
   const colors = useColors();
-  
-  // アニメーション値
-  const fanScale = useSharedValue(1);
-  const hostScale = useSharedValue(1);
-  const mainCharacterY = useSharedValue(0);
-  const sparkle1Opacity = useSharedValue(0);
-  const sparkle2Opacity = useSharedValue(0);
-  const sparkle3Opacity = useSharedValue(0);
-  const titleScale = useSharedValue(0.8);
+  const [isVisible, setIsVisible] = useState(false);
+  const [opacity, setOpacity] = useState(0);
 
   useEffect(() => {
     if (visible) {
-      // 静的な表示（ちかちかアニメーション削除）
-      mainCharacterY.value = withTiming(0, { duration: 300 });
-      sparkle1Opacity.value = withTiming(1, { duration: 300 });
-      sparkle2Opacity.value = withTiming(1, { duration: 300 });
-      sparkle3Opacity.value = withTiming(1, { duration: 300 });
-      titleScale.value = withTiming(1, { duration: 300 });
+      setIsVisible(true);
+      // 少し遅延してフェードイン
+      const timer = setTimeout(() => {
+        setOpacity(1);
+      }, 50);
+      return () => clearTimeout(timer);
+    } else {
+      setOpacity(0);
+      const timer = setTimeout(() => {
+        setIsVisible(false);
+      }, 200);
+      return () => clearTimeout(timer);
     }
   }, [visible]);
-
-  const handlePressIn = (type: UserType) => {
-    if (type === "fan") {
-      fanScale.value = withSpring(0.95);
-    } else {
-      hostScale.value = withSpring(0.95);
-    }
-  };
-
-  const handlePressOut = (type: UserType) => {
-    if (type === "fan") {
-      fanScale.value = withSpring(1);
-    } else {
-      hostScale.value = withSpring(1);
-    }
-  };
 
   const handleSelect = (type: UserType) => {
     if (Platform.OS !== "web") {
@@ -87,112 +55,72 @@ export function UserTypeSelector({ visible, onSelect, onSkip }: UserTypeSelector
     onSelect(type);
   };
 
-  const fanStyle = useAnimatedStyle(() => ({
-    transform: [{ scale: fanScale.value }],
-  }));
-
-  const hostStyle = useAnimatedStyle(() => ({
-    transform: [{ scale: hostScale.value }],
-  }));
-
-  const mainCharacterStyle = useAnimatedStyle(() => ({
-    transform: [{ translateY: mainCharacterY.value }],
-  }));
-
-  const sparkle1Style = useAnimatedStyle(() => ({
-    opacity: sparkle1Opacity.value,
-  }));
-
-  const sparkle2Style = useAnimatedStyle(() => ({
-    opacity: sparkle2Opacity.value,
-  }));
-
-  const sparkle3Style = useAnimatedStyle(() => ({
-    opacity: sparkle3Opacity.value,
-  }));
-
-  const titleStyle = useAnimatedStyle(() => ({
-    transform: [{ scale: titleScale.value }],
-  }));
-
-  if (!visible) return null;
+  if (!isVisible) return null;
 
   return (
-    <Animated.View
-      entering={FadeIn.duration(300)}
-      exiting={FadeOut.duration(200)}
-      style={styles.container}
-    >
+    <View style={[styles.container, { opacity }]}>
       <View style={styles.overlay}>
-        <Animated.View entering={SlideInUp.delay(100).springify()} style={styles.content}>
+        <View style={styles.content}>
           {/* メインキャラクター */}
-          <Animated.View style={[styles.mainCharacterContainer, mainCharacterStyle]}>
+          <View style={styles.mainCharacterContainer}>
             <Image
               source={characterImages.main}
               style={styles.mainCharacterImage}
               contentFit="contain"
             />
             {/* キラキラエフェクト */}
-            <Animated.Text style={[styles.sparkle, styles.sparkle1, sparkle1Style]}>✦</Animated.Text>
-            <Animated.Text style={[styles.sparkle, styles.sparkle2, sparkle2Style]}>✦</Animated.Text>
-            <Animated.Text style={[styles.sparkle, styles.sparkle3, sparkle3Style]}>✦</Animated.Text>
-          </Animated.View>
+            <Text style={[styles.sparkle, styles.sparkle1]}>✦</Text>
+            <Text style={[styles.sparkle, styles.sparkle2]}>✦</Text>
+            <Text style={[styles.sparkle, styles.sparkle3]}>✦</Text>
+          </View>
 
           {/* タイトル */}
-          <Animated.View style={titleStyle}>
+          <View>
             <Text style={styles.title}>はじめまして！</Text>
             <Text style={styles.subtitle}>あなたはどっち？</Text>
-          </Animated.View>
+          </View>
 
           {/* 選択肢 */}
           <View style={styles.optionsContainer}>
             {/* ファン */}
-            <Animated.View style={fanStyle}>
-              <TouchableOpacity
-                onPressIn={() => handlePressIn("fan")}
-                onPressOut={() => handlePressOut("fan")}
-                onPress={() => handleSelect("fan")}
-                style={[styles.optionCard, { backgroundColor: "#EC4899" }]}
-                activeOpacity={1}
-              >
-                <View style={styles.optionImageContainer}>
-                  <Image
-                    source={characterImages.fan}
-                    style={styles.characterImage}
-                    contentFit="contain"
-                  />
-                </View>
-                <Text style={styles.optionTitle}>ファン</Text>
-                <Text style={styles.optionDescription}>推しを応援したい</Text>
-                <View style={styles.optionBadge}>
-                  <Text style={styles.optionBadgeText}>参加する側</Text>
-                </View>
-              </TouchableOpacity>
-            </Animated.View>
+            <TouchableOpacity
+              onPress={() => handleSelect("fan")}
+              style={[styles.optionCard, { backgroundColor: "#EC4899" }]}
+              activeOpacity={0.8}
+            >
+              <View style={styles.optionImageContainer}>
+                <Image
+                  source={characterImages.fan}
+                  style={styles.characterImage}
+                  contentFit="contain"
+                />
+              </View>
+              <Text style={styles.optionTitle}>ファン</Text>
+              <Text style={styles.optionDescription}>推しを応援したい</Text>
+              <View style={styles.optionBadge}>
+                <Text style={styles.optionBadgeText}>参加する側</Text>
+              </View>
+            </TouchableOpacity>
 
             {/* 主催者 */}
-            <Animated.View style={hostStyle}>
-              <TouchableOpacity
-                onPressIn={() => handlePressIn("host")}
-                onPressOut={() => handlePressOut("host")}
-                onPress={() => handleSelect("host")}
-                style={[styles.optionCard, { backgroundColor: "#DD6500" }]}
-                activeOpacity={1}
-              >
-                <View style={styles.optionImageContainer}>
-                  <Image
-                    source={characterImages.host}
-                    style={styles.characterImage}
-                    contentFit="contain"
-                  />
-                </View>
-                <Text style={styles.optionTitle}>主催者</Text>
-                <Text style={styles.optionDescription}>チャレンジを作りたい</Text>
-                <View style={styles.optionBadge}>
-                  <Text style={styles.optionBadgeText}>企画する側</Text>
-                </View>
-              </TouchableOpacity>
-            </Animated.View>
+            <TouchableOpacity
+              onPress={() => handleSelect("host")}
+              style={[styles.optionCard, { backgroundColor: "#DD6500" }]}
+              activeOpacity={0.8}
+            >
+              <View style={styles.optionImageContainer}>
+                <Image
+                  source={characterImages.host}
+                  style={styles.characterImage}
+                  contentFit="contain"
+                />
+              </View>
+              <Text style={styles.optionTitle}>主催者</Text>
+              <Text style={styles.optionDescription}>チャレンジを作りたい</Text>
+              <View style={styles.optionBadge}>
+                <Text style={styles.optionBadgeText}>企画する側</Text>
+              </View>
+            </TouchableOpacity>
           </View>
 
           {/* 説明テキスト */}
@@ -204,9 +132,9 @@ export function UserTypeSelector({ visible, onSelect, onSkip }: UserTypeSelector
           <TouchableOpacity onPress={onSkip} style={styles.skipButton}>
             <Text style={styles.skipText}>あとで見る</Text>
           </TouchableOpacity>
-        </Animated.View>
+        </View>
       </View>
-    </Animated.View>
+    </View>
   );
 }
 
@@ -214,6 +142,7 @@ const styles = StyleSheet.create({
   container: {
     ...StyleSheet.absoluteFillObject,
     zIndex: 9998,
+    // CSS transitionはReact Nativeでは使えないが、opacityの変更で対応
   },
   overlay: {
     flex: 1,
