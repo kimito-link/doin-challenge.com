@@ -309,25 +309,39 @@ function ContributionRanking({ participations, followerIds = [] }: { participati
               <Text style={{ color: colors.foreground, fontSize: 14, fontWeight: "600" }}>
                 {p.isAnonymous ? "匿名" : p.displayName}
               </Text>
+              {/* v5.86: 性別アイコン */}
+              {p.gender && p.gender !== "unspecified" && (
+                <Text style={{ marginLeft: 4, fontSize: 12 }}>
+                  {p.gender === "male" ? "👨" : "👩"}
+                </Text>
+              )}
               {p.userId && followerSet.has(p.userId) && (
                 <View style={{ marginLeft: 6, backgroundColor: "#8B5CF6", paddingHorizontal: 6, paddingVertical: 2, borderRadius: 8 }}>
                   <Text style={{ color: colors.foreground, fontSize: 9, fontWeight: "bold" }}>フォロワー</Text>
                 </View>
               )}
             </View>
-            {p.username && !p.isAnonymous && (
-              <TouchableOpacity
-                onPress={() => {
-                  if (p.userId) {
-                    router.push({ pathname: "/profile/[userId]", params: { userId: p.userId.toString() } });
-                  }
-                }}
-                style={{ flexDirection: "row", alignItems: "center" }}
-              >
-                <MaterialIcons name="person" size={10} color="#DD6500" style={{ marginRight: 2 }} />
-                <Text style={{ color: "#DD6500", fontSize: 12 }}>@{p.username}</Text>
-              </TouchableOpacity>
-            )}
+            {/* v5.86: 都道府県を表示 */}
+            <View style={{ flexDirection: "row", alignItems: "center", flexWrap: "wrap", gap: 4 }}>
+              {p.prefecture && (
+                <Text style={{ color: "#6B7280", fontSize: 11 }}>
+                  📍{p.prefecture}
+                </Text>
+              )}
+              {p.username && !p.isAnonymous && (
+                <TouchableOpacity
+                  onPress={() => {
+                    if (p.userId) {
+                      router.push({ pathname: "/profile/[userId]", params: { userId: p.userId.toString() } });
+                    }
+                  }}
+                  style={{ flexDirection: "row", alignItems: "center" }}
+                >
+                  <MaterialIcons name="person" size={10} color="#DD6500" style={{ marginRight: 2 }} />
+                  <Text style={{ color: "#DD6500", fontSize: 11 }}>@{p.username}</Text>
+                </TouchableOpacity>
+              )}
+            </View>
           </View>
           <View style={{ alignItems: "flex-end" }}>
             <Text style={{ color: "#EC4899", fontSize: 18, fontWeight: "bold" }}>
@@ -356,7 +370,7 @@ type CompanionDisplay = {
   profileImage: string | null;
 };
 
-function MessageCard({ participation, onCheer, cheerCount, onDM, challengeId, companions }: { participation: Participation; onCheer?: () => void; cheerCount?: number; onDM?: (userId: number) => void; challengeId?: number; companions?: CompanionDisplay[] }) {
+function MessageCard({ participation, onCheer, cheerCount, onDM, challengeId, companions, isOwnPost, onEdit, onDelete }: { participation: Participation; onCheer?: () => void; cheerCount?: number; onDM?: (userId: number) => void; challengeId?: number; companions?: CompanionDisplay[]; isOwnPost?: boolean; onEdit?: () => void; onDelete?: () => void }) {
   const colors = useColors();
   const router = useRouter();
   return (
@@ -378,10 +392,18 @@ function MessageCard({ participation, onCheer, cheerCount, onDM, challengeId, co
           fallbackText={participation.displayName.charAt(0)}
         />
         <View style={{ marginLeft: 12, flex: 1 }}>
-          <Text style={{ color: colors.foreground, fontSize: 16, fontWeight: "600" }}>
-            {participation.isAnonymous ? "匿名" : participation.displayName}
-          </Text>
           <View style={{ flexDirection: "row", alignItems: "center" }}>
+            <Text style={{ color: colors.foreground, fontSize: 16, fontWeight: "600" }}>
+              {participation.isAnonymous ? "匿名" : participation.displayName}
+            </Text>
+            {/* v5.86: 性別アイコン */}
+            {participation.gender && participation.gender !== "unspecified" && (
+              <Text style={{ marginLeft: 4, fontSize: 14 }}>
+                {participation.gender === "male" ? "👨" : "👩"}
+              </Text>
+            )}
+          </View>
+          <View style={{ flexDirection: "row", alignItems: "center", flexWrap: "wrap" }}>
             {participation.username && !participation.isAnonymous && (
               <TouchableOpacity
                 onPress={() => {
@@ -398,12 +420,12 @@ function MessageCard({ participation, onCheer, cheerCount, onDM, challengeId, co
               </TouchableOpacity>
             )}
             {participation.prefecture && (
-              <Text style={{ color: "#6B7280", fontSize: 12 }}>
+              <Text style={{ color: "#6B7280", fontSize: 12, marginRight: 8 }}>
                 📍{participation.prefecture}
               </Text>
             )}
             {participation.followersCount && participation.followersCount > 0 && (
-              <Text style={{ color: "#EC4899", fontSize: 11, marginLeft: 8 }}>
+              <Text style={{ color: "#EC4899", fontSize: 11 }}>
                 {participation.followersCount.toLocaleString()} フォロワー
               </Text>
             )}
@@ -499,6 +521,39 @@ function MessageCard({ participation, onCheer, cheerCount, onDM, challengeId, co
           <Text style={{ fontSize: 16, marginRight: 4 }}>👏</Text>
           <Text style={{ color: "#9CA3AF", fontSize: 12 }}>エール{cheerCount && cheerCount > 0 ? ` (${cheerCount})` : ""}</Text>
         </TouchableOpacity>
+        {/* v5.86: 自分の投稿の場合は編集・削除アイコンを表示 */}
+        {isOwnPost && onEdit && (
+          <TouchableOpacity
+            onPress={onEdit}
+            style={{
+              flexDirection: "row",
+              alignItems: "center",
+              backgroundColor: "#2D3139",
+              paddingHorizontal: 12,
+              paddingVertical: 6,
+              borderRadius: 16,
+            }}
+          >
+            <MaterialIcons name="edit" size={14} color="#9CA3AF" />
+            <Text style={{ color: "#9CA3AF", fontSize: 12, marginLeft: 4 }}>編集</Text>
+          </TouchableOpacity>
+        )}
+        {isOwnPost && onDelete && (
+          <TouchableOpacity
+            onPress={onDelete}
+            style={{
+              flexDirection: "row",
+              alignItems: "center",
+              backgroundColor: "rgba(239, 68, 68, 0.2)",
+              paddingHorizontal: 12,
+              paddingVertical: 6,
+              borderRadius: 16,
+            }}
+          >
+            <MaterialIcons name="delete" size={14} color="#EF4444" />
+            <Text style={{ color: "#EF4444", fontSize: 12, marginLeft: 4 }}>取消</Text>
+          </TouchableOpacity>
+        )}
       </View>
     </View>
   );
@@ -514,6 +569,7 @@ export default function ChallengeDetailScreen() {
   const [displayName, setDisplayName] = useState("");
   const [companionCount, setCompanionCount] = useState(0);
   const [prefecture, setPrefecture] = useState("");
+  const [gender, setGender] = useState<"male" | "female" | "">("")
   const [showForm, setShowForm] = useState(false);
   const [showPrefectureList, setShowPrefectureList] = useState(false);
   const [allowVideoUse, setAllowVideoUse] = useState(true);
@@ -563,6 +619,10 @@ export default function ChallengeDetailScreen() {
     displayName: string;
     profileImage?: string;
   } | null>(null);
+
+  // v5.86: 参加表明削除モーダル用のstate
+  const [showDeleteParticipationModal, setShowDeleteParticipationModal] = useState(false);
+  const [deleteTargetParticipation, setDeleteTargetParticipation] = useState<Participation | null>(null);
 
   const challengeId = parseInt(id || "0", 10);
   
@@ -656,6 +716,19 @@ export default function ChallengeDetailScreen() {
   } | null>(null);
   const [isGeneratingOgp, setIsGeneratingOgp] = useState(false);
   const generateOgpMutation = trpc.ogp.generateChallengeOgp.useMutation();
+
+  // v5.86: 参加表明削除mutation
+  const deleteParticipationMutation = trpc.participations.delete.useMutation({
+    onSuccess: async () => {
+      Alert.alert("参加取消", "参加表明を取り消しました");
+      setShowDeleteParticipationModal(false);
+      setDeleteTargetParticipation(null);
+      await refetch();
+    },
+    onError: (error) => {
+      Alert.alert("エラー", error.message || "削除に失敗しました");
+    },
+  });
 
   const createParticipationMutation = trpc.participations.create.useMutation({
     onSuccess: async () => {
@@ -875,6 +948,7 @@ export default function ChallengeDetailScreen() {
           message,
           companionCount: companions.length,
           prefecture,
+          gender: gender || "unspecified", // v5.86: 性別を送信
           twitterId, // Twitter IDを送信
           displayName: user.name || "ゲスト",
           username: user.username,
@@ -977,6 +1051,32 @@ export default function ChallengeDetailScreen() {
             end={{ x: 1, y: 1 }}
             style={{ marginHorizontal: 16, borderRadius: 16, padding: 20, position: "relative" }}
           >
+            {/* v5.86: 主催者用の編集アイコン */}
+            {(() => {
+              const userTwitterId = user?.openId?.startsWith("twitter:") 
+                ? user.openId.replace("twitter:", "") 
+                : user?.openId;
+              const isOwner = userTwitterId && challenge?.hostTwitterId === userTwitterId;
+              return isOwner ? (
+                <TouchableOpacity
+                  onPress={() => router.push({ pathname: "/edit-challenge/[id]", params: { id: challengeId.toString() } })}
+                  style={{
+                    position: "absolute",
+                    top: 12,
+                    right: 60,
+                    width: 40,
+                    height: 40,
+                    borderRadius: 20,
+                    backgroundColor: "rgba(255,255,255,0.2)",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    zIndex: 10,
+                  }}
+                >
+                  <MaterialIcons name="edit" size={20} color="#fff" />
+                </TouchableOpacity>
+              ) : null;
+            })()}
             {/* v5.61: お気に入りボタン */}
             <TouchableOpacity
               onPress={() => toggleFavorite(challengeId)}
@@ -1669,7 +1769,11 @@ export default function ChallengeDetailScreen() {
                     const participantCompanions = challengeCompanions?.filter(
                       (c: any) => c.participationId === p.id
                     ) || [];
-                    const isOwnPost = user && p.userId === user.id;
+                    // v5.86: twitterIdでも本人確認
+                    const userTwitterId = user?.openId?.startsWith("twitter:") 
+                      ? user.openId.replace("twitter:", "") 
+                      : user?.openId;
+                    const isOwnPost = Boolean((user && p.userId === user.id) || (userTwitterId && p.twitterId === userTwitterId));
                     return (
                       <View key={p.id} style={isOwnPost && justSubmitted ? {
                         borderWidth: 3,
@@ -1704,6 +1808,12 @@ export default function ChallengeDetailScreen() {
                           onDM={(userId) => router.push(`/messages/${userId}?challengeId=${challengeId}` as never)}
                           challengeId={challengeId}
                           companions={participantCompanions}
+                          isOwnPost={isOwnPost}
+                          onEdit={() => router.push({ pathname: "/edit-participation/[id]", params: { id: p.id.toString(), challengeId: challengeId.toString() } })}
+                          onDelete={() => {
+                            setDeleteTargetParticipation(p);
+                            setShowDeleteParticipationModal(true);
+                          }}
                         />
                       </View>
                     );
@@ -1868,6 +1978,59 @@ export default function ChallengeDetailScreen() {
                         ))}
                       </ScrollView>
                     </View>
+                  )}
+                </View>
+
+                {/* v5.86: 性別選択（必須） */}
+                <View style={{ marginBottom: 16 }}>
+                  <View style={{ flexDirection: "row", alignItems: "center", marginBottom: 8 }}>
+                    <Text style={{ color: "#9CA3AF", fontSize: 14 }}>
+                      性別
+                    </Text>
+                    <Text style={{ color: "#EC4899", fontSize: 12, marginLeft: 6, fontWeight: "bold" }}>
+                      必須
+                    </Text>
+                  </View>
+                  <View style={{ flexDirection: "row", gap: 12 }}>
+                    <TouchableOpacity
+                      onPress={() => setGender("male")}
+                      style={{
+                        flex: 1,
+                        backgroundColor: gender === "male" ? "#3B82F6" : colors.background,
+                        borderRadius: 12,
+                        padding: 16,
+                        alignItems: "center",
+                        borderWidth: 2,
+                        borderColor: gender === "male" ? "#3B82F6" : gender === "" ? "#EC4899" : "#2D3139",
+                      }}
+                    >
+                      <Text style={{ fontSize: 24, marginBottom: 4 }}>👨</Text>
+                      <Text style={{ color: gender === "male" ? "#fff" : "#9CA3AF", fontSize: 14, fontWeight: "600" }}>
+                        男性
+                      </Text>
+                    </TouchableOpacity>
+                    <TouchableOpacity
+                      onPress={() => setGender("female")}
+                      style={{
+                        flex: 1,
+                        backgroundColor: gender === "female" ? "#EC4899" : colors.background,
+                        borderRadius: 12,
+                        padding: 16,
+                        alignItems: "center",
+                        borderWidth: 2,
+                        borderColor: gender === "female" ? "#EC4899" : gender === "" ? "#EC4899" : "#2D3139",
+                      }}
+                    >
+                      <Text style={{ fontSize: 24, marginBottom: 4 }}>👩</Text>
+                      <Text style={{ color: gender === "female" ? "#fff" : "#9CA3AF", fontSize: 14, fontWeight: "600" }}>
+                        女性
+                      </Text>
+                    </TouchableOpacity>
+                  </View>
+                  {gender === "" && (
+                    <Text style={{ color: "#EF4444", fontSize: 12, marginTop: 8 }}>
+                      性別を選択してください
+                    </Text>
                   )}
                 </View>
 
@@ -2288,18 +2451,18 @@ export default function ChallengeDetailScreen() {
                   </TouchableOpacity>
                   <TouchableOpacity
                     onPress={handleSubmit}
-                    disabled={createParticipationMutation.isPending || createAnonymousMutation.isPending || !prefecture}
+                    disabled={createParticipationMutation.isPending || createAnonymousMutation.isPending || !prefecture || !gender}
                     style={{
                       flex: 1,
                       borderRadius: 12,
                       padding: 16,
                       alignItems: "center",
                       overflow: "hidden",
-                      opacity: !prefecture ? 0.5 : 1,
+                      opacity: (!prefecture || !gender) ? 0.5 : 1,
                     }}
                   >
                     <LinearGradient
-                      colors={!prefecture ? ["#6B7280", "#4B5563"] : ["#EC4899", "#8B5CF6"]}
+                      colors={(!prefecture || !gender) ? ["#6B7280", "#4B5563"] : ["#EC4899", "#8B5CF6"]}
                       start={{ x: 0, y: 0 }}
                       end={{ x: 1, y: 0 }}
                       style={{
@@ -2670,6 +2833,100 @@ export default function ChallengeDetailScreen() {
           profileImage={selectedFan.profileImage}
         />
       )}
+
+      {/* v5.86: 参加表明削除確認モーダル */}
+      <Modal
+        visible={showDeleteParticipationModal}
+        transparent
+        animationType="fade"
+        onRequestClose={() => setShowDeleteParticipationModal(false)}
+      >
+        <View style={{
+          flex: 1,
+          backgroundColor: "rgba(0,0,0,0.7)",
+          justifyContent: "center",
+          alignItems: "center",
+          padding: 20,
+        }}>
+          <View style={{
+            backgroundColor: "#1A1D21",
+            borderRadius: 16,
+            padding: 24,
+            width: "100%",
+            maxWidth: 400,
+            borderWidth: 1,
+            borderColor: "#2D3139",
+          }}>
+            <View style={{ alignItems: "center", marginBottom: 20 }}>
+              <MaterialIcons name="warning" size={48} color="#EF4444" />
+              <Text style={{ color: colors.foreground, fontSize: 20, fontWeight: "bold", marginTop: 12 }}>
+                参加表明を取り消しますか？
+              </Text>
+              <Text style={{ color: "#9CA3AF", fontSize: 14, textAlign: "center", marginTop: 8 }}>
+                この操作は取り消すことができません。
+              </Text>
+            </View>
+
+            {deleteTargetParticipation && (
+              <View style={{
+                backgroundColor: colors.background,
+                borderRadius: 12,
+                padding: 12,
+                marginBottom: 20,
+                borderWidth: 1,
+                borderColor: "#2D3139",
+              }}>
+                <Text style={{ color: colors.foreground, fontSize: 14, fontWeight: "600" }}>
+                  {deleteTargetParticipation.displayName}
+                </Text>
+                {deleteTargetParticipation.message && (
+                  <Text style={{ color: "#9CA3AF", fontSize: 13, marginTop: 4 }} numberOfLines={2}>
+                    {deleteTargetParticipation.message}
+                  </Text>
+                )}
+              </View>
+            )}
+
+            <View style={{ flexDirection: "row", gap: 12 }}>
+              <TouchableOpacity
+                onPress={() => {
+                  setShowDeleteParticipationModal(false);
+                  setDeleteTargetParticipation(null);
+                }}
+                style={{
+                  flex: 1,
+                  backgroundColor: "#2D3139",
+                  borderRadius: 12,
+                  padding: 16,
+                  alignItems: "center",
+                }}
+              >
+                <Text style={{ color: colors.foreground, fontSize: 16 }}>キャンセル</Text>
+              </TouchableOpacity>
+              <TouchableOpacity
+                onPress={() => {
+                  if (deleteTargetParticipation) {
+                    deleteParticipationMutation.mutate({ id: deleteTargetParticipation.id });
+                  }
+                }}
+                disabled={deleteParticipationMutation.isPending}
+                style={{
+                  flex: 1,
+                  backgroundColor: "#EF4444",
+                  borderRadius: 12,
+                  padding: 16,
+                  alignItems: "center",
+                  opacity: deleteParticipationMutation.isPending ? 0.5 : 1,
+                }}
+              >
+                <Text style={{ color: colors.foreground, fontSize: 16, fontWeight: "bold" }}>
+                  {deleteParticipationMutation.isPending ? "削除中..." : "取り消す"}
+                </Text>
+              </TouchableOpacity>
+            </View>
+          </View>
+        </View>
+      </Modal>
     </ScreenContainer>
   );
 }

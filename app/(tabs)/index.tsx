@@ -34,6 +34,7 @@ import { HostEmptyState } from "@/components/organisms/host-empty-state";
 import { TutorialHighlightTarget } from "@/components/atoms/tutorial-highlight-target";
 import { useTutorial } from "@/lib/tutorial-context";
 import { useFavorites } from "@/hooks/use-favorites";
+import { useExperience } from "@/lib/experience-context";
 
 // キャラクター画像
 const characterImages = {
@@ -524,77 +525,103 @@ function FeatureListSection() {
   );
 }
 
-// デモ体験バナー（ログインなしでお試し）
-function DemoTrialBanner() {
+// 追体験バナー（主催者・ファンの体験）
+function ExperienceBanner() {
   const colors = useColors();
-  const router = useRouter();
   const { isDesktop } = useResponsive();
-
-  const handlePress = () => {
-    router.push("/demo");
-  };
+  const { startExperience } = useExperience();
 
   return (
     <View style={{ marginHorizontal: isDesktop ? 24 : 16, marginTop: 16, marginBottom: 8 }}>
-      <TouchableOpacity
-        onPress={handlePress}
-        activeOpacity={0.8}
-        style={{
-          backgroundColor: "#1A1D21",
-          borderRadius: 16,
-          padding: 16,
-          borderWidth: 2,
-          borderColor: "#DD6500",
-          borderStyle: "dashed",
-        }}
-      >
-        <View style={{ flexDirection: "row", alignItems: "center" }}>
-          {/* キャラクター */}
-          <View style={{
-            width: 48,
-            height: 48,
-            borderRadius: 24,
-            backgroundColor: "#DD6500",
-            alignItems: "center",
-            justifyContent: "center",
-            marginRight: 12,
-          }}>
-            <MaterialIcons name="play-arrow" size={28} color="#fff" />
-          </View>
-          
-          {/* テキスト */}
-          <View style={{ flex: 1 }}>
-            <View style={{ flexDirection: "row", alignItems: "center", marginBottom: 4 }}>
-              <Text style={{ 
-                color: "#DD6500", 
-                fontSize: 14, 
-                fontWeight: "bold",
-              }}>
-                🎮 ログインなしでお試し
-              </Text>
-              <View style={{
-                backgroundColor: "#DD6500",
-                paddingHorizontal: 8,
-                paddingVertical: 2,
-                borderRadius: 8,
-                marginLeft: 8,
-              }}>
-                <Text style={{ color: "#fff", fontSize: 10, fontWeight: "bold" }}>NEW</Text>
-              </View>
-            </View>
+      <View style={{
+        backgroundColor: "#1A1D21",
+        borderRadius: 16,
+        padding: 16,
+        borderWidth: 1,
+        borderColor: "#2D3139",
+      }}>
+        <Text style={{ 
+          color: colors.foreground, 
+          fontSize: 16, 
+          fontWeight: "bold",
+          marginBottom: 12,
+          textAlign: "center",
+        }}>
+          🎬 追体験してみよう
+        </Text>
+        <Text style={{ 
+          color: "#D1D5DB", 
+          fontSize: 13,
+          lineHeight: 20,
+          textAlign: "center",
+          marginBottom: 16,
+        }}>
+          動員ちゃれんじの使い方を、{"\n"}
+          主催者・ファンそれぞれの視点で体験できるよ！
+        </Text>
+        
+        <View style={{ flexDirection: "row", gap: 12 }}>
+          {/* 主催者視点 */}
+          <TouchableOpacity
+            onPress={() => startExperience("organizer")}
+            activeOpacity={0.8}
+            style={{
+              flex: 1,
+              backgroundColor: "#EC4899",
+              borderRadius: 12,
+              padding: 16,
+              alignItems: "center",
+            }}
+          >
+            <Text style={{ fontSize: 24, marginBottom: 8 }}>🎙️</Text>
             <Text style={{ 
-              color: "#D1D5DB", 
-              fontSize: 12,
-              lineHeight: 18,
+              color: "#fff", 
+              fontSize: 14, 
+              fontWeight: "bold",
+              marginBottom: 4,
             }}>
-              デモチャレンジに参加して、アプリの使い方を体験してみよう！
+              主催者の追体験
             </Text>
-          </View>
+            <Text style={{ 
+              color: "rgba(255,255,255,0.8)", 
+              fontSize: 11,
+              textAlign: "center",
+            }}>
+              チャレンジを{"\n"}作る側の体験
+            </Text>
+          </TouchableOpacity>
           
-          {/* 矢印 */}
-          <MaterialIcons name="chevron-right" size={24} color="#DD6500" />
+          {/* ファン視点 */}
+          <TouchableOpacity
+            onPress={() => startExperience("fan")}
+            activeOpacity={0.8}
+            style={{
+              flex: 1,
+              backgroundColor: "#8B5CF6",
+              borderRadius: 12,
+              padding: 16,
+              alignItems: "center",
+            }}
+          >
+            <Text style={{ fontSize: 24, marginBottom: 8 }}>💖</Text>
+            <Text style={{ 
+              color: "#fff", 
+              fontSize: 14, 
+              fontWeight: "bold",
+              marginBottom: 4,
+            }}>
+              ファンの追体験
+            </Text>
+            <Text style={{ 
+              color: "rgba(255,255,255,0.8)", 
+              fontSize: 11,
+              textAlign: "center",
+            }}>
+              参加表明する{"\n"}側の体験
+            </Text>
+          </TouchableOpacity>
         </View>
-      </TouchableOpacity>
+      </View>
     </View>
   );
 }
@@ -790,7 +817,7 @@ function EmptyState({ onGenerateSamples: _onGenerateSamples }: { onGenerateSampl
   return (
     <ScrollView style={{ flex: 1, backgroundColor: "#0D1117" }}>
       {/* デモ体験バナー（ログインなしでお試し） */}
-      <DemoTrialBanner />
+      <ExperienceBanner />
       
       {/* LP風キャッチコピー（チャレンジがない時も表示） */}
       <CatchCopySection />
@@ -1110,7 +1137,7 @@ export default function HomeScreen() {
       )}
 
       {/* デモ体験ボタン（常に表示） */}
-      <DemoTrialBanner />
+      <ExperienceBanner />
       
       {/* データ読み込み中のインジケーター */}
       {isDataLoading && (

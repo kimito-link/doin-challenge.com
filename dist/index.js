@@ -3249,7 +3249,7 @@ var adminProcedure = t.procedure.use(
 );
 
 // shared/version.ts
-var APP_VERSION = "v5.75";
+var APP_VERSION = "v5.76";
 
 // server/_core/systemRouter.ts
 var systemRouter = router({
@@ -3517,6 +3517,8 @@ var appRouter = router({
       message: z2.string().optional(),
       companionCount: z2.number().default(0),
       prefecture: z2.string().optional(),
+      gender: z2.enum(["male", "female", "unspecified"]).optional(),
+      // v5.86: 性別を追加
       twitterId: z2.string().optional(),
       displayName: z2.string(),
       username: z2.string().optional(),
@@ -3545,6 +3547,8 @@ var appRouter = router({
         message: input.message,
         companionCount: input.companionCount,
         prefecture: input.prefecture,
+        gender: input.gender || "unspecified",
+        // v5.86: 性別を保存
         isAnonymous: false
       });
       if (input.companions && input.companions.length > 0 && participationId) {

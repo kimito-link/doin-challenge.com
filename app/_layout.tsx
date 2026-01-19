@@ -33,6 +33,8 @@ import { TutorialOverlay } from "@/components/organisms/tutorial-overlay";
 import { UserTypeSelector } from "@/components/organisms/user-type-selector";
 import { LoginPromptModal } from "@/components/organisms/login-prompt-modal";
 import { NetworkToast } from "@/components/organisms/network-toast";
+import { ExperienceProvider } from "@/lib/experience-context";
+import { ExperienceOverlay } from "@/components/organisms/experience-overlay";
 
 const DEFAULT_WEB_INSETS: EdgeInsets = { top: 0, right: 0, bottom: 0, left: 0 };
 const DEFAULT_WEB_FRAME: Rect = { x: 0, y: 0, width: 0, height: 0 };
@@ -156,7 +158,8 @@ export default function RootLayout() {
           <AutoLoginProvider>
             <LoginSuccessProvider>
               <TutorialProvider>
-                <ToastProvider>
+                <ExperienceProvider>
+                  <ToastProvider>
                   {/* Default to hiding native headers so raw route segments don't appear (e.g. "(tabs)", "products/[id]"). */}
                   {/* If a screen needs the native header, explicitly enable it and set a human title via Stack.Screen options. */}
                   <Stack screenOptions={{ headerShown: false }}>
@@ -167,8 +170,10 @@ export default function RootLayout() {
                   <LoginSuccessModalWrapper />
                   <OfflineBanner />
                   <NetworkToast />
-                  <TutorialUI />
-                </ToastProvider>
+                    <TutorialUI />
+                    <ExperienceOverlay />
+                  </ToastProvider>
+                </ExperienceProvider>
               </TutorialProvider>
             </LoginSuccessProvider>
           </AutoLoginProvider>

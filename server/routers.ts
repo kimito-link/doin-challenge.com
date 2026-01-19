@@ -180,6 +180,7 @@ export const appRouter = router({
         message: z.string().optional(),
         companionCount: z.number().default(0),
         prefecture: z.string().optional(),
+        gender: z.enum(["male", "female", "unspecified"]).optional(), // v5.86: 性別を追加
         twitterId: z.string().optional(),
         displayName: z.string(),
         username: z.string().optional(),
@@ -211,6 +212,7 @@ export const appRouter = router({
           message: input.message,
           companionCount: input.companionCount,
           prefecture: input.prefecture,
+          gender: input.gender || "unspecified", // v5.86: 性別を保存
           isAnonymous: false,
         });
         
