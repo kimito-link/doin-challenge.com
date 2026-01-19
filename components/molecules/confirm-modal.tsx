@@ -153,7 +153,7 @@ const styles = StyleSheet.create({
     marginBottom: 8,
   },
   message: {
-    color: "#9CA3AF",
+    color: "#D1D5DB",
     fontSize: 14,
     textAlign: "center",
     marginBottom: 24,

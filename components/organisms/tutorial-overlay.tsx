@@ -137,23 +137,10 @@ function Sparkles({ active }: { active: boolean }) {
     
     useEffect(() => {
       if (active) {
-        const delay = i * 100;
-        opacity.value = withDelay(delay, withRepeat(
-          withSequence(
-            withTiming(1, { duration: 300 }),
-            withTiming(0, { duration: 300 })
-          ),
-          -1,
-          false
-        ));
-        scale.value = withDelay(delay, withRepeat(
-          withSequence(
-            withTiming(1, { duration: 300 }),
-            withTiming(0.5, { duration: 300 })
-          ),
-          -1,
-          false
-        ));
+        // 静的な表示（ちかちかアニメーション削除）
+        const delay = i * 50;
+        opacity.value = withDelay(delay, withTiming(1, { duration: 300 }));
+        scale.value = withDelay(delay, withTiming(1, { duration: 300 }));
       }
     }, [active]);
 

@@ -140,7 +140,7 @@ export function TicketTransferSection({ challengeId, challengeTitle }: TicketTra
         borderWidth: 1,
         borderColor: "#2D3139",
       }}>
-        <Text style={{ color: "#9CA3AF", fontSize: 12, lineHeight: 18 }}>
+        <Text style={{ color: "#D1D5DB", fontSize: 12, lineHeight: 18 }}>
           急な予定変更でライブに行けなくなった方と、チケットを探している方をつなぐコーナーです。
           連絡はX（Twitter）のDMで行ってください。
         </Text>
@@ -241,7 +241,7 @@ export function TicketTransferSection({ challengeId, challengeTitle }: TicketTra
               }
             }}
             style={{
-              backgroundColor: isInWaitlist ? "#6B7280" : "#8B5CF6",
+              backgroundColor: isInWaitlist ? "#CBD5E0" : "#8B5CF6",
               borderRadius: 16,
               minHeight: 52,
               paddingVertical: 16,
@@ -249,7 +249,7 @@ export function TicketTransferSection({ challengeId, challengeTitle }: TicketTra
               flexDirection: "row",
               alignItems: "center",
               justifyContent: "center",
-              shadowColor: isInWaitlist ? "#6B7280" : "#8B5CF6",
+              shadowColor: isInWaitlist ? "#CBD5E0" : "#8B5CF6",
               shadowOffset: { width: 0, height: 4 },
               shadowOpacity: 0.3,
               shadowRadius: 8,
@@ -304,13 +304,13 @@ export function TicketTransferSection({ challengeId, challengeTitle }: TicketTra
                       {transfer.userName || "匿名"}
                     </Text>
                     {transfer.userUsername && (
-                      <Text style={{ color: "#9CA3AF", fontSize: 12 }}>
+                      <Text style={{ color: "#D1D5DB", fontSize: 12 }}>
                         @{transfer.userUsername}
                       </Text>
                     )}
                   </View>
                   <View style={{
-                    backgroundColor: priceTypeColors[transfer.priceType as PriceType] || "#6B7280",
+                    backgroundColor: priceTypeColors[transfer.priceType as PriceType] || "#CBD5E0",
                     paddingHorizontal: 10,
                     paddingVertical: 4,
                     borderRadius: 12,
@@ -329,7 +329,7 @@ export function TicketTransferSection({ challengeId, challengeTitle }: TicketTra
                 </View>
                 
                 {transfer.comment && (
-                  <Text style={{ color: "#9CA3AF", fontSize: 13, marginBottom: 12 }}>
+                  <Text style={{ color: "#D1D5DB", fontSize: 13, marginBottom: 12 }}>
                     {transfer.comment}
                   </Text>
                 )}
@@ -387,8 +387,8 @@ export function TicketTransferSection({ challengeId, challengeTitle }: TicketTra
           </View>
         ) : (
           <View style={{ alignItems: "center", paddingVertical: 32 }}>
-            <MaterialIcons name="confirmation-number" size={48} color="#4B5563" />
-            <Text style={{ color: "#9CA3AF", fontSize: 14, marginTop: 12, textAlign: "center" }}>
+            <MaterialIcons name="confirmation-number" size={48} color="#CBD5E0" />
+            <Text style={{ color: "#D1D5DB", fontSize: 14, marginTop: 12, textAlign: "center" }}>
               現在、チケット譲渡の投稿はありません
             </Text>
           </View>
@@ -432,7 +432,7 @@ export function TicketTransferSection({ challengeId, challengeTitle }: TicketTra
                   <Text style={{ color: "#fff", fontSize: 14, fontWeight: "600" }}>
                     {item.userName || "匿名"}
                   </Text>
-                  <Text style={{ color: "#9CA3AF", fontSize: 12 }}>
+                  <Text style={{ color: "#D1D5DB", fontSize: 12 }}>
                     {item.desiredCount}枚希望
                   </Text>
                 </View>
@@ -462,8 +462,8 @@ export function TicketTransferSection({ challengeId, challengeTitle }: TicketTra
           </View>
         ) : (
           <View style={{ alignItems: "center", paddingVertical: 32 }}>
-            <MaterialIcons name="people" size={48} color="#4B5563" />
-            <Text style={{ color: "#9CA3AF", fontSize: 14, marginTop: 12, textAlign: "center" }}>
+            <MaterialIcons name="people" size={48} color="#CBD5E0" />
+            <Text style={{ color: "#D1D5DB", fontSize: 14, marginTop: 12, textAlign: "center" }}>
               現在、チケットを探している人はいません
             </Text>
           </View>
@@ -541,7 +541,7 @@ function CreateTransferModal({
           </Text>
           
           {/* 枚数 */}
-          <Text style={{ color: "#9CA3AF", fontSize: 14, marginBottom: 8 }}>枚数</Text>
+          <Text style={{ color: "#D1D5DB", fontSize: 14, marginBottom: 8 }}>枚数</Text>
           <View style={{ flexDirection: "row", gap: 8, marginBottom: 16 }}>
             {[1, 2, 3, 4, 5].map((n) => (
               <TouchableOpacity
@@ -565,7 +565,7 @@ function CreateTransferModal({
           </View>
           
           {/* 価格タイプ */}
-          <Text style={{ color: "#9CA3AF", fontSize: 14, marginBottom: 8 }}>価格</Text>
+          <Text style={{ color: "#D1D5DB", fontSize: 14, marginBottom: 8 }}>価格</Text>
           <View style={{ flexDirection: "row", gap: 8, marginBottom: 16 }}>
             {(["face_value", "negotiable", "free"] as PriceType[]).map((type) => (
               <TouchableOpacity
@@ -589,12 +589,12 @@ function CreateTransferModal({
           </View>
           
           {/* コメント */}
-          <Text style={{ color: "#9CA3AF", fontSize: 14, marginBottom: 8 }}>コメント（任意）</Text>
+          <Text style={{ color: "#D1D5DB", fontSize: 14, marginBottom: 8 }}>コメント（任意）</Text>
           <TextInput
             value={comment}
             onChangeText={setComment}
             placeholder="例: 急な仕事で行けなくなりました..."
-            placeholderTextColor="#6B7280"
+            placeholderTextColor="#CBD5E0"
             multiline
             numberOfLines={3}
             style={{
@@ -705,12 +705,12 @@ function WaitlistModal({
             チケットを探す
           </Text>
           
-          <Text style={{ color: "#9CA3AF", fontSize: 14, marginBottom: 16 }}>
+          <Text style={{ color: "#D1D5DB", fontSize: 14, marginBottom: 16 }}>
             待機リストに登録すると、新しい譲渡投稿があった時に通知を受け取れます。
           </Text>
           
           {/* 希望枚数 */}
-          <Text style={{ color: "#9CA3AF", fontSize: 14, marginBottom: 8 }}>希望枚数</Text>
+          <Text style={{ color: "#D1D5DB", fontSize: 14, marginBottom: 8 }}>希望枚数</Text>
           <View style={{ flexDirection: "row", gap: 8, marginBottom: 20 }}>
             {[1, 2, 3, 4, 5].map((n) => (
               <TouchableOpacity

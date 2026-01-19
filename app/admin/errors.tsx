@@ -63,7 +63,7 @@ const categoryLabels: Record<string, { label: string; icon: keyof typeof Ionicon
   auth: { label: "認証", icon: "lock-closed-outline", color: "#8B5CF6" },
   twitter: { label: "Twitter", icon: "logo-twitter", color: "#1DA1F2" },
   validation: { label: "バリデーション", icon: "alert-circle-outline", color: "#EC4899" },
-  unknown: { label: "その他", icon: "help-circle-outline", color: "#6B7280" },
+  unknown: { label: "その他", icon: "help-circle-outline", color: "#CBD5E0" },
 };
 
 const severityColors: Record<string, string> = {

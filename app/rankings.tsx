@@ -73,6 +73,9 @@ export default function RankingsScreen() {
         <Text style={{ color: "#fff", fontSize: 18, fontWeight: "bold" }}>
           ランキング
         </Text>
+        <Text style={{ color: "#A0AEC0", fontSize: 12, marginTop: 4 }}>
+          チャレンジへの参加・貢献でポイントを獲得して上位を目指そう
+        </Text>
       </View>
 
       {/* タブ切り替え */}
@@ -107,9 +110,18 @@ export default function RankingsScreen() {
           }}
         >
           <Text style={{ color: "#fff", fontWeight: tab === "hosts" ? "bold" : "normal" }}>
-            ホスト
+            主催者
           </Text>
         </TouchableOpacity>
+      </View>
+
+      {/* タブ説明 */}
+      <View style={{ paddingHorizontal: 16, paddingBottom: 8 }}>
+        <Text style={{ color: "#CBD5E0", fontSize: 11 }}>
+          {tab === "contribution" 
+            ? "貢献度: チャレンジへの参加・同伴・拡散で獲得したポイントのランキング"
+            : "主催者: チャレンジを作成した人の総動員数ランキング"}
+        </Text>
       </View>
 
       {/* 期間フィルター（貢献度タブのみ） */}
@@ -150,7 +162,7 @@ export default function RankingsScreen() {
           borderWidth: 1,
           borderColor: "#DD6500",
         }}>
-          <Text style={{ color: "#9CA3AF", fontSize: 12, marginBottom: 4 }}>
+          <Text style={{ color: "#D1D5DB", fontSize: 12, marginBottom: 4 }}>
             あなたの順位
           </Text>
           <View style={{ flexDirection: "row", alignItems: "center", justifyContent: "space-between" }}>
@@ -158,13 +170,13 @@ export default function RankingsScreen() {
               <Text style={{ color: "#DD6500", fontSize: 32, fontWeight: "bold" }}>
                 {myPosition.position || "-"}
               </Text>
-              <Text style={{ color: "#9CA3AF", fontSize: 14, marginLeft: 4 }}>位</Text>
+              <Text style={{ color: "#D1D5DB", fontSize: 14, marginLeft: 4 }}>位</Text>
             </View>
             <View style={{ alignItems: "flex-end" }}>
               <Text style={{ color: "#EC4899", fontSize: 20, fontWeight: "bold" }}>
                 {myPosition.totalContribution?.toLocaleString() || 0}
               </Text>
-              <Text style={{ color: "#9CA3AF", fontSize: 12 }}>貢献度</Text>
+              <Text style={{ color: "#D1D5DB", fontSize: 12 }}>貢献度</Text>
             </View>
           </View>
         </View>
@@ -172,7 +184,7 @@ export default function RankingsScreen() {
 
       {isLoading ? (
         <View style={{ flex: 1, alignItems: "center", justifyContent: "center" }}>
-          <Text style={{ color: "#9CA3AF" }}>読み込み中...</Text>
+          <Text style={{ color: "#D1D5DB" }}>読み込み中...</Text>
         </View>
       ) : data && data.length > 0 ? (
         <FlatList
@@ -204,7 +216,7 @@ export default function RankingsScreen() {
                     </Text>
                   </LinearGradient>
                 ) : (
-                  <Text style={{ color: "#9CA3AF", fontSize: 16, fontWeight: "bold" }}>
+                  <Text style={{ color: "#D1D5DB", fontSize: 16, fontWeight: "bold" }}>
                     {index + 1}
                   </Text>
                 )}
@@ -237,7 +249,7 @@ export default function RankingsScreen() {
                   {item.userName || "匿名"}
                 </Text>
                 {tab === "hosts" && (
-                  <Text style={{ color: "#9CA3AF", fontSize: 12, marginTop: 2 }}>
+                  <Text style={{ color: "#D1D5DB", fontSize: 12, marginTop: 2 }}>
                     {item.participationCount || 0} 回参加
                   </Text>
                 )}
@@ -247,7 +259,7 @@ export default function RankingsScreen() {
                 <Text style={{ color: "#EC4899", fontSize: 18, fontWeight: "bold" }}>
                   {(item.totalContribution || 0).toLocaleString()}
                 </Text>
-                <Text style={{ color: "#9CA3AF", fontSize: 10 }}>
+                <Text style={{ color: "#D1D5DB", fontSize: 10 }}>
                   {tab === "contribution" ? "貢献度" : "総動員数"}
                 </Text>
               </View>
@@ -266,11 +278,11 @@ export default function RankingsScreen() {
         />
       ) : (
         <View style={{ flex: 1, alignItems: "center", justifyContent: "center", padding: 32 }}>
-          <MaterialIcons name="leaderboard" size={64} color="#4B5563" />
+          <MaterialIcons name="leaderboard" size={64} color="#CBD5E0" />
           <Text style={{ color: "#fff", fontSize: 18, fontWeight: "bold", marginTop: 16, marginBottom: 8 }}>
             まだランキングデータがありません
           </Text>
-          <Text style={{ color: "#9CA3AF", fontSize: 14, textAlign: "center" }}>
+          <Text style={{ color: "#D1D5DB", fontSize: 14, textAlign: "center" }}>
             チャレンジに参加して貢献度を上げましょう
           </Text>
         </View>

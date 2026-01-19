@@ -98,9 +98,9 @@ export function optimizeImageUrl(
     return transformImgixUrl(url, { width, height, quality });
   }
 
-  // Twitter/X画像の場合
+  // Twitter/X画像の場合はそのまま返す（パラメータ追加で404になるため）
   if (url.includes("pbs.twimg.com")) {
-    return transformTwitterImageUrl(url, { width, quality });
+    return url;
   }
 
   // その他のURLはそのまま返す

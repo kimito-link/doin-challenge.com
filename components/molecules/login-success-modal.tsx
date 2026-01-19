@@ -324,10 +324,10 @@ export function LoginSuccessModal({
                   backgroundColor: "#2D3139",
                 }}
               >
-                <Text style={{ color: "#9CA3AF", fontSize: 14 }}>
+                <Text style={{ color: "#D1D5DB", fontSize: 14 }}>
                   タップして始める
                 </Text>
-                <MaterialIcons name="arrow-forward" size={18} color="#9CA3AF" style={{ marginLeft: 8 }} />
+                <MaterialIcons name="arrow-forward" size={18} color="#D1D5DB" style={{ marginLeft: 8 }} />
               </TouchableOpacity>
             </View>
           </View>

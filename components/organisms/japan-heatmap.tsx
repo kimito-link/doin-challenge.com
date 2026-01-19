@@ -8,7 +8,8 @@ const screenWidth = Dimensions.get("window").width;
 
 // 地域グループ定義
 const regionGroups = [
-  { name: "北海道・東北", prefectures: ["北海道", "青森県", "岩手県", "宮城県", "秋田県", "山形県", "福島県"] },
+  { name: "北海道", prefectures: ["北海道"] },
+  { name: "東北", prefectures: ["青森県", "岩手県", "宮城県", "秋田県", "山形県", "福島県"] },
   { name: "関東", prefectures: ["茨城県", "栃木県", "群馬県", "埼玉県", "千葉県", "東京都", "神奈川県"] },
   { name: "中部", prefectures: ["新潟県", "富山県", "石川県", "福井県", "山梨県", "長野県", "岐阜県", "静岡県", "愛知県"] },
   { name: "関西", prefectures: ["三重県", "滋賀県", "京都府", "大阪府", "兵庫県", "奈良県", "和歌山県"] },
@@ -398,7 +399,7 @@ export function JapanHeatmap({ prefectureCounts, onPrefecturePress, onRegionPres
                 <Text style={styles.regionName}>{region.name}</Text>
                 {isHot && <Text style={styles.hotEmoji}>🔥</Text>}
               </View>
-              <Text style={[styles.regionCount, { color: count > 0 ? "#333" : "#6B7280" }]}>
+              <Text style={[styles.regionCount, { color: count > 0 ? "#333" : "#CBD5E0" }]}>
                 {count.toLocaleString()}<Text style={styles.regionUnit}>人</Text>
               </Text>
               <View style={styles.progressBar}>
@@ -427,7 +428,7 @@ const styles = StyleSheet.create({
     fontWeight: "bold",
   },
   subtitle: {
-    color: "#9CA3AF",
+    color: "#D1D5DB",
     fontSize: 12,
     marginLeft: 8,
   },
@@ -439,7 +440,7 @@ const styles = StyleSheet.create({
     fontSize: 48,
   },
   emptyText: {
-    color: "#9CA3AF",
+    color: "#D1D5DB",
     fontSize: 14,
     marginTop: 8,
     textAlign: "center",
@@ -472,7 +473,7 @@ const styles = StyleSheet.create({
     borderColor: "#666",
   },
   legendText: {
-    color: "#9CA3AF",
+    color: "#D1D5DB",
     fontSize: 11,
     marginHorizontal: 4,
   },
@@ -495,7 +496,7 @@ const styles = StyleSheet.create({
     fontWeight: "bold",
   },
   statLabel: {
-    color: "#9CA3AF",
+    color: "#D1D5DB",
     fontSize: 11,
     marginTop: 2,
   },
@@ -527,7 +528,7 @@ const styles = StyleSheet.create({
     fontWeight: "bold",
   },
   hotSubtitle: {
-    color: "#9CA3AF",
+    color: "#D1D5DB",
     fontSize: 12,
     marginTop: 2,
   },

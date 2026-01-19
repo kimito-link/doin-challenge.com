@@ -103,7 +103,7 @@ export function PrefectureParticipantsModal({
               </Text>
             </View>
             <TouchableOpacity onPress={onClose} style={styles.closeButton}>
-              <MaterialIcons name="close" size={24} color="#9CA3AF" />
+              <MaterialIcons name="close" size={24} color="#D1D5DB" />
             </TouchableOpacity>
           </View>
 
@@ -160,7 +160,7 @@ const styles = StyleSheet.create({
     fontWeight: "bold",
   },
   participantCount: {
-    color: "#9CA3AF",
+    color: "#D1D5DB",
     fontSize: 13,
     marginTop: 4,
   },
@@ -213,12 +213,12 @@ const styles = StyleSheet.create({
     fontWeight: "bold",
   },
   participantUsername: {
-    color: "#9CA3AF",
+    color: "#D1D5DB",
     fontSize: 12,
     marginTop: 2,
   },
   participantMessage: {
-    color: "#6B7280",
+    color: "#CBD5E0",
     fontSize: 12,
     marginTop: 4,
     fontStyle: "italic",
@@ -246,7 +246,7 @@ const styles = StyleSheet.create({
     marginBottom: 16,
   },
   emptyText: {
-    color: "#9CA3AF",
+    color: "#D1D5DB",
     fontSize: 14,
     textAlign: "center",
   },

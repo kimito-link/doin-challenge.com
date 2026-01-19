@@ -34,25 +34,9 @@ export function HostEmptyState() {
   const scale = useSharedValue(1);
   
   useEffect(() => {
-    // ぴょんぴょん跳ねるアニメーション
-    bounce.value = withRepeat(
-      withSequence(
-        withTiming(-8, { duration: 300, easing: Easing.out(Easing.ease) }),
-        withTiming(0, { duration: 300, easing: Easing.in(Easing.ease) }),
-      ),
-      -1,
-      true
-    );
-    
-    // スケールアニメーション
-    scale.value = withRepeat(
-      withSequence(
-        withTiming(1.08, { duration: 300, easing: Easing.out(Easing.ease) }),
-        withTiming(1, { duration: 300, easing: Easing.in(Easing.ease) }),
-      ),
-      -1,
-      true
-    );
+    // 静的な表示（ちかちかアニメーション削除）
+    bounce.value = withTiming(0, { duration: 300 });
+    scale.value = withTiming(1, { duration: 300 });
   }, []);
   
   const characterAnimatedStyle = useAnimatedStyle(() => ({

@@ -57,7 +57,7 @@ export default function FollowersScreen() {
 
       {isLoading ? (
         <View style={{ flex: 1, alignItems: "center", justifyContent: "center" }}>
-          <Text style={{ color: "#9CA3AF" }}>読み込み中...</Text>
+          <Text style={{ color: "#D1D5DB" }}>読み込み中...</Text>
         </View>
       ) : followers && followers.length > 0 ? (
         <FlatList
@@ -104,12 +104,12 @@ export default function FollowersScreen() {
                 <Text style={{ color: "#fff", fontSize: 16, fontWeight: "600" }}>
                   {item.followerName || "不明なユーザー"}
                 </Text>
-                <Text style={{ color: "#9CA3AF", fontSize: 12, marginTop: 2 }}>
+                <Text style={{ color: "#D1D5DB", fontSize: 12, marginTop: 2 }}>
                   {new Date(item.createdAt).toLocaleDateString("ja-JP")} からフォロー
                 </Text>
               </View>
               
-              <MaterialIcons name="chevron-right" size={24} color="#9CA3AF" />
+              <MaterialIcons name="chevron-right" size={24} color="#D1D5DB" />
             </TouchableOpacity>
           )}
           refreshControl={
@@ -125,11 +125,11 @@ export default function FollowersScreen() {
         />
       ) : (
         <View style={{ flex: 1, alignItems: "center", justifyContent: "center", padding: 32 }}>
-          <MaterialIcons name="people-outline" size={64} color="#4B5563" />
+          <MaterialIcons name="people-outline" size={64} color="#CBD5E0" />
           <Text style={{ color: "#fff", fontSize: 18, fontWeight: "bold", marginTop: 16, marginBottom: 8 }}>
             まだフォロワーがいません
           </Text>
-          <Text style={{ color: "#9CA3AF", fontSize: 14, textAlign: "center" }}>
+          <Text style={{ color: "#D1D5DB", fontSize: 14, textAlign: "center" }}>
             チャレンジを作成して{"\n"}フォロワーを増やしましょう
           </Text>
         </View>

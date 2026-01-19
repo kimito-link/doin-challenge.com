@@ -64,7 +64,8 @@ export const appRouter = router({
 
     // 自分が作成したイベント一覧
     myEvents: protectedProcedure.query(async ({ ctx }) => {
-      return db.getEventsByHostUserId(ctx.user.id);
+      // openIdはTwitter IDを保存しているので、hostTwitterIdでフィルタリング
+      return db.getEventsByHostTwitterId(ctx.user.openId);
     }),
 
     // イベント作成（publicProcedureでフロントエンドのユーザー情報を使用）
@@ -132,10 +133,19 @@ export const appRouter = router({
         eventDate: z.string().optional(),
         venue: z.string().optional(),
         isPublic: z.boolean().optional(),
+        goalValue: z.number().optional(),
+        goalUnit: z.string().optional(),
+        goalType: z.enum(["attendance", "followers", "viewers", "points", "custom"]).optional(),
+        categoryId: z.number().optional(),
+        externalUrl: z.string().optional(),
+        ticketPresale: z.number().optional(),
+        ticketDoor: z.number().optional(),
+        ticketUrl: z.string().optional(),
       }))
       .mutation(async ({ ctx, input }) => {
         const event = await db.getEventById(input.id);
-        if (!event || event.hostUserId !== ctx.user.id) {
+        // hostTwitterIdで権限チェック（openIdはTwitter ID）
+        if (!event || event.hostTwitterId !== ctx.user.openId) {
           throw new Error("Unauthorized");
         }
         const { id, eventDate, ...rest } = input;
@@ -151,7 +161,8 @@ export const appRouter = router({
       .input(z.object({ id: z.number() }))
       .mutation(async ({ ctx, input }) => {
         const event = await db.getEventById(input.id);
-        if (!event || event.hostUserId !== ctx.user.id) {
+        // hostTwitterIdで権限チェック（openIdはTwitter ID）
+        if (!event || event.hostTwitterId !== ctx.user.openId) {
           throw new Error("Unauthorized");
         }
         await db.deleteEvent(input.id);

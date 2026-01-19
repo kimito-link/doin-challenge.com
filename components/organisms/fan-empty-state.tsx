@@ -34,25 +34,9 @@ export function FanEmptyState() {
   const scale = useSharedValue(1);
   
   useEffect(() => {
-    // ゆらゆら揺れるアニメーション
-    rotation.value = withRepeat(
-      withSequence(
-        withTiming(-5, { duration: 500, easing: Easing.inOut(Easing.ease) }),
-        withTiming(5, { duration: 500, easing: Easing.inOut(Easing.ease) }),
-      ),
-      -1, // 無限ループ
-      true
-    );
-    
-    // 呼吸するようなスケールアニメーション
-    scale.value = withRepeat(
-      withSequence(
-        withTiming(1.05, { duration: 1500, easing: Easing.inOut(Easing.ease) }),
-        withTiming(1, { duration: 1500, easing: Easing.inOut(Easing.ease) }),
-      ),
-      -1,
-      true
-    );
+    // 静的な表示（ちかちかアニメーション削除）
+    rotation.value = withTiming(0, { duration: 300 });
+    scale.value = withTiming(1, { duration: 300 });
   }, []);
   
   const characterAnimatedStyle = useAnimatedStyle(() => ({

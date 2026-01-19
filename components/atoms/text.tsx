@@ -45,7 +45,7 @@ const variantStyles = {
 
 const colorStyles = {
   default: "#ECEDEE",
-  muted: "#9CA3AF",
+  muted: "#D1D5DB",
   primary: "#DD6500",
   success: "#22C55E",
   warning: "#F59E0B",

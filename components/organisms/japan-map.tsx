@@ -57,7 +57,8 @@ const prefectureData: { [key: string]: { name: string; x: number; y: number } } 
 
 // 地域グループ
 const regionGroups = [
-  { name: "北海道・東北", prefectures: ["北海道", "青森県", "岩手県", "宮城県", "秋田県", "山形県", "福島県"], color: "#60A5FA" },
+  { name: "北海道", prefectures: ["北海道"], color: "#60A5FA" },
+  { name: "東北", prefectures: ["青森県", "岩手県", "宮城県", "秋田県", "山形県", "福島県"], color: "#3B82F6" },
   { name: "関東", prefectures: ["茨城県", "栃木県", "群馬県", "埼玉県", "千葉県", "東京都", "神奈川県"], color: "#F472B6" },
   { name: "中部", prefectures: ["新潟県", "富山県", "石川県", "福井県", "山梨県", "長野県", "岐阜県", "静岡県", "愛知県"], color: "#34D399" },
   { name: "関西", prefectures: ["三重県", "滋賀県", "京都府", "大阪府", "兵庫県", "奈良県", "和歌山県"], color: "#FBBF24" },
@@ -111,7 +112,7 @@ export function JapanMap({ prefectureCounts, onPrefecturePress, selectedPrefectu
         <Text style={{ color: "#fff", fontSize: 16, fontWeight: "bold" }}>
           🗾 地域別参加者マップ
         </Text>
-        <Text style={{ color: "#9CA3AF", fontSize: 12, marginLeft: 8 }}>
+        <Text style={{ color: "#D1D5DB", fontSize: 12, marginLeft: 8 }}>
           合計 {totalCount}人
         </Text>
       </View>
@@ -150,19 +151,19 @@ export function JapanMap({ prefectureCounts, onPrefecturePress, selectedPrefectu
                     backgroundColor: region.color,
                     marginRight: 8,
                   }} />
-                  <Text style={{ color: "#9CA3AF", fontSize: 12 }}>{region.name}</Text>
+                  <Text style={{ color: "#D1D5DB", fontSize: 12 }}>{region.name}</Text>
                 </View>
                 {isHot && (
                   <Text style={{ fontSize: 12 }}>🔥</Text>
                 )}
               </View>
               <Text style={{ 
-                color: count > 0 ? "#EC4899" : "#6B7280", 
+                color: count > 0 ? "#EC4899" : "#CBD5E0", 
                 fontSize: 24, 
                 fontWeight: "bold",
                 marginTop: 4,
               }}>
-                {count}<Text style={{ fontSize: 14, color: "#9CA3AF" }}>人</Text>
+                {count}<Text style={{ fontSize: 14, color: "#D1D5DB" }}>人</Text>
               </Text>
               
               {/* 参加者バー */}
@@ -201,7 +202,7 @@ export function JapanMap({ prefectureCounts, onPrefecturePress, selectedPrefectu
             <Text style={{ color: "#EC4899", fontSize: 14, fontWeight: "bold" }}>
               {hotRegion.name}が熱い！
             </Text>
-            <Text style={{ color: "#9CA3AF", fontSize: 12, marginTop: 2 }}>
+            <Text style={{ color: "#D1D5DB", fontSize: 12, marginTop: 2 }}>
               {hotRegion.count}人が参加表明中
             </Text>
           </View>
@@ -242,7 +243,7 @@ export function SimpleRegionMap({ prefectureCounts }: { prefectureCounts: Prefec
     return (
       <View style={{ marginVertical: 16, alignItems: "center", padding: 24 }}>
         <Text style={{ fontSize: 48 }}>🗾</Text>
-        <Text style={{ color: "#9CA3AF", fontSize: 14, marginTop: 8, textAlign: "center" }}>
+        <Text style={{ color: "#D1D5DB", fontSize: 14, marginTop: 8, textAlign: "center" }}>
           まだ参加者がいません{"\n"}最初の参加者になろう！
         </Text>
       </View>
@@ -255,7 +256,7 @@ export function SimpleRegionMap({ prefectureCounts }: { prefectureCounts: Prefec
         <Text style={{ color: "#fff", fontSize: 16, fontWeight: "bold" }}>
           🗾 地域別参加者
         </Text>
-        <Text style={{ color: "#9CA3AF", fontSize: 12, marginLeft: 8 }}>
+        <Text style={{ color: "#D1D5DB", fontSize: 12, marginLeft: 8 }}>
           合計 {totalCount}人
         </Text>
       </View>
@@ -289,19 +290,19 @@ export function SimpleRegionMap({ prefectureCounts }: { prefectureCounts: Prefec
                     backgroundColor: region.color,
                     marginRight: 6,
                   }} />
-                  <Text style={{ color: "#9CA3AF", fontSize: 11 }}>{region.name}</Text>
+                  <Text style={{ color: "#D1D5DB", fontSize: 11 }}>{region.name}</Text>
                 </View>
                 {isHot && (
                   <Text style={{ fontSize: 10 }}>🔥</Text>
                 )}
               </View>
               <Text style={{ 
-                color: count > 0 ? "#EC4899" : "#6B7280", 
+                color: count > 0 ? "#EC4899" : "#CBD5E0", 
                 fontSize: 20, 
                 fontWeight: "bold",
                 marginTop: 4,
               }}>
-                {count}<Text style={{ fontSize: 12, color: "#9CA3AF" }}>人</Text>
+                {count}<Text style={{ fontSize: 12, color: "#D1D5DB" }}>人</Text>
               </Text>
               
               {/* 参加者バー */}
@@ -341,7 +342,7 @@ export function SimpleRegionMap({ prefectureCounts }: { prefectureCounts: Prefec
             <Text style={{ color: "#EC4899", fontSize: 13, fontWeight: "bold" }}>
               {hotRegion.name}が熱い！
             </Text>
-            <Text style={{ color: "#9CA3AF", fontSize: 11, marginTop: 2 }}>
+            <Text style={{ color: "#D1D5DB", fontSize: 11, marginTop: 2 }}>
               {hotRegion.count}人が参加表明中
             </Text>
           </View>

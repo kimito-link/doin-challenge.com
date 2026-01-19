@@ -161,7 +161,7 @@ export default function LogoutScreen() {
         </Text>
 
         <Text style={{ 
-          color: "#9CA3AF", 
+          color: "#D1D5DB", 
           fontSize: 14,
           marginBottom: 24,
           textAlign: "center",
@@ -265,7 +265,7 @@ export default function LogoutScreen() {
         {/* サブメッセージ */}
         {logoutComplete && (
           <Text style={{ 
-            color: "#6B7280", 
+            color: "#CBD5E0", 
             fontSize: 13,
             marginTop: 24,
             textAlign: "center",

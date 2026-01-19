@@ -221,12 +221,12 @@ const styles = StyleSheet.create({
     fontWeight: "600",
   },
   subtitle: {
-    color: "#9CA3AF",
+    color: "#D1D5DB",
     fontSize: 12,
     marginTop: 2,
   },
   expandIcon: {
-    color: "#9CA3AF",
+    color: "#D1D5DB",
     fontSize: 12,
   },
   details: {
@@ -236,7 +236,7 @@ const styles = StyleSheet.create({
     borderTopColor: "#2D3748",
   },
   detailText: {
-    color: "#9CA3AF",
+    color: "#D1D5DB",
     fontSize: 12,
     lineHeight: 18,
     marginBottom: 12,
@@ -258,7 +258,7 @@ const styles = StyleSheet.create({
   secondaryButton: {
     backgroundColor: "transparent",
     borderWidth: 1,
-    borderColor: "#4B5563",
+    borderColor: "#CBD5E0",
   },
   actionButtonText: {
     color: "#FFFFFF",
@@ -266,7 +266,7 @@ const styles = StyleSheet.create({
     fontWeight: "600",
   },
   secondaryButtonText: {
-    color: "#9CA3AF",
+    color: "#D1D5DB",
     fontSize: 14,
     fontWeight: "600",
   },

@@ -222,7 +222,7 @@ const styles = StyleSheet.create({
     marginBottom: 8,
   },
   message: {
-    color: "#9CA3AF",
+    color: "#D1D5DB",
     fontSize: 14,
     textAlign: "center",
     marginBottom: 24,
@@ -252,7 +252,7 @@ const styles = StyleSheet.create({
     fontWeight: "600",
   },
   confirmButton: {
-    backgroundColor: "#6B7280",
+    backgroundColor: "#CBD5E0",
   },
   confirmButtonText: {
     color: "#fff",

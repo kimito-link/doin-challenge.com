@@ -129,7 +129,7 @@ export function GlobalMenu({ isVisible, onClose }: GlobalMenuProps) {
                       justifyContent: "center",
                     }}
                   >
-                    <MaterialIcons name="close" size={20} color="#9CA3AF" />
+                    <MaterialIcons name="close" size={20} color="#D1D5DB" />
                   </TouchableOpacity>
                 </View>
               </View>
@@ -167,7 +167,7 @@ export function GlobalMenu({ isVisible, onClose }: GlobalMenuProps) {
                           marginRight: 12,
                         }}
                       >
-                        <MaterialIcons name="person" size={24} color="#9CA3AF" />
+                        <MaterialIcons name="person" size={24} color="#D1D5DB" />
                       </View>
                     )}
                     <View style={{ flex: 1 }}>
@@ -184,7 +184,7 @@ export function GlobalMenu({ isVisible, onClose }: GlobalMenuProps) {
                       {user.username && (
                         <Text
                           style={{
-                            color: "#9CA3AF",
+                            color: "#D1D5DB",
                             fontSize: 14,
                           }}
                           numberOfLines={1}
@@ -223,7 +223,7 @@ export function GlobalMenu({ isVisible, onClose }: GlobalMenuProps) {
                     />
                     <Text
                       style={{
-                        color: "#9CA3AF",
+                        color: "#D1D5DB",
                         fontSize: 14,
                         textAlign: "center",
                         marginBottom: 12,
@@ -287,7 +287,7 @@ export function GlobalMenu({ isVisible, onClose }: GlobalMenuProps) {
                       <MaterialIcons
                         name={item.icon as any}
                         size={24}
-                        color="#9CA3AF"
+                        color="#D1D5DB"
                         style={{ marginRight: 16 }}
                       />
                       <Text style={{ color: "#fff", fontSize: 16 }}>

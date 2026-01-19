@@ -55,7 +55,7 @@ function SettingItem({
         onValueChange={handleChange}
         disabled={disabled}
         trackColor={{ false: "#3A3F47", true: "#DD6500" }}
-        thumbColor={value ? "#fff" : "#9CA3AF"}
+        thumbColor={value ? "#fff" : "#D1D5DB"}
         ios_backgroundColor="#3A3F47"
       />
     </View>
@@ -144,7 +144,7 @@ export function NotificationSettingsPanel({ onClose }: NotificationSettingsProps
         <Text style={styles.headerTitle}>通知設定</Text>
         {onClose && (
           <TouchableOpacity onPress={onClose} style={styles.closeButton}>
-            <MaterialIcons name="close" size={24} color="#9CA3AF" />
+            <MaterialIcons name="close" size={24} color="#D1D5DB" />
           </TouchableOpacity>
         )}
       </View>
@@ -181,7 +181,7 @@ export function NotificationSettingsPanel({ onClose }: NotificationSettingsProps
               }
             }}
             trackColor={{ false: "#3A3F47", true: "#DD6500" }}
-            thumbColor={settings.enabled ? "#fff" : "#9CA3AF"}
+            thumbColor={settings.enabled ? "#fff" : "#D1D5DB"}
             ios_backgroundColor="#3A3F47"
           />
         )}
@@ -249,7 +249,7 @@ const styles = StyleSheet.create({
     backgroundColor: "#151718",
   },
   loadingText: {
-    color: "#9CA3AF",
+    color: "#D1D5DB",
     textAlign: "center",
     marginTop: 40,
   },
@@ -306,14 +306,14 @@ const styles = StyleSheet.create({
     fontWeight: "600",
   },
   mainToggleDescription: {
-    color: "#9CA3AF",
+    color: "#D1D5DB",
     fontSize: 14,
   },
   settingsList: {
     padding: 16,
   },
   sectionTitle: {
-    color: "#9CA3AF",
+    color: "#D1D5DB",
     fontSize: 13,
     fontWeight: "600",
     textTransform: "uppercase",
@@ -348,18 +348,18 @@ const styles = StyleSheet.create({
     fontWeight: "500",
   },
   settingDescription: {
-    color: "#9CA3AF",
+    color: "#D1D5DB",
     fontSize: 13,
   },
   textDisabled: {
-    color: "#6B7280",
+    color: "#CBD5E0",
   },
   footer: {
     padding: 16,
     marginTop: "auto",
   },
   footerText: {
-    color: "#6B7280",
+    color: "#CBD5E0",
     fontSize: 13,
     textAlign: "center",
     lineHeight: 18,

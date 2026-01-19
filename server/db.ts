@@ -163,6 +163,12 @@ export async function getEventsByHostUserId(hostUserId: number) {
   return db.select().from(events).where(eq(events.hostUserId, hostUserId)).orderBy(desc(events.eventDate));
 }
 
+export async function getEventsByHostTwitterId(hostTwitterId: string) {
+  const db = await getDb();
+  if (!db) return [];
+  return db.select().from(events).where(eq(events.hostTwitterId, hostTwitterId)).orderBy(desc(events.eventDate));
+}
+
 export async function createEvent(data: InsertEvent) {
   const db = await getDb();
   if (!db) throw new Error("Database not available");

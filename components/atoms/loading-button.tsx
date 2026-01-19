@@ -38,7 +38,7 @@ const variantStyles = {
   },
   ghost: {
     bg: "transparent",
-    text: "#9CA3AF",
+    text: "#D1D5DB",
     border: "transparent",
   },
   destructive: {

@@ -178,7 +178,7 @@ export function ReminderButton({
         <MaterialIcons
           name={activeReminder ? "notifications-active" : "notifications-none"}
           size={18}
-          color={activeReminder ? "#EC4899" : "#9CA3AF"}
+          color={activeReminder ? "#EC4899" : "#D1D5DB"}
         />
         <Text style={[styles.buttonText, activeReminder && styles.buttonTextActive]}>
           {activeReminder ? getActiveOptionLabel() : "リマインド"}
@@ -237,7 +237,7 @@ export function ReminderButton({
                         <MaterialIcons
                           name={isActive ? "check-circle" : "radio-button-unchecked"}
                           size={20}
-                          color={isActive ? "#EC4899" : isPast ? "#4B5563" : "#9CA3AF"}
+                          color={isActive ? "#EC4899" : isPast ? "#CBD5E0" : "#D1D5DB"}
                         />
                         <Text
                           style={[
@@ -299,7 +299,7 @@ const styles = StyleSheet.create({
     opacity: 0.5,
   },
   buttonText: {
-    color: "#9CA3AF",
+    color: "#D1D5DB",
     fontSize: 13,
     fontWeight: "500",
   },
@@ -332,7 +332,7 @@ const styles = StyleSheet.create({
     fontWeight: "bold",
   },
   modalSubtitle: {
-    color: "#9CA3AF",
+    color: "#D1D5DB",
     fontSize: 13,
     marginBottom: 20,
   },
@@ -368,10 +368,10 @@ const styles = StyleSheet.create({
     color: "#EC4899",
   },
   optionTextDisabled: {
-    color: "#6B7280",
+    color: "#CBD5E0",
   },
   optionSubtext: {
-    color: "#6B7280",
+    color: "#CBD5E0",
     fontSize: 11,
     marginTop: 4,
     marginLeft: 30,

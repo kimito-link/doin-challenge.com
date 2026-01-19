@@ -102,7 +102,7 @@ function getParticipantIcon(count: number): string {
 function getHeatColor(count: number, maxCount: number, baseColor: { bg: string; text: string; border: string }) {
   if (count === 0) {
     // 参加者がいない場合は灰色
-    return { bg: "#3A3F47", text: "#9CA3AF", border: "#2D3139", hasParticipants: false };
+    return { bg: "#3A3F47", text: "#D1D5DB", border: "#2D3139", hasParticipants: false };
   }
   
   // 参加者がいる場合は赤系の色に（参加者数に応じて濃くなる）
@@ -415,7 +415,7 @@ const styles = StyleSheet.create({
   statDivider: {
     width: 1,
     height: 40,
-    backgroundColor: "#4B5563",
+    backgroundColor: "#CBD5E0",
   },
   hotHighlight: {
     flexDirection: "row",

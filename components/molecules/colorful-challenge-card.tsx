@@ -144,6 +144,26 @@ export function ColorfulChallengeCard({
             {challenge.title}
           </Text>
 
+          {/* 作成者情報 */}
+          <View style={styles.hostContainer}>
+            <LazyAvatar
+              source={challenge.hostProfileImage ? { uri: challenge.hostProfileImage } : undefined}
+              size={20}
+              fallbackColor="rgba(255,255,255,0.3)"
+              fallbackText={(challenge.hostName || "?").charAt(0)}
+            />
+            <View style={styles.hostInfo}>
+              <Text style={styles.hostName} numberOfLines={1}>
+                {challenge.hostName}
+              </Text>
+              {challenge.hostUsername && (
+                <Text style={styles.hostUsername} numberOfLines={1}>
+                  @{challenge.hostUsername}
+                </Text>
+              )}
+            </View>
+          </View>
+
           {/* タグ/バッジ（タイプ表示） */}
           <View style={styles.badgeContainer}>
             <View style={[styles.badge, { backgroundColor: typeBadge.color }]}>
@@ -280,6 +300,25 @@ const styles = StyleSheet.create({
     position: "absolute",
     bottom: 12,
     right: 12,
+  },
+  hostContainer: {
+    flexDirection: "row",
+    alignItems: "center",
+    marginBottom: 8,
+    paddingHorizontal: 4,
+  },
+  hostInfo: {
+    marginLeft: 6,
+    flex: 1,
+  },
+  hostName: {
+    color: "rgba(255,255,255,0.9)",
+    fontSize: 11,
+    fontWeight: "600",
+  },
+  hostUsername: {
+    color: "rgba(255,255,255,0.7)",
+    fontSize: 9,
   },
 });
 

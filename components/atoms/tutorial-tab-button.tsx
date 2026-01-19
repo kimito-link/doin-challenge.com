@@ -44,24 +44,9 @@ export function TutorialTabButton({
 
   useEffect(() => {
     if (shouldHighlight) {
-      // グローアニメーション開始
-      glowOpacity.value = withRepeat(
-        withSequence(
-          withTiming(0.8, { duration: 600, easing: Easing.inOut(Easing.ease) }),
-          withTiming(0.3, { duration: 600, easing: Easing.inOut(Easing.ease) }),
-        ),
-        -1,
-        true
-      );
-      
-      glowScale.value = withRepeat(
-        withSequence(
-          withTiming(1.2, { duration: 600, easing: Easing.inOut(Easing.ease) }),
-          withTiming(1, { duration: 600, easing: Easing.inOut(Easing.ease) }),
-        ),
-        -1,
-        true
-      );
+      // 静的なハイライト（ちかちかアニメーション削除）
+      glowOpacity.value = withTiming(0.6, { duration: 300 });
+      glowScale.value = withTiming(1.1, { duration: 300 });
       
       // ハイライト位置を設定
       if (viewRef.current) {

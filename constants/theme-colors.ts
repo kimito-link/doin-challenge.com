@@ -9,7 +9,7 @@ export const DARK_COLORS = {
   surface: "#151718",
   surfaceAlt: "#1E2022",
   foreground: "#E6EDF3",
-  muted: "#9CA3AF",
+  muted: "#D1D5DB",
   border: "#2D3139",
   primary: "#DD6500",
   primaryHover: "#C55A00",

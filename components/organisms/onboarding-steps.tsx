@@ -111,7 +111,7 @@ export function OnboardingSteps() {
             {/* 説明 */}
             <Text
               style={{
-                color: "#9CA3AF",
+                color: "#D1D5DB",
                 fontSize: isDesktop ? 13 : 11,
                 textAlign: "center",
               }}
@@ -130,7 +130,7 @@ export function OnboardingSteps() {
                 <MaterialIcons
                   name="chevron-right"
                   size={isDesktop ? 28 : 24}
-                  color="#4B5563"
+                  color="#CBD5E0"
                 />
               </View>
             )}

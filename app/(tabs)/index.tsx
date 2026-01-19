@@ -70,7 +70,8 @@ const eventTypeBadge: Record<string, { label: string; color: string }> = {
 
 // 地域グループ
 const regionGroups: Record<string, string[]> = {
-  "北海道・東北": ["北海道", "青森県", "岩手県", "宮城県", "秋田県", "山形県", "福島県"],
+  "北海道": ["北海道"],
+  "東北": ["青森県", "岩手県", "宮城県", "秋田県", "山形県", "福島県"],
   "関東": ["茨城県", "栃木県", "群馬県", "埼玉県", "千葉県", "東京都", "神奈川県"],
   "中部": ["新潟県", "富山県", "石川県", "福井県", "山梨県", "長野県", "岐阜県", "静岡県", "愛知県"],
   "関西": ["三重県", "滋賀県", "京都府", "大阪府", "兵庫県", "奈良県", "和歌山県"],
@@ -137,12 +138,44 @@ function FeaturedChallenge({ challenge, onPress }: { challenge: Challenge; onPre
         </View>
 
         {/* タイトル */}
-        <Text style={{ color: colors.foreground, fontSize: 22, fontWeight: "bold", marginBottom: 4 }}>
+        <Text style={{ color: colors.foreground, fontSize: 22, fontWeight: "bold", marginBottom: 8 }}>
           {challenge.title}
         </Text>
-        <Text style={{ color: "rgba(255,255,255,0.8)", fontSize: 14, marginBottom: 16 }}>
-          {challenge.hostName}
-        </Text>
+        
+        {/* 作成者情報 */}
+        <View style={{ flexDirection: "row", alignItems: "center", marginBottom: 16 }}>
+          {challenge.hostProfileImage ? (
+            <Image
+              source={{ uri: challenge.hostProfileImage }}
+              style={{ width: 32, height: 32, borderRadius: 16, marginRight: 8 }}
+              contentFit="cover"
+            />
+          ) : (
+            <View style={{ 
+              width: 32, 
+              height: 32, 
+              borderRadius: 16, 
+              backgroundColor: "rgba(255,255,255,0.2)", 
+              marginRight: 8,
+              alignItems: "center",
+              justifyContent: "center",
+            }}>
+              <Text style={{ color: colors.foreground, fontSize: 14, fontWeight: "bold" }}>
+                {(challenge.hostName || "?").charAt(0)}
+              </Text>
+            </View>
+          )}
+          <View>
+            <Text style={{ color: colors.foreground, fontSize: 14, fontWeight: "600" }}>
+              {challenge.hostName}
+            </Text>
+            {challenge.hostUsername && (
+              <Text style={{ color: "rgba(255,255,255,0.7)", fontSize: 12 }}>
+                @{challenge.hostUsername}
+              </Text>
+            )}
+          </View>
+        </View>
 
         {/* 大きな進捗表示 */}
         <View style={{ alignItems: "center", marginBottom: 16 }}>
@@ -251,7 +284,7 @@ function EngagementSection({ challenges }: { challenges: Challenge[] }) {
   );
 }
 
-// おすすめホストセクション（遅延読み込み）
+// おすすめ主催者セクション（遅延読み込み）
 function RecommendedHostsSection() {
   const colors = useColors();
   const router = useRouter();
@@ -280,7 +313,7 @@ function RecommendedHostsSection() {
         borderColor: "#2D3139",
       }}>
         <Text style={{ color: "#8B5CF6", fontSize: 16, fontWeight: "bold", marginBottom: 12 }}>
-          ✨ おすすめのホスト
+          ✨ おすすめの主催者
         </Text>
         <ScrollView horizontal showsHorizontalScrollIndicator={false}>
           <View style={{ flexDirection: "row", gap: 16 }}>
@@ -297,7 +330,7 @@ function RecommendedHostsSection() {
                   fallbackText={(host.name || "?").charAt(0)}
                 />
                 <Text style={{ color: colors.foreground, fontSize: 12, marginTop: 6, textAlign: "center" }} numberOfLines={1}>
-                  {host.name || "ホスト"}
+                  {host.name || "主催者"}
                 </Text>
                 {host.username && (
                   <Text style={{ color: "#D1D5DB", fontSize: 10 }} numberOfLines={1}>
@@ -704,7 +737,7 @@ function ChallengeCard({ challenge, onPress, numColumns = 2, colorIndex, isFavor
             </Text>
           </View>
         )}
-        {/* ホストプロフィール画像（遅延読み込み） */}
+        {/* 主催者プロフィール画像（遅延読み込み） */}
         <View style={{ position: "absolute", bottom: -16, left: 12 }}>
           <LazyAvatar
             source={challenge.hostProfileImage ? { uri: challenge.hostProfileImage } : undefined}
@@ -725,7 +758,7 @@ function ChallengeCard({ challenge, onPress, numColumns = 2, colorIndex, isFavor
           {challenge.title}
         </Text>
 
-        {/* ホスト名 */}
+        {/* 主催者名 */}
         <Text style={{ color: "#D1D5DB", fontSize: 12, marginBottom: 8 }}>
           {challenge.hostName}
         </Text>
@@ -1058,14 +1091,21 @@ export default function HomeScreen() {
               setIsSearching(text.length > 0);
             }}
             placeholder="チャレンジを検索..."
-            placeholderTextColor="#9CA3AF"
+            placeholderTextColor="#D1D5DB"
             style={{
               flex: 1,
               marginLeft: 8,
               color: colors.foreground,
               fontSize: 14,
+              paddingVertical: 8,
             }}
             returnKeyType="search"
+            autoCorrect={false}
+            autoCapitalize="none"
+            autoComplete="off"
+            spellCheck={false}
+            textContentType="none"
+            keyboardType="default"
           />
           {searchQuery.length > 0 && (
             <TouchableOpacity onPress={() => { setSearchQuery(""); setIsSearching(false); }}>
@@ -1175,7 +1215,7 @@ export default function HomeScreen() {
         <EngagementSection challenges={effectiveChallenges as Challenge[]} />
       )}
 
-      {/* おすすめホストセクション */}
+      {/* おすすめ主催者セクション */}
       {!isSearching && <RecommendedHostsSection />}
 
       {/* LP風キャッチコピー */}
@@ -1215,7 +1255,7 @@ export default function HomeScreen() {
             // 最初のアイテムのみチュートリアルハイライト対象
             if (index === 0) {
               return (
-                <TutorialHighlightTarget tutorialStep={1} userType="fan">
+                <TutorialHighlightTarget tutorialStep={1} userType="fan" style={{ flex: 1 }}>
                   {useColorfulCards ? (
                     <ColorfulChallengeCard {...cardProps} />
                   ) : (

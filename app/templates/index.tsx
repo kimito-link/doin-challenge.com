@@ -91,7 +91,7 @@ export default function TemplatesScreen() {
       </View>
 
       {item.description && (
-        <Text style={{ color: "#9CA3AF", fontSize: 13, marginBottom: 8 }}>
+        <Text style={{ color: "#D1D5DB", fontSize: 13, marginBottom: 8 }}>
           {item.description}
         </Text>
       )}
@@ -103,13 +103,13 @@ export default function TemplatesScreen() {
           </Text>
         </View>
         <View style={{ backgroundColor: "#2D3139", borderRadius: 8, paddingHorizontal: 8, paddingVertical: 4 }}>
-          <Text style={{ color: "#9CA3AF", fontSize: 12 }}>
+          <Text style={{ color: "#D1D5DB", fontSize: 12 }}>
             {item.eventType === "solo" ? "ソロ" : "グループ"}
           </Text>
         </View>
         {item.useCount > 0 && (
           <View style={{ backgroundColor: "#2D3139", borderRadius: 8, paddingHorizontal: 8, paddingVertical: 4 }}>
-            <Text style={{ color: "#9CA3AF", fontSize: 12 }}>
+            <Text style={{ color: "#D1D5DB", fontSize: 12 }}>
               {item.useCount}回使用
             </Text>
           </View>
@@ -165,7 +165,7 @@ export default function TemplatesScreen() {
         {item.name}
       </Text>
       {item.description && (
-        <Text style={{ color: "#9CA3AF", fontSize: 13, marginBottom: 8 }}>
+        <Text style={{ color: "#D1D5DB", fontSize: 13, marginBottom: 8 }}>
           {item.description}
         </Text>
       )}
@@ -176,7 +176,7 @@ export default function TemplatesScreen() {
           </Text>
         </View>
         <View style={{ backgroundColor: "#2D3139", borderRadius: 8, paddingHorizontal: 8, paddingVertical: 4 }}>
-          <Text style={{ color: "#9CA3AF", fontSize: 12 }}>
+          <Text style={{ color: "#D1D5DB", fontSize: 12 }}>
             {item.useCount}回使用
           </Text>
         </View>
@@ -237,8 +237,8 @@ export default function TemplatesScreen() {
                   ))
                 ) : (
                   <View style={{ backgroundColor: "#1A1D21", borderRadius: 12, padding: 24, alignItems: "center" }}>
-                    <MaterialIcons name="folder-open" size={48} color="#6B7280" />
-                    <Text style={{ color: "#9CA3AF", fontSize: 14, marginTop: 8, textAlign: "center" }}>
+                    <MaterialIcons name="folder-open" size={48} color="#CBD5E0" />
+                    <Text style={{ color: "#D1D5DB", fontSize: 14, marginTop: 8, textAlign: "center" }}>
                       まだテンプレートがありません{"\n"}
                       チャレンジ作成時に保存できます
                     </Text>
@@ -260,8 +260,8 @@ export default function TemplatesScreen() {
                 ))
               ) : (
                 <View style={{ backgroundColor: "#1A1D21", borderRadius: 12, padding: 24, alignItems: "center" }}>
-                  <MaterialIcons name="public" size={48} color="#6B7280" />
-                  <Text style={{ color: "#9CA3AF", fontSize: 14, marginTop: 8, textAlign: "center" }}>
+                  <MaterialIcons name="public" size={48} color="#CBD5E0" />
+                  <Text style={{ color: "#D1D5DB", fontSize: 14, marginTop: 8, textAlign: "center" }}>
                     公開テンプレートはまだありません
                   </Text>
                 </View>

@@ -44,13 +44,13 @@ const ACHIEVEMENTS = [
   { id: "goal_reached", name: "目標達成", description: "参加したチャレンジが目標を達成した", icon: "🎯", type: "special", rarity: "rare", points: 60 },
 ];
 
-// レアリティの色
-const RARITY_COLORS: Record<string, { bg: string; border: string; text: string }> = {
-  common: { bg: "#374151", border: "#6B7280", text: "#9CA3AF" },
-  uncommon: { bg: "#065F46", border: "#10B981", text: "#34D399" },
-  rare: { bg: "#1E3A8A", border: "#3B82F6", text: "#60A5FA" },
-  epic: { bg: "#581C87", border: "#A855F7", text: "#C084FC" },
-  legendary: { bg: "#78350F", border: "#F59E0B", text: "#FCD34D" },
+// レアリティの色（ダークモード専用・高視認性）
+const RARITY_COLORS: Record<string, { bg: string; border: string; text: string; badgeBg: string; badgeText: string }> = {
+  common: { bg: "#2D3748", border: "#A0AEC0", text: "#E2E8F0", badgeBg: "#718096", badgeText: "#FFFFFF" },
+  uncommon: { bg: "#1A4731", border: "#48BB78", text: "#9AE6B4", badgeBg: "#38A169", badgeText: "#FFFFFF" },
+  rare: { bg: "#1A365D", border: "#63B3ED", text: "#90CDF4", badgeBg: "#4299E1", badgeText: "#FFFFFF" },
+  epic: { bg: "#44337A", border: "#B794F4", text: "#D6BCFA", badgeBg: "#9F7AEA", badgeText: "#FFFFFF" },
+  legendary: { bg: "#744210", border: "#F6E05E", text: "#FAF089", badgeBg: "#ECC94B", badgeText: "#1A202C" },
 };
 
 // レアリティの日本語名
@@ -114,24 +114,24 @@ function AchievementCard({
         </View>
         <View style={{ flex: 1 }}>
           <View style={{ flexDirection: "row", alignItems: "center", marginBottom: 4 }}>
-            <Text style={{ color: isUnlocked ? colors.text : "#6B7280", fontSize: 16, fontWeight: "bold" }}>
+            <Text style={{ color: isUnlocked ? colors.text : "#CBD5E0", fontSize: 16, fontWeight: "bold" }}>
               {achievement.name}
             </Text>
             <View
               style={{
-                backgroundColor: colors.border,
+                backgroundColor: colors.badgeBg,
                 borderRadius: 4,
-                paddingHorizontal: 6,
-                paddingVertical: 2,
+                paddingHorizontal: 8,
+                paddingVertical: 3,
                 marginLeft: 8,
               }}
             >
-              <Text style={{ color: "#fff", fontSize: 10, fontWeight: "bold" }}>
+              <Text style={{ color: colors.badgeText, fontSize: 11, fontWeight: "bold" }}>
                 {RARITY_NAMES[achievement.rarity]}
               </Text>
             </View>
           </View>
-          <Text style={{ color: "#9CA3AF", fontSize: 13 }}>
+          <Text style={{ color: "#E2E8F0", fontSize: 13 }}>
             {achievement.description}
           </Text>
           {/* 進捗バー（未解除の場合） */}
@@ -147,17 +147,17 @@ function AchievementCard({
                   }}
                 />
               </View>
-              <Text style={{ color: "#6B7280", fontSize: 11, marginTop: 4 }}>
+              <Text style={{ color: "#CBD5E0", fontSize: 11, marginTop: 4 }}>
                 {progress} / {maxProgress}
               </Text>
             </View>
           )}
         </View>
         <View style={{ alignItems: "flex-end" }}>
-          <Text style={{ color: isUnlocked ? "#FFD700" : "#6B7280", fontSize: 14, fontWeight: "bold" }}>
+          <Text style={{ color: isUnlocked ? "#FFD700" : "#CBD5E0", fontSize: 14, fontWeight: "bold" }}>
             +{achievement.points}
           </Text>
-          <Text style={{ color: "#6B7280", fontSize: 10 }}>ポイント</Text>
+          <Text style={{ color: "#CBD5E0", fontSize: 10 }}>ポイント</Text>
         </View>
       </View>
     </View>
@@ -326,7 +326,7 @@ export default function AchievementsScreen() {
     return (
       <ScreenContainer className="p-4">
         <View style={{ flex: 1, alignItems: "center", justifyContent: "center" }}>
-          <Text style={{ color: "#9CA3AF", fontSize: 16 }}>ログインしてください</Text>
+          <Text style={{ color: "#D1D5DB", fontSize: 16 }}>ログインしてください</Text>
           <TouchableOpacity
             onPress={() => router.push("/mypage")}
             style={{ marginTop: 16, padding: 12 }}
