@@ -13,9 +13,9 @@ const { width: SCREEN_WIDTH } = Dimensions.get("window");
 
 // キャラクター画像のマッピング
 const CHARACTER_IMAGES: Record<string, any> = {
-  rinku: require("@/assets/images/characters/link/link-yukkuri-smile-mouth-open.png"),
-  konta: require("@/assets/images/characters/konta/kitsune-yukkuri-smile-mouth-open.png"),
-  tanune: require("@/assets/images/characters/tanunee/tanuki-yukkuri-smile-mouth-open.png"),
+  rinku: require("@/assets/images/characters/rinku.png"),
+  konta: require("@/assets/images/characters/konta.png"),
+  tanune: require("@/assets/images/characters/tanune.png"),
   kimitolink: require("@/assets/images/characters/KimitoLink.png"),
 };
 

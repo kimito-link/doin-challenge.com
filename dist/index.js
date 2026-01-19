@@ -3506,6 +3506,7 @@ var appRouter = router({
       goalValue: z2.number().optional(),
       goalUnit: z2.string().optional(),
       goalType: z2.enum(["attendance", "followers", "viewers", "points", "custom"]).optional(),
+      eventType: z2.enum(["solo", "group"]).optional(),
       categoryId: z2.number().optional(),
       externalUrl: z2.string().optional(),
       ticketPresale: z2.number().optional(),
@@ -3636,9 +3637,10 @@ var appRouter = router({
     // 参加表明の更新（都道府県・コメント・一緒に参加する人の変更）
     update: publicProcedure.input(z2.object({
       id: z2.number(),
-      twitterId: z2.string(),
+      twitterId: z2.string().optional(),
       message: z2.string().optional(),
       prefecture: z2.string().optional(),
+      gender: z2.enum(["male", "female", "unspecified"]).optional(),
       companionCount: z2.number().default(0),
       companions: z2.array(z2.object({
         displayName: z2.string(),
@@ -3647,17 +3649,15 @@ var appRouter = router({
         profileImage: z2.string().optional()
       })).optional()
     })).mutation(async ({ input }) => {
-      if (!input.twitterId) {
-        throw new Error("\u30ED\u30B0\u30A4\u30F3\u304C\u5FC5\u8981\u3067\u3059\u3002");
-      }
       const participation = await getParticipationById(input.id);
-      if (!participation || participation.twitterId !== input.twitterId) {
-        throw new Error("\u3053\u306E\u53C2\u52A0\u8868\u660E\u3092\u7DE8\u96C6\u3059\u308B\u6A29\u9650\u304C\u3042\u308A\u307E\u305B\u3093\u3002");
+      if (!participation) {
+        throw new Error("\u53C2\u52A0\u8868\u660E\u304C\u898B\u3064\u304B\u308A\u307E\u305B\u3093\u3002");
       }
       await updateParticipation(input.id, {
         message: input.message,
         prefecture: input.prefecture,
-        companionCount: input.companionCount
+        companionCount: input.companionCount,
+        gender: input.gender
       });
       await deleteCompanionsForParticipation(input.id);
       if (input.companions && input.companions.length > 0) {

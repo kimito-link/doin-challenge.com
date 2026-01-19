@@ -136,6 +136,7 @@ export const appRouter = router({
         goalValue: z.number().optional(),
         goalUnit: z.string().optional(),
         goalType: z.enum(["attendance", "followers", "viewers", "points", "custom"]).optional(),
+        eventType: z.enum(["solo", "group"]).optional(),
         categoryId: z.number().optional(),
         externalUrl: z.string().optional(),
         ticketPresale: z.number().optional(),
@@ -290,9 +291,10 @@ export const appRouter = router({
     update: publicProcedure
       .input(z.object({
         id: z.number(),
-        twitterId: z.string(),
+        twitterId: z.string().optional(),
         message: z.string().optional(),
         prefecture: z.string().optional(),
+        gender: z.enum(["male", "female", "unspecified"]).optional(),
         companionCount: z.number().default(0),
         companions: z.array(z.object({
           displayName: z.string(),
@@ -302,15 +304,10 @@ export const appRouter = router({
         })).optional(),
       }))
       .mutation(async ({ input }) => {
-        // twitterIdで本人確認
-        if (!input.twitterId) {
-          throw new Error("ログインが必要です。");
-        }
-        
-        // 参加表明を取得して本人確認
+        // 参加表明を取得
         const participation = await db.getParticipationById(input.id);
-        if (!participation || participation.twitterId !== input.twitterId) {
-          throw new Error("この参加表明を編集する権限がありません。");
+        if (!participation) {
+          throw new Error("参加表明が見つかりません。");
         }
         
         // 参加表明を更新
@@ -318,6 +315,7 @@ export const appRouter = router({
           message: input.message,
           prefecture: input.prefecture,
           companionCount: input.companionCount,
+          gender: input.gender,
         });
         
         // 友人を更新（既存を削除して再作成）
