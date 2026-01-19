@@ -70,8 +70,8 @@ export default function CreateChallengeScreen() {
   const [goalValue, setGoalValue] = useState(100);
   const [goalUnit, setGoalUnit] = useState("人");
   const [eventType, setEventType] = useState("solo");
-  const [ticketPresale, setTicketPresale] = useState("");
-  const [ticketDoor, setTicketDoor] = useState("");
+  const [ticketPresale, setTicketPresale] = useState<number | null>(null);
+  const [ticketDoor, setTicketDoor] = useState<number | null>(null);
   const [ticketUrl, setTicketUrl] = useState("");
   const [externalUrl, setExternalUrl] = useState("");
   const [showPrefectureList, setShowPrefectureList] = useState(false);
@@ -94,7 +94,7 @@ export default function CreateChallengeScreen() {
 
   // バリデーションエラーを計算
   const validationErrors = useMemo(() => {
-    const errors: Array<{ field: "title" | "date" | "host" | "general"; message?: string }> = [];
+    const errors: Array<{ field: "title" | "date" | "host" | "venue" | "general"; message?: string }> = [];
     
     if (!title.trim()) {
       errors.push({ field: "title" });
@@ -102,12 +102,15 @@ export default function CreateChallengeScreen() {
     if (!eventDateStr.trim()) {
       errors.push({ field: "date" });
     }
+    if (!venue.trim()) {
+      errors.push({ field: "venue" });
+    }
     if (!user?.twitterId) {
       errors.push({ field: "host" });
     }
     
     return errors;
-  }, [title, eventDateStr, user]);
+  }, [title, eventDateStr, venue, user]);
   
   // バリデーションエラー表示時にエラーのあるフィールドにスクロール
   useEffect(() => {
@@ -184,8 +187,8 @@ export default function CreateChallengeScreen() {
         goalValue: goalValue || 100,
         goalUnit: goalUnit || "人",
         eventType: eventType as "solo" | "group",
-        ticketPresale: ticketPresale ? parseInt(ticketPresale) : undefined,
-        ticketDoor: ticketDoor ? parseInt(ticketDoor) : undefined,
+        ticketPresale: ticketPresale || undefined,
+        ticketDoor: ticketDoor || undefined,
         isPublic: templateIsPublic,
       });
     }
@@ -209,8 +212,8 @@ export default function CreateChallengeScreen() {
       eventType: eventType as "solo" | "group",
       categoryId: categoryId || undefined,
       externalUrl: externalUrl.trim() || undefined,
-      ticketPresale: ticketPresale ? parseInt(ticketPresale) : undefined,
-      ticketDoor: ticketDoor ? parseInt(ticketDoor) : undefined,
+      ticketPresale: ticketPresale || undefined,
+      ticketDoor: ticketDoor || undefined,
       ticketUrl: ticketUrl.trim() || undefined,
     });
   };
@@ -587,11 +590,16 @@ export default function CreateChallengeScreen() {
 
               <View style={{ marginBottom: 16 }}>
                 <Text style={{ color: colors.muted, fontSize: 14, marginBottom: 8 }}>
-                  開催場所（任意）
+                  開催場所 *
                 </Text>
                 <TextInput
                   value={venue}
-                  onChangeText={setVenue}
+                  onChangeText={(text) => {
+                    setVenue(text);
+                    if (showValidationError && text.trim()) {
+                      setShowValidationError(false);
+                    }
+                  }}
                   placeholder="例: 渋谷○○ホール / YouTube / ミクチャ"
                   placeholderTextColor="#D1D5DB"
                   style={{
@@ -600,8 +608,13 @@ export default function CreateChallengeScreen() {
                     padding: 12,
                     color: colors.foreground,
                     borderWidth: 1,
-                    borderColor: "#2D3139",
+                    borderColor: !venue.trim() && showValidationError ? "#EC4899" : "#2D3139",
                   }}
+                />
+                <InlineValidationError
+                  message="開催場所を入力してね！"
+                  visible={showValidationError && !venue.trim()}
+                  character="tanune"
                 />
               </View>
 
@@ -644,56 +657,26 @@ export default function CreateChallengeScreen() {
                     </Text>
                   </View>
                   
-                  <View style={{ flexDirection: "row", gap: 12, marginBottom: 12 }}>
-                    <View style={{ flex: 1 }}>
-                      <Text style={{ color: colors.muted, fontSize: 12, marginBottom: 4 }}>
-                        前売り券
-                      </Text>
-                      <View style={{ flexDirection: "row", alignItems: "center" }}>
-                        <TextInput
-                          value={ticketPresale}
-                          onChangeText={setTicketPresale}
-                          placeholder="3000"
-                          placeholderTextColor="#D1D5DB"
-                          keyboardType="numeric"
-                          style={{
-                            backgroundColor: "#1A1D21",
-                            borderRadius: 8,
-                            padding: 10,
-                            color: colors.foreground,
-                            borderWidth: 1,
-                            borderColor: "#2D3139",
-                            flex: 1,
-                          }}
-                        />
-                        <Text style={{ color: colors.muted, fontSize: 14, marginLeft: 8 }}>円</Text>
-                      </View>
-                    </View>
-                    <View style={{ flex: 1 }}>
-                      <Text style={{ color: colors.muted, fontSize: 12, marginBottom: 4 }}>
-                        当日券
-                      </Text>
-                      <View style={{ flexDirection: "row", alignItems: "center" }}>
-                        <TextInput
-                          value={ticketDoor}
-                          onChangeText={setTicketDoor}
-                          placeholder="3500"
-                          placeholderTextColor="#D1D5DB"
-                          keyboardType="numeric"
-                          style={{
-                            backgroundColor: "#1A1D21",
-                            borderRadius: 8,
-                            padding: 10,
-                            color: colors.foreground,
-                            borderWidth: 1,
-                            borderColor: "#2D3139",
-                            flex: 1,
-                          }}
-                        />
-                        <Text style={{ color: colors.muted, fontSize: 14, marginLeft: 8 }}>円</Text>
-                      </View>
-                    </View>
-                  </View>
+                  <NumberStepper
+                    value={ticketPresale || 3000}
+                    onChange={(v) => setTicketPresale(v)}
+                    min={0}
+                    max={50000}
+                    step={100}
+                    unit="円"
+                    label="前売り券"
+                    presets={[1000, 2000, 3000, 4000, 5000]}
+                  />
+                  <NumberStepper
+                    value={ticketDoor || 3500}
+                    onChange={(v) => setTicketDoor(v)}
+                    min={0}
+                    max={50000}
+                    step={100}
+                    unit="円"
+                    label="当日券"
+                    presets={[1500, 2500, 3500, 4500, 5500]}
+                  />
 
                   <View>
                     <Text style={{ color: colors.muted, fontSize: 12, marginBottom: 4 }}>
