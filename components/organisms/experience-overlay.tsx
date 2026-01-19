@@ -11,11 +11,11 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 const { width: SCREEN_WIDTH } = Dimensions.get("window");
 
-// キャラクター画像のマッピング
+// キャラクター画像のマッピング（ゆっくりスタイル）
 const CHARACTER_IMAGES: Record<string, any> = {
-  rinku: require("@/assets/images/characters/rinku.png"),
-  konta: require("@/assets/images/characters/konta.png"),
-  tanune: require("@/assets/images/characters/tanune.png"),
+  rinku: require("@/assets/images/characters/link/link-yukkuri-smile-mouth-open.png"),
+  konta: require("@/assets/images/characters/konta/kitsune-yukkuri-smile-mouth-open.png"),
+  tanune: require("@/assets/images/characters/tanunee/tanuki-yukkuri-smile-mouth-open.png"),
   kimitolink: require("@/assets/images/characters/KimitoLink.png"),
 };
 
@@ -25,7 +25,9 @@ function PreviewContent({ type }: { type: ExperienceSlide["previewType"] }) {
     case "map":
       return (
         <View style={styles.previewContainer}>
-          <Text style={styles.previewEmoji}>🗾</Text>
+          <View style={styles.mapPreviewIcon}>
+            <Text style={styles.mapIconText}>地図</Text>
+          </View>
           <Text style={styles.previewText}>地図で参加者の分布が見える</Text>
         </View>
       );
@@ -34,14 +36,18 @@ function PreviewContent({ type }: { type: ExperienceSlide["previewType"] }) {
         <View style={styles.previewContainer}>
           <View style={styles.participantRow}>
             <View style={styles.participantCard}>
-              <Text style={styles.participantEmoji}>👨</Text>
+              <View style={styles.participantAvatar}>
+                <Text style={styles.participantInitial}>田</Text>
+              </View>
               <Text style={styles.participantName}>田中さん</Text>
-              <Text style={styles.participantPref}>📍東京都</Text>
+              <Text style={styles.participantPref}>東京都</Text>
             </View>
             <View style={styles.participantCard}>
-              <Text style={styles.participantEmoji}>👩</Text>
+              <View style={styles.participantAvatar}>
+                <Text style={styles.participantInitial}>佐</Text>
+              </View>
               <Text style={styles.participantName}>佐藤さん</Text>
-              <Text style={styles.participantPref}>📍千葉県</Text>
+              <Text style={styles.participantPref}>千葉県</Text>
             </View>
           </View>
         </View>
@@ -49,14 +55,20 @@ function PreviewContent({ type }: { type: ExperienceSlide["previewType"] }) {
     case "chart":
       return (
         <View style={styles.previewContainer}>
-          <Text style={styles.previewEmoji}>📊</Text>
+          <View style={styles.chartPreviewIcon}>
+            <View style={[styles.chartBar, { height: 24 }]} />
+            <View style={[styles.chartBar, { height: 32 }]} />
+            <View style={[styles.chartBar, { height: 20 }]} />
+          </View>
           <Text style={styles.previewText}>男女比・地域分布</Text>
         </View>
       );
     case "notification":
       return (
         <View style={styles.notificationPreview}>
-          <Text style={styles.notificationIcon}>🔔</Text>
+          <View style={styles.notificationIconContainer}>
+            <Text style={styles.notificationIconText}>!</Text>
+          </View>
           <View style={styles.notificationContent}>
             <Text style={styles.notificationTitle}>動員ちゃれんじ</Text>
             <Text style={styles.notificationBody}>推しの新しいチャレンジが始まりました！</Text>
@@ -66,7 +78,9 @@ function PreviewContent({ type }: { type: ExperienceSlide["previewType"] }) {
     case "crown":
       return (
         <View style={styles.previewContainer}>
-          <Text style={styles.previewEmoji}>👑</Text>
+          <View style={styles.crownIcon}>
+            <Text style={styles.crownText}>VIP</Text>
+          </View>
           <Text style={styles.previewText}>常連ファンバッジ</Text>
         </View>
       );
@@ -80,8 +94,10 @@ function PreviewContent({ type }: { type: ExperienceSlide["previewType"] }) {
       return (
         <View style={styles.previewContainer}>
           <View style={styles.inviteRow}>
-            <Text style={styles.previewEmoji}>📨</Text>
-            <Text style={styles.inviteText}>+3人</Text>
+            <View style={styles.inviteIcon}>
+              <Text style={styles.inviteIconText}>+</Text>
+            </View>
+            <Text style={styles.inviteText}>3人招待</Text>
           </View>
           <Text style={styles.previewText}>友達を招待</Text>
         </View>
@@ -119,7 +135,7 @@ function PreviewContent({ type }: { type: ExperienceSlide["previewType"] }) {
         <View style={styles.profilePreview}>
           <View style={styles.profileHeader}>
             <View style={styles.profileAvatar}>
-              <Text style={{ fontSize: 24 }}>👩</Text>
+              <Text style={styles.profileAvatarText}>M</Text>
             </View>
             <View style={styles.profileInfo}>
               <Text style={styles.profileName}>@music_lover_123</Text>
@@ -136,7 +152,7 @@ function PreviewContent({ type }: { type: ExperienceSlide["previewType"] }) {
         <View style={styles.profilePreview}>
           <View style={styles.profileHeader}>
             <View style={[styles.profileAvatar, { backgroundColor: "#FFD700" }]}>
-              <Text style={{ fontSize: 24 }}>👑</Text>
+              <Text style={styles.profileAvatarText}>S</Text>
             </View>
             <View style={styles.profileInfo}>
               <Text style={styles.profileName}>@super_fan_2024</Text>
@@ -153,10 +169,10 @@ function PreviewContent({ type }: { type: ExperienceSlide["previewType"] }) {
         <View style={styles.genderPreview}>
           <View style={styles.genderChart}>
             <View style={[styles.genderBar, { flex: 6, backgroundColor: "#3B82F6" }]}>
-              <Text style={styles.genderText}>👨 60%</Text>
+              <Text style={styles.genderText}>男性 60%</Text>
             </View>
             <View style={[styles.genderBar, { flex: 4, backgroundColor: "#EC4899" }]}>
-              <Text style={styles.genderText}>👩 40%</Text>
+              <Text style={styles.genderText}>女性 40%</Text>
             </View>
           </View>
           <Text style={styles.previewText}>男女比</Text>
@@ -186,7 +202,7 @@ export function ExperienceOverlay() {
 
   const characterImage = CHARACTER_IMAGES[currentSlide.character];
   const isLastSlide = currentSlideIndex === totalSlides - 1;
-  const title = experienceType === "organizer" ? "🎙️ 主催者の追体験" : "💖 ファンの追体験";
+  const title = experienceType === "organizer" ? "主催者の追体験" : "ファンの追体験";
 
   return (
     <Animated.View 
@@ -680,5 +696,90 @@ const styles = StyleSheet.create({
   slideCounter: {
     color: "rgba(255, 255, 255, 0.6)",
     fontSize: 14,
+  },
+  // 追加のスタイル（絵文字置き換え用）
+  mapPreviewIcon: {
+    width: 64,
+    height: 64,
+    borderRadius: 12,
+    backgroundColor: "rgba(59, 130, 246, 0.3)",
+    justifyContent: "center",
+    alignItems: "center",
+    marginBottom: 8,
+  },
+  mapIconText: {
+    fontSize: 16,
+    fontWeight: "bold",
+    color: "#3B82F6",
+  },
+  participantAvatar: {
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    backgroundColor: "#8B5CF6",
+    justifyContent: "center",
+    alignItems: "center",
+    marginBottom: 4,
+  },
+  participantInitial: {
+    fontSize: 16,
+    fontWeight: "bold",
+    color: "#ffffff",
+  },
+  chartPreviewIcon: {
+    flexDirection: "row",
+    alignItems: "flex-end",
+    gap: 4,
+    marginBottom: 8,
+  },
+  chartBar: {
+    width: 16,
+    backgroundColor: "#EC4899",
+    borderRadius: 4,
+  },
+  notificationIconContainer: {
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    backgroundColor: "#EC4899",
+    justifyContent: "center",
+    alignItems: "center",
+  },
+  notificationIconText: {
+    fontSize: 20,
+    fontWeight: "bold",
+    color: "#ffffff",
+  },
+  crownIcon: {
+    width: 64,
+    height: 64,
+    borderRadius: 32,
+    backgroundColor: "#FFD700",
+    justifyContent: "center",
+    alignItems: "center",
+    marginBottom: 8,
+  },
+  crownText: {
+    fontSize: 16,
+    fontWeight: "bold",
+    color: "#1a1a2e",
+  },
+  inviteIcon: {
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    backgroundColor: "#4ADE80",
+    justifyContent: "center",
+    alignItems: "center",
+  },
+  inviteIconText: {
+    fontSize: 24,
+    fontWeight: "bold",
+    color: "#ffffff",
+  },
+  profileAvatarText: {
+    fontSize: 20,
+    fontWeight: "bold",
+    color: "#ffffff",
   },
 });

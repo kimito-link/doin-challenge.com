@@ -580,7 +580,7 @@ function ExperienceBanner() {
           marginBottom: 12,
           textAlign: "center",
         }}>
-          🎬 追体験してみよう
+          追体験してみよう
         </Text>
         <Text style={{ 
           color: "#D1D5DB", 
@@ -594,7 +594,7 @@ function ExperienceBanner() {
         </Text>
         
         <View style={{ flexDirection: "row", gap: 12 }}>
-          {/* 主催者視点 */}
+          {/* 主催者視点 - りんくちゃん */}
           <TouchableOpacity
             onPress={() => startExperience("organizer")}
             activeOpacity={0.8}
@@ -604,9 +604,14 @@ function ExperienceBanner() {
               borderRadius: 12,
               padding: 16,
               alignItems: "center",
+              overflow: "hidden",
             }}
           >
-            <Text style={{ fontSize: 24, marginBottom: 8 }}>🎙️</Text>
+            <Image
+              source={require("@/assets/images/characters/link/link-yukkuri-smile-mouth-open.png")}
+              style={{ width: 48, height: 48, marginBottom: 8 }}
+              contentFit="contain"
+            />
             <Text style={{ 
               color: "#fff", 
               fontSize: 14, 
@@ -624,7 +629,7 @@ function ExperienceBanner() {
             </Text>
           </TouchableOpacity>
           
-          {/* ファン視点 */}
+          {/* ファン視点 - こん太 */}
           <TouchableOpacity
             onPress={() => startExperience("fan")}
             activeOpacity={0.8}
@@ -634,9 +639,14 @@ function ExperienceBanner() {
               borderRadius: 12,
               padding: 16,
               alignItems: "center",
+              overflow: "hidden",
             }}
           >
-            <Text style={{ fontSize: 24, marginBottom: 8 }}>💖</Text>
+            <Image
+              source={require("@/assets/images/characters/konta/kitsune-yukkuri-smile-mouth-open.png")}
+              style={{ width: 48, height: 48, marginBottom: 8 }}
+              contentFit="contain"
+            />
             <Text style={{ 
               color: "#fff", 
               fontSize: 14, 
