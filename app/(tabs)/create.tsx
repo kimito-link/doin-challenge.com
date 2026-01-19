@@ -1,4 +1,4 @@
-import { Text, View, TouchableOpacity, TextInput, ScrollView, KeyboardAvoidingView, Platform, Linking } from "react-native";
+import { Text, View, TouchableOpacity, TextInput, ScrollView, KeyboardAvoidingView, Platform, Linking, Pressable } from "react-native";
 import { Image } from "expo-image";
 import { useRouter } from "expo-router";
 import { useState, useMemo, useRef, useEffect } from "react";
@@ -158,7 +158,18 @@ export default function CreateChallengeScreen() {
       ]);
     },
     onError: (error) => {
-      showAlert("エラー", error.message);
+      // ユーザーフレンドリーなエラーメッセージを表示
+      const errorMessage = error.message || "チャレンジの作成に失敗しました";
+      showAlert("チャレンジ作成エラー", errorMessage, [
+        {
+          text: "もう一度試す",
+          onPress: () => handleCreate(),
+        },
+        {
+          text: "閉じる",
+          style: "cancel",
+        },
+      ]);
     },
   });
 
@@ -209,8 +220,8 @@ export default function CreateChallengeScreen() {
       eventType: eventType as "solo" | "group",
       categoryId: categoryId || undefined,
       externalUrl: externalUrl.trim() || undefined,
-      ticketPresale: ticketPresale ? parseInt(ticketPresale) : undefined,
-      ticketDoor: ticketDoor ? parseInt(ticketDoor) : undefined,
+      ticketPresale: ticketPresale && ticketPresale !== "-1" ? parseInt(ticketPresale) : undefined,
+      ticketDoor: ticketDoor && ticketDoor !== "-1" ? parseInt(ticketDoor) : undefined,
       ticketUrl: ticketUrl.trim() || undefined,
     });
   };
@@ -590,20 +601,57 @@ export default function CreateChallengeScreen() {
                 <Text style={{ color: colors.muted, fontSize: 14, marginBottom: 8 }}>
                   開催場所（任意）
                 </Text>
-                <TextInput
-                  value={venue}
-                  onChangeText={setVenue}
-                  placeholder="例: 渋谷○○ホール / YouTube / ミクチャ"
-                  placeholderTextColor="#9CA3AF"
-                  style={{
-                    backgroundColor: colors.background,
-                    borderRadius: 8,
-                    padding: 12,
-                    color: colors.foreground,
-                    borderWidth: 1,
-                    borderColor: "#2D3139",
-                  }}
-                />
+                <Pressable
+                  onPress={() => setVenue("まだ決まっていない")}
+                  style={({ pressed }) => ({
+                    flexDirection: "row",
+                    alignItems: "center",
+                    marginBottom: 8,
+                    opacity: pressed ? 0.7 : 1,
+                  })}
+                >
+                  <View
+                    style={{
+                      width: 20,
+                      height: 20,
+                      borderRadius: 10,
+                      borderWidth: 2,
+                      borderColor: venue === "まだ決まっていない" ? "#EC4899" : "#4B5563",
+                      backgroundColor: venue === "まだ決まっていない" ? "#EC4899" : "transparent",
+                      marginRight: 8,
+                      justifyContent: "center",
+                      alignItems: "center",
+                    }}
+                  >
+                    {venue === "まだ決まっていない" && (
+                      <View style={{ width: 8, height: 8, borderRadius: 4, backgroundColor: "#fff" }} />
+                    )}
+                  </View>
+                  <Text style={{ color: colors.muted, fontSize: 14 }}>
+                    まだ決まっていない
+                  </Text>
+                </Pressable>
+                {venue !== "まだ決まっていない" && (
+                  <TextInput
+                    value={venue}
+                    onChangeText={setVenue}
+                    placeholder="例: 渋谷○○ホール / YouTube / ミクチャ"
+                    placeholderTextColor="#9CA3AF"
+                    style={{
+                      backgroundColor: colors.background,
+                      borderRadius: 8,
+                      padding: 12,
+                      color: colors.foreground,
+                      borderWidth: 1,
+                      borderColor: "#2D3139",
+                    }}
+                  />
+                )}
+                {venue === "まだ決まっていない" && (
+                  <Text style={{ color: "#9CA3AF", fontSize: 12, marginTop: 4 }}>
+                    ※ 決まり次第、後から編集できます
+                  </Text>
+                )}
               </View>
 
               <View style={{ marginBottom: 16 }}>
@@ -645,76 +693,125 @@ export default function CreateChallengeScreen() {
                     </Text>
                   </View>
                   
-                  <View style={{ flexDirection: "row", gap: 12, marginBottom: 12 }}>
-                    <View style={{ flex: 1 }}>
-                      <Text style={{ color: colors.muted, fontSize: 12, marginBottom: 4 }}>
-                        前売り券
-                      </Text>
-                      <View style={{ flexDirection: "row", alignItems: "center" }}>
-                        <TextInput
-                          value={ticketPresale}
-                          onChangeText={setTicketPresale}
-                          placeholder="3000"
-                          placeholderTextColor="#9CA3AF"
-                          keyboardType="numeric"
-                          style={{
-                            backgroundColor: "#1A1D21",
-                            borderRadius: 8,
-                            padding: 10,
-                            color: colors.foreground,
-                            borderWidth: 1,
-                            borderColor: "#2D3139",
-                            flex: 1,
-                          }}
-                        />
-                        <Text style={{ color: colors.muted, fontSize: 14, marginLeft: 8 }}>円</Text>
-                      </View>
-                    </View>
-                    <View style={{ flex: 1 }}>
-                      <Text style={{ color: colors.muted, fontSize: 12, marginBottom: 4 }}>
-                        当日券
-                      </Text>
-                      <View style={{ flexDirection: "row", alignItems: "center" }}>
-                        <TextInput
-                          value={ticketDoor}
-                          onChangeText={setTicketDoor}
-                          placeholder="3500"
-                          placeholderTextColor="#9CA3AF"
-                          keyboardType="numeric"
-                          style={{
-                            backgroundColor: "#1A1D21",
-                            borderRadius: 8,
-                            padding: 10,
-                            color: colors.foreground,
-                            borderWidth: 1,
-                            borderColor: "#2D3139",
-                            flex: 1,
-                          }}
-                        />
-                        <Text style={{ color: colors.muted, fontSize: 14, marginLeft: 8 }}>円</Text>
-                      </View>
-                    </View>
-                  </View>
-
-                  <View>
-                    <Text style={{ color: colors.muted, fontSize: 12, marginBottom: 4 }}>
-                      チケット購入URL
-                    </Text>
-                    <TextInput
-                      value={ticketUrl}
-                      onChangeText={setTicketUrl}
-                      placeholder="https://tiget.net/events/..."
-                      placeholderTextColor="#9CA3AF"
+                  {/* まだ決まっていないオプション */}
+                  <Pressable
+                    onPress={() => {
+                      if (ticketPresale === "-1" && ticketDoor === "-1") {
+                        setTicketPresale("");
+                        setTicketDoor("");
+                      } else {
+                        setTicketPresale("-1");
+                        setTicketDoor("-1");
+                        setTicketUrl("");
+                      }
+                    }}
+                    style={({ pressed }) => ({
+                      flexDirection: "row",
+                      alignItems: "center",
+                      marginBottom: 12,
+                      opacity: pressed ? 0.7 : 1,
+                    })}
+                  >
+                    <View
                       style={{
-                        backgroundColor: "#1A1D21",
-                        borderRadius: 8,
-                        padding: 10,
-                        color: colors.foreground,
-                        borderWidth: 1,
-                        borderColor: "#2D3139",
+                        width: 20,
+                        height: 20,
+                        borderRadius: 10,
+                        borderWidth: 2,
+                        borderColor: ticketPresale === "-1" ? "#EC4899" : "#4B5563",
+                        backgroundColor: ticketPresale === "-1" ? "#EC4899" : "transparent",
+                        marginRight: 8,
+                        justifyContent: "center",
+                        alignItems: "center",
                       }}
-                    />
-                  </View>
+                    >
+                      {ticketPresale === "-1" && (
+                        <View style={{ width: 8, height: 8, borderRadius: 4, backgroundColor: "#fff" }} />
+                      )}
+                    </View>
+                    <Text style={{ color: colors.muted, fontSize: 14 }}>
+                      まだ決まっていない
+                    </Text>
+                  </Pressable>
+                  
+                  {ticketPresale === "-1" ? (
+                    <Text style={{ color: "#9CA3AF", fontSize: 12 }}>
+                      ※ 決まり次第、後から編集できます
+                    </Text>
+                  ) : (
+                    <>
+                      <View style={{ flexDirection: "row", gap: 12, marginBottom: 12 }}>
+                        <View style={{ flex: 1 }}>
+                          <Text style={{ color: colors.muted, fontSize: 12, marginBottom: 4 }}>
+                            前売り券
+                          </Text>
+                          <View style={{ flexDirection: "row", alignItems: "center" }}>
+                            <TextInput
+                              value={ticketPresale}
+                              onChangeText={setTicketPresale}
+                              placeholder="3000"
+                              placeholderTextColor="#9CA3AF"
+                              keyboardType="numeric"
+                              style={{
+                                backgroundColor: "#1A1D21",
+                                borderRadius: 8,
+                                padding: 10,
+                                color: colors.foreground,
+                                borderWidth: 1,
+                                borderColor: "#2D3139",
+                                flex: 1,
+                              }}
+                            />
+                            <Text style={{ color: colors.muted, fontSize: 14, marginLeft: 8 }}>円</Text>
+                          </View>
+                        </View>
+                        <View style={{ flex: 1 }}>
+                          <Text style={{ color: colors.muted, fontSize: 12, marginBottom: 4 }}>
+                            当日券
+                          </Text>
+                          <View style={{ flexDirection: "row", alignItems: "center" }}>
+                            <TextInput
+                              value={ticketDoor}
+                              onChangeText={setTicketDoor}
+                              placeholder="3500"
+                              placeholderTextColor="#9CA3AF"
+                              keyboardType="numeric"
+                              style={{
+                                backgroundColor: "#1A1D21",
+                                borderRadius: 8,
+                                padding: 10,
+                                color: colors.foreground,
+                                borderWidth: 1,
+                                borderColor: "#2D3139",
+                                flex: 1,
+                              }}
+                            />
+                            <Text style={{ color: colors.muted, fontSize: 14, marginLeft: 8 }}>円</Text>
+                          </View>
+                        </View>
+                      </View>
+
+                      <View>
+                        <Text style={{ color: colors.muted, fontSize: 12, marginBottom: 4 }}>
+                          チケット購入URL
+                        </Text>
+                        <TextInput
+                          value={ticketUrl}
+                          onChangeText={setTicketUrl}
+                          placeholder="https://tiget.net/events/..."
+                          placeholderTextColor="#9CA3AF"
+                          style={{
+                            backgroundColor: "#1A1D21",
+                            borderRadius: 8,
+                            padding: 10,
+                            color: colors.foreground,
+                            borderWidth: 1,
+                            borderColor: "#2D3139",
+                          }}
+                        />
+                      </View>
+                    </>
+                  )}
                 </View>
               )}
 

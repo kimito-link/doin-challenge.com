@@ -240,7 +240,8 @@ export async function createEvent(data: InsertEvent) {
       title, slug, description, goalType, goalValue, goalUnit, currentValue,
       eventType, categoryId, eventDate, venue, prefecture,
       ticketPresale, ticketDoor, ticketSaleStart, ticketUrl, externalUrl,
-      status, isPublic, createdAt, updatedAt
+      status, isPublic, createdAt, updatedAt,
+      aiSummary, intentTags, regionSummary, participantSummary, aiSummaryUpdatedAt
     ) VALUES (
       ${data.hostUserId ?? null},
       ${data.hostTwitterId ?? null},
@@ -269,7 +270,12 @@ export async function createEvent(data: InsertEvent) {
       ${data.status ?? 'active'},
       ${data.isPublic ?? true},
       ${now},
-      ${now}
+      ${now},
+      ${null},
+      ${null},
+      ${null},
+      ${null},
+      ${null}
     )
   `);
   

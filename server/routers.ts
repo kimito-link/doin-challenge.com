@@ -98,30 +98,53 @@ export const appRouter = router({
           throw new Error("ログインが必要です。Twitterでログインしてください。");
         }
         
-        const eventId = await db.createEvent({
-          hostUserId: null, // セッションに依存しない
-          hostTwitterId: input.hostTwitterId,
-          hostName: input.hostName,
-          hostUsername: input.hostUsername,
-          hostProfileImage: input.hostProfileImage,
-          hostFollowersCount: input.hostFollowersCount,
-          hostDescription: input.hostDescription,
-          title: input.title,
-          description: input.description,
-          eventDate: new Date(input.eventDate),
-          venue: input.venue,
-          isPublic: true,
-          goalType: input.goalType || "attendance",
-          goalValue: input.goalValue || 100,
-          goalUnit: input.goalUnit || "人",
-          eventType: input.eventType || "solo",
-          categoryId: input.categoryId,
-          externalUrl: input.externalUrl,
-          ticketPresale: input.ticketPresale,
-          ticketDoor: input.ticketDoor,
-          ticketUrl: input.ticketUrl,
-        });
-        return { id: eventId };
+        try {
+          const eventId = await db.createEvent({
+            hostUserId: null, // セッションに依存しない
+            hostTwitterId: input.hostTwitterId,
+            hostName: input.hostName,
+            hostUsername: input.hostUsername,
+            hostProfileImage: input.hostProfileImage,
+            hostFollowersCount: input.hostFollowersCount,
+            hostDescription: input.hostDescription,
+            title: input.title,
+            description: input.description,
+            eventDate: new Date(input.eventDate),
+            venue: input.venue,
+            isPublic: true,
+            goalType: input.goalType || "attendance",
+            goalValue: input.goalValue || 100,
+            goalUnit: input.goalUnit || "人",
+            eventType: input.eventType || "solo",
+            categoryId: input.categoryId,
+            externalUrl: input.externalUrl,
+            ticketPresale: input.ticketPresale,
+            ticketDoor: input.ticketDoor,
+            ticketUrl: input.ticketUrl,
+          });
+          return { id: eventId };
+        } catch (error) {
+          console.error("[Challenge Create] Error:", error);
+          const errorMessage = error instanceof Error ? error.message : String(error);
+          
+          // データベース接続エラー
+          if (errorMessage.includes("Database not available") || errorMessage.includes("ECONNREFUSED")) {
+            throw new Error("サーバーに接続できません。しばらく待ってから再度お試しください。");
+          }
+          
+          // SQLエラー（カラム不足など）
+          if (errorMessage.includes("SQL") || errorMessage.includes("Failed query") || errorMessage.includes("ER_")) {
+            throw new Error("チャレンジの作成に失敗しました。入力内容を確認して再度お試しください。");
+          }
+          
+          // 重複エラー
+          if (errorMessage.includes("Duplicate entry") || errorMessage.includes("unique constraint")) {
+            throw new Error("同じタイトルのチャレンジがすでに存在します。別のタイトルをお試しください。");
+          }
+          
+          // その他のエラー
+          throw new Error("チャレンジの作成中にエラーが発生しました。しばらく待ってから再度お試しください。");
+        }
       }),
 
     // イベント更新
@@ -213,36 +236,51 @@ export const appRouter = router({
           throw new Error("ログインが必要です。Twitterでログインしてください。");
         }
         
-        const participationId = await db.createParticipation({
-          challengeId: input.challengeId,
-          userId: ctx.user?.id, // セッションがあれば使用、なくてもOK
-          twitterId: input.twitterId,
-          displayName: input.displayName,
-          username: input.username,
-          profileImage: input.profileImage,
-          followersCount: input.followersCount,
-          message: input.message,
-          companionCount: input.companionCount,
-          prefecture: input.prefecture,
-          gender: input.gender || "unspecified", // v5.86: 性別を保存
-          isAnonymous: false,
-        });
-        
-        // 友人を登録
-        if (input.companions && input.companions.length > 0 && participationId) {
-          const companionRecords = input.companions.map(c => ({
-            participationId,
+        try {
+          const participationId = await db.createParticipation({
             challengeId: input.challengeId,
-            displayName: c.displayName,
-            twitterUsername: c.twitterUsername,
-            twitterId: c.twitterId,
-            profileImage: c.profileImage,
-            invitedByUserId: ctx.user?.id,
-          }));
-          await db.createCompanions(companionRecords);
+            userId: ctx.user?.id, // セッションがあれば使用、なくてもOK
+            twitterId: input.twitterId,
+            displayName: input.displayName,
+            username: input.username,
+            profileImage: input.profileImage,
+            followersCount: input.followersCount,
+            message: input.message,
+            companionCount: input.companionCount,
+            prefecture: input.prefecture,
+            gender: input.gender || "unspecified", // v5.86: 性別を保存
+            isAnonymous: false,
+          });
+          
+          // 友人を登録
+          if (input.companions && input.companions.length > 0 && participationId) {
+            const companionRecords = input.companions.map(c => ({
+              participationId,
+              challengeId: input.challengeId,
+              displayName: c.displayName,
+              twitterUsername: c.twitterUsername,
+              twitterId: c.twitterId,
+              profileImage: c.profileImage,
+              invitedByUserId: ctx.user?.id,
+            }));
+            await db.createCompanions(companionRecords);
+          }
+          
+          return { id: participationId };
+        } catch (error) {
+          console.error("[Participation Create] Error:", error);
+          const errorMessage = error instanceof Error ? error.message : String(error);
+          
+          if (errorMessage.includes("Database not available") || errorMessage.includes("ECONNREFUSED")) {
+            throw new Error("サーバーに接続できません。しばらく待ってから再度お試しください。");
+          }
+          
+          if (errorMessage.includes("Duplicate entry") || errorMessage.includes("unique constraint")) {
+            throw new Error("すでに参加表明済みです。");
+          }
+          
+          throw new Error("参加表明の登録中にエラーが発生しました。しばらく待ってから再度お試しください。");
         }
-        
-        return { id: participationId };
       }),
 
     // 匿名参加登録

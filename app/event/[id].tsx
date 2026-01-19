@@ -774,9 +774,23 @@ export default function ChallengeDetailScreen() {
     },
     onError: (error) => {
       console.error("Participation error:", error);
+      // ユーザーフレンドリーなエラーメッセージを表示
+      const errorMessage = error.message || "参加表明の登録に失敗しました";
       Alert.alert(
-        "参加表明に失敗しました",
-        error.message || "もう一度お試しください"
+        "参加表明エラー",
+        errorMessage,
+        [
+          {
+            text: "もう一度試す",
+            onPress: () => {
+              // 再試行ロジックはフォームを開いたままにする
+            },
+          },
+          {
+            text: "閉じる",
+            style: "cancel",
+          },
+        ]
       );
     },
   });

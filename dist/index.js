@@ -892,7 +892,8 @@ async function createEvent(data) {
       title, slug, description, goalType, goalValue, goalUnit, currentValue,
       eventType, categoryId, eventDate, venue, prefecture,
       ticketPresale, ticketDoor, ticketSaleStart, ticketUrl, externalUrl,
-      status, isPublic, createdAt, updatedAt
+      status, isPublic, createdAt, updatedAt,
+      aiSummary, intentTags, regionSummary, participantSummary, aiSummaryUpdatedAt
     ) VALUES (
       ${data.hostUserId ?? null},
       ${data.hostTwitterId ?? null},
@@ -921,7 +922,12 @@ async function createEvent(data) {
       ${data.status ?? "active"},
       ${data.isPublic ?? true},
       ${now},
-      ${now}
+      ${now},
+      ${null},
+      ${null},
+      ${null},
+      ${null},
+      ${null}
     )
   `);
   invalidateEventsCache();
@@ -3417,7 +3423,7 @@ var adminProcedure = t.procedure.use(
 );
 
 // shared/version.ts
-var APP_VERSION = "v5.96";
+var APP_VERSION = "v5.98";
 
 // server/_core/systemRouter.ts
 var systemRouter = router({
@@ -3613,31 +3619,46 @@ var appRouter = router({
       if (!input.hostTwitterId) {
         throw new Error("\u30ED\u30B0\u30A4\u30F3\u304C\u5FC5\u8981\u3067\u3059\u3002Twitter\u3067\u30ED\u30B0\u30A4\u30F3\u3057\u3066\u304F\u3060\u3055\u3044\u3002");
       }
-      const eventId = await createEvent({
-        hostUserId: null,
-        // セッションに依存しない
-        hostTwitterId: input.hostTwitterId,
-        hostName: input.hostName,
-        hostUsername: input.hostUsername,
-        hostProfileImage: input.hostProfileImage,
-        hostFollowersCount: input.hostFollowersCount,
-        hostDescription: input.hostDescription,
-        title: input.title,
-        description: input.description,
-        eventDate: new Date(input.eventDate),
-        venue: input.venue,
-        isPublic: true,
-        goalType: input.goalType || "attendance",
-        goalValue: input.goalValue || 100,
-        goalUnit: input.goalUnit || "\u4EBA",
-        eventType: input.eventType || "solo",
-        categoryId: input.categoryId,
-        externalUrl: input.externalUrl,
-        ticketPresale: input.ticketPresale,
-        ticketDoor: input.ticketDoor,
-        ticketUrl: input.ticketUrl
-      });
-      return { id: eventId };
+      try {
+        const eventId = await createEvent({
+          hostUserId: null,
+          // セッションに依存しない
+          hostTwitterId: input.hostTwitterId,
+          hostName: input.hostName,
+          hostUsername: input.hostUsername,
+          hostProfileImage: input.hostProfileImage,
+          hostFollowersCount: input.hostFollowersCount,
+          hostDescription: input.hostDescription,
+          title: input.title,
+          description: input.description,
+          eventDate: new Date(input.eventDate),
+          venue: input.venue,
+          isPublic: true,
+          goalType: input.goalType || "attendance",
+          goalValue: input.goalValue || 100,
+          goalUnit: input.goalUnit || "\u4EBA",
+          eventType: input.eventType || "solo",
+          categoryId: input.categoryId,
+          externalUrl: input.externalUrl,
+          ticketPresale: input.ticketPresale,
+          ticketDoor: input.ticketDoor,
+          ticketUrl: input.ticketUrl
+        });
+        return { id: eventId };
+      } catch (error) {
+        console.error("[Challenge Create] Error:", error);
+        const errorMessage = error instanceof Error ? error.message : String(error);
+        if (errorMessage.includes("Database not available") || errorMessage.includes("ECONNREFUSED")) {
+          throw new Error("\u30B5\u30FC\u30D0\u30FC\u306B\u63A5\u7D9A\u3067\u304D\u307E\u305B\u3093\u3002\u3057\u3070\u3089\u304F\u5F85\u3063\u3066\u304B\u3089\u518D\u5EA6\u304A\u8A66\u3057\u304F\u3060\u3055\u3044\u3002");
+        }
+        if (errorMessage.includes("SQL") || errorMessage.includes("Failed query") || errorMessage.includes("ER_")) {
+          throw new Error("\u30C1\u30E3\u30EC\u30F3\u30B8\u306E\u4F5C\u6210\u306B\u5931\u6557\u3057\u307E\u3057\u305F\u3002\u5165\u529B\u5185\u5BB9\u3092\u78BA\u8A8D\u3057\u3066\u518D\u5EA6\u304A\u8A66\u3057\u304F\u3060\u3055\u3044\u3002");
+        }
+        if (errorMessage.includes("Duplicate entry") || errorMessage.includes("unique constraint")) {
+          throw new Error("\u540C\u3058\u30BF\u30A4\u30C8\u30EB\u306E\u30C1\u30E3\u30EC\u30F3\u30B8\u304C\u3059\u3067\u306B\u5B58\u5728\u3057\u307E\u3059\u3002\u5225\u306E\u30BF\u30A4\u30C8\u30EB\u3092\u304A\u8A66\u3057\u304F\u3060\u3055\u3044\u3002");
+        }
+        throw new Error("\u30C1\u30E3\u30EC\u30F3\u30B8\u306E\u4F5C\u6210\u4E2D\u306B\u30A8\u30E9\u30FC\u304C\u767A\u751F\u3057\u307E\u3057\u305F\u3002\u3057\u3070\u3089\u304F\u5F85\u3063\u3066\u304B\u3089\u518D\u5EA6\u304A\u8A66\u3057\u304F\u3060\u3055\u3044\u3002");
+      }
     }),
     // イベント更新
     update: protectedProcedure.input(z2.object({
@@ -3712,35 +3733,47 @@ var appRouter = router({
       if (!input.twitterId) {
         throw new Error("\u30ED\u30B0\u30A4\u30F3\u304C\u5FC5\u8981\u3067\u3059\u3002Twitter\u3067\u30ED\u30B0\u30A4\u30F3\u3057\u3066\u304F\u3060\u3055\u3044\u3002");
       }
-      const participationId = await createParticipation({
-        challengeId: input.challengeId,
-        userId: ctx.user?.id,
-        // セッションがあれば使用、なくてもOK
-        twitterId: input.twitterId,
-        displayName: input.displayName,
-        username: input.username,
-        profileImage: input.profileImage,
-        followersCount: input.followersCount,
-        message: input.message,
-        companionCount: input.companionCount,
-        prefecture: input.prefecture,
-        gender: input.gender || "unspecified",
-        // v5.86: 性別を保存
-        isAnonymous: false
-      });
-      if (input.companions && input.companions.length > 0 && participationId) {
-        const companionRecords = input.companions.map((c) => ({
-          participationId,
+      try {
+        const participationId = await createParticipation({
           challengeId: input.challengeId,
-          displayName: c.displayName,
-          twitterUsername: c.twitterUsername,
-          twitterId: c.twitterId,
-          profileImage: c.profileImage,
-          invitedByUserId: ctx.user?.id
-        }));
-        await createCompanions(companionRecords);
+          userId: ctx.user?.id,
+          // セッションがあれば使用、なくてもOK
+          twitterId: input.twitterId,
+          displayName: input.displayName,
+          username: input.username,
+          profileImage: input.profileImage,
+          followersCount: input.followersCount,
+          message: input.message,
+          companionCount: input.companionCount,
+          prefecture: input.prefecture,
+          gender: input.gender || "unspecified",
+          // v5.86: 性別を保存
+          isAnonymous: false
+        });
+        if (input.companions && input.companions.length > 0 && participationId) {
+          const companionRecords = input.companions.map((c) => ({
+            participationId,
+            challengeId: input.challengeId,
+            displayName: c.displayName,
+            twitterUsername: c.twitterUsername,
+            twitterId: c.twitterId,
+            profileImage: c.profileImage,
+            invitedByUserId: ctx.user?.id
+          }));
+          await createCompanions(companionRecords);
+        }
+        return { id: participationId };
+      } catch (error) {
+        console.error("[Participation Create] Error:", error);
+        const errorMessage = error instanceof Error ? error.message : String(error);
+        if (errorMessage.includes("Database not available") || errorMessage.includes("ECONNREFUSED")) {
+          throw new Error("\u30B5\u30FC\u30D0\u30FC\u306B\u63A5\u7D9A\u3067\u304D\u307E\u305B\u3093\u3002\u3057\u3070\u3089\u304F\u5F85\u3063\u3066\u304B\u3089\u518D\u5EA6\u304A\u8A66\u3057\u304F\u3060\u3055\u3044\u3002");
+        }
+        if (errorMessage.includes("Duplicate entry") || errorMessage.includes("unique constraint")) {
+          throw new Error("\u3059\u3067\u306B\u53C2\u52A0\u8868\u660E\u6E08\u307F\u3067\u3059\u3002");
+        }
+        throw new Error("\u53C2\u52A0\u8868\u660E\u306E\u767B\u9332\u4E2D\u306B\u30A8\u30E9\u30FC\u304C\u767A\u751F\u3057\u307E\u3057\u305F\u3002\u3057\u3070\u3089\u304F\u5F85\u3063\u3066\u304B\u3089\u518D\u5EA6\u304A\u8A66\u3057\u304F\u3060\u3055\u3044\u3002");
       }
-      return { id: participationId };
     }),
     // 匿名参加登録
     createAnonymous: publicProcedure.input(z2.object({
