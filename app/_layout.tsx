@@ -47,37 +47,39 @@ export const unstable_settings = {
  * チュートリアルUI（ユーザータイプ選択 + チュートリアルオーバーレイ）
  */
 function TutorialUI() {
-  const tutorial = useTutorial();
-
-  return (
-    <>
-      {/* ユーザータイプ選択画面 */}
-      <UserTypeSelector
-        visible={tutorial.showUserTypeSelector}
-        onSelect={tutorial.selectUserType}
-        onSkip={tutorial.skipTutorial}
-      />
-      
-      {/* チュートリアルオーバーレイ */}
-      {tutorial.currentStep && (
-        <TutorialOverlay
-          step={tutorial.currentStep}
-          stepNumber={tutorial.currentStepIndex + 1}
-          totalSteps={tutorial.totalSteps}
-          onNext={tutorial.nextStep}
-          onComplete={tutorial.completeTutorial}
-          visible={tutorial.isActive}
-        />
-      )}
-      
-      {/* チュートリアル完了後のログイン誘導モーダル */}
-      <LoginPromptModal
-        visible={tutorial.showLoginPrompt}
-        onLogin={tutorial.dismissLoginPrompt}
-        onSkip={tutorial.dismissLoginPrompt}
-      />
-    </>
-  );
+  // 一時的に無効化（真っ暗画面問題の調査中）
+  return null;
+  
+  // const tutorial = useTutorial();
+  // return (
+  //   <>
+  //     {/* ユーザータイプ選択画面 */}
+  //     <UserTypeSelector
+  //       visible={tutorial.showUserTypeSelector}
+  //       onSelect={tutorial.selectUserType}
+  //       onSkip={tutorial.skipTutorial}
+  //     />
+  //     
+  //     {/* チュートリアルオーバーレイ */}
+  //     {tutorial.currentStep && (
+  //       <TutorialOverlay
+  //         step={tutorial.currentStep}
+  //         stepNumber={tutorial.currentStepIndex + 1}
+  //         totalSteps={tutorial.totalSteps}
+  //         onNext={tutorial.nextStep}
+  //         onComplete={tutorial.completeTutorial}
+  //         visible={tutorial.isActive}
+  //       />
+  //     )}
+  //     
+  //     {/* チュートリアル完了後のログイン誘導モーダル */}
+  //     <LoginPromptModal
+  //       visible={tutorial.showLoginPrompt}
+  //       onLogin={tutorial.dismissLoginPrompt}
+  //       onSkip={tutorial.dismissLoginPrompt}
+  //     />
+  //   </>
+  // );
 }
 
 export default function RootLayout() {
