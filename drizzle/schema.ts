@@ -33,6 +33,7 @@ export const challenges = mysqlTable("challenges", {
   hostDescription: text("hostDescription"),
   // チャレンジ情報
   title: varchar("title", { length: 255 }).notNull(),
+  slug: varchar("slug", { length: 255 }),  // URL用のスラッグ（例: birthday-live-100）
   description: text("description"),
   // 目標設定
   goalType: mysqlEnum("goalType", ["attendance", "followers", "viewers", "points", "custom"]).default("attendance").notNull(),
