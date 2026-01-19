@@ -231,12 +231,15 @@ export async function createEvent(data: InsertEvent) {
   // slugを生成（タイトルからスラッグを作成）
   const slug = data.slug || generateSlug(data.title);
   
+  // ticketSaleStartの処理
+  const ticketSaleStart = data.ticketSaleStart ? new Date(data.ticketSaleStart).toISOString().slice(0, 19).replace('T', ' ') : null;
+  
   const result = await db.execute(sql`
     INSERT INTO challenges (
       hostUserId, hostTwitterId, hostName, hostUsername, hostProfileImage, hostFollowersCount, hostDescription,
       title, slug, description, goalType, goalValue, goalUnit, currentValue,
       eventType, categoryId, eventDate, venue, prefecture,
-      ticketPresale, ticketDoor, ticketUrl, externalUrl,
+      ticketPresale, ticketDoor, ticketSaleStart, ticketUrl, externalUrl,
       status, isPublic, createdAt, updatedAt
     ) VALUES (
       ${data.hostUserId ?? null},
@@ -260,6 +263,7 @@ export async function createEvent(data: InsertEvent) {
       ${data.prefecture ?? null},
       ${data.ticketPresale ?? null},
       ${data.ticketDoor ?? null},
+      ${ticketSaleStart},
       ${data.ticketUrl ?? null},
       ${data.externalUrl ?? null},
       ${data.status ?? 'active'},

@@ -885,12 +885,13 @@ async function createEvent(data) {
   const now = (/* @__PURE__ */ new Date()).toISOString().slice(0, 19).replace("T", " ");
   const eventDate = data.eventDate ? new Date(data.eventDate).toISOString().slice(0, 19).replace("T", " ") : now;
   const slug = data.slug || generateSlug(data.title);
+  const ticketSaleStart = data.ticketSaleStart ? new Date(data.ticketSaleStart).toISOString().slice(0, 19).replace("T", " ") : null;
   const result = await db.execute(sql`
     INSERT INTO challenges (
       hostUserId, hostTwitterId, hostName, hostUsername, hostProfileImage, hostFollowersCount, hostDescription,
       title, slug, description, goalType, goalValue, goalUnit, currentValue,
       eventType, categoryId, eventDate, venue, prefecture,
-      ticketPresale, ticketDoor, ticketUrl, externalUrl,
+      ticketPresale, ticketDoor, ticketSaleStart, ticketUrl, externalUrl,
       status, isPublic, createdAt, updatedAt
     ) VALUES (
       ${data.hostUserId ?? null},
@@ -914,6 +915,7 @@ async function createEvent(data) {
       ${data.prefecture ?? null},
       ${data.ticketPresale ?? null},
       ${data.ticketDoor ?? null},
+      ${ticketSaleStart},
       ${data.ticketUrl ?? null},
       ${data.externalUrl ?? null},
       ${data.status ?? "active"},
@@ -3415,7 +3417,7 @@ var adminProcedure = t.procedure.use(
 );
 
 // shared/version.ts
-var APP_VERSION = "v5.95";
+var APP_VERSION = "v5.96";
 
 // server/_core/systemRouter.ts
 var systemRouter = router({
