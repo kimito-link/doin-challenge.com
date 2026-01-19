@@ -2233,3 +2233,8 @@
 - [x] 一覧ページの左側に縦表示されるレイアウト崩れを修正（TutorialHighlightTargetにflex:1追加）
 - [ ] カテゴリの「ホスト」を「主催者」に変更（DBには「ホスト」カテゴリなし、別途確認待ち）
 - [x] 注目のチャレンジに作成者のTwitter ID・サムネを追加
+
+
+## v5.83 チャレンジカードに作成者情報追加
+
+- [x] チャレンジカードに作成者のサムネイル・Twitter IDを表示（ColorfulChallengeCardに追加、MemoizedChallengeCardは既に対応済み）
