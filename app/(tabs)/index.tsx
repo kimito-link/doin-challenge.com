@@ -251,7 +251,7 @@ function EngagementSection({ challenges }: { challenges: Challenge[] }) {
   );
 }
 
-// おすすめホストセクション（遅延読み込み）
+// おすすめ主催者セクション（遅延読み込み）
 function RecommendedHostsSection() {
   const colors = useColors();
   const router = useRouter();
@@ -280,7 +280,7 @@ function RecommendedHostsSection() {
         borderColor: "#2D3139",
       }}>
         <Text style={{ color: "#8B5CF6", fontSize: 16, fontWeight: "bold", marginBottom: 12 }}>
-          ✨ おすすめのホスト
+          ✨ おすすめの主催者
         </Text>
         <ScrollView horizontal showsHorizontalScrollIndicator={false}>
           <View style={{ flexDirection: "row", gap: 16 }}>
@@ -297,7 +297,7 @@ function RecommendedHostsSection() {
                   fallbackText={(host.name || "?").charAt(0)}
                 />
                 <Text style={{ color: colors.foreground, fontSize: 12, marginTop: 6, textAlign: "center" }} numberOfLines={1}>
-                  {host.name || "ホスト"}
+                  {host.name || "主催者"}
                 </Text>
                 {host.username && (
                   <Text style={{ color: "#D1D5DB", fontSize: 10 }} numberOfLines={1}>
@@ -678,7 +678,7 @@ function ChallengeCard({ challenge, onPress, numColumns = 2, colorIndex, isFavor
             </Text>
           </View>
         )}
-        {/* ホストプロフィール画像（遅延読み込み） */}
+        {/* 主催者プロフィール画像（遅延読み込み） */}
         <View style={{ position: "absolute", bottom: -16, left: 12 }}>
           <LazyAvatar
             source={challenge.hostProfileImage ? { uri: challenge.hostProfileImage } : undefined}
@@ -699,7 +699,7 @@ function ChallengeCard({ challenge, onPress, numColumns = 2, colorIndex, isFavor
           {challenge.title}
         </Text>
 
-        {/* ホスト名 */}
+        {/* 主催者名 */}
         <Text style={{ color: "#D1D5DB", fontSize: 12, marginBottom: 8 }}>
           {challenge.hostName}
         </Text>
@@ -1038,8 +1038,15 @@ export default function HomeScreen() {
               marginLeft: 8,
               color: colors.foreground,
               fontSize: 14,
+              paddingVertical: 8,
             }}
             returnKeyType="search"
+            autoCorrect={false}
+            autoCapitalize="none"
+            autoComplete="off"
+            spellCheck={false}
+            textContentType="none"
+            keyboardType="default"
           />
           {searchQuery.length > 0 && (
             <TouchableOpacity onPress={() => { setSearchQuery(""); setIsSearching(false); }}>
@@ -1149,7 +1156,7 @@ export default function HomeScreen() {
         <EngagementSection challenges={effectiveChallenges as Challenge[]} />
       )}
 
-      {/* おすすめホストセクション */}
+      {/* おすすめ主催者セクション */}
       {!isSearching && <RecommendedHostsSection />}
 
       {/* LP風キャッチコピー */}

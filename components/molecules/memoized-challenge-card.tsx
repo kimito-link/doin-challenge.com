@@ -78,7 +78,7 @@ export const MemoizedChallengeCard = memo<MemoizedChallengeCardProps>(
         >
           {/* ヘッダー */}
           <View style={styles.header}>
-            {/* ホスト情報 */}
+            {/* 主催者情報 */}
             <View style={styles.hostInfo}>
               {challenge.hostProfileImage ? (
                 <Image

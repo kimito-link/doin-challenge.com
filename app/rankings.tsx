@@ -73,6 +73,9 @@ export default function RankingsScreen() {
         <Text style={{ color: "#fff", fontSize: 18, fontWeight: "bold" }}>
           ランキング
         </Text>
+        <Text style={{ color: "#A0AEC0", fontSize: 12, marginTop: 4 }}>
+          チャレンジへの参加・貢献でポイントを獲得して上位を目指そう
+        </Text>
       </View>
 
       {/* タブ切り替え */}
@@ -107,9 +110,18 @@ export default function RankingsScreen() {
           }}
         >
           <Text style={{ color: "#fff", fontWeight: tab === "hosts" ? "bold" : "normal" }}>
-            ホスト
+            主催者
           </Text>
         </TouchableOpacity>
+      </View>
+
+      {/* タブ説明 */}
+      <View style={{ paddingHorizontal: 16, paddingBottom: 8 }}>
+        <Text style={{ color: "#CBD5E0", fontSize: 11 }}>
+          {tab === "contribution" 
+            ? "貢献度: チャレンジへの参加・同伴・拡散で獲得したポイントのランキング"
+            : "主催者: チャレンジを作成した人の総動員数ランキング"}
+        </Text>
       </View>
 
       {/* 期間フィルター（貢献度タブのみ） */}

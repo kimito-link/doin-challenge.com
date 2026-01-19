@@ -133,7 +133,7 @@ export default function FollowingScreen() {
             まだ誰もフォローしていません
           </Text>
           <Text style={{ color: "#D1D5DB", fontSize: 14, textAlign: "center" }}>
-            チャレンジ詳細画面からホストをフォローすると{"\n"}新着チャレンジの通知を受け取れます
+            チャレンジ詳細画面から主催者をフォローすると{"\n"}新着チャレンジの通知を受け取れます
           </Text>
         </View>
       )}

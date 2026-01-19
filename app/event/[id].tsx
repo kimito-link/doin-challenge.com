@@ -554,7 +554,7 @@ export default function ChallengeDetailScreen() {
   // 地域別参加者モーダル用のstate
   const [selectedRegion, setSelectedRegion] = useState<{ name: string; prefectures: string[] } | null>(null);
 
-  // ホストプロフィールモーダル用のstate
+  // 主催者プロフィールモーダル用のstate
   const [showHostProfileModal, setShowHostProfileModal] = useState(false);
   
   // ファンプロフィールモーダル用のstate
@@ -611,7 +611,7 @@ export default function ChallengeDetailScreen() {
   // フォロー状態
   const hostUserId = challenge?.hostUserId;
   
-  // ホスト判定（hostTwitterIdで判定）
+  // 主催者判定（hostTwitterIdで判定）
   const userTwitterId = user?.openId?.startsWith("twitter:") 
     ? user.openId.replace("twitter:", "") 
     : user?.openId;
@@ -629,7 +629,7 @@ export default function ChallengeDetailScreen() {
   
   const unfollowMutation = trpc.follows.unfollow.useMutation();
   
-  // ホストのフォロワーID一覧を取得（ランキング優先表示用）
+  // 主催者のフォロワーID一覧を取得（ランキング優先表示用）
   const { data: followerIds } = trpc.follows.followerIds.useQuery(
     { userId: hostUserId! },
     { enabled: !!hostUserId }
@@ -1009,7 +1009,7 @@ export default function ChallengeDetailScreen() {
                 color={isChallengeFavorite ? "#FFD700" : "#fff"}
               />
             </TouchableOpacity>
-            {/* ホスト情報（クリックでプロフィールモーダル表示） */}
+            {/* 主催者情報（クリックでプロフィールモーダル表示） */}
             <TwitterUserCard
               user={{
                 twitterId: challenge.hostTwitterId || undefined,
@@ -1295,7 +1295,7 @@ export default function ChallengeDetailScreen() {
               </View>
             )}
 
-            {/* ホスト用管理ボタン */}
+            {/* 主催者用管理ボタン */}
             {user && isHost && (
               <View style={{ gap: 12, marginTop: 16 }}>
                 <TouchableOpacity
@@ -2715,7 +2715,7 @@ export default function ChallengeDetailScreen() {
         }
       />
 
-      {/* ホストプロフィールモーダル */}
+      {/* 主催者プロフィールモーダル */}
       {challenge && (
         <HostProfileModal
           visible={showHostProfileModal}
