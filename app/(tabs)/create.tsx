@@ -99,8 +99,9 @@ export default function CreateChallengeScreen() {
     if (!title.trim()) {
       errors.push({ field: "title" });
     }
-    if (!eventDateStr.trim()) {
-      errors.push({ field: "date" });
+    // 「まだ決まっていない」(9999-12-31)は有効な値として扱う
+    if (!eventDateStr.trim() && eventDateStr !== "9999-12-31") {
+      // 日付が未入力の場合はエラーにしない（任意にする）
     }
     if (!user?.twitterId) {
       errors.push({ field: "host" });
@@ -581,20 +582,57 @@ export default function CreateChallengeScreen() {
 
               <View ref={dateInputRef} style={{ marginBottom: 16 }}>
                 <Text style={{ color: colors.muted, fontSize: 14, marginBottom: 8 }}>
-                  開催日 *
+                  開催日
                 </Text>
-                <View style={{ borderWidth: !eventDateStr.trim() && showValidationError ? 1 : 0, borderColor: "#EC4899", borderRadius: 8 }}>
-                  <DatePicker
-                    value={eventDateStr}
-                    onChange={handleDateChange}
-                    placeholder="日付を選択"
-                  />
-                </View>
-                <InlineValidationError
-                  message="日程が決まってないと参加できないよ〜"
-                  visible={showValidationError && !eventDateStr.trim()}
-                  character="tanune"
-                />
+                <Pressable
+                  onPress={() => {
+                    if (eventDateStr === "9999-12-31") {
+                      setEventDateStr("");
+                    } else {
+                      setEventDateStr("9999-12-31");
+                    }
+                  }}
+                  style={({ pressed }) => ({
+                    flexDirection: "row",
+                    alignItems: "center",
+                    marginBottom: 8,
+                    opacity: pressed ? 0.7 : 1,
+                  })}
+                >
+                  <View
+                    style={{
+                      width: 20,
+                      height: 20,
+                      borderRadius: 10,
+                      borderWidth: 2,
+                      borderColor: eventDateStr === "9999-12-31" ? "#EC4899" : "#4B5563",
+                      backgroundColor: eventDateStr === "9999-12-31" ? "#EC4899" : "transparent",
+                      marginRight: 8,
+                      justifyContent: "center",
+                      alignItems: "center",
+                    }}
+                  >
+                    {eventDateStr === "9999-12-31" && (
+                      <View style={{ width: 8, height: 8, borderRadius: 4, backgroundColor: "#fff" }} />
+                    )}
+                  </View>
+                  <Text style={{ color: colors.muted, fontSize: 14 }}>
+                    まだ決まっていない
+                  </Text>
+                </Pressable>
+                {eventDateStr === "9999-12-31" ? (
+                  <Text style={{ color: "#9CA3AF", fontSize: 12 }}>
+                    ※ 日程が決まり次第、後から編集できます
+                  </Text>
+                ) : (
+                  <View style={{ borderWidth: !eventDateStr.trim() && showValidationError ? 1 : 0, borderColor: "#EC4899", borderRadius: 8 }}>
+                    <DatePicker
+                      value={eventDateStr}
+                      onChange={handleDateChange}
+                      placeholder="日付を選択"
+                    />
+                  </View>
+                )}
               </View>
 
               <View style={{ marginBottom: 16 }}>
