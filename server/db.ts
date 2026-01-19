@@ -236,11 +236,12 @@ export async function createEvent(data: InsertEvent) {
   
   // AI関連カラム（aiSummary, intentTags, regionSummary, participantSummary, aiSummaryUpdatedAt）は
   // 本番DBに存在しない可能性があるため、INSERTから除外
+  // slugカラムも本番DBに存在しないため除外（2024年1月修正）
   // これらのカラムは後から追加する場合は、マイグレーションを実行してから使用する
   const result = await db.execute(sql`
     INSERT INTO challenges (
       hostUserId, hostTwitterId, hostName, hostUsername, hostProfileImage, hostFollowersCount, hostDescription,
-      title, slug, description, goalType, goalValue, goalUnit, currentValue,
+      title, description, goalType, goalValue, goalUnit, currentValue,
       eventType, categoryId, eventDate, venue, prefecture,
       ticketPresale, ticketDoor, ticketSaleStart, ticketUrl, externalUrl,
       status, isPublic, createdAt, updatedAt
@@ -253,7 +254,6 @@ export async function createEvent(data: InsertEvent) {
       ${data.hostFollowersCount ?? 0},
       ${data.hostDescription ?? null},
       ${data.title},
-      ${slug},
       ${data.description ?? null},
       ${data.goalType ?? 'attendance'},
       ${data.goalValue ?? 100},

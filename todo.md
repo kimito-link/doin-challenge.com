@@ -2434,3 +2434,50 @@
 
 - [x] project-summary.md作成（GPT/AI向けプロジェクト概要）
 - [x] code-reference.md作成（詳細なコードリファレンス）
+
+
+## features/events リファクタリング（GPT設計図に基づく）
+
+### Phase 1: ディレクトリ構造の作成
+- [ ] features/events/hooks/ ディレクトリ作成
+- [ ] features/events/mappers/ ディレクトリ作成
+- [ ] features/events/ui/components/ ディレクトリ作成
+- [ ] features/events/ui/sections/ ディレクトリ作成
+- [ ] features/events/ui/modals/ ディレクトリ作成
+- [ ] features/events/screens/ ディレクトリ作成
+- [ ] features/events/utils/ ディレクトリ作成
+
+### Phase 2: 型定義・定数・ユーティリティ
+- [ ] features/events/mappers/participationVM.ts 作成（Participation, Companion型）
+- [ ] features/events/mappers/eventDetailVM.ts 作成（goalTypeConfig含む）
+- [ ] features/events/utils/normalizePrefecture.ts 作成
+- [ ] features/events/utils/prefectures.ts 作成（regionGroups, prefectures）
+
+### Phase 3: ローカルコンポーネントの移動
+- [ ] features/events/ui/components/ProgressGrid.tsx 作成
+- [ ] features/events/ui/components/RegionMap.tsx 作成
+- [ ] features/events/ui/components/ParticipantsList.tsx 作成
+- [ ] features/events/ui/components/ContributionRanking.tsx 作成
+- [ ] features/events/ui/components/MessageCard.tsx 作成
+
+### Phase 4: useEventDetailScreenフック
+- [ ] features/events/hooks/useEventDetailScreen.ts 作成
+
+### Phase 5: EventDetailScreenとセクション
+- [ ] features/events/screens/EventDetailScreen.tsx 作成
+- [ ] features/events/ui/sections/HeaderSection.tsx 作成
+- [ ] features/events/ui/sections/HostSection.tsx 作成
+- [ ] features/events/ui/sections/ProgressSection.tsx 作成
+- [ ] features/events/ui/sections/ParticipantsSection.tsx 作成
+- [ ] features/events/ui/sections/RankingSection.tsx 作成
+- [ ] features/events/ui/sections/MessagesSection.tsx 作成
+- [ ] features/events/ui/sections/ShareSection.tsx 作成
+
+### Phase 6: app/event/[id].tsxの薄化
+- [ ] app/event/[id].tsx を3行に薄化
+- [ ] コンパイルエラーの修正
+- [ ] 動作確認
+
+
+## バグ修正（v6.05）
+- [x] チャレンジ作成エラー修正: Unknown column 'slug' in 'field list'（server/db.tsのcreateEvent関数からslugカラムを削除）

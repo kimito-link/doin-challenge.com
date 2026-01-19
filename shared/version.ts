@@ -1,3 +1,3 @@
 // アプリバージョン（1箇所で管理）
 // チェックポイント保存時にここだけ更新すれば、フロントエンド・バックエンド両方に反映される
-export const APP_VERSION = "v6.04";
+export const APP_VERSION = "v6.05";

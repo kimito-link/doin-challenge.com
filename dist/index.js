@@ -891,7 +891,7 @@ async function createEvent(data) {
   const result = await db.execute(sql`
     INSERT INTO challenges (
       hostUserId, hostTwitterId, hostName, hostUsername, hostProfileImage, hostFollowersCount, hostDescription,
-      title, slug, description, goalType, goalValue, goalUnit, currentValue,
+      title, description, goalType, goalValue, goalUnit, currentValue,
       eventType, categoryId, eventDate, venue, prefecture,
       ticketPresale, ticketDoor, ticketSaleStart, ticketUrl, externalUrl,
       status, isPublic, createdAt, updatedAt
@@ -904,7 +904,6 @@ async function createEvent(data) {
       ${data.hostFollowersCount ?? 0},
       ${data.hostDescription ?? null},
       ${data.title},
-      ${slug},
       ${data.description ?? null},
       ${data.goalType ?? "attendance"},
       ${data.goalValue ?? 100},
@@ -3497,7 +3496,7 @@ var adminProcedure = t.procedure.use(
 );
 
 // shared/version.ts
-var APP_VERSION = "v6.04";
+var APP_VERSION = "v6.05";
 
 // server/_core/systemRouter.ts
 var systemRouter = router({
