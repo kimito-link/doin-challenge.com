@@ -746,3 +746,29 @@ export const ticketWaitlist = mysqlTable("ticket_waitlist", {
 
 export type TicketWaitlist = typeof ticketWaitlist.$inferSelect;
 export type InsertTicketWaitlist = typeof ticketWaitlist.$inferInsert;
+
+
+/**
+ * お気に入りアーティストテーブル（チャレンジ開始通知用）
+ */
+export const favoriteArtists = mysqlTable("favorite_artists", {
+  id: int("id").autoincrement().primaryKey(),
+  // フォローする人
+  userId: int("userId").notNull(),
+  userTwitterId: varchar("userTwitterId", { length: 64 }),
+  // お気に入りアーティスト（ホスト）のTwitter ID
+  artistTwitterId: varchar("artistTwitterId", { length: 64 }).notNull(),
+  artistName: varchar("artistName", { length: 255 }),
+  artistUsername: varchar("artistUsername", { length: 255 }),
+  artistProfileImage: text("artistProfileImage"),
+  // 通知設定
+  notifyNewChallenge: boolean("notifyNewChallenge").default(true).notNull(),
+  // Expoプッシュトークン
+  expoPushToken: text("expoPushToken"),
+  // メタデータ
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+  updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
+});
+
+export type FavoriteArtist = typeof favoriteArtists.$inferSelect;
+export type InsertFavoriteArtist = typeof favoriteArtists.$inferInsert;

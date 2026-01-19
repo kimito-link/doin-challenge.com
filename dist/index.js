@@ -10,7 +10,7 @@ var __export = (target, all) => {
 
 // drizzle/schema.ts
 import { int, mysqlEnum, mysqlTable, text, timestamp, varchar, boolean, json } from "drizzle-orm/mysql-core";
-var users, challenges, participations, notificationSettings, notifications, badges, userBadges, pickedComments, cheers, achievementPages, reminders, directMessages, challengeTemplates, follows, searchHistory, categories, invitations, invitationUses, challengeStats, achievements, userAchievements, collaborators, collaboratorInvitations, twitterFollowStatus, oauthPkceData, participationCompanions, challengeMembers, twitterUserCache, ticketTransfers, ticketWaitlist;
+var users, challenges, participations, notificationSettings, notifications, badges, userBadges, pickedComments, cheers, achievementPages, reminders, directMessages, challengeTemplates, follows, searchHistory, categories, invitations, invitationUses, challengeStats, achievements, userAchievements, collaborators, collaboratorInvitations, twitterFollowStatus, oauthPkceData, participationCompanions, challengeMembers, twitterUserCache, ticketTransfers, ticketWaitlist, favoriteArtists;
 var init_schema = __esm({
   "drizzle/schema.ts"() {
     "use strict";
@@ -538,6 +538,24 @@ var init_schema = __esm({
       createdAt: timestamp("createdAt").defaultNow().notNull(),
       updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull()
     });
+    favoriteArtists = mysqlTable("favorite_artists", {
+      id: int("id").autoincrement().primaryKey(),
+      // フォローする人
+      userId: int("userId").notNull(),
+      userTwitterId: varchar("userTwitterId", { length: 64 }),
+      // お気に入りアーティスト（ホスト）のTwitter ID
+      artistTwitterId: varchar("artistTwitterId", { length: 64 }).notNull(),
+      artistName: varchar("artistName", { length: 255 }),
+      artistUsername: varchar("artistUsername", { length: 255 }),
+      artistProfileImage: text("artistProfileImage"),
+      // 通知設定
+      notifyNewChallenge: boolean("notifyNewChallenge").default(true).notNull(),
+      // Expoプッシュトークン
+      expoPushToken: text("expoPushToken"),
+      // メタデータ
+      createdAt: timestamp("createdAt").defaultNow().notNull(),
+      updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull()
+    });
   }
 });
 
@@ -617,6 +635,7 @@ __export(db_exports, {
   getDb: () => getDb,
   getDirectMessagesForUser: () => getDirectMessagesForUser,
   getEventById: () => getEventById,
+  getEventsByHostTwitterId: () => getEventsByHostTwitterId,
   getEventsByHostUserId: () => getEventsByHostUserId,
   getFollowerCount: () => getFollowerCount,
   getFollowerIdsForUser: () => getFollowerIdsForUser,
@@ -816,6 +835,11 @@ async function getEventsByHostUserId(hostUserId) {
   const db = await getDb();
   if (!db) return [];
   return db.select().from(events).where(eq(events.hostUserId, hostUserId)).orderBy(desc(events.eventDate));
+}
+async function getEventsByHostTwitterId(hostTwitterId) {
+  const db = await getDb();
+  if (!db) return [];
+  return db.select().from(events).where(eq(events.hostTwitterId, hostTwitterId)).orderBy(desc(events.eventDate));
 }
 async function createEvent(data) {
   const db = await getDb();
@@ -3416,7 +3440,7 @@ var appRouter = router({
     }),
     // 自分が作成したイベント一覧
     myEvents: protectedProcedure.query(async ({ ctx }) => {
-      return getEventsByHostUserId(ctx.user.id);
+      return getEventsByHostTwitterId(ctx.user.openId);
     }),
     // イベント作成（publicProcedureでフロントエンドのユーザー情報を使用）
     create: publicProcedure.input(z2.object({
@@ -3478,10 +3502,18 @@ var appRouter = router({
       description: z2.string().optional(),
       eventDate: z2.string().optional(),
       venue: z2.string().optional(),
-      isPublic: z2.boolean().optional()
+      isPublic: z2.boolean().optional(),
+      goalValue: z2.number().optional(),
+      goalUnit: z2.string().optional(),
+      goalType: z2.enum(["attendance", "followers", "viewers", "points", "custom"]).optional(),
+      categoryId: z2.number().optional(),
+      externalUrl: z2.string().optional(),
+      ticketPresale: z2.number().optional(),
+      ticketDoor: z2.number().optional(),
+      ticketUrl: z2.string().optional()
     })).mutation(async ({ ctx, input }) => {
       const event = await getEventById(input.id);
-      if (!event || event.hostUserId !== ctx.user.id) {
+      if (!event || event.hostTwitterId !== ctx.user.openId) {
         throw new Error("Unauthorized");
       }
       const { id, eventDate, ...rest } = input;
@@ -3494,7 +3526,7 @@ var appRouter = router({
     // イベント削除
     delete: protectedProcedure.input(z2.object({ id: z2.number() })).mutation(async ({ ctx, input }) => {
       const event = await getEventById(input.id);
-      if (!event || event.hostUserId !== ctx.user.id) {
+      if (!event || event.hostTwitterId !== ctx.user.openId) {
         throw new Error("Unauthorized");
       }
       await deleteEvent(input.id);

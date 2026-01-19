@@ -1,6 +1,6 @@
 import { eq, desc, and, sql, ne } from "drizzle-orm";
 import { drizzle } from "drizzle-orm/mysql2";
-import { InsertUser, users, challenges, participations, InsertChallenge, InsertParticipation, notificationSettings, notifications, InsertNotificationSetting, InsertNotification, badges, userBadges, pickedComments, InsertBadge, InsertUserBadge, InsertPickedComment, cheers, achievementPages, InsertCheer, InsertAchievementPage, reminders, directMessages, challengeTemplates, InsertReminder, InsertDirectMessage, InsertChallengeTemplate, follows, searchHistory, InsertFollow, InsertSearchHistory, categories, invitations, invitationUses, InsertCategory, InsertInvitation, InsertInvitationUse, participationCompanions, InsertParticipationCompanion } from "../drizzle/schema";
+import { InsertUser, users, challenges, participations, InsertChallenge, InsertParticipation, notificationSettings, notifications, InsertNotificationSetting, InsertNotification, badges, userBadges, pickedComments, InsertBadge, InsertUserBadge, InsertPickedComment, cheers, achievementPages, InsertCheer, InsertAchievementPage, reminders, directMessages, challengeTemplates, InsertReminder, InsertDirectMessage, InsertChallengeTemplate, follows, searchHistory, InsertFollow, InsertSearchHistory, categories, invitations, invitationUses, InsertCategory, InsertInvitation, InsertInvitationUse, participationCompanions, InsertParticipationCompanion, favoriteArtists, InsertFavoriteArtist } from "../drizzle/schema";
 
 // 後方互換性のためのエイリアス
 const events = challenges;
