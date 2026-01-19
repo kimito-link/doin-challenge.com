@@ -677,34 +677,55 @@ export function ExperienceOverlay() {
         </Animated.View>
       </ScrollView>
 
-      {/* ナビゲーションボタン */}
+      {/* ナビゲーションボタン（こん太とたぬ姉のキャラクター吹き出し） */}
       <View style={styles.navigation}>
+        {/* こん太（戻るボタン） */}
         <Pressable
           onPress={prevSlide}
           disabled={currentSlideIndex === 0}
           style={({ pressed }) => [
-            styles.navButton,
-            currentSlideIndex === 0 && styles.navButtonDisabled,
-            pressed && { opacity: 0.7 }
+            styles.characterNavButton,
+            currentSlideIndex === 0 && styles.characterNavButtonDisabled,
+            pressed && { transform: [{ scale: 0.95 }] }
           ]}
         >
-          <Text style={[
-            styles.navButtonText,
-            currentSlideIndex === 0 && styles.navButtonTextDisabled
-          ]}>← 戻る</Text>
+          <Image
+            source={CHARACTER_IMAGES.konta}
+            style={styles.navCharacterImage}
+            contentFit="contain"
+          />
+          <View style={[
+            styles.navBubble,
+            styles.navBubbleLeft,
+            currentSlideIndex === 0 && styles.navBubbleDisabled
+          ]}>
+            <View style={styles.navBubbleTailLeft} />
+            <Text style={[
+              styles.navBubbleText,
+              currentSlideIndex === 0 && styles.navBubbleTextDisabled
+            ]}>← 戻る</Text>
+          </View>
         </Pressable>
 
+        {/* たぬ姉（次へボタン） */}
         <Pressable
           onPress={nextSlide}
           style={({ pressed }) => [
-            styles.navButton,
-            styles.navButtonPrimary,
-            pressed && { opacity: 0.7 }
+            styles.characterNavButton,
+            pressed && { transform: [{ scale: 0.95 }] }
           ]}
         >
-          <Text style={styles.navButtonTextPrimary}>
-            {isLastSlide ? "完了 ✓" : "次へ →"}
-          </Text>
+          <View style={[styles.navBubble, styles.navBubbleRight, styles.navBubblePrimary]}>
+            <Text style={styles.navBubbleTextPrimary}>
+              {isLastSlide ? "完了 ✓" : "次へ →"}
+            </Text>
+            <View style={styles.navBubbleTailRight} />
+          </View>
+          <Image
+            source={CHARACTER_IMAGES.tanune}
+            style={styles.navCharacterImage}
+            contentFit="contain"
+          />
         </Pressable>
       </View>
     </Animated.View>
@@ -1887,9 +1908,84 @@ const styles = StyleSheet.create({
   navigation: {
     flexDirection: "row",
     justifyContent: "space-between",
-    alignItems: "center",
+    alignItems: "flex-end",
     paddingTop: 16,
+    paddingHorizontal: 4,
   },
+  
+  // キャラクターナビゲーションボタン
+  characterNavButton: {
+    flexDirection: "row",
+    alignItems: "flex-end",
+  },
+  characterNavButtonDisabled: {
+    opacity: 0.4,
+  },
+  navCharacterImage: {
+    width: 56,
+    height: 56,
+  },
+  navBubble: {
+    backgroundColor: "rgba(255, 255, 255, 0.15)",
+    borderRadius: 16,
+    paddingHorizontal: 16,
+    paddingVertical: 10,
+    position: "relative",
+    marginBottom: 8,
+  },
+  navBubbleLeft: {
+    marginLeft: -8,
+  },
+  navBubbleRight: {
+    marginRight: -8,
+  },
+  navBubbleDisabled: {
+    backgroundColor: "rgba(255, 255, 255, 0.08)",
+  },
+  navBubblePrimary: {
+    backgroundColor: "#FF6B9D",
+  },
+  navBubbleTailLeft: {
+    position: "absolute",
+    left: -6,
+    bottom: 12,
+    width: 0,
+    height: 0,
+    borderTopWidth: 6,
+    borderTopColor: "transparent",
+    borderBottomWidth: 6,
+    borderBottomColor: "transparent",
+    borderRightWidth: 6,
+    borderRightColor: "rgba(255, 255, 255, 0.15)",
+  },
+  navBubbleTailRight: {
+    position: "absolute",
+    right: -6,
+    bottom: 12,
+    width: 0,
+    height: 0,
+    borderTopWidth: 6,
+    borderTopColor: "transparent",
+    borderBottomWidth: 6,
+    borderBottomColor: "transparent",
+    borderLeftWidth: 6,
+    borderLeftColor: "#FF6B9D",
+  },
+  navBubbleText: {
+    color: "#ffffff",
+    fontSize: 14,
+    fontWeight: "600",
+  },
+  navBubbleTextDisabled: {
+    color: "rgba(255, 255, 255, 0.4)",
+  },
+  navBubbleTextPrimary: {
+    color: "#ffffff",
+    fontSize: 14,
+    fontWeight: "bold",
+  },
+  
+  // 旧ナビゲーション（後方互換用）
   navButton: {
     paddingHorizontal: 20,
     paddingVertical: 12,
