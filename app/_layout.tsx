@@ -92,21 +92,29 @@ export default function RootLayout() {
 
   // Initialize Manus runtime for cookie injection from parent container
   useEffect(() => {
-    initManusRuntime();
-    // 重要な画像をプリロード（キャラクター等）
-    preloadCriticalImages();
-    // Service Workerを登録（Webのみ）
-    registerServiceWorker();
-    // オフライン同期ハンドラーを初期化
-    initSyncHandlers();
-    // オンライン復帰時の自動同期を初期化
-    const unsubscribeSync = initAutoSync();
-    // APIオフラインキューのネットワーク監視を開始
-    startNetworkMonitoring();
-    return () => {
-      unsubscribeSync();
-      stopNetworkMonitoring();
-    };
+    try {
+      initManusRuntime();
+      // 重要な画像をプリロード（キャラクター等）
+      preloadCriticalImages();
+      // Service Workerを登録（Webのみ）
+      registerServiceWorker();
+      // オフライン同期ハンドラーを初期化
+      initSyncHandlers();
+      // オンライン復帰時の自動同期を初期化
+      const unsubscribeSync = initAutoSync();
+      // APIオフラインキューのネットワーク監視を開始
+      startNetworkMonitoring();
+      return () => {
+        try {
+          unsubscribeSync();
+          stopNetworkMonitoring();
+        } catch (e) {
+          console.error("Cleanup error:", e);
+        }
+      };
+    } catch (error) {
+      console.error("Initialization error:", error);
+    }
   }, []);
 
   const handleSafeAreaUpdate = useCallback((metrics: Metrics) => {

@@ -74,8 +74,8 @@ export function Badge({
   size = "md",
   icon,
 }: BadgeProps) {
-  const variantStyle = variantStyles[variant];
-  const sizeStyle = sizeStyles[size];
+  const variantStyle = variantStyles[variant] ?? variantStyles.default;
+  const sizeStyle = sizeStyles[size] ?? sizeStyles.md;
 
   return (
     <View

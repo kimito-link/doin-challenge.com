@@ -92,8 +92,8 @@ export function LoadingButton({
   haptic = true,
 }: LoadingButtonProps) {
   const [loading, setLoading] = useState(false);
-  const variantStyle = variantStyles[variant];
-  const sizeStyle = sizeStyles[size];
+  const variantStyle = variantStyles[variant] ?? variantStyles.primary;
+  const sizeStyle = sizeStyles[size] ?? sizeStyles.md;
 
   const handlePress = useCallback(async () => {
     if (loading || disabled) return;

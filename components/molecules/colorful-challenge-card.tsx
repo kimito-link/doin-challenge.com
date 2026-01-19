@@ -89,8 +89,9 @@ export function ColorfulChallengeCard({
   const cardWidth = numColumns === 3 ? "31%" : numColumns === 2 ? "47%" : "100%";
   
   // カードの色を決定（IDベースで一貫性を保つ）
-  const cardColorIdx = colorIndex !== undefined ? colorIndex : challenge.id % CARD_COLORS.length;
-  const cardColor = CARD_COLORS[cardColorIdx];
+  const safeId = challenge?.id ?? 0;
+  const cardColorIdx = colorIndex !== undefined ? colorIndex : safeId % CARD_COLORS.length;
+  const cardColor = CARD_COLORS[cardColorIdx] ?? CARD_COLORS[0];
 
   return (
     <AnimatedCard
