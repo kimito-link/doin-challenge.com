@@ -84,7 +84,7 @@ function AchievementCard({
   progress?: number;
   maxProgress?: number;
 }) {
-  const colors = RARITY_COLORS[achievement.rarity];
+  const colors = RARITY_COLORS[achievement.rarity] || RARITY_COLORS.common;
   
   return (
     <View
@@ -127,7 +127,7 @@ function AchievementCard({
               }}
             >
               <Text style={{ color: colors.badgeText, fontSize: 11, fontWeight: "bold" }}>
-                {RARITY_NAMES[achievement.rarity]}
+                {RARITY_NAMES[achievement.rarity] || 'コモン'}
               </Text>
             </View>
           </View>
