@@ -966,7 +966,8 @@ export default function MyPageScreen() {
             {myChallenges && myChallenges.length > 0 ? (
               myChallenges.map((item) => {
                 const eventDate = new Date(item.eventDate);
-                const formattedDate = `${eventDate.getMonth() + 1}/${eventDate.getDate()}`;
+                const isDateUndecided = eventDate.getFullYear() === 9999;
+                const formattedDate = isDateUndecided ? "未定" : `${eventDate.getMonth() + 1}/${eventDate.getDate()}`;
                 const progress = Math.min(((item.currentValue || 0) / (item.goalValue || 100)) * 100, 100);
                 
                 return (

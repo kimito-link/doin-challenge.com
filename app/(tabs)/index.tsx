@@ -104,6 +104,7 @@ type FilterType = "all" | "solo" | "group" | "favorites";
 function FeaturedChallenge({ challenge, onPress }: { challenge: Challenge; onPress: () => void }) {
   const colors = useColors();
   const eventDate = new Date(challenge.eventDate);
+  const isDateUndecided = eventDate.getFullYear() === 9999;
   const progress = Math.min((challenge.currentValue / challenge.goalValue) * 100, 100);
   const goalConfig = goalTypeConfig[challenge.goalType] || goalTypeConfig.custom;
   const unit = challenge.goalUnit || goalConfig.unit;
@@ -132,9 +133,11 @@ function FeaturedChallenge({ challenge, onPress }: { challenge: Challenge; onPre
           <View style={{ backgroundColor: "#DD6500", paddingHorizontal: 12, paddingVertical: 4, borderRadius: 12 }}>
             <Text style={{ color: colors.foreground, fontSize: 12, fontWeight: "bold" }}>🔥 注目のチャレンジ</Text>
           </View>
-          <View style={{ marginLeft: "auto" }}>
-            <Countdown targetDate={challenge.eventDate} compact />
-          </View>
+          {!isDateUndecided && (
+            <View style={{ marginLeft: "auto" }}>
+              <Countdown targetDate={challenge.eventDate} compact />
+            </View>
+          )}
         </View>
 
         {/* タイトル */}
@@ -673,7 +676,8 @@ function ChallengeCard({ challenge, onPress, numColumns = 2, colorIndex, isFavor
   const colors = useColors();
   const { isDesktop } = useResponsive();
   const eventDate = new Date(challenge.eventDate);
-  const formattedDate = `${eventDate.getMonth() + 1}/${eventDate.getDate()}`;
+  const isDateUndecided = eventDate.getFullYear() === 9999;
+  const formattedDate = isDateUndecided ? "未定" : `${eventDate.getMonth() + 1}/${eventDate.getDate()}`;
   
   const progress = Math.min((challenge.currentValue / challenge.goalValue) * 100, 100);
   const goalConfig = goalTypeConfig[challenge.goalType] || goalTypeConfig.custom;
@@ -810,7 +814,7 @@ function ChallengeCard({ challenge, onPress, numColumns = 2, colorIndex, isFavor
 
         {/* カウントダウン・日付 */}
         <View style={{ flexDirection: "row", alignItems: "center", justifyContent: "space-between" }}>
-          <Countdown targetDate={challenge.eventDate} compact />
+          {!isDateUndecided && <Countdown targetDate={challenge.eventDate} compact />}
           <View style={{ flexDirection: "row", alignItems: "center" }}>
             <MaterialIcons name="event" size={12} color="#DD6500" />
             <Text style={{ color: "#DD6500", fontSize: 11, marginLeft: 2 }}>

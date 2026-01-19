@@ -989,7 +989,8 @@ export default function ChallengeDetailScreen() {
   }
 
   const eventDate = new Date(challenge.eventDate);
-  const formattedDate = `${eventDate.getFullYear()}年${eventDate.getMonth() + 1}月${eventDate.getDate()}日`;
+  const isDateUndecided = eventDate.getFullYear() === 9999;
+  const formattedDate = isDateUndecided ? "日程未定" : `${eventDate.getFullYear()}年${eventDate.getMonth() + 1}月${eventDate.getDate()}日`;
   
   const goalConfig = goalTypeConfig[challenge.goalType || "attendance"] || goalTypeConfig.attendance;
   const unit = challenge.goalUnit || goalConfig.unit;
@@ -1169,14 +1170,20 @@ export default function ChallengeDetailScreen() {
                 overflow: "hidden",
               }}
             >
-              <LinearGradient
-                colors={["rgba(236, 72, 153, 0.1)", "rgba(139, 92, 246, 0.1)"]}
-                start={{ x: 0, y: 0 }}
-                end={{ x: 1, y: 0 }}
-                style={{ paddingVertical: 4 }}
-              >
-                <Countdown targetDate={challenge.eventDate} />
-              </LinearGradient>
+              {!isDateUndecided ? (
+                <LinearGradient
+                  colors={["rgba(236, 72, 153, 0.1)", "rgba(139, 92, 246, 0.1)"]}
+                  start={{ x: 0, y: 0 }}
+                  end={{ x: 1, y: 0 }}
+                  style={{ paddingVertical: 4 }}
+                >
+                  <Countdown targetDate={challenge.eventDate} />
+                </LinearGradient>
+              ) : (
+                <View style={{ paddingVertical: 8, paddingHorizontal: 12 }}>
+                  <Text style={{ color: "#EC4899", fontSize: 14, fontWeight: "bold" }}>日程未定</Text>
+                </View>
+              )}
             </View>
           </View>
 
