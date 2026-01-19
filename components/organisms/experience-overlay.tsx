@@ -581,18 +581,22 @@ export function ExperienceOverlay() {
   const title = experienceType === "organizer" ? "主催者の追体験" : "ファンの追体験";
 
   return (
-    <Animated.View 
-      entering={FadeIn.duration(300)}
-      exiting={FadeOut.duration(300)}
-      style={[
-        styles.overlay, 
-        { 
-          paddingTop: insets.top + 16,
-          paddingBottom: insets.bottom + 16,
-          backgroundColor: currentSlide.backgroundColor || "#1a1a2e",
-        }
-      ]}
+    <Pressable
+      onPress={nextSlide}
+      style={{ flex: 1 }}
     >
+      <Animated.View 
+        entering={FadeIn.duration(300)}
+        exiting={FadeOut.duration(300)}
+        style={[
+          styles.overlay, 
+          { 
+            paddingTop: insets.top + 16,
+            paddingBottom: insets.bottom + 16,
+            backgroundColor: currentSlide.backgroundColor || "#1a1a2e",
+          }
+        ]}
+      >
       {/* ヘッダー */}
       <View style={styles.header}>
         <View>
@@ -728,7 +732,8 @@ export function ExperienceOverlay() {
           </Pressable>
         </View>
       </ScrollView>
-    </Animated.View>
+      </Animated.View>
+    </Pressable>
   );
 }
 
