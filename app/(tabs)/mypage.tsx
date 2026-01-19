@@ -111,6 +111,10 @@ export default function MyPageScreen() {
   const [loginPattern, setLoginPattern] = useState(() => getRandomPattern());
   const [showLogoutModal, setShowLogoutModal] = useState(false);
   const [showAccountSwitcher, setShowAccountSwitcher] = useState(false);
+  // v5.87: 性別編集用のstate
+  const [editingParticipationId, setEditingParticipationId] = useState<number | null>(null);
+  const [editGender, setEditGender] = useState<"male" | "female" | "">("")
+  const [showGenderEditModal, setShowGenderEditModal] = useState(false);
 
   // ログイン時にフォロー状態を更新
   useEffect(() => {
