@@ -23,11 +23,13 @@ interface MenuItem {
 const menuItems: MenuItem[] = [
   { id: "dashboard", label: "ダッシュボード", icon: "grid-outline", path: "/admin" },
   { id: "system", label: "システム状態", icon: "server-outline", path: "/admin/system" },
+  { id: "data-integrity", label: "データ整合性", icon: "checkmark-done-circle-outline", path: "/admin/data-integrity" },
   { id: "errors", label: "エラーログ", icon: "bug-outline", path: "/admin/errors" },
   { id: "categories", label: "カテゴリ管理", icon: "pricetags-outline", path: "/admin/categories" },
   { id: "challenges", label: "チャレンジ管理", icon: "trophy-outline", path: "/admin/challenges" },
   { id: "users", label: "ユーザー管理", icon: "people-outline", path: "/admin/users" },
   { id: "api-usage", label: "API使用量", icon: "analytics-outline", path: "/admin/api-usage" },
+  { id: "components", label: "コンポーネント", icon: "cube-outline", path: "/admin/components" },
 ];
 
 export default function AdminLayout() {

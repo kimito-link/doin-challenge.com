@@ -1619,6 +1619,25 @@ Design requirements:
         }
         return db.getUserById(input.userId);
       }),
+
+    // データ整合性レポート取得
+    getDataIntegrityReport: protectedProcedure
+      .query(async ({ ctx }) => {
+        if (ctx.user.role !== "admin") {
+          throw new Error("管理者権限が必要です");
+        }
+        return db.getDataIntegrityReport();
+      }),
+
+    // チャレンジのcurrentValueを再計算して修正
+    recalculateCurrentValues: protectedProcedure
+      .mutation(async ({ ctx }) => {
+        if (ctx.user.role !== "admin") {
+          throw new Error("管理者権限が必要です");
+        }
+        const results = await db.recalculateChallengeCurrentValues();
+        return { success: true, fixedCount: results.length, details: results };
+      }),
   }),
 });
 

@@ -37,6 +37,8 @@ var init_schema = __esm({
       hostDescription: text("hostDescription"),
       // チャレンジ情報
       title: varchar("title", { length: 255 }).notNull(),
+      slug: varchar("slug", { length: 255 }),
+      // URL用のスラッグ（例: birthday-live-100）
       description: text("description"),
       // 目標設定
       goalType: mysqlEnum("goalType", ["attendance", "followers", "viewers", "points", "custom"]).default("attendance").notNull(),
@@ -608,6 +610,7 @@ __export(db_exports, {
   deleteParticipation: () => deleteParticipation,
   deleteReminder: () => deleteReminder,
   followUser: () => followUser,
+  generateSlug: () => generateSlug,
   getAchievementPage: () => getAchievementPage,
   getAllBadges: () => getAllBadges,
   getAllCategories: () => getAllCategories,
@@ -632,6 +635,7 @@ __export(db_exports, {
   getContributionRanking: () => getContributionRanking,
   getConversation: () => getConversation,
   getConversationList: () => getConversationList,
+  getDataIntegrityReport: () => getDataIntegrityReport,
   getDb: () => getDb,
   getDirectMessagesForUser: () => getDirectMessagesForUser,
   getEventById: () => getEventById,
@@ -696,6 +700,7 @@ __export(db_exports, {
   markNotificationAsRead: () => markNotificationAsRead,
   markReminderAsSent: () => markReminderAsSent,
   pickComment: () => pickComment,
+  recalculateChallengeCurrentValues: () => recalculateChallengeCurrentValues,
   recordInvitationUse: () => recordInvitationUse,
   refreshAllChallengeSummaries: () => refreshAllChallengeSummaries,
   refreshChallengeSummary: () => refreshChallengeSummary,
@@ -721,6 +726,39 @@ __export(db_exports, {
 });
 import { eq, desc, and, sql, ne } from "drizzle-orm";
 import { drizzle } from "drizzle-orm/mysql2";
+function generateSlug(title) {
+  const translations = {
+    "\u751F\u8A95\u796D": "birthday",
+    "\u30E9\u30A4\u30D6": "live",
+    "\u30EF\u30F3\u30DE\u30F3": "oneman",
+    "\u52D5\u54E1": "attendance",
+    "\u30C1\u30E3\u30EC\u30F3\u30B8": "challenge",
+    "\u30D5\u30A9\u30ED\u30EF\u30FC": "followers",
+    "\u540C\u6642\u8996\u8074": "viewers",
+    "\u914D\u4FE1": "stream",
+    "\u30B0\u30EB\u30FC\u30D7": "group",
+    "\u30BD\u30ED": "solo",
+    "\u30D5\u30A7\u30B9": "fes",
+    "\u5BFE\u30D0\u30F3": "taiban",
+    "\u30D5\u30A1\u30F3\u30DF\u30FC\u30C6\u30A3\u30F3\u30B0": "fanmeeting",
+    "\u30EA\u30EA\u30FC\u30B9": "release",
+    "\u30A4\u30D9\u30F3\u30C8": "event",
+    "\u4EBA": "",
+    "\u4E07": "0000"
+  };
+  let slug = title.toLowerCase();
+  for (const [jp, en] of Object.entries(translations)) {
+    slug = slug.replace(new RegExp(jp, "g"), en);
+  }
+  const words = slug.match(/[a-z]+|\d+/g) || [];
+  slug = words.join("-");
+  slug = slug.replace(/-+/g, "-");
+  slug = slug.replace(/^-|-$/g, "");
+  if (!slug) {
+    slug = `challenge-${Date.now()}`;
+  }
+  return slug;
+}
 async function getDb() {
   if (!_db && process.env.DATABASE_URL) {
     try {
@@ -846,10 +884,11 @@ async function createEvent(data) {
   if (!db) throw new Error("Database not available");
   const now = (/* @__PURE__ */ new Date()).toISOString().slice(0, 19).replace("T", " ");
   const eventDate = data.eventDate ? new Date(data.eventDate).toISOString().slice(0, 19).replace("T", " ") : now;
+  const slug = data.slug || generateSlug(data.title);
   const result = await db.execute(sql`
     INSERT INTO challenges (
       hostUserId, hostTwitterId, hostName, hostUsername, hostProfileImage, hostFollowersCount, hostDescription,
-      title, description, goalType, goalValue, goalUnit, currentValue,
+      title, slug, description, goalType, goalValue, goalUnit, currentValue,
       eventType, categoryId, eventDate, venue, prefecture,
       ticketPresale, ticketDoor, ticketUrl, externalUrl,
       status, isPublic, createdAt, updatedAt
@@ -862,6 +901,7 @@ async function createEvent(data) {
       ${data.hostFollowersCount ?? 0},
       ${data.hostDescription ?? null},
       ${data.title},
+      ${slug},
       ${data.description ?? null},
       ${data.goalType ?? "attendance"},
       ${data.goalValue ?? 100},
@@ -917,7 +957,13 @@ async function createParticipation(data) {
   const db = await getDb();
   if (!db) throw new Error("Database not available");
   const result = await db.insert(participations).values(data);
-  return result[0].insertId;
+  const participationId = result[0].insertId;
+  if (data.challengeId) {
+    const contribution = (data.contribution || 1) + (data.companionCount || 0);
+    await db.update(challenges).set({ currentValue: sql`${challenges.currentValue} + ${contribution}` }).where(eq(challenges.id, data.challengeId));
+    invalidateEventsCache();
+  }
+  return participationId;
 }
 async function updateParticipation(id, data) {
   const db = await getDb();
@@ -927,7 +973,14 @@ async function updateParticipation(id, data) {
 async function deleteParticipation(id) {
   const db = await getDb();
   if (!db) throw new Error("Database not available");
+  const participation = await db.select().from(participations).where(eq(participations.id, id));
+  const p = participation[0];
   await db.delete(participations).where(eq(participations.id, id));
+  if (p && p.challengeId) {
+    const contribution = (p.contribution || 1) + (p.companionCount || 0);
+    await db.update(challenges).set({ currentValue: sql`GREATEST(${challenges.currentValue} - ${contribution}, 0)` }).where(eq(challenges.id, p.challengeId));
+    invalidateEventsCache();
+  }
 }
 async function getParticipationCountByEventId(eventId) {
   const db = await getDb();
@@ -2068,6 +2121,95 @@ async function getOshikatsuStats(userId, twitterId) {
     totalContribution,
     recentChallenges
   };
+}
+async function recalculateChallengeCurrentValues() {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+  const allChallenges = await db.select({
+    id: challenges.id,
+    title: challenges.title,
+    currentValue: challenges.currentValue,
+    goalValue: challenges.goalValue
+  }).from(challenges);
+  const results = [];
+  for (const challenge of allChallenges) {
+    const participationList = await db.select({
+      contribution: participations.contribution,
+      companionCount: participations.companionCount
+    }).from(participations).where(eq(participations.challengeId, challenge.id));
+    const actualValue = participationList.reduce((sum, p) => {
+      return sum + (p.contribution || 1) + (p.companionCount || 0);
+    }, 0);
+    const oldValue = challenge.currentValue || 0;
+    const diff = actualValue - oldValue;
+    if (diff !== 0) {
+      await db.update(challenges).set({ currentValue: actualValue }).where(eq(challenges.id, challenge.id));
+      results.push({
+        id: challenge.id,
+        title: challenge.title,
+        oldValue,
+        newValue: actualValue,
+        diff
+      });
+    }
+  }
+  invalidateEventsCache();
+  return results;
+}
+async function getDataIntegrityReport() {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+  const allChallenges = await db.select({
+    id: challenges.id,
+    title: challenges.title,
+    hostName: challenges.hostName,
+    hostUsername: challenges.hostUsername,
+    currentValue: challenges.currentValue,
+    goalValue: challenges.goalValue,
+    status: challenges.status,
+    eventDate: challenges.eventDate
+  }).from(challenges).orderBy(desc(challenges.id));
+  const report = [];
+  for (const challenge of allChallenges) {
+    const participationList = await db.select({
+      id: participations.id,
+      contribution: participations.contribution,
+      companionCount: participations.companionCount
+    }).from(participations).where(eq(participations.challengeId, challenge.id));
+    const totalParticipations = participationList.length;
+    const totalContribution = participationList.reduce((sum, p) => sum + (p.contribution || 1), 0);
+    const totalCompanions = participationList.reduce((sum, p) => sum + (p.companionCount || 0), 0);
+    const actualTotalContribution = totalContribution + totalCompanions;
+    const storedCurrentValue = challenge.currentValue || 0;
+    const hasDiscrepancy = storedCurrentValue !== actualTotalContribution;
+    report.push({
+      id: challenge.id,
+      title: challenge.title,
+      hostName: challenge.hostName,
+      hostUsername: challenge.hostUsername,
+      status: challenge.status,
+      eventDate: challenge.eventDate,
+      goalValue: challenge.goalValue,
+      storedCurrentValue,
+      actualParticipantCount: totalParticipations,
+      actualTotalContribution,
+      hasDiscrepancy,
+      discrepancyAmount: actualTotalContribution - storedCurrentValue,
+      participationBreakdown: {
+        totalParticipations,
+        totalContribution,
+        totalCompanions
+      }
+    });
+  }
+  const summary = {
+    totalChallenges: report.length,
+    challengesWithDiscrepancy: report.filter((r) => r.hasDiscrepancy).length,
+    totalStoredValue: report.reduce((sum, r) => sum + r.storedCurrentValue, 0),
+    totalActualValue: report.reduce((sum, r) => sum + r.actualTotalContribution, 0),
+    totalDiscrepancy: report.reduce((sum, r) => sum + r.discrepancyAmount, 0)
+  };
+  return { summary, challenges: report };
 }
 var events, _db, eventsCache, EVENTS_CACHE_TTL, categoriesCache, CATEGORIES_CACHE_TTL;
 var init_db = __esm({
@@ -3273,7 +3415,7 @@ var adminProcedure = t.procedure.use(
 );
 
 // shared/version.ts
-var APP_VERSION = "v5.76";
+var APP_VERSION = "5.88";
 
 // server/_core/systemRouter.ts
 var systemRouter = router({
@@ -4642,6 +4784,21 @@ Design requirements:
         throw new Error("\u7BA1\u7406\u8005\u6A29\u9650\u304C\u5FC5\u8981\u3067\u3059");
       }
       return getUserById(input.userId);
+    }),
+    // データ整合性レポート取得
+    getDataIntegrityReport: protectedProcedure.query(async ({ ctx }) => {
+      if (ctx.user.role !== "admin") {
+        throw new Error("\u7BA1\u7406\u8005\u6A29\u9650\u304C\u5FC5\u8981\u3067\u3059");
+      }
+      return getDataIntegrityReport();
+    }),
+    // チャレンジのcurrentValueを再計算して修正
+    recalculateCurrentValues: protectedProcedure.mutation(async ({ ctx }) => {
+      if (ctx.user.role !== "admin") {
+        throw new Error("\u7BA1\u7406\u8005\u6A29\u9650\u304C\u5FC5\u8981\u3067\u3059");
+      }
+      const results = await recalculateChallengeCurrentValues();
+      return { success: true, fixedCount: results.length, details: results };
     })
   })
 });

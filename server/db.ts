@@ -7,6 +7,57 @@ const events = challenges;
 type InsertEvent = InsertChallenge;
 import { ENV } from "./_core/env";
 
+// URL用のスラッグを生成する関数
+export function generateSlug(title: string): string {
+  // 日本語のタイトルをローマ字に変換し、URLフレンドリーなスラッグを作成
+  // 例: "生誕祭ライブ 動員100人チャレンジ" -> "birthday-live-100"
+  
+  // 日本語のキーワードを英語に変換
+  const translations: Record<string, string> = {
+    '生誕祭': 'birthday',
+    'ライブ': 'live',
+    'ワンマン': 'oneman',
+    '動員': 'attendance',
+    'チャレンジ': 'challenge',
+    'フォロワー': 'followers',
+    '同時視聴': 'viewers',
+    '配信': 'stream',
+    'グループ': 'group',
+    'ソロ': 'solo',
+    'フェス': 'fes',
+    '対バン': 'taiban',
+    'ファンミーティング': 'fanmeeting',
+    'リリース': 'release',
+    'イベント': 'event',
+    '人': '',
+    '万': '0000',
+  };
+  
+  let slug = title.toLowerCase();
+  
+  // 日本語キーワードを英語に変換
+  for (const [jp, en] of Object.entries(translations)) {
+    slug = slug.replace(new RegExp(jp, 'g'), en);
+  }
+  
+  // 英字と数字のみを抽出し、ハイフンで結合
+  const words = slug.match(/[a-z]+|\d+/g) || [];
+  slug = words.join('-');
+  
+  // 連続ハイフンを単一に
+  slug = slug.replace(/-+/g, '-');
+  
+  // 先頭と末尾のハイフンを削除
+  slug = slug.replace(/^-|-$/g, '');
+  
+  // 空の場合はタイムスタンプを使用
+  if (!slug) {
+    slug = `challenge-${Date.now()}`;
+  }
+  
+  return slug;
+}
+
 let _db: ReturnType<typeof drizzle> | null = null;
 
 // Lazily create the drizzle instance so local tooling can run without a DB.
@@ -177,10 +228,13 @@ export async function createEvent(data: InsertEvent) {
   const now = new Date().toISOString().slice(0, 19).replace('T', ' ');
   const eventDate = data.eventDate ? new Date(data.eventDate).toISOString().slice(0, 19).replace('T', ' ') : now;
   
+  // slugを生成（タイトルからスラッグを作成）
+  const slug = data.slug || generateSlug(data.title);
+  
   const result = await db.execute(sql`
     INSERT INTO challenges (
       hostUserId, hostTwitterId, hostName, hostUsername, hostProfileImage, hostFollowersCount, hostDescription,
-      title, description, goalType, goalValue, goalUnit, currentValue,
+      title, slug, description, goalType, goalValue, goalUnit, currentValue,
       eventType, categoryId, eventDate, venue, prefecture,
       ticketPresale, ticketDoor, ticketUrl, externalUrl,
       status, isPublic, createdAt, updatedAt
@@ -193,6 +247,7 @@ export async function createEvent(data: InsertEvent) {
       ${data.hostFollowersCount ?? 0},
       ${data.hostDescription ?? null},
       ${data.title},
+      ${slug},
       ${data.description ?? null},
       ${data.goalType ?? 'attendance'},
       ${data.goalValue ?? 100},
@@ -257,7 +312,18 @@ export async function createParticipation(data: InsertParticipation) {
   const db = await getDb();
   if (!db) throw new Error("Database not available");
   const result = await db.insert(participations).values(data);
-  return result[0].insertId;
+  const participationId = result[0].insertId;
+  
+  // challengesのcurrentValueを更新（参加者数 + 同伴者数）
+  if (data.challengeId) {
+    const contribution = (data.contribution || 1) + (data.companionCount || 0);
+    await db.update(challenges)
+      .set({ currentValue: sql`${challenges.currentValue} + ${contribution}` })
+      .where(eq(challenges.id, data.challengeId));
+    invalidateEventsCache();
+  }
+  
+  return participationId;
 }
 
 export async function updateParticipation(id: number, data: Partial<InsertParticipation>) {
@@ -269,7 +335,21 @@ export async function updateParticipation(id: number, data: Partial<InsertPartic
 export async function deleteParticipation(id: number) {
   const db = await getDb();
   if (!db) throw new Error("Database not available");
+  
+  // 削除前に参加情報を取得
+  const participation = await db.select().from(participations).where(eq(participations.id, id));
+  const p = participation[0];
+  
   await db.delete(participations).where(eq(participations.id, id));
+  
+  // challengesのcurrentValueを減少
+  if (p && p.challengeId) {
+    const contribution = (p.contribution || 1) + (p.companionCount || 0);
+    await db.update(challenges)
+      .set({ currentValue: sql`GREATEST(${challenges.currentValue} - ${contribution}, 0)` })
+      .where(eq(challenges.id, p.challengeId));
+    invalidateEventsCache();
+  }
 }
 
 export async function getParticipationCountByEventId(eventId: number) {
@@ -1909,4 +1989,154 @@ export async function getOshikatsuStats(userId?: number, twitterId?: string) {
     totalContribution,
     recentChallenges,
   };
+}
+
+
+// ========== データ整合性確認・修復 ==========
+
+/**
+ * チャレンジのcurrentValueを再計算して修正
+ * 参加者テーブルから実際の数を集計してcurrentValueを更新
+ */
+export async function recalculateChallengeCurrentValues() {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+  
+  // 全チャレンジを取得
+  const allChallenges = await db.select({
+    id: challenges.id,
+    title: challenges.title,
+    currentValue: challenges.currentValue,
+    goalValue: challenges.goalValue,
+  }).from(challenges);
+  
+  const results: Array<{
+    id: number;
+    title: string;
+    oldValue: number;
+    newValue: number;
+    diff: number;
+  }> = [];
+  
+  for (const challenge of allChallenges) {
+    // participationsテーブルから実際の参加者数を計算
+    const participationList = await db.select({
+      contribution: participations.contribution,
+      companionCount: participations.companionCount,
+    }).from(participations).where(eq(participations.challengeId, challenge.id));
+    
+    // 実際の合計を計算（contribution + companionCount）
+    const actualValue = participationList.reduce((sum, p) => {
+      return sum + (p.contribution || 1) + (p.companionCount || 0);
+    }, 0);
+    
+    const oldValue = challenge.currentValue || 0;
+    const diff = actualValue - oldValue;
+    
+    // 差分がある場合のみ更新
+    if (diff !== 0) {
+      await db.update(challenges)
+        .set({ currentValue: actualValue })
+        .where(eq(challenges.id, challenge.id));
+      
+      results.push({
+        id: challenge.id,
+        title: challenge.title,
+        oldValue,
+        newValue: actualValue,
+        diff,
+      });
+    }
+  }
+  
+  invalidateEventsCache();
+  return results;
+}
+
+/**
+ * データ整合性レポートを取得（修正なし、確認のみ）
+ */
+export async function getDataIntegrityReport() {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+  
+  // 全チャレンジを取得
+  const allChallenges = await db.select({
+    id: challenges.id,
+    title: challenges.title,
+    hostName: challenges.hostName,
+    hostUsername: challenges.hostUsername,
+    currentValue: challenges.currentValue,
+    goalValue: challenges.goalValue,
+    status: challenges.status,
+    eventDate: challenges.eventDate,
+  }).from(challenges).orderBy(desc(challenges.id));
+  
+  const report: Array<{
+    id: number;
+    title: string;
+    hostName: string;
+    hostUsername: string | null;
+    status: string;
+    eventDate: Date;
+    goalValue: number;
+    storedCurrentValue: number;
+    actualParticipantCount: number;
+    actualTotalContribution: number;
+    hasDiscrepancy: boolean;
+    discrepancyAmount: number;
+    participationBreakdown: {
+      totalParticipations: number;
+      totalContribution: number;
+      totalCompanions: number;
+    };
+  }> = [];
+  
+  for (const challenge of allChallenges) {
+    // participationsテーブルから実際の参加者数を計算
+    const participationList = await db.select({
+      id: participations.id,
+      contribution: participations.contribution,
+      companionCount: participations.companionCount,
+    }).from(participations).where(eq(participations.challengeId, challenge.id));
+    
+    const totalParticipations = participationList.length;
+    const totalContribution = participationList.reduce((sum, p) => sum + (p.contribution || 1), 0);
+    const totalCompanions = participationList.reduce((sum, p) => sum + (p.companionCount || 0), 0);
+    const actualTotalContribution = totalContribution + totalCompanions;
+    
+    const storedCurrentValue = challenge.currentValue || 0;
+    const hasDiscrepancy = storedCurrentValue !== actualTotalContribution;
+    
+    report.push({
+      id: challenge.id,
+      title: challenge.title,
+      hostName: challenge.hostName,
+      hostUsername: challenge.hostUsername,
+      status: challenge.status,
+      eventDate: challenge.eventDate,
+      goalValue: challenge.goalValue,
+      storedCurrentValue,
+      actualParticipantCount: totalParticipations,
+      actualTotalContribution,
+      hasDiscrepancy,
+      discrepancyAmount: actualTotalContribution - storedCurrentValue,
+      participationBreakdown: {
+        totalParticipations,
+        totalContribution,
+        totalCompanions,
+      },
+    });
+  }
+  
+  // サマリー統計
+  const summary = {
+    totalChallenges: report.length,
+    challengesWithDiscrepancy: report.filter(r => r.hasDiscrepancy).length,
+    totalStoredValue: report.reduce((sum, r) => sum + r.storedCurrentValue, 0),
+    totalActualValue: report.reduce((sum, r) => sum + r.actualTotalContribution, 0),
+    totalDiscrepancy: report.reduce((sum, r) => sum + r.discrepancyAmount, 0),
+  };
+  
+  return { summary, challenges: report };
 }
