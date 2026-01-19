@@ -228,20 +228,17 @@ export async function createEvent(data: InsertEvent) {
   const now = new Date().toISOString().slice(0, 19).replace('T', ' ');
   const eventDate = data.eventDate ? new Date(data.eventDate).toISOString().slice(0, 19).replace('T', ' ') : now;
   
-  // slugを生成（タイトルからスラッグを作成）
-  const slug = data.slug || generateSlug(data.title);
-  
   // ticketSaleStartの処理
   const ticketSaleStart = data.ticketSaleStart ? new Date(data.ticketSaleStart).toISOString().slice(0, 19).replace('T', ' ') : null;
   
+  // 本番DBに存在しないカラム（slug, AI関連）は除外
   const result = await db.execute(sql`
     INSERT INTO challenges (
       hostUserId, hostTwitterId, hostName, hostUsername, hostProfileImage, hostFollowersCount, hostDescription,
-      title, slug, description, goalType, goalValue, goalUnit, currentValue,
+      title, description, goalType, goalValue, goalUnit, currentValue,
       eventType, categoryId, eventDate, venue, prefecture,
       ticketPresale, ticketDoor, ticketSaleStart, ticketUrl, externalUrl,
-      status, isPublic, createdAt, updatedAt,
-      aiSummary, intentTags, regionSummary, participantSummary, aiSummaryUpdatedAt
+      status, isPublic, createdAt, updatedAt
     ) VALUES (
       ${data.hostUserId ?? null},
       ${data.hostTwitterId ?? null},
@@ -251,7 +248,6 @@ export async function createEvent(data: InsertEvent) {
       ${data.hostFollowersCount ?? 0},
       ${data.hostDescription ?? null},
       ${data.title},
-      ${slug},
       ${data.description ?? null},
       ${data.goalType ?? 'attendance'},
       ${data.goalValue ?? 100},
@@ -270,12 +266,7 @@ export async function createEvent(data: InsertEvent) {
       ${data.status ?? 'active'},
       ${data.isPublic ?? true},
       ${now},
-      ${now},
-      ${null},
-      ${null},
-      ${null},
-      ${null},
-      ${null}
+      ${now}
     )
   `);
   
