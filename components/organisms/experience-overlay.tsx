@@ -675,59 +675,59 @@ export function ExperienceOverlay() {
             <PreviewContent type={currentSlide.previewType} />
           )}
         </Animated.View>
+
+        {/* ナビゲーションボタン（コンテンツの下に配置） */}
+        <View style={styles.navigation}>
+          {/* こん太（戻るボタン） */}
+          <Pressable
+            onPress={prevSlide}
+            disabled={currentSlideIndex === 0}
+            style={({ pressed }) => [
+              styles.characterNavButton,
+              currentSlideIndex === 0 && styles.characterNavButtonDisabled,
+              pressed && { transform: [{ scale: 0.95 }] }
+            ]}
+          >
+            <Image
+              source={CHARACTER_IMAGES.konta}
+              style={styles.navCharacterImage}
+              contentFit="contain"
+            />
+            <View style={[
+              styles.navBubble,
+              styles.navBubbleLeft,
+              currentSlideIndex === 0 && styles.navBubbleDisabled
+            ]}>
+              <View style={styles.navBubbleTailLeft} />
+              <Text style={[
+                styles.navBubbleText,
+                currentSlideIndex === 0 && styles.navBubbleTextDisabled
+              ]}>← 戻る</Text>
+            </View>
+          </Pressable>
+
+          {/* たぬ姉（次へボタン） */}
+          <Pressable
+            onPress={nextSlide}
+            style={({ pressed }) => [
+              styles.characterNavButton,
+              pressed && { transform: [{ scale: 0.95 }] }
+            ]}
+          >
+            <View style={[styles.navBubble, styles.navBubbleRight, styles.navBubblePrimary]}>
+              <Text style={styles.navBubbleTextPrimary}>
+                {isLastSlide ? "完了 ✓" : "次へ →"}
+              </Text>
+              <View style={styles.navBubbleTailRight} />
+            </View>
+            <Image
+              source={CHARACTER_IMAGES.tanune}
+              style={styles.navCharacterImage}
+              contentFit="contain"
+            />
+          </Pressable>
+        </View>
       </ScrollView>
-
-      {/* ナビゲーションボタン（こん太とたぬ姉のキャラクター吹き出し） */}
-      <View style={styles.navigation}>
-        {/* こん太（戻るボタン） */}
-        <Pressable
-          onPress={prevSlide}
-          disabled={currentSlideIndex === 0}
-          style={({ pressed }) => [
-            styles.characterNavButton,
-            currentSlideIndex === 0 && styles.characterNavButtonDisabled,
-            pressed && { transform: [{ scale: 0.95 }] }
-          ]}
-        >
-          <Image
-            source={CHARACTER_IMAGES.konta}
-            style={styles.navCharacterImage}
-            contentFit="contain"
-          />
-          <View style={[
-            styles.navBubble,
-            styles.navBubbleLeft,
-            currentSlideIndex === 0 && styles.navBubbleDisabled
-          ]}>
-            <View style={styles.navBubbleTailLeft} />
-            <Text style={[
-              styles.navBubbleText,
-              currentSlideIndex === 0 && styles.navBubbleTextDisabled
-            ]}>← 戻る</Text>
-          </View>
-        </Pressable>
-
-        {/* たぬ姉（次へボタン） */}
-        <Pressable
-          onPress={nextSlide}
-          style={({ pressed }) => [
-            styles.characterNavButton,
-            pressed && { transform: [{ scale: 0.95 }] }
-          ]}
-        >
-          <View style={[styles.navBubble, styles.navBubbleRight, styles.navBubblePrimary]}>
-            <Text style={styles.navBubbleTextPrimary}>
-              {isLastSlide ? "完了 ✓" : "次へ →"}
-            </Text>
-            <View style={styles.navBubbleTailRight} />
-          </View>
-          <Image
-            source={CHARACTER_IMAGES.tanune}
-            style={styles.navCharacterImage}
-            contentFit="contain"
-          />
-        </Pressable>
-      </View>
     </Animated.View>
   );
 }
