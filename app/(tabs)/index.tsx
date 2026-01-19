@@ -137,12 +137,44 @@ function FeaturedChallenge({ challenge, onPress }: { challenge: Challenge; onPre
         </View>
 
         {/* タイトル */}
-        <Text style={{ color: colors.foreground, fontSize: 22, fontWeight: "bold", marginBottom: 4 }}>
+        <Text style={{ color: colors.foreground, fontSize: 22, fontWeight: "bold", marginBottom: 8 }}>
           {challenge.title}
         </Text>
-        <Text style={{ color: "rgba(255,255,255,0.8)", fontSize: 14, marginBottom: 16 }}>
-          {challenge.hostName}
-        </Text>
+        
+        {/* 作成者情報 */}
+        <View style={{ flexDirection: "row", alignItems: "center", marginBottom: 16 }}>
+          {challenge.hostProfileImage ? (
+            <Image
+              source={{ uri: challenge.hostProfileImage }}
+              style={{ width: 32, height: 32, borderRadius: 16, marginRight: 8 }}
+              contentFit="cover"
+            />
+          ) : (
+            <View style={{ 
+              width: 32, 
+              height: 32, 
+              borderRadius: 16, 
+              backgroundColor: "rgba(255,255,255,0.2)", 
+              marginRight: 8,
+              alignItems: "center",
+              justifyContent: "center",
+            }}>
+              <Text style={{ color: colors.foreground, fontSize: 14, fontWeight: "bold" }}>
+                {(challenge.hostName || "?").charAt(0)}
+              </Text>
+            </View>
+          )}
+          <View>
+            <Text style={{ color: colors.foreground, fontSize: 14, fontWeight: "600" }}>
+              {challenge.hostName}
+            </Text>
+            {challenge.hostUsername && (
+              <Text style={{ color: "rgba(255,255,255,0.7)", fontSize: 12 }}>
+                @{challenge.hostUsername}
+              </Text>
+            )}
+          </View>
+        </View>
 
         {/* 大きな進捗表示 */}
         <View style={{ alignItems: "center", marginBottom: 16 }}>
@@ -1196,7 +1228,7 @@ export default function HomeScreen() {
             // 最初のアイテムのみチュートリアルハイライト対象
             if (index === 0) {
               return (
-                <TutorialHighlightTarget tutorialStep={1} userType="fan">
+                <TutorialHighlightTarget tutorialStep={1} userType="fan" style={{ flex: 1 }}>
                   {useColorfulCards ? (
                     <ColorfulChallengeCard {...cardProps} />
                   ) : (
