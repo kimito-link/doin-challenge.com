@@ -159,8 +159,8 @@ export default function RootLayout() {
         <QueryClientProvider client={queryClient}>
           <AutoLoginProvider>
             <LoginSuccessProvider>
-              <TutorialProvider>
-                <ExperienceProvider>
+              {/* <TutorialProvider> */}
+                {/* <ExperienceProvider> */}
                   <ToastProvider>
                   {/* Default to hiding native headers so raw route segments don't appear (e.g. "(tabs)", "products/[id]"). */}
                   {/* If a screen needs the native header, explicitly enable it and set a human title via Stack.Screen options. */}
@@ -175,8 +175,8 @@ export default function RootLayout() {
                     <TutorialUI />
                     {/* <ExperienceOverlay /> */}
                   </ToastProvider>
-                </ExperienceProvider>
-              </TutorialProvider>
+                {/* </ExperienceProvider> */}
+              {/* </TutorialProvider> */}
             </LoginSuccessProvider>
           </AutoLoginProvider>
         </QueryClientProvider>
