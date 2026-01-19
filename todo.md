@@ -2318,3 +2318,10 @@
 - [x] ホーム画面のチャレンジカードの数字を調査
 - [x] 管理画面にデータ整合性確認ダッシュボードを作成
 - [x] 数字の計算ロジックを修正（createParticipation/deleteParticipationにcurrentValue更新を追加）
+
+
+## デプロイ反映問題（v5.88）
+
+- [x] ManusのPublishでVercelにも反映されるように設定を確認（docs/DEPLOY.mdに仕様書作成）
+- [x] GitHubリポジトリへのプッシュ状況を確認
+- [x] 手動でGitHubにプッシュしてVercelデプロイをトリガー（v5.88反映完了）
