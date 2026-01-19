@@ -161,13 +161,9 @@ export default function CreateChallengeScreen() {
     onError: (error) => {
       // ユーザーフレンドリーなエラーメッセージを表示
       const errorMessage = error.message || "チャレンジの作成に失敗しました";
-      showAlert("チャレンジ作成エラー", errorMessage, [
+      showAlert("チャレンジ作成エラー", `${errorMessage}\n\n入力内容を確認して再度お試しください。`, [
         {
-          text: "もう一度試す",
-          onPress: () => handleCreate(),
-        },
-        {
-          text: "閉じる",
+          text: "OK",
           style: "cancel",
         },
       ]);

@@ -3423,7 +3423,7 @@ var adminProcedure = t.procedure.use(
 );
 
 // shared/version.ts
-var APP_VERSION = "v6.01";
+var APP_VERSION = "v6.02";
 
 // server/_core/systemRouter.ts
 var systemRouter = router({
