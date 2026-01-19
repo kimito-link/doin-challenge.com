@@ -173,7 +173,7 @@ export default function RootLayout() {
                   <OfflineBanner />
                   <NetworkToast />
                     <TutorialUI />
-                    <ExperienceOverlay />
+                    {/* <ExperienceOverlay /> */}
                   </ToastProvider>
                 </ExperienceProvider>
               </TutorialProvider>
