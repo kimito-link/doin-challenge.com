@@ -796,11 +796,9 @@ const styles = StyleSheet.create({
     textAlign: "right",
   },
   scrollContent: {
-    flexGrow: 1,
-    paddingBottom: 20,
+    paddingBottom: 40,
   },
   content: {
-    flex: 1,
     alignItems: "center",
   },
   characterSection: {
@@ -1909,7 +1907,7 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     justifyContent: "space-between",
     alignItems: "flex-end",
-    paddingTop: 16,
+    marginTop: 24,
     paddingHorizontal: 4,
   },
   
