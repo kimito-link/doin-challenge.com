@@ -277,7 +277,7 @@ const styles = StyleSheet.create({
     color: "#fff",
   },
   prefectureNameEmpty: {
-    color: "#9CA3AF",
+    color: "#CBD5E0",
   },
   prefectureCount: {
     color: "#D1D5DB",
@@ -288,7 +288,7 @@ const styles = StyleSheet.create({
     color: "rgba(255, 255, 255, 0.8)",
   },
   prefectureCountEmpty: {
-    color: "#9CA3AF",
+    color: "#CBD5E0",
   },
   listContent: {
     padding: 16,
@@ -336,7 +336,7 @@ const styles = StyleSheet.create({
     marginTop: 2,
   },
   participantPrefecture: {
-    color: "#9CA3AF",
+    color: "#CBD5E0",
     fontSize: 11,
     marginTop: 2,
   },

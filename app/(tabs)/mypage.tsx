@@ -480,7 +480,7 @@ export default function MyPageScreen() {
               disabled={isLoggingIn}
               style={{
                 minHeight: 52,
-                backgroundColor: isLoggingIn ? "#9CA3AF" : "#1DA1F2",
+                backgroundColor: isLoggingIn ? "#CBD5E0" : "#1DA1F2",
                 borderRadius: 26,
                 paddingVertical: 14,
                 paddingHorizontal: 32,

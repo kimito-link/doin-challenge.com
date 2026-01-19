@@ -266,7 +266,7 @@ export default function RankingsScreen() {
         />
       ) : (
         <View style={{ flex: 1, alignItems: "center", justifyContent: "center", padding: 32 }}>
-          <MaterialIcons name="leaderboard" size={64} color="#9CA3AF" />
+          <MaterialIcons name="leaderboard" size={64} color="#CBD5E0" />
           <Text style={{ color: "#fff", fontSize: 18, fontWeight: "bold", marginTop: 16, marginBottom: 8 }}>
             まだランキングデータがありません
           </Text>

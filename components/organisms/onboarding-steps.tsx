@@ -130,7 +130,7 @@ export function OnboardingSteps() {
                 <MaterialIcons
                   name="chevron-right"
                   size={isDesktop ? 28 : 24}
-                  color="#9CA3AF"
+                  color="#CBD5E0"
                 />
               </View>
             )}

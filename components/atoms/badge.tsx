@@ -14,7 +14,7 @@ const variantStyles = {
   default: {
     bg: "rgba(156, 163, 175, 0.2)",
     text: "#D1D5DB",
-    border: "#9CA3AF",
+    border: "#CBD5E0",
   },
   success: {
     bg: "rgba(34, 197, 94, 0.2)",

@@ -369,7 +369,7 @@ export default function ProfileScreen() {
                     </Text>
                     {participation.friendsCount > 0 && (
                       <>
-                        <Text style={{ color: "#9CA3AF", marginHorizontal: 8 }}>•</Text>
+                        <Text style={{ color: "#CBD5E0", marginHorizontal: 8 }}>•</Text>
                         <Text style={{ color: "#D1D5DB", fontSize: 12 }}>
                           +{participation.friendsCount}人連れ
                         </Text>
@@ -380,7 +380,7 @@ export default function ProfileScreen() {
               ))
             ) : (
               <View style={{ alignItems: "center", padding: 32 }}>
-                <MaterialIcons name="event-busy" size={48} color="#9CA3AF" />
+                <MaterialIcons name="event-busy" size={48} color="#CBD5E0" />
                 <Text style={{ color: "#D1D5DB", marginTop: 12 }}>参加履歴がありません</Text>
               </View>
             )
@@ -420,7 +420,7 @@ export default function ProfileScreen() {
               </View>
             ) : (
               <View style={{ alignItems: "center", padding: 32 }}>
-                <MaterialIcons name="emoji-events" size={48} color="#9CA3AF" />
+                <MaterialIcons name="emoji-events" size={48} color="#CBD5E0" />
                 <Text style={{ color: "#D1D5DB", marginTop: 12 }}>バッジがありません</Text>
               </View>
             )

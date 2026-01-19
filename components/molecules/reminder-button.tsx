@@ -237,7 +237,7 @@ export function ReminderButton({
                         <MaterialIcons
                           name={isActive ? "check-circle" : "radio-button-unchecked"}
                           size={20}
-                          color={isActive ? "#EC4899" : isPast ? "#9CA3AF" : "#D1D5DB"}
+                          color={isActive ? "#EC4899" : isPast ? "#CBD5E0" : "#D1D5DB"}
                         />
                         <Text
                           style={[
@@ -368,10 +368,10 @@ const styles = StyleSheet.create({
     color: "#EC4899",
   },
   optionTextDisabled: {
-    color: "#9CA3AF",
+    color: "#CBD5E0",
   },
   optionSubtext: {
-    color: "#9CA3AF",
+    color: "#CBD5E0",
     fontSize: 11,
     marginTop: 4,
     marginLeft: 30,

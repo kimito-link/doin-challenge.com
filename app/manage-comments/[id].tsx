@@ -69,7 +69,7 @@ export default function ManageCommentsScreen() {
     return (
       <ScreenContainer edges={["top", "left", "right"]} containerClassName="bg-background">
         <View style={{ flex: 1, alignItems: "center", justifyContent: "center", padding: 24 }}>
-          <MaterialIcons name="lock" size={64} color="#9CA3AF" />
+          <MaterialIcons name="lock" size={64} color="#CBD5E0" />
           <Text style={{ color: "#D1D5DB", fontSize: 16, marginTop: 16, textAlign: "center" }}>
             この機能はチャレンジの主催者または管理者のみ利用できます
           </Text>
@@ -258,7 +258,7 @@ export default function ManageCommentsScreen() {
                           value={pickReason}
                           onChangeText={setPickReason}
                           placeholder="ピックアップ理由（任意）"
-                          placeholderTextColor="#9CA3AF"
+                          placeholderTextColor="#CBD5E0"
                           style={{
                             backgroundColor: colors.background,
                             borderRadius: 8,
@@ -328,7 +328,7 @@ export default function ManageCommentsScreen() {
               })
             ) : (
               <View style={{ alignItems: "center", paddingVertical: 40 }}>
-                <MaterialIcons name="chat-bubble-outline" size={64} color="#9CA3AF" />
+                <MaterialIcons name="chat-bubble-outline" size={64} color="#CBD5E0" />
                 <Text style={{ color: "#D1D5DB", fontSize: 16, marginTop: 16 }}>
                   コメントがありません
                 </Text>
@@ -438,7 +438,7 @@ export default function ManageCommentsScreen() {
               ))
             ) : (
               <View style={{ alignItems: "center", paddingVertical: 40 }}>
-                <MaterialIcons name="star-outline" size={64} color="#9CA3AF" />
+                <MaterialIcons name="star-outline" size={64} color="#CBD5E0" />
                 <Text style={{ color: "#D1D5DB", fontSize: 16, marginTop: 16 }}>
                   ピックアップしたコメントはありません
                 </Text>

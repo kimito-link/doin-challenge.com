@@ -101,7 +101,7 @@ export default function NotificationsScreen() {
     return (
       <ScreenContainer edges={["top", "left", "right"]} containerClassName="bg-background">
         <View style={{ flex: 1, alignItems: "center", justifyContent: "center", padding: 24 }}>
-          <MaterialIcons name="notifications-off" size={64} color="#9CA3AF" />
+          <MaterialIcons name="notifications-off" size={64} color="#CBD5E0" />
           <Text style={{ color: "#D1D5DB", fontSize: 16, marginTop: 16, textAlign: "center" }}>
             通知を受け取るにはログインが必要です
           </Text>
@@ -240,7 +240,7 @@ export default function NotificationsScreen() {
                     <Text style={{ color: "#D1D5DB", fontSize: 13, marginTop: 4, lineHeight: 18 }}>
                       {notification.body}
                     </Text>
-                    <Text style={{ color: "#9CA3AF", fontSize: 11, marginTop: 8 }}>
+                    <Text style={{ color: "#CBD5E0", fontSize: 11, marginTop: 8 }}>
                       {new Date(notification.sentAt).toLocaleString("ja-JP")}
                     </Text>
                   </View>
@@ -259,7 +259,7 @@ export default function NotificationsScreen() {
             ))
           ) : (
             <View style={{ alignItems: "center", paddingVertical: 40 }}>
-              <MaterialIcons name="notifications-none" size={64} color="#9CA3AF" />
+              <MaterialIcons name="notifications-none" size={64} color="#CBD5E0" />
               <Text style={{ color: "#D1D5DB", fontSize: 16, marginTop: 16 }}>
                 通知はありません
               </Text>

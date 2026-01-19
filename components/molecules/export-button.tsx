@@ -84,7 +84,7 @@ export function ExportButton({ data, disabled = false }: ExportButtonProps) {
         accessibilityRole="button"
         accessibilityLabel="統計データをエクスポート"
       >
-        <MaterialIcons name="file-download" size={20} color={disabled ? "#9CA3AF" : "#fff"} />
+        <MaterialIcons name="file-download" size={20} color={disabled ? "#CBD5E0" : "#fff"} />
         <Text style={[styles.buttonText, disabled && styles.buttonTextDisabled]}>
           エクスポート
         </Text>
@@ -125,7 +125,7 @@ export function ExportButton({ data, disabled = false }: ExportButtonProps) {
                     表計算ソフトで開ける形式
                   </Text>
                 </View>
-                <MaterialIcons name="chevron-right" size={24} color="#9CA3AF" />
+                <MaterialIcons name="chevron-right" size={24} color="#CBD5E0" />
               </TouchableOpacity>
 
               {/* テキストレポート */}
@@ -143,7 +143,7 @@ export function ExportButton({ data, disabled = false }: ExportButtonProps) {
                     SNSでシェアしやすい形式
                   </Text>
                 </View>
-                <MaterialIcons name="chevron-right" size={24} color="#9CA3AF" />
+                <MaterialIcons name="chevron-right" size={24} color="#CBD5E0" />
               </TouchableOpacity>
 
               {/* クリップボードコピー（Web専用） */}
@@ -162,7 +162,7 @@ export function ExportButton({ data, disabled = false }: ExportButtonProps) {
                       CSVデータをコピー
                     </Text>
                   </View>
-                  <MaterialIcons name="chevron-right" size={24} color="#9CA3AF" />
+                  <MaterialIcons name="chevron-right" size={24} color="#CBD5E0" />
                 </TouchableOpacity>
               )}
             </View>
@@ -200,7 +200,7 @@ const styles = StyleSheet.create({
     fontWeight: "500",
   },
   buttonTextDisabled: {
-    color: "#9CA3AF",
+    color: "#CBD5E0",
   },
   modalOverlay: {
     flex: 1,

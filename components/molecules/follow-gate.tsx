@@ -248,7 +248,7 @@ export function FollowGate({
                 padding: 8,
               }}
             >
-              <MaterialIcons name="close" size={24} color="#9CA3AF" />
+              <MaterialIcons name="close" size={24} color="#CBD5E0" />
             </TouchableOpacity>
           </View>
         </View>

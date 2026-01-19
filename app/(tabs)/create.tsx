@@ -759,7 +759,7 @@ export default function CreateChallengeScreen() {
                       height: 24,
                       borderRadius: 4,
                       borderWidth: 2,
-                      borderColor: saveAsTemplate ? "#8B5CF6" : "#9CA3AF",
+                      borderColor: saveAsTemplate ? "#8B5CF6" : "#CBD5E0",
                       backgroundColor: saveAsTemplate ? "#8B5CF6" : "transparent",
                       alignItems: "center",
                       justifyContent: "center",
@@ -794,7 +794,7 @@ export default function CreateChallengeScreen() {
                           height: 20,
                           borderRadius: 4,
                           borderWidth: 2,
-                          borderColor: templateIsPublic ? "#22C55E" : "#9CA3AF",
+                          borderColor: templateIsPublic ? "#22C55E" : "#CBD5E0",
                           backgroundColor: templateIsPublic ? "#22C55E" : "transparent",
                           alignItems: "center",
                           justifyContent: "center",
@@ -822,7 +822,7 @@ export default function CreateChallengeScreen() {
                 }}
               >
                 <LinearGradient
-                  colors={createChallengeMutation.isPending ? ["#9CA3AF", "#9CA3AF"] : ["#EC4899", "#8B5CF6"]}
+                  colors={createChallengeMutation.isPending ? ["#CBD5E0", "#CBD5E0"] : ["#EC4899", "#8B5CF6"]}
                   start={{ x: 0, y: 0 }}
                   end={{ x: 1, y: 0 }}
                   style={{

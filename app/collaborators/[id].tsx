@@ -84,7 +84,7 @@ function CollaboratorCard({
             </Text>
             <View
               style={{
-                backgroundColor: ROLE_COLORS[collaborator.role] || "#9CA3AF",
+                backgroundColor: ROLE_COLORS[collaborator.role] || "#CBD5E0",
                 borderRadius: 4,
                 paddingHorizontal: 6,
                 paddingVertical: 2,
@@ -201,7 +201,7 @@ function InviteForm({
           value={twitterId}
           onChangeText={setTwitterId}
           placeholder="例: idolfunch"
-          placeholderTextColor="#9CA3AF"
+          placeholderTextColor="#CBD5E0"
           style={{
             backgroundColor: colors.background,
             borderRadius: 8,
@@ -234,7 +234,7 @@ function InviteForm({
             <Text style={{ color: colors.foreground, fontSize: 14, fontWeight: role === "co-host" ? "bold" : "normal" }}>
               共同主催者
             </Text>
-            <Text style={{ color: role === "co-host" ? "rgba(255,255,255,0.8)" : "#9CA3AF", fontSize: 10, marginTop: 2 }}>
+            <Text style={{ color: role === "co-host" ? "rgba(255,255,255,0.8)" : "#CBD5E0", fontSize: 10, marginTop: 2 }}>
               編集・参加者管理・招待
             </Text>
           </TouchableOpacity>
@@ -251,7 +251,7 @@ function InviteForm({
             <Text style={{ color: colors.foreground, fontSize: 14, fontWeight: role === "moderator" ? "bold" : "normal" }}>
               モデレーター
             </Text>
-            <Text style={{ color: role === "moderator" ? "rgba(255,255,255,0.8)" : "#9CA3AF", fontSize: 10, marginTop: 2 }}>
+            <Text style={{ color: role === "moderator" ? "rgba(255,255,255,0.8)" : "#CBD5E0", fontSize: 10, marginTop: 2 }}>
               参加者管理のみ
             </Text>
           </TouchableOpacity>
@@ -262,7 +262,7 @@ function InviteForm({
         onPress={handleSubmit}
         disabled={isLoading || !twitterId.trim()}
         style={{
-          backgroundColor: isLoading || !twitterId.trim() ? "#9CA3AF" : "#10B981",
+          backgroundColor: isLoading || !twitterId.trim() ? "#CBD5E0" : "#10B981",
           borderRadius: 8,
           padding: 14,
           alignItems: "center",
@@ -400,7 +400,7 @@ export default function CollaboratorsScreen() {
     return (
       <ScreenContainer className="p-4">
         <View style={{ flex: 1, alignItems: "center", justifyContent: "center" }}>
-          <MaterialIcons name="lock" size={48} color="#9CA3AF" />
+          <MaterialIcons name="lock" size={48} color="#CBD5E0" />
           <Text style={{ color: "#D1D5DB", fontSize: 16, marginTop: 12 }}>
             この機能は主催者のみ利用できます
           </Text>

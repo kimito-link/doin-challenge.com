@@ -195,7 +195,7 @@ export default function SettingsScreen() {
             </View>
           ) : (
             <View style={styles.notLoggedIn}>
-              <MaterialIcons name="person-outline" size={32} color="#9CA3AF" />
+              <MaterialIcons name="person-outline" size={32} color="#CBD5E0" />
               <Text style={styles.notLoggedInText}>ログインしていません</Text>
             </View>
           )}
@@ -217,7 +217,7 @@ export default function SettingsScreen() {
                   : "別のアカウントでログイン"}
               </Text>
             </View>
-            <MaterialIcons name="chevron-right" size={24} color="#9CA3AF" />
+            <MaterialIcons name="chevron-right" size={24} color="#CBD5E0" />
           </TouchableOpacity>
 
           {/* 保存済みアカウント一覧（簡易表示） */}
@@ -262,7 +262,7 @@ export default function SettingsScreen() {
               <View style={styles.menuItemContent}>
                 <Text style={[styles.menuItemTitle, styles.logoutText]}>ログアウト</Text>
               </View>
-              <MaterialIcons name="chevron-right" size={24} color="#9CA3AF" />
+              <MaterialIcons name="chevron-right" size={24} color="#CBD5E0" />
             </TouchableOpacity>
           )}
         </View>
@@ -286,10 +286,10 @@ export default function SettingsScreen() {
             <View style={styles.menuItemContent}>
               <Text style={styles.menuItemTitle}>テーマ</Text>
               <Text style={styles.menuItemDescription}>
-                {getThemeModeLabel(themeMode)} ({colorScheme === "dark" ? "ダーク" : "ライト"})
+                ダークモード
               </Text>
             </View>
-            <MaterialIcons name="chevron-right" size={24} color="#9CA3AF" />
+            <MaterialIcons name="chevron-right" size={24} color="#CBD5E0" />
           </TouchableOpacity>
         </View>
 
@@ -311,7 +311,7 @@ export default function SettingsScreen() {
                 プッシュ通知やリマインダーの設定
               </Text>
             </View>
-            <MaterialIcons name="chevron-right" size={24} color="#9CA3AF" />
+            <MaterialIcons name="chevron-right" size={24} color="#CBD5E0" />
           </TouchableOpacity>
         </View>
 
@@ -333,7 +333,7 @@ export default function SettingsScreen() {
                 アプリの使い方とよくある質問
               </Text>
             </View>
-            <MaterialIcons name="chevron-right" size={24} color="#9CA3AF" />
+            <MaterialIcons name="chevron-right" size={24} color="#CBD5E0" />
           </TouchableOpacity>
 
           <TouchableOpacity
@@ -350,7 +350,7 @@ export default function SettingsScreen() {
                 はじめの説明をもう一度見る
               </Text>
             </View>
-            <MaterialIcons name="chevron-right" size={24} color="#9CA3AF" />
+            <MaterialIcons name="chevron-right" size={24} color="#CBD5E0" />
           </TouchableOpacity>
 
           {/* v5.37: キャッシュクリアボタン */}
@@ -368,7 +368,7 @@ export default function SettingsScreen() {
                 古いデータを削除して最新の情報を取得
               </Text>
             </View>
-            <MaterialIcons name="chevron-right" size={24} color="#9CA3AF" />
+            <MaterialIcons name="chevron-right" size={24} color="#CBD5E0" />
           </TouchableOpacity>
         </View>
 
@@ -502,7 +502,7 @@ const styles = StyleSheet.create({
     marginBottom: 12,
   },
   notLoggedInText: {
-    color: "#9CA3AF",
+    color: "#CBD5E0",
     fontSize: 14,
     marginTop: 8,
   },
@@ -544,7 +544,7 @@ const styles = StyleSheet.create({
     marginBottom: 8,
   },
   savedAccountsLabel: {
-    color: "#9CA3AF",
+    color: "#CBD5E0",
     fontSize: 12,
     marginRight: 8,
   },
@@ -633,11 +633,11 @@ const styles = StyleSheet.create({
     marginBottom: 4,
   },
   footerText: {
-    color: "#9CA3AF",
+    color: "#CBD5E0",
     fontSize: 14,
   },
   footerSubtext: {
-    color: "#9CA3AF",
+    color: "#CBD5E0",
     fontSize: 12,
     marginTop: 4,
   },
@@ -660,7 +660,7 @@ const styles = StyleSheet.create({
     marginLeft: 4,
   },
   footerCopyright: {
-    color: "#9CA3AF",
+    color: "#CBD5E0",
     fontSize: 11,
     marginTop: 16,
   },

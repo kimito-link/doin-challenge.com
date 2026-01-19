@@ -352,14 +352,14 @@ const styles = StyleSheet.create({
     fontSize: 13,
   },
   textDisabled: {
-    color: "#9CA3AF",
+    color: "#CBD5E0",
   },
   footer: {
     padding: 16,
     marginTop: "auto",
   },
   footerText: {
-    color: "#9CA3AF",
+    color: "#CBD5E0",
     fontSize: 13,
     textAlign: "center",
     lineHeight: 18,

@@ -218,7 +218,7 @@ const styles = StyleSheet.create({
     marginTop: 2,
   },
   participantMessage: {
-    color: "#9CA3AF",
+    color: "#CBD5E0",
     fontSize: 12,
     marginTop: 4,
     fontStyle: "italic",

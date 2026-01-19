@@ -1,133 +1,83 @@
 import { createContext, useCallback, useContext, useEffect, useMemo, useState } from "react";
-import { Appearance, View, useColorScheme as useSystemColorScheme } from "react-native";
+import { Appearance, View } from "react-native";
 import { colorScheme as nativewindColorScheme, vars } from "nativewind";
-import AsyncStorage from "@react-native-async-storage/async-storage";
 
 import { SchemeColors, type ColorScheme } from "@/constants/theme";
 
-const THEME_STORAGE_KEY = "app_theme_preference";
-
-type ThemeMode = "system" | "light" | "dark";
+// v5.80: ダークモード専用化（ライトモードは削除）
+const FIXED_SCHEME: ColorScheme = "dark";
 
 type ThemeContextValue = {
   colorScheme: ColorScheme;
-  themeMode: ThemeMode;
+  // 後方互換性のため残すが、常にdarkを返す
+  themeMode: "dark";
   setColorScheme: (scheme: ColorScheme) => void;
-  setThemeMode: (mode: ThemeMode) => void;
+  setThemeMode: (mode: "dark") => void;
   toggleTheme: () => void;
 };
 
 const ThemeContext = createContext<ThemeContextValue | null>(null);
 
 export function ThemeProvider({ children }: { children: React.ReactNode }) {
-  const systemScheme = useSystemColorScheme() ?? "light";
-  const [themeMode, setThemeModeState] = useState<ThemeMode>("system");
-  const [colorScheme, setColorSchemeState] = useState<ColorScheme>(systemScheme);
   const [isInitialized, setIsInitialized] = useState(false);
 
-  // 保存されたテーマ設定を読み込み
-  useEffect(() => {
-    async function loadThemePreference() {
-      try {
-        const stored = await AsyncStorage.getItem(THEME_STORAGE_KEY);
-        if (stored && (stored === "system" || stored === "light" || stored === "dark")) {
-          setThemeModeState(stored as ThemeMode);
-          if (stored !== "system") {
-            setColorSchemeState(stored as ColorScheme);
-          }
-        }
-      } catch (error) {
-        console.error("[ThemeProvider] Failed to load theme:", error);
-      } finally {
-        setIsInitialized(true);
-      }
-    }
-    loadThemePreference();
-  }, []);
-
-  // システムテーマの変更を監視
-  useEffect(() => {
-    if (themeMode === "system") {
-      setColorSchemeState(systemScheme);
-    }
-  }, [systemScheme, themeMode]);
-
-  const applyScheme = useCallback((scheme: ColorScheme) => {
-    nativewindColorScheme.set(scheme);
-    Appearance.setColorScheme?.(scheme);
+  const applyScheme = useCallback(() => {
+    nativewindColorScheme.set(FIXED_SCHEME);
+    Appearance.setColorScheme?.(FIXED_SCHEME);
     if (typeof document !== "undefined") {
       const root = document.documentElement;
-      root.dataset.theme = scheme;
-      root.classList.toggle("dark", scheme === "dark");
-      const palette = SchemeColors[scheme];
+      root.dataset.theme = FIXED_SCHEME;
+      root.classList.add("dark");
+      const palette = SchemeColors[FIXED_SCHEME];
       Object.entries(palette).forEach(([token, value]) => {
         root.style.setProperty(`--color-${token}`, value);
       });
     }
   }, []);
 
-  const setColorScheme = useCallback((scheme: ColorScheme) => {
-    setColorSchemeState(scheme);
-    applyScheme(scheme);
-  }, [applyScheme]);
-
-  const setThemeMode = useCallback(async (mode: ThemeMode) => {
-    setThemeModeState(mode);
-    
-    // テーマ設定を保存
-    try {
-      await AsyncStorage.setItem(THEME_STORAGE_KEY, mode);
-    } catch (error) {
-      console.error("[ThemeProvider] Failed to save theme:", error);
-    }
-
-    // 実際のカラースキームを設定
-    if (mode === "system") {
-      setColorScheme(systemScheme);
-    } else {
-      setColorScheme(mode);
-    }
-  }, [systemScheme, setColorScheme]);
-
-  const toggleTheme = useCallback(() => {
-    // light -> dark -> system -> light のサイクル
-    const nextMode: ThemeMode = 
-      themeMode === "light" ? "dark" :
-      themeMode === "dark" ? "system" : "light";
-    setThemeMode(nextMode);
-  }, [themeMode, setThemeMode]);
-
   useEffect(() => {
-    if (isInitialized) {
-      applyScheme(colorScheme);
-    }
-  }, [applyScheme, colorScheme, isInitialized]);
+    applyScheme();
+    setIsInitialized(true);
+  }, [applyScheme]);
 
   const themeVariables = useMemo(
     () =>
       vars({
-        "color-primary": SchemeColors[colorScheme].primary,
-        "color-background": SchemeColors[colorScheme].background,
-        "color-surface": SchemeColors[colorScheme].surface,
-        "color-foreground": SchemeColors[colorScheme].foreground,
-        "color-muted": SchemeColors[colorScheme].muted,
-        "color-border": SchemeColors[colorScheme].border,
-        "color-success": SchemeColors[colorScheme].success,
-        "color-warning": SchemeColors[colorScheme].warning,
-        "color-error": SchemeColors[colorScheme].error,
+        "color-primary": SchemeColors[FIXED_SCHEME].primary,
+        "color-background": SchemeColors[FIXED_SCHEME].background,
+        "color-surface": SchemeColors[FIXED_SCHEME].surface,
+        "color-foreground": SchemeColors[FIXED_SCHEME].foreground,
+        "color-muted": SchemeColors[FIXED_SCHEME].muted,
+        "color-border": SchemeColors[FIXED_SCHEME].border,
+        "color-success": SchemeColors[FIXED_SCHEME].success,
+        "color-warning": SchemeColors[FIXED_SCHEME].warning,
+        "color-error": SchemeColors[FIXED_SCHEME].error,
       }),
-    [colorScheme],
+    [],
   );
+
+  // 後方互換性のためのダミー関数
+  const setColorScheme = useCallback(() => {
+    // ダークモード専用なので何もしない
+  }, []);
+
+  const setThemeMode = useCallback(() => {
+    // ダークモード専用なので何もしない
+  }, []);
+
+  const toggleTheme = useCallback(() => {
+    // ダークモード専用なので何もしない
+  }, []);
 
   const value = useMemo(
     () => ({
-      colorScheme,
-      themeMode,
+      colorScheme: FIXED_SCHEME,
+      themeMode: "dark" as const,
       setColorScheme,
       setThemeMode,
       toggleTheme,
     }),
-    [colorScheme, themeMode, setColorScheme, setThemeMode, toggleTheme],
+    [setColorScheme, setThemeMode, toggleTheme],
   );
 
   return (
@@ -146,29 +96,15 @@ export function useThemeContext(): ThemeContextValue {
 }
 
 /**
- * テーマモードのラベルを取得
+ * テーマモードのラベルを取得（後方互換性のため残す）
  */
-export function getThemeModeLabel(mode: ThemeMode): string {
-  switch (mode) {
-    case "system":
-      return "システム設定に従う";
-    case "light":
-      return "ライトモード";
-    case "dark":
-      return "ダークモード";
-  }
+export function getThemeModeLabel(mode: string): string {
+  return "ダークモード";
 }
 
 /**
- * テーマモードのアイコン名を取得
+ * テーマモードのアイコン名を取得（後方互換性のため残す）
  */
-export function getThemeModeIcon(mode: ThemeMode): string {
-  switch (mode) {
-    case "system":
-      return "settings-brightness";
-    case "light":
-      return "light-mode";
-    case "dark":
-      return "dark-mode";
-  }
+export function getThemeModeIcon(mode: string): string {
+  return "dark-mode";
 }

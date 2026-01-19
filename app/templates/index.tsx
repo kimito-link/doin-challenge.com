@@ -237,7 +237,7 @@ export default function TemplatesScreen() {
                   ))
                 ) : (
                   <View style={{ backgroundColor: "#1A1D21", borderRadius: 12, padding: 24, alignItems: "center" }}>
-                    <MaterialIcons name="folder-open" size={48} color="#9CA3AF" />
+                    <MaterialIcons name="folder-open" size={48} color="#CBD5E0" />
                     <Text style={{ color: "#D1D5DB", fontSize: 14, marginTop: 8, textAlign: "center" }}>
                       まだテンプレートがありません{"\n"}
                       チャレンジ作成時に保存できます
@@ -260,7 +260,7 @@ export default function TemplatesScreen() {
                 ))
               ) : (
                 <View style={{ backgroundColor: "#1A1D21", borderRadius: 12, padding: 24, alignItems: "center" }}>
-                  <MaterialIcons name="public" size={48} color="#9CA3AF" />
+                  <MaterialIcons name="public" size={48} color="#CBD5E0" />
                   <Text style={{ color: "#D1D5DB", fontSize: 14, marginTop: 8, textAlign: "center" }}>
                     公開テンプレートはまだありません
                   </Text>

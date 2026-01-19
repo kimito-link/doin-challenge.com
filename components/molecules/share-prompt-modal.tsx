@@ -270,7 +270,7 @@ const styles = StyleSheet.create({
     fontWeight: "bold",
   },
   contributionLabel: {
-    color: "#9CA3AF",
+    color: "#CBD5E0",
     fontSize: 11,
   },
   messageBox: {
@@ -356,7 +356,7 @@ const styles = StyleSheet.create({
     alignItems: "center",
   },
   skipButtonText: {
-    color: "#9CA3AF",
+    color: "#CBD5E0",
     fontSize: 14,
   },
 });

@@ -75,7 +75,7 @@ export function ErrorMessage({ message, onRetry, type = "error" }: ErrorMessageP
 export function NetworkError({ onRetry }: { onRetry?: () => void }) {
   return (
     <View style={{ padding: 20, alignItems: "center" }}>
-      <MaterialIcons name="wifi-off" size={64} color="#9CA3AF" />
+      <MaterialIcons name="wifi-off" size={64} color="#CBD5E0" />
       <Text style={{ color: "#fff", fontSize: 18, fontWeight: "bold", marginTop: 16, marginBottom: 8 }}>
         接続エラー
       </Text>
@@ -123,7 +123,7 @@ export function EmptyState({
 }) {
   return (
     <View style={{ flex: 1, alignItems: "center", justifyContent: "center", padding: 32 }}>
-      <MaterialIcons name={icon} size={64} color="#9CA3AF" />
+      <MaterialIcons name={icon} size={64} color="#CBD5E0" />
       <Text style={{ color: "#fff", fontSize: 18, fontWeight: "bold", marginTop: 16, marginBottom: 8 }}>
         {title}
       </Text>

@@ -158,7 +158,7 @@ const styles = StyleSheet.create({
     fontWeight: "bold",
   },
   timeLabel: {
-    color: "#9CA3AF",
+    color: "#CBD5E0",
     fontSize: 11,
     marginTop: 4,
   },

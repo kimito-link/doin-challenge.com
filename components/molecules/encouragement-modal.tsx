@@ -92,7 +92,7 @@ export function EncouragementModal({
             onPress={handleClose}
             activeOpacity={0.7}
           >
-            <MaterialIcons name="close" size={24} color="#9CA3AF" />
+            <MaterialIcons name="close" size={24} color="#CBD5E0" />
           </TouchableOpacity>
 
           {/* メインコンテンツ */}
@@ -201,7 +201,7 @@ const styles = StyleSheet.create({
   },
   message: {
     fontSize: 15,
-    color: "#9CA3AF",
+    color: "#CBD5E0",
     textAlign: "center",
     lineHeight: 24,
   },

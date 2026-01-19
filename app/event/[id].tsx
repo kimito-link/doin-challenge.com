@@ -46,7 +46,8 @@ const goalTypeConfig: Record<string, { label: string; icon: string; unit: string
 
 // 地域グループ
 const regionGroups = [
-  { name: "北海道・東北", prefectures: ["北海道", "青森県", "岩手県", "宮城県", "秋田県", "山形県", "福島県"] },
+  { name: "北海道", prefectures: ["北海道"] },
+  { name: "東北", prefectures: ["青森県", "岩手県", "宮城県", "秋田県", "山形県", "福島県"] },
   { name: "関東", prefectures: ["茨城県", "栃木県", "群馬県", "埼玉県", "千葉県", "東京都", "神奈川県"] },
   { name: "中部", prefectures: ["新潟県", "富山県", "石川県", "福井県", "山梨県", "長野県", "岐阜県", "静岡県", "愛知県"] },
   { name: "近畿", prefectures: ["三重県", "滋賀県", "京都府", "大阪府", "兵庫県", "奈良県", "和歌山県"] },
@@ -152,7 +153,7 @@ function RegionMap({ participations }: { participations: Participation[] }) {
               }}
             >
               <Text style={{ color: "#D1D5DB", fontSize: 12 }}>{region.name}</Text>
-              <Text style={{ color: count > 0 ? "#EC4899" : "#9CA3AF", fontSize: 20, fontWeight: "bold" }}>
+              <Text style={{ color: count > 0 ? "#EC4899" : "#CBD5E0", fontSize: 20, fontWeight: "bold" }}>
                 {count}人
               </Text>
             </View>
@@ -333,7 +334,7 @@ function ContributionRanking({ participations, followerIds = [] }: { participati
             <Text style={{ color: "#EC4899", fontSize: 18, fontWeight: "bold" }}>
               +{p.contribution || 1}
             </Text>
-            <Text style={{ color: "#9CA3AF", fontSize: 10 }}>
+            <Text style={{ color: "#CBD5E0", fontSize: 10 }}>
               {p.companionCount > 0 ? `(本人+${p.companionCount}人)` : ""}
             </Text>
             {p.followersCount && p.followersCount > 0 && (
@@ -398,7 +399,7 @@ function MessageCard({ participation, onCheer, cheerCount, onDM, challengeId, co
               </TouchableOpacity>
             )}
             {participation.prefecture && (
-              <Text style={{ color: "#9CA3AF", fontSize: 12 }}>
+              <Text style={{ color: "#CBD5E0", fontSize: 12 }}>
                 📍{participation.prefecture}
               </Text>
             )}
@@ -609,6 +610,12 @@ export default function ChallengeDetailScreen() {
   
   // フォロー状態
   const hostUserId = challenge?.hostUserId;
+  
+  // ホスト判定（hostTwitterIdで判定）
+  const userTwitterId = user?.openId?.startsWith("twitter:") 
+    ? user.openId.replace("twitter:", "") 
+    : user?.openId;
+  const isHost = challenge?.hostTwitterId && userTwitterId && challenge.hostTwitterId === userTwitterId;
   const { data: isFollowing } = trpc.follows.isFollowing.useQuery(
     { followeeId: hostUserId! },
     { enabled: !!user && !!hostUserId && hostUserId !== user.id }
@@ -707,6 +714,9 @@ export default function ChallengeDetailScreen() {
       );
     },
   });
+  
+  // チャレンジ削除用mutation
+  const deleteMutation = trpc.events.delete.useMutation();
   
   const createAnonymousMutation = trpc.participations.createAnonymous.useMutation({
     onSuccess: () => {
@@ -1083,7 +1093,7 @@ export default function ChallengeDetailScreen() {
                   <Text style={{ color: "#EC4899", fontSize: 48, fontWeight: "bold" }}>
                     {currentValue}
                   </Text>
-                  <Text style={{ color: "#9CA3AF", fontSize: 20, marginLeft: 4 }}>
+                  <Text style={{ color: "#CBD5E0", fontSize: 20, marginLeft: 4 }}>
                     / {goalValue}{unit}
                   </Text>
                 </View>
@@ -1286,7 +1296,7 @@ export default function ChallengeDetailScreen() {
             )}
 
             {/* ホスト用管理ボタン */}
-            {user && challenge.hostUserId === user.id && (
+            {user && isHost && (
               <View style={{ gap: 12, marginTop: 16 }}>
                 <TouchableOpacity
                   onPress={() => router.push(`/dashboard/${challengeId}`)}
@@ -1369,6 +1379,63 @@ export default function ChallengeDetailScreen() {
                   <MaterialIcons name="group-add" size={20} color={colors.foreground} />
                   <Text style={{ color: colors.foreground, fontSize: 14, fontWeight: "bold", marginLeft: 8 }}>
                     共同主催者管理
+                  </Text>
+                </TouchableOpacity>
+                
+                {/* 編集ボタン */}
+                <TouchableOpacity
+                  onPress={() => router.push(`/edit-challenge/${challengeId}`)}
+                  style={{
+                    backgroundColor: "#A0AEC0",
+                    borderRadius: 12,
+                    padding: 14,
+                    flexDirection: "row",
+                    alignItems: "center",
+                    justifyContent: "center",
+                  }}
+                >
+                  <MaterialIcons name="edit" size={20} color={colors.foreground} />
+                  <Text style={{ color: colors.foreground, fontSize: 14, fontWeight: "bold", marginLeft: 8 }}>
+                    チャレンジを編集
+                  </Text>
+                </TouchableOpacity>
+                
+                {/* 削除ボタン */}
+                <TouchableOpacity
+                  onPress={() => {
+                    Alert.alert(
+                      "チャレンジを削除",
+                      "このチャレンジを削除しますか？\nこの操作は取り消すことができません。",
+                      [
+                        { text: "キャンセル", style: "cancel" },
+                        {
+                          text: "削除する",
+                          style: "destructive",
+                          onPress: async () => {
+                            try {
+                              await deleteMutation.mutateAsync({ id: challengeId });
+                              Alert.alert("削除完了", "チャレンジを削除しました");
+                              router.replace("/mypage");
+                            } catch (error) {
+                              Alert.alert("エラー", "削除に失敗しました");
+                            }
+                          },
+                        },
+                      ]
+                    );
+                  }}
+                  style={{
+                    backgroundColor: "#EF4444",
+                    borderRadius: 12,
+                    padding: 14,
+                    flexDirection: "row",
+                    alignItems: "center",
+                    justifyContent: "center",
+                  }}
+                >
+                  <MaterialIcons name="delete" size={20} color={colors.foreground} />
+                  <Text style={{ color: colors.foreground, fontSize: 14, fontWeight: "bold", marginLeft: 8 }}>
+                    チャレンジを削除
                   </Text>
                 </TouchableOpacity>
               </View>
@@ -1545,7 +1612,7 @@ export default function ChallengeDetailScreen() {
                         {unspecifiedCount > 0 && (
                           <View style={{
                             width: `${unspecifiedPercent}%`,
-                            backgroundColor: "#9CA3AF",
+                            backgroundColor: "#CBD5E0",
                             justifyContent: "center",
                             alignItems: "center",
                           }}>
@@ -1569,7 +1636,7 @@ export default function ChallengeDetailScreen() {
                           <Text style={{ color: "#D1D5DB", fontSize: 12 }}>女性 {femaleCount}人</Text>
                         </View>
                         <View style={{ flexDirection: "row", alignItems: "center" }}>
-                          <View style={{ width: 12, height: 12, borderRadius: 6, backgroundColor: "#9CA3AF", marginRight: 6 }} />
+                          <View style={{ width: 12, height: 12, borderRadius: 6, backgroundColor: "#CBD5E0", marginRight: 6 }} />
                           <Text style={{ color: "#D1D5DB", fontSize: 12 }}>未設定 {unspecifiedCount}人</Text>
                         </View>
                       </View>
@@ -1716,7 +1783,7 @@ export default function ChallengeDetailScreen() {
                   return p.prefecture === selectedPrefectureFilter;
                 }).length === 0 && selectedPrefectureFilter !== "all" && (
                   <View style={{ alignItems: "center", paddingVertical: 24 }}>
-                    <MaterialIcons name="search-off" size={48} color="#9CA3AF" />
+                    <MaterialIcons name="search-off" size={48} color="#CBD5E0" />
                     <Text style={{ color: "#D1D5DB", fontSize: 14, marginTop: 8 }}>
                       {selectedPrefectureFilter}からの参加者はまだいません
                     </Text>
@@ -1833,10 +1900,10 @@ export default function ChallengeDetailScreen() {
                       alignItems: "center",
                     }}
                   >
-                    <Text style={{ color: prefecture ? "#fff" : "#9CA3AF" }}>
+                    <Text style={{ color: prefecture ? "#fff" : "#CBD5E0" }}>
                       {prefecture || "選択してください"}
                     </Text>
-                    <MaterialIcons name="arrow-drop-down" size={24} color="#9CA3AF" />
+                    <MaterialIcons name="arrow-drop-down" size={24} color="#CBD5E0" />
                   </TouchableOpacity>
                   {showPrefectureList && (
                     <View
@@ -1907,7 +1974,7 @@ export default function ChallengeDetailScreen() {
                       <Text style={{ color: "#D1D5DB", fontSize: 14, marginBottom: 4 }}>
                         Twitterユーザー名またはURL
                       </Text>
-                      <Text style={{ color: "#9CA3AF", fontSize: 12, marginBottom: 8 }}>
+                      <Text style={{ color: "#CBD5E0", fontSize: 12, marginBottom: 8 }}>
                         @username または https://x.com/username
                       </Text>
                       <View style={{ flexDirection: "row", gap: 8, marginBottom: 12 }}>
@@ -1919,7 +1986,7 @@ export default function ChallengeDetailScreen() {
                             setLookupError(null);
                           }}
                           placeholder="@idolfunch または https://x.com/idolfunch"
-                          placeholderTextColor="#9CA3AF"
+                          placeholderTextColor="#CBD5E0"
                           autoCapitalize="none"
                           style={{
                             flex: 1,
@@ -2003,7 +2070,7 @@ export default function ChallengeDetailScreen() {
                             marginVertical: 12,
                           }}>
                             <View style={{ flex: 1, height: 1, backgroundColor: "#2D3139" }} />
-                            <Text style={{ color: "#9CA3AF", fontSize: 12, marginHorizontal: 12 }}>
+                            <Text style={{ color: "#CBD5E0", fontSize: 12, marginHorizontal: 12 }}>
                               または名前で追加
                             </Text>
                             <View style={{ flex: 1, height: 1, backgroundColor: "#2D3139" }} />
@@ -2015,7 +2082,7 @@ export default function ChallengeDetailScreen() {
                             value={newCompanionName}
                             onChangeText={setNewCompanionName}
                             placeholder="ニックネーム"
-                            placeholderTextColor="#9CA3AF"
+                            placeholderTextColor="#CBD5E0"
                             style={{
                               backgroundColor: "#1A1D21",
                               borderRadius: 8,
@@ -2122,7 +2189,7 @@ export default function ChallengeDetailScreen() {
                             onPress={() => handleRemoveCompanion(companion.id)}
                             style={{ padding: 8 }}
                           >
-                            <MaterialIcons name="close" size={20} color="#9CA3AF" />
+                            <MaterialIcons name="close" size={20} color="#CBD5E0" />
                           </TouchableOpacity>
                         </View>
                       ))}
@@ -2149,7 +2216,7 @@ export default function ChallengeDetailScreen() {
                       <Text style={{ color: "#D1D5DB", fontSize: 14, marginLeft: 4 }}>人</Text>
                     </View>
                   </View>
-                  <Text style={{ color: "#9CA3AF", fontSize: 11, marginTop: 8 }}>
+                  <Text style={{ color: "#CBD5E0", fontSize: 11, marginTop: 8 }}>
                     ※ 自分 + 友人{companions.length}人 = {1 + companions.length}人の貢献になります
                   </Text>
                 </View>
@@ -2162,7 +2229,7 @@ export default function ChallengeDetailScreen() {
                     value={message}
                     onChangeText={setMessage}
                     placeholder="応援メッセージを書いてね"
-                    placeholderTextColor="#9CA3AF"
+                    placeholderTextColor="#CBD5E0"
                     multiline
                     numberOfLines={3}
                     style={{
@@ -2299,7 +2366,7 @@ export default function ChallengeDetailScreen() {
                     }}
                   >
                     <LinearGradient
-                      colors={!prefecture ? ["#9CA3AF", "#9CA3AF"] : ["#EC4899", "#8B5CF6"]}
+                      colors={!prefecture ? ["#CBD5E0", "#CBD5E0"] : ["#EC4899", "#8B5CF6"]}
                       start={{ x: 0, y: 0 }}
                       end={{ x: 1, y: 0 }}
                       style={{

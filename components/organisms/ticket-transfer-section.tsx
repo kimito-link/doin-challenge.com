@@ -241,7 +241,7 @@ export function TicketTransferSection({ challengeId, challengeTitle }: TicketTra
               }
             }}
             style={{
-              backgroundColor: isInWaitlist ? "#9CA3AF" : "#8B5CF6",
+              backgroundColor: isInWaitlist ? "#CBD5E0" : "#8B5CF6",
               borderRadius: 16,
               minHeight: 52,
               paddingVertical: 16,
@@ -249,7 +249,7 @@ export function TicketTransferSection({ challengeId, challengeTitle }: TicketTra
               flexDirection: "row",
               alignItems: "center",
               justifyContent: "center",
-              shadowColor: isInWaitlist ? "#9CA3AF" : "#8B5CF6",
+              shadowColor: isInWaitlist ? "#CBD5E0" : "#8B5CF6",
               shadowOffset: { width: 0, height: 4 },
               shadowOpacity: 0.3,
               shadowRadius: 8,
@@ -310,7 +310,7 @@ export function TicketTransferSection({ challengeId, challengeTitle }: TicketTra
                     )}
                   </View>
                   <View style={{
-                    backgroundColor: priceTypeColors[transfer.priceType as PriceType] || "#9CA3AF",
+                    backgroundColor: priceTypeColors[transfer.priceType as PriceType] || "#CBD5E0",
                     paddingHorizontal: 10,
                     paddingVertical: 4,
                     borderRadius: 12,
@@ -387,7 +387,7 @@ export function TicketTransferSection({ challengeId, challengeTitle }: TicketTra
           </View>
         ) : (
           <View style={{ alignItems: "center", paddingVertical: 32 }}>
-            <MaterialIcons name="confirmation-number" size={48} color="#9CA3AF" />
+            <MaterialIcons name="confirmation-number" size={48} color="#CBD5E0" />
             <Text style={{ color: "#D1D5DB", fontSize: 14, marginTop: 12, textAlign: "center" }}>
               現在、チケット譲渡の投稿はありません
             </Text>
@@ -462,7 +462,7 @@ export function TicketTransferSection({ challengeId, challengeTitle }: TicketTra
           </View>
         ) : (
           <View style={{ alignItems: "center", paddingVertical: 32 }}>
-            <MaterialIcons name="people" size={48} color="#9CA3AF" />
+            <MaterialIcons name="people" size={48} color="#CBD5E0" />
             <Text style={{ color: "#D1D5DB", fontSize: 14, marginTop: 12, textAlign: "center" }}>
               現在、チケットを探している人はいません
             </Text>
@@ -594,7 +594,7 @@ function CreateTransferModal({
             value={comment}
             onChangeText={setComment}
             placeholder="例: 急な仕事で行けなくなりました..."
-            placeholderTextColor="#9CA3AF"
+            placeholderTextColor="#CBD5E0"
             multiline
             numberOfLines={3}
             style={{

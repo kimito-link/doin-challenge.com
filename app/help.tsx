@@ -126,7 +126,7 @@ export default function HelpScreen() {
                 はじめの説明をもう一度見る
               </Text>
             </View>
-            <MaterialIcons name="chevron-right" size={24} color="#9CA3AF" />
+            <MaterialIcons name="chevron-right" size={24} color="#CBD5E0" />
           </TouchableOpacity>
         </Animated.View>
 
@@ -149,7 +149,7 @@ export default function HelpScreen() {
                 <MaterialIcons 
                   name={expandedIndex === index ? "expand-less" : "expand-more"} 
                   size={24} 
-                  color="#9CA3AF" 
+                  color="#CBD5E0" 
                 />
               </View>
               {expandedIndex === index && (
@@ -383,7 +383,7 @@ const styles = StyleSheet.create({
     alignItems: "center",
   },
   footerText: {
-    color: "#9CA3AF",
+    color: "#CBD5E0",
     fontSize: 13,
     textAlign: "center",
     lineHeight: 20,

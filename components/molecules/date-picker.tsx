@@ -273,7 +273,7 @@ const styles = StyleSheet.create({
     fontSize: 14,
   },
   placeholderText: {
-    color: "#9CA3AF",
+    color: "#CBD5E0",
   },
   modalOverlay: {
     flex: 1,
