@@ -1,26 +1,28 @@
-import { FlatList, Text, View, TouchableOpacity, ScrollView, Linking } from "react-native";
+import { Text, View, ScrollView } from "react-native";
 import { useState, useEffect, useRef } from "react";
-import { Image } from "expo-image";
 import { useRouter } from "expo-router";
 import { ScreenContainer } from "@/components/organisms/screen-container";
-import { ResponsiveContainer } from "@/components/molecules/responsive-container";
 import { trpc } from "@/lib/trpc";
 import { useAuth } from "@/hooks/use-auth";
 import { useFollowStatus } from "@/hooks/use-follow-status";
 import { useResponsive } from "@/hooks/use-responsive";
 import { useColors } from "@/hooks/use-colors";
-import { FollowStatusBadge, FollowPromptBanner } from "@/components/molecules/follow-gate";
-import MaterialIcons from "@expo/vector-icons/MaterialIcons";
-import { LinearGradient } from "expo-linear-gradient";
+import { FollowPromptBanner } from "@/components/molecules/follow-gate";
 import { AppHeader } from "@/components/organisms/app-header";
-import { ConfirmModal } from "@/components/molecules/confirm-modal";
 import { LogoutConfirmModal } from "@/components/molecules/logout-confirm-modal";
 import { MypageSkeleton } from "@/components/organisms/mypage-skeleton";
 import { AccountSwitcher } from "@/components/organisms/account-switcher";
 import { TutorialResetButton } from "@/components/molecules/tutorial-reset-button";
-import { FanEmptyState } from "@/components/organisms/fan-empty-state";
-import { TwitterUserCard } from "@/components/molecules/twitter-user-card";
-import { LoginScreen, ProfileCard, SettingsLinkItem, loginPatterns, getRandomPattern } from "@/features/mypage";
+import { 
+  LoginScreen, 
+  ProfileCard, 
+  SettingsLinkItem, 
+  loginPatterns, 
+  getRandomPattern,
+  BadgeSection,
+  ParticipationSection,
+  HostedChallengeSection
+} from "@/features/mypage";
 
 
 
@@ -203,148 +205,19 @@ export default function MyPageScreen() {
           />
 
           {/* バッジセクション */}
-          <View style={{ paddingHorizontal: 16, marginBottom: 24 }}>
-            <Text style={{ color: colors.foreground, fontSize: 18, fontWeight: "bold", marginBottom: 12 }}>
-              獲得バッジ
-            </Text>
-            
-            {myBadges && myBadges.length > 0 ? (
-              <View style={{ flexDirection: "row", flexWrap: "wrap", gap: 12 }}>
-                {myBadges.map((userBadge: any) => (
-                  <View
-                    key={userBadge.id}
-                    style={{
-                      backgroundColor: "#1A1D21",
-                      borderRadius: 12,
-                      padding: 12,
-                      alignItems: "center",
-                      width: 80,
-                      borderWidth: 1,
-                      borderColor: "#2D3139",
-                    }}
-                  >
-                    <Text style={{ fontSize: 32 }}>{userBadge.badge?.icon || "🏅"}</Text>
-                    <Text style={{ color: "#D1D5DB", fontSize: 10, marginTop: 4, textAlign: "center" }}>
-                      {userBadge.badge?.name || "バッジ"}
-                    </Text>
-                  </View>
-                ))}
-              </View>
-            ) : (
-              <View
-                style={{
-                  backgroundColor: "#1A1D21",
-                  borderRadius: 12,
-                  padding: 24,
-                  alignItems: "center",
-                  borderWidth: 1,
-                  borderColor: "#2D3139",
-                }}
-              >
-                <Text style={{ fontSize: 32, marginBottom: 8 }}>🏅</Text>
-                <Text style={{ color: "#D1D5DB", fontSize: 14 }}>
-                  まだバッジを獲得していません
-                </Text>
-              </View>
-            )}
-          </View>
+          <BadgeSection badges={myBadges} />
 
           {/* 参加チャレンジセクション */}
-          <View style={{ paddingHorizontal: 16, marginBottom: 24 }}>
-            <Text style={{ color: colors.foreground, fontSize: 18, fontWeight: "bold", marginBottom: 12 }}>
-              参加チャレンジ
-            </Text>
-            
-            {myParticipations && myParticipations.length > 0 ? (
-              <View style={{ gap: 12 }}>
-                {myParticipations.map((participation: any) => (
-                  <TouchableOpacity
-                    key={participation.id}
-                    onPress={() => handleChallengePress(participation.eventId)}
-                    style={{
-                      backgroundColor: "#1A1D21",
-                      borderRadius: 12,
-                      padding: 16,
-                      borderWidth: 1,
-                      borderColor: "#2D3139",
-                    }}
-                  >
-                    <View style={{ flexDirection: "row", justifyContent: "space-between", alignItems: "center" }}>
-                      <View style={{ flex: 1 }}>
-                        <Text style={{ color: colors.foreground, fontSize: 16, fontWeight: "bold" }}>
-                          {participation.event?.title || "チャレンジ"}
-                        </Text>
-                        <Text style={{ color: "#D1D5DB", fontSize: 12, marginTop: 4 }}>
-                          貢献度: {participation.contribution || 1}
-                        </Text>
-                      </View>
-                      <MaterialIcons name="chevron-right" size={24} color="#D1D5DB" />
-                    </View>
-                  </TouchableOpacity>
-                ))}
-              </View>
-            ) : (
-              <FanEmptyState />
-            )}
-          </View>
+          <ParticipationSection 
+            participations={myParticipations} 
+            onChallengePress={handleChallengePress} 
+          />
 
           {/* 主催チャレンジセクション */}
-          <View style={{ paddingHorizontal: 16, marginBottom: 100 }}>
-            <Text style={{ color: colors.foreground, fontSize: 18, fontWeight: "bold", marginBottom: 12 }}>
-              主催チャレンジ
-            </Text>
-            
-            {myChallenges && myChallenges.length > 0 ? (
-              <View style={{ gap: 12 }}>
-                {myChallenges.map((challenge: any) => (
-                  <TouchableOpacity
-                    key={challenge.id}
-                    onPress={() => handleChallengePress(challenge.id)}
-                    style={{
-                      backgroundColor: "#1A1D21",
-                      borderRadius: 12,
-                      padding: 16,
-                      borderWidth: 1,
-                      borderColor: "#DD6500",
-                    }}
-                  >
-                    <View style={{ flexDirection: "row", justifyContent: "space-between", alignItems: "center" }}>
-                      <View style={{ flex: 1 }}>
-                        <View style={{ flexDirection: "row", alignItems: "center", marginBottom: 4 }}>
-                          <View style={{ backgroundColor: "#DD6500", borderRadius: 4, paddingHorizontal: 6, paddingVertical: 2, marginRight: 8 }}>
-                            <Text style={{ color: colors.foreground, fontSize: 10, fontWeight: "bold" }}>主催</Text>
-                          </View>
-                          <Text style={{ color: colors.foreground, fontSize: 16, fontWeight: "bold" }}>
-                            {challenge.title}
-                          </Text>
-                        </View>
-                        <Text style={{ color: "#D1D5DB", fontSize: 12 }}>
-                          {challenge.currentCount || 0} / {challenge.goalCount || 0} 人
-                        </Text>
-                      </View>
-                      <MaterialIcons name="chevron-right" size={24} color="#D1D5DB" />
-                    </View>
-                  </TouchableOpacity>
-                ))}
-              </View>
-            ) : (
-              <View
-                style={{
-                  backgroundColor: "#1A1D21",
-                  borderRadius: 12,
-                  padding: 24,
-                  alignItems: "center",
-                  borderWidth: 1,
-                  borderColor: "#2D3139",
-                }}
-              >
-                <Text style={{ fontSize: 32, marginBottom: 8 }}>🎯</Text>
-                <Text style={{ color: "#D1D5DB", fontSize: 14 }}>
-                  まだチャレンジを主催していません
-                </Text>
-              </View>
-            )}
-          </View>
+          <HostedChallengeSection 
+            challenges={myChallenges} 
+            onChallengePress={handleChallengePress} 
+          />
         </ScrollView>
       )}
 

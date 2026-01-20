@@ -7,3 +7,6 @@
 export { LoginScreen, loginPatterns, getRandomPattern } from "./LoginScreen";
 export { ProfileCard } from "./ProfileCard";
 export { SettingsLinkItem } from "./SettingsLinkItem";
+
+// セクションコンポーネント
+export { BadgeSection, ParticipationSection, HostedChallengeSection } from "./sections";

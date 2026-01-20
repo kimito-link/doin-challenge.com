@@ -2637,3 +2637,11 @@ features/create/
 - [x] ui/components/TemplateSaveSection.tsx
 - [x] create.tsxの薄型化（971行 → 636行、約35%削減）
 - [x] TypeScriptエラー修正（eventTypes/goalTypes → eventTypeOptions/goalTypeOptions）
+
+
+### mypage.tsx 分割（GPT推奨構造）
+- [x] mypage.tsxの現状分析
+- [x] features/mypage/ディレクトリ構造の整理
+- [x] UIコンポーネントの分離（BadgeSection, ParticipationSection, HostedChallengeSection）
+- [x] mypage.tsxの薄型化（365行 → 238行、約35%削減）
+- [x] テスト実行と動作確認
