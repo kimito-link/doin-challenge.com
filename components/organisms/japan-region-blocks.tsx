@@ -241,6 +241,17 @@ export function JapanRegionBlocks({ prefectureCounts, onPrefecturePress, onRegio
   const maxRegionCount = useMemo(() => {
     return Math.max(...Object.values(regionTotals), 0);
   }, [regionTotals]);
+  
+  // 地域ランキング（参加者数の多い順）
+  const regionRanking = useMemo(() => {
+    return regions
+      .map(region => ({
+        ...region,
+        total: regionTotals[region.id] || 0,
+      }))
+      .filter(r => r.total > 0)
+      .sort((a, b) => b.total - a.total);
+  }, [regionTotals]);
 
   // レスポンシブ設定
   const isSmallScreen = screenWidth < 375;
@@ -402,6 +413,48 @@ export function JapanRegionBlocks({ prefectureCounts, onPrefecturePress, onRegio
           <Text style={styles.legendLabel}>多</Text>
         </View>
       </View>
+
+      {/* 地域ランキング */}
+      {regionRanking.length > 0 && (
+        <View style={styles.rankingContainer}>
+          <Text style={styles.rankingTitle}>🏆 地域ランキング</Text>
+          {regionRanking.map((region, index) => {
+            const rankEmoji = index === 0 ? "🥇" : index === 1 ? "🥈" : index === 2 ? "🥉" : `${index + 1}`;
+            const isUserRegion = region.id === userRegionId;
+            const barWidth = maxRegionCount > 0 ? (region.total / maxRegionCount) * 100 : 0;
+            
+            return (
+              <View key={region.id} style={[
+                styles.rankingItem,
+                isUserRegion && styles.rankingItemHighlight
+              ]}>
+                <View style={styles.rankingLeft}>
+                  <Text style={styles.rankingRank}>{rankEmoji}</Text>
+                  <Text style={styles.rankingEmoji}>{region.emoji}</Text>
+                  <Text style={[
+                    styles.rankingName,
+                    isUserRegion && styles.rankingNameHighlight
+                  ]}>
+                    {region.shortName}
+                  </Text>
+                </View>
+                <View style={styles.rankingRight}>
+                  <View style={styles.rankingBarContainer}>
+                    <View style={[
+                      styles.rankingBar,
+                      { 
+                        width: `${barWidth}%`,
+                        backgroundColor: region.color,
+                      }
+                    ]} />
+                  </View>
+                  <Text style={styles.rankingCount}>{region.total}人</Text>
+                </View>
+              </View>
+            );
+          })}
+        </View>
+      )}
 
       {/* 熱い地域ハイライト */}
       {stats.hotPrefecture && stats.maxCount > 0 && (
@@ -676,6 +729,80 @@ const styles = StyleSheet.create({
   legendLabel: {
     fontSize: 10,
     color: color.textMuted,
+  },
+  rankingContainer: {
+    backgroundColor: color.border,
+    borderRadius: 12,
+    padding: 12,
+    marginBottom: 12,
+  },
+  rankingTitle: {
+    fontSize: 14,
+    fontWeight: "bold",
+    color: color.textPrimary,
+    marginBottom: 12,
+  },
+  rankingItem: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+    paddingVertical: 8,
+    borderBottomWidth: 1,
+    borderBottomColor: color.surfaceAlt,
+  },
+  rankingItemHighlight: {
+    backgroundColor: "rgba(236, 72, 153, 0.1)",
+    marginHorizontal: -8,
+    paddingHorizontal: 8,
+    borderRadius: 8,
+    borderBottomWidth: 0,
+  },
+  rankingLeft: {
+    flexDirection: "row",
+    alignItems: "center",
+    flex: 1,
+  },
+  rankingRank: {
+    fontSize: 16,
+    width: 28,
+    textAlign: "center",
+  },
+  rankingEmoji: {
+    fontSize: 18,
+    marginRight: 8,
+  },
+  rankingName: {
+    fontSize: 14,
+    color: color.textPrimary,
+  },
+  rankingNameHighlight: {
+    fontWeight: "bold",
+    color: color.accentPrimary,
+  },
+  rankingRight: {
+    flexDirection: "row",
+    alignItems: "center",
+    flex: 1,
+    justifyContent: "flex-end",
+  },
+  rankingBarContainer: {
+    flex: 1,
+    height: 8,
+    backgroundColor: color.surfaceAlt,
+    borderRadius: 4,
+    marginRight: 8,
+    overflow: "hidden",
+  },
+  rankingBar: {
+    height: "100%",
+    borderRadius: 4,
+  },
+  rankingCount: {
+    fontSize: 14,
+    fontWeight: "bold",
+    color: color.textPrimary,
+    width: 50,
+    textAlign: "right",
   },
   hotHighlight: {
     flexDirection: "row",
