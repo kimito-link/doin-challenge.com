@@ -2694,3 +2694,61 @@ features/create/
 - [x] RegionMap.tsx - 2箇所をトークン化
 
 **結果: events内の直書き色（#DD6500, #EC4899, #9CA3AF）は0箇所になりました！**
+
+
+## チュートリアル/追体験機能の強化（将来計画）
+
+### 訴求ポイントの追加
+- [ ] 「まだ決まってない」選択肢を追加（イベント未定でも事前に動員予測ができる）
+- [ ] ライブ動員予測の訴求 - 「みんながどれぐらいライブに来てくれるか事前にわかる」
+- [ ] 本・グッズ販売予測の訴求 - 「本を出したときにどれぐらい売れるか事前にわかる」
+- [ ] チュートリアル画面でこれらのユースケースを紹介
+- [ ] 追体験機能（デモモード）でこれらのシナリオを体験できるようにする
+
+---
+
+## リファクタリング継続計画（v4.8以降）
+
+### 他のfeaturesのトークン化（段階的）
+- [ ] features/home/ のトークン化
+- [ ] features/create/ のトークン化
+- [ ] features/mypage/ のトークン化
+
+### ライト/ダークテーマ対応
+- [ ] tokens.tsをuseColors()に連携
+- [ ] テーマ切り替え時に色が自動で変わるようにする
+
+### 共通フォーム部品の抽出
+- [ ] RadioButton, Checkbox, NumberStepperなどを共通コンポーネント化
+
+
+## features/home トークン化（v4.8）
+
+### tokens.ts作成
+- [ ] features/home/ui/theme/tokens.ts を作成
+
+### 16箇所の置換
+- [ ] FeaturedChallenge.tsx - 3箇所
+- [ ] ChallengeCard.tsx - 3箇所
+- [ ] EngagementSection.tsx - 1箇所
+- [ ] CatchCopySection.tsx - 2箇所
+- [ ] FeatureListSection.tsx - 2箇所
+- [ ] ExperienceBanner.tsx - 1箇所
+- [ ] FilterButton.tsx - 1箇所
+- [ ] SectionHeader.tsx - 2箇所
+- [ ] SearchBar.tsx - 1箇所
+- [ ] テスト実行と動作確認
+
+
+## リファクタリング（v4.5）
+
+### コンポーネント分割
+- [x] create.tsx分割（971行→636行、約35%削減）
+- [x] mypage.tsx分割（365行→238行、約35%削減）
+- [x] index.tsx分割（671行→449行、約33%削減）
+
+### 視認性改善・トークン化
+- [x] features/events のトークン化（21箇所→0箇所）
+- [x] features/home のトークン化（47箇所→0箇所）
+- [ ] features/create のトークン化（13箇所/5ファイル）
+- [ ] features/mypage のトークン化（12箇所/6ファイル）

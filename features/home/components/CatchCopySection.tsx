@@ -6,6 +6,7 @@ import { View, Text } from "react-native";
 import { Image } from "expo-image";
 import { LinearGradient } from "expo-linear-gradient";
 import { useColors } from "@/hooks/use-colors";
+import { homeUI, homeText, homeGradient } from "@/features/home/ui/theme/tokens";
 
 // キャラクター画像
 const characterImages = {
@@ -17,12 +18,12 @@ export function CatchCopySection() {
   return (
     <View style={{ marginHorizontal: 16, marginVertical: 12 }}>
       <LinearGradient
-        colors={["#1A1D21", "#0D1117"]}
+        colors={homeGradient.surfaceGradient}
         style={{
           borderRadius: 16,
           padding: 24,
           borderWidth: 1,
-          borderColor: "#2D3139",
+          borderColor: homeUI.border,
         }}
       >
         {/* キャラクターと吹き出し */}
@@ -50,7 +51,7 @@ export function CatchCopySection() {
               みんな、ちょっと聞いて！😊✨
             </Text>
             <Text style={{ 
-              color: "#E5E7EB", 
+              color: homeText.primary, 
               fontSize: 13, 
               lineHeight: 20,
             }}>
@@ -62,7 +63,7 @@ export function CatchCopySection() {
         {/* メインメッセージ */}
         <View style={{ marginBottom: 20 }}>
           <Text style={{ 
-            color: "#D1D5DB", 
+            color: homeText.muted, 
             fontSize: 14, 
             lineHeight: 24,
             marginBottom: 16,
@@ -73,7 +74,7 @@ export function CatchCopySection() {
           </Text>
           
           <Text style={{ 
-            color: "#EC4899", 
+            color: homeText.brand, 
             fontSize: 18, 
             fontWeight: "bold",
             textAlign: "center",
@@ -83,7 +84,7 @@ export function CatchCopySection() {
           </Text>
 
           <Text style={{ 
-            color: "#D1D5DB", 
+            color: homeText.muted, 
             fontSize: 14, 
             lineHeight: 24,
           }}>
@@ -99,10 +100,10 @@ export function CatchCopySection() {
           padding: 16,
           marginBottom: 20,
           borderLeftWidth: 3,
-          borderLeftColor: "#8B5CF6",
+          borderLeftColor: homeUI.iconBgPurple,
         }}>
           <Text style={{ 
-            color: "#E5E7EB", 
+            color: homeText.primary, 
             fontSize: 14, 
             lineHeight: 22,
           }}>
@@ -133,7 +134,7 @@ export function CatchCopySection() {
           alignItems: "center",
         }}>
           <Text style={{ 
-            color: "#EC4899", 
+            color: homeText.brand, 
             fontSize: 15, 
             fontWeight: "bold",
             marginBottom: 4,
@@ -141,7 +142,7 @@ export function CatchCopySection() {
             さあ、一緒に推しの未来を作ろう！🙌
           </Text>
           <Text style={{ 
-            color: "#D1D5DB", 
+            color: homeText.muted, 
             fontSize: 12,
           }}>
             下のチャレンジから参加表明してみてね

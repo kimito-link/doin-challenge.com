@@ -6,6 +6,7 @@ import { View, Text } from "react-native";
 import { Image } from "expo-image";
 import { LinearGradient } from "expo-linear-gradient";
 import { useColors } from "@/hooks/use-colors";
+import { homeColor, homeGradient, homeUI, homeText } from "@/features/home/ui/theme/tokens";
 import { PressableCard } from "@/components/molecules/pressable-card";
 import { Countdown } from "@/components/atoms/countdown";
 import { goalTypeConfig } from "@/constants/goal-types";
@@ -36,18 +37,18 @@ export function FeaturedChallenge({ challenge, onPress }: FeaturedChallengeProps
         borderRadius: 16,
         overflow: "hidden",
         borderWidth: 2,
-        borderColor: "#DD6500",
+        borderColor: homeColor.accent,
       }}
     >
       <LinearGradient
-        colors={["#EC4899", "#8B5CF6", "#6366F1"]}
+        colors={homeGradient.pinkPurpleIndigo}
         start={{ x: 0, y: 0 }}
         end={{ x: 1, y: 1 }}
         style={{ padding: 20 }}
       >
         {/* 注目バッジ */}
         <View style={{ flexDirection: "row", alignItems: "center", marginBottom: 12 }}>
-          <View style={{ backgroundColor: "#DD6500", paddingHorizontal: 12, paddingVertical: 4, borderRadius: 12 }}>
+          <View style={{ backgroundColor: homeColor.accent, paddingHorizontal: 12, paddingVertical: 4, borderRadius: 12 }}>
             <Text style={{ color: colors.foreground, fontSize: 12, fontWeight: "bold" }}>🔥 注目のチャレンジ</Text>
           </View>
           {!isDateUndecided && (
@@ -105,7 +106,7 @@ export function FeaturedChallenge({ challenge, onPress }: FeaturedChallengeProps
               {unit}
             </Text>
           </Text>
-          <Text style={{ color: "#FFD700", fontSize: 16, fontWeight: "bold", marginTop: 4 }}>
+          <Text style={{ color: homeUI.iconBgGold, fontSize: 16, fontWeight: "bold", marginTop: 4 }}>
             あと{remaining}
             {unit}で目標達成！
           </Text>
@@ -114,7 +115,7 @@ export function FeaturedChallenge({ challenge, onPress }: FeaturedChallengeProps
         {/* 進捗バー */}
         <View style={{ height: 12, backgroundColor: "rgba(255,255,255,0.2)", borderRadius: 6, overflow: "hidden" }}>
           <LinearGradient
-            colors={["#FFD700", "#FFA500"]}
+            colors={homeGradient.goldOrange}
             start={{ x: 0, y: 0 }}
             end={{ x: 1, y: 0 }}
             style={{ height: "100%", width: `${progress}%`, borderRadius: 6 }}

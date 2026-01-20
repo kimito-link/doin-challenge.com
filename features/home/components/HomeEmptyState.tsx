@@ -4,6 +4,7 @@
  */
 
 import { ScrollView } from "react-native";
+import { homeUI } from "@/features/home/ui/theme/tokens";
 import { ExperienceBanner } from "./ExperienceBanner";
 import { CatchCopySection } from "./CatchCopySection";
 import { HostEmptyState } from "@/components/organisms/host-empty-state";
@@ -14,7 +15,7 @@ interface HomeEmptyStateProps {
 
 export function HomeEmptyState({ onGenerateSamples: _onGenerateSamples }: HomeEmptyStateProps) {
   return (
-    <ScrollView style={{ flex: 1, backgroundColor: "#0D1117" }}>
+    <ScrollView style={{ flex: 1, backgroundColor: homeUI.surfaceAlt }}>
       {/* デモ体験バナー（ログインなしでお試し） */}
       <ExperienceBanner />
       

@@ -7,6 +7,7 @@ import { View, Text, ScrollView, TouchableOpacity } from "react-native";
 import { useState, useEffect } from "react";
 import { useRouter } from "expo-router";
 import { useColors } from "@/hooks/use-colors";
+import { homeUI, homeText } from "@/features/home/ui/theme/tokens";
 import { trpc } from "@/lib/trpc";
 import { OptimizedAvatar } from "@/components/molecules/optimized-image";
 
@@ -31,13 +32,13 @@ export function RecommendedHostsSection() {
   return (
     <View style={{ marginHorizontal: 16, marginVertical: 12 }}>
       <View style={{ 
-        backgroundColor: "#1A1D21", 
+        backgroundColor: homeUI.surface, 
         borderRadius: 16, 
         padding: 16,
         borderWidth: 1,
-        borderColor: "#2D3139",
+        borderColor: homeUI.border,
       }}>
-        <Text style={{ color: "#8B5CF6", fontSize: 16, fontWeight: "bold", marginBottom: 12 }}>
+        <Text style={{ color: homeUI.iconBgPurple, fontSize: 16, fontWeight: "bold", marginBottom: 12 }}>
           ✨ おすすめの主催者
         </Text>
         <ScrollView horizontal showsHorizontalScrollIndicator={false}>
@@ -51,18 +52,18 @@ export function RecommendedHostsSection() {
                 <OptimizedAvatar
                   source={host.profileImage ? { uri: host.profileImage } : undefined}
                   size={56}
-                  fallbackColor="#8B5CF6"
+                  fallbackColor={homeUI.iconBgPurple}
                   fallbackText={(host.name || "?").charAt(0)}
                 />
                 <Text style={{ color: colors.foreground, fontSize: 12, marginTop: 6, textAlign: "center" }} numberOfLines={1}>
                   {host.name || "主催者"}
                 </Text>
                 {host.username && (
-                  <Text style={{ color: "#D1D5DB", fontSize: 10 }} numberOfLines={1}>
+                  <Text style={{ color: homeText.muted, fontSize: 10 }} numberOfLines={1}>
                     @{host.username}
                   </Text>
                 )}
-                <Text style={{ color: "#8B5CF6", fontSize: 9, marginTop: 2 }}>
+                <Text style={{ color: homeUI.iconBgPurple, fontSize: 9, marginTop: 2 }}>
                   {host.challengeCount}チャレンジ
                 </Text>
               </TouchableOpacity>

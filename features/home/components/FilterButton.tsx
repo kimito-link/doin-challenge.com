@@ -5,6 +5,7 @@
 
 import { TouchableOpacity, Text } from "react-native";
 import { useColors } from "@/hooks/use-colors";
+import { homeUI, homeText } from "@/features/home/ui/theme/tokens";
 
 interface FilterButtonProps {
   label: string;
@@ -23,7 +24,7 @@ export function FilterButton({ label, active, onPress }: FilterButtonProps) {
         paddingHorizontal: 20,
         paddingVertical: 12,
         borderRadius: 22,
-        backgroundColor: active ? "#DD6500" : "#2D3139",
+        backgroundColor: active ? homeText.accent : homeUI.border,
         marginRight: 8,
         justifyContent: "center",
         alignItems: "center",

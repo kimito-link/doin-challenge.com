@@ -5,17 +5,18 @@
 import { View, Text } from "react-native";
 import MaterialIcons from "@expo/vector-icons/MaterialIcons";
 import { useColors } from "@/hooks/use-colors";
+import { homeUI, homeText } from "@/features/home/ui/theme/tokens";
 
 export function FeatureListSection() {
   const colors = useColors();
   return (
     <View style={{ marginHorizontal: 16, marginVertical: 12 }}>
       <View style={{
-        backgroundColor: "#1A1D21",
+        backgroundColor: homeUI.surface,
         borderRadius: 16,
         padding: 20,
         borderWidth: 1,
-        borderColor: "#2D3139",
+        borderColor: homeUI.border,
       }}>
         <Text style={{ 
           color: colors.foreground, 
@@ -31,7 +32,7 @@ export function FeatureListSection() {
           <View style={{ flexDirection: "row", alignItems: "center" }}>
             <View style={{ 
               width: 32, height: 32, borderRadius: 16, 
-              backgroundColor: "#EC4899", 
+              backgroundColor: homeText.brand, 
               alignItems: "center", justifyContent: "center",
               marginRight: 12,
             }}>
@@ -44,7 +45,7 @@ export function FeatureListSection() {
           <View style={{ flexDirection: "row", alignItems: "center" }}>
             <View style={{ 
               width: 32, height: 32, borderRadius: 16, 
-              backgroundColor: "#8B5CF6", 
+              backgroundColor: homeUI.iconBgPurple, 
               alignItems: "center", justifyContent: "center",
               marginRight: 12,
             }}>
@@ -57,7 +58,7 @@ export function FeatureListSection() {
           <View style={{ flexDirection: "row", alignItems: "center" }}>
             <View style={{ 
               width: 32, height: 32, borderRadius: 16, 
-              backgroundColor: "#DD6500", 
+              backgroundColor: homeText.accent, 
               alignItems: "center", justifyContent: "center",
               marginRight: 12,
             }}>

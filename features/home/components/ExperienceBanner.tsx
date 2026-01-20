@@ -5,6 +5,7 @@
 import { View, Text, TouchableOpacity } from "react-native";
 import { Image } from "expo-image";
 import { useColors } from "@/hooks/use-colors";
+import { homeUI, homeText } from "@/features/home/ui/theme/tokens";
 import { useResponsive } from "@/hooks/use-responsive";
 import { useExperience } from "@/lib/experience-context";
 
@@ -16,11 +17,11 @@ export function ExperienceBanner() {
   return (
     <View style={{ marginHorizontal: isDesktop ? 24 : 16, marginTop: 16, marginBottom: 8 }}>
       <View style={{
-        backgroundColor: "#1A1D21",
+        backgroundColor: homeUI.surface,
         borderRadius: 16,
         padding: 16,
         borderWidth: 1,
-        borderColor: "#2D3139",
+        borderColor: homeUI.border,
       }}>
         <Text style={{ 
           color: colors.foreground, 
@@ -32,7 +33,7 @@ export function ExperienceBanner() {
           追体験してみよう
         </Text>
         <Text style={{ 
-          color: "#D1D5DB", 
+          color: homeText.muted, 
           fontSize: 13,
           lineHeight: 20,
           textAlign: "center",
@@ -49,7 +50,7 @@ export function ExperienceBanner() {
             activeOpacity={0.8}
             style={{
               flex: 1,
-              backgroundColor: "#EC4899",
+              backgroundColor: homeText.brand,
               borderRadius: 12,
               padding: 16,
               alignItems: "center",
@@ -84,7 +85,7 @@ export function ExperienceBanner() {
             activeOpacity={0.8}
             style={{
               flex: 1,
-              backgroundColor: "#8B5CF6",
+              backgroundColor: homeUI.iconBgPurple,
               borderRadius: 12,
               padding: 16,
               alignItems: "center",

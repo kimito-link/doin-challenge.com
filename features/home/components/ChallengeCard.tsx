@@ -6,6 +6,7 @@ import { View, Text } from "react-native";
 import { LinearGradient } from "expo-linear-gradient";
 import MaterialIcons from "@expo/vector-icons/MaterialIcons";
 import { useColors } from "@/hooks/use-colors";
+import { homeColor, homeGradient, homeUI, homeText } from "@/features/home/ui/theme/tokens";
 import { useResponsive } from "@/hooks/use-responsive";
 import { AnimatedCard } from "@/components/molecules/animated-pressable";
 import { LazyAvatar } from "@/components/molecules/lazy-image";
@@ -50,13 +51,13 @@ export function ChallengeCard({
       onPress={onPress}
       scaleAmount={0.98}
       style={{
-        backgroundColor: "#1A1D21",
+        backgroundColor: homeUI.surface,
         borderRadius: 12,
         marginHorizontal: isDesktop ? 4 : 4,
         marginVertical: 6,
         overflow: "hidden",
         borderWidth: 1,
-        borderColor: "#2D3139",
+        borderColor: homeUI.border,
         width: cardWidth as any,
         shadowColor: "#000",
         shadowOffset: { width: 0, height: 2 },
@@ -72,7 +73,7 @@ export function ChallengeCard({
       </View>
 
       <LinearGradient
-        colors={["#EC4899", "#8B5CF6"]}
+        colors={homeGradient.pinkPurple}
         start={{ x: 0, y: 0 }}
         end={{ x: 1, y: 1 }}
         style={{ height: 60, justifyContent: "flex-end", paddingHorizontal: 12, paddingBottom: 8 }}
@@ -91,7 +92,7 @@ export function ChallengeCard({
           <LazyAvatar
             source={challenge.hostProfileImage ? { uri: challenge.hostProfileImage } : undefined}
             size={32}
-            fallbackColor="#EC4899"
+            fallbackColor={homeColor.fallback}
             fallbackText={challenge.hostName?.charAt(0) || challenge.hostUsername?.charAt(0) || "?"}
             lazy={true}
           />
@@ -102,31 +103,31 @@ export function ChallengeCard({
         <Text style={{ color: colors.foreground, fontSize: 14, fontWeight: "bold", marginBottom: 4 }} numberOfLines={2}>
           {challenge.title}
         </Text>
-        <Text style={{ color: "#D1D5DB", fontSize: 12, marginBottom: 8 }}>{challenge.hostName}</Text>
+        <Text style={{ color: homeText.muted, fontSize: 12, marginBottom: 8 }}>{challenge.hostName}</Text>
         <View style={{ marginBottom: 8 }}>
           <View style={{ flexDirection: "row", justifyContent: "space-between", marginBottom: 4 }}>
             <Text style={{ color: colors.foreground, fontSize: 18, fontWeight: "bold" }}>
               {challenge.currentValue}
-              <Text style={{ fontSize: 12, color: "#D1D5DB" }}> / {challenge.goalValue}{unit}</Text>
+              <Text style={{ fontSize: 12, color: homeText.muted }}> / {challenge.goalValue}{unit}</Text>
             </Text>
           </View>
-          <View style={{ height: 6, backgroundColor: "#2D3139", borderRadius: 3, overflow: "hidden" }}>
+          <View style={{ height: 6, backgroundColor: homeUI.progressBar, borderRadius: 3, overflow: "hidden" }}>
             <LinearGradient
-              colors={["#EC4899", "#8B5CF6"]}
+              colors={homeGradient.pinkPurple}
               start={{ x: 0, y: 0 }}
               end={{ x: 1, y: 0 }}
               style={{ height: "100%", width: `${progress}%`, borderRadius: 3 }}
             />
           </View>
-          <Text style={{ color: "#D1D5DB", fontSize: 10, marginTop: 4 }}>
+          <Text style={{ color: homeText.muted, fontSize: 10, marginTop: 4 }}>
             あと{remaining}{unit}で目標達成！
           </Text>
         </View>
         <View style={{ flexDirection: "row", alignItems: "center", justifyContent: "space-between" }}>
           {!isDateUndecided && <Countdown targetDate={challenge.eventDate} compact />}
           <View style={{ flexDirection: "row", alignItems: "center" }}>
-            <MaterialIcons name="event" size={12} color="#FBBF24" />
-            <Text style={{ color: "#FBBF24", fontSize: 12, marginLeft: 2 }}>{formattedDate}</Text>
+            <MaterialIcons name="event" size={12} color={homeText.accent} />
+            <Text style={{ color: homeText.accent, fontSize: 12, marginLeft: 2 }}>{formattedDate}</Text>
           </View>
         </View>
       </View>

@@ -6,6 +6,7 @@
 import { View, TextInput, TouchableOpacity } from "react-native";
 import MaterialIcons from "@expo/vector-icons/MaterialIcons";
 import { useColors } from "@/hooks/use-colors";
+import { homeUI, homeText } from "@/features/home/ui/theme/tokens";
 
 interface SearchBarProps {
   value: string;
@@ -21,19 +22,19 @@ export function SearchBar({ value, onChangeText, onClear }: SearchBarProps) {
       <View style={{
         flexDirection: "row",
         alignItems: "center",
-        backgroundColor: "#1A1D21",
+        backgroundColor: homeUI.surface,
         borderRadius: 12,
         paddingHorizontal: 12,
         paddingVertical: 10,
         borderWidth: 1,
-        borderColor: value ? "#DD6500" : "#2D3139",
+        borderColor: value ? homeUI.borderActive : homeUI.border,
       }}>
-        <MaterialIcons name="search" size={20} color="#D1D5DB" />
+        <MaterialIcons name="search" size={20} color={homeText.muted} />
         <TextInput
           value={value}
           onChangeText={onChangeText}
           placeholder="チャレンジを検索..."
-          placeholderTextColor="#D1D5DB"
+          placeholderTextColor={homeText.muted}
           style={{
             flex: 1,
             marginLeft: 8,
@@ -51,7 +52,7 @@ export function SearchBar({ value, onChangeText, onClear }: SearchBarProps) {
         />
         {value.length > 0 && (
           <TouchableOpacity onPress={onClear}>
-            <MaterialIcons name="close" size={20} color="#D1D5DB" />
+            <MaterialIcons name="close" size={20} color={homeText.muted} />
           </TouchableOpacity>
         )}
       </View>

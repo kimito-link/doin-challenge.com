@@ -5,6 +5,7 @@
 
 import { View, Text, ScrollView, TouchableOpacity } from "react-native";
 import { useColors } from "@/hooks/use-colors";
+import { homeUI } from "@/features/home/ui/theme/tokens";
 
 interface Category {
   id: number;
@@ -38,7 +39,7 @@ export function CategoryFilter({ categories, selectedCategory, onSelectCategory 
           paddingHorizontal: 12,
           paddingVertical: 8,
           borderRadius: 16,
-          backgroundColor: selectedCategory === null ? "#8B5CF6" : "#1E293B",
+          backgroundColor: selectedCategory === null ? homeUI.activeFilter : homeUI.inactiveFilter,
           marginRight: 8,
           flexDirection: "row",
           alignItems: "center",
@@ -56,7 +57,7 @@ export function CategoryFilter({ categories, selectedCategory, onSelectCategory 
             paddingHorizontal: 12,
             paddingVertical: 8,
             borderRadius: 16,
-            backgroundColor: selectedCategory === cat.id ? "#8B5CF6" : "#1E293B",
+            backgroundColor: selectedCategory === cat.id ? homeUI.activeFilter : homeUI.inactiveFilter,
             marginRight: 8,
             flexDirection: "row",
             alignItems: "center",

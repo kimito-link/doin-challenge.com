@@ -6,6 +6,7 @@
 import { View, Text, TouchableOpacity } from "react-native";
 import MaterialIcons from "@expo/vector-icons/MaterialIcons";
 import { useColors } from "@/hooks/use-colors";
+import { homeText } from "@/features/home/ui/theme/tokens";
 
 interface SectionHeaderProps {
   title: string;
@@ -26,8 +27,8 @@ export function SectionHeader({ title, onSeeAll }: SectionHeaderProps) {
       <Text style={{ color: colors.foreground, fontSize: 18, fontWeight: "bold" }}>{title}</Text>
       {onSeeAll && (
         <TouchableOpacity onPress={onSeeAll} style={{ flexDirection: "row", alignItems: "center" }}>
-          <Text style={{ color: "#DD6500", fontSize: 14 }}>すべて見る</Text>
-          <MaterialIcons name="chevron-right" size={20} color="#DD6500" />
+          <Text style={{ color: homeText.accent, fontSize: 14 }}>すべて見る</Text>
+          <MaterialIcons name="chevron-right" size={20} color={homeText.accent} />
         </TouchableOpacity>
       )}
     </View>
