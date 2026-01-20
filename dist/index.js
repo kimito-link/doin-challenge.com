@@ -8,6 +8,66 @@ var __export = (target, all) => {
     __defProp(target, name, { get: all[name], enumerable: true });
 };
 
+// server/db/connection.ts
+import { eq, desc, and, sql, isNull, or, gte, lte, inArray, asc, ne, like, count } from "drizzle-orm";
+import { drizzle } from "drizzle-orm/mysql2";
+async function getDb() {
+  if (!_db && process.env.DATABASE_URL) {
+    try {
+      let connectionUrl = process.env.DATABASE_URL;
+      if (connectionUrl && !connectionUrl.includes("ssl=")) {
+        const separator = connectionUrl.includes("?") ? "&" : "?";
+        connectionUrl = `${connectionUrl}${separator}ssl={"rejectUnauthorized":true}`;
+      }
+      _db = drizzle(connectionUrl);
+    } catch (error) {
+      console.warn("[Database] Failed to connect:", error);
+      _db = null;
+    }
+  }
+  return _db;
+}
+function generateSlug(title) {
+  const translations = {
+    "\u751F\u8A95\u796D": "birthday",
+    "\u30E9\u30A4\u30D6": "live",
+    "\u30EF\u30F3\u30DE\u30F3": "oneman",
+    "\u52D5\u54E1": "attendance",
+    "\u30C1\u30E3\u30EC\u30F3\u30B8": "challenge",
+    "\u30D5\u30A9\u30ED\u30EF\u30FC": "followers",
+    "\u540C\u6642\u8996\u8074": "viewers",
+    "\u914D\u4FE1": "stream",
+    "\u30B0\u30EB\u30FC\u30D7": "group",
+    "\u30BD\u30ED": "solo",
+    "\u30D5\u30A7\u30B9": "fes",
+    "\u5BFE\u30D0\u30F3": "taiban",
+    "\u30D5\u30A1\u30F3\u30DF\u30FC\u30C6\u30A3\u30F3\u30B0": "fanmeeting",
+    "\u30EA\u30EA\u30FC\u30B9": "release",
+    "\u30A4\u30D9\u30F3\u30C8": "event",
+    "\u4EBA": "",
+    "\u4E07": "0000"
+  };
+  let slug = title.toLowerCase();
+  for (const [jp, en] of Object.entries(translations)) {
+    slug = slug.replace(new RegExp(jp, "g"), en);
+  }
+  const words = slug.match(/[a-z]+|\d+/g) || [];
+  slug = words.join("-");
+  slug = slug.replace(/-+/g, "-");
+  slug = slug.replace(/^-|-$/g, "");
+  if (!slug) {
+    slug = `challenge-${Date.now()}`;
+  }
+  return slug;
+}
+var _db;
+var init_connection = __esm({
+  "server/db/connection.ts"() {
+    "use strict";
+    _db = null;
+  }
+});
+
 // drizzle/schema/users.ts
 import { mysqlTable, int, varchar, text, timestamp, mysqlEnum, boolean } from "drizzle-orm/mysql-core";
 var users, twitterFollowStatus, oauthPkceData, twitterUserCache;
@@ -545,207 +605,7 @@ var init_env = __esm({
   }
 });
 
-// server/db.ts
-var db_exports = {};
-__export(db_exports, {
-  addToTicketWaitlist: () => addToTicketWaitlist,
-  awardBadge: () => awardBadge,
-  awardFollowerBadge: () => awardFollowerBadge,
-  cancelParticipation: () => cancelParticipation,
-  cancelTicketTransfer: () => cancelTicketTransfer,
-  checkAndAwardBadges: () => checkAndAwardBadges,
-  clearSearchHistoryForUser: () => clearSearchHistoryForUser,
-  compareSchemas: () => compareSchemas,
-  confirmInvitationUse: () => confirmInvitationUse,
-  createAchievementPage: () => createAchievementPage,
-  createBadge: () => createBadge,
-  createCategory: () => createCategory,
-  createChallengeTemplate: () => createChallengeTemplate,
-  createCompanion: () => createCompanion,
-  createCompanions: () => createCompanions,
-  createEvent: () => createEvent,
-  createInvitation: () => createInvitation,
-  createNotification: () => createNotification,
-  createParticipation: () => createParticipation,
-  createReminder: () => createReminder,
-  createTicketTransfer: () => createTicketTransfer,
-  deactivateInvitation: () => deactivateInvitation,
-  deleteCategory: () => deleteCategory,
-  deleteChallengeTemplate: () => deleteChallengeTemplate,
-  deleteCompanion: () => deleteCompanion,
-  deleteCompanionsForParticipation: () => deleteCompanionsForParticipation,
-  deleteEvent: () => deleteEvent,
-  deleteParticipation: () => deleteParticipation,
-  deleteReminder: () => deleteReminder,
-  followUser: () => followUser,
-  generateSlug: () => generateSlug,
-  getAchievementPage: () => getAchievementPage,
-  getAllBadges: () => getAllBadges,
-  getAllCategories: () => getAllCategories,
-  getAllEvents: () => getAllEvents,
-  getAllUsers: () => getAllUsers,
-  getBadgeById: () => getBadgeById,
-  getCategoryById: () => getCategoryById,
-  getCategoryBySlug: () => getCategoryBySlug,
-  getChallengeAchievementRanking: () => getChallengeAchievementRanking,
-  getChallengeForAI: () => getChallengeForAI,
-  getChallengeTemplateById: () => getChallengeTemplateById,
-  getChallengeTemplatesForUser: () => getChallengeTemplatesForUser,
-  getChallengesByCategory: () => getChallengesByCategory,
-  getCheerCountForParticipation: () => getCheerCountForParticipation,
-  getCheersForChallenge: () => getCheersForChallenge,
-  getCheersForParticipation: () => getCheersForParticipation,
-  getCheersReceivedByUser: () => getCheersReceivedByUser,
-  getCheersSentByUser: () => getCheersSentByUser,
-  getCompanionInviteStats: () => getCompanionInviteStats,
-  getCompanionsForChallenge: () => getCompanionsForChallenge,
-  getCompanionsForParticipation: () => getCompanionsForParticipation,
-  getContributionRanking: () => getContributionRanking,
-  getConversation: () => getConversation,
-  getConversationList: () => getConversationList,
-  getDataIntegrityReport: () => getDataIntegrityReport,
-  getDb: () => getDb,
-  getDbSchema: () => getDbSchema,
-  getDirectMessagesForUser: () => getDirectMessagesForUser,
-  getEventById: () => getEventById,
-  getEventsByHostTwitterId: () => getEventsByHostTwitterId,
-  getEventsByHostUserId: () => getEventsByHostUserId,
-  getFollowerCount: () => getFollowerCount,
-  getFollowerIdsForUser: () => getFollowerIdsForUser,
-  getFollowersForUser: () => getFollowersForUser,
-  getFollowingCount: () => getFollowingCount,
-  getFollowingForUser: () => getFollowingForUser,
-  getGlobalContributionRanking: () => getGlobalContributionRanking,
-  getHostRanking: () => getHostRanking,
-  getInvitationByCode: () => getInvitationByCode,
-  getInvitationStats: () => getInvitationStats,
-  getInvitationUses: () => getInvitationUses,
-  getInvitationsForChallenge: () => getInvitationsForChallenge,
-  getInvitationsForUser: () => getInvitationsForUser,
-  getInvitedParticipants: () => getInvitedParticipants,
-  getNotificationSettings: () => getNotificationSettings,
-  getNotificationsByUserId: () => getNotificationsByUserId,
-  getOshikatsuStats: () => getOshikatsuStats,
-  getParticipationById: () => getParticipationById,
-  getParticipationCountByEventId: () => getParticipationCountByEventId,
-  getParticipationsByEventId: () => getParticipationsByEventId,
-  getParticipationsByPrefecture: () => getParticipationsByPrefecture,
-  getParticipationsByPrefectureFilter: () => getParticipationsByPrefectureFilter,
-  getParticipationsByUserId: () => getParticipationsByUserId,
-  getPendingReminders: () => getPendingReminders,
-  getPickedCommentsByChallengeId: () => getPickedCommentsByChallengeId,
-  getPickedCommentsWithParticipation: () => getPickedCommentsWithParticipation,
-  getPrefectureRanking: () => getPrefectureRanking,
-  getPublicAchievementPages: () => getPublicAchievementPages,
-  getPublicChallengeTemplates: () => getPublicChallengeTemplates,
-  getRecommendedHosts: () => getRecommendedHosts,
-  getRemindersForChallenge: () => getRemindersForChallenge,
-  getRemindersForUser: () => getRemindersForUser,
-  getSearchHistoryForUser: () => getSearchHistoryForUser,
-  getTicketTransfersForChallenge: () => getTicketTransfersForChallenge,
-  getTicketTransfersForUser: () => getTicketTransfersForUser,
-  getTicketWaitlistForChallenge: () => getTicketWaitlistForChallenge,
-  getTicketWaitlistForUser: () => getTicketWaitlistForUser,
-  getTotalCompanionCountByEventId: () => getTotalCompanionCountByEventId,
-  getUnreadMessageCount: () => getUnreadMessageCount,
-  getUserBadges: () => getUserBadges,
-  getUserBadgesWithDetails: () => getUserBadgesWithDetails,
-  getUserById: () => getUserById,
-  getUserByOpenId: () => getUserByOpenId,
-  getUserInvitationStats: () => getUserInvitationStats,
-  getUserPublicProfile: () => getUserPublicProfile,
-  getUserRankingPosition: () => getUserRankingPosition,
-  getUserReminderForChallenge: () => getUserReminderForChallenge,
-  getUsersWithNotificationEnabled: () => getUsersWithNotificationEnabled,
-  getWaitlistUsersForNotification: () => getWaitlistUsersForNotification,
-  incrementInvitationUseCount: () => incrementInvitationUseCount,
-  incrementTemplateUseCount: () => incrementTemplateUseCount,
-  invalidateEventsCache: () => invalidateEventsCache,
-  isCommentPicked: () => isCommentPicked,
-  isFollowing: () => isFollowing,
-  isUserInWaitlist: () => isUserInWaitlist,
-  markAllMessagesAsRead: () => markAllMessagesAsRead,
-  markAllNotificationsAsRead: () => markAllNotificationsAsRead,
-  markCommentAsUsedInVideo: () => markCommentAsUsedInVideo,
-  markMessageAsRead: () => markMessageAsRead,
-  markNotificationAsRead: () => markNotificationAsRead,
-  markReminderAsSent: () => markReminderAsSent,
-  pickComment: () => pickComment,
-  recalculateChallengeCurrentValues: () => recalculateChallengeCurrentValues,
-  recordInvitationUse: () => recordInvitationUse,
-  refreshAllChallengeSummaries: () => refreshAllChallengeSummaries,
-  refreshChallengeSummary: () => refreshChallengeSummary,
-  removeFromTicketWaitlist: () => removeFromTicketWaitlist,
-  saveSearchHistory: () => saveSearchHistory,
-  searchChallenges: () => searchChallenges,
-  searchChallengesForAI: () => searchChallengesForAI,
-  sendCheer: () => sendCheer,
-  sendDirectMessage: () => sendDirectMessage,
-  unfollowUser: () => unfollowUser,
-  unpickComment: () => unpickComment,
-  updateAchievementPage: () => updateAchievementPage,
-  updateCategory: () => updateCategory,
-  updateChallengeTemplate: () => updateChallengeTemplate,
-  updateEvent: () => updateEvent,
-  updateFollowNotification: () => updateFollowNotification,
-  updateParticipation: () => updateParticipation,
-  updateReminder: () => updateReminder,
-  updateTicketTransferStatus: () => updateTicketTransferStatus,
-  updateUserRole: () => updateUserRole,
-  upsertNotificationSettings: () => upsertNotificationSettings,
-  upsertUser: () => upsertUser
-});
-import { eq, desc, and, sql, ne } from "drizzle-orm";
-import { drizzle } from "drizzle-orm/mysql2";
-function generateSlug(title) {
-  const translations = {
-    "\u751F\u8A95\u796D": "birthday",
-    "\u30E9\u30A4\u30D6": "live",
-    "\u30EF\u30F3\u30DE\u30F3": "oneman",
-    "\u52D5\u54E1": "attendance",
-    "\u30C1\u30E3\u30EC\u30F3\u30B8": "challenge",
-    "\u30D5\u30A9\u30ED\u30EF\u30FC": "followers",
-    "\u540C\u6642\u8996\u8074": "viewers",
-    "\u914D\u4FE1": "stream",
-    "\u30B0\u30EB\u30FC\u30D7": "group",
-    "\u30BD\u30ED": "solo",
-    "\u30D5\u30A7\u30B9": "fes",
-    "\u5BFE\u30D0\u30F3": "taiban",
-    "\u30D5\u30A1\u30F3\u30DF\u30FC\u30C6\u30A3\u30F3\u30B0": "fanmeeting",
-    "\u30EA\u30EA\u30FC\u30B9": "release",
-    "\u30A4\u30D9\u30F3\u30C8": "event",
-    "\u4EBA": "",
-    "\u4E07": "0000"
-  };
-  let slug = title.toLowerCase();
-  for (const [jp, en] of Object.entries(translations)) {
-    slug = slug.replace(new RegExp(jp, "g"), en);
-  }
-  const words = slug.match(/[a-z]+|\d+/g) || [];
-  slug = words.join("-");
-  slug = slug.replace(/-+/g, "-");
-  slug = slug.replace(/^-|-$/g, "");
-  if (!slug) {
-    slug = `challenge-${Date.now()}`;
-  }
-  return slug;
-}
-async function getDb() {
-  if (!_db && process.env.DATABASE_URL) {
-    try {
-      let connectionUrl = process.env.DATABASE_URL;
-      if (connectionUrl && !connectionUrl.includes("ssl=")) {
-        const separator = connectionUrl.includes("?") ? "&" : "?";
-        connectionUrl = `${connectionUrl}${separator}ssl={"rejectUnauthorized":true}`;
-      }
-      _db = drizzle(connectionUrl);
-    } catch (error) {
-      console.warn("[Database] Failed to connect:", error);
-      _db = null;
-    }
-  }
-  return _db;
-}
+// server/db/user-db.ts
 async function upsertUser(user) {
   if (!user.openId) {
     throw new Error("User openId is required for upsert");
@@ -820,6 +680,16 @@ async function updateUserRole(userId, role) {
   await db.update(users).set({ role }).where(eq(users.id, userId));
   return true;
 }
+var init_user_db = __esm({
+  "server/db/user-db.ts"() {
+    "use strict";
+    init_connection();
+    init_schema2();
+    init_env();
+  }
+});
+
+// server/db/challenge-db.ts
 async function getAllEvents() {
   const now = Date.now();
   if (eventsCache.data && now - eventsCache.timestamp < EVENTS_CACHE_TTL) {
@@ -909,6 +779,33 @@ async function deleteEvent(id) {
   await db.delete(events).where(eq(events.id, id));
   invalidateEventsCache();
 }
+async function searchChallenges(query) {
+  const db = await getDb();
+  if (!db) return [];
+  const normalizedQuery = query.toLowerCase().trim();
+  const allChallenges = await db.select().from(challenges).where(eq(challenges.isPublic, true)).orderBy(desc(challenges.eventDate));
+  return allChallenges.filter((c) => {
+    const title = (c.title || "").toLowerCase();
+    const hostName = (c.hostName || "").toLowerCase();
+    const description = (c.description || "").toLowerCase();
+    const venue = (c.venue || "").toLowerCase();
+    return title.includes(normalizedQuery) || hostName.includes(normalizedQuery) || description.includes(normalizedQuery) || venue.includes(normalizedQuery);
+  });
+}
+var events, eventsCache, EVENTS_CACHE_TTL;
+var init_challenge_db = __esm({
+  "server/db/challenge-db.ts"() {
+    "use strict";
+    init_connection();
+    init_connection();
+    init_schema2();
+    events = challenges;
+    eventsCache = { data: null, timestamp: 0 };
+    EVENTS_CACHE_TTL = 30 * 1e3;
+  }
+});
+
+// server/db/participation-db.ts
 async function getParticipationsByEventId(eventId) {
   const db = await getDb();
   if (!db) return [];
@@ -992,6 +889,40 @@ async function getContributionRanking(challengeId, limit = 10) {
     isAnonymous: p.isAnonymous
   }));
 }
+async function getParticipationsByPrefectureFilter(challengeId, prefecture) {
+  const db = await getDb();
+  if (!db) return [];
+  return db.select().from(participations).where(sql`${participations.challengeId} = ${challengeId} AND ${participations.prefecture} = ${prefecture}`).orderBy(desc(participations.createdAt));
+}
+async function getPrefectureRanking(challengeId) {
+  const db = await getDb();
+  if (!db) return [];
+  const result = await db.select().from(participations).where(eq(participations.challengeId, challengeId));
+  const prefectureMap = {};
+  result.forEach((p) => {
+    const pref = p.prefecture || "\u672A\u8A2D\u5B9A";
+    if (!prefectureMap[pref]) {
+      prefectureMap[pref] = { count: 0, contribution: 0 };
+    }
+    prefectureMap[pref].count += 1;
+    prefectureMap[pref].contribution += p.contribution || 1;
+  });
+  return Object.entries(prefectureMap).map(([prefecture, data]) => ({
+    prefecture,
+    count: data.count,
+    contribution: data.contribution
+  })).sort((a, b) => b.contribution - a.contribution);
+}
+var init_participation_db = __esm({
+  "server/db/participation-db.ts"() {
+    "use strict";
+    init_connection();
+    init_schema2();
+    init_challenge_db();
+  }
+});
+
+// server/db/notification-db.ts
 async function getNotificationSettings(userId) {
   const db = await getDb();
   if (!db) return null;
@@ -1040,6 +971,15 @@ async function markAllNotificationsAsRead(userId) {
   if (!db) throw new Error("Database not available");
   await db.update(notifications).set({ isRead: true }).where(eq(notifications.userId, userId));
 }
+var init_notification_db = __esm({
+  "server/db/notification-db.ts"() {
+    "use strict";
+    init_connection();
+    init_schema2();
+  }
+});
+
+// server/db/badge-db.ts
 async function getAllBadges() {
   const db = await getDb();
   if (!db) return [];
@@ -1129,6 +1069,15 @@ async function awardFollowerBadge(userId) {
   if (followerBadge.length === 0) return null;
   return awardBadge(userId, followerBadge[0].id);
 }
+var init_badge_db = __esm({
+  "server/db/badge-db.ts"() {
+    "use strict";
+    init_connection();
+    init_schema2();
+  }
+});
+
+// server/db/social-db.ts
 async function getPickedCommentsByChallengeId(challengeId) {
   const db = await getDb();
   if (!db) return [];
@@ -1172,33 +1121,6 @@ async function isCommentPicked(participationId) {
   if (!db) return false;
   const result = await db.select().from(pickedComments).where(eq(pickedComments.participationId, participationId));
   return result.length > 0;
-}
-async function getPrefectureRanking(challengeId) {
-  const db = await getDb();
-  if (!db) return [];
-  const result = await db.select().from(participations).where(eq(participations.challengeId, challengeId));
-  const prefectureMap = {};
-  result.forEach((p) => {
-    const pref = p.prefecture || "\u672A\u8A2D\u5B9A";
-    if (!prefectureMap[pref]) {
-      prefectureMap[pref] = { count: 0, contribution: 0 };
-    }
-    prefectureMap[pref].count += 1;
-    prefectureMap[pref].contribution += p.contribution || 1;
-  });
-  return Object.entries(prefectureMap).map(([prefecture, data]) => ({
-    prefecture,
-    count: data.count,
-    contribution: data.contribution
-  })).sort((a, b) => b.contribution - a.contribution);
-}
-async function getParticipationsByPrefectureFilter(challengeId, prefecture) {
-  const db = await getDb();
-  if (!db) return [];
-  if (prefecture === "all") {
-    return db.select().from(participations).where(eq(participations.challengeId, challengeId)).orderBy(desc(participations.createdAt));
-  }
-  return db.select().from(participations).where(and(eq(participations.challengeId, challengeId), eq(participations.prefecture, prefecture))).orderBy(desc(participations.createdAt));
 }
 async function sendCheer(cheer) {
   const db = await getDb();
@@ -1254,6 +1176,15 @@ async function getPublicAchievementPages() {
   if (!db) return [];
   return db.select().from(achievementPages).where(eq(achievementPages.isPublic, true)).orderBy(desc(achievementPages.achievedAt));
 }
+var init_social_db = __esm({
+  "server/db/social-db.ts"() {
+    "use strict";
+    init_connection();
+    init_schema2();
+  }
+});
+
+// server/db/messaging-db.ts
 async function createReminder(reminder) {
   const db = await getDb();
   if (!db) return null;
@@ -1382,12 +1313,15 @@ async function incrementTemplateUseCount(id) {
   if (!db) return;
   await db.update(challengeTemplates).set({ useCount: sql`${challengeTemplates.useCount} + 1` }).where(eq(challengeTemplates.id, id));
 }
-async function searchChallenges(query) {
-  const db = await getDb();
-  if (!db) return [];
-  const searchTerm = `%${query}%`;
-  return db.select().from(challenges).where(sql`${challenges.title} LIKE ${searchTerm} OR ${challenges.hostName} LIKE ${searchTerm} OR ${challenges.venue} LIKE ${searchTerm} OR ${challenges.description} LIKE ${searchTerm}`).orderBy(desc(challenges.createdAt));
-}
+var init_messaging_db = __esm({
+  "server/db/messaging-db.ts"() {
+    "use strict";
+    init_connection();
+    init_schema2();
+  }
+});
+
+// server/db/follow-db.ts
 async function saveSearchHistory(history) {
   const db = await getDb();
   if (!db) return null;
@@ -1465,6 +1399,16 @@ async function updateFollowNotification(followerId, followeeId, notify) {
   if (!db) return;
   await db.update(follows).set({ notifyNewChallenge: notify }).where(and(eq(follows.followerId, followerId), eq(follows.followeeId, followeeId)));
 }
+var init_follow_db = __esm({
+  "server/db/follow-db.ts"() {
+    "use strict";
+    init_connection();
+    init_schema2();
+    init_badge_db();
+  }
+});
+
+// server/db/ranking-db.ts
 async function getGlobalContributionRanking(period = "all", limit = 50) {
   const db = await getDb();
   if (!db) return [];
@@ -1525,6 +1469,15 @@ async function getUserRankingPosition(userId, period = "all") {
     participationCount: ranking[position].participationCount
   };
 }
+var init_ranking_db = __esm({
+  "server/db/ranking-db.ts"() {
+    "use strict";
+    init_connection();
+    init_schema2();
+  }
+});
+
+// server/db/category-db.ts
 async function getAllCategories() {
   const now = Date.now();
   if (categoriesCache.data && now - categoriesCache.timestamp < CATEGORIES_CACHE_TTL) {
@@ -1571,6 +1524,18 @@ async function deleteCategory(id) {
   await db.delete(categories).where(eq(categories.id, id));
   return true;
 }
+var categoriesCache, CATEGORIES_CACHE_TTL;
+var init_category_db = __esm({
+  "server/db/category-db.ts"() {
+    "use strict";
+    init_connection();
+    init_schema2();
+    categoriesCache = { data: null, timestamp: 0 };
+    CATEGORIES_CACHE_TTL = 5 * 60 * 1e3;
+  }
+});
+
+// server/db/invitation-db.ts
 async function createInvitation(invitation) {
   const db = await getDb();
   if (!db) return null;
@@ -1671,6 +1636,15 @@ async function getInvitationStats(invitationId) {
     participationCount: participations_count[0]?.count || 0
   };
 }
+var init_invitation_db = __esm({
+  "server/db/invitation-db.ts"() {
+    "use strict";
+    init_connection();
+    init_schema2();
+  }
+});
+
+// server/db/profile-db.ts
 async function getUserPublicProfile(userId) {
   const db = await getDb();
   if (!db) return null;
@@ -1776,6 +1750,15 @@ async function getRecommendedHosts(userId, categoryId, limit = 5) {
     challengeCount: h.challengeCount
   }));
 }
+var init_profile_db = __esm({
+  "server/db/profile-db.ts"() {
+    "use strict";
+    init_connection();
+    init_schema2();
+  }
+});
+
+// server/db/companion-db.ts
 async function createCompanion(companion) {
   const db = await getDb();
   if (!db) return null;
@@ -1818,6 +1801,15 @@ async function getCompanionInviteStats(userId) {
     companions
   };
 }
+var init_companion_db = __esm({
+  "server/db/companion-db.ts"() {
+    "use strict";
+    init_connection();
+    init_schema2();
+  }
+});
+
+// server/db/ai-db.ts
 async function refreshChallengeSummary(challengeId) {
   const db = await getDb();
   if (!db) return;
@@ -1849,9 +1841,9 @@ async function refreshChallengeSummary(challengeId) {
     )).orderBy(desc(participations.createdAt)).limit(5);
     let hotRegion;
     let maxCount = 0;
-    Object.entries(regionSummary).forEach(([region, count]) => {
-      if (count > maxCount) {
-        maxCount = count;
+    Object.entries(regionSummary).forEach(([region, count2]) => {
+      if (count2 > maxCount) {
+        maxCount = count2;
         hotRegion = region;
       }
     });
@@ -1984,6 +1976,15 @@ async function refreshAllChallengeSummaries() {
   }
   return { updated, total: allChallenges.length };
 }
+var init_ai_db = __esm({
+  "server/db/ai-db.ts"() {
+    "use strict";
+    init_connection();
+    init_schema2();
+  }
+});
+
+// server/db/ticket-db.ts
 async function createTicketTransfer(transfer) {
   const db = await getDb();
   if (!db) return null;
@@ -2088,6 +2089,15 @@ async function cancelParticipation(participationId, userId) {
   await db.update(challenges).set({ currentValue: sql`${challenges.currentValue} - ${p.contribution}` }).where(eq(challenges.id, p.challengeId));
   return { success: true, challengeId: p.challengeId, contribution: p.contribution };
 }
+var init_ticket_db = __esm({
+  "server/db/ticket-db.ts"() {
+    "use strict";
+    init_connection();
+    init_schema2();
+  }
+});
+
+// server/db/stats-db.ts
 async function getOshikatsuStats(userId, twitterId) {
   const db = await getDb();
   if (!db) return null;
@@ -2221,106 +2231,286 @@ async function getDataIntegrityReport() {
       }
     });
   }
-  const summary = {
-    totalChallenges: report.length,
+  return {
+    totalChallenges: allChallenges.length,
     challengesWithDiscrepancy: report.filter((r) => r.hasDiscrepancy).length,
-    totalStoredValue: report.reduce((sum, r) => sum + r.storedCurrentValue, 0),
-    totalActualValue: report.reduce((sum, r) => sum + r.actualTotalContribution, 0),
-    totalDiscrepancy: report.reduce((sum, r) => sum + r.discrepancyAmount, 0)
+    challenges: report
   };
-  return { summary, challenges: report };
 }
 async function getDbSchema() {
   const db = await getDb();
-  if (!db) throw new Error("Database not available");
+  if (!db) return { tables: [], error: "Database not available" };
   try {
-    const tablesResult = await db.execute(sql`SHOW TABLES`);
-    const tables = tablesResult[0].map((row) => Object.values(row)[0]);
-    const schema = {};
-    for (const tableName of tables) {
-      const columnsResult = await db.execute(sql.raw(`DESCRIBE \`${tableName}\``));
-      schema[tableName] = columnsResult[0];
-    }
-    return { tables, schema };
+    const result = await db.execute(sql`
+      SELECT TABLE_NAME, COLUMN_NAME, DATA_TYPE, IS_NULLABLE, COLUMN_DEFAULT
+      FROM INFORMATION_SCHEMA.COLUMNS
+      WHERE TABLE_SCHEMA = DATABASE()
+      ORDER BY TABLE_NAME, ORDINAL_POSITION
+    `);
+    return { tables: result[0] };
   } catch (error) {
-    console.error("[DB Schema] Error:", error);
-    throw error;
+    return { tables: [], error: String(error) };
   }
 }
 async function compareSchemas() {
   const db = await getDb();
-  if (!db) throw new Error("Database not available");
-  const codeColumns = [
-    "id",
-    "hostUserId",
-    "hostTwitterId",
-    "hostName",
-    "hostUsername",
-    "hostProfileImage",
-    "hostFollowersCount",
-    "hostDescription",
-    "title",
-    "slug",
-    "description",
-    "goalType",
-    "goalValue",
-    "goalUnit",
-    "currentValue",
-    "eventType",
-    "categoryId",
-    "eventDate",
-    "venue",
-    "prefecture",
-    "ticketPresale",
-    "ticketDoor",
-    "ticketSaleStart",
-    "ticketUrl",
-    "externalUrl",
-    "status",
-    "isPublic",
-    "createdAt",
-    "updatedAt",
-    "aiSummary",
-    "intentTags",
-    "regionSummary",
-    "participantSummary",
-    "aiSummaryUpdatedAt"
-  ];
+  if (!db) return { match: false, error: "Database not available" };
   try {
-    const columnsResult = await db.execute(sql`DESCRIBE challenges`);
-    const dbColumns = columnsResult[0].map((row) => row.Field);
-    const missingInDb = codeColumns.filter((col) => !dbColumns.includes(col));
-    const extraInDb = dbColumns.filter((col) => !codeColumns.includes(col));
-    const matching = codeColumns.filter((col) => dbColumns.includes(col));
+    const result = await db.execute(sql`
+      SELECT TABLE_NAME
+      FROM INFORMATION_SCHEMA.TABLES
+      WHERE TABLE_SCHEMA = DATABASE()
+    `);
+    const dbTables = result[0].map((r) => r.TABLE_NAME);
+    const codeTables = [
+      "users",
+      "challenges",
+      "participations",
+      "notifications",
+      "notification_settings",
+      "badges",
+      "user_badges",
+      "cheers",
+      "achievement_pages",
+      "picked_comments",
+      "reminders",
+      "direct_messages",
+      "challenge_templates",
+      "follows",
+      "search_history",
+      "categories",
+      "invitations",
+      "invitation_uses",
+      "participation_companions",
+      "favorite_artists",
+      "twitter_follow_status",
+      "oauth_pkce_data",
+      "twitter_user_cache",
+      "challenge_members",
+      "ticket_transfers",
+      "ticket_waitlist",
+      "collaborators",
+      "collaborator_invitations",
+      "achievements",
+      "user_achievements",
+      "challenge_stats"
+    ];
+    const missingInDb = codeTables.filter((t2) => !dbTables.includes(t2));
+    const extraInDb = dbTables.filter((t2) => !codeTables.includes(t2));
     return {
-      codeColumns,
-      dbColumns,
+      match: missingInDb.length === 0 && extraInDb.length === 0,
+      dbTables,
+      codeTables,
       missingInDb,
-      // コードにあるがDBにないカラム
-      extraInDb,
-      // DBにあるがコードにないカラム
-      matching,
-      // 両方にあるカラム
-      isMatching: missingInDb.length === 0 && extraInDb.length === 0
+      extraInDb
     };
   } catch (error) {
-    console.error("[Compare Schemas] Error:", error);
-    throw error;
+    return { match: false, error: String(error) };
   }
 }
-var events, _db, eventsCache, EVENTS_CACHE_TTL, categoriesCache, CATEGORIES_CACHE_TTL;
+var init_stats_db = __esm({
+  "server/db/stats-db.ts"() {
+    "use strict";
+    init_connection();
+    init_schema2();
+    init_challenge_db();
+  }
+});
+
+// server/db/index.ts
 var init_db = __esm({
+  "server/db/index.ts"() {
+    "use strict";
+    init_connection();
+    init_user_db();
+    init_challenge_db();
+    init_participation_db();
+    init_notification_db();
+    init_badge_db();
+    init_social_db();
+    init_messaging_db();
+    init_follow_db();
+    init_ranking_db();
+    init_category_db();
+    init_invitation_db();
+    init_profile_db();
+    init_companion_db();
+    init_ai_db();
+    init_ticket_db();
+    init_stats_db();
+  }
+});
+
+// server/db.ts
+var db_exports = {};
+__export(db_exports, {
+  addToTicketWaitlist: () => addToTicketWaitlist,
+  and: () => and,
+  asc: () => asc,
+  awardBadge: () => awardBadge,
+  awardFollowerBadge: () => awardFollowerBadge,
+  cancelParticipation: () => cancelParticipation,
+  cancelTicketTransfer: () => cancelTicketTransfer,
+  checkAndAwardBadges: () => checkAndAwardBadges,
+  clearSearchHistoryForUser: () => clearSearchHistoryForUser,
+  compareSchemas: () => compareSchemas,
+  confirmInvitationUse: () => confirmInvitationUse,
+  count: () => count,
+  createAchievementPage: () => createAchievementPage,
+  createBadge: () => createBadge,
+  createCategory: () => createCategory,
+  createChallengeTemplate: () => createChallengeTemplate,
+  createCompanion: () => createCompanion,
+  createCompanions: () => createCompanions,
+  createEvent: () => createEvent,
+  createInvitation: () => createInvitation,
+  createNotification: () => createNotification,
+  createParticipation: () => createParticipation,
+  createReminder: () => createReminder,
+  createTicketTransfer: () => createTicketTransfer,
+  deactivateInvitation: () => deactivateInvitation,
+  deleteCategory: () => deleteCategory,
+  deleteChallengeTemplate: () => deleteChallengeTemplate,
+  deleteCompanion: () => deleteCompanion,
+  deleteCompanionsForParticipation: () => deleteCompanionsForParticipation,
+  deleteEvent: () => deleteEvent,
+  deleteParticipation: () => deleteParticipation,
+  deleteReminder: () => deleteReminder,
+  desc: () => desc,
+  eq: () => eq,
+  followUser: () => followUser,
+  generateSlug: () => generateSlug,
+  getAchievementPage: () => getAchievementPage,
+  getAllBadges: () => getAllBadges,
+  getAllCategories: () => getAllCategories,
+  getAllEvents: () => getAllEvents,
+  getAllUsers: () => getAllUsers,
+  getBadgeById: () => getBadgeById,
+  getCategoryById: () => getCategoryById,
+  getCategoryBySlug: () => getCategoryBySlug,
+  getChallengeAchievementRanking: () => getChallengeAchievementRanking,
+  getChallengeForAI: () => getChallengeForAI,
+  getChallengeTemplateById: () => getChallengeTemplateById,
+  getChallengeTemplatesForUser: () => getChallengeTemplatesForUser,
+  getChallengesByCategory: () => getChallengesByCategory,
+  getCheerCountForParticipation: () => getCheerCountForParticipation,
+  getCheersForChallenge: () => getCheersForChallenge,
+  getCheersForParticipation: () => getCheersForParticipation,
+  getCheersReceivedByUser: () => getCheersReceivedByUser,
+  getCheersSentByUser: () => getCheersSentByUser,
+  getCompanionInviteStats: () => getCompanionInviteStats,
+  getCompanionsForChallenge: () => getCompanionsForChallenge,
+  getCompanionsForParticipation: () => getCompanionsForParticipation,
+  getContributionRanking: () => getContributionRanking,
+  getConversation: () => getConversation,
+  getConversationList: () => getConversationList,
+  getDataIntegrityReport: () => getDataIntegrityReport,
+  getDb: () => getDb,
+  getDbSchema: () => getDbSchema,
+  getDirectMessagesForUser: () => getDirectMessagesForUser,
+  getEventById: () => getEventById,
+  getEventsByHostTwitterId: () => getEventsByHostTwitterId,
+  getEventsByHostUserId: () => getEventsByHostUserId,
+  getFollowerCount: () => getFollowerCount,
+  getFollowerIdsForUser: () => getFollowerIdsForUser,
+  getFollowersForUser: () => getFollowersForUser,
+  getFollowingCount: () => getFollowingCount,
+  getFollowingForUser: () => getFollowingForUser,
+  getGlobalContributionRanking: () => getGlobalContributionRanking,
+  getHostRanking: () => getHostRanking,
+  getInvitationByCode: () => getInvitationByCode,
+  getInvitationStats: () => getInvitationStats,
+  getInvitationUses: () => getInvitationUses,
+  getInvitationsForChallenge: () => getInvitationsForChallenge,
+  getInvitationsForUser: () => getInvitationsForUser,
+  getInvitedParticipants: () => getInvitedParticipants,
+  getNotificationSettings: () => getNotificationSettings,
+  getNotificationsByUserId: () => getNotificationsByUserId,
+  getOshikatsuStats: () => getOshikatsuStats,
+  getParticipationById: () => getParticipationById,
+  getParticipationCountByEventId: () => getParticipationCountByEventId,
+  getParticipationsByEventId: () => getParticipationsByEventId,
+  getParticipationsByPrefecture: () => getParticipationsByPrefecture,
+  getParticipationsByPrefectureFilter: () => getParticipationsByPrefectureFilter,
+  getParticipationsByUserId: () => getParticipationsByUserId,
+  getPendingReminders: () => getPendingReminders,
+  getPickedCommentsByChallengeId: () => getPickedCommentsByChallengeId,
+  getPickedCommentsWithParticipation: () => getPickedCommentsWithParticipation,
+  getPrefectureRanking: () => getPrefectureRanking,
+  getPublicAchievementPages: () => getPublicAchievementPages,
+  getPublicChallengeTemplates: () => getPublicChallengeTemplates,
+  getRecommendedHosts: () => getRecommendedHosts,
+  getRemindersForChallenge: () => getRemindersForChallenge,
+  getRemindersForUser: () => getRemindersForUser,
+  getSearchHistoryForUser: () => getSearchHistoryForUser,
+  getTicketTransfersForChallenge: () => getTicketTransfersForChallenge,
+  getTicketTransfersForUser: () => getTicketTransfersForUser,
+  getTicketWaitlistForChallenge: () => getTicketWaitlistForChallenge,
+  getTicketWaitlistForUser: () => getTicketWaitlistForUser,
+  getTotalCompanionCountByEventId: () => getTotalCompanionCountByEventId,
+  getUnreadMessageCount: () => getUnreadMessageCount,
+  getUserBadges: () => getUserBadges,
+  getUserBadgesWithDetails: () => getUserBadgesWithDetails,
+  getUserById: () => getUserById,
+  getUserByOpenId: () => getUserByOpenId,
+  getUserInvitationStats: () => getUserInvitationStats,
+  getUserPublicProfile: () => getUserPublicProfile,
+  getUserRankingPosition: () => getUserRankingPosition,
+  getUserReminderForChallenge: () => getUserReminderForChallenge,
+  getUsersWithNotificationEnabled: () => getUsersWithNotificationEnabled,
+  getWaitlistUsersForNotification: () => getWaitlistUsersForNotification,
+  gte: () => gte,
+  inArray: () => inArray,
+  incrementInvitationUseCount: () => incrementInvitationUseCount,
+  incrementTemplateUseCount: () => incrementTemplateUseCount,
+  invalidateEventsCache: () => invalidateEventsCache,
+  isCommentPicked: () => isCommentPicked,
+  isFollowing: () => isFollowing,
+  isNull: () => isNull,
+  isUserInWaitlist: () => isUserInWaitlist,
+  like: () => like,
+  lte: () => lte,
+  markAllMessagesAsRead: () => markAllMessagesAsRead,
+  markAllNotificationsAsRead: () => markAllNotificationsAsRead,
+  markCommentAsUsedInVideo: () => markCommentAsUsedInVideo,
+  markMessageAsRead: () => markMessageAsRead,
+  markNotificationAsRead: () => markNotificationAsRead,
+  markReminderAsSent: () => markReminderAsSent,
+  ne: () => ne,
+  or: () => or,
+  pickComment: () => pickComment,
+  recalculateChallengeCurrentValues: () => recalculateChallengeCurrentValues,
+  recordInvitationUse: () => recordInvitationUse,
+  refreshAllChallengeSummaries: () => refreshAllChallengeSummaries,
+  refreshChallengeSummary: () => refreshChallengeSummary,
+  removeFromTicketWaitlist: () => removeFromTicketWaitlist,
+  saveSearchHistory: () => saveSearchHistory,
+  searchChallenges: () => searchChallenges,
+  searchChallengesForAI: () => searchChallengesForAI,
+  sendCheer: () => sendCheer,
+  sendDirectMessage: () => sendDirectMessage,
+  sql: () => sql,
+  ticketTransfers: () => ticketTransfers,
+  ticketWaitlist: () => ticketWaitlist,
+  unfollowUser: () => unfollowUser,
+  unpickComment: () => unpickComment,
+  updateAchievementPage: () => updateAchievementPage,
+  updateCategory: () => updateCategory,
+  updateChallengeTemplate: () => updateChallengeTemplate,
+  updateEvent: () => updateEvent,
+  updateFollowNotification: () => updateFollowNotification,
+  updateParticipation: () => updateParticipation,
+  updateReminder: () => updateReminder,
+  updateTicketTransferStatus: () => updateTicketTransferStatus,
+  updateUserRole: () => updateUserRole,
+  upsertNotificationSettings: () => upsertNotificationSettings,
+  upsertUser: () => upsertUser
+});
+var init_db2 = __esm({
   "server/db.ts"() {
     "use strict";
+    init_db();
     init_schema2();
-    init_env();
-    init_schema2();
-    events = challenges;
-    _db = null;
-    eventsCache = { data: null, timestamp: 0 };
-    EVENTS_CACHE_TTL = 30 * 1e3;
-    categoriesCache = { data: null, timestamp: 0 };
-    CATEGORIES_CACHE_TTL = 5 * 60 * 1e3;
   }
 });
 
@@ -2339,7 +2529,7 @@ var UNAUTHED_ERR_MSG = "Please login (10001)";
 var NOT_ADMIN_ERR_MSG = "You do not have required permission (10002)";
 
 // server/_core/oauth.ts
-init_db();
+init_db2();
 
 // server/_core/cookies.ts
 var LOCAL_HOSTS = /* @__PURE__ */ new Set(["localhost", "127.0.0.1", "::1"]);
@@ -2387,7 +2577,7 @@ var HttpError = class extends Error {
 var ForbiddenError = (msg) => new HttpError(403, msg);
 
 // server/_core/sdk.ts
-init_db();
+init_db2();
 init_env();
 import axios from "axios";
 import { parse as parseCookieHeader } from "cookie";
@@ -2727,10 +2917,10 @@ function registerOAuthRoutes(app) {
 }
 
 // server/twitter-oauth2.ts
-init_db();
+init_db2();
 init_schema2();
 import crypto from "crypto";
-import { eq as eq2, lt } from "drizzle-orm";
+import { eq as eq3, lt } from "drizzle-orm";
 
 // server/rate-limit-handler.ts
 var DEFAULT_OPTIONS = {
@@ -2963,7 +3153,7 @@ async function getPKCEData(state) {
     return void 0;
   }
   try {
-    const result = await db.select().from(oauthPkceData).where(eq2(oauthPkceData.state, state)).limit(1);
+    const result = await db.select().from(oauthPkceData).where(eq3(oauthPkceData.state, state)).limit(1);
     if (result.length === 0) {
       console.log("[PKCE] No PKCE data found for state:", state.substring(0, 8) + "...");
       return void 0;
@@ -2992,7 +3182,7 @@ async function deletePKCEData(state) {
     return;
   }
   try {
-    await db.delete(oauthPkceData).where(eq2(oauthPkceData.state, state));
+    await db.delete(oauthPkceData).where(eq3(oauthPkceData.state, state));
     console.log("[PKCE] Deleted PKCE data for state:", state.substring(0, 8) + "...");
   } catch (error) {
     console.error("[PKCE] Failed to delete from database:", error);
@@ -3437,7 +3627,7 @@ var authRouter = router({
 
 // server/routers/events.ts
 import { z } from "zod";
-init_db();
+init_db2();
 var eventsRouter = router({
   // 公開イベント一覧取得
   list: publicProcedure.query(async () => {
@@ -3581,7 +3771,7 @@ var eventsRouter = router({
 
 // server/routers/participations.ts
 import { z as z2 } from "zod";
-init_db();
+init_db2();
 var participationsRouter = router({
   // イベントの参加者一覧
   listByEvent: publicProcedure.input(z2.object({ eventId: z2.number() })).query(async ({ input }) => {
@@ -3774,7 +3964,7 @@ var participationsRouter = router({
 
 // server/routers/notifications.ts
 import { z as z3 } from "zod";
-init_db();
+init_db2();
 var notificationsRouter = router({
   // 通知設定取得
   getSettings: protectedProcedure.input(z3.object({ challengeId: z3.number() })).query(async ({ ctx, input }) => {
@@ -3906,7 +4096,7 @@ async function generateImage(options) {
 }
 
 // server/routers/ogp.ts
-init_db();
+init_db2();
 var ogpRouter = router({
   // チャレンジのシェア用OGP画像を生成
   generateChallengeOgp: publicProcedure.input(z4.object({ challengeId: z4.number() })).mutation(async ({ input }) => {
@@ -4012,7 +4202,7 @@ ${customMessage ? `- Personal message in speech bubble: "${customMessage.substri
 
 // server/routers/badges.ts
 import { z as z5 } from "zod";
-init_db();
+init_db2();
 var badgesRouter = router({
   // 全バッジ一覧
   list: publicProcedure.query(async () => {
@@ -4038,7 +4228,7 @@ var badgesRouter = router({
 
 // server/routers/picked-comments.ts
 import { z as z6 } from "zod";
-init_db();
+init_db2();
 var pickedCommentsRouter = router({
   // チャレンジのピックアップコメント一覧
   list: publicProcedure.input(z6.object({ challengeId: z6.number() })).query(async ({ input }) => {
@@ -4086,7 +4276,7 @@ var pickedCommentsRouter = router({
 
 // server/routers/prefectures.ts
 import { z as z7 } from "zod";
-init_db();
+init_db2();
 var prefecturesRouter = router({
   // 地域ランキング
   ranking: publicProcedure.input(z7.object({ challengeId: z7.number() })).query(async ({ input }) => {
@@ -4100,7 +4290,7 @@ var prefecturesRouter = router({
 
 // server/routers/cheers.ts
 import { z as z8 } from "zod";
-init_db();
+init_db2();
 var cheersRouter = router({
   // エールを送る
   send: protectedProcedure.input(z8.object({
@@ -4146,7 +4336,7 @@ var cheersRouter = router({
 
 // server/routers/achievements.ts
 import { z as z9 } from "zod";
-init_db();
+init_db2();
 var achievementsRouter = router({
   // 達成記念ページを作成
   create: protectedProcedure.input(z9.object({
@@ -4203,7 +4393,7 @@ var achievementsRouter = router({
 
 // server/routers/reminders.ts
 import { z as z10 } from "zod";
-init_db();
+init_db2();
 var remindersRouter = router({
   // リマインダーを作成
   create: protectedProcedure.input(z10.object({
@@ -4248,7 +4438,7 @@ var remindersRouter = router({
 
 // server/routers/dm.ts
 import { z as z11 } from "zod";
-init_db();
+init_db2();
 var dmRouter = router({
   // DMを送信
   send: protectedProcedure.input(z11.object({
@@ -4295,7 +4485,7 @@ var dmRouter = router({
 
 // server/routers/templates.ts
 import { z as z12 } from "zod";
-init_db();
+init_db2();
 var templatesRouter = router({
   // テンプレートを作成
   create: protectedProcedure.input(z12.object({
@@ -4363,7 +4553,7 @@ var templatesRouter = router({
 
 // server/routers/search.ts
 import { z as z13 } from "zod";
-init_db();
+init_db2();
 var searchRouter = router({
   // チャレンジを検索
   challenges: publicProcedure.input(z13.object({ query: z13.string().min(1) })).query(async ({ input }) => {
@@ -4407,7 +4597,7 @@ var searchRouter = router({
 
 // server/routers/follows.ts
 import { z as z14 } from "zod";
-init_db();
+init_db2();
 var followsRouter = router({
   // フォローする
   follow: protectedProcedure.input(z14.object({
@@ -4464,7 +4654,7 @@ var followsRouter = router({
 
 // server/routers/rankings.ts
 import { z as z15 } from "zod";
-init_db();
+init_db2();
 var rankingsRouter = router({
   // 貢献度ランキング
   contribution: publicProcedure.input(z15.object({
@@ -4489,7 +4679,7 @@ var rankingsRouter = router({
 
 // server/routers/categories.ts
 import { z as z16 } from "zod";
-init_db();
+init_db2();
 var categoriesRouter = router({
   // カテゴリ一覧を取得
   list: publicProcedure.query(async () => {
@@ -4543,7 +4733,7 @@ var categoriesRouter = router({
 
 // server/routers/invitations.ts
 import { z as z17 } from "zod";
-init_db();
+init_db2();
 var invitationsRouter = router({
   // 招待リンクを作成
   create: protectedProcedure.input(z17.object({
@@ -4617,7 +4807,7 @@ var invitationsRouter = router({
 
 // server/routers/profiles.ts
 import { z as z18 } from "zod";
-init_db();
+init_db2();
 var profilesRouter = router({
   // ユーザーの公開プロフィールを取得
   get: publicProcedure.input(z18.object({ userId: z18.number() })).query(async ({ input }) => {
@@ -4642,7 +4832,7 @@ var profilesRouter = router({
 
 // server/routers/companions.ts
 import { z as z19 } from "zod";
-init_db();
+init_db2();
 var companionsRouter = router({
   // 参加者の友人一覧を取得
   forParticipation: publicProcedure.input(z19.object({ participationId: z19.number() })).query(async ({ input }) => {
@@ -4670,7 +4860,7 @@ var companionsRouter = router({
 
 // server/routers/ai.ts
 import { z as z20 } from "zod";
-init_db();
+init_db2();
 var aiRouter = router({
   // AI向けチャレンジ詳細取得（JOINなし・1ホップ）
   getChallenge: publicProcedure.input(z20.object({ id: z20.number() })).query(async ({ input }) => {
@@ -4697,7 +4887,7 @@ var aiRouter = router({
 
 // server/routers/dev.ts
 import { z as z21 } from "zod";
-init_db();
+init_db2();
 var devRouter = router({
   // サンプルチャレンジを生成
   generateSampleChallenges: publicProcedure.input(z21.object({ count: z21.number().min(1).max(20).default(6) })).mutation(async ({ input }) => {
@@ -4800,8 +4990,8 @@ var devRouter = router({
       }
     ];
     const createdIds = [];
-    const count = Math.min(input.count, sampleChallenges.length);
-    for (let i = 0; i < count; i++) {
+    const count2 = Math.min(input.count, sampleChallenges.length);
+    for (let i = 0; i < count2; i++) {
       const sample = sampleChallenges[i];
       const id = await createEvent({
         ...sample,
@@ -4828,7 +5018,7 @@ var devRouter = router({
 
 // server/routers/ticket-transfer.ts
 import { z as z22 } from "zod";
-init_db();
+init_db2();
 var ticketTransferRouter = router({
   // 譲渡投稿を作成
   create: protectedProcedure.input(z22.object({
@@ -4876,7 +5066,7 @@ var ticketTransferRouter = router({
 
 // server/routers/ticket-waitlist.ts
 import { z as z23 } from "zod";
-init_db();
+init_db2();
 var ticketWaitlistRouter = router({
   // 待機リストに登録
   add: protectedProcedure.input(z23.object({
@@ -4915,7 +5105,7 @@ var ticketWaitlistRouter = router({
 
 // server/routers/admin.ts
 import { z as z24 } from "zod";
-init_db();
+init_db2();
 var adminRouter = router({
   // ユーザー一覧取得
   users: protectedProcedure.query(async ({ ctx }) => {
@@ -5029,8 +5219,8 @@ var stats = {
 function getApiUsageStats() {
   return { ...stats };
 }
-function getRecentUsageHistory(count = 100) {
-  return usageHistory.slice(-count);
+function getRecentUsageHistory(count2 = 100) {
+  return usageHistory.slice(-count2);
 }
 function getRateLimitWarningLevel(endpoint) {
   const endpointStats = stats.endpoints[endpoint];
@@ -5096,14 +5286,14 @@ function resolveError(errorId) {
   return false;
 }
 function resolveAllErrors() {
-  const count = errorLogs.filter((l) => !l.resolved).length;
+  const count2 = errorLogs.filter((l) => !l.resolved).length;
   errorLogs.forEach((log) => log.resolved = true);
-  return count;
+  return count2;
 }
 function clearErrorLogs() {
-  const count = errorLogs.length;
+  const count2 = errorLogs.length;
   errorLogs = [];
-  return count;
+  return count2;
 }
 function getErrorStats() {
   const oneHourAgo = new Date(Date.now() - 60 * 60 * 1e3);
@@ -5677,7 +5867,7 @@ async function startServer() {
   }));
   app.get("/api/admin/system-status", async (_req, res) => {
     try {
-      const { getDb: getDb2 } = await Promise.resolve().then(() => (init_db(), db_exports));
+      const { getDb: getDb2 } = await Promise.resolve().then(() => (init_db2(), db_exports));
       let dbStatus = { connected: false, latency: 0, error: "" };
       try {
         const startTime = Date.now();
@@ -5761,12 +5951,12 @@ async function startServer() {
     res.json({ success });
   });
   app.post("/api/admin/errors/resolve-all", (_req, res) => {
-    const count = resolveAllErrors();
-    res.json({ success: true, count });
+    const count2 = resolveAllErrors();
+    res.json({ success: true, count: count2 });
   });
   app.delete("/api/admin/errors", (_req, res) => {
-    const count = clearErrorLogs();
-    res.json({ success: true, count });
+    const count2 = clearErrorLogs();
+    res.json({ success: true, count: count2 });
   });
   app.use(
     "/api/trpc",

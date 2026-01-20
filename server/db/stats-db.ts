@@ -224,3 +224,65 @@ export async function getDataIntegrityReport() {
     challenges: report,
   };
 }
+
+/**
+ * データベーススキーマ情報を取得
+ */
+export async function getDbSchema() {
+  const db = await getDb();
+  if (!db) return { tables: [], error: "Database not available" };
+  
+  try {
+    const result = await db.execute(sql`
+      SELECT TABLE_NAME, COLUMN_NAME, DATA_TYPE, IS_NULLABLE, COLUMN_DEFAULT
+      FROM INFORMATION_SCHEMA.COLUMNS
+      WHERE TABLE_SCHEMA = DATABASE()
+      ORDER BY TABLE_NAME, ORDINAL_POSITION
+    `);
+    
+    return { tables: result[0] };
+  } catch (error) {
+    return { tables: [], error: String(error) };
+  }
+}
+
+/**
+ * コードとDBのスキーマを比較
+ */
+export async function compareSchemas() {
+  const db = await getDb();
+  if (!db) return { match: false, error: "Database not available" };
+  
+  try {
+    const result = await db.execute(sql`
+      SELECT TABLE_NAME
+      FROM INFORMATION_SCHEMA.TABLES
+      WHERE TABLE_SCHEMA = DATABASE()
+    `);
+    
+    const dbTables = (result[0] as unknown as any[]).map(r => r.TABLE_NAME);
+    
+    const codeTables = [
+      "users", "challenges", "participations", "notifications", "notification_settings",
+      "badges", "user_badges", "cheers", "achievement_pages", "picked_comments",
+      "reminders", "direct_messages", "challenge_templates", "follows", "search_history",
+      "categories", "invitations", "invitation_uses", "participation_companions",
+      "favorite_artists", "twitter_follow_status", "oauth_pkce_data", "twitter_user_cache",
+      "challenge_members", "ticket_transfers", "ticket_waitlist", "collaborators",
+      "collaborator_invitations", "achievements", "user_achievements", "challenge_stats"
+    ];
+    
+    const missingInDb = codeTables.filter(t => !dbTables.includes(t));
+    const extraInDb = dbTables.filter(t => !codeTables.includes(t));
+    
+    return {
+      match: missingInDb.length === 0 && extraInDb.length === 0,
+      dbTables,
+      codeTables,
+      missingInDb,
+      extraInDb,
+    };
+  } catch (error) {
+    return { match: false, error: String(error) };
+  }
+}

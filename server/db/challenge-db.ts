@@ -126,3 +126,31 @@ export async function deleteEvent(id: number) {
   await db.delete(events).where(eq(events.id, id));
   invalidateEventsCache(); // キャッシュを無効化
 }
+
+
+/**
+ * チャレンジを検索
+ */
+export async function searchChallenges(query: string) {
+  const db = await getDb();
+  if (!db) return [];
+  
+  // 検索クエリを正規化
+  const normalizedQuery = query.toLowerCase().trim();
+  
+  // 全チャレンジを取得してフィルタリング
+  const allChallenges = await db.select().from(challenges).where(eq(challenges.isPublic, true)).orderBy(desc(challenges.eventDate));
+  
+  // タイトル、ホスト名、説明文で検索
+  return allChallenges.filter(c => {
+    const title = (c.title || "").toLowerCase();
+    const hostName = (c.hostName || "").toLowerCase();
+    const description = (c.description || "").toLowerCase();
+    const venue = (c.venue || "").toLowerCase();
+    
+    return title.includes(normalizedQuery) ||
+           hostName.includes(normalizedQuery) ||
+           description.includes(normalizedQuery) ||
+           venue.includes(normalizedQuery);
+  });
+}

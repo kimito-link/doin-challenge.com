@@ -49,9 +49,10 @@ export default function DataIntegrityScreen() {
     );
   }
 
-  const summary = report?.summary;
   const challenges = report?.challenges || [];
-  const hasDiscrepancies = summary && summary.challengesWithDiscrepancy > 0;
+  const totalChallenges = report?.totalChallenges || 0;
+  const challengesWithDiscrepancy = report?.challengesWithDiscrepancy || 0;
+  const hasDiscrepancies = challengesWithDiscrepancy > 0;
 
   return (
     <ScrollView
@@ -69,36 +70,36 @@ export default function DataIntegrityScreen() {
         </View>
 
         {/* サマリーカード */}
-        {summary && (
+        {report && (
           <View className="bg-surface rounded-xl p-4 mb-6 border border-border">
             <Text className="text-lg font-bold text-foreground mb-4">📊 サマリー</Text>
             
             <View className="flex-row flex-wrap" style={{ gap: 12 }}>
               <StatCard 
                 label="総チャレンジ数" 
-                value={summary.totalChallenges} 
+                value={totalChallenges} 
                 color={colors.foreground} 
               />
               <StatCard 
                 label="不整合あり" 
-                value={summary.challengesWithDiscrepancy} 
-                color={summary.challengesWithDiscrepancy > 0 ? colors.error : colors.success}
-                icon={summary.challengesWithDiscrepancy > 0 ? "warning" : "checkmark-circle"}
+                value={challengesWithDiscrepancy} 
+                color={challengesWithDiscrepancy > 0 ? colors.error : colors.success}
+                icon={challengesWithDiscrepancy > 0 ? "warning" : "checkmark-circle"}
               />
               <StatCard 
                 label="保存値合計" 
-                value={summary.totalStoredValue} 
+                value={challenges.reduce((sum, c) => sum + c.storedCurrentValue, 0)} 
                 color={colors.muted} 
               />
               <StatCard 
                 label="実際値合計" 
-                value={summary.totalActualValue} 
+                value={challenges.reduce((sum, c) => sum + c.actualTotalContribution, 0)} 
                 color={colors.primary} 
               />
               <StatCard 
                 label="差分合計" 
-                value={summary.totalDiscrepancy} 
-                color={summary.totalDiscrepancy !== 0 ? colors.warning : colors.success}
+                value={challenges.reduce((sum, c) => sum + c.discrepancyAmount, 0)} 
+                color={challenges.reduce((sum, c) => sum + c.discrepancyAmount, 0) !== 0 ? colors.warning : colors.success}
                 showSign
               />
             </View>
@@ -140,7 +141,7 @@ export default function DataIntegrityScreen() {
         )}
 
         {/* 整合性ステータス */}
-        {!hasDiscrepancies && summary && (
+        {!hasDiscrepancies && report && (
           <View className="mb-6 p-4 bg-success/20 rounded-xl border border-success/30">
             <View className="flex-row items-center">
               <Ionicons name="checkmark-circle" size={24} color={colors.success} />
