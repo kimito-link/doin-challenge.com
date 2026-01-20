@@ -6,6 +6,7 @@ import { useResponsive } from "@/hooks/use-responsive";
 import { AnimatedCard } from "@/components/molecules/animated-pressable";
 import { LazyAvatar } from "@/components/molecules/lazy-image";
 import { Countdown } from "@/components/atoms/countdown";
+import { goalTypeConfig } from "@/constants/goal-types";
 
 interface Challenge {
   id: number;
@@ -46,15 +47,6 @@ const CARD_COLORS = [
   { bg: "#8B5CF6", gradient: ["#8B5CF6", "#A78BFA"] }, // 紫
   { bg: "#3B82F6", gradient: ["#3B82F6", "#60A5FA"] }, // 青
 ];
-
-// 目標タイプの表示名とアイコン
-const goalTypeConfig: Record<string, { label: string; icon: string; unit: string }> = {
-  attendance: { label: "動員", icon: "people", unit: "人" },
-  followers: { label: "フォロワー", icon: "person-add", unit: "人" },
-  viewers: { label: "同時視聴", icon: "visibility", unit: "人" },
-  points: { label: "ポイント", icon: "star", unit: "pt" },
-  custom: { label: "カスタム", icon: "flag", unit: "" },
-};
 
 // イベントタイプのバッジ
 const eventTypeBadge: Record<string, { label: string; color: string }> = {

@@ -3,6 +3,7 @@ import { View, Text, TouchableOpacity, StyleSheet } from "react-native";
 import { Image } from "expo-image";
 import { LinearGradient } from "expo-linear-gradient";
 import MaterialIcons from "@expo/vector-icons/MaterialIcons";
+import { goalTypeConfig } from "@/constants/goal-types";
 
 interface Challenge {
   id: number;
@@ -28,15 +29,6 @@ interface MemoizedChallengeCardProps {
   onPress: () => void;
   numColumns?: number;
 }
-
-// 目標タイプの表示名とアイコン
-const goalTypeConfig: Record<string, { label: string; icon: string; unit: string }> = {
-  attendance: { label: "動員", icon: "people", unit: "人" },
-  followers: { label: "フォロワー", icon: "person-add", unit: "人" },
-  viewers: { label: "同時視聴", icon: "visibility", unit: "人" },
-  points: { label: "ポイント", icon: "star", unit: "pt" },
-  custom: { label: "カスタム", icon: "flag", unit: "" },
-};
 
 // イベントタイプのバッジ
 const eventTypeBadge: Record<string, { label: string; color: string }> = {

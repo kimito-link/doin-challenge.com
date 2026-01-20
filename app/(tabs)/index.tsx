@@ -35,6 +35,7 @@ import { TutorialHighlightTarget } from "@/components/atoms/tutorial-highlight-t
 import { useTutorial } from "@/lib/tutorial-context";
 import { useFavorites } from "@/hooks/use-favorites";
 import { useExperience } from "@/lib/experience-context";
+import { goalTypeConfig } from "@/constants/goal-types";
 
 // キャラクター画像
 const characterImages = {
@@ -52,15 +53,6 @@ const characterImages = {
 
 // ロゴ画像
 const logoImage = require("@/assets/images/logo/logo-color.jpg");
-
-// 目標タイプの表示名とアイコン
-const goalTypeConfig: Record<string, { label: string; icon: string; unit: string }> = {
-  attendance: { label: "動員", icon: "people", unit: "人" },
-  followers: { label: "フォロワー", icon: "person-add", unit: "人" },
-  viewers: { label: "同時視聴", icon: "visibility", unit: "人" },
-  points: { label: "ポイント", icon: "star", unit: "pt" },
-  custom: { label: "カスタム", icon: "flag", unit: "" },
-};
 
 // イベントタイプのバッジ
 const eventTypeBadge: Record<string, { label: string; color: string }> = {

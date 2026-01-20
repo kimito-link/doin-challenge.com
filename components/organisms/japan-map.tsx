@@ -55,7 +55,7 @@ const prefectureData: { [key: string]: { name: string; x: number; y: number } } 
   "沖縄県": { name: "沖縄", x: 10, y: 420 },
 };
 
-// 地域グループ
+// 地図用地域グループ（北海道・東北が分離、近畿は「関西」表記、色付き）
 const regionGroups = [
   { name: "北海道", prefectures: ["北海道"], color: "#60A5FA" },
   { name: "東北", prefectures: ["青森県", "岩手県", "宮城県", "秋田県", "山形県", "福島県"], color: "#3B82F6" },

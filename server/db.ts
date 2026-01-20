@@ -2159,13 +2159,13 @@ export async function getDbSchema() {
   try {
     // テーブル一覧を取得
     const tablesResult = await db.execute(sql`SHOW TABLES`);
-    const tables = (tablesResult[0] as any[]).map((row: any) => Object.values(row)[0] as string);
+    const tables = (tablesResult[0] as unknown as any[]).map((row: any) => Object.values(row)[0] as string);
     
     // 各テーブルのカラム構造を取得
     const schema: Record<string, any[]> = {};
     for (const tableName of tables) {
       const columnsResult = await db.execute(sql.raw(`DESCRIBE \`${tableName}\``));
-      schema[tableName] = columnsResult[0] as any[];
+      schema[tableName] = columnsResult[0] as unknown as any[];
     }
     
     return { tables, schema };
@@ -2193,7 +2193,7 @@ export async function compareSchemas() {
   try {
     // 本番DBのchallengesテーブルのカラムを取得
     const columnsResult = await db.execute(sql`DESCRIBE challenges`);
-    const dbColumns = (columnsResult[0] as any[]).map((row: any) => row.Field);
+    const dbColumns = (columnsResult[0] as unknown as any[]).map((row: any) => row.Field);
     
     // 比較
     const missingInDb = codeColumns.filter(col => !dbColumns.includes(col));

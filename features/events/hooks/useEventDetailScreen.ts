@@ -649,13 +649,22 @@ export function useEventDetailScreen(challengeId: number): UseEventDetailScreenR
       return;
     }
     
+    // tRPCの型定義に合わせて必須フィールドを追加
+    const twitterId = user.openId?.startsWith("twitter:") 
+      ? user.openId.replace("twitter:", "") 
+      : user.openId;
+    
     createParticipationMutation.mutate({
       challengeId,
+      displayName: user.name || "",
+      twitterId: twitterId || undefined,
+      username: user.username || undefined,
+      profileImage: user.profileImage || undefined,
+      followersCount: user.followersCount || undefined,
       message: message.trim() || undefined,
       companionCount: companions.length,
       prefecture: prefecture || undefined,
       gender: gender || undefined,
-      allowVideoUse,
       companions: companions.map(c => ({
         displayName: c.displayName,
         twitterUsername: c.twitterUsername || undefined,
@@ -663,7 +672,7 @@ export function useEventDetailScreen(challengeId: number): UseEventDetailScreenR
         profileImage: c.profileImage,
       })),
     });
-  }, [user, challengeId, message, companions, prefecture, gender, allowVideoUse, createParticipationMutation]);
+  }, [user, challengeId, message, companions, prefecture, gender, createParticipationMutation]);
   
   const submitAnonymousParticipation = useCallback(() => {
     if (!displayName.trim()) {
@@ -677,10 +686,14 @@ export function useEventDetailScreen(challengeId: number): UseEventDetailScreenR
       message: message.trim() || undefined,
       companionCount: companions.length,
       prefecture: prefecture || undefined,
-      gender: gender || undefined,
-      allowVideoUse,
+      companions: companions.map(c => ({
+        displayName: c.displayName,
+        twitterUsername: c.twitterUsername || undefined,
+        twitterId: c.twitterId,
+        profileImage: c.profileImage,
+      })),
     });
-  }, [challengeId, displayName, message, companions, prefecture, gender, allowVideoUse, createAnonymousMutation]);
+  }, [challengeId, displayName, message, companions, prefecture, createAnonymousMutation]);
   
   const updateParticipation = useCallback(() => {
     if (!editingParticipationId) return;

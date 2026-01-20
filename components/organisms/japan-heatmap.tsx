@@ -6,7 +6,7 @@ import { prefecturesData, prefectureNameToCode } from "@/lib/prefecture-paths";
 
 const screenWidth = Dimensions.get("window").width;
 
-// 地域グループ定義
+// ヒートマップ用地域グループ（北海道・東北が分離、近畿は「関西」表記）
 const regionGroups = [
   { name: "北海道", prefectures: ["北海道"] },
   { name: "東北", prefectures: ["青森県", "岩手県", "宮城県", "秋田県", "山形県", "福島県"] },

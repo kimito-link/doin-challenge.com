@@ -32,38 +32,10 @@ import { FanProfileModal } from "@/components/organisms/fan-profile-modal";
 import { TwitterUserCard } from "@/components/molecules/twitter-user-card";
 import { useFavorites } from "@/hooks/use-favorites";
 import { getChallengeColor } from "@/lib/challenge-colors";
+import { goalTypeConfig } from "@/constants/goal-types";
+import { regionGroups, prefectures } from "@/constants/prefectures";
 
 const { width: screenWidth } = Dimensions.get("window");
-
-// 目標タイプの表示名とアイコン
-const goalTypeConfig: Record<string, { label: string; icon: string; unit: string }> = {
-  attendance: { label: "動員", icon: "people", unit: "人" },
-  followers: { label: "フォロワー", icon: "person-add", unit: "人" },
-  viewers: { label: "同時視聴", icon: "visibility", unit: "人" },
-  points: { label: "ポイント", icon: "star", unit: "pt" },
-  custom: { label: "カスタム", icon: "flag", unit: "" },
-};
-
-// 地域グループ
-const regionGroups = [
-  { name: "北海道・東北", prefectures: ["北海道", "青森県", "岩手県", "宮城県", "秋田県", "山形県", "福島県"] },
-  { name: "関東", prefectures: ["茨城県", "栃木県", "群馬県", "埼玉県", "千葉県", "東京都", "神奈川県"] },
-  { name: "中部", prefectures: ["新潟県", "富山県", "石川県", "福井県", "山梨県", "長野県", "岐阜県", "静岡県", "愛知県"] },
-  { name: "近畿", prefectures: ["三重県", "滋賀県", "京都府", "大阪府", "兵庫県", "奈良県", "和歌山県"] },
-  { name: "中国・四国", prefectures: ["鳥取県", "島根県", "岡山県", "広島県", "山口県", "徳島県", "香川県", "愛媛県", "高知県"] },
-  { name: "九州・沖縄", prefectures: ["福岡県", "佐賀県", "長崎県", "熊本県", "大分県", "宮崎県", "鹿児島県", "沖縄県"] },
-];
-
-// 都道府県リスト
-const prefectures = [
-  "北海道", "青森県", "岩手県", "宮城県", "秋田県", "山形県", "福島県",
-  "茨城県", "栃木県", "群馬県", "埼玉県", "千葉県", "東京都", "神奈川県",
-  "新潟県", "富山県", "石川県", "福井県", "山梨県", "長野県", "岐阜県",
-  "静岡県", "愛知県", "三重県", "滋賀県", "京都府", "大阪府", "兵庫県",
-  "奈良県", "和歌山県", "鳥取県", "島根県", "岡山県", "広島県", "山口県",
-  "徳島県", "香川県", "愛媛県", "高知県", "福岡県", "佐賀県", "長崎県",
-  "熊本県", "大分県", "宮崎県", "鹿児島県", "沖縄県"
-];
 
 type Participation = {
   id: number;
@@ -119,7 +91,7 @@ function RegionMap({ participations }: { participations: Participation[] }) {
   
   participations.forEach(p => {
     if (p.prefecture) {
-      const region = regionGroups.find(r => r.prefectures.includes(p.prefecture!));
+      const region = regionGroups.find(r => (r.prefectures as readonly string[]).includes(p.prefecture!));
       if (region) {
         regionCounts[region.name] = (regionCounts[region.name] || 0) + (p.contribution || 1);
       }
@@ -1781,7 +1753,7 @@ export default function ChallengeDetailScreen() {
                     if (selectedPrefectureFilter === "all") return true;
                     // 地域グループでフィルター
                     const region = regionGroups.find(r => r.name === selectedPrefectureFilter);
-                    if (region) return region.prefectures.includes(p.prefecture || "");
+                    if (region) return (region.prefectures as readonly string[]).includes(p.prefecture || "");
                     // 都道府県でフィルター
                     return p.prefecture === selectedPrefectureFilter;
                   })
@@ -1843,7 +1815,7 @@ export default function ChallengeDetailScreen() {
                 {participations.filter((p: any) => {
                   if (selectedPrefectureFilter === "all") return true;
                   const region = regionGroups.find(r => r.name === selectedPrefectureFilter);
-                  if (region) return region.prefectures.includes(p.prefecture || "");
+                  if (region) return (region.prefectures as readonly string[]).includes(p.prefecture || "");
                   return p.prefecture === selectedPrefectureFilter;
                 }).length === 0 && selectedPrefectureFilter !== "all" && (
                   <View style={{ alignItems: "center", paddingVertical: 24 }}>

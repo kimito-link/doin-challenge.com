@@ -2481,3 +2481,38 @@
 
 ## バグ修正（v6.05）
 - [x] チャレンジ作成エラー修正: Unknown column 'slug' in 'field list'（server/db.tsのcreateEvent関数からslugカラムを削除）
+
+## 緊急バグ修正（v6.22）
+- [x] 真っ黒画面問題を調査・修正
+- [x] チャレンジ作成機能の動作確認
+
+
+## コンポーネントリファクタリング（v6.14+）
+
+### Phase 1: コードベース分析
+- [x] 重複コードの特定（都道府県リスト、4ファイル、regionGroups 5ファイル、goalTypeConfig 4ファイル）
+- [x] 大きなコンポーネントの特定（event/[id].tsx 2953行、experience-overlay 2017行、index.tsx 1358行）
+- [x] 共通パターンの抽出候補を特定
+
+### Phase 2: 共通定数・型の抽出
+- [x] constants/prefectures.ts 作成（都道府県リスト、地域グループ、ユーティリティ関数）
+- [x] constants/goal-types.ts 作成（目標タイプ設定、ユーティリティ関数）
+- [x] types/participation.ts 作成（参加者型定義、性別型）
+
+### Phase 3: イベント詳細画面のコンポーネント分割
+- [x] features/events/components/ProgressGrid.tsx 作成（進捗グリッド）
+- [x] features/events/components/RegionMap.tsx 作成（地域別マップ）
+- [x] features/events/components/ParticipantsList.tsx 作成（参加者リスト）
+- [x] features/events/components/ContributionRanking.tsx 作成（貢献度ランキング）
+- [x] features/events/components/MessageCard.tsx 作成（応援メッセージカード）
+- [x] features/events/index.ts 作成（モジュールエクスポート）
+- [ ] app/event/[id].tsx を新コンポーネントで置き換え
+- [ ] チャレンジ作成画面の分割
+- [ ] ホーム画面の分割
+
+### Phase 4: 重複コードの削除
+- [x] goalTypeConfigの共通化（colorful-challenge-card, memoized-challenge-card, index.tsx, event/[id].tsx）
+- [x] regionGroups/prefecturesの共通化（event/[id].tsx）
+- [x] 各ファイルのローカル定義にコメント追加（用途の明確化）
+- [x] イベントタイプバッジの共通化（constants/event-types.ts）
+- [x] constants/index.ts 作成（共通定数の一括エクスポート）

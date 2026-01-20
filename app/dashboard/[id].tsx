@@ -13,8 +13,9 @@ import { ParticipantRanking } from "@/components/organisms/participant-ranking";
 
 const { width: screenWidth } = Dimensions.get("window");
 
-// 地域グループ
-const regionGroups = [
+// ダッシュボード用地域グループ（色付き）
+// 注: 共通のdashboardRegionGroupsとは分割が異なる（北海道が単独、東北が別）
+const dashboardRegionGroups = [
   { name: "北海道", prefectures: ["北海道"], color: "#3B82F6" },
   { name: "東北", prefectures: ["青森県", "岩手県", "宮城県", "秋田県", "山形県", "福島県"], color: "#60A5FA" },
   { name: "関東", prefectures: ["茨城県", "栃木県", "群馬県", "埼玉県", "千葉県", "東京都", "神奈川県"], color: "#EC4899" },
@@ -219,7 +220,7 @@ function RegionPieChart({ participations }: { participations: Participation[] })
     
     participations.forEach(p => {
       if (p.prefecture) {
-        const region = regionGroups.find(r => r.prefectures.includes(p.prefecture!));
+        const region = dashboardRegionGroups.find(r => r.prefectures.includes(p.prefecture!));
         if (region) {
           counts[region.name] = (counts[region.name] || 0) + (p.contribution || 1);
           total += p.contribution || 1;
@@ -227,7 +228,7 @@ function RegionPieChart({ participations }: { participations: Participation[] })
       }
     });
 
-    return regionGroups.map(region => ({
+    return dashboardRegionGroups.map(region => ({
       name: region.name,
       count: counts[region.name] || 0,
       color: region.color,
