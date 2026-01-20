@@ -498,7 +498,7 @@ export default function HomeScreen() {
             width: grid.maxWidth ? "100%" : undefined,
           }}
           style={{ backgroundColor: color.bg }}
-          columnWrapperStyle={numColumns > 1 ? { justifyContent: "flex-start", gap: grid.gap } : undefined}
+          columnWrapperStyle={isSearching && numColumns > 1 ? { justifyContent: "flex-start", gap: grid.gap } : undefined}
           // パフォーマンス最適化
           windowSize={5}
           maxToRenderPerBatch={6}
