@@ -19,6 +19,15 @@ import { showAlert } from "@/lib/web-alert";
 import { TwitterUserCard } from "@/components/molecules/twitter-user-card";
 import { CharacterGroupValidationError } from "@/components/molecules/character-validation-error";
 import { InlineValidationError } from "@/components/molecules/inline-validation-error";
+import { goalTypeOptions, eventTypeOptions } from "@/constants/goal-types";
+import { prefectures } from "@/constants/prefectures";
+import {
+  EventTypeSelector,
+  GoalTypeSelector,
+  CategorySelector,
+  TicketInfoSection,
+  TemplateSaveSection,
+} from "@/features/create";
 
 // キャラクター画像
 const characterImages = {
@@ -27,31 +36,6 @@ const characterImages = {
   tanune: require("@/assets/images/characters/tanune.png"),
 };
 
-// 目標タイプの設定
-const goalTypes = [
-  { id: "attendance", label: "動員", icon: "people", unit: "人", description: "ライブ・イベントの参加者数" },
-  { id: "followers", label: "フォロワー", icon: "person-add", unit: "人", description: "SNSのフォロワー増加目標" },
-  { id: "viewers", label: "同時視聴", icon: "visibility", unit: "人", description: "配信・プレミア公開の同接" },
-  { id: "points", label: "ポイント", icon: "star", unit: "pt", description: "ミクチャ等のイベントポイント" },
-  { id: "custom", label: "カスタム", icon: "flag", unit: "", description: "自由な目標を設定" },
-];
-
-// イベントタイプの設定
-const eventTypes = [
-  { id: "solo", label: "ソロ", color: "#EC4899" },
-  { id: "group", label: "グループ", color: "#8B5CF6" },
-];
-
-// 都道府県リスト
-const prefectures = [
-  "北海道", "青森県", "岩手県", "宮城県", "秋田県", "山形県", "福島県",
-  "茨城県", "栃木県", "群馬県", "埼玉県", "千葉県", "東京都", "神奈川県",
-  "新潟県", "富山県", "石川県", "福井県", "山梨県", "長野県", "岐阜県",
-  "静岡県", "愛知県", "三重県", "滋賀県", "京都府", "大阪府", "兵庫県",
-  "奈良県", "和歌山県", "鳥取県", "島根県", "岡山県", "広島県", "山口県",
-  "徳島県", "香川県", "愛媛県", "高知県", "福岡県", "佐賀県", "長崎県",
-  "熊本県", "大分県", "宮崎県", "鹿児島県", "沖縄県", "オンライン"
-];
 
 export default function CreateChallengeScreen() {
   const router = useRouter();
@@ -238,8 +222,6 @@ export default function CreateChallengeScreen() {
     }
   };
 
-  const selectedGoalType = goalTypes.find(g => g.id === goalType);
-
   return (
     <ScreenContainer containerClassName="bg-background">
       <KeyboardAvoidingView
@@ -357,110 +339,22 @@ export default function CreateChallengeScreen() {
               )}
 
               {/* イベントタイプ選択 */}
-              <View style={{ marginBottom: 16 }}>
-                <Text style={{ color: colors.muted, fontSize: 14, marginBottom: 8 }}>
-                  イベントタイプ
-                </Text>
-                <View style={{ flexDirection: "row", gap: 12 }}>
-                  {eventTypes.map((type) => (
-                    <TouchableOpacity
-                      key={type.id}
-                      onPress={() => setEventType(type.id)}
-                      style={{
-                        flex: 1,
-                        backgroundColor: eventType === type.id ? type.color : colors.background,
-                        borderRadius: 12,
-                        padding: 12,
-                        alignItems: "center",
-                        borderWidth: 2,
-                        borderColor: eventType === type.id ? type.color : "#2D3139",
-                      }}
-                    >
-                      <Text
-                        style={{
-                          color: eventType === type.id ? "#fff" : colors.muted,
-                          fontSize: 14,
-                          fontWeight: "600",
-                        }}
-                      >
-                        {type.label}
-                      </Text>
-                    </TouchableOpacity>
-                  ))}
-                </View>
-              </View>
+              <EventTypeSelector
+                value={eventType}
+                onChange={setEventType}
+              />
 
               {/* カテゴリ選択 */}
-              <View style={{ marginBottom: 16 }}>
-                <Text style={{ color: colors.muted, fontSize: 14, marginBottom: 8 }}>
-                  カテゴリ
-                </Text>
-                <TouchableOpacity
-                  onPress={() => setShowCategoryList(!showCategoryList)}
-                  style={{
-                    backgroundColor: colors.background,
-                    borderRadius: 8,
-                    padding: 12,
-                    borderWidth: 1,
-                    borderColor: "#2D3139",
-                    flexDirection: "row",
-                    justifyContent: "space-between",
-                    alignItems: "center",
-                  }}
-                >
-                  <Text style={{ color: categoryId ? colors.foreground : "#9CA3AF", fontSize: 14 }}>
-                    {categoryId
-                      ? categoriesData?.find((c) => c.id === categoryId)?.name || "カテゴリを選択"
-                      : "カテゴリを選択"}
-                  </Text>
-                  <MaterialIcons
-                    name={showCategoryList ? "keyboard-arrow-up" : "keyboard-arrow-down"}
-                    size={24}
-                    color={colors.muted}
-                  />
-                </TouchableOpacity>
-                {showCategoryList && categoriesData && (
-                  <View
-                    style={{
-                      backgroundColor: colors.background,
-                      borderRadius: 8,
-                      marginTop: 4,
-                      borderWidth: 1,
-                      borderColor: "#2D3139",
-                      maxHeight: 200,
-                    }}
-                  >
-                    <ScrollView nestedScrollEnabled={true}>
-                      {categoriesData.map((category) => (
-                        <TouchableOpacity
-                          key={category.id}
-                          onPress={() => {
-                            setCategoryId(category.id);
-                            setShowCategoryList(false);
-                          }}
-                          activeOpacity={0.7}
-                          style={{
-                            padding: 12,
-                            borderBottomWidth: 1,
-                            borderBottomColor: "#2D3139",
-                            minHeight: 44,
-                            justifyContent: "center",
-                          }}
-                        >
-                          <Text
-                            style={{
-                              color: categoryId === category.id ? "#EC4899" : colors.foreground,
-                              fontSize: 14,
-                            }}
-                          >
-                            {category.name}
-                          </Text>
-                        </TouchableOpacity>
-                      ))}
-                    </ScrollView>
-                  </View>
-                )}
-              </View>
+              <CategorySelector
+                categoryId={categoryId}
+                categories={categoriesData}
+                showList={showCategoryList}
+                onToggleList={() => setShowCategoryList(!showCategoryList)}
+                onSelect={(id) => {
+                  setCategoryId(id);
+                  setShowCategoryList(false);
+                }}
+              />
 
               {/* チャレンジ名 */}
               <View ref={titleInputRef} style={{ marginBottom: 16 }}>
@@ -489,80 +383,15 @@ export default function CreateChallengeScreen() {
               </View>
 
               {/* 目標タイプ選択 */}
-              <View style={{ marginBottom: 16 }}>
-                <Text style={{ color: colors.muted, fontSize: 14, marginBottom: 8 }}>
-                  目標タイプ
-                </Text>
-                <ScrollView
-                  horizontal
-                  showsHorizontalScrollIndicator={false}
-                  style={{ marginHorizontal: -4 }}
-                >
-                  {goalTypes.map((type) => (
-                    <TouchableOpacity
-                      key={type.id}
-                      onPress={() => {
-                        setGoalType(type.id);
-                        setGoalUnit(type.unit);
-                      }}
-                      style={{
-                        backgroundColor: goalType === type.id ? "#EC4899" : colors.background,
-                        borderRadius: 20,
-                        paddingHorizontal: 16,
-                        paddingVertical: 8,
-                        marginHorizontal: 4,
-                        flexDirection: "row",
-                        alignItems: "center",
-                        borderWidth: 1,
-                        borderColor: goalType === type.id ? "#EC4899" : "#2D3139",
-                      }}
-                    >
-                      <MaterialIcons
-                        name={type.icon as any}
-                        size={16}
-                        color={goalType === type.id ? "#fff" : colors.muted}
-                      />
-                      <Text
-                        style={{
-                          color: goalType === type.id ? "#fff" : colors.muted,
-                          fontSize: 13,
-                          marginLeft: 4,
-                        }}
-                      >
-                        {type.label}
-                      </Text>
-                    </TouchableOpacity>
-                  ))}
-                </ScrollView>
-                {selectedGoalType && (
-                  <Text style={{ color: colors.muted, fontSize: 12, marginTop: 8 }}>
-                    {selectedGoalType.description}
-                  </Text>
-                )}
-              </View>
-
-              {/* カスタム単位入力 */}
-              {goalType === "custom" && (
-                <View style={{ marginBottom: 16 }}>
-                  <Text style={{ color: colors.muted, fontSize: 14, marginBottom: 8 }}>
-                    単位
-                  </Text>
-                  <TextInput
-                    value={goalUnit}
-                    onChangeText={setGoalUnit}
-                    placeholder="例: 人、pt、回"
-                    placeholderTextColor="#9CA3AF"
-                    style={{
-                      backgroundColor: colors.background,
-                      borderRadius: 8,
-                      padding: 12,
-                      color: colors.foreground,
-                      borderWidth: 1,
-                      borderColor: "#2D3139",
-                    }}
-                  />
-                </View>
-              )}
+              <GoalTypeSelector
+                goalType={goalType}
+                goalUnit={goalUnit}
+                onGoalTypeChange={(id, unit) => {
+                  setGoalType(id);
+                  setGoalUnit(unit);
+                }}
+                onGoalUnitChange={setGoalUnit}
+              />
 
               {/* 目標数値 */}
               <NumberStepper
@@ -710,143 +539,14 @@ export default function CreateChallengeScreen() {
 
               {/* チケット情報セクション */}
               {goalType === "attendance" && (
-                <View
-                  style={{
-                    backgroundColor: colors.background,
-                    borderRadius: 12,
-                    padding: 16,
-                    marginBottom: 16,
-                    borderWidth: 1,
-                    borderColor: "#2D3139",
-                  }}
-                >
-                  <View style={{ flexDirection: "row", alignItems: "center", marginBottom: 12 }}>
-                    <MaterialIcons name="confirmation-number" size={20} color="#EC4899" />
-                    <Text style={{ color: colors.foreground, fontSize: 16, fontWeight: "600", marginLeft: 8 }}>
-                      チケット情報（任意）
-                    </Text>
-                  </View>
-                  
-                  {/* まだ決まっていないオプション */}
-                  <Pressable
-                    onPress={() => {
-                      if (ticketPresale === "-1" && ticketDoor === "-1") {
-                        setTicketPresale("");
-                        setTicketDoor("");
-                      } else {
-                        setTicketPresale("-1");
-                        setTicketDoor("-1");
-                        setTicketUrl("");
-                      }
-                    }}
-                    style={({ pressed }) => ({
-                      flexDirection: "row",
-                      alignItems: "center",
-                      marginBottom: 12,
-                      opacity: pressed ? 0.7 : 1,
-                    })}
-                  >
-                    <View
-                      style={{
-                        width: 20,
-                        height: 20,
-                        borderRadius: 10,
-                        borderWidth: 2,
-                        borderColor: ticketPresale === "-1" ? "#EC4899" : "#4B5563",
-                        backgroundColor: ticketPresale === "-1" ? "#EC4899" : "transparent",
-                        marginRight: 8,
-                        justifyContent: "center",
-                        alignItems: "center",
-                      }}
-                    >
-                      {ticketPresale === "-1" && (
-                        <View style={{ width: 8, height: 8, borderRadius: 4, backgroundColor: "#fff" }} />
-                      )}
-                    </View>
-                    <Text style={{ color: colors.muted, fontSize: 14 }}>
-                      まだ決まっていない
-                    </Text>
-                  </Pressable>
-                  
-                  {ticketPresale === "-1" ? (
-                    <Text style={{ color: "#9CA3AF", fontSize: 12 }}>
-                      ※ 決まり次第、後から編集できます
-                    </Text>
-                  ) : (
-                    <>
-                      <View style={{ flexDirection: "row", gap: 12, marginBottom: 12 }}>
-                        <View style={{ flex: 1 }}>
-                          <Text style={{ color: colors.muted, fontSize: 12, marginBottom: 4 }}>
-                            前売り券
-                          </Text>
-                          <View style={{ flexDirection: "row", alignItems: "center" }}>
-                            <TextInput
-                              value={ticketPresale}
-                              onChangeText={setTicketPresale}
-                              placeholder="3000"
-                              placeholderTextColor="#9CA3AF"
-                              keyboardType="numeric"
-                              style={{
-                                backgroundColor: "#1A1D21",
-                                borderRadius: 8,
-                                padding: 10,
-                                color: colors.foreground,
-                                borderWidth: 1,
-                                borderColor: "#2D3139",
-                                flex: 1,
-                              }}
-                            />
-                            <Text style={{ color: colors.muted, fontSize: 14, marginLeft: 8 }}>円</Text>
-                          </View>
-                        </View>
-                        <View style={{ flex: 1 }}>
-                          <Text style={{ color: colors.muted, fontSize: 12, marginBottom: 4 }}>
-                            当日券
-                          </Text>
-                          <View style={{ flexDirection: "row", alignItems: "center" }}>
-                            <TextInput
-                              value={ticketDoor}
-                              onChangeText={setTicketDoor}
-                              placeholder="3500"
-                              placeholderTextColor="#9CA3AF"
-                              keyboardType="numeric"
-                              style={{
-                                backgroundColor: "#1A1D21",
-                                borderRadius: 8,
-                                padding: 10,
-                                color: colors.foreground,
-                                borderWidth: 1,
-                                borderColor: "#2D3139",
-                                flex: 1,
-                              }}
-                            />
-                            <Text style={{ color: colors.muted, fontSize: 14, marginLeft: 8 }}>円</Text>
-                          </View>
-                        </View>
-                      </View>
-
-                      <View>
-                        <Text style={{ color: colors.muted, fontSize: 12, marginBottom: 4 }}>
-                          チケット購入URL
-                        </Text>
-                        <TextInput
-                          value={ticketUrl}
-                          onChangeText={setTicketUrl}
-                          placeholder="https://tiget.net/events/..."
-                          placeholderTextColor="#9CA3AF"
-                          style={{
-                            backgroundColor: "#1A1D21",
-                            borderRadius: 8,
-                            padding: 10,
-                            color: colors.foreground,
-                            borderWidth: 1,
-                            borderColor: "#2D3139",
-                          }}
-                        />
-                      </View>
-                    </>
-                  )}
-                </View>
+                <TicketInfoSection
+                  ticketPresale={ticketPresale}
+                  ticketDoor={ticketDoor}
+                  ticketUrl={ticketUrl}
+                  onTicketPresaleChange={setTicketPresale}
+                  onTicketDoorChange={setTicketDoor}
+                  onTicketUrlChange={setTicketUrl}
+                />
               )}
 
               <View style={{ marginBottom: 16 }}>
@@ -875,72 +575,14 @@ export default function CreateChallengeScreen() {
 
               {/* テンプレート保存オプション */}
               {user && (
-                <View style={{ marginBottom: 16, backgroundColor: "#1A1D21", borderRadius: 12, padding: 16, borderWidth: 1, borderColor: "#2D3139" }}>
-                  <TouchableOpacity
-                    onPress={() => setSaveAsTemplate(!saveAsTemplate)}
-                    style={{ flexDirection: "row", alignItems: "center", justifyContent: "space-between" }}
-                  >
-                    <View style={{ flexDirection: "row", alignItems: "center" }}>
-                      <MaterialIcons name="bookmark" size={20} color="#8B5CF6" />
-                      <Text style={{ color: colors.foreground, fontSize: 14, fontWeight: "600", marginLeft: 8 }}>
-                        テンプレートとして保存
-                      </Text>
-                    </View>
-                    <View style={{
-                      width: 24,
-                      height: 24,
-                      borderRadius: 4,
-                      borderWidth: 2,
-                      borderColor: saveAsTemplate ? "#8B5CF6" : "#6B7280",
-                      backgroundColor: saveAsTemplate ? "#8B5CF6" : "transparent",
-                      alignItems: "center",
-                      justifyContent: "center",
-                    }}>
-                      {saveAsTemplate && <MaterialIcons name="check" size={16} color="#fff" />}
-                    </View>
-                  </TouchableOpacity>
-                  
-                  {saveAsTemplate && (
-                    <View style={{ marginTop: 12 }}>
-                      <TextInput
-                        value={templateName}
-                        onChangeText={setTemplateName}
-                        placeholder="テンプレート名"
-                        placeholderTextColor="#9CA3AF"
-                        style={{
-                          backgroundColor: colors.background,
-                          borderRadius: 8,
-                          padding: 12,
-                          color: colors.foreground,
-                          borderWidth: 1,
-                          borderColor: "#2D3139",
-                          marginBottom: 8,
-                        }}
-                      />
-                      <TouchableOpacity
-                        onPress={() => setTemplateIsPublic(!templateIsPublic)}
-                        style={{ flexDirection: "row", alignItems: "center" }}
-                      >
-                        <View style={{
-                          width: 20,
-                          height: 20,
-                          borderRadius: 4,
-                          borderWidth: 2,
-                          borderColor: templateIsPublic ? "#22C55E" : "#6B7280",
-                          backgroundColor: templateIsPublic ? "#22C55E" : "transparent",
-                          alignItems: "center",
-                          justifyContent: "center",
-                          marginRight: 8,
-                        }}>
-                          {templateIsPublic && <MaterialIcons name="check" size={14} color="#fff" />}
-                        </View>
-                        <Text style={{ color: colors.muted, fontSize: 13 }}>
-                          他のユーザーにも公開する
-                        </Text>
-                      </TouchableOpacity>
-                    </View>
-                  )}
-                </View>
+                <TemplateSaveSection
+                  saveAsTemplate={saveAsTemplate}
+                  templateName={templateName}
+                  templateIsPublic={templateIsPublic}
+                  onSaveAsTemplateChange={setSaveAsTemplate}
+                  onTemplateNameChange={setTemplateName}
+                  onTemplateIsPublicChange={setTemplateIsPublic}
+                />
               )}
 
               <TouchableOpacity

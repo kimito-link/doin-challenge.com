@@ -2575,3 +2575,65 @@
 - types/participation.ts: 参加者型定義
 
 ### 合計削減行数: 約1,150行
+
+
+## mypage.tsx & create.tsx の分割（v6.18+）
+
+### mypage.tsx の分割（1,104行 → 365行、**-739行、67%削減**）
+- [x] 構造分析とコンポーネント特定
+- [x] LoginScreenコンポーネントの分離（features/mypage/components/）
+- [x] ProfileCardコンポーネントの分離（features/mypage/components/）
+- [x] SettingsLinkItemコンポーネントの分離（features/mypage/components/）
+- [x] メインファイルでの置き換え
+
+### create.tsx の分割（994行）
+- [ ] 構造分析とコンポーネント特定
+- [ ] ローカルコンポーネントの分離
+- [ ] メインファイルでの置き換え
+
+
+## create.tsx 分割（GPT推奨構造）（v6.19+）
+
+### ディレクトリ構造
+```
+features/create/
+├── hooks/
+│   └── useCreateChallengeForm.ts  # state/handler/validation
+├── ui/
+│   ├── components/
+│   │   ├── GoalTypeSelector.tsx
+│   │   ├── EventTypeSelector.tsx
+│   │   ├── PrefectureSelector.tsx
+│   │   ├── TicketInfoSection.tsx
+│   │   ├── TemplateSaveSection.tsx
+│   │   └── index.ts
+│   └── sections/
+│       └── CreateFormCard.tsx
+├── types.ts
+└── index.ts
+```
+
+### タスク
+- [ ] features/create/types.ts 作成（CreateChallengeFormState型）
+- [ ] features/create/hooks/useCreateChallengeForm.ts 作成
+- [ ] features/create/ui/components/GoalTypeSelector.tsx 作成
+- [ ] features/create/ui/components/EventTypeSelector.tsx 作成
+- [ ] features/create/ui/components/PrefectureSelector.tsx 作成
+- [ ] features/create/ui/components/TicketInfoSection.tsx 作成
+- [ ] features/create/ui/components/TemplateSaveSection.tsx 作成
+- [ ] app/(tabs)/create.tsx を薄型化
+
+
+## コードリファクタリング（v4.5）
+
+### create.tsx 分割（GPT推奨構造）
+- [x] features/create/ディレクトリ構造の作成
+- [x] types.ts（フォーム状態の型定義）
+- [x] hooks/useCreateChallengeForm.ts（フォームロジックのフック）
+- [x] ui/components/EventTypeSelector.tsx
+- [x] ui/components/GoalTypeSelector.tsx
+- [x] ui/components/CategorySelector.tsx
+- [x] ui/components/TicketInfoSection.tsx
+- [x] ui/components/TemplateSaveSection.tsx
+- [x] create.tsxの薄型化（971行 → 636行、約35%削減）
+- [x] TypeScriptエラー修正（eventTypes/goalTypes → eventTypeOptions/goalTypeOptions）
