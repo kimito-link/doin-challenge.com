@@ -3199,7 +3199,12 @@ features/create/
 ### 500行以上のファイル分割
 - [x] event/[id].tsx (2540行 → 1855行) - 12コンポーネントに分割
 - [x] server/db.ts (2295行 → 18モジュール) - データベース関数を機能別に分割
-- [ ] experience-overlay.tsx (2018行) - 経験値オーバーレイ
+- [x] experience-overlay.tsx (2018行 → 5モジュール) - 経験値オーバーレイ
+  - [x] ファイル構造を分析
+  - [x] スタイル定義を別ファイルに抽出 (styles.ts: 1288行)
+  - [x] プレビューコンテンツを分離 (preview-content.tsx: 554行)
+  - [x] メインコンポーネントを整理 (ExperienceOverlay.tsx: 197行)
+  - [x] テスト実行と動作確認 (428テストパス)
 - [ ] server/routers.ts (1817行) - APIルーター（26サブルーター）
 - [x] japan-region-blocks.tsx (1052行 → 5モジュール) - 日本地図ブロック
   - [x] 地域データを別ファイルに抽出 (region-data.ts: 156行)
