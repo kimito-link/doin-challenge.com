@@ -1,0 +1,255 @@
+// features/create/hooks/use-create-challenge.ts
+// v6.18: チャレンジ作成の状態管理・バリデーション・ミューテーションを集約
+import { useState, useMemo, useRef, useEffect, useCallback } from "react";
+import { ScrollView, View } from "react-native";
+import { useRouter } from "expo-router";
+import { trpc } from "@/lib/trpc";
+import { useAuth } from "@/hooks/use-auth";
+import { showAlert } from "@/lib/web-alert";
+import type { GenreId, PurposeId } from "@/constants/event-categories";
+
+export type ValidationError = {
+  field: "title" | "date" | "host" | "general";
+  message?: string;
+};
+
+export type CreateChallengeState = {
+  // 基本情報
+  title: string;
+  description: string;
+  venue: string;
+  prefecture: string;
+  eventDateStr: string;
+  hostName: string;
+  externalUrl: string;
+  
+  // 目標設定
+  goalType: string;
+  goalValue: number;
+  goalUnit: string;
+  eventType: string;
+  
+  // チケット情報
+  ticketPresale: string;
+  ticketDoor: string;
+  ticketUrl: string;
+  
+  // カテゴリ
+  categoryId: number | null;
+  genre: GenreId | null;
+  purpose: PurposeId | null;
+  
+  // テンプレート
+  saveAsTemplate: boolean;
+  templateName: string;
+  templateIsPublic: boolean;
+  
+  // UI状態
+  showCategoryList: boolean;
+  showPrefectureList: boolean;
+  showValidationError: boolean;
+};
+
+const initialState: CreateChallengeState = {
+  title: "",
+  description: "",
+  venue: "",
+  prefecture: "",
+  eventDateStr: "",
+  hostName: "",
+  externalUrl: "",
+  goalType: "attendance",
+  goalValue: 100,
+  goalUnit: "人",
+  eventType: "solo",
+  ticketPresale: "",
+  ticketDoor: "",
+  ticketUrl: "",
+  categoryId: null,
+  genre: null,
+  purpose: null,
+  saveAsTemplate: false,
+  templateName: "",
+  templateIsPublic: false,
+  showCategoryList: false,
+  showPrefectureList: false,
+  showValidationError: false,
+};
+
+export function useCreateChallenge() {
+  const router = useRouter();
+  const { user } = useAuth();
+  
+  // 状態
+  const [state, setState] = useState<CreateChallengeState>(initialState);
+  
+  // refs
+  const scrollViewRef = useRef<ScrollView>(null);
+  const titleInputRef = useRef<View>(null);
+  const dateInputRef = useRef<View>(null);
+  
+  // バリデーションエラー
+  const validationErrors = useMemo<ValidationError[]>(() => {
+    const errors: ValidationError[] = [];
+    
+    if (!state.title.trim()) {
+      errors.push({ field: "title" });
+    }
+    if (!user?.twitterId) {
+      errors.push({ field: "host" });
+    }
+    
+    return errors;
+  }, [state.title, user]);
+  
+  // バリデーションエラー表示時にスクロール
+  useEffect(() => {
+    if (state.showValidationError && scrollViewRef.current) {
+      const firstError = validationErrors[0];
+      if (firstError?.field === "title" && titleInputRef.current) {
+        titleInputRef.current.measureLayout(
+          scrollViewRef.current as any,
+          (x, y) => {
+            scrollViewRef.current?.scrollTo({ y: Math.max(0, y - 100), animated: true });
+          },
+          () => {}
+        );
+      } else if (firstError?.field === "date" && dateInputRef.current) {
+        dateInputRef.current.measureLayout(
+          scrollViewRef.current as any,
+          (x, y) => {
+            scrollViewRef.current?.scrollTo({ y: Math.max(0, y - 100), animated: true });
+          },
+          () => {}
+        );
+      }
+    }
+  }, [state.showValidationError, validationErrors]);
+  
+  // テンプレート保存ミューテーション
+  const createTemplateMutation = trpc.templates.create.useMutation({
+    onSuccess: () => {
+      showAlert("保存完了", "テンプレートを保存しました");
+    },
+  });
+  
+  // チャレンジ作成ミューテーション
+  const createChallengeMutation = trpc.events.create.useMutation({
+    onSuccess: (newChallenge) => {
+      setState(prev => ({ ...prev, showValidationError: false }));
+      showAlert("成功", "チャレンジを作成しました！", [
+        {
+          text: "OK",
+          onPress: () => {
+            router.push({
+              pathname: "/event/[id]",
+              params: { id: newChallenge.id.toString() },
+            });
+          },
+        },
+      ]);
+    },
+    onError: (error) => {
+      const errorMessage = error.message || "チャレンジの作成に失敗しました";
+      showAlert("チャレンジ作成エラー", `${errorMessage}\n\n入力内容を確認して再度お試しください。`, [
+        { text: "OK", style: "cancel" },
+      ]);
+    },
+  });
+  
+  // フィールド更新関数
+  const updateField = useCallback(<K extends keyof CreateChallengeState>(
+    field: K,
+    value: CreateChallengeState[K]
+  ) => {
+    setState(prev => {
+      const newState = { ...prev, [field]: value };
+      
+      // タイトルや日付が入力されたらバリデーションエラーを非表示
+      if (field === "title" && typeof value === "string" && value.trim()) {
+        newState.showValidationError = false;
+      }
+      if (field === "eventDateStr" && typeof value === "string" && value.trim()) {
+        newState.showValidationError = false;
+      }
+      
+      return newState;
+    });
+  }, []);
+  
+  // 目標タイプ変更
+  const handleGoalTypeChange = useCallback((id: string, unit: string) => {
+    setState(prev => ({
+      ...prev,
+      goalType: id,
+      goalUnit: unit,
+    }));
+  }, []);
+  
+  // チャレンジ作成
+  const handleCreate = useCallback(() => {
+    if (validationErrors.length > 0) {
+      setState(prev => ({ ...prev, showValidationError: true }));
+      return;
+    }
+    
+    const eventDate = new Date(state.eventDateStr);
+    if (isNaN(eventDate.getTime())) {
+      showAlert("エラー", "日付の形式が正しくありません");
+      return;
+    }
+    
+    // テンプレートとして保存
+    if (state.saveAsTemplate && state.templateName.trim()) {
+      createTemplateMutation.mutate({
+        name: state.templateName.trim(),
+        description: state.description.trim() || undefined,
+        goalType: state.goalType as "attendance" | "followers" | "viewers" | "points" | "custom",
+        goalValue: state.goalValue || 100,
+        goalUnit: state.goalUnit || "人",
+        eventType: state.eventType as "solo" | "group",
+        ticketPresale: state.ticketPresale ? parseInt(state.ticketPresale) : undefined,
+        ticketDoor: state.ticketDoor ? parseInt(state.ticketDoor) : undefined,
+        isPublic: state.templateIsPublic,
+      });
+    }
+    
+    setState(prev => ({ ...prev, showValidationError: false }));
+    
+    createChallengeMutation.mutate({
+      title: state.title.trim(),
+      description: state.description.trim() || undefined,
+      venue: state.venue.trim() || undefined,
+      eventDate: eventDate.toISOString(),
+      hostTwitterId: user!.twitterId!,
+      hostName: user!.name || state.hostName.trim(),
+      hostUsername: user!.username || undefined,
+      hostProfileImage: user!.profileImage || undefined,
+      hostFollowersCount: user!.followersCount || undefined,
+      hostDescription: user!.description || undefined,
+      goalType: state.goalType as "attendance" | "followers" | "viewers" | "points" | "custom",
+      goalValue: state.goalValue || 100,
+      goalUnit: state.goalUnit || "人",
+      eventType: state.eventType as "solo" | "group",
+      categoryId: state.categoryId || undefined,
+      externalUrl: state.externalUrl.trim() || undefined,
+      ticketPresale: state.ticketPresale && state.ticketPresale !== "-1" ? parseInt(state.ticketPresale) : undefined,
+      ticketDoor: state.ticketDoor && state.ticketDoor !== "-1" ? parseInt(state.ticketDoor) : undefined,
+      ticketUrl: state.ticketUrl.trim() || undefined,
+    });
+  }, [state, validationErrors, user, createTemplateMutation, createChallengeMutation]);
+  
+  return {
+    state,
+    updateField,
+    handleGoalTypeChange,
+    handleCreate,
+    validationErrors,
+    isPending: createChallengeMutation.isPending,
+    refs: {
+      scrollViewRef,
+      titleInputRef,
+      dateInputRef,
+    },
+  };
+}

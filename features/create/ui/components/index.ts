@@ -11,3 +11,4 @@ export { GenreSelector } from "./GenreSelector";
 export { PurposeSelector } from "./PurposeSelector";
 export { TicketInfoSection } from "./TicketInfoSection";
 export { TemplateSaveSection } from "./TemplateSaveSection";
+export { CreateChallengeForm } from "./CreateChallengeForm";

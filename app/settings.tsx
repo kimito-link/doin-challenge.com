@@ -1,29 +1,30 @@
+// app/settings.tsx
+// v6.18: リファクタリング済み設定画面
 import { useState, useCallback, useEffect } from "react";
-import { color, palette } from "@/theme/tokens";
-import {
-  View,
-  Text,
-  TouchableOpacity,
-  ScrollView,
-  StyleSheet,
-  Platform,
-  Linking,
-} from "react-native";
+import { ScrollView, Platform, Linking } from "react-native";
 import { useRouter } from "expo-router";
-import { Image } from "expo-image";
-import MaterialIcons from "@expo/vector-icons/MaterialIcons";
 import * as Haptics from "expo-haptics";
+import AsyncStorage from "@react-native-async-storage/async-storage";
+
 import { ScreenContainer } from "@/components/organisms/screen-container";
 import { AppHeader } from "@/components/organisms/app-header";
+import { AccountSwitcher } from "@/components/organisms/account-switcher";
 import { useAuth } from "@/hooks/use-auth";
 import { useAccounts } from "@/hooks/use-accounts";
-import { useThemeContext, getThemeModeLabel, getThemeModeIcon } from "@/lib/theme-provider";
-import { AccountSwitcher } from "@/components/organisms/account-switcher";
+import { useThemeContext, getThemeModeIcon } from "@/lib/theme-provider";
 import { getSessionExpiryInfo, SessionExpiryInfo } from "@/lib/token-manager";
 import { useTutorial } from "@/lib/tutorial-context";
 import { useResponsive } from "@/hooks/use-responsive";
-import AsyncStorage from "@react-native-async-storage/async-storage";
 import { showAlert } from "@/lib/web-alert";
+
+import {
+  AccountSection,
+  DisplaySection,
+  NotificationSection,
+  HelpSection,
+  SettingsFooter,
+  settingsStyles as styles,
+} from "@/features/settings";
 
 /**
  * 総合設定画面
@@ -31,9 +32,9 @@ import { showAlert } from "@/lib/web-alert";
  */
 export default function SettingsScreen() {
   const router = useRouter();
-  const { user, isAuthenticated, logout } = useAuth();
-  const { accounts, currentAccountId, deleteAccount } = useAccounts();
-  const { themeMode, colorScheme } = useThemeContext();
+  const { user, isAuthenticated } = useAuth();
+  const { accounts, currentAccountId } = useAccounts();
+  const { themeMode } = useThemeContext();
   const [showAccountSwitcher, setShowAccountSwitcher] = useState(false);
   const [sessionExpiry, setSessionExpiry] = useState<SessionExpiryInfo | null>(null);
   const { resetTutorial } = useTutorial();
@@ -51,8 +52,6 @@ export default function SettingsScreen() {
     };
     
     fetchSessionExpiry();
-    
-    // 1分ごとに更新
     const interval = setInterval(fetchSessionExpiry, 60000);
     return () => clearInterval(interval);
   }, [isAuthenticated]);
@@ -62,11 +61,6 @@ export default function SettingsScreen() {
       Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
     }
   }, []);
-
-  const handleBack = useCallback(() => {
-    handleHaptic();
-    router.back();
-  }, [router, handleHaptic]);
 
   const handleThemeSettings = useCallback(() => {
     handleHaptic();
@@ -98,11 +92,9 @@ export default function SettingsScreen() {
     await resetTutorial();
   }, [handleHaptic, resetTutorial]);
 
-  // v5.37: キャッシュクリア機能
   const handleClearCache = useCallback(async () => {
     handleHaptic();
     try {
-      // キャッシュ関連のキーを取得して削除
       const allKeys = await AsyncStorage.getAllKeys();
       const cacheKeys = allKeys.filter(key => 
         key.startsWith('prefetch:') || 
@@ -122,17 +114,16 @@ export default function SettingsScreen() {
     }
   }, [handleHaptic]);
 
-  // 他のアカウント（現在のアカウント以外）
-  const otherAccounts = accounts.filter((a) => a.id !== currentAccountId);
-
   const handleTwitter = useCallback(() => {
     handleHaptic();
     Linking.openURL("https://twitter.com/doin_challenge");
   }, [handleHaptic]);
 
+  // 他のアカウント（現在のアカウント以外）
+  const otherAccounts = accounts.filter((a) => a.id !== currentAccountId);
+
   return (
     <ScreenContainer containerClassName="bg-background">
-      {/* ヘッダー */}
       <AppHeader
         title="設定"
         showCharacters={true}
@@ -143,263 +134,33 @@ export default function SettingsScreen() {
       />
 
       <ScrollView style={styles.content} contentContainerStyle={styles.contentContainer}>
-        {/* アカウント管理セクション */}
-        <View style={styles.section}>
-          <Text style={styles.sectionTitle}>アカウント</Text>
+        <AccountSection
+          user={user}
+          isAuthenticated={isAuthenticated}
+          sessionExpiry={sessionExpiry}
+          otherAccounts={otherAccounts}
+          onAccountSwitch={handleAccountSwitch}
+          onLogout={handleLogout}
+        />
 
-          {/* 現在のアカウント */}
-          {isAuthenticated && user ? (
-            <View style={styles.currentAccount}>
-              <View style={styles.accountRow}>
-                {user.profileImage ? (
-                  <Image
-                    source={{ uri: user.profileImage }}
-                    style={styles.avatar}
-                    contentFit="cover"
-                  />
-                ) : (
-                  <View style={[styles.avatar, styles.avatarPlaceholder]}>
-                    <MaterialIcons name="person" size={24} color={color.textMuted} />
-                  </View>
-                )}
-                <View style={styles.accountInfo}>
-                  <Text style={styles.accountName} numberOfLines={1}>
-                    {user.name || user.username || "ユーザー"}
-                  </Text>
-                  {user.username && (
-                    <Text style={styles.accountUsername} numberOfLines={1}>
-                      @{user.username}
-                    </Text>
-                  )}
-                </View>
-                <View style={styles.currentBadge}>
-                  <Text style={styles.currentBadgeText}>ログイン中</Text>
-                </View>
-              </View>
-              
-              {/* セッション有効期限表示 */}
-              {sessionExpiry && (
-                <View style={styles.sessionExpiryRow}>
-                  <MaterialIcons 
-                    name={sessionExpiry.isExpired ? "warning" : "schedule"} 
-                    size={14} 
-                    color={sessionExpiry.isExpired ? color.danger : color.textMuted} 
-                  />
-                  <Text style={[
-                    styles.sessionExpiryText,
-                    sessionExpiry.isExpired && styles.sessionExpiryExpired
-                  ]}>
-                    セッション有効期限: {sessionExpiry.formattedExpiry}
-                  </Text>
-                </View>
-              )}
-            </View>
-          ) : (
-            <View style={styles.notLoggedIn}>
-              <MaterialIcons name="person-outline" size={32} color={color.textSubtle} />
-              <Text style={styles.notLoggedInText}>ログインしていません</Text>
-            </View>
-          )}
+        <DisplaySection
+          themeIcon={getThemeModeIcon(themeMode)}
+          onThemeSettings={handleThemeSettings}
+        />
 
-          {/* アカウント切り替えボタン */}
-          <TouchableOpacity
-            onPress={handleAccountSwitch}
-            style={styles.menuItem}
-            activeOpacity={0.7}
-          >
-            <View style={styles.menuItemIcon}>
-              <MaterialIcons name="swap-horiz" size={24} color={color.hostAccentLegacy} />
-            </View>
-            <View style={styles.menuItemContent}>
-              <Text style={styles.menuItemTitle}>アカウントを切り替え</Text>
-              <Text style={styles.menuItemDescription}>
-                {otherAccounts.length > 0
-                  ? `${otherAccounts.length}件の保存済みアカウント`
-                  : "別のアカウントでログイン"}
-              </Text>
-            </View>
-            <MaterialIcons name="chevron-right" size={24} color={color.textSubtle} />
-          </TouchableOpacity>
+        <NotificationSection
+          onNotificationSettings={handleNotificationSettings}
+        />
 
-          {/* 保存済みアカウント一覧（簡易表示） */}
-          {otherAccounts.length > 0 && (
-            <View style={styles.savedAccountsPreview}>
-              <Text style={styles.savedAccountsLabel}>保存済みアカウント:</Text>
-              <View style={styles.savedAccountsAvatars}>
-                {otherAccounts.slice(0, 3).map((account) => (
-                  <View key={account.id} style={styles.savedAccountAvatar}>
-                    {account.profileImageUrl ? (
-                      <Image
-                        source={{ uri: account.profileImageUrl }}
-                        style={styles.savedAccountAvatarImage}
-                        contentFit="cover"
-                      />
-                    ) : (
-                      <View style={[styles.savedAccountAvatarImage, styles.avatarPlaceholder]}>
-                        <MaterialIcons name="person" size={12} color={color.textMuted} />
-                      </View>
-                    )}
-                  </View>
-                ))}
-                {otherAccounts.length > 3 && (
-                  <View style={styles.moreAccountsBadge}>
-                    <Text style={styles.moreAccountsText}>+{otherAccounts.length - 3}</Text>
-                  </View>
-                )}
-              </View>
-            </View>
-          )}
+        <HelpSection
+          onHelp={handleHelp}
+          onReplayTutorial={handleReplayTutorial}
+          onClearCache={handleClearCache}
+        />
 
-          {/* ログアウトボタン */}
-          {isAuthenticated && (
-            <TouchableOpacity
-              onPress={handleLogout}
-              style={[styles.menuItem, styles.logoutItem]}
-              activeOpacity={0.7}
-            >
-              <View style={[styles.menuItemIcon, styles.logoutIcon]}>
-                <MaterialIcons name="logout" size={24} color={color.danger} />
-              </View>
-              <View style={styles.menuItemContent}>
-                <Text style={[styles.menuItemTitle, styles.logoutText]}>ログアウト</Text>
-              </View>
-              <MaterialIcons name="chevron-right" size={24} color={color.textSubtle} />
-            </TouchableOpacity>
-          )}
-        </View>
-
-        {/* 表示設定セクション */}
-        <View style={styles.section}>
-          <Text style={styles.sectionTitle}>表示</Text>
-
-          <TouchableOpacity
-            onPress={handleThemeSettings}
-            style={styles.menuItem}
-            activeOpacity={0.7}
-          >
-            <View style={styles.menuItemIcon}>
-              <MaterialIcons
-                name={getThemeModeIcon(themeMode) as any}
-                size={24}
-                color={color.hostAccentLegacy}
-              />
-            </View>
-            <View style={styles.menuItemContent}>
-              <Text style={styles.menuItemTitle}>テーマ</Text>
-              <Text style={styles.menuItemDescription}>
-                ダークモード
-              </Text>
-            </View>
-            <MaterialIcons name="chevron-right" size={24} color={color.textSubtle} />
-          </TouchableOpacity>
-        </View>
-
-        {/* 通知設定セクション */}
-        <View style={styles.section}>
-          <Text style={styles.sectionTitle}>通知</Text>
-
-          <TouchableOpacity
-            onPress={handleNotificationSettings}
-            style={styles.menuItem}
-            activeOpacity={0.7}
-          >
-            <View style={styles.menuItemIcon}>
-              <MaterialIcons name="notifications" size={24} color={color.hostAccentLegacy} />
-            </View>
-            <View style={styles.menuItemContent}>
-              <Text style={styles.menuItemTitle}>通知設定</Text>
-              <Text style={styles.menuItemDescription}>
-                プッシュ通知やリマインダーの設定
-              </Text>
-            </View>
-            <MaterialIcons name="chevron-right" size={24} color={color.textSubtle} />
-          </TouchableOpacity>
-        </View>
-
-        {/* ヘルプセクション */}
-        <View style={styles.section}>
-          <Text style={styles.sectionTitle}>ヘルプ</Text>
-
-          <TouchableOpacity
-            onPress={handleHelp}
-            style={styles.menuItem}
-            activeOpacity={0.7}
-          >
-            <View style={styles.menuItemIcon}>
-              <MaterialIcons name="help-outline" size={24} color={color.hostAccentLegacy} />
-            </View>
-            <View style={styles.menuItemContent}>
-              <Text style={styles.menuItemTitle}>使い方ガイド</Text>
-              <Text style={styles.menuItemDescription}>
-                アプリの使い方とよくある質問
-              </Text>
-            </View>
-            <MaterialIcons name="chevron-right" size={24} color={color.textSubtle} />
-          </TouchableOpacity>
-
-          <TouchableOpacity
-            onPress={handleReplayTutorial}
-            style={styles.menuItem}
-            activeOpacity={0.7}
-          >
-            <View style={[styles.menuItemIcon, { backgroundColor: "rgba(236, 72, 153, 0.1)" }]}>
-              <MaterialIcons name="replay" size={24} color={color.accentPrimary} />
-            </View>
-            <View style={styles.menuItemContent}>
-              <Text style={styles.menuItemTitle}>チュートリアルを見返す</Text>
-              <Text style={styles.menuItemDescription}>
-                はじめの説明をもう一度見る
-              </Text>
-            </View>
-            <MaterialIcons name="chevron-right" size={24} color={color.textSubtle} />
-          </TouchableOpacity>
-
-          {/* v5.37: キャッシュクリアボタン */}
-          <TouchableOpacity
-            onPress={handleClearCache}
-            style={styles.menuItem}
-            activeOpacity={0.7}
-          >
-            <View style={[styles.menuItemIcon, { backgroundColor: "rgba(59, 130, 246, 0.1)" }]}>
-              <MaterialIcons name="cached" size={24} color={color.info} />
-            </View>
-            <View style={styles.menuItemContent}>
-              <Text style={styles.menuItemTitle}>キャッシュをクリア</Text>
-              <Text style={styles.menuItemDescription}>
-                古いデータを削除して最新の情報を取得
-              </Text>
-            </View>
-            <MaterialIcons name="chevron-right" size={24} color={color.textSubtle} />
-          </TouchableOpacity>
-        </View>
-
-        {/* フッター */}
-        <View style={styles.footer}>
-          <View style={styles.footerLogoContainer}>
-            <Image
-              source={require("@/assets/images/logo/logo-color.jpg")}
-              style={styles.footerLogo}
-              contentFit="contain"
-            />
-            <Text style={styles.footerAppName}>動員ちゃれんじ</Text>
-          </View>
-          <Text style={styles.footerVersion}>v1.0.0</Text>
-          <Text style={styles.footerSubtext}>設定はこのデバイスに保存されます</Text>
-          
-          <View style={styles.footerLinks}>
-            <TouchableOpacity onPress={handleTwitter} style={styles.footerLink}>
-              <MaterialIcons name="alternate-email" size={16} color={color.twitter} />
-              <Text style={styles.footerLinkText}>@doin_challenge</Text>
-            </TouchableOpacity>
-          </View>
-          
-          <Text style={styles.footerCopyright}>
-            © 2024 KimitoLink. All rights reserved.
-          </Text>
-        </View>
+        <SettingsFooter onTwitter={handleTwitter} />
       </ScrollView>
 
-      {/* アカウント切り替えモーダル */}
       <AccountSwitcher
         visible={showAccountSwitcher}
         onClose={() => setShowAccountSwitcher(false)}
@@ -407,262 +168,3 @@ export default function SettingsScreen() {
     </ScreenContainer>
   );
 }
-
-const styles = StyleSheet.create({
-  header: {
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "space-between",
-    padding: 16,
-    borderBottomWidth: 1,
-    borderBottomColor: color.border,
-  },
-  backButton: {
-    width: 40,
-    height: 40,
-    alignItems: "center",
-    justifyContent: "center",
-    borderRadius: 20,
-  },
-  headerTitle: {
-    color: color.textWhite,
-    fontSize: 18,
-    fontWeight: "bold",
-  },
-  headerSpacer: {
-    width: 40,
-  },
-  content: {
-    flex: 1,
-  },
-  contentContainer: {
-    paddingBottom: 40,
-  },
-  section: {
-    padding: 16,
-    borderBottomWidth: 1,
-    borderBottomColor: color.border,
-  },
-  sectionTitle: {
-    color: color.textMuted,
-    fontSize: 13,
-    fontWeight: "600",
-    textTransform: "uppercase",
-    marginBottom: 12,
-  },
-  currentAccount: {
-    backgroundColor: color.surface,
-    borderRadius: 12,
-    padding: 16,
-    marginBottom: 12,
-  },
-  accountRow: {
-    flexDirection: "row",
-    alignItems: "center",
-  },
-  avatar: {
-    width: 48,
-    height: 48,
-    borderRadius: 24,
-    marginRight: 12,
-  },
-  avatarPlaceholder: {
-    backgroundColor: color.borderAlt,
-    alignItems: "center",
-    justifyContent: "center",
-  },
-  accountInfo: {
-    flex: 1,
-  },
-  accountName: {
-    color: color.textWhite,
-    fontSize: 16,
-    fontWeight: "600",
-  },
-  accountUsername: {
-    color: color.textMuted,
-    fontSize: 14,
-    marginTop: 2,
-  },
-  currentBadge: {
-    backgroundColor: "rgba(16, 185, 129, 0.2)",
-    paddingHorizontal: 10,
-    paddingVertical: 4,
-    borderRadius: 12,
-  },
-  currentBadgeText: {
-    color: color.successDark,
-    fontSize: 12,
-    fontWeight: "600",
-  },
-  notLoggedIn: {
-    backgroundColor: color.surface,
-    borderRadius: 12,
-    padding: 24,
-    alignItems: "center",
-    marginBottom: 12,
-  },
-  notLoggedInText: {
-    color: color.textSubtle,
-    fontSize: 14,
-    marginTop: 8,
-  },
-  menuItem: {
-    flexDirection: "row",
-    alignItems: "center",
-    backgroundColor: color.surface,
-    padding: 16,
-    borderRadius: 12,
-    marginBottom: 8,
-  },
-  menuItemIcon: {
-    width: 44,
-    height: 44,
-    borderRadius: 22,
-    backgroundColor: "rgba(221, 101, 0, 0.1)",
-    alignItems: "center",
-    justifyContent: "center",
-    marginRight: 12,
-  },
-  menuItemContent: {
-    flex: 1,
-  },
-  menuItemTitle: {
-    color: color.textWhite,
-    fontSize: 16,
-    fontWeight: "500",
-  },
-  menuItemDescription: {
-    color: color.textMuted,
-    fontSize: 13,
-    marginTop: 2,
-  },
-  savedAccountsPreview: {
-    flexDirection: "row",
-    alignItems: "center",
-    paddingHorizontal: 16,
-    paddingVertical: 8,
-    marginBottom: 8,
-  },
-  savedAccountsLabel: {
-    color: color.textSubtle,
-    fontSize: 12,
-    marginRight: 8,
-  },
-  savedAccountsAvatars: {
-    flexDirection: "row",
-    alignItems: "center",
-  },
-  savedAccountAvatar: {
-    marginLeft: -8,
-  },
-  savedAccountAvatarImage: {
-    width: 24,
-    height: 24,
-    borderRadius: 12,
-    borderWidth: 2,
-    borderColor: color.surfaceDark,
-  },
-  moreAccountsBadge: {
-    width: 24,
-    height: 24,
-    borderRadius: 12,
-    backgroundColor: color.borderAlt,
-    alignItems: "center",
-    justifyContent: "center",
-    marginLeft: -8,
-    borderWidth: 2,
-    borderColor: color.surfaceDark,
-  },
-  moreAccountsText: {
-    color: color.textMuted,
-    fontSize: 10,
-    fontWeight: "600",
-  },
-  logoutItem: {
-    marginTop: 8,
-  },
-  logoutIcon: {
-    backgroundColor: "rgba(239, 68, 68, 0.1)",
-  },
-  logoutText: {
-    color: color.danger,
-  },
-  sessionExpiryRow: {
-    flexDirection: "row",
-    alignItems: "center",
-    marginTop: 12,
-    paddingTop: 12,
-    borderTopWidth: 1,
-    borderTopColor: color.border,
-  },
-  sessionExpiryText: {
-    color: color.textMuted,
-    fontSize: 12,
-    marginLeft: 6,
-  },
-  sessionExpiryExpired: {
-    color: color.danger,
-  },
-  footer: {
-    padding: 24,
-    paddingTop: 32,
-    alignItems: "center",
-    borderTopWidth: 1,
-    borderTopColor: color.border,
-    marginTop: 16,
-  },
-  footerLogoContainer: {
-    flexDirection: "row",
-    alignItems: "center",
-    marginBottom: 8,
-  },
-  footerLogo: {
-    width: 40,
-    height: 40,
-    borderRadius: 8,
-  },
-  footerAppName: {
-    color: color.textWhite,
-    fontSize: 16,
-    fontWeight: "bold",
-    marginLeft: 8,
-  },
-  footerVersion: {
-    color: color.textMuted,
-    fontSize: 12,
-    marginBottom: 4,
-  },
-  footerText: {
-    color: color.textSubtle,
-    fontSize: 14,
-  },
-  footerSubtext: {
-    color: color.textSubtle,
-    fontSize: 12,
-    marginTop: 4,
-  },
-  footerLinks: {
-    flexDirection: "row",
-    alignItems: "center",
-    marginTop: 16,
-    gap: 16,
-  },
-  footerLink: {
-    flexDirection: "row",
-    alignItems: "center",
-    padding: 8,
-    borderRadius: 8,
-    backgroundColor: "rgba(29, 161, 242, 0.1)",
-  },
-  footerLinkText: {
-    color: color.twitter,
-    fontSize: 13,
-    marginLeft: 4,
-  },
-  footerCopyright: {
-    color: color.textSubtle,
-    fontSize: 11,
-    marginTop: 16,
-  },
-});

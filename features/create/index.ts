@@ -9,6 +9,7 @@ export * from "./types";
 
 // フック
 export { useCreateChallengeForm } from "./hooks/useCreateChallengeForm";
+export { useCreateChallenge } from "./hooks/use-create-challenge";
 
 // UIコンポーネント
 export {
@@ -19,4 +20,5 @@ export {
   PurposeSelector,
   TicketInfoSection,
   TemplateSaveSection,
+  CreateChallengeForm,
 } from "./ui/components";

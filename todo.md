@@ -3314,3 +3314,42 @@ features/create/
 - [x] 簡易版地域マップのUI設計
 - [x] 簡易版地域マップコンポーネントの実装
 - [x] ホーム画面への統合
+
+
+## リファクタリング（v6.18）
+
+### create.tsx（655行→分割）
+- [ ] CreateChallengeFormコンポーネントの抽出
+- [ ] useCreateChallengeフックの抽出（状態管理・バリデーション）
+- [ ] フォーム入力フィールドのコンポーネント化
+
+### tutorial-overlay.tsx（842行→分割）
+- [ ] 各チュートリアルステップをコンポーネント化
+- [ ] チュートリアル状態管理フックの抽出
+
+### ticket-transfer-section.tsx（772行→分割）
+- [ ] チケット譲渡フォームのコンポーネント化
+- [ ] 譲渡状態管理フックの抽出
+
+### settings.tsx（668行→分割）
+- [ ] 各設定セクションをコンポーネント化
+- [ ] 設定状態管理フックの抽出
+
+
+## リファクタリング（v6.18）
+
+### 巨大ファイルの分割
+- [x] create.tsx（655行→173行）を分割
+  - useCreateChallengeフックを分離
+  - CreateChallengeFormコンポーネントを分離
+- [x] tutorial-overlay.tsx（842行→435行+サブモジュール）を分割
+  - types.ts（型定義・キャラクター画像）
+  - effects.tsx（Confetti, Sparkles）
+  - previews.tsx（プレビューコンポーネント）
+- [x] ticket-transfer-section.tsx（772行→サブモジュール化）を分割
+  - types.ts（型定義）
+  - modals.tsx（CreateTransferModal, WaitlistModal）
+  - lists.tsx（TransferList, WaitlistList）
+- [x] settings.tsx（668行→170行）を分割
+  - styles.ts（スタイル定義）
+  - SettingsSections.tsx（セクションコンポーネント）
