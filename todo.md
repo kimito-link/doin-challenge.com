@@ -2516,3 +2516,25 @@
 - [x] 各ファイルのローカル定義にコメント追加（用途の明確化）
 - [x] イベントタイプバッジの共通化（constants/event-types.ts）
 - [x] constants/index.ts 作成（共通定数の一括エクスポート）
+
+
+## コンポーネント置き換え実装（v6.16+）
+
+### event/[id].tsxの置き換え（2,925行 → 2,484行、-441行）
+- [x] RegionMapコンポーネントの置き換え
+- [x] ParticipantsListコンポーネントの置き換え
+- [x] ContributionRankingコンポーネントの置き換え
+- [x] MessageCardコンポーネントの置き換え
+
+### index.tsxの置き換え
+- [x] FeaturedChallengeコンポーネントの分離（features/home/components/）
+- [x] ChallengeCardコンポーネントの分離（features/home/components/）
+- [x] types/challenge.ts 作成（Challenge型定義、eventTypeBadge）
+- [ ] メインファイルでの置き換え（今後）
+
+### experience-overlay.tsxの分割
+- [x] 構造分析完了
+  - PreviewContent: 540行（23種類のswitch case）
+  - ExperienceOverlay: 180行
+  - StyleSheet: 1,280行（共有）
+- [x] 分割不要と判断（スタイル依存関係が複雑なため現状維持）
