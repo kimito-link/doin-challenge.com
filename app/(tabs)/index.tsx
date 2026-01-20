@@ -39,7 +39,8 @@ import {
   RecommendedHostsSection,
   ResponsiveFilterRow,
   RankingTop3,
-  RankingRow
+  RankingRow,
+  SimpleRegionMap
 } from "@/features/home";
 import { sortByMomentum } from "@/features/home/utils/momentum";
 import type { Challenge, FilterType } from "@/types/challenge";
@@ -338,6 +339,16 @@ export default function HomeScreen() {
         <RankingTop3
           top3={top3}
           onPress={(id) => handleChallengePress(id)}
+          onQuickJoin={(id) => handleChallengePress(id)}
+        />
+      )}
+
+      {/* v6.17: 簡易地域マップ（アプリの顔） */}
+      {!isSearching && featuredChallenge && (
+        <SimpleRegionMap
+          totalCount={featuredChallenge.currentValue}
+          onPress={() => handleChallengePress(featuredChallenge.id)}
+          challengeId={featuredChallenge.id}
         />
       )}
 
@@ -440,6 +451,7 @@ export default function HomeScreen() {
                   rank={index + 4}
                   challenge={item as Challenge}
                   onPress={() => handleChallengePress(item.id)}
+                  onQuickJoin={() => handleChallengePress(item.id)}
                 />
               </View>
             );

@@ -1,5 +1,6 @@
 // features/home/components/RankingRow.tsx
-import { View, Text } from "react-native";
+// v6.16: 「参加する」クイックボタンを追加
+import { View, Text, Pressable, StyleSheet } from "react-native";
 import MaterialIcons from "@expo/vector-icons/MaterialIcons";
 import { useColors } from "@/hooks/use-colors";
 import { homeText, homeUI } from "@/features/home/ui/theme/tokens";
@@ -13,6 +14,7 @@ type Props = {
   rank: number; // 1-based
   challenge: Challenge;
   onPress: () => void;
+  onQuickJoin?: () => void; // クイック参加ボタン
 };
 
 function rankLabel(rank: number) {
@@ -22,7 +24,7 @@ function rankLabel(rank: number) {
   return String(rank);
 }
 
-export function RankingRow({ rank, challenge, onPress }: Props) {
+export function RankingRow({ rank, challenge, onPress, onQuickJoin }: Props) {
   const colors = useColors();
   const goalConfig = goalTypeConfig[challenge.goalType] || goalTypeConfig.custom;
   const typeBadge = eventTypeBadge[challenge.eventType] || eventTypeBadge.solo;
@@ -48,16 +50,16 @@ export function RankingRow({ rank, challenge, onPress }: Props) {
         padding: 12,
       }}
     >
-      <View style={{ flexDirection: "row", alignItems: "center" }}>
+      <View style={styles.row}>
         {/* Rank */}
-        <View style={{ width: 34, alignItems: "center", justifyContent: "center" }}>
-          <Text style={{ color: colors.foreground, fontSize: 16, fontWeight: "bold" }}>
+        <View style={styles.rankContainer}>
+          <Text style={[styles.rankText, { color: colors.foreground }]}>
             {rankLabel(rank)}
           </Text>
         </View>
 
         {/* Avatar */}
-        <View style={{ marginRight: 10 }}>
+        <View style={styles.avatarContainer}>
           <LazyAvatar
             source={challenge.hostProfileImage ? { uri: challenge.hostProfileImage } : undefined}
             size={36}
@@ -68,40 +70,146 @@ export function RankingRow({ rank, challenge, onPress }: Props) {
         </View>
 
         {/* Main */}
-        <View style={{ flex: 1 }}>
-          <View style={{ flexDirection: "row", alignItems: "center", gap: 8 }}>
-            <View style={{ backgroundColor: typeBadge.color, paddingHorizontal: 8, paddingVertical: 2, borderRadius: 6 }}>
-              <Text style={{ color: colors.foreground, fontSize: 10, fontWeight: "bold" }}>{typeBadge.label}</Text>
+        <View style={styles.mainContent}>
+          <View style={styles.titleRow}>
+            <View style={[styles.typeBadge, { backgroundColor: typeBadge.color }]}>
+              <Text style={styles.typeBadgeText}>{typeBadge.label}</Text>
             </View>
-            <Text style={{ color: colors.foreground, fontSize: 14, fontWeight: "bold", flex: 1 }} numberOfLines={1}>
+            <Text style={[styles.title, { color: colors.foreground }]} numberOfLines={1}>
               {challenge.title}
             </Text>
           </View>
 
-          <Text style={{ color: homeText.muted, fontSize: 12, marginTop: 2 }} numberOfLines={1}>
+          <Text style={styles.hostName} numberOfLines={1}>
             {challenge.hostName}
           </Text>
 
           {/* Progress */}
-          <View style={{ marginTop: 8 }}>
-            <View style={{ flexDirection: "row", justifyContent: "space-between", marginBottom: 4 }}>
-              <Text style={{ color: colors.foreground, fontSize: 12, fontWeight: "600" }}>
+          <View style={styles.progressSection}>
+            <View style={styles.progressInfo}>
+              <Text style={[styles.progressValue, { color: colors.foreground }]}>
                 {current.toLocaleString()}
-                <Text style={{ color: homeText.muted, fontSize: 11 }}> / {goal.toLocaleString()}{unit}</Text>
+                <Text style={styles.progressGoal}> / {goal.toLocaleString()}{unit}</Text>
               </Text>
 
-              <View style={{ flexDirection: "row", alignItems: "center", gap: 6 }}>
+              <View style={styles.dateContainer}>
                 <MaterialIcons name="event" size={12} color={homeText.accent} />
-                <Text style={{ color: homeText.accent, fontSize: 12 }}>{formattedDate}</Text>
+                <Text style={styles.dateText}>{formattedDate}</Text>
               </View>
             </View>
 
-            <View style={{ height: 6, backgroundColor: homeUI.progressBar, borderRadius: 3, overflow: "hidden" }}>
-              <View style={{ height: "100%", width: `${progress}%`, backgroundColor: homeText.accent }} />
+            <View style={styles.progressBar}>
+              <View style={[styles.progressFill, { width: `${progress}%` }]} />
             </View>
           </View>
         </View>
+
+        {/* クイック参加ボタン */}
+        {onQuickJoin && (
+          <Pressable
+            onPress={(e) => {
+              e.stopPropagation();
+              onQuickJoin();
+            }}
+            style={({ pressed }) => [
+              styles.quickJoinButton,
+              { backgroundColor: typeBadge.color, opacity: pressed ? 0.8 : 1 }
+            ]}
+          >
+            <MaterialIcons name="add" size={18} color="#fff" />
+          </Pressable>
+        )}
       </View>
     </AnimatedCard>
   );
 }
+
+const styles = StyleSheet.create({
+  row: {
+    flexDirection: "row",
+    alignItems: "center",
+  },
+  rankContainer: {
+    width: 34,
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  rankText: {
+    fontSize: 16,
+    fontWeight: "bold",
+  },
+  avatarContainer: {
+    marginRight: 10,
+  },
+  mainContent: {
+    flex: 1,
+  },
+  titleRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 8,
+  },
+  typeBadge: {
+    paddingHorizontal: 8,
+    paddingVertical: 2,
+    borderRadius: 6,
+  },
+  typeBadgeText: {
+    color: "#fff",
+    fontSize: 10,
+    fontWeight: "bold",
+  },
+  title: {
+    fontSize: 14,
+    fontWeight: "bold",
+    flex: 1,
+  },
+  hostName: {
+    color: homeText.muted,
+    fontSize: 12,
+    marginTop: 2,
+  },
+  progressSection: {
+    marginTop: 8,
+  },
+  progressInfo: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    marginBottom: 4,
+  },
+  progressValue: {
+    fontSize: 12,
+    fontWeight: "600",
+  },
+  progressGoal: {
+    color: homeText.muted,
+    fontSize: 11,
+  },
+  dateContainer: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 6,
+  },
+  dateText: {
+    color: homeText.accent,
+    fontSize: 12,
+  },
+  progressBar: {
+    height: 6,
+    backgroundColor: homeUI.progressBar,
+    borderRadius: 3,
+    overflow: "hidden",
+  },
+  progressFill: {
+    height: "100%",
+    backgroundColor: homeText.accent,
+  },
+  quickJoinButton: {
+    width: 36,
+    height: 36,
+    borderRadius: 18,
+    justifyContent: "center",
+    alignItems: "center",
+    marginLeft: 10,
+  },
+});
