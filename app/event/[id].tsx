@@ -108,6 +108,7 @@ export default function ChallengeDetailScreen() {
   const [allowVideoUse, setAllowVideoUse] = useState(true);
   const [selectedPrefectureFilter, setSelectedPrefectureFilter] = useState("all");
   const [showPrefectureFilterList, setShowPrefectureFilterList] = useState(false);
+  const [selectedGenderFilter, setSelectedGenderFilter] = useState<"all" | "male" | "female">("all");
   const [showConfirmation, setShowConfirmation] = useState(false);
   const [justSubmitted, setJustSubmitted] = useState(false);
   const [isEditMode, setIsEditMode] = useState(false); // 編集モード
@@ -1237,25 +1238,61 @@ export default function ChallengeDetailScreen() {
                     応援メッセージ ({participations.length}件)
                   </Text>
                   
-                  {/* 地域フィルター */}
-                  <TouchableOpacity
-                    onPress={() => setShowPrefectureFilterList(!showPrefectureFilterList)}
-                    style={{
-                      backgroundColor: color.surface,
-                      borderRadius: 8,
-                      paddingHorizontal: 12,
-                      paddingVertical: 8,
-                      flexDirection: "row",
-                      alignItems: "center",
-                      borderWidth: 1,
-                      borderColor: selectedPrefectureFilter !== "all" ? color.accentPrimary : color.border,
-                    }}
-                  >
-                    <MaterialIcons name="filter-list" size={16} color={selectedPrefectureFilter !== "all" ? color.accentPrimary : color.textSecondary} />
-                    <Text style={{ color: selectedPrefectureFilter !== "all" ? color.accentPrimary : color.textSecondary, fontSize: 12, marginLeft: 4 }}>
-                      {selectedPrefectureFilter === "all" ? "地域" : selectedPrefectureFilter}
-                    </Text>
-                  </TouchableOpacity>
+                  <View style={{ flexDirection: "row", gap: 8 }}>
+                    {/* 性別フィルター */}
+                    <View style={{ flexDirection: "row", backgroundColor: color.surface, borderRadius: 8, borderWidth: 1, borderColor: color.border, overflow: "hidden" }}>
+                      <TouchableOpacity
+                        onPress={() => setSelectedGenderFilter("all")}
+                        style={{
+                          paddingHorizontal: 10,
+                          paddingVertical: 6,
+                          backgroundColor: selectedGenderFilter === "all" ? color.accentPrimary : "transparent",
+                        }}
+                      >
+                        <Text style={{ color: selectedGenderFilter === "all" ? color.textWhite : color.textSecondary, fontSize: 11, fontWeight: "600" }}>全て</Text>
+                      </TouchableOpacity>
+                      <TouchableOpacity
+                        onPress={() => setSelectedGenderFilter("male")}
+                        style={{
+                          paddingHorizontal: 10,
+                          paddingVertical: 6,
+                          backgroundColor: selectedGenderFilter === "male" ? "#3B82F6" : "transparent",
+                        }}
+                      >
+                        <Text style={{ color: selectedGenderFilter === "male" ? color.textWhite : color.textSecondary, fontSize: 11, fontWeight: "600" }}>男性</Text>
+                      </TouchableOpacity>
+                      <TouchableOpacity
+                        onPress={() => setSelectedGenderFilter("female")}
+                        style={{
+                          paddingHorizontal: 10,
+                          paddingVertical: 6,
+                          backgroundColor: selectedGenderFilter === "female" ? "#EC4899" : "transparent",
+                        }}
+                      >
+                        <Text style={{ color: selectedGenderFilter === "female" ? color.textWhite : color.textSecondary, fontSize: 11, fontWeight: "600" }}>女性</Text>
+                      </TouchableOpacity>
+                    </View>
+
+                    {/* 地域フィルター */}
+                    <TouchableOpacity
+                      onPress={() => setShowPrefectureFilterList(!showPrefectureFilterList)}
+                      style={{
+                        backgroundColor: color.surface,
+                        borderRadius: 8,
+                        paddingHorizontal: 12,
+                        paddingVertical: 8,
+                        flexDirection: "row",
+                        alignItems: "center",
+                        borderWidth: 1,
+                        borderColor: selectedPrefectureFilter !== "all" ? color.accentPrimary : color.border,
+                      }}
+                    >
+                      <MaterialIcons name="filter-list" size={16} color={selectedPrefectureFilter !== "all" ? color.accentPrimary : color.textSecondary} />
+                      <Text style={{ color: selectedPrefectureFilter !== "all" ? color.accentPrimary : color.textSecondary, fontSize: 12, marginLeft: 4 }}>
+                        {selectedPrefectureFilter === "all" ? "地域" : selectedPrefectureFilter}
+                      </Text>
+                    </TouchableOpacity>
+                  </View>
                 </View>
 
                 {/* 地域フィルターリスト */}
@@ -1312,6 +1349,12 @@ export default function ChallengeDetailScreen() {
                 {/* フィルター適用済みメッセージ一覧 */}
                 {participations
                   .filter((p: any) => {
+                    // 性別フィルター
+                    if (selectedGenderFilter !== "all") {
+                      if (selectedGenderFilter === "male" && p.gender !== "male") return false;
+                      if (selectedGenderFilter === "female" && p.gender !== "female") return false;
+                    }
+                    // 地域フィルター
                     if (selectedPrefectureFilter === "all") return true;
                     // 地域グループでフィルター
                     const region = regionGroups.find(r => r.name === selectedPrefectureFilter);
@@ -1375,15 +1418,25 @@ export default function ChallengeDetailScreen() {
                   })}
                 
                 {participations.filter((p: any) => {
+                  // 性別フィルター
+                  if (selectedGenderFilter !== "all") {
+                    if (selectedGenderFilter === "male" && p.gender !== "male") return false;
+                    if (selectedGenderFilter === "female" && p.gender !== "female") return false;
+                  }
+                  // 地域フィルター
                   if (selectedPrefectureFilter === "all") return true;
                   const region = regionGroups.find(r => r.name === selectedPrefectureFilter);
                   if (region) return (region.prefectures as readonly string[]).includes(p.prefecture || "");
                   return p.prefecture === selectedPrefectureFilter;
-                }).length === 0 && selectedPrefectureFilter !== "all" && (
+                }).length === 0 && (selectedPrefectureFilter !== "all" || selectedGenderFilter !== "all") && (
                   <View style={{ alignItems: "center", paddingVertical: 24 }}>
                     <MaterialIcons name="search-off" size={48} color={color.textHint} />
                     <Text style={{ color: color.textSecondary, fontSize: 14, marginTop: 8 }}>
-                      {selectedPrefectureFilter}からの参加者はまだいません
+                      {selectedGenderFilter !== "all" && selectedPrefectureFilter !== "all"
+                        ? `${selectedPrefectureFilter}の${selectedGenderFilter === "male" ? "男性" : "女性"}参加者はまだいません`
+                        : selectedGenderFilter !== "all"
+                        ? `${selectedGenderFilter === "male" ? "男性" : "女性"}参加者はまだいません`
+                        : `${selectedPrefectureFilter}からの参加者はまだいません`}
                     </Text>
                   </View>
                 )}
