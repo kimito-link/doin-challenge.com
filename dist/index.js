@@ -4096,6 +4096,75 @@ Design requirements:
         console.error("OGP image generation failed:", error);
         throw new Error("Failed to generate OGP image");
       }
+    }),
+    // v6.10: 招待リンク用OGP画像を生成
+    generateInviteOgp: publicProcedure.input(z2.object({ code: z2.string() })).mutation(async ({ input }) => {
+      const invitation = await getInvitationByCode(input.code);
+      if (!invitation) {
+        throw new Error("Invitation not found");
+      }
+      const challenge = await getEventById(invitation.challengeId);
+      if (!challenge) {
+        throw new Error("Challenge not found");
+      }
+      const currentValue = challenge.currentValue || 0;
+      const goalValue = challenge.goalValue || 100;
+      const progress = Math.min(Math.round(currentValue / goalValue * 100), 100);
+      const unit = challenge.goalUnit || "\u4EBA";
+      const inviterName = invitation.inviterName || "\u53CB\u9054";
+      const customTitle = invitation.customTitle || challenge.title;
+      const customMessage = invitation.customMessage || "";
+      const prompt = `Create a personalized invitation card for a Japanese idol fan challenge app called "\u52D5\u54E1\u3061\u3083\u308C\u3093\u3058".
+
+Design requirements:
+- Modern dark theme with pink to purple gradient accents (#EC4899 to #8B5CF6)
+- Large invitation text: "\u{1F389} ${inviterName}\u3055\u3093\u304B\u3089\u306E\u62DB\u5F85"
+- Challenge title: "${customTitle}"
+- Progress: ${currentValue}/${goalValue}${unit} (${progress}%)
+${customMessage ? `- Personal message in speech bubble: "${customMessage.substring(0, 100)}"` : ""}
+- Include a "Join Now" call-to-action button design
+- Japanese text style with cute idol aesthetic
+- Include sparkles, hearts, and star decorations
+- Aspect ratio 1200x630 (Twitter/OGP standard)
+- Text should be large and readable
+- Include "#\u52D5\u54E1\u3061\u3083\u308C\u3093\u3058" hashtag at bottom
+- Make it feel personal and welcoming`;
+      try {
+        const result = await generateImage({ prompt });
+        return {
+          url: result.url,
+          title: `${inviterName}\u3055\u3093\u304B\u3089\u300C${customTitle}\u300D\u3078\u306E\u62DB\u5F85`,
+          description: customMessage || `\u4E00\u7DD2\u306B\u30C1\u30E3\u30EC\u30F3\u30B8\u306B\u53C2\u52A0\u3057\u3088\u3046\uFF01\u76EE\u6A19: ${goalValue}${unit}`
+        };
+      } catch (error) {
+        console.error("Invite OGP image generation failed:", error);
+        throw new Error("Failed to generate invite OGP image");
+      }
+    }),
+    // v6.10: 招待リンクのOGP情報を取得（画像生成なし、メタデータのみ）
+    getInviteOgpMeta: publicProcedure.input(z2.object({ code: z2.string() })).query(async ({ input }) => {
+      const invitation = await getInvitationByCode(input.code);
+      if (!invitation) {
+        return null;
+      }
+      const challenge = await getEventById(invitation.challengeId);
+      if (!challenge) {
+        return null;
+      }
+      const goalValue = challenge.goalValue || 100;
+      const unit = challenge.goalUnit || "\u4EBA";
+      const inviterName = invitation.inviterName || "\u53CB\u9054";
+      const customTitle = invitation.customTitle || challenge.title;
+      const customMessage = invitation.customMessage || "";
+      return {
+        title: `${inviterName}\u3055\u3093\u304B\u3089\u300C${customTitle}\u300D\u3078\u306E\u62DB\u5F85`,
+        description: customMessage || `\u4E00\u7DD2\u306B\u30C1\u30E3\u30EC\u30F3\u30B8\u306B\u53C2\u52A0\u3057\u3088\u3046\uFF01\u76EE\u6A19: ${goalValue}${unit}`,
+        inviterName,
+        challengeTitle: customTitle,
+        originalTitle: challenge.title,
+        customMessage,
+        challengeId: challenge.id
+      };
     })
   }),
   // バッジ関連API

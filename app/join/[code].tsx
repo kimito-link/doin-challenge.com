@@ -1,11 +1,12 @@
 /**
  * 招待リンク受け取りページ
  * v6.09: カスタムメッセージ表示対応
+ * v6.10: OGP画像自動生成対応
  */
 import { Text, View, ScrollView, TouchableOpacity, Platform } from "react-native";
 import { color, palette } from "@/theme/tokens";
 import { Image } from "expo-image";
-import { useLocalSearchParams, useRouter } from "expo-router";
+import { useLocalSearchParams, useRouter, Stack } from "expo-router";
 import { useState, useEffect } from "react";
 import { ScreenContainer } from "@/components/organisms/screen-container";
 import { trpc } from "@/lib/trpc";
@@ -16,6 +17,7 @@ import * as Haptics from "expo-haptics";
 import { AppHeader } from "@/components/organisms/app-header";
 import { useColors } from "@/hooks/use-colors";
 import { OptimizedAvatar } from "@/components/molecules/optimized-image";
+import Head from "expo-router/head";
 
 export default function JoinScreen() {
   const { code } = useLocalSearchParams<{ code: string }>();
@@ -33,6 +35,12 @@ export default function JoinScreen() {
   const { data: challenge, isLoading: isLoadingChallenge } = (trpc as any).challenges.get.useQuery(
     { id: invitation?.challengeId || 0 },
     { enabled: !!invitation?.challengeId }
+  );
+
+  // v6.10: OGPメタ情報を取得
+  const { data: ogpMeta } = trpc.ogp.getInviteOgpMeta.useQuery(
+    { code: code || "" },
+    { enabled: !!code }
   );
 
   const isLoading = isLoadingInvitation || isLoadingChallenge;
@@ -126,8 +134,26 @@ export default function JoinScreen() {
     );
   }
 
+  // OGPタイトルと説明を計算
+  const ogpTitle = ogpMeta?.title || `招待 - 動員ちゃれんじ`;
+  const ogpDescription = ogpMeta?.description || `一緒にチャレンジに参加しよう！`;
+
   return (
     <ScreenContainer containerClassName="bg-background">
+      {/* v6.10: OGPメタタグ */}
+      {Platform.OS === "web" && (
+        <Head>
+          <title>{ogpTitle}</title>
+          <meta name="description" content={ogpDescription} />
+          <meta property="og:title" content={ogpTitle} />
+          <meta property="og:description" content={ogpDescription} />
+          <meta property="og:type" content="website" />
+          <meta property="og:site_name" content="動員ちゃれんじ" />
+          <meta name="twitter:card" content="summary_large_image" />
+          <meta name="twitter:title" content={ogpTitle} />
+          <meta name="twitter:description" content={ogpDescription} />
+        </Head>
+      )}
       <ScrollView>
         {/* ヘッダー */}
         <AppHeader 

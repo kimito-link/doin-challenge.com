@@ -26,6 +26,10 @@ export default function InviteScreen() {
   const [customTitle, setCustomTitle] = useState("");
   const [showCustomForm, setShowCustomForm] = useState(false);
   const [isCreatingInvite, setIsCreatingInvite] = useState(false);
+  
+  // v6.10: OGP画像生成
+  const [ogpImageUrl, setOgpImageUrl] = useState<string | null>(null);
+  const [isGeneratingOgp, setIsGeneratingOgp] = useState(false);
 
   const { data: challenge, isLoading } = (trpc as any).challenges.get.useQuery(
     { id: parseInt(id || "0") },
@@ -36,11 +40,31 @@ export default function InviteScreen() {
     onSuccess: (data) => {
       setInviteCode(data.code);
       setIsCreatingInvite(false);
+      // OGP画像をリセット
+      setOgpImageUrl(null);
     },
     onError: () => {
       setIsCreatingInvite(false);
     },
   });
+
+  // v6.10: OGP画像生成ミューテーション
+  const generateOgpMutation = trpc.ogp.generateInviteOgp.useMutation({
+    onSuccess: (data) => {
+      setOgpImageUrl(data.url || null);
+      setIsGeneratingOgp(false);
+    },
+    onError: () => {
+      setIsGeneratingOgp(false);
+    },
+  });
+
+  // OGP画像を生成
+  const handleGenerateOgp = () => {
+    if (!inviteCode) return;
+    setIsGeneratingOgp(true);
+    generateOgpMutation.mutate({ code: inviteCode });
+  };
 
   // 招待リンクを作成
   const handleCreateInvite = () => {
@@ -438,6 +462,7 @@ export default function InviteScreen() {
                   alignItems: "center",
                   flexDirection: "row",
                   justifyContent: "center",
+                  marginBottom: 12,
                 }}
               >
                 <Text style={{ fontSize: 20 }}>𝕏</Text>
@@ -445,6 +470,48 @@ export default function InviteScreen() {
                   Xでシェア
                 </Text>
               </TouchableOpacity>
+
+              {/* v6.10: OGP画像生成ボタン */}
+              <TouchableOpacity
+                onPress={handleGenerateOgp}
+                disabled={isGeneratingOgp}
+                style={{
+                  backgroundColor: isGeneratingOgp ? color.border : color.accentPrimary,
+                  borderRadius: 8,
+                  padding: 14,
+                  alignItems: "center",
+                  flexDirection: "row",
+                  justifyContent: "center",
+                }}
+              >
+                <MaterialIcons 
+                  name={isGeneratingOgp ? "hourglass-empty" : "auto-awesome"} 
+                  size={20} 
+                  color={color.textWhite} 
+                />
+                <Text style={{ color: color.textWhite, fontWeight: "600", marginLeft: 8 }}>
+                  {isGeneratingOgp ? "OGP画像を生成中..." : "✨ SNS用OGP画像を生成"}
+                </Text>
+              </TouchableOpacity>
+
+              {/* 生成されたOGP画像を表示 */}
+              {ogpImageUrl && (
+                <View style={{ marginTop: 12 }}>
+                  <Text style={{ color: color.textMuted, fontSize: 12, marginBottom: 8 }}>
+                    ✨ 生成されたOGP画像（SNSでシェア時に表示されます）
+                  </Text>
+                  <Image
+                    source={{ uri: ogpImageUrl }}
+                    style={{
+                      width: "100%",
+                      height: 200,
+                      borderRadius: 8,
+                      backgroundColor: color.surfaceDark,
+                    }}
+                    contentFit="cover"
+                  />
+                </View>
+              )}
             </>
           ) : (
             <View style={{ alignItems: "center", padding: 20 }}>
