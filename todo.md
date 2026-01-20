@@ -3353,3 +3353,13 @@ features/create/
 - [x] settings.tsx（668行→170行）を分割
   - styles.ts（スタイル定義）
   - SettingsSections.tsx（セクションコンポーネント）
+
+
+## コンポーネント整理（v6.19）
+
+### 共通UIコンポーネントの整理
+- [x] 既存コンポーネントの棚卸し・重複パターンの特定
+- [x] Button系コンポーネントの統一（components/ui/button.tsx）
+- [x] Card系コンポーネントの統一（components/ui/card.tsx）
+- [x] Modal系コンポーネントの統一（components/ui/modal.tsx）
+- [x] 画面間で重複しているUIパターンの統一（section.tsx, input.tsx, list.tsx）
