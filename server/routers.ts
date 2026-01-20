@@ -1204,6 +1204,9 @@ Design requirements:
         challengeId: z.number(),
         maxUses: z.number().optional(),
         expiresAt: z.string().optional(),
+        // v6.09: カスタムメッセージとタイトル
+        customMessage: z.string().max(500).optional(),
+        customTitle: z.string().max(100).optional(),
       }))
       .mutation(async ({ ctx, input }) => {
         // ランダムな招待コードを生成
@@ -1211,9 +1214,13 @@ Design requirements:
         const result = await db.createInvitation({
           challengeId: input.challengeId,
           inviterId: ctx.user.id,
+          inviterName: ctx.user.name || undefined,
           code,
           maxUses: input.maxUses,
           expiresAt: input.expiresAt ? new Date(input.expiresAt) : undefined,
+          // v6.09: カスタムメッセージとタイトル
+          customMessage: input.customMessage || undefined,
+          customTitle: input.customTitle || undefined,
         });
         return { success: !!result, id: result, code };
       }),

@@ -292,6 +292,10 @@ var init_schema = __esm({
       inviterName: varchar("inviterName", { length: 255 }),
       // 招待コード
       code: varchar("code", { length: 32 }).notNull().unique(),
+      // v6.09: カスタムメッセージ（招待者が設定する独自メッセージ）
+      customMessage: text("customMessage"),
+      // v6.09: 招待タイトル（デフォルトはチャレンジ名）
+      customTitle: varchar("customTitle", { length: 255 }),
       // 使用制限
       maxUses: int("maxUses").default(0),
       // 0 = 無制限
@@ -4595,15 +4599,22 @@ Design requirements:
     create: protectedProcedure.input(z2.object({
       challengeId: z2.number(),
       maxUses: z2.number().optional(),
-      expiresAt: z2.string().optional()
+      expiresAt: z2.string().optional(),
+      // v6.09: カスタムメッセージとタイトル
+      customMessage: z2.string().max(500).optional(),
+      customTitle: z2.string().max(100).optional()
     })).mutation(async ({ ctx, input }) => {
       const code = Math.random().toString(36).substring(2, 10).toUpperCase();
       const result = await createInvitation({
         challengeId: input.challengeId,
         inviterId: ctx.user.id,
+        inviterName: ctx.user.name || void 0,
         code,
         maxUses: input.maxUses,
-        expiresAt: input.expiresAt ? new Date(input.expiresAt) : void 0
+        expiresAt: input.expiresAt ? new Date(input.expiresAt) : void 0,
+        // v6.09: カスタムメッセージとタイトル
+        customMessage: input.customMessage || void 0,
+        customTitle: input.customTitle || void 0
       });
       return { success: !!result, id: result, code };
     }),

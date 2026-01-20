@@ -1,4 +1,4 @@
-import { Text, View, ScrollView, TouchableOpacity, Share, Platform } from "react-native";
+import { Text, View, ScrollView, TouchableOpacity, Share, Platform, TextInput } from "react-native";
 import { color, palette } from "@/theme/tokens";
 import { Image } from "expo-image";
 import { useLocalSearchParams, useRouter } from "expo-router";
@@ -11,13 +11,21 @@ import { LinearGradient } from "expo-linear-gradient";
 // Clipboardはネイティブ機能を使用
 import * as Haptics from "expo-haptics";
 import { AppHeader } from "@/components/organisms/app-header";
+import { useColors } from "@/hooks/use-colors";
 
 export default function InviteScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
   const router = useRouter();
   const { user } = useAuth();
+  const colors = useColors();
   const [copied, setCopied] = useState(false);
   const [inviteCode, setInviteCode] = useState<string | null>(null);
+  
+  // v6.09: カスタムメッセージ機能
+  const [customMessage, setCustomMessage] = useState("");
+  const [customTitle, setCustomTitle] = useState("");
+  const [showCustomForm, setShowCustomForm] = useState(false);
+  const [isCreatingInvite, setIsCreatingInvite] = useState(false);
 
   const { data: challenge, isLoading } = (trpc as any).challenges.get.useQuery(
     { id: parseInt(id || "0") },
@@ -27,20 +35,54 @@ export default function InviteScreen() {
   const createInviteMutation = trpc.invitations.create.useMutation({
     onSuccess: (data) => {
       setInviteCode(data.code);
+      setIsCreatingInvite(false);
+    },
+    onError: () => {
+      setIsCreatingInvite(false);
     },
   });
 
+  // 招待リンクを作成
+  const handleCreateInvite = () => {
+    if (!id || !user) return;
+    setIsCreatingInvite(true);
+    createInviteMutation.mutate({
+      challengeId: parseInt(id),
+      customMessage: customMessage.trim() || undefined,
+      customTitle: customTitle.trim() || undefined,
+    });
+  };
+
+  // 初回は自動で招待リンクを作成（カスタムメッセージなし）
   useEffect(() => {
-    if (id && user) {
-      createInviteMutation.mutate({
-        challengeId: parseInt(id),
-      });
+    if (id && user && !inviteCode && !showCustomForm) {
+      handleCreateInvite();
     }
   }, [id, user]);
 
   const inviteUrl = inviteCode 
     ? `https://douin-challenge.app/join/${inviteCode}`
     : null;
+
+  // シェアメッセージを生成（カスタムメッセージ対応）
+  const getShareMessage = () => {
+    if (!challenge) return "";
+    
+    const title = customTitle || challenge.title;
+    const inviterName = user?.name || "友達";
+    
+    let message = `🎉 ${inviterName}さんから「${title}」への招待が届きました！\n\n`;
+    
+    if (customMessage) {
+      message += `💬 ${customMessage}\n\n`;
+    }
+    
+    message += `目標: ${challenge.targetCount}人\n`;
+    message += `招待リンク: ${inviteUrl}\n\n`;
+    message += `#動員ちゃれんじ #君斗りんく`;
+    
+    return message;
+  };
 
   const handleCopyLink = async () => {
     if (inviteUrl) {
@@ -60,7 +102,7 @@ export default function InviteScreen() {
     if (inviteUrl && challenge) {
       try {
         await Share.share({
-          message: `🎉 「${challenge.title}」に一緒に参加しよう！\n\n目標: ${challenge.targetCount}人\n\n招待リンク: ${inviteUrl}\n\n#動員ちゃれんじ #君斗りんく`,
+          message: getShareMessage(),
           url: inviteUrl,
         });
       } catch (error) {
@@ -71,14 +113,19 @@ export default function InviteScreen() {
 
   const handleShareTwitter = () => {
     if (inviteUrl && challenge) {
-      const text = encodeURIComponent(
-        `🎉 「${challenge.title}」に一緒に参加しよう！\n\n目標: ${challenge.targetCount}人\n\n招待リンク: ${inviteUrl}\n\n#動員ちゃれんじ #君斗りんく`
-      );
+      const text = encodeURIComponent(getShareMessage());
       const url = `https://twitter.com/intent/tweet?text=${text}`;
       if (Platform.OS === "web") {
         window.open(url, "_blank");
       }
     }
+  };
+
+  // 新しい招待リンクを作成（カスタムメッセージ付き）
+  const handleCreateCustomInvite = () => {
+    setInviteCode(null);
+    handleCreateInvite();
+    setShowCustomForm(false);
   };
 
   if (isLoading) {
@@ -170,6 +217,153 @@ export default function InviteScreen() {
               </View>
             )}
           </View>
+        </View>
+
+        {/* v6.09: カスタムメッセージ設定 */}
+        <View style={{ padding: 16 }}>
+          <TouchableOpacity
+            onPress={() => setShowCustomForm(!showCustomForm)}
+            style={{
+              backgroundColor: color.surfaceDark,
+              borderRadius: 12,
+              padding: 16,
+              borderWidth: 1,
+              borderColor: showCustomForm ? color.hostAccentLegacy : color.border,
+              flexDirection: "row",
+              alignItems: "center",
+              justifyContent: "space-between",
+            }}
+          >
+            <View style={{ flexDirection: "row", alignItems: "center" }}>
+              <MaterialIcons name="edit" size={20} color={color.hostAccentLegacy} />
+              <Text style={{ color: color.textWhite, fontSize: 16, fontWeight: "600", marginLeft: 8 }}>
+                招待メッセージをカスタマイズ
+              </Text>
+            </View>
+            <MaterialIcons 
+              name={showCustomForm ? "expand-less" : "expand-more"} 
+              size={24} 
+              color={color.textMuted} 
+            />
+          </TouchableOpacity>
+
+          {showCustomForm && (
+            <View
+              style={{
+                backgroundColor: color.surfaceDark,
+                borderRadius: 12,
+                padding: 16,
+                marginTop: 12,
+                borderWidth: 1,
+                borderColor: color.border,
+              }}
+            >
+              {/* カスタムタイトル */}
+              <View style={{ marginBottom: 16 }}>
+                <Text style={{ color: color.textMuted, fontSize: 12, marginBottom: 8 }}>
+                  招待タイトル（任意）
+                </Text>
+                <TextInput
+                  value={customTitle}
+                  onChangeText={setCustomTitle}
+                  placeholder={challenge.title}
+                  placeholderTextColor={color.textHint}
+                  maxLength={100}
+                  style={{
+                    backgroundColor: colors.background,
+                    borderRadius: 8,
+                    padding: 12,
+                    color: color.textWhite,
+                    fontSize: 14,
+                    borderWidth: 1,
+                    borderColor: color.border,
+                  }}
+                />
+                <Text style={{ color: color.textHint, fontSize: 11, marginTop: 4, textAlign: "right" }}>
+                  {customTitle.length}/100
+                </Text>
+              </View>
+
+              {/* カスタムメッセージ */}
+              <View style={{ marginBottom: 16 }}>
+                <Text style={{ color: color.textMuted, fontSize: 12, marginBottom: 8 }}>
+                  あなたからのメッセージ（任意）
+                </Text>
+                <TextInput
+                  value={customMessage}
+                  onChangeText={setCustomMessage}
+                  placeholder="例: 一緒に推しを応援しよう！絶対楽しいから来てね♪"
+                  placeholderTextColor={color.textHint}
+                  multiline
+                  numberOfLines={4}
+                  maxLength={500}
+                  style={{
+                    backgroundColor: colors.background,
+                    borderRadius: 8,
+                    padding: 12,
+                    color: color.textWhite,
+                    fontSize: 14,
+                    minHeight: 100,
+                    textAlignVertical: "top",
+                    borderWidth: 1,
+                    borderColor: color.border,
+                  }}
+                />
+                <Text style={{ color: color.textHint, fontSize: 11, marginTop: 4, textAlign: "right" }}>
+                  {customMessage.length}/500
+                </Text>
+              </View>
+
+              {/* プレビュー */}
+              {(customTitle || customMessage) && (
+                <View
+                  style={{
+                    backgroundColor: colors.background,
+                    borderRadius: 8,
+                    padding: 12,
+                    marginBottom: 16,
+                    borderWidth: 1,
+                    borderColor: color.hostAccentLegacy,
+                  }}
+                >
+                  <Text style={{ color: color.hostAccentLegacy, fontSize: 12, fontWeight: "600", marginBottom: 8 }}>
+                    📝 プレビュー
+                  </Text>
+                  <Text style={{ color: color.textWhite, fontSize: 14, lineHeight: 20 }}>
+                    🎉 {user?.name || "あなた"}さんから「{customTitle || challenge.title}」への招待が届きました！
+                  </Text>
+                  {customMessage && (
+                    <Text style={{ color: color.textMuted, fontSize: 14, marginTop: 8, lineHeight: 20 }}>
+                      💬 {customMessage}
+                    </Text>
+                  )}
+                </View>
+              )}
+
+              {/* 新しい招待リンクを作成 */}
+              <TouchableOpacity
+                onPress={handleCreateCustomInvite}
+                disabled={isCreatingInvite}
+                style={{
+                  backgroundColor: isCreatingInvite ? color.border : color.hostAccentLegacy,
+                  borderRadius: 8,
+                  padding: 14,
+                  alignItems: "center",
+                  flexDirection: "row",
+                  justifyContent: "center",
+                }}
+              >
+                <MaterialIcons 
+                  name={isCreatingInvite ? "hourglass-empty" : "refresh"} 
+                  size={20} 
+                  color={color.textWhite} 
+                />
+                <Text style={{ color: color.textWhite, fontWeight: "600", marginLeft: 8 }}>
+                  {isCreatingInvite ? "作成中..." : "この設定で招待リンクを作成"}
+                </Text>
+              </TouchableOpacity>
+            </View>
+          )}
         </View>
 
         {/* 招待リンク */}

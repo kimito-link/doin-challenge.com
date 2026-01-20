@@ -404,6 +404,10 @@ export const invitations = mysqlTable("invitations", {
   inviterName: varchar("inviterName", { length: 255 }),
   // 招待コード
   code: varchar("code", { length: 32 }).notNull().unique(),
+  // v6.09: カスタムメッセージ（招待者が設定する独自メッセージ）
+  customMessage: text("customMessage"),
+  // v6.09: 招待タイトル（デフォルトはチャレンジ名）
+  customTitle: varchar("customTitle", { length: 255 }),
   // 使用制限
   maxUses: int("maxUses").default(0), // 0 = 無制限
   useCount: int("useCount").default(0).notNull(),
