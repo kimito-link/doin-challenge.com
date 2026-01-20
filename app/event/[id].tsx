@@ -800,6 +800,7 @@ export default function ChallengeDetailScreen() {
                 prefectureCounts={prefectureCounts} 
                 onPrefecturePress={(prefName) => setSelectedPrefectureForModal(prefName)}
                 onRegionPress={(regionName, prefectures) => setSelectedRegion({ name: regionName, prefectures })}
+                userPrefecture={myParticipation?.prefecture || undefined}
               />
 
               {/* 動員までの軌跡グラフ */}
