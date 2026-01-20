@@ -7,7 +7,7 @@ import { eventText, eventFont, eventUI } from "@/features/events/ui/theme/tokens
 
 const { width: screenWidth } = Dimensions.get("window");
 
-interface ProgressGridProps {
+export interface ProgressGridProps {
   /** 現在の達成数 */
   current: number;
   /** 目標数 */
@@ -20,6 +20,14 @@ interface ProgressGridProps {
   fillColor?: string;
   /** 空セル色（デフォルト: #2D3139） */
   emptyColor?: string;
+}
+
+/** 進捗アイテムのViewModel */
+export interface ProgressItemVM {
+  key: string;
+  label: string;
+  valueText: string;
+  subText?: string;
 }
 
 export function ProgressGrid({

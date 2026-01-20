@@ -35,7 +35,7 @@ export { ReminderButton } from "./reminder-button";
 export { ShareButton } from "./share-button";
 
 // Character系
-export { BlinkingCharacter, BlinkingLink } from "./blinking-character";
+export { BlinkingCharacter, BlinkingLink } from "@/components/atoms/blinking-character";
 export { CelebrationAnimation } from "./celebration-animation";
 export { InteractiveCharacter, TappableLink, LongPressCharacter } from "./interactive-character";
 export { TalkingCharacter } from "./talking-character";

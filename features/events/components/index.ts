@@ -4,8 +4,8 @@
  * app/event/[id].tsx から分離したローカルコンポーネント
  */
 
-export { ProgressGrid } from "./ProgressGrid";
-export { RegionMap } from "./RegionMap";
+export { ProgressGrid, type ProgressItemVM, type ProgressGridProps } from "./ProgressGrid";
+export { RegionMap, type RegionGroupVM, type RegionMapProps } from "./RegionMap";
 export { ParticipantsList } from "./ParticipantsList";
-export { ContributionRanking } from "./ContributionRanking";
-export { MessageCard } from "./MessageCard";
+export { ContributionRanking, type RankingItemVM, type ContributionRankingProps } from "./ContributionRanking";
+export { MessageCard, type MessageVM, type MessageCardProps } from "./MessageCard";

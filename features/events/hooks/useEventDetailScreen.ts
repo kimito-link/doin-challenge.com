@@ -19,10 +19,10 @@ import {
   type FanVM,
 } from "../mappers/participationVM";
 import { regionGroups, normalizePrefecture } from "../utils/prefectures";
-import type { ProgressItemVM } from "../ui/components/ProgressGrid";
-import type { RegionGroupVM } from "../ui/components/RegionMap";
-import type { RankingItemVM } from "../ui/components/ContributionRanking";
-import type { MessageVM } from "../ui/components/MessageCard";
+import type { ProgressItemVM } from "../components/ProgressGrid";
+import type { RegionGroupVM } from "../components/RegionMap";
+import type { RankingItemVM } from "../components/ContributionRanking";
+import type { MessageVM } from "../components/MessageCard";
 
 // ========================================
 // 型定義

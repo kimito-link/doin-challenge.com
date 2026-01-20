@@ -9,13 +9,24 @@ import { eventText, eventFont, eventUI } from "@/features/events/ui/theme/tokens
 import { OptimizedAvatar } from "@/components/molecules/optimized-image";
 import type { Participation } from "@/types/participation";
 
-interface ContributionRankingProps {
+export interface ContributionRankingProps {
   /** 参加者リスト */
   participations: Participation[];
   /** フォロワーのユーザーIDリスト（優先表示用） */
   followerIds?: number[];
   /** 表示する最大人数（デフォルト: 5） */
   maxDisplay?: number;
+}
+
+/** ランキングアイテムのViewModel */
+export interface RankingItemVM {
+  key: string;
+  rank: number;
+  twitterId: string;
+  displayName: string;
+  username?: string;
+  profileImage?: string;
+  valueText: string;
 }
 
 export function ContributionRanking({

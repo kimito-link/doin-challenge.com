@@ -8,9 +8,16 @@ import { eventText, eventFont } from "@/features/events/ui/theme/tokens";
 import { regionGroups, countByRegion, type RegionName } from "@/constants/prefectures";
 import type { Participation } from "@/types/participation";
 
-interface RegionMapProps {
+export interface RegionMapProps {
   /** 参加者リスト */
   participations: Participation[];
+}
+
+/** 地域グループのViewModel */
+export interface RegionGroupVM {
+  name: string;
+  count: number;
+  prefectures: string[];
 }
 
 export function RegionMap({ participations }: RegionMapProps) {

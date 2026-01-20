@@ -20,7 +20,18 @@ interface CompanionDisplay {
   isConfirmed?: boolean;
 }
 
-interface MessageCardProps {
+/** メッセージのViewModel */
+export interface MessageVM {
+  id: string;
+  twitterId?: string | null;
+  displayName: string;
+  username?: string;
+  profileImage?: string;
+  message: string;
+  createdAtText?: string;
+}
+
+export interface MessageCardProps {
   /** 参加情報 */
   participation: Participation;
   /** エールボタンのコールバック */
