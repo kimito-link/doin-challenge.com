@@ -140,6 +140,45 @@ function getParticipantIcon(count: number): string {
   return "🔥🔥🔥";
 }
 
+// ヒートマップ色の段階（参加者数に応じて色の濃淡を変化）
+type HeatLevel = 0 | 1 | 2 | 3 | 4 | 5;
+
+function getHeatLevel(count: number, maxCount: number): HeatLevel {
+  if (count === 0) return 0;
+  if (maxCount === 0) return 1;
+  
+  const ratio = count / maxCount;
+  if (ratio <= 0.2) return 1; // 少ない
+  if (ratio <= 0.4) return 2; // やや少ない
+  if (ratio <= 0.6) return 3; // 中程度
+  if (ratio <= 0.8) return 4; // 多い
+  return 5; // 最多
+}
+
+// ヒートレベルに応じた色の不透明度を返す
+function getHeatOpacity(level: HeatLevel): number {
+  switch (level) {
+    case 0: return 0.3;  // グレー
+    case 1: return 0.5;  // 薄い
+    case 2: return 0.65; // やや薄い
+    case 3: return 0.8;  // 中程度
+    case 4: return 0.9;  // 濃い
+    case 5: return 1.0;  // 最も濃い
+  }
+}
+
+// ヒートレベルに応じたボーダー幅を返す
+function getHeatBorderWidth(level: HeatLevel): number {
+  switch (level) {
+    case 0: return 1;
+    case 1: return 2;
+    case 2: return 2;
+    case 3: return 3;
+    case 4: return 3;
+    case 5: return 4;
+  }
+}
+
 export function JapanRegionBlocks({ prefectureCounts, onPrefecturePress, onRegionPress, userPrefecture }: JapanRegionBlocksProps) {
   const { width: screenWidth } = useWindowDimensions();
   const [selectedRegion, setSelectedRegion] = useState<typeof regions[0] | null>(null);
@@ -197,6 +236,11 @@ export function JapanRegionBlocks({ prefectureCounts, onPrefecturePress, onRegio
     });
     return totals;
   }, [prefectureCounts]);
+  
+  // 地域ごとの最大参加者数（ヒートマップ計算用）
+  const maxRegionCount = useMemo(() => {
+    return Math.max(...Object.values(regionTotals), 0);
+  }, [regionTotals]);
 
   // レスポンシブ設定
   const isSmallScreen = screenWidth < 375;
@@ -238,11 +282,22 @@ export function JapanRegionBlocks({ prefectureCounts, onPrefecturePress, onRegio
           const fireIcon = getParticipantIcon(total);
           const isUserRegion = region.id === userRegionId;
           
+          // ヒートマップ色の計算
+          const heatLevel = getHeatLevel(total, maxRegionCount);
+          const heatOpacity = getHeatOpacity(heatLevel);
+          const heatBorderWidth = getHeatBorderWidth(heatLevel);
+          
           const blockContent = (
             <>
               {isUserRegion && (
                 <View style={styles.userRegionBadge}>
                   <Text style={styles.userRegionBadgeText}>あなたの地域</Text>
+                </View>
+              )}
+              {/* ヒートレベルインジケーター（最多の場合のみ表示） */}
+              {heatLevel === 5 && (
+                <View style={styles.hotBadge}>
+                  <Text style={styles.hotBadgeText}>HOT</Text>
                 </View>
               )}
               <Text style={styles.regionEmoji}>{region.emoji}</Text>
@@ -278,6 +333,7 @@ export function JapanRegionBlocks({ prefectureCounts, onPrefecturePress, onRegio
                       backgroundColor: region.color,
                       borderColor: color.accentPrimary,
                       borderWidth: 4,
+                      opacity: heatOpacity,
                     },
                   ]}
                   onPress={() => handleRegionPress(region)}
@@ -299,7 +355,8 @@ export function JapanRegionBlocks({ prefectureCounts, onPrefecturePress, onRegio
                   height: actualBlockSize,
                   backgroundColor: hasParticipants ? region.color : color.mapInactive,
                   borderColor: hasParticipants ? region.borderColor : color.border,
-                  borderWidth: hasParticipants ? 3 : 1,
+                  borderWidth: heatBorderWidth,
+                  opacity: heatOpacity,
                 },
               ]}
               onPress={() => handleRegionPress(region)}
@@ -506,6 +563,21 @@ const styles = StyleSheet.create({
   },
   userRegionBadgeText: {
     fontSize: 10,
+    fontWeight: "bold",
+    color: color.textWhite,
+  },
+  hotBadge: {
+    position: "absolute",
+    top: -8,
+    right: -8,
+    backgroundColor: color.danger,
+    paddingHorizontal: 6,
+    paddingVertical: 2,
+    borderRadius: 6,
+    zIndex: 10,
+  },
+  hotBadgeText: {
+    fontSize: 9,
     fontWeight: "bold",
     color: color.textWhite,
   },

@@ -2975,3 +2975,10 @@ features/create/
 - [x] event/[id].tsxでユーザーの都道府県情報を取得
 - [x] JapanRegionBlocksにuserPrefectureを渡す
 - [x] テスト実行と動作確認
+
+
+## 地域ブロックヒートマップ色（v4.16）
+
+- [x] ヒートマップ色の段階設計（0人→少→中→多）
+- [x] JapanRegionBlocksに色の濃淡ロジックを実装
+- [x] テスト実行と動作確認
