@@ -2802,3 +2802,51 @@ features/create/
 - [x] mypageUI: UI要素色（cardBg, cardBorder, buttonBg）
 - [x] mypageText: テキスト色（muted, accent, stats）
 - [x] mypageGradient: グラデーション色
+
+
+## プロジェクト全体のトークン化（v4.8）
+
+### 調査結果
+- **components/**: 800箇所/68ファイル
+- **app/**: 655箇所/27ファイル
+- **合計**: 1455箇所/95ファイル
+
+### 方針
+直書き色をすべてトークン化し、コンポーネントの保守性を向上させる。
+グローバルなトークンファイル（constants/colors.ts）を作成し、全コンポーネントで共通利用する。
+
+### グローバルトークン定義（constants/colors.ts）
+- [x] 基本色（primary, secondary, accent, muted, error, success, warning, info）
+- [x] グラデーション（pinkPurple, orangePink, etc.）
+- [x] UI要素色（cardBg, cardBorder, inputBg, inputBorder, etc.）
+- [x] テキスト色（default, muted, accent, etc.）
+- [x] ソーシャル色（twitter, line, etc.）
+- [x] ランキング色（gold, silver, bronze）
+- [x] 地域色（hokkaido, tohoku, kanto, etc.）
+
+### components/ トークン化
+- [ ] atoms/（badge, button, countdown, floating-action-button, etc.）
+- [ ] molecules/（celebration-animation, colorful-challenge-card, confirm-modal, etc.）
+- [ ] organisms/（account-switcher, app-header, error-dialog, etc.）
+
+### app/ トークン化
+- [ ] (tabs)/（_layout, create, index, mypage）
+- [ ] 各画面（achievements, followers, following, help, etc.）
+
+
+## デザインシステム統合（v4.9）
+
+### Phase 1: theme/tokens を正として整備
+- [x] layout.ts を作成（spacing, borderRadius, touchTarget, shadows, animation, zIndex）
+- [x] theme/tokens/index.ts を更新してlayoutをエクスポート
+
+### Phase 2: design-system.ts を薄いラッパーに
+- [x] constants/design-system.ts を theme/tokens からの再エクスポートに書き換え
+- [x] 後方互換性を維持
+
+### Phase 3: 残りのatoms/をトークン化
+- [x] input.tsx（design-system.ts経由でトークン化済み）
+- [x] button.tsx, countdown.tsx, floating-action-button.tsx, hoverable-button.tsx, sync-status-indicator.tsx, toast.tsx, tutorial-tab-button.tsx
+
+### Phase 4: molecules/をトークン化
+- [ ] 主要コンポーネントをトークン化

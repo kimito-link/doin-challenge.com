@@ -1,6 +1,7 @@
 import { View, StyleSheet, Animated } from "react-native";
 import { useEffect, useRef } from "react";
 import { LinearGradient } from "expo-linear-gradient";
+import { color } from "@/theme/tokens";
 
 interface SkeletonProps {
   width?: number | string;
@@ -141,7 +142,7 @@ export function ChallengeCardSkeleton() {
 
 const styles = StyleSheet.create({
   skeleton: {
-    backgroundColor: "#2D3139",
+    backgroundColor: color.border,
     overflow: "hidden",
   },
   shimmer: {
@@ -153,7 +154,7 @@ const styles = StyleSheet.create({
     width: 200,
   },
   card: {
-    backgroundColor: "#1A1D21",
+    backgroundColor: color.surface,
     borderRadius: 16,
     overflow: "hidden",
     marginBottom: 16,
@@ -165,7 +166,7 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     alignItems: "center",
     padding: 12,
-    backgroundColor: "#1A1D21",
+    backgroundColor: color.surface,
     borderRadius: 12,
     marginBottom: 8,
   },
@@ -182,12 +183,12 @@ const styles = StyleSheet.create({
     marginLeft: 16,
   },
   challengeCard: {
-    backgroundColor: "#1A1D21",
+    backgroundColor: color.surface,
     borderRadius: 16,
     padding: 16,
     marginBottom: 16,
     borderWidth: 1,
-    borderColor: "#2D3139",
+    borderColor: color.border,
   },
   challengeHeader: {
     flexDirection: "row",

@@ -2,6 +2,7 @@ import { useState, useCallback } from "react";
 import { TouchableOpacity, Text, ActivityIndicator, View, Platform, StyleSheet } from "react-native";
 import MaterialIcons from "@expo/vector-icons/MaterialIcons";
 import * as Haptics from "expo-haptics";
+import { color } from "@/theme/tokens";
 
 type ButtonVariant = "primary" | "secondary" | "outline" | "ghost" | "destructive";
 type ButtonSize = "sm" | "md" | "lg";
@@ -22,28 +23,28 @@ interface LoadingButtonProps {
 
 const variantStyles = {
   primary: {
-    bg: "#EC4899",
-    text: "#fff",
+    bg: color.accentPrimary,
+    text: color.textWhite,
     border: "transparent",
   },
   secondary: {
-    bg: "#1A1D21",
-    text: "#fff",
-    border: "#374151",
+    bg: color.surface,
+    text: color.textWhite,
+    border: color.borderAlt,
   },
   outline: {
     bg: "transparent",
-    text: "#EC4899",
-    border: "#EC4899",
+    text: color.accentPrimary,
+    border: color.accentPrimary,
   },
   ghost: {
     bg: "transparent",
-    text: "#D1D5DB",
+    text: color.textMuted,
     border: "transparent",
   },
   destructive: {
-    bg: "#EF4444",
-    text: "#fff",
+    bg: color.danger,
+    text: color.textWhite,
     border: "transparent",
   },
 };

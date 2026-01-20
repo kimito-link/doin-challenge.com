@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { View, Text, StyleSheet } from "react-native";
 import { LinearGradient } from "expo-linear-gradient";
+import { color, grad } from "@/theme/tokens";
 
 interface CountdownProps {
   targetDate: Date | string;
@@ -58,7 +59,7 @@ export function Countdown({ targetDate, compact = false, onComplete }: Countdown
     return (
       <View style={compact ? styles.compactContainer : styles.container}>
         <LinearGradient
-          colors={["#EC4899", "#8B5CF6"]}
+          colors={[...grad.pinkPurple]}
           start={{ x: 0, y: 0 }}
           end={{ x: 1, y: 0 }}
           style={compact ? styles.compactBadge : styles.completeBadge}
@@ -84,7 +85,7 @@ export function Countdown({ targetDate, compact = false, onComplete }: Countdown
     }
     return (
       <View style={styles.compactContainer}>
-        <View style={[styles.compactBadge, { backgroundColor: "#EC4899" }]}>
+        <View style={[styles.compactBadge, { backgroundColor: color.accentPrimary }]}>
           <Text style={styles.compactTime}>
             {String(timeLeft.hours).padStart(2, "0")}:
             {String(timeLeft.minutes).padStart(2, "0")}:
@@ -116,7 +117,7 @@ function TimeUnit({ value, label }: { value: number; label: string }) {
   return (
     <View style={styles.timeUnit}>
       <LinearGradient
-        colors={["#1A1D21", "#2D3139"]}
+        colors={[color.surface, color.border]}
         style={styles.timeBox}
       >
         <Text style={styles.timeValue}>{String(value).padStart(2, "0")}</Text>
@@ -132,7 +133,7 @@ const styles = StyleSheet.create({
     padding: 16,
   },
   label: {
-    color: "#D1D5DB",
+    color: color.textMuted,
     fontSize: 14,
     marginBottom: 12,
   },
@@ -150,20 +151,20 @@ const styles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "center",
     borderWidth: 1,
-    borderColor: "#3D4149",
+    borderColor: color.borderAlt,
   },
   timeValue: {
-    color: "#fff",
+    color: color.textWhite,
     fontSize: 24,
     fontWeight: "bold",
   },
   timeLabel: {
-    color: "#CBD5E0",
+    color: color.textSubtle,
     fontSize: 11,
     marginTop: 4,
   },
   separator: {
-    color: "#EC4899",
+    color: color.accentPrimary,
     fontSize: 24,
     fontWeight: "bold",
     marginHorizontal: 4,
@@ -174,7 +175,7 @@ const styles = StyleSheet.create({
     borderRadius: 24,
   },
   completeText: {
-    color: "#fff",
+    color: color.textWhite,
     fontSize: 18,
     fontWeight: "bold",
   },
@@ -183,24 +184,24 @@ const styles = StyleSheet.create({
     alignItems: "flex-start",
   },
   compactBadge: {
-    backgroundColor: "#2D3139",
+    backgroundColor: color.border,
     paddingHorizontal: 10,
     paddingVertical: 4,
     borderRadius: 12,
   },
   compactDays: {
-    color: "#fff",
+    color: color.textWhite,
     fontSize: 12,
     fontWeight: "600",
   },
   compactTime: {
-    color: "#fff",
+    color: color.textWhite,
     fontSize: 12,
     fontWeight: "bold",
     fontVariant: ["tabular-nums"],
   },
   compactCompleteText: {
-    color: "#fff",
+    color: color.textWhite,
     fontSize: 12,
     fontWeight: "bold",
   },

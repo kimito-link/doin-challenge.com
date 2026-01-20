@@ -10,6 +10,7 @@ import Animated, {
   withTiming,
   interpolate,
 } from "react-native-reanimated";
+import { color } from "@/theme/tokens";
 
 interface FloatingActionButtonProps {
   onPress: () => void;
@@ -37,7 +38,7 @@ export function FloatingActionButton({
   icon = "add",
   label,
   position = "bottom-right",
-  color = "#EC4899",
+  color: buttonColor = color.accentPrimary,
   gradientColors,
   size = "medium",
   showLabel = false,
@@ -70,7 +71,7 @@ export function FloatingActionButton({
 
   const ButtonContent = () => (
     <View style={[styles.buttonContent, { width: sizeConfig.button, height: sizeConfig.button }]}>
-      <MaterialIcons name={icon as any} size={sizeConfig.icon} color="#fff" />
+      <MaterialIcons name={icon as any} size={sizeConfig.icon} color={color.textWhite} />
     </View>
   );
 
@@ -116,7 +117,7 @@ export function FloatingActionButton({
             style={[
               styles.solidBackground, 
               { 
-                backgroundColor: color,
+                backgroundColor: buttonColor,
                 width: sizeConfig.button, 
                 height: sizeConfig.button,
                 borderRadius: sizeConfig.button / 2,
@@ -151,7 +152,7 @@ interface ExpandableFABProps {
 export function ExpandableFAB({
   actions,
   mainIcon = "add",
-  mainColor = "#EC4899",
+  mainColor = color.accentPrimary,
 }: ExpandableFABProps) {
   const [expanded, setExpanded] = useState(false);
   const rotation = useSharedValue(0);
@@ -199,10 +200,10 @@ export function ExpandableFAB({
             </View>
             <TouchableOpacity
               onPress={() => handleActionPress(action)}
-              style={[styles.actionButton, { backgroundColor: action.color || "#CBD5E0" }]}
+              style={[styles.actionButton, { backgroundColor: action.color || color.textSubtle }]}
               activeOpacity={0.8}
             >
-              <MaterialIcons name={action.icon as any} size={20} color="#fff" />
+              <MaterialIcons name={action.icon as any} size={20} color={color.textWhite} />
             </TouchableOpacity>
           </Animated.View>
         );
@@ -215,7 +216,7 @@ export function ExpandableFAB({
           style={[styles.mainButton, { backgroundColor: mainColor }]}
           activeOpacity={0.8}
         >
-          <MaterialIcons name={mainIcon as any} size={28} color="#fff" />
+          <MaterialIcons name={mainIcon as any} size={28} color={color.textWhite} />
         </TouchableOpacity>
       </Animated.View>
     </View>
@@ -259,7 +260,7 @@ const styles = StyleSheet.create({
     justifyContent: "center",
   },
   labelContainer: {
-    backgroundColor: "#1F2937",
+    backgroundColor: color.surface,
     paddingHorizontal: 12,
     paddingVertical: 6,
     borderRadius: 8,
@@ -272,7 +273,7 @@ const styles = StyleSheet.create({
     elevation: 4,
   },
   labelText: {
-    color: "#fff",
+    color: color.textWhite,
     fontSize: 14,
     fontWeight: "500",
   },
@@ -290,14 +291,14 @@ const styles = StyleSheet.create({
     marginBottom: 12,
   },
   actionLabelContainer: {
-    backgroundColor: "#1F2937",
+    backgroundColor: color.surface,
     paddingHorizontal: 12,
     paddingVertical: 6,
     borderRadius: 8,
     marginRight: 12,
   },
   actionLabel: {
-    color: "#fff",
+    color: color.textWhite,
     fontSize: 14,
     fontWeight: "500",
   },

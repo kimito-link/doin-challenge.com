@@ -1,4 +1,5 @@
 import { View, Text, StyleSheet } from "react-native";
+import { color } from "@/theme/tokens";
 
 type BadgeVariant = "default" | "success" | "warning" | "error" | "info" | "primary";
 type BadgeSize = "sm" | "md" | "lg";
@@ -13,33 +14,33 @@ interface BadgeProps {
 const variantStyles = {
   default: {
     bg: "rgba(156, 163, 175, 0.2)",
-    text: "#D1D5DB",
-    border: "#CBD5E0",
+    text: color.textMuted,
+    border: color.textSubtle,
   },
   success: {
     bg: "rgba(34, 197, 94, 0.2)",
-    text: "#22C55E",
-    border: "#22C55E",
+    text: color.success,
+    border: color.success,
   },
   warning: {
     bg: "rgba(245, 158, 11, 0.2)",
-    text: "#F59E0B",
-    border: "#F59E0B",
+    text: color.warning,
+    border: color.warning,
   },
   error: {
     bg: "rgba(239, 68, 68, 0.2)",
-    text: "#EF4444",
-    border: "#EF4444",
+    text: color.danger,
+    border: color.danger,
   },
   info: {
     bg: "rgba(59, 130, 246, 0.2)",
-    text: "#3B82F6",
-    border: "#3B82F6",
+    text: color.info,
+    border: color.info,
   },
   primary: {
     bg: "rgba(221, 101, 0, 0.2)",
-    text: "#DD6500",
-    border: "#DD6500",
+    text: color.hostAccentLegacy,
+    border: color.hostAccentLegacy,
   },
 };
 

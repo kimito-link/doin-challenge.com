@@ -1,4 +1,5 @@
 import { Text as RNText, TextProps as RNTextProps, StyleSheet } from "react-native";
+import { color } from "@/theme/tokens";
 
 type TextVariant = "h1" | "h2" | "h3" | "body" | "caption" | "label";
 type TextColor = "default" | "muted" | "primary" | "success" | "warning" | "error";
@@ -44,12 +45,12 @@ const variantStyles = {
 };
 
 const colorStyles = {
-  default: "#ECEDEE",
-  muted: "#D1D5DB",
-  primary: "#DD6500",
-  success: "#22C55E",
-  warning: "#F59E0B",
-  error: "#EF4444",
+  default: color.textPrimary,
+  muted: color.textMuted,
+  primary: color.hostAccentLegacy,
+  success: color.success,
+  warning: color.warning,
+  error: color.danger,
 };
 
 /**

@@ -2,6 +2,7 @@ import { useEffect, useRef } from "react";
 import { View, Text, Animated, StyleSheet, Platform } from "react-native";
 import MaterialIcons from "@expo/vector-icons/MaterialIcons";
 import * as Haptics from "expo-haptics";
+import { color } from "@/theme/tokens";
 
 type ToastType = "success" | "error" | "warning" | "info";
 
@@ -20,27 +21,27 @@ interface ToastProps {
 const toastConfig = {
   success: {
     icon: "check-circle" as const,
-    bg: "#065F46",
-    border: "#10B981",
-    iconColor: "#10B981",
+    bg: color.toastSuccessBg,
+    border: color.successDark,
+    iconColor: color.successDark,
   },
   error: {
     icon: "error" as const,
-    bg: "#7F1D1D",
-    border: "#EF4444",
-    iconColor: "#EF4444",
+    bg: color.toastErrorBg,
+    border: color.danger,
+    iconColor: color.danger,
   },
   warning: {
     icon: "warning" as const,
-    bg: "#78350F",
-    border: "#F59E0B",
-    iconColor: "#F59E0B",
+    bg: color.toastWarningBg,
+    border: color.warning,
+    iconColor: color.warning,
   },
   info: {
     icon: "info" as const,
-    bg: "#1E3A5F",
-    border: "#3B82F6",
-    iconColor: "#3B82F6",
+    bg: color.toastInfoBg,
+    border: color.info,
+    iconColor: color.info,
   },
 };
 
@@ -165,14 +166,14 @@ const styles = StyleSheet.create({
   },
   message: {
     flex: 1,
-    color: "#fff",
+    color: color.textWhite,
     fontSize: 15,
     fontWeight: "500",
     marginLeft: 12,
     lineHeight: 20,
   },
   action: {
-    color: "#fff",
+    color: color.textWhite,
     fontSize: 14,
     fontWeight: "600",
     marginLeft: 12,

@@ -1,6 +1,7 @@
 import { View } from "react-native";
 import { useEffect, useRef } from "react";
 import { useTutorial } from "@/lib/tutorial-context";
+import { color } from "@/theme/tokens";
 import { HapticTab } from "@/components/atoms/haptic-tab";
 import { BottomTabBarButtonProps } from "@react-navigation/bottom-tabs";
 import Animated, {
@@ -86,7 +87,7 @@ export function TutorialTabButton({
               right: -8,
               bottom: -8,
               borderRadius: 24,
-              backgroundColor: "#DD6500",
+              backgroundColor: color.hostAccentLegacy,
             },
             glowStyle,
           ]}

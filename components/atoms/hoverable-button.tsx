@@ -2,6 +2,7 @@ import { Pressable, Platform, Text, type PressableProps, type ViewStyle, type Te
 import { useState, useCallback } from "react";
 import Animated, { useAnimatedStyle, withTiming } from "react-native-reanimated";
 import * as Haptics from "expo-haptics";
+import { color, palette } from "@/theme/tokens";
 
 interface HoverableButtonProps extends Omit<PressableProps, "style"> {
   title: string;
@@ -101,6 +102,9 @@ export function HoverableButton({
   );
 }
 
+// ホバー時の明るいオレンジ
+const hoverOrange = palette.amber400; // ホバー時の明るいオレンジ
+
 function getVariantStyles(variant: string, isHovered: boolean, isPressed: boolean) {
   const baseStyles: { container: ViewStyle; text: TextStyle } = {
     container: {},
@@ -111,29 +115,29 @@ function getVariantStyles(variant: string, isHovered: boolean, isPressed: boolea
     case "primary":
       return {
         container: {
-          backgroundColor: isHovered ? "#FF7B00" : "#DD6500",
+          backgroundColor: isHovered ? hoverOrange : color.hostAccentLegacy,
           borderWidth: 0,
           ...(Platform.OS === "web" && isHovered ? {
-            shadowColor: "#DD6500",
+            shadowColor: color.hostAccentLegacy,
             shadowOffset: { width: 0, height: 4 },
             shadowOpacity: 0.4,
             shadowRadius: 12,
           } : {}),
         } as ViewStyle,
         text: {
-          color: "#FFFFFF",
+          color: color.textWhite,
           fontWeight: "600",
         } as TextStyle,
       };
     case "secondary":
       return {
         container: {
-          backgroundColor: isHovered ? "#2A2D30" : "#1E2022",
+          backgroundColor: isHovered ? color.surfaceAlt : color.surface,
           borderWidth: 1,
-          borderColor: isHovered ? "#DD6500" : "#334155",
+          borderColor: isHovered ? color.hostAccentLegacy : color.border,
         } as ViewStyle,
         text: {
-          color: isHovered ? "#DD6500" : "#ECEDEE",
+          color: isHovered ? color.hostAccentLegacy : color.textPrimary,
           fontWeight: "500",
         } as TextStyle,
       };
@@ -142,10 +146,10 @@ function getVariantStyles(variant: string, isHovered: boolean, isPressed: boolea
         container: {
           backgroundColor: isHovered ? "rgba(221, 101, 0, 0.1)" : "transparent",
           borderWidth: 2,
-          borderColor: isHovered ? "#FF7B00" : "#DD6500",
+          borderColor: isHovered ? hoverOrange : color.hostAccentLegacy,
         } as ViewStyle,
         text: {
-          color: isHovered ? "#FF7B00" : "#DD6500",
+          color: isHovered ? hoverOrange : color.hostAccentLegacy,
           fontWeight: "600",
         } as TextStyle,
       };
@@ -156,7 +160,7 @@ function getVariantStyles(variant: string, isHovered: boolean, isPressed: boolea
           borderWidth: 0,
         } as ViewStyle,
         text: {
-          color: isHovered ? "#FF7B00" : "#9BA1A6",
+          color: isHovered ? hoverOrange : color.textSecondary,
           fontWeight: "500",
         } as TextStyle,
       };

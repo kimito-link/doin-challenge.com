@@ -9,6 +9,7 @@ import Animated, {
   Easing,
 } from "react-native-reanimated";
 import { useOfflineSync } from "@/hooks/use-offline-sync";
+import { color } from "@/theme/tokens";
 
 interface SyncStatusIndicatorProps {
   showDetails?: boolean;
@@ -166,13 +167,13 @@ export function SyncStatusIndicator({
 
 const styles = StyleSheet.create({
   container: {
-    backgroundColor: "#1E2530",
+    backgroundColor: color.surfaceDark,
     borderRadius: 12,
     marginHorizontal: 16,
     marginVertical: 8,
     overflow: "hidden",
     borderWidth: 1,
-    borderColor: "#2D3748",
+    borderColor: color.border,
   },
   compactContainer: {
     padding: 4,
@@ -180,13 +181,13 @@ const styles = StyleSheet.create({
   compactBadge: {
     flexDirection: "row",
     alignItems: "center",
-    backgroundColor: "#F59E0B20",
+    backgroundColor: `${color.warning}20`,
     paddingHorizontal: 8,
     paddingVertical: 4,
     borderRadius: 12,
   },
   compactCount: {
-    color: "#F59E0B",
+    color: color.warning,
     fontSize: 12,
     fontWeight: "600",
     marginLeft: 4,
@@ -216,27 +217,27 @@ const styles = StyleSheet.create({
     fontSize: 16,
   },
   title: {
-    color: "#F3F4F6",
+    color: color.textPrimary,
     fontSize: 14,
     fontWeight: "600",
   },
   subtitle: {
-    color: "#D1D5DB",
+    color: color.textMuted,
     fontSize: 12,
     marginTop: 2,
   },
   expandIcon: {
-    color: "#D1D5DB",
+    color: color.textMuted,
     fontSize: 12,
   },
   details: {
     padding: 12,
     paddingTop: 0,
     borderTopWidth: 1,
-    borderTopColor: "#2D3748",
+    borderTopColor: color.border,
   },
   detailText: {
-    color: "#D1D5DB",
+    color: color.textMuted,
     fontSize: 12,
     lineHeight: 18,
     marginBottom: 12,
@@ -253,20 +254,20 @@ const styles = StyleSheet.create({
     justifyContent: "center",
   },
   primaryButton: {
-    backgroundColor: "#3B82F6",
+    backgroundColor: color.info,
   },
   secondaryButton: {
     backgroundColor: "transparent",
     borderWidth: 1,
-    borderColor: "#CBD5E0",
+    borderColor: color.textSubtle,
   },
   actionButtonText: {
-    color: "#FFFFFF",
+    color: color.textWhite,
     fontSize: 14,
     fontWeight: "600",
   },
   secondaryButtonText: {
-    color: "#D1D5DB",
+    color: color.textMuted,
     fontSize: 14,
     fontWeight: "600",
   },

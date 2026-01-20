@@ -1,5 +1,6 @@
 import { useEffect, useRef } from "react";
 import { View, Animated, StyleSheet, ViewStyle } from "react-native";
+import { color } from "@/theme/tokens";
 
 interface SkeletonProps {
   width?: number | `${number}%`;
@@ -146,10 +147,10 @@ export function ProfileSkeleton() {
 
 const styles = StyleSheet.create({
   skeleton: {
-    backgroundColor: "#2D3139",
+    backgroundColor: color.border,
   },
   card: {
-    backgroundColor: "#1A1D21",
+    backgroundColor: color.surface,
     borderRadius: 16,
     overflow: "hidden",
     marginBottom: 16,
@@ -161,7 +162,7 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     alignItems: "center",
     padding: 16,
-    backgroundColor: "#1A1D21",
+    backgroundColor: color.surface,
     borderRadius: 12,
     marginBottom: 8,
   },
@@ -170,7 +171,7 @@ const styles = StyleSheet.create({
     marginLeft: 12,
   },
   challengeCard: {
-    backgroundColor: "#1A1D21",
+    backgroundColor: color.surface,
     borderRadius: 16,
     padding: 16,
     marginBottom: 16,

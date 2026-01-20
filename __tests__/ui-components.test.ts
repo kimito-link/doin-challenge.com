@@ -16,7 +16,7 @@ describe("Design System", () => {
 
     it("should have status colors defined", async () => {
       const { colors } = await import("../constants/design-system");
-      expect(colors.status.success).toBe("#10B981");
+      expect(colors.status.success).toBe("#22C55E");
       expect(colors.status.error).toBe("#EF4444");
       expect(colors.status.warning).toBe("#F59E0B");
     });
