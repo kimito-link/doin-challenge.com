@@ -1,4 +1,5 @@
 import { View, Text, StyleSheet, Modal, TouchableOpacity, FlatList, Pressable } from "react-native";
+import { color, palette } from "@/theme/tokens";
 import { useRouter } from "expo-router";
 import MaterialIcons from "@expo/vector-icons/MaterialIcons";
 import { OptimizedAvatar } from "./optimized-image";
@@ -50,7 +51,7 @@ export function PrefectureParticipantsModal({
       <OptimizedAvatar
         source={item.profileImage ? { uri: item.profileImage } : undefined}
         size={44}
-        fallbackColor="#EC4899"
+        fallbackColor={color.accentPrimary}
         fallbackText={item.displayName.charAt(0)}
       />
       <View style={styles.participantInfo}>
@@ -103,7 +104,7 @@ export function PrefectureParticipantsModal({
               </Text>
             </View>
             <TouchableOpacity onPress={onClose} style={styles.closeButton}>
-              <MaterialIcons name="close" size={24} color="#D1D5DB" />
+              <MaterialIcons name="close" size={24} color={color.textMuted} />
             </TouchableOpacity>
           </View>
 
@@ -137,7 +138,7 @@ const styles = StyleSheet.create({
     justifyContent: "flex-end",
   },
   modalContainer: {
-    backgroundColor: "#1A1D21",
+    backgroundColor: color.surface,
     borderTopLeftRadius: 24,
     borderTopRightRadius: 24,
     maxHeight: "80%",
@@ -149,18 +150,18 @@ const styles = StyleSheet.create({
     justifyContent: "space-between",
     padding: 20,
     borderBottomWidth: 1,
-    borderBottomColor: "#2D3139",
+    borderBottomColor: color.border,
   },
   headerContent: {
     flex: 1,
   },
   prefectureName: {
-    color: "#fff",
+    color: color.textWhite,
     fontSize: 20,
     fontWeight: "bold",
   },
   participantCount: {
-    color: "#D1D5DB",
+    color: color.textMuted,
     fontSize: 13,
     marginTop: 4,
   },
@@ -170,7 +171,7 @@ const styles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "center",
     borderRadius: 20,
-    backgroundColor: "#2D3139",
+    backgroundColor: color.border,
   },
   listContent: {
     padding: 16,
@@ -178,7 +179,7 @@ const styles = StyleSheet.create({
   participantItem: {
     flexDirection: "row",
     alignItems: "center",
-    backgroundColor: "#0D1117",
+    backgroundColor: color.bg,
     borderRadius: 12,
     padding: 12,
     marginBottom: 8,
@@ -195,7 +196,7 @@ const styles = StyleSheet.create({
     alignItems: "center",
   },
   participantName: {
-    color: "#fff",
+    color: color.textWhite,
     fontSize: 15,
     fontWeight: "600",
     flex: 1,
@@ -208,30 +209,30 @@ const styles = StyleSheet.create({
     marginLeft: 8,
   },
   followersText: {
-    color: "#EC4899",
+    color: color.accentPrimary,
     fontSize: 10,
     fontWeight: "bold",
   },
   participantUsername: {
-    color: "#D1D5DB",
+    color: color.textMuted,
     fontSize: 12,
     marginTop: 2,
   },
   participantMessage: {
-    color: "#CBD5E0",
+    color: color.textSubtle,
     fontSize: 12,
     marginTop: 4,
     fontStyle: "italic",
   },
   contributionBadge: {
-    backgroundColor: "#2D3139",
+    backgroundColor: color.border,
     paddingHorizontal: 10,
     paddingVertical: 6,
     borderRadius: 8,
     marginLeft: 8,
   },
   contributionText: {
-    color: "#EC4899",
+    color: color.accentPrimary,
     fontSize: 12,
     fontWeight: "bold",
   },
@@ -246,7 +247,7 @@ const styles = StyleSheet.create({
     marginBottom: 16,
   },
   emptyText: {
-    color: "#D1D5DB",
+    color: color.textMuted,
     fontSize: 14,
     textAlign: "center",
   },

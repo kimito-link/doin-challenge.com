@@ -1,4 +1,5 @@
 import { View, StyleSheet, Animated, Platform } from "react-native";
+import { color, palette } from "@/theme/tokens";
 import { Image, ImageProps } from "expo-image";
 import { useState, useRef, useEffect, useCallback } from "react";
 
@@ -17,7 +18,7 @@ interface LazyImageProps extends Omit<ImageProps, "onLoad" | "onError"> {
  * - プレースホルダー表示
  */
 export function LazyImage({
-  fallbackColor = "#2D3139",
+  fallbackColor = color.border,
   lazy = true,
   rootMargin = 100,
   style,
@@ -133,7 +134,7 @@ export function LazyImage({
 export function LazyAvatar({
   size = 48,
   fallbackText,
-  fallbackColor = "#3B82F6",
+  fallbackColor = color.info,
   ...props
 }: LazyImageProps & { size?: number; fallbackText?: string }) {
   const [hasError, setHasError] = useState(false);
@@ -169,7 +170,7 @@ export function LazyAvatar({
         }}
       >
         {fallbackText && (
-          <Animated.Text style={{ color: "#fff", fontSize: size * 0.4, fontWeight: "bold" }}>
+          <Animated.Text style={{ color: color.textWhite, fontSize: size * 0.4, fontWeight: "bold" }}>
             {fallbackText}
           </Animated.Text>
         )}

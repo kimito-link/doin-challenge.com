@@ -1,4 +1,5 @@
 import { Pressable, Platform, View, type PressableProps, type ViewStyle, StyleSheet } from "react-native";
+import { color, palette } from "@/theme/tokens";
 import { useState, useCallback } from "react";
 import Animated, { useAnimatedStyle, withTiming } from "react-native-reanimated";
 import * as Haptics from "expo-haptics";
@@ -69,7 +70,7 @@ export function HoverableListItem({
   // ホバー時の左ボーダー
   const hoverBorderStyle: ViewStyle = Platform.OS === "web" && isHovered && !disabled ? {
     borderLeftWidth: 3,
-    borderLeftColor: "#DD6500",
+    borderLeftColor: color.hostAccentLegacy,
   } : {};
 
   return (
@@ -95,7 +96,7 @@ export function HoverableListItem({
       </View>
       {showChevron && (
         <View style={[styles.chevron, isHovered && styles.chevronHovered]}>
-          <ChevronIcon color={isHovered ? "#DD6500" : "#9BA1A6"} />
+          <ChevronIcon color={isHovered ? color.hostAccentLegacy : color.textSecondary} />
         </View>
       )}
     </AnimatedPressable>
@@ -116,7 +117,7 @@ const styles = StyleSheet.create({
     minHeight: 56, // Apple HIG準拠（44px以上）
     paddingHorizontal: 16,
     paddingVertical: 12,
-    backgroundColor: "#1E2022",
+    backgroundColor: color.surface,
     borderRadius: 12,
     marginVertical: 4,
   },

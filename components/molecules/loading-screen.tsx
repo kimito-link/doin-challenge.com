@@ -1,4 +1,5 @@
 import { View, Text, ActivityIndicator } from "react-native";
+import { color, palette } from "@/theme/tokens";
 import { BlinkingLink } from "./blinking-character";
 
 interface LoadingScreenProps {
@@ -37,10 +38,10 @@ export function LoadingScreen({
           style={{ marginBottom: 16 }}
         />
       )}
-      <ActivityIndicator size={indicatorSize} color="#EC4899" />
+      <ActivityIndicator size={indicatorSize} color={color.accentPrimary} />
       <Text 
         style={{ 
-          color: "#D1D5DB", 
+          color: color.textMuted, 
           fontSize, 
           marginTop: 12,
           textAlign: "center",
@@ -57,16 +58,16 @@ export function LoadingScreen({
  */
 export function LoadingIndicator({
   message,
-  color = "#EC4899",
+  indicatorColor = color.accentPrimary,
 }: {
   message?: string;
-  color?: string;
+  indicatorColor?: string;
 }) {
   return (
     <View className="flex-row items-center justify-center py-4">
-      <ActivityIndicator size="small" color={color} />
+      <ActivityIndicator size="small" color={indicatorColor} />
       {message && (
-        <Text style={{ color: "#D1D5DB", fontSize: 12, marginLeft: 8 }}>
+        <Text style={{ color: color.textMuted, fontSize: 12, marginLeft: 8 }}>
           {message}
         </Text>
       )}

@@ -2850,3 +2850,37 @@ features/create/
 
 ### Phase 4: molecules/をトークン化
 - [ ] 主要コンポーネントをトークン化
+
+
+## molecules/ トークン化（v4.10）
+
+### Phase 1: 一括置換スクリプト
+- [x] 主要な色を自動置換（717箇所/32ファイル）
+- [x] インポート文を自動追加（32ファイル）
+- [x] JSX属性の構文エラーを修正（46箇所）
+- [x] 変数名衝突を修正（celebration-animation, loading-screen）
+
+### Phase 2: Tier 1（基盤コンポーネント）
+- [x] confirm-modal.tsx
+- [x] date-picker.tsx
+- [x] loading-screen.tsx
+- [x] share-button.tsx
+- [x] reminder-button.tsx
+
+### Phase 3: Tier 2（頻出コンポーネント）
+- [x] colorful-challenge-card.tsx
+- [x] filter-tabs.tsx
+- [x] number-stepper.tsx
+- [x] export-button.tsx
+- [x] lazy-image.tsx
+- [x] optimized-image.tsx
+
+### 手動トークン化（残り）
+- [x] celebration-animation.tsx
+- [x] follow-gate.tsx
+- [x] follow-success-modal.tsx
+- [x] hoverable-list-item.tsx
+- [x] login-success-modal.tsx
+- [x] share-prompt-modal.tsx
+- [x] theme-settings.tsx
+- [x] twitter-user-card.tsx

@@ -1,4 +1,5 @@
 import { View, Text, TouchableOpacity, StyleSheet, Alert, Platform } from "react-native";
+import { color, palette } from "@/theme/tokens";
 import MaterialIcons from "@expo/vector-icons/MaterialIcons";
 import { useTutorial } from "@/lib/tutorial-context";
 import { useColors } from "@/hooks/use-colors";
@@ -49,7 +50,7 @@ export function TutorialResetButton() {
       activeOpacity={0.7}
     >
       <View style={styles.iconContainer}>
-        <MaterialIcons name="school" size={24} color="#DD6500" />
+        <MaterialIcons name="school" size={24} color={color.hostAccentLegacy} />
       </View>
       <View style={styles.textContainer}>
         <Text style={[styles.title, { color: colors.foreground }]}>

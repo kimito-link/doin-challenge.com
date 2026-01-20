@@ -1,4 +1,5 @@
 import { View, Text, TouchableOpacity, StyleSheet, Modal, Platform } from "react-native";
+import { color, palette } from "@/theme/tokens";
 import { useEffect, useState, useCallback } from "react";
 import MaterialIcons from "@expo/vector-icons/MaterialIcons";
 import * as Haptics from "expo-haptics";
@@ -92,7 +93,7 @@ export function EncouragementModal({
             onPress={handleClose}
             activeOpacity={0.7}
           >
-            <MaterialIcons name="close" size={24} color="#CBD5E0" />
+            <MaterialIcons name="close" size={24} color={color.textSubtle} />
           </TouchableOpacity>
 
           {/* メインコンテンツ */}
@@ -163,7 +164,7 @@ const styles = StyleSheet.create({
     padding: 24,
   },
   modalContainer: {
-    backgroundColor: "#fff",
+    backgroundColor: color.textWhite,
     borderRadius: 20,
     padding: 24,
     width: "100%",
@@ -195,13 +196,13 @@ const styles = StyleSheet.create({
   title: {
     fontSize: 22,
     fontWeight: "bold",
-    color: "#1F2937",
+    color: color.surfaceAlt,
     marginBottom: 12,
     textAlign: "center",
   },
   message: {
     fontSize: 15,
-    color: "#CBD5E0",
+    color: color.textSubtle,
     textAlign: "center",
     lineHeight: 24,
   },
@@ -210,13 +211,13 @@ const styles = StyleSheet.create({
     paddingVertical: 14,
     borderRadius: 12,
     borderWidth: 1,
-    borderColor: "#E5E7EB",
+    borderColor: color.textPrimary,
     alignItems: "center",
   },
   actionButtonText: {
     fontSize: 16,
     fontWeight: "600",
-    color: "#374151",
+    color: color.borderAlt,
   },
 });
 

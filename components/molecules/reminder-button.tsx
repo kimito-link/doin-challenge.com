@@ -1,4 +1,5 @@
 import { View, Text, TouchableOpacity, StyleSheet, Modal, Animated } from "react-native";
+import { color, palette } from "@/theme/tokens";
 import MaterialIcons from "@expo/vector-icons/MaterialIcons";
 import { useState, useRef, useEffect } from "react";
 import { LinearGradient } from "expo-linear-gradient";
@@ -178,7 +179,7 @@ export function ReminderButton({
         <MaterialIcons
           name={activeReminder ? "notifications-active" : "notifications-none"}
           size={18}
-          color={activeReminder ? "#EC4899" : "#D1D5DB"}
+          color={activeReminder ? color.accentPrimary : color.textMuted}
         />
         <Text style={[styles.buttonText, activeReminder && styles.buttonTextActive]}>
           {activeReminder ? getActiveOptionLabel() : "リマインド"}
@@ -207,7 +208,7 @@ export function ReminderButton({
           >
             <TouchableOpacity activeOpacity={1}>
               <View style={styles.modalHeader}>
-                <MaterialIcons name="notifications" size={24} color="#EC4899" />
+                <MaterialIcons name="notifications" size={24} color={color.accentPrimary} />
                 <Text style={styles.modalTitle}>リマインダー設定</Text>
               </View>
 
@@ -237,7 +238,7 @@ export function ReminderButton({
                         <MaterialIcons
                           name={isActive ? "check-circle" : "radio-button-unchecked"}
                           size={20}
-                          color={isActive ? "#EC4899" : isPast ? "#CBD5E0" : "#D1D5DB"}
+                          color={isActive ? color.accentPrimary : isPast ? color.textSubtle : color.textMuted}
                         />
                         <Text
                           style={[
@@ -287,24 +288,24 @@ const styles = StyleSheet.create({
   button: {
     flexDirection: "row",
     alignItems: "center",
-    backgroundColor: "#1A1D21",
+    backgroundColor: color.surface,
     borderRadius: 8,
     paddingHorizontal: 12,
     paddingVertical: 8,
     gap: 6,
     borderWidth: 1,
-    borderColor: "#2D3139",
+    borderColor: color.border,
   },
   buttonDisabled: {
     opacity: 0.5,
   },
   buttonText: {
-    color: "#D1D5DB",
+    color: color.textMuted,
     fontSize: 13,
     fontWeight: "500",
   },
   buttonTextActive: {
-    color: "#EC4899",
+    color: color.accentPrimary,
   },
   overlay: {
     flex: 1,
@@ -314,7 +315,7 @@ const styles = StyleSheet.create({
     padding: 24,
   },
   modalContainer: {
-    backgroundColor: "#1A1D21",
+    backgroundColor: color.surface,
     borderRadius: 20,
     padding: 24,
     width: "100%",
@@ -327,12 +328,12 @@ const styles = StyleSheet.create({
     marginBottom: 8,
   },
   modalTitle: {
-    color: "#fff",
+    color: color.textWhite,
     fontSize: 18,
     fontWeight: "bold",
   },
   modalSubtitle: {
-    color: "#D1D5DB",
+    color: color.textMuted,
     fontSize: 13,
     marginBottom: 20,
   },
@@ -341,14 +342,14 @@ const styles = StyleSheet.create({
     marginBottom: 16,
   },
   optionButton: {
-    backgroundColor: "#0D1117",
+    backgroundColor: color.bg,
     borderRadius: 12,
     padding: 14,
     borderWidth: 1,
-    borderColor: "#2D3139",
+    borderColor: color.border,
   },
   optionButtonActive: {
-    borderColor: "#EC4899",
+    borderColor: color.accentPrimary,
     backgroundColor: "rgba(236, 72, 153, 0.1)",
   },
   optionButtonDisabled: {
@@ -360,18 +361,18 @@ const styles = StyleSheet.create({
     gap: 10,
   },
   optionText: {
-    color: "#fff",
+    color: color.textWhite,
     fontSize: 15,
     fontWeight: "500",
   },
   optionTextActive: {
-    color: "#EC4899",
+    color: color.accentPrimary,
   },
   optionTextDisabled: {
-    color: "#CBD5E0",
+    color: color.textSubtle,
   },
   optionSubtext: {
-    color: "#CBD5E0",
+    color: color.textSubtle,
     fontSize: 11,
     marginTop: 4,
     marginLeft: 30,
@@ -382,17 +383,17 @@ const styles = StyleSheet.create({
     marginBottom: 8,
   },
   cancelButtonText: {
-    color: "#EF4444",
+    color: color.danger,
     fontSize: 14,
   },
   closeButton: {
-    backgroundColor: "#2D3139",
+    backgroundColor: color.border,
     borderRadius: 12,
     paddingVertical: 14,
     alignItems: "center",
   },
   closeButtonText: {
-    color: "#fff",
+    color: color.textWhite,
     fontSize: 15,
     fontWeight: "600",
   },

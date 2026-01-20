@@ -1,4 +1,5 @@
 import { Modal, View, Text, TouchableOpacity, StyleSheet, Animated } from "react-native";
+import { color, palette } from "@/theme/tokens";
 import { Image } from "expo-image";
 import MaterialIcons from "@expo/vector-icons/MaterialIcons";
 import { useEffect, useRef, useState } from "react";
@@ -107,12 +108,12 @@ export function SharePromptModal({
           {/* 成功アイコン */}
           <View style={styles.iconContainer}>
             <LinearGradient
-              colors={["#EC4899", "#8B5CF6"]}
+              colors={[color.accentPrimary, color.accentAlt]}
               start={{ x: 0, y: 0 }}
               end={{ x: 1, y: 1 }}
               style={styles.iconGradient}
             >
-              <MaterialIcons name="check" size={40} color="#fff" />
+              <MaterialIcons name="check" size={40} color={color.textWhite} />
             </LinearGradient>
           </View>
 
@@ -133,7 +134,7 @@ export function SharePromptModal({
                     contentFit="cover"
                   />
                 ) : (
-                  <View style={[styles.participantAvatar, { backgroundColor: '#EC4899' }]}>
+                  <View style={[styles.participantAvatar, { backgroundColor: color.accentPrimary }]}>
                     <Text style={styles.avatarText}>{participantName.charAt(0)}</Text>
                   </View>
                 )}
@@ -177,7 +178,7 @@ export function SharePromptModal({
               activeOpacity={0.8}
             >
               <LinearGradient
-                colors={["#000", "#1a1a1a"]}
+                colors={["#000000", color.surface]}
                 style={styles.shareButtonGradient}
               >
                 <Text style={styles.xLogo}>𝕏</Text>
@@ -210,7 +211,7 @@ const styles = StyleSheet.create({
     padding: 24,
   },
   container: {
-    backgroundColor: "#1A1D21",
+    backgroundColor: color.surface,
     borderRadius: 24,
     padding: 24,
     width: "100%",
@@ -218,7 +219,7 @@ const styles = StyleSheet.create({
     alignItems: "center",
   },
   participantCard: {
-    backgroundColor: "#2D3139",
+    backgroundColor: color.border,
     borderRadius: 12,
     padding: 16,
     width: "100%",
@@ -244,7 +245,7 @@ const styles = StyleSheet.create({
     justifyContent: "center",
   },
   avatarText: {
-    color: "#fff",
+    color: color.textWhite,
     fontSize: 20,
     fontWeight: "bold",
   },
@@ -253,34 +254,34 @@ const styles = StyleSheet.create({
     marginLeft: 12,
   },
   participantName: {
-    color: "#fff",
+    color: color.textWhite,
     fontSize: 16,
     fontWeight: "600",
   },
   participantUsername: {
-    color: "#DD6500",
+    color: color.hostAccentLegacy,
     fontSize: 14,
   },
   contributionBadge: {
     alignItems: "center",
   },
   contributionText: {
-    color: "#EC4899",
+    color: color.accentPrimary,
     fontSize: 24,
     fontWeight: "bold",
   },
   contributionLabel: {
-    color: "#CBD5E0",
+    color: color.textSubtle,
     fontSize: 11,
   },
   messageBox: {
-    backgroundColor: "#1A1D21",
+    backgroundColor: color.surface,
     borderRadius: 8,
     padding: 12,
     marginTop: 12,
   },
   messageText: {
-    color: "#E5E7EB",
+    color: color.textPrimary,
     fontSize: 14,
     lineHeight: 20,
   },
@@ -295,33 +296,33 @@ const styles = StyleSheet.create({
     justifyContent: "center",
   },
   title: {
-    color: "#fff",
+    color: color.textWhite,
     fontSize: 22,
     fontWeight: "bold",
     marginBottom: 8,
   },
   subtitle: {
-    color: "#D1D5DB",
+    color: color.textMuted,
     fontSize: 14,
     textAlign: "center",
     marginBottom: 20,
   },
   messageContainer: {
-    backgroundColor: "#0D1117",
+    backgroundColor: color.bg,
     borderRadius: 12,
     padding: 16,
     width: "100%",
     marginBottom: 24,
   },
   message: {
-    color: "#fff",
+    color: color.textWhite,
     fontSize: 15,
     fontWeight: "600",
     textAlign: "center",
     marginBottom: 4,
   },
   subMessage: {
-    color: "#D1D5DB",
+    color: color.textMuted,
     fontSize: 13,
     textAlign: "center",
   },
@@ -342,12 +343,12 @@ const styles = StyleSheet.create({
     gap: 8,
   },
   xLogo: {
-    color: "#fff",
+    color: color.textWhite,
     fontSize: 18,
     fontWeight: "bold",
   },
   shareButtonText: {
-    color: "#fff",
+    color: color.textWhite,
     fontSize: 16,
     fontWeight: "600",
   },
@@ -356,7 +357,7 @@ const styles = StyleSheet.create({
     alignItems: "center",
   },
   skipButtonText: {
-    color: "#CBD5E0",
+    color: color.textSubtle,
     fontSize: 14,
   },
 });

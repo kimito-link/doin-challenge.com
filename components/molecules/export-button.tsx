@@ -1,4 +1,5 @@
 import { View, Text, TouchableOpacity, Modal, StyleSheet, Platform, Alert } from "react-native";
+import { color, palette } from "@/theme/tokens";
 import { useState, useCallback } from "react";
 import MaterialIcons from "@expo/vector-icons/MaterialIcons";
 import * as Haptics from "expo-haptics";
@@ -84,7 +85,7 @@ export function ExportButton({ data, disabled = false }: ExportButtonProps) {
         accessibilityRole="button"
         accessibilityLabel="統計データをエクスポート"
       >
-        <MaterialIcons name="file-download" size={20} color={disabled ? "#CBD5E0" : "#fff"} />
+        <MaterialIcons name="file-download" size={20} color={disabled ? color.textSubtle : color.textWhite} />
         <Text style={[styles.buttonText, disabled && styles.buttonTextDisabled]}>
           エクスポート
         </Text>
@@ -105,7 +106,7 @@ export function ExportButton({ data, disabled = false }: ExportButtonProps) {
             <View style={styles.modalHeader}>
               <Text style={styles.modalTitle}>エクスポート形式を選択</Text>
               <TouchableOpacity onPress={closeModal} style={styles.closeButton}>
-                <MaterialIcons name="close" size={24} color="#D1D5DB" />
+                <MaterialIcons name="close" size={24} color={color.textMuted} />
               </TouchableOpacity>
             </View>
 
@@ -116,8 +117,8 @@ export function ExportButton({ data, disabled = false }: ExportButtonProps) {
                 disabled={exporting}
                 style={styles.optionItem}
               >
-                <View style={[styles.optionIcon, { backgroundColor: "#10B981" }]}>
-                  <MaterialIcons name="table-chart" size={24} color="#fff" />
+                <View style={[styles.optionIcon, { backgroundColor: color.successDark }]}>
+                  <MaterialIcons name="table-chart" size={24} color={color.textWhite} />
                 </View>
                 <View style={styles.optionInfo}>
                   <Text style={styles.optionTitle}>CSV形式</Text>
@@ -125,7 +126,7 @@ export function ExportButton({ data, disabled = false }: ExportButtonProps) {
                     表計算ソフトで開ける形式
                   </Text>
                 </View>
-                <MaterialIcons name="chevron-right" size={24} color="#CBD5E0" />
+                <MaterialIcons name="chevron-right" size={24} color={color.textSubtle} />
               </TouchableOpacity>
 
               {/* テキストレポート */}
@@ -134,8 +135,8 @@ export function ExportButton({ data, disabled = false }: ExportButtonProps) {
                 disabled={exporting}
                 style={styles.optionItem}
               >
-                <View style={[styles.optionIcon, { backgroundColor: "#EC4899" }]}>
-                  <MaterialIcons name="description" size={24} color="#fff" />
+                <View style={[styles.optionIcon, { backgroundColor: color.accentPrimary }]}>
+                  <MaterialIcons name="description" size={24} color={color.textWhite} />
                 </View>
                 <View style={styles.optionInfo}>
                   <Text style={styles.optionTitle}>テキストレポート</Text>
@@ -143,7 +144,7 @@ export function ExportButton({ data, disabled = false }: ExportButtonProps) {
                     SNSでシェアしやすい形式
                   </Text>
                 </View>
-                <MaterialIcons name="chevron-right" size={24} color="#CBD5E0" />
+                <MaterialIcons name="chevron-right" size={24} color={color.textSubtle} />
               </TouchableOpacity>
 
               {/* クリップボードコピー（Web専用） */}
@@ -153,8 +154,8 @@ export function ExportButton({ data, disabled = false }: ExportButtonProps) {
                   disabled={exporting}
                   style={styles.optionItem}
                 >
-                  <View style={[styles.optionIcon, { backgroundColor: "#8B5CF6" }]}>
-                    <MaterialIcons name="content-copy" size={24} color="#fff" />
+                  <View style={[styles.optionIcon, { backgroundColor: color.accentAlt }]}>
+                    <MaterialIcons name="content-copy" size={24} color={color.textWhite} />
                   </View>
                   <View style={styles.optionInfo}>
                     <Text style={styles.optionTitle}>クリップボードにコピー</Text>
@@ -162,7 +163,7 @@ export function ExportButton({ data, disabled = false }: ExportButtonProps) {
                       CSVデータをコピー
                     </Text>
                   </View>
-                  <MaterialIcons name="chevron-right" size={24} color="#CBD5E0" />
+                  <MaterialIcons name="chevron-right" size={24} color={color.textSubtle} />
                 </TouchableOpacity>
               )}
             </View>
@@ -183,24 +184,24 @@ const styles = StyleSheet.create({
   button: {
     flexDirection: "row",
     alignItems: "center",
-    backgroundColor: "#1A1D21",
+    backgroundColor: color.surface,
     paddingHorizontal: 16,
     paddingVertical: 10,
     borderRadius: 8,
     borderWidth: 1,
-    borderColor: "#2D3139",
+    borderColor: color.border,
     gap: 8,
   },
   buttonDisabled: {
     opacity: 0.5,
   },
   buttonText: {
-    color: "#fff",
+    color: color.textWhite,
     fontSize: 14,
     fontWeight: "500",
   },
   buttonTextDisabled: {
-    color: "#CBD5E0",
+    color: color.textSubtle,
   },
   modalOverlay: {
     flex: 1,
@@ -210,7 +211,7 @@ const styles = StyleSheet.create({
     padding: 24,
   },
   modalContent: {
-    backgroundColor: "#1A1D21",
+    backgroundColor: color.surface,
     borderRadius: 16,
     width: "100%",
     maxWidth: 400,
@@ -222,10 +223,10 @@ const styles = StyleSheet.create({
     justifyContent: "space-between",
     padding: 16,
     borderBottomWidth: 1,
-    borderBottomColor: "#2D3139",
+    borderBottomColor: color.border,
   },
   modalTitle: {
-    color: "#fff",
+    color: color.textWhite,
     fontSize: 18,
     fontWeight: "bold",
   },
@@ -254,13 +255,13 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   optionTitle: {
-    color: "#fff",
+    color: color.textWhite,
     fontSize: 16,
     fontWeight: "600",
     marginBottom: 2,
   },
   optionDescription: {
-    color: "#D1D5DB",
+    color: color.textMuted,
     fontSize: 13,
   },
   loadingOverlay: {
@@ -274,7 +275,7 @@ const styles = StyleSheet.create({
     justifyContent: "center",
   },
   loadingText: {
-    color: "#fff",
+    color: color.textWhite,
     fontSize: 16,
   },
 });

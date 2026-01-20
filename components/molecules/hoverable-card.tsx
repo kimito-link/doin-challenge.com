@@ -1,4 +1,5 @@
 import { Pressable, Platform, type PressableProps, type ViewStyle, StyleSheet } from "react-native";
+import { color, palette } from "@/theme/tokens";
 import { useState, useCallback } from "react";
 import Animated, { useAnimatedStyle, withTiming, Easing } from "react-native-reanimated";
 import * as Haptics from "expo-haptics";
@@ -37,8 +38,8 @@ export function HoverableCard({
   hoverScale = 1.02,
   pressScale = 0.97,
   hoverLift = 4,
-  hoverBorderColor = "#DD6500",
-  hoverShadowColor = "#DD6500",
+  hoverBorderColor = color.hostAccentLegacy,
+  hoverShadowColor = color.hostAccentLegacy,
   haptic = true,
   disabled = false,
   onPress,
@@ -174,7 +175,7 @@ export function HoverableMenuItem({
   const hoverStyle: ViewStyle = enableHover && isHovered && !disabled ? {
     backgroundColor: "rgba(221, 101, 0, 0.08)",
     borderLeftWidth: 3,
-    borderLeftColor: "#DD6500",
+    borderLeftColor: color.hostAccentLegacy,
   } : {};
 
   return (
@@ -210,7 +211,7 @@ const styles = StyleSheet.create({
     minHeight: 56,
     paddingHorizontal: 16,
     paddingVertical: 12,
-    backgroundColor: "#1E2022",
+    backgroundColor: color.surface,
     borderRadius: 12,
     marginVertical: 4,
     flexDirection: "row",

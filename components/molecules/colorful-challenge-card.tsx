@@ -1,4 +1,5 @@
 import { View, Text, StyleSheet, TouchableOpacity } from "react-native";
+import { color, palette } from "@/theme/tokens";
 import { LinearGradient } from "expo-linear-gradient";
 import MaterialIcons from "@expo/vector-icons/MaterialIcons";
 import { useColors } from "@/hooks/use-colors";
@@ -39,14 +40,14 @@ interface ColorfulChallengeCardProps {
 
 // 「しゃべった！」風のカラフルなカラーパレット
 const CARD_COLORS = [
-  { bg: "#EC4899", gradient: ["#EC4899", "#F472B6"] }, // ピンク
-  { bg: "#EF4444", gradient: ["#EF4444", "#F87171"] }, // 赤
-  { bg: "#F97316", gradient: ["#F97316", "#FB923C"] }, // オレンジ
-  { bg: "#EAB308", gradient: ["#EAB308", "#FACC15"] }, // 黄色
-  { bg: "#14B8A6", gradient: ["#14B8A6", "#2DD4BF"] }, // ティール
-  { bg: "#22C55E", gradient: ["#22C55E", "#4ADE80"] }, // 緑
-  { bg: "#8B5CF6", gradient: ["#8B5CF6", "#A78BFA"] }, // 紫
-  { bg: "#3B82F6", gradient: ["#3B82F6", "#60A5FA"] }, // 青
+  { bg: color.accentPrimary, gradient: [color.accentPrimary, color.pink400] }, // ピンク
+  { bg: color.danger, gradient: [color.danger, color.red400] }, // 赤
+  { bg: color.orange500, gradient: [color.orange500, color.orange400] }, // オレンジ
+  { bg: color.yellow500, gradient: [color.yellow500, color.yellow400] }, // 黄色
+  { bg: color.teal500, gradient: [color.teal500, color.teal400] }, // ティール
+  { bg: color.success, gradient: [color.success, color.green400] }, // 緑
+  { bg: color.accentAlt, gradient: [color.accentAlt, color.purple400] }, // 紫
+  { bg: color.info, gradient: [color.info, color.blue400] }, // 青
 ];
 
 // イベントタイプのバッジ
@@ -123,7 +124,7 @@ export function ColorfulChallengeCard({
           <MaterialIcons 
             name={isFavorite ? "star" : "star-outline"} 
             size={20} 
-            color={isFavorite ? "#FFD700" : "rgba(255,255,255,0.6)"} 
+            color={isFavorite ? color.rankGold : "rgba(255,255,255,0.6)"} 
           />
         </TouchableOpacity>
 
@@ -166,7 +167,7 @@ export function ColorfulChallengeCard({
             </View>
             {challenge.venue && (
               <View style={[styles.badge, { backgroundColor: "rgba(0,0,0,0.2)" }]}>
-                <MaterialIcons name="place" size={10} color="#fff" />
+                <MaterialIcons name="place" size={10} color={color.textWhite} />
                 <Text style={[styles.badgeText, { marginLeft: 2 }]} numberOfLines={1}>
                   {challenge.venue}
                 </Text>
@@ -229,7 +230,7 @@ const styles = StyleSheet.create({
     paddingBottom: 24,
   },
   title: {
-    color: "#fff",
+    color: color.textWhite,
     fontSize: 18,
     fontWeight: "bold",
     textAlign: "center",
@@ -253,7 +254,7 @@ const styles = StyleSheet.create({
     borderRadius: 12,
   },
   badgeText: {
-    color: "#fff",
+    color: color.textWhite,
     fontSize: 10,
     fontWeight: "600",
   },
@@ -262,7 +263,7 @@ const styles = StyleSheet.create({
     marginTop: 8,
   },
   progressText: {
-    color: "#fff",
+    color: color.textWhite,
     fontSize: 12,
     textAlign: "center",
     marginBottom: 4,
@@ -276,7 +277,7 @@ const styles = StyleSheet.create({
   },
   progressFill: {
     height: "100%",
-    backgroundColor: "#fff",
+    backgroundColor: color.textWhite,
     borderRadius: 2,
   },
   dateContainer: {

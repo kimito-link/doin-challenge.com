@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { color, palette } from "@/theme/tokens";
 import { View, StyleSheet, Platform } from "react-native";
 import { Image } from "expo-image";
 import Animated, {
@@ -167,8 +168,8 @@ export function CelebrationAnimation({
           ],
         }));
 
-        const colors = ["#EC4899", "#F97316", "#FBBF24", "#22C55E", "#3B82F6", "#8B5CF6"];
-        const color = colors[index % colors.length];
+        const confettiColors = [color.accentPrimary, color.orange500, palette.amber400, color.success, color.info, color.accentAlt];
+        const confettiColor = confettiColors[index % confettiColors.length];
 
         return (
           <Animated.View
@@ -176,7 +177,7 @@ export function CelebrationAnimation({
             style={[
               styles.confetti,
               confettiStyle,
-              { backgroundColor: color },
+              { backgroundColor: confettiColor },
             ]}
           />
         );
@@ -213,7 +214,7 @@ export function ConfettiEffect({
 
   useEffect(() => {
     if (visible) {
-      const colors = ["#EC4899", "#F97316", "#FBBF24", "#22C55E", "#3B82F6", "#8B5CF6"];
+      const colors = [color.accentPrimary, color.orange500, palette.amber400, color.success, color.info, color.accentAlt];
       const newParticles = Array.from({ length: 20 }, (_, i) => ({
         id: i,
         x: Math.random() * 100 - 50,

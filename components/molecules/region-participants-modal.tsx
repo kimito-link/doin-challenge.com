@@ -1,4 +1,5 @@
 import { View, Text, StyleSheet, Modal, TouchableOpacity, FlatList, Pressable } from "react-native";
+import { color, palette } from "@/theme/tokens";
 import { useState } from "react";
 import { useRouter } from "expo-router";
 import MaterialIcons from "@expo/vector-icons/MaterialIcons";
@@ -109,7 +110,7 @@ export function RegionParticipantsModal({
       <OptimizedAvatar
         source={item.profileImage ? { uri: item.profileImage } : undefined}
         size={44}
-        fallbackColor="#EC4899"
+        fallbackColor={color.accentPrimary}
         fallbackText={item.displayName.charAt(0)}
       />
       <View style={styles.participantInfo}>
@@ -161,7 +162,7 @@ export function RegionParticipantsModal({
               </Text>
             </View>
             <TouchableOpacity onPress={handleClose} style={styles.closeButton}>
-              <MaterialIcons name="close" size={24} color="#D1D5DB" />
+              <MaterialIcons name="close" size={24} color={color.textMuted} />
             </TouchableOpacity>
           </View>
 
@@ -210,7 +211,7 @@ const styles = StyleSheet.create({
     justifyContent: "flex-end",
   },
   modalContainer: {
-    backgroundColor: "#1A1D21",
+    backgroundColor: color.surface,
     borderTopLeftRadius: 24,
     borderTopRightRadius: 24,
     maxHeight: "85%",
@@ -222,18 +223,18 @@ const styles = StyleSheet.create({
     justifyContent: "space-between",
     padding: 20,
     borderBottomWidth: 1,
-    borderBottomColor: "#2D3139",
+    borderBottomColor: color.border,
   },
   headerContent: {
     flex: 1,
   },
   regionTitle: {
-    color: "#fff",
+    color: color.textWhite,
     fontSize: 20,
     fontWeight: "bold",
   },
   participantCount: {
-    color: "#D1D5DB",
+    color: color.textMuted,
     fontSize: 13,
     marginTop: 4,
   },
@@ -243,18 +244,18 @@ const styles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "center",
     borderRadius: 20,
-    backgroundColor: "#2D3139",
+    backgroundColor: color.border,
   },
   prefectureFilter: {
     borderBottomWidth: 1,
-    borderBottomColor: "#2D3139",
+    borderBottomColor: color.border,
   },
   prefectureList: {
     padding: 12,
     gap: 8,
   },
   prefectureItem: {
-    backgroundColor: "#2D3139",
+    backgroundColor: color.border,
     paddingHorizontal: 14,
     paddingVertical: 8,
     borderRadius: 20,
@@ -263,24 +264,24 @@ const styles = StyleSheet.create({
     alignItems: "center",
   },
   prefectureItemSelected: {
-    backgroundColor: "#EC4899",
+    backgroundColor: color.accentPrimary,
   },
   prefectureItemEmpty: {
     opacity: 0.5,
   },
   prefectureName: {
-    color: "#fff",
+    color: color.textWhite,
     fontSize: 13,
     fontWeight: "500",
   },
   prefectureNameSelected: {
-    color: "#fff",
+    color: color.textWhite,
   },
   prefectureNameEmpty: {
-    color: "#CBD5E0",
+    color: color.textSubtle,
   },
   prefectureCount: {
-    color: "#D1D5DB",
+    color: color.textMuted,
     fontSize: 11,
     marginLeft: 6,
   },
@@ -288,7 +289,7 @@ const styles = StyleSheet.create({
     color: "rgba(255, 255, 255, 0.8)",
   },
   prefectureCountEmpty: {
-    color: "#CBD5E0",
+    color: color.textSubtle,
   },
   listContent: {
     padding: 16,
@@ -296,7 +297,7 @@ const styles = StyleSheet.create({
   participantItem: {
     flexDirection: "row",
     alignItems: "center",
-    backgroundColor: "#0D1117",
+    backgroundColor: color.bg,
     borderRadius: 12,
     padding: 12,
     marginBottom: 8,
@@ -313,7 +314,7 @@ const styles = StyleSheet.create({
     alignItems: "center",
   },
   participantName: {
-    color: "#fff",
+    color: color.textWhite,
     fontSize: 15,
     fontWeight: "600",
     flex: 1,
@@ -326,29 +327,29 @@ const styles = StyleSheet.create({
     marginLeft: 8,
   },
   followersText: {
-    color: "#EC4899",
+    color: color.accentPrimary,
     fontSize: 10,
     fontWeight: "bold",
   },
   participantUsername: {
-    color: "#D1D5DB",
+    color: color.textMuted,
     fontSize: 12,
     marginTop: 2,
   },
   participantPrefecture: {
-    color: "#CBD5E0",
+    color: color.textSubtle,
     fontSize: 11,
     marginTop: 2,
   },
   contributionBadge: {
-    backgroundColor: "#2D3139",
+    backgroundColor: color.border,
     paddingHorizontal: 10,
     paddingVertical: 6,
     borderRadius: 8,
     marginLeft: 8,
   },
   contributionText: {
-    color: "#EC4899",
+    color: color.accentPrimary,
     fontSize: 12,
     fontWeight: "bold",
   },
@@ -363,7 +364,7 @@ const styles = StyleSheet.create({
     marginBottom: 16,
   },
   emptyText: {
-    color: "#D1D5DB",
+    color: color.textMuted,
     fontSize: 14,
     textAlign: "center",
   },

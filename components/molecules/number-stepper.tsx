@@ -1,4 +1,5 @@
 import { View, Text, TouchableOpacity, StyleSheet, Platform } from "react-native";
+import { color, palette } from "@/theme/tokens";
 import { useCallback } from "react";
 import MaterialIcons from "@expo/vector-icons/MaterialIcons";
 import * as Haptics from "expo-haptics";
@@ -78,32 +79,32 @@ export function NumberStepper({
       )}
       
       {/* メインのステッパー部分 */}
-      <View style={[styles.stepperContainer, { backgroundColor: colors.background, borderColor: "#2D3139" }]}>
+      <View style={[styles.stepperContainer, { backgroundColor: colors.background, borderColor: color.border }]}>
         {/* 大きく減らすボタン */}
         <TouchableOpacity
           onPress={handleLargeDecrement}
-          style={[styles.stepButton, styles.largeStepButton, { borderRightColor: "#2D3139" }]}
+          style={[styles.stepButton, styles.largeStepButton, { borderRightColor: color.border }]}
           activeOpacity={0.7}
           disabled={value <= min}
         >
           <MaterialIcons 
             name="keyboard-double-arrow-down" 
             size={24} 
-            color={value <= min ? "#CBD5E0" : "#EC4899"} 
+            color={value <= min ? color.textSubtle : color.accentPrimary} 
           />
         </TouchableOpacity>
 
         {/* 減らすボタン */}
         <TouchableOpacity
           onPress={handleDecrement}
-          style={[styles.stepButton, { borderRightColor: "#2D3139" }]}
+          style={[styles.stepButton, { borderRightColor: color.border }]}
           activeOpacity={0.7}
           disabled={value <= min}
         >
           <MaterialIcons 
             name="remove" 
             size={28} 
-            color={value <= min ? "#CBD5E0" : colors.foreground} 
+            color={value <= min ? color.textSubtle : colors.foreground} 
           />
         </TouchableOpacity>
 
@@ -118,28 +119,28 @@ export function NumberStepper({
         {/* 増やすボタン */}
         <TouchableOpacity
           onPress={handleIncrement}
-          style={[styles.stepButton, { borderLeftColor: "#2D3139" }]}
+          style={[styles.stepButton, { borderLeftColor: color.border }]}
           activeOpacity={0.7}
           disabled={value >= max}
         >
           <MaterialIcons 
             name="add" 
             size={28} 
-            color={value >= max ? "#CBD5E0" : colors.foreground} 
+            color={value >= max ? color.textSubtle : colors.foreground} 
           />
         </TouchableOpacity>
 
         {/* 大きく増やすボタン */}
         <TouchableOpacity
           onPress={handleLargeIncrement}
-          style={[styles.stepButton, styles.largeStepButton, { borderLeftColor: "#2D3139" }]}
+          style={[styles.stepButton, styles.largeStepButton, { borderLeftColor: color.border }]}
           activeOpacity={0.7}
           disabled={value >= max}
         >
           <MaterialIcons 
             name="keyboard-double-arrow-up" 
             size={24} 
-            color={value >= max ? "#CBD5E0" : "#EC4899"} 
+            color={value >= max ? color.textSubtle : color.accentPrimary} 
           />
         </TouchableOpacity>
       </View>
@@ -156,15 +157,15 @@ export function NumberStepper({
                 style={[
                   styles.presetButton,
                   { 
-                    backgroundColor: value === preset ? "#EC4899" : colors.background,
-                    borderColor: value === preset ? "#EC4899" : "#2D3139",
+                    backgroundColor: value === preset ? color.accentPrimary : colors.background,
+                    borderColor: value === preset ? color.accentPrimary : color.border,
                   }
                 ]}
                 activeOpacity={0.7}
               >
                 <Text style={[
                   styles.presetButtonText,
-                  { color: value === preset ? "#fff" : colors.foreground }
+                  { color: value === preset ? color.textWhite : colors.foreground }
                 ]}>
                   {preset.toLocaleString()}
                 </Text>

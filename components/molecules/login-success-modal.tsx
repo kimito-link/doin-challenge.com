@@ -1,4 +1,5 @@
 import { MaterialIcons } from "@expo/vector-icons";
+import { color, palette } from "@/theme/tokens";
 import { LinearGradient } from "expo-linear-gradient";
 import { Image } from "expo-image";
 import { useEffect, useState } from "react";
@@ -20,7 +21,7 @@ const SUCCESS_PATTERNS = [
     title: "ログイン成功！🎉",
     message: "おかえりなさい！\n一緒に推しの夢を叶えよう！",
     emoji: "✨",
-    gradient: ["#EC4899", "#8B5CF6"] as [string, string],
+    gradient: [color.accentPrimary, color.accentAlt] as [string, string],
   },
   {
     id: "excited",
@@ -28,7 +29,7 @@ const SUCCESS_PATTERNS = [
     title: "やったー！🎊",
     message: "ログインありがとう！\nあなたの参加を待ってたよ！",
     emoji: "🌟",
-    gradient: ["#F59E0B", "#EC4899"] as [string, string],
+    gradient: [color.warning, color.accentPrimary] as [string, string],
   },
   {
     id: "happy",
@@ -36,7 +37,7 @@ const SUCCESS_PATTERNS = [
     title: "ようこそ！😊",
     message: "動員ちゃれんじへようこそ！\nみんなで盛り上げていこう！",
     emoji: "💖",
-    gradient: ["#8B5CF6", "#06B6D4"] as [string, string],
+    gradient: [color.accentAlt, color.cyan500] as [string, string],
   },
   {
     id: "cheer",
@@ -44,7 +45,7 @@ const SUCCESS_PATTERNS = [
     title: "準備OK！💪",
     message: "さあ、推しを応援する\n準備はできた？",
     emoji: "🔥",
-    gradient: ["#EF4444", "#F59E0B"] as [string, string],
+    gradient: [color.danger, color.warning] as [string, string],
   },
 ];
 
@@ -157,11 +158,11 @@ export function LoginSuccessModal({
           {/* メインカード */}
           <View
             style={{
-              backgroundColor: "#1A1D21",
+              backgroundColor: color.surface,
               borderRadius: 24,
               overflow: "hidden",
               borderWidth: 1,
-              borderColor: "#2D3139",
+              borderColor: color.border,
             }}
           >
             {/* グラデーションヘッダー */}
@@ -221,7 +222,7 @@ export function LoginSuccessModal({
                     height: 80,
                     borderRadius: 40,
                     borderWidth: 3,
-                    borderColor: "#fff",
+                    borderColor: color.textWhite,
                   }}
                 />
                 
@@ -234,7 +235,7 @@ export function LoginSuccessModal({
                     padding: 8,
                   }}
                 >
-                  <MaterialIcons name="favorite" size={24} color="#fff" />
+                  <MaterialIcons name="favorite" size={24} color={color.textWhite} />
                 </View>
 
                 {/* ユーザーアイコン */}
@@ -246,7 +247,7 @@ export function LoginSuccessModal({
                       height: 80,
                       borderRadius: 40,
                       borderWidth: 3,
-                      borderColor: "#fff",
+                      borderColor: color.textWhite,
                     }}
                   />
                 ) : (
@@ -259,10 +260,10 @@ export function LoginSuccessModal({
                       alignItems: "center",
                       justifyContent: "center",
                       borderWidth: 3,
-                      borderColor: "#fff",
+                      borderColor: color.textWhite,
                     }}
                   >
-                    <MaterialIcons name="person" size={40} color="#fff" />
+                    <MaterialIcons name="person" size={40} color={color.textWhite} />
                   </View>
                 )}
               </View>
@@ -270,7 +271,7 @@ export function LoginSuccessModal({
               {/* タイトル */}
               <Text
                 style={{
-                  color: "#fff",
+                  color: color.textWhite,
                   fontSize: 24,
                   fontWeight: "bold",
                   textAlign: "center",
@@ -289,7 +290,7 @@ export function LoginSuccessModal({
               {userName && (
                 <Text
                   style={{
-                    color: "#EC4899",
+                    color: color.accentPrimary,
                     fontSize: 18,
                     fontWeight: "bold",
                     marginBottom: 8,
@@ -302,7 +303,7 @@ export function LoginSuccessModal({
               {/* メッセージ */}
               <Text
                 style={{
-                  color: "#E5E7EB",
+                  color: color.textPrimary,
                   fontSize: 16,
                   textAlign: "center",
                   lineHeight: 24,
@@ -321,13 +322,13 @@ export function LoginSuccessModal({
                   paddingVertical: 12,
                   paddingHorizontal: 24,
                   borderRadius: 24,
-                  backgroundColor: "#2D3139",
+                  backgroundColor: color.border,
                 }}
               >
-                <Text style={{ color: "#D1D5DB", fontSize: 14 }}>
+                <Text style={{ color: color.textMuted, fontSize: 14 }}>
                   タップして始める
                 </Text>
-                <MaterialIcons name="arrow-forward" size={18} color="#D1D5DB" style={{ marginLeft: 8 }} />
+                <MaterialIcons name="arrow-forward" size={18} color={color.textMuted} style={{ marginLeft: 8 }} />
               </TouchableOpacity>
             </View>
           </View>

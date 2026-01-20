@@ -4,6 +4,7 @@
  */
 
 import { Platform, View, Text, TouchableOpacity, Modal, Pressable, StyleSheet } from "react-native";
+import { color, palette } from "@/theme/tokens";
 import { useState, useEffect, useId } from "react";
 import MaterialIcons from "@expo/vector-icons/MaterialIcons";
 
@@ -138,7 +139,7 @@ export function DatePicker({ value, onChange, placeholder = "日付を選択", m
           style={styles.navButton}
           accessibilityLabel="前の月"
         >
-          <MaterialIcons name="chevron-left" size={24} color="#fff" />
+          <MaterialIcons name="chevron-left" size={24} color={color.textWhite} />
         </TouchableOpacity>
         <Text style={styles.monthYearText}>
           {viewYear}年 {MONTHS[viewMonth]}
@@ -148,7 +149,7 @@ export function DatePicker({ value, onChange, placeholder = "日付を選択", m
           style={styles.navButton}
           accessibilityLabel="次の月"
         >
-          <MaterialIcons name="chevron-right" size={24} color="#fff" />
+          <MaterialIcons name="chevron-right" size={24} color={color.textWhite} />
         </TouchableOpacity>
       </View>
 
@@ -233,7 +234,7 @@ export function DatePicker({ value, onChange, placeholder = "日付を選択", m
         <Text style={[styles.inputText, !value && styles.placeholderText]}>
           {displayText}
         </Text>
-        <MaterialIcons name="calendar-today" size={20} color="#D1D5DB" />
+        <MaterialIcons name="calendar-today" size={20} color={color.textMuted} />
       </TouchableOpacity>
 
       {/* カレンダーモーダル */}
@@ -258,22 +259,22 @@ export function DatePicker({ value, onChange, placeholder = "日付を選択", m
 
 const styles = StyleSheet.create({
   inputContainer: {
-    backgroundColor: "#0D1117",
+    backgroundColor: color.bg,
     borderRadius: 8,
     padding: 12,
     borderWidth: 1,
-    borderColor: "#2D3139",
+    borderColor: color.border,
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "space-between",
     minHeight: 48,
   },
   inputText: {
-    color: "#fff",
+    color: color.textWhite,
     fontSize: 14,
   },
   placeholderText: {
-    color: "#CBD5E0",
+    color: color.textSubtle,
   },
   modalOverlay: {
     flex: 1,
@@ -282,7 +283,7 @@ const styles = StyleSheet.create({
     alignItems: "center",
   },
   calendarContainer: {
-    backgroundColor: "#1A1D21",
+    backgroundColor: color.surface,
     borderRadius: 16,
     padding: 16,
     width: 320,
@@ -302,7 +303,7 @@ const styles = StyleSheet.create({
     alignItems: "center",
   },
   monthYearText: {
-    color: "#fff",
+    color: color.textWhite,
     fontSize: 18,
     fontWeight: "bold",
   },
@@ -315,15 +316,15 @@ const styles = StyleSheet.create({
     alignItems: "center",
   },
   weekdayText: {
-    color: "#D1D5DB",
+    color: color.textMuted,
     fontSize: 12,
     fontWeight: "500",
   },
   sundayText: {
-    color: "#EF4444",
+    color: color.danger,
   },
   saturdayText: {
-    color: "#3B82F6",
+    color: color.info,
   },
   calendarGrid: {
     flexDirection: "row",
@@ -341,23 +342,23 @@ const styles = StyleSheet.create({
     borderRadius: 8,
   },
   selectedDay: {
-    backgroundColor: "#EC4899",
+    backgroundColor: color.accentPrimary,
   },
   todayDay: {
-    backgroundColor: "#2D3139",
+    backgroundColor: color.border,
   },
   disabledDay: {
     opacity: 0.3,
   },
   dayText: {
-    color: "#fff",
+    color: color.textWhite,
     fontSize: 14,
   },
   selectedDayText: {
     fontWeight: "bold",
   },
   todayDayText: {
-    color: "#EC4899",
+    color: color.accentPrimary,
     fontWeight: "bold",
   },
   todayButton: {
@@ -366,18 +367,18 @@ const styles = StyleSheet.create({
     alignItems: "center",
   },
   todayButtonText: {
-    color: "#EC4899",
+    color: color.accentPrimary,
     fontWeight: "500",
   },
   closeButton: {
     marginTop: 8,
     padding: 12,
-    backgroundColor: "#2D3139",
+    backgroundColor: color.border,
     borderRadius: 8,
     alignItems: "center",
   },
   closeButtonText: {
-    color: "#fff",
+    color: color.textWhite,
     fontWeight: "500",
   },
 });

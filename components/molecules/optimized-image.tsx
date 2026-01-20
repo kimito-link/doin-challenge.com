@@ -1,4 +1,5 @@
 import { View, StyleSheet, Animated, Text } from "react-native";
+import { color, palette } from "@/theme/tokens";
 import { Image, ImageProps, ImageSource } from "expo-image";
 import { useState, useRef, useEffect, useMemo } from "react";
 import { LinearGradient } from "expo-linear-gradient";
@@ -21,7 +22,7 @@ interface OptimizedImageProps extends Omit<ImageProps, "onLoad" | "onError"> {
  * - エラー時のフォールバック
  */
 export function OptimizedImage({
-  fallbackColor = "#2D3139",
+  fallbackColor = color.border,
   showPlaceholder = true,
   placeholderType = "shimmer",
   optimizeFormat = true,
@@ -157,7 +158,7 @@ function useOptimizedSource(
 export function OptimizedAvatar({
   size = 48,
   fallbackText,
-  fallbackColor = "#3B82F6",
+  fallbackColor = color.info,
   ...props
 }: OptimizedImageProps & { size?: number; fallbackText?: string }) {
   const [showFallback, setShowFallback] = useState(!props.source);
@@ -176,7 +177,7 @@ export function OptimizedAvatar({
         }}
       >
         {fallbackText && (
-          <Text style={{ color: "#fff", fontSize: size * 0.4, fontWeight: "bold" }}>
+          <Text style={{ color: color.textWhite, fontSize: size * 0.4, fontWeight: "bold" }}>
             {fallbackText}
           </Text>
         )}

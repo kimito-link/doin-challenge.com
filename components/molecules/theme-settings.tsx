@@ -1,4 +1,5 @@
 import { View, Text, TouchableOpacity, StyleSheet } from "react-native";
+import { color, palette } from "@/theme/tokens";
 import MaterialIcons from "@expo/vector-icons/MaterialIcons";
 
 interface ThemeSettingsProps {
@@ -17,7 +18,7 @@ export function ThemeSettingsPanel({ onClose }: ThemeSettingsProps) {
         <Text style={styles.headerTitle}>テーマ設定</Text>
         {onClose && (
           <TouchableOpacity onPress={onClose} style={styles.closeButton}>
-            <MaterialIcons name="close" size={24} color="#E2E8F0" />
+            <MaterialIcons name="close" size={24} color={color.slate200} />
           </TouchableOpacity>
         )}
       </View>
@@ -28,7 +29,7 @@ export function ThemeSettingsPanel({ onClose }: ThemeSettingsProps) {
           <MaterialIcons
             name="dark-mode"
             size={32}
-            color="#DD6500"
+            color={color.hostAccentLegacy}
           />
         </View>
         <Text style={styles.currentThemeText}>
@@ -38,7 +39,7 @@ export function ThemeSettingsPanel({ onClose }: ThemeSettingsProps) {
 
       {/* 説明 */}
       <View style={styles.infoBox}>
-        <MaterialIcons name="info-outline" size={20} color="#DD6500" />
+        <MaterialIcons name="info-outline" size={20} color={color.hostAccentLegacy} />
         <Text style={styles.infoText}>
           このアプリはダークモード専用です。目に優しく、バッテリー消費も抑えられます。
         </Text>
@@ -61,7 +62,7 @@ export function ThemeSettingsPanel({ onClose }: ThemeSettingsProps) {
 export function ThemeToggleButton() {
   return (
     <View style={styles.toggleButton}>
-      <MaterialIcons name="dark-mode" size={24} color="#DD6500" />
+      <MaterialIcons name="dark-mode" size={24} color={color.hostAccentLegacy} />
     </View>
   );
 }
@@ -69,7 +70,7 @@ export function ThemeToggleButton() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: "#0D1117",
+    backgroundColor: color.bg,
     padding: 16,
   },
   header: {
@@ -80,7 +81,7 @@ const styles = StyleSheet.create({
     paddingTop: 8,
   },
   headerTitle: {
-    color: "#E2E8F0",
+    color: color.slate200,
     fontSize: 20,
     fontWeight: "bold",
   },
@@ -90,7 +91,7 @@ const styles = StyleSheet.create({
   currentTheme: {
     alignItems: "center",
     paddingVertical: 32,
-    backgroundColor: "#161B22",
+    backgroundColor: color.surfaceDark,
     borderRadius: 16,
     marginBottom: 24,
   },
@@ -98,20 +99,20 @@ const styles = StyleSheet.create({
     width: 64,
     height: 64,
     borderRadius: 32,
-    backgroundColor: "rgba(221, 101, 0, 0.2)",
+    backgroundColor: `${color.hostAccentLegacy}33`,
     alignItems: "center",
     justifyContent: "center",
     marginBottom: 12,
   },
   currentThemeText: {
-    color: "#E2E8F0",
+    color: color.slate200,
     fontSize: 18,
     fontWeight: "600",
   },
   infoBox: {
     flexDirection: "row",
     alignItems: "flex-start",
-    backgroundColor: "rgba(221, 101, 0, 0.1)",
+    backgroundColor: `${color.hostAccentLegacy}1A`,
     borderRadius: 12,
     padding: 16,
     marginBottom: 24,
@@ -120,7 +121,7 @@ const styles = StyleSheet.create({
   infoText: {
     flex: 1,
     fontSize: 14,
-    color: "#E2E8F0",
+    color: color.slate200,
     lineHeight: 20,
   },
   footer: {
@@ -128,7 +129,7 @@ const styles = StyleSheet.create({
     paddingVertical: 16,
   },
   footerText: {
-    color: "#A0AEC0",
+    color: color.slate400,
     fontSize: 12,
     textAlign: "center",
   },

@@ -1,4 +1,5 @@
 import { View, Text, Modal, TouchableOpacity, StyleSheet, Dimensions } from "react-native";
+import { color, palette } from "@/theme/tokens";
 import { Image } from "expo-image";
 import MaterialIcons from "@expo/vector-icons/MaterialIcons";
 import { useEffect, useRef } from "react";
@@ -108,7 +109,7 @@ export function FollowSuccessModal({
                   {
                     left: `${(i * 8) + 4}%`,
                     top: `${Math.random() * 30}%`,
-                    backgroundColor: ["#EC4899", "#F97316", "#FBBF24", "#22C55E", "#3B82F6"][i % 5],
+                    backgroundColor: [color.accentPrimary, color.orange500, palette.amber400, color.success, color.info][i % 5],
                     transform: [{ rotate: `${Math.random() * 360}deg` }],
                   },
                 ]}
@@ -118,7 +119,7 @@ export function FollowSuccessModal({
 
           {/* スターアイコン */}
           <Animated.View style={[styles.starContainer, starStyle]}>
-            <MaterialIcons name="star" size={48} color="#FBBF24" />
+            <MaterialIcons name="star" size={48} color={palette.amber400} />
           </Animated.View>
 
           {/* キャラクター */}
@@ -136,7 +137,7 @@ export function FollowSuccessModal({
             <Text style={styles.subtitle}>プレミアム機能が解放されました</Text>
             
             <View style={styles.followInfo}>
-              <MaterialIcons name="check-circle" size={20} color="#22C55E" />
+              <MaterialIcons name="check-circle" size={20} color={color.success} />
               <Text style={styles.followText}>
                 @{targetUsername}をフォロー中
               </Text>
@@ -145,15 +146,15 @@ export function FollowSuccessModal({
             <View style={styles.featureList}>
               <Text style={styles.featureTitle}>使える機能:</Text>
               <View style={styles.featureItem}>
-                <MaterialIcons name="add-circle" size={16} color="#EC4899" />
+                <MaterialIcons name="add-circle" size={16} color={color.accentPrimary} />
                 <Text style={styles.featureText}>チャレンジ作成</Text>
               </View>
               <View style={styles.featureItem}>
-                <MaterialIcons name="analytics" size={16} color="#EC4899" />
+                <MaterialIcons name="analytics" size={16} color={color.accentPrimary} />
                 <Text style={styles.featureText}>統計ダッシュボード</Text>
               </View>
               <View style={styles.featureItem}>
-                <MaterialIcons name="people" size={16} color="#EC4899" />
+                <MaterialIcons name="people" size={16} color={color.accentPrimary} />
                 <Text style={styles.featureText}>コラボ機能</Text>
               </View>
             </View>
@@ -182,13 +183,13 @@ const styles = StyleSheet.create({
     padding: 20,
   },
   container: {
-    backgroundColor: "#1A1D21",
+    backgroundColor: color.surface,
     borderRadius: 24,
     padding: 24,
     width: Math.min(SCREEN_WIDTH - 40, 360),
     alignItems: "center",
     borderWidth: 2,
-    borderColor: "#EC4899",
+    borderColor: color.accentPrimary,
     position: "relative",
     overflow: "hidden",
   },
@@ -225,12 +226,12 @@ const styles = StyleSheet.create({
   title: {
     fontSize: 24,
     fontWeight: "bold",
-    color: "#fff",
+    color: color.textWhite,
     marginBottom: 8,
   },
   subtitle: {
     fontSize: 16,
-    color: "#EC4899",
+    color: color.accentPrimary,
     marginBottom: 16,
     fontWeight: "600",
   },
@@ -244,7 +245,7 @@ const styles = StyleSheet.create({
     marginBottom: 16,
   },
   followText: {
-    color: "#22C55E",
+    color: color.success,
     fontSize: 14,
     marginLeft: 6,
     fontWeight: "500",
@@ -256,7 +257,7 @@ const styles = StyleSheet.create({
     padding: 12,
   },
   featureTitle: {
-    color: "#D1D5DB",
+    color: color.textMuted,
     fontSize: 12,
     marginBottom: 8,
   },
@@ -266,19 +267,19 @@ const styles = StyleSheet.create({
     marginBottom: 6,
   },
   featureText: {
-    color: "#fff",
+    color: color.textWhite,
     fontSize: 14,
     marginLeft: 8,
   },
   closeButton: {
-    backgroundColor: "#EC4899",
+    backgroundColor: color.accentPrimary,
     paddingHorizontal: 32,
     paddingVertical: 14,
     borderRadius: 12,
     width: "100%",
   },
   closeButtonText: {
-    color: "#fff",
+    color: color.textWhite,
     fontSize: 16,
     fontWeight: "bold",
     textAlign: "center",

@@ -1,4 +1,5 @@
 import { View, ViewProps, StyleSheet } from "react-native";
+import { color, palette } from "@/theme/tokens";
 import { useContentMaxWidth, useResponsive } from "@/hooks/use-responsive";
 
 interface ResponsiveContainerProps extends ViewProps {
@@ -203,9 +204,9 @@ const styles = StyleSheet.create({
     flexDirection: "row",
   },
   sidebar: {
-    backgroundColor: "#1A1D21",
+    backgroundColor: color.surface,
     borderRightWidth: 1,
-    borderRightColor: "#2D3139",
+    borderRightColor: color.border,
   },
   mainContent: {
     flex: 1,

@@ -1,4 +1,5 @@
 import { useState, useCallback, useRef, useEffect } from "react";
+import { color, palette } from "@/theme/tokens";
 import { View, Text, Pressable, Platform, StyleSheet, StyleProp, ViewStyle } from "react-native";
 import { Image } from "expo-image";
 import Animated, {
@@ -149,7 +150,7 @@ const styles = StyleSheet.create({
   container: { position: "relative", alignItems: "center", justifyContent: "center" },
   bubble: {
     position: "absolute",
-    backgroundColor: "#EC4899",
+    backgroundColor: color.accentPrimary,
     borderRadius: 16,
     paddingHorizontal: 12,
     paddingVertical: 8,
@@ -159,5 +160,5 @@ const styles = StyleSheet.create({
   },
   bubbleTop: { bottom: "100%", marginBottom: 8 },
   bubbleBottom: { top: "100%", marginTop: 8 },
-  bubbleText: { color: "#fff", fontSize: 13, fontWeight: "600", textAlign: "center" },
+  bubbleText: { color: color.textWhite, fontSize: 13, fontWeight: "600", textAlign: "center" },
 });

@@ -1,4 +1,5 @@
 import { Pressable, Platform, type PressableProps, type ViewStyle } from "react-native";
+import { color, palette } from "@/theme/tokens";
 import { useState, useCallback } from "react";
 import Animated, { useAnimatedStyle, withTiming, Easing } from "react-native-reanimated";
 import * as Haptics from "expo-haptics";
@@ -66,11 +67,11 @@ export function PressableCard({
 
   // Web用のホバースタイル（より目立つ効果）
   const webHoverStyle: ViewStyle = Platform.OS === "web" && isHovered ? {
-    shadowColor: "#DD6500",
+    shadowColor: color.hostAccentLegacy,
     shadowOffset: { width: 0, height: 8 },
     shadowOpacity: 0.4,
     shadowRadius: 16,
-    borderColor: "#DD6500",
+    borderColor: color.hostAccentLegacy,
     borderWidth: 2,
   } : {};
 

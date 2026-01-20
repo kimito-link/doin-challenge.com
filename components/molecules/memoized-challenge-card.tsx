@@ -1,4 +1,5 @@
 import { memo, useCallback } from "react";
+import { color, palette } from "@/theme/tokens";
 import { View, Text, TouchableOpacity, StyleSheet } from "react-native";
 import { Image } from "expo-image";
 import { LinearGradient } from "expo-linear-gradient";
@@ -32,8 +33,8 @@ interface MemoizedChallengeCardProps {
 
 // イベントタイプのバッジ
 const eventTypeBadge: Record<string, { label: string; color: string }> = {
-  solo: { label: "ソロ", color: "#EC4899" },
-  group: { label: "グループ", color: "#8B5CF6" },
+  solo: { label: "ソロ", color: color.accentPrimary },
+  group: { label: "グループ", color: color.accentAlt },
 };
 
 /**
@@ -65,7 +66,7 @@ export const MemoizedChallengeCard = memo<MemoizedChallengeCardProps>(
       >
         {/* グラデーション背景 */}
         <LinearGradient
-          colors={["#1A1D21", "#0D1117"]}
+          colors={[color.surface, color.bg]}
           style={styles.gradient}
         >
           {/* ヘッダー */}
@@ -136,14 +137,14 @@ export const MemoizedChallengeCard = memo<MemoizedChallengeCardProps>(
           {/* フッター */}
           <View style={styles.footer}>
             <View style={styles.footerItem}>
-              <MaterialIcons name="event" size={14} color="#D1D5DB" />
+              <MaterialIcons name="event" size={14} color={color.textMuted} />
               <Text style={styles.footerText}>
                 {eventDate.toLocaleDateString("ja-JP", { month: "short", day: "numeric" })}
               </Text>
             </View>
             {challenge.venue && (
               <View style={styles.footerItem}>
-                <MaterialIcons name="place" size={14} color="#D1D5DB" />
+                <MaterialIcons name="place" size={14} color={color.textMuted} />
                 <Text style={styles.footerText} numberOfLines={1}>
                   {challenge.venue}
                 </Text>
@@ -171,7 +172,7 @@ const styles = StyleSheet.create({
     overflow: "hidden",
     marginBottom: 12,
     borderWidth: 1,
-    borderColor: "#2D3139",
+    borderColor: color.border,
   },
   gradient: {
     padding: 16,
@@ -193,12 +194,12 @@ const styles = StyleSheet.create({
     borderRadius: 20,
   },
   avatarFallback: {
-    backgroundColor: "#DD6500",
+    backgroundColor: color.hostAccentLegacy,
     alignItems: "center",
     justifyContent: "center",
   },
   avatarText: {
-    color: "#fff",
+    color: color.textWhite,
     fontSize: 16,
     fontWeight: "bold",
   },
@@ -207,12 +208,12 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   hostName: {
-    color: "#fff",
+    color: color.textWhite,
     fontSize: 14,
     fontWeight: "600",
   },
   hostUsername: {
-    color: "#D1D5DB",
+    color: color.textMuted,
     fontSize: 12,
   },
   badge: {
@@ -221,12 +222,12 @@ const styles = StyleSheet.create({
     borderRadius: 12,
   },
   badgeText: {
-    color: "#fff",
+    color: color.textWhite,
     fontSize: 10,
     fontWeight: "600",
   },
   title: {
-    color: "#fff",
+    color: color.textWhite,
     fontSize: 16,
     fontWeight: "bold",
     marginBottom: 12,
@@ -237,14 +238,14 @@ const styles = StyleSheet.create({
   },
   progressBar: {
     height: 8,
-    backgroundColor: "#2D3139",
+    backgroundColor: color.border,
     borderRadius: 4,
     overflow: "hidden",
     marginBottom: 6,
   },
   progressFill: {
     height: "100%",
-    backgroundColor: "#DD6500",
+    backgroundColor: color.hostAccentLegacy,
     borderRadius: 4,
   },
   progressInfo: {
@@ -252,11 +253,11 @@ const styles = StyleSheet.create({
     justifyContent: "space-between",
   },
   progressText: {
-    color: "#D1D5DB",
+    color: color.textMuted,
     fontSize: 12,
   },
   progressPercent: {
-    color: "#DD6500",
+    color: color.hostAccentLegacy,
     fontSize: 12,
     fontWeight: "600",
   },
@@ -270,7 +271,7 @@ const styles = StyleSheet.create({
     gap: 4,
   },
   footerText: {
-    color: "#D1D5DB",
+    color: color.textMuted,
     fontSize: 12,
   },
 });

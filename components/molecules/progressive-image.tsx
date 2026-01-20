@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { color, palette } from "@/theme/tokens";
 import { View, StyleSheet, ViewStyle } from "react-native";
 import { Image, ImageSource } from "expo-image";
 import Animated, {
@@ -91,7 +92,7 @@ interface ProgressiveAvatarProps {
 export function ProgressiveAvatar({
   source,
   size = 40,
-  fallbackColor = "#EC4899",
+  fallbackColor = color.accentPrimary,
   fallbackText,
 }: ProgressiveAvatarProps) {
   const [isLoaded, setIsLoaded] = useState(false);
@@ -183,7 +184,7 @@ const styles = StyleSheet.create({
     alignItems: "center",
   },
   fallbackText: {
-    color: "#FFFFFF",
+    color: color.textWhite,
     fontWeight: "bold",
   },
 });

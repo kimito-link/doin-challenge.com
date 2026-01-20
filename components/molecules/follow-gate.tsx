@@ -1,4 +1,5 @@
 import { View, Text, TouchableOpacity, Linking, Modal } from "react-native";
+import { color, palette } from "@/theme/tokens";
 import { useState } from "react";
 import { Image } from "expo-image";
 import MaterialIcons from "@expo/vector-icons/MaterialIcons";
@@ -74,10 +75,10 @@ export function FollowGate({
             padding: 24,
           }}
         >
-          <MaterialIcons name="lock" size={48} color="#EC4899" />
+          <MaterialIcons name="lock" size={48} color={color.accentPrimary} />
           <Text
             style={{
-              color: "#fff",
+              color: color.textWhite,
               fontSize: 18,
               fontWeight: "bold",
               marginTop: 16,
@@ -88,7 +89,7 @@ export function FollowGate({
           </Text>
           <Text
             style={{
-              color: "#D1D5DB",
+              color: color.textMuted,
               fontSize: 14,
               marginTop: 8,
               textAlign: "center",
@@ -116,7 +117,7 @@ export function FollowGate({
         >
           <View
             style={{
-              backgroundColor: "#1A1D21",
+              backgroundColor: color.surface,
               borderRadius: 24,
               padding: 24,
               width: "100%",
@@ -125,7 +126,7 @@ export function FollowGate({
             }}
           >
             <LinearGradient
-              colors={["#EC4899", "#8B5CF6"]}
+              colors={[color.accentPrimary, color.accentAlt]}
               start={{ x: 0, y: 0 }}
               end={{ x: 1, y: 0 }}
               style={{
@@ -147,7 +148,7 @@ export function FollowGate({
 
             <Text
               style={{
-                color: "#fff",
+                color: color.textWhite,
                 fontSize: 20,
                 fontWeight: "bold",
                 textAlign: "center",
@@ -158,7 +159,7 @@ export function FollowGate({
 
             <Text
               style={{
-                color: "#D1D5DB",
+                color: color.textMuted,
                 fontSize: 14,
                 textAlign: "center",
                 marginTop: 12,
@@ -166,7 +167,7 @@ export function FollowGate({
               }}
             >
               この機能を使うには{"\n"}
-              <Text style={{ color: "#EC4899", fontWeight: "bold" }}>
+              <Text style={{ color: color.accentPrimary, fontWeight: "bold" }}>
                 @{targetUsername}
               </Text>
               {"\n"}をフォローしてください
@@ -175,7 +176,7 @@ export function FollowGate({
             <TouchableOpacity
               onPress={handleFollowPress}
               style={{
-                backgroundColor: "#1DA1F2",
+                backgroundColor: color.twitter,
                 borderRadius: 12,
                 paddingVertical: 14,
                 paddingHorizontal: 32,
@@ -184,10 +185,10 @@ export function FollowGate({
                 alignItems: "center",
               }}
             >
-              <MaterialIcons name="person-add" size={20} color="#fff" />
+              <MaterialIcons name="person-add" size={20} color={color.textWhite} />
               <Text
                 style={{
-                  color: "#fff",
+                  color: color.textWhite,
                   fontSize: 16,
                   fontWeight: "bold",
                   marginLeft: 8,
@@ -203,7 +204,7 @@ export function FollowGate({
                 onPress={onRelogin}
                 disabled={refreshing}
                 style={{
-                  backgroundColor: "#374151",
+                  backgroundColor: color.borderAlt,
                   borderRadius: 12,
                   paddingVertical: 12,
                   paddingHorizontal: 24,
@@ -213,10 +214,10 @@ export function FollowGate({
                   opacity: refreshing ? 0.6 : 1,
                 }}
               >
-                <MaterialIcons name="refresh" size={18} color="#fff" />
+                <MaterialIcons name="refresh" size={18} color={color.textWhite} />
                 <Text
                   style={{
-                    color: "#fff",
+                    color: color.textWhite,
                     fontSize: 14,
                     marginLeft: 8,
                   }}
@@ -234,7 +235,7 @@ export function FollowGate({
                 paddingHorizontal: 24,
               }}
             >
-              <Text style={{ color: "#D1D5DB", fontSize: 14 }}>
+              <Text style={{ color: color.textMuted, fontSize: 14 }}>
                 フォロー済みの方はタップして更新
               </Text>
             </TouchableOpacity>
@@ -248,7 +249,7 @@ export function FollowGate({
                 padding: 8,
               }}
             >
-              <MaterialIcons name="close" size={24} color="#CBD5E0" />
+              <MaterialIcons name="close" size={24} color={color.textSubtle} />
             </TouchableOpacity>
           </View>
         </View>
@@ -292,13 +293,13 @@ export function FollowPromptBanner({
   return (
     <View
       style={{
-        backgroundColor: "#1A1D21",
+        backgroundColor: color.surface,
         borderRadius: 12,
         padding: 16,
         marginHorizontal: 16,
         marginVertical: 8,
         borderWidth: 1,
-        borderColor: "#EC4899",
+        borderColor: color.accentPrimary,
       }}
     >
       <TouchableOpacity
@@ -311,22 +312,22 @@ export function FollowPromptBanner({
               width: 40,
               height: 40,
               borderRadius: 20,
-              backgroundColor: "#EC4899",
+              backgroundColor: color.accentPrimary,
               alignItems: "center",
               justifyContent: "center",
             }}
           >
-            <MaterialIcons name="star" size={24} color="#fff" />
+            <MaterialIcons name="star" size={24} color={color.textWhite} />
           </View>
           <View style={{ flex: 1, marginLeft: 12 }}>
-            <Text style={{ color: "#fff", fontSize: 14, fontWeight: "bold" }}>
+            <Text style={{ color: color.textWhite, fontSize: 14, fontWeight: "bold" }}>
               フォローで特典をゲット！
             </Text>
-            <Text style={{ color: "#D1D5DB", fontSize: 12, marginTop: 2 }}>
+            <Text style={{ color: color.textMuted, fontSize: 12, marginTop: 2 }}>
               @{targetUsername}をフォローすると特別な特典がもらえるかも？
             </Text>
           </View>
-          <MaterialIcons name="chevron-right" size={24} color="#EC4899" />
+          <MaterialIcons name="chevron-right" size={24} color={color.accentPrimary} />
         </View>
       </TouchableOpacity>
       
@@ -340,7 +341,7 @@ export function FollowPromptBanner({
             marginTop: 12,
             paddingVertical: 10,
             paddingHorizontal: 16,
-            backgroundColor: "#374151",
+            backgroundColor: color.borderAlt,
             borderRadius: 8,
             flexDirection: "row",
             alignItems: "center",
@@ -348,8 +349,8 @@ export function FollowPromptBanner({
             opacity: refreshing ? 0.6 : 1,
           }}
         >
-          <MaterialIcons name="refresh" size={16} color="#fff" />
-          <Text style={{ color: "#E5E7EB", fontSize: 13, marginLeft: 6 }}>
+          <MaterialIcons name="refresh" size={16} color={color.textWhite} />
+          <Text style={{ color: color.textPrimary, fontSize: 13, marginLeft: 6 }}>
             {refreshing ? "確認中..." : "フォロー済みの方はタップして再確認"}
           </Text>
         </TouchableOpacity>
@@ -368,16 +369,16 @@ export function FollowStatusBadge({ isFollowing }: { isFollowing: boolean }) {
         style={{
           flexDirection: "row",
           alignItems: "center",
-          backgroundColor: "#22C55E20",
+          backgroundColor: `${color.success}20`,
           paddingHorizontal: 8,
           paddingVertical: 4,
           borderRadius: 8,
         }}
       >
-        <MaterialIcons name="verified" size={14} color="#22C55E" />
+        <MaterialIcons name="verified" size={14} color={color.success} />
         <Text
           style={{
-            color: "#22C55E",
+            color: color.success,
             fontSize: 12,
             fontWeight: "bold",
             marginLeft: 4,
@@ -394,16 +395,16 @@ export function FollowStatusBadge({ isFollowing }: { isFollowing: boolean }) {
       style={{
         flexDirection: "row",
         alignItems: "center",
-        backgroundColor: "#EC489920",
+        backgroundColor: `${color.accentPrimary}20`,
         paddingHorizontal: 8,
         paddingVertical: 4,
         borderRadius: 8,
       }}
     >
-      <MaterialIcons name="star-outline" size={14} color="#EC4899" />
+      <MaterialIcons name="star-outline" size={14} color={color.accentPrimary} />
       <Text
         style={{
-          color: "#EC4899",
+          color: color.accentPrimary,
           fontSize: 12,
           marginLeft: 4,
         }}

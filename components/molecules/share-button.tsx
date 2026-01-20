@@ -1,4 +1,5 @@
 import { TouchableOpacity, Text, View, StyleSheet, ActivityIndicator, ViewStyle, TextStyle } from "react-native";
+import { color, palette } from "@/theme/tokens";
 import MaterialIcons from "@expo/vector-icons/MaterialIcons";
 import { useState } from "react";
 import * as Haptics from "expo-haptics";
@@ -69,11 +70,11 @@ export function ShareButton({
         activeOpacity={0.7}
       >
         {loading ? (
-          <ActivityIndicator size="small" color="#fff" />
+          <ActivityIndicator size="small" color={color.textWhite} />
         ) : success ? (
-          <MaterialIcons name="check" size={iconSize} color="#22C55E" />
+          <MaterialIcons name="check" size={iconSize} color={color.success} />
         ) : (
-          <MaterialIcons name="share" size={iconSize} color="#fff" />
+          <MaterialIcons name="share" size={iconSize} color={color.textWhite} />
         )}
       </TouchableOpacity>
     );
@@ -87,13 +88,13 @@ export function ShareButton({
       activeOpacity={0.7}
     >
       {loading ? (
-        <ActivityIndicator size="small" color={variant === "secondary" ? "#EC4899" : "#fff"} />
+        <ActivityIndicator size="small" color={variant === "secondary" ? color.accentPrimary : color.textWhite} />
       ) : (
         <View style={styles.content}>
           {success ? (
-            <MaterialIcons name="check" size={iconSize} color={variant === "secondary" ? "#22C55E" : "#fff"} />
+            <MaterialIcons name="check" size={iconSize} color={variant === "secondary" ? color.success : color.textWhite} />
           ) : (
-            <MaterialIcons name="share" size={iconSize} color={variant === "secondary" ? "#EC4899" : "#fff"} />
+            <MaterialIcons name="share" size={iconSize} color={variant === "secondary" ? color.accentPrimary : color.textWhite} />
           )}
           <Text style={textStyle}>
             {success ? "シェアしました！" : label}
@@ -151,7 +152,7 @@ export function TwitterShareButton({
       activeOpacity={0.7}
     >
       {loading ? (
-        <ActivityIndicator size="small" color="#fff" />
+        <ActivityIndicator size="small" color={color.textWhite} />
       ) : (
         <View style={styles.content}>
           <Text style={styles.xLogo}>𝕏</Text>
@@ -181,12 +182,12 @@ const styles = StyleSheet.create({
     paddingVertical: 16,
   },
   buttonPrimary: {
-    backgroundColor: "#EC4899",
+    backgroundColor: color.accentPrimary,
   },
   buttonSecondary: {
     backgroundColor: "transparent",
     borderWidth: 1,
-    borderColor: "#EC4899",
+    borderColor: color.accentPrimary,
   },
   buttonIcon: {
     backgroundColor: "rgba(236, 72, 153, 0.2)",
@@ -200,7 +201,7 @@ const styles = StyleSheet.create({
     opacity: 0.5,
   },
   buttonSuccess: {
-    backgroundColor: "#22C55E",
+    backgroundColor: color.success,
   },
   content: {
     flexDirection: "row",
@@ -220,10 +221,10 @@ const styles = StyleSheet.create({
     fontSize: 16,
   },
   textPrimary: {
-    color: "#fff",
+    color: color.textWhite,
   },
   textSecondary: {
-    color: "#EC4899",
+    color: color.accentPrimary,
   },
   twitterButton: {
     backgroundColor: "#000",
@@ -232,10 +233,10 @@ const styles = StyleSheet.create({
     justifyContent: "center",
   },
   twitterText: {
-    color: "#fff",
+    color: color.textWhite,
   },
   xLogo: {
-    color: "#fff",
+    color: color.textWhite,
     fontSize: 18,
     fontWeight: "bold",
   },

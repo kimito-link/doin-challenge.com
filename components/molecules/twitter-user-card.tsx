@@ -2,6 +2,7 @@ import { View, Text, Pressable, StyleSheet } from "react-native";
 import { Image } from "expo-image";
 import { useColors } from "@/hooks/use-colors";
 import { cn } from "@/lib/utils";
+import { color } from "@/theme/tokens";
 
 export interface TwitterUserData {
   /** Twitter ID (例: "1867512383713030149") */
@@ -124,7 +125,7 @@ export function TwitterUserCard({
         <View className="flex-row items-center" style={{ gap: 8 }}>
           {user.username && (
             <Text
-              style={{ fontSize: config.usernameSize, color: '#EC4899' }}
+              style={{ fontSize: config.usernameSize, color: color.accentPrimary }}
             >
               @{user.username}
             </Text>

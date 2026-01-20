@@ -1,4 +1,5 @@
 import { View, Text, TouchableOpacity, Modal, StyleSheet, Animated, Platform } from "react-native";
+import { color, palette } from "@/theme/tokens";
 import { useRef, useEffect } from "react";
 import MaterialIcons from "@expo/vector-icons/MaterialIcons";
 
@@ -29,7 +30,7 @@ export function ConfirmModal({
   onConfirm,
   onCancel,
   icon,
-  iconColor = "#EC4899",
+  iconColor = color.accentPrimary,
 }: ConfirmModalProps) {
   const scaleAnim = useRef(new Animated.Value(0.9)).current;
   const opacityAnim = useRef(new Animated.Value(0)).current;
@@ -135,7 +136,7 @@ const styles = StyleSheet.create({
     padding: 24,
   },
   container: {
-    backgroundColor: "#1A1D21",
+    backgroundColor: color.surface,
     borderRadius: 20,
     padding: 24,
     width: "100%",
@@ -146,14 +147,14 @@ const styles = StyleSheet.create({
     marginBottom: 16,
   },
   title: {
-    color: "#fff",
+    color: color.textWhite,
     fontSize: 18,
     fontWeight: "bold",
     textAlign: "center",
     marginBottom: 8,
   },
   message: {
-    color: "#D1D5DB",
+    color: color.textMuted,
     fontSize: 14,
     textAlign: "center",
     marginBottom: 24,
@@ -171,25 +172,25 @@ const styles = StyleSheet.create({
     alignItems: "center",
   },
   cancelButton: {
-    backgroundColor: "#2D3139",
+    backgroundColor: color.border,
   },
   cancelButtonText: {
-    color: "#fff",
+    color: color.textWhite,
     fontSize: 15,
     fontWeight: "600",
   },
   confirmButton: {
-    backgroundColor: "#3B82F6",
+    backgroundColor: color.info,
   },
   confirmButtonText: {
-    color: "#fff",
+    color: color.textWhite,
     fontSize: 15,
     fontWeight: "600",
   },
   destructiveButton: {
-    backgroundColor: "#EF4444",
+    backgroundColor: color.danger,
   },
   destructiveButtonText: {
-    color: "#fff",
+    color: color.textWhite,
   },
 });

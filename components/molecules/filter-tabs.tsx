@@ -1,4 +1,5 @@
 import { View, Text, TouchableOpacity, StyleSheet, ScrollView, Platform } from "react-native";
+import { color, palette } from "@/theme/tokens";
 import { useCallback } from "react";
 import * as Haptics from "expo-haptics";
 import { useColors } from "@/hooks/use-colors";
@@ -64,8 +65,8 @@ export function FilterTabs({
               style={[
                 styles.shabettaTab,
                 {
-                  backgroundColor: isActive ? "#1F2937" : "transparent",
-                  borderColor: isActive ? "#1F2937" : "#E5E7EB",
+                  backgroundColor: isActive ? color.surfaceAlt : "transparent",
+                  borderColor: isActive ? color.surfaceAlt : color.textPrimary,
                   paddingHorizontal: sizeStyles.paddingHorizontal,
                   paddingVertical: sizeStyles.paddingVertical,
                 },
@@ -75,7 +76,7 @@ export function FilterTabs({
                 style={[
                   styles.shabettaTabText,
                   {
-                    color: isActive ? "#fff" : "#D1D5DB",
+                    color: isActive ? color.textWhite : color.textMuted,
                     fontSize: sizeStyles.fontSize,
                     fontWeight: isActive ? "600" : "400",
                   },
@@ -109,7 +110,7 @@ export function FilterTabs({
               style={[
                 styles.pillTab,
                 {
-                  backgroundColor: isActive ? "#EC4899" : "#2D3139",
+                  backgroundColor: isActive ? color.accentPrimary : color.border,
                   paddingHorizontal: sizeStyles.paddingHorizontal,
                   paddingVertical: sizeStyles.paddingVertical,
                 },
@@ -119,7 +120,7 @@ export function FilterTabs({
                 style={[
                   styles.pillTabText,
                   {
-                    color: isActive ? "#fff" : "#E5E7EB",
+                    color: isActive ? color.textWhite : color.textPrimary,
                     fontSize: sizeStyles.fontSize,
                     fontWeight: isActive ? "600" : "400",
                   },
@@ -147,7 +148,7 @@ export function FilterTabs({
             style={[
               styles.underlineTab,
               {
-                borderBottomColor: isActive ? "#EC4899" : "transparent",
+                borderBottomColor: isActive ? color.accentPrimary : "transparent",
                 paddingHorizontal: sizeStyles.paddingHorizontal,
                 paddingVertical: sizeStyles.paddingVertical,
               },
@@ -157,7 +158,7 @@ export function FilterTabs({
               style={[
                 styles.underlineTabText,
                 {
-                  color: isActive ? "#EC4899" : "#D1D5DB",
+                  color: isActive ? color.accentPrimary : color.textMuted,
                   fontSize: sizeStyles.fontSize,
                   fontWeight: isActive ? "600" : "400",
                 },
@@ -235,7 +236,7 @@ const styles = StyleSheet.create({
   underlineContainer: {
     flexDirection: "row",
     borderBottomWidth: 1,
-    borderBottomColor: "#2D3139",
+    borderBottomColor: color.border,
   },
   underlineTab: {
     borderBottomWidth: 2,

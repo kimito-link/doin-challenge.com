@@ -1,4 +1,5 @@
 import { useEffect, useCallback } from "react";
+import { color, palette } from "@/theme/tokens";
 import { View, Text, StyleSheet, Platform } from "react-native";
 import { Image } from "expo-image";
 import Animated, {
@@ -112,7 +113,7 @@ const styles = StyleSheet.create({
   },
   bubble: {
     flex: 1,
-    backgroundColor: "#EC4899",
+    backgroundColor: color.accentPrimary,
     borderRadius: 12,
     paddingHorizontal: 12,
     paddingVertical: 8,
@@ -130,10 +131,10 @@ const styles = StyleSheet.create({
     borderRightWidth: 6,
     borderTopColor: "transparent",
     borderBottomColor: "transparent",
-    borderRightColor: "#EC4899",
+    borderRightColor: color.accentPrimary,
   },
   bubbleText: {
-    color: "#fff",
+    color: color.textWhite,
     fontSize: 13,
     fontWeight: "600",
   },

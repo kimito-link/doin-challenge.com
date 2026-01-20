@@ -1,4 +1,5 @@
 import { useState, useEffect, useCallback, useRef } from "react";
+import { color, palette } from "@/theme/tokens";
 import { View, Text, StyleSheet, Platform } from "react-native";
 import { Image } from "expo-image";
 import Animated, {
@@ -277,7 +278,7 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   bubble: {
-    backgroundColor: "#EC4899",
+    backgroundColor: color.accentPrimary,
     borderRadius: 12,
     padding: 12,
     position: "relative",
@@ -294,21 +295,21 @@ const styles = StyleSheet.create({
     borderRightWidth: 8,
     borderTopColor: "transparent",
     borderBottomColor: "transparent",
-    borderRightColor: "#EC4899",
+    borderRightColor: color.accentPrimary,
   },
   bubbleText: {
-    color: "#fff",
+    color: color.textWhite,
     fontSize: 14,
     fontWeight: "600",
   },
   characterName: {
-    color: "#EC4899",
+    color: color.accentPrimary,
     fontSize: 11,
     marginTop: 4,
     marginLeft: 4,
   },
   moreErrors: {
-    color: "#EC4899",
+    color: color.accentPrimary,
     fontSize: 12,
     marginTop: 8,
     textAlign: "center",
@@ -348,7 +349,7 @@ const styles = StyleSheet.create({
     opacity: 0.5,
   },
   groupBubble: {
-    backgroundColor: "#EC4899",
+    backgroundColor: color.accentPrimary,
     borderRadius: 12,
     paddingHorizontal: 14,
     paddingVertical: 10,
@@ -356,7 +357,7 @@ const styles = StyleSheet.create({
     position: "relative",
   },
   groupBubbleText: {
-    color: "#fff",
+    color: color.textWhite,
     fontSize: 14,
     fontWeight: "600",
     textAlign: "center",
@@ -373,7 +374,7 @@ const styles = StyleSheet.create({
     borderTopWidth: 8,
     borderLeftColor: "transparent",
     borderRightColor: "transparent",
-    borderTopColor: "#EC4899",
+    borderTopColor: color.accentPrimary,
   },
   errorList: {
     backgroundColor: "rgba(0, 0, 0, 0.2)",
@@ -386,12 +387,12 @@ const styles = StyleSheet.create({
     marginVertical: 2,
   },
   errorDot: {
-    color: "#EC4899",
+    color: color.accentPrimary,
     fontSize: 16,
     marginRight: 8,
   },
   errorText: {
-    color: "#D1D5DB",
+    color: color.textMuted,
     fontSize: 13,
   },
 });

@@ -1,4 +1,5 @@
 import { View, Text, TouchableOpacity, Modal, StyleSheet, Animated, Platform } from "react-native";
+import { color, palette } from "@/theme/tokens";
 import { useRef, useEffect } from "react";
 import { Image } from "expo-image";
 import MaterialIcons from "@expo/vector-icons/MaterialIcons";
@@ -139,7 +140,7 @@ export function LogoutConfirmModal({
                 style={[styles.button, styles.cancelButton]}
                 activeOpacity={0.7}
               >
-                <MaterialIcons name="favorite" size={18} color="#EC4899" style={{ marginRight: 6 }} />
+                <MaterialIcons name="favorite" size={18} color={color.accentPrimary} style={{ marginRight: 6 }} />
                 <Text style={styles.cancelButtonText}>まだいる！</Text>
               </TouchableOpacity>
 
@@ -148,7 +149,7 @@ export function LogoutConfirmModal({
                 style={[styles.button, styles.confirmButton]}
                 activeOpacity={0.7}
               >
-                <MaterialIcons name="logout" size={18} color="#fff" style={{ marginRight: 6 }} />
+                <MaterialIcons name="logout" size={18} color={color.textWhite} style={{ marginRight: 6 }} />
                 <Text style={styles.confirmButtonText}>またね！</Text>
               </TouchableOpacity>
             </View>
@@ -168,7 +169,7 @@ const styles = StyleSheet.create({
     padding: 24,
   },
   container: {
-    backgroundColor: "#1A1D21",
+    backgroundColor: color.surface,
     borderRadius: 24,
     padding: 24,
     width: "100%",
@@ -189,14 +190,14 @@ const styles = StyleSheet.create({
     height: 100,
   },
   speechBubble: {
-    backgroundColor: "#2D3139",
+    backgroundColor: color.border,
     borderRadius: 16,
     paddingHorizontal: 16,
     paddingVertical: 10,
     position: "relative",
   },
   speechText: {
-    color: "#fff",
+    color: color.textWhite,
     fontSize: 14,
     fontWeight: "500",
   },
@@ -212,17 +213,17 @@ const styles = StyleSheet.create({
     borderBottomWidth: 8,
     borderLeftColor: "transparent",
     borderRightColor: "transparent",
-    borderBottomColor: "#2D3139",
+    borderBottomColor: color.border,
   },
   title: {
-    color: "#fff",
+    color: color.textWhite,
     fontSize: 20,
     fontWeight: "bold",
     textAlign: "center",
     marginBottom: 8,
   },
   message: {
-    color: "#D1D5DB",
+    color: color.textMuted,
     fontSize: 14,
     textAlign: "center",
     marginBottom: 24,
@@ -247,15 +248,15 @@ const styles = StyleSheet.create({
     borderColor: "rgba(236, 72, 153, 0.3)",
   },
   cancelButtonText: {
-    color: "#EC4899",
+    color: color.accentPrimary,
     fontSize: 15,
     fontWeight: "600",
   },
   confirmButton: {
-    backgroundColor: "#CBD5E0",
+    backgroundColor: color.textSubtle,
   },
   confirmButtonText: {
-    color: "#fff",
+    color: color.textWhite,
     fontSize: 15,
     fontWeight: "600",
   },

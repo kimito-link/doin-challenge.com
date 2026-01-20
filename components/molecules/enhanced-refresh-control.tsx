@@ -1,4 +1,5 @@
 import { RefreshControl, RefreshControlProps, Platform } from "react-native";
+import { color, palette } from "@/theme/tokens";
 import { haptics } from "@/lib/haptics";
 import { useState, useCallback } from "react";
 
@@ -46,9 +47,9 @@ export function EnhancedRefreshControl({
     <RefreshControl
       refreshing={refreshing}
       onRefresh={handleRefresh}
-      tintColor="#DD6500"
-      colors={["#DD6500"]} // Android用
-      progressBackgroundColor="#1A1D21" // Android用
+      tintColor={color.hostAccentLegacy}
+      colors={[color.hostAccentLegacy]} // Android用
+      progressBackgroundColor={color.surface} // Android用
       {...props}
     />
   );
@@ -60,9 +61,9 @@ export function EnhancedRefreshControl({
 export function SimpleRefreshControl({
   refreshing,
   onRefresh,
-  tintColor = "#DD6500",
-  colors = ["#DD6500"],
-  progressBackgroundColor = "#1A1D21",
+  tintColor = color.hostAccentLegacy,
+  colors = [color.hostAccentLegacy],
+  progressBackgroundColor = color.surface,
   ...props
 }: RefreshControlProps) {
   const handleRefresh = useCallback(() => {
