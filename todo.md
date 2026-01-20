@@ -3174,8 +3174,7 @@ features/create/
 - [ ] features/events/components/ParticipationForm.tsx (938行) - 参加フォーム
 - [ ] features/events/hooks/useEventDetailScreen.ts (936行) - イベント詳細フック
 - [ ] components/organisms/tutorial-overlay.tsx (842行) - チュートリアルオーバーレイ
-- [ ] lib/api/client.ts (803行) - APIクライアント
-- [ ] drizzle/schema.ts (784行) - DBスキーマ
+- [ ] lib/api/client.ts (803行) - APIクライアント- [x] drizzle/schema.tsの分割（784行→8行+サブモジュール）784行) - DBスキーマ
 - [ ] components/organisms/ticket-transfer-section.tsx (772行) - チケット譲渡セクション
 - [ ] app/settings.tsx (668行) - 設定画面
 - [ ] lib/experience-context.tsx (667行) - 経験値コンテキスト
