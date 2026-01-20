@@ -1,49 +1,39 @@
 import { FlatList, Text, View, TouchableOpacity, RefreshControl, ScrollView, TextInput, Platform } from "react-native";
-import { Image } from "expo-image";
 import { useRouter } from "expo-router";
 import { useState, useMemo, useEffect } from "react";
 import { ScreenContainer } from "@/components/organisms/screen-container";
-import { ResponsiveContainer } from "@/components/molecules/responsive-container";
 import { OnboardingSteps } from "@/components/organisms/onboarding-steps";
 import { trpc } from "@/lib/trpc";
 import { useColors } from "@/hooks/use-colors";
 import { useResponsive, useGridColumns } from "@/hooks/use-responsive";
-import { LinearGradient } from "expo-linear-gradient";
-import MaterialIcons from "@expo/vector-icons/MaterialIcons";
-import { Countdown } from "@/components/atoms/countdown";
-import { PressableCard } from "@/components/molecules/pressable-card";
 import { AppHeader } from "@/components/organisms/app-header";
 import { CachedDataIndicator } from "@/components/organisms/offline-banner";
 import { useNetworkStatus } from "@/hooks/use-offline-cache";
 import { setCache, getCache, CACHE_KEYS } from "@/lib/offline-cache";
 import { setCachedData, getCachedData, PREFETCH_KEYS } from "@/lib/data-prefetch";
 import { useTabPrefetch } from "@/hooks/use-prefetch";
-import { ChallengeCardSkeleton, Skeleton } from "@/components/atoms/skeleton-loader";
-import { OptimizedAvatar } from "@/components/molecules/optimized-image";
-import { LazyAvatar } from "@/components/molecules/lazy-image";
 import { prefetchChallengeImages } from "@/lib/image-prefetch";
 import { SimpleRefreshControl } from "@/components/molecules/enhanced-refresh-control";
-import { AnimatedCard } from "@/components/molecules/animated-pressable";
 import { ColorfulChallengeCard } from "@/components/molecules/colorful-challenge-card";
 import { FloatingActionButton } from "@/components/atoms/floating-action-button";
 import { EncouragementModal, useEncouragementModal } from "@/components/molecules/encouragement-modal";
-import { FilterTabs } from "@/components/molecules/filter-tabs";
 import { SyncStatusIndicator } from "@/components/atoms/sync-status-indicator";
-import { BlinkingLink } from "@/components/atoms/blinking-character";
-import { HostEmptyState } from "@/components/organisms/host-empty-state";
 import { TutorialHighlightTarget } from "@/components/atoms/tutorial-highlight-target";
-import { useTutorial } from "@/lib/tutorial-context";
 import { useFavorites } from "@/hooks/use-favorites";
 import { useExperience } from "@/lib/experience-context";
-import { goalTypeConfig } from "@/constants/goal-types";
-import { regionGroups } from "@/constants/prefectures";
 import { 
   FeaturedChallenge, 
   ChallengeCard, 
   EngagementSection, 
   CatchCopySection, 
   FeatureListSection, 
-  ExperienceBanner 
+  ExperienceBanner,
+  FilterButton,
+  SectionHeader,
+  SearchBar,
+  CategoryFilter,
+  HomeEmptyState,
+  RecommendedHostsSection
 } from "@/features/home";
 import type { Challenge, FilterType } from "@/types/challenge";
 import { eventTypeBadge } from "@/types/challenge";
@@ -72,144 +62,7 @@ const logoImage = require("@/assets/images/logo/logo-color.jpg");
 
 // 盛り上がりセクション
 
-// おすすめ主催者セクション（遅延読み込み）
-function RecommendedHostsSection() {
-  const colors = useColors();
-  const router = useRouter();
-  const [shouldLoad, setShouldLoad] = useState(false);
-  
-  // 500ms後に読み込み開始（初期表示を優先）
-  useEffect(() => {
-    const timer = setTimeout(() => setShouldLoad(true), 500);
-    return () => clearTimeout(timer);
-  }, []);
-  
-  const { data: hosts, isLoading } = trpc.profiles.recommendedHosts.useQuery(
-    { limit: 5 },
-    { enabled: shouldLoad } // 遅延読み込み
-  );
-
-  if (!shouldLoad || isLoading || !hosts || hosts.length === 0) return null;
-
-  return (
-    <View style={{ marginHorizontal: 16, marginVertical: 12 }}>
-      <View style={{ 
-        backgroundColor: "#1A1D21", 
-        borderRadius: 16, 
-        padding: 16,
-        borderWidth: 1,
-        borderColor: "#2D3139",
-      }}>
-        <Text style={{ color: "#8B5CF6", fontSize: 16, fontWeight: "bold", marginBottom: 12 }}>
-          ✨ おすすめの主催者
-        </Text>
-        <ScrollView horizontal showsHorizontalScrollIndicator={false}>
-          <View style={{ flexDirection: "row", gap: 16 }}>
-            {hosts.map((host) => (
-              <TouchableOpacity
-                key={host.userId}
-                onPress={() => router.push({ pathname: "/profile/[userId]", params: { userId: host.userId.toString() } })}
-                style={{ alignItems: "center", width: 80 }}
-              >
-                <OptimizedAvatar
-                  source={host.profileImage ? { uri: host.profileImage } : undefined}
-                  size={56}
-                  fallbackColor="#8B5CF6"
-                  fallbackText={(host.name || "?").charAt(0)}
-                />
-                <Text style={{ color: colors.foreground, fontSize: 12, marginTop: 6, textAlign: "center" }} numberOfLines={1}>
-                  {host.name || "主催者"}
-                </Text>
-                {host.username && (
-                  <Text style={{ color: "#D1D5DB", fontSize: 10 }} numberOfLines={1}>
-                    @{host.username}
-                  </Text>
-                )}
-                <Text style={{ color: "#8B5CF6", fontSize: 9, marginTop: 2 }}>
-                  {host.challengeCount}チャレンジ
-                </Text>
-              </TouchableOpacity>
-            ))}
-          </View>
-        </ScrollView>
-      </View>
-    </View>
-  );
-}
-
-// りんくちゃんの語りかけセクション（LP風メッセージ）
-
-
-function FilterButton({ 
-  label, 
-  active, 
-  onPress 
-}: { 
-  label: string; 
-  active: boolean; 
-  onPress: () => void;
-}) {
-  const colors = useColors();
-  return (
-    <TouchableOpacity
-      onPress={onPress}
-      style={{
-        // UXガイドライン: 最小44pxのタップエリア
-        minHeight: 44,
-        paddingHorizontal: 20,
-        paddingVertical: 12,
-        borderRadius: 22,
-        backgroundColor: active ? "#DD6500" : "#2D3139",
-        marginRight: 8,
-        justifyContent: "center",
-        alignItems: "center",
-      }}
-    >
-      <Text style={{ color: colors.foreground, fontSize: 14, fontWeight: active ? "bold" : "normal" }}>
-        {label}
-      </Text>
-    </TouchableOpacity>
-  );
-}
-
-// 空の状態表示コンポーネント（改善版）
-function EmptyState({ onGenerateSamples: _onGenerateSamples }: { onGenerateSamples: () => void }) {
-  return (
-    <ScrollView style={{ flex: 1, backgroundColor: "#0D1117" }}>
-      {/* デモ体験バナー（ログインなしでお試し） */}
-      <ExperienceBanner />
-      
-      {/* LP風キャッチコピー（チャレンジがない時も表示） */}
-      <CatchCopySection />
-      
-      {/* 主催者向け空状態画面 */}
-      <HostEmptyState />
-    </ScrollView>
-  );
-}
-
-// セクションヘッダー
-function SectionHeader({ title, onSeeAll }: { title: string; onSeeAll?: () => void }) {
-  const colors = useColors();
-  return (
-    <View style={{ 
-      flexDirection: "row", 
-      justifyContent: "space-between", 
-      alignItems: "center",
-      marginHorizontal: 16,
-      marginTop: 24,
-      marginBottom: 8,
-    }}>
-      <Text style={{ color: colors.foreground, fontSize: 18, fontWeight: "bold" }}>{title}</Text>
-      {onSeeAll && (
-        <TouchableOpacity onPress={onSeeAll} style={{ flexDirection: "row", alignItems: "center" }}>
-          <Text style={{ color: "#DD6500", fontSize: 14 }}>すべて見る</Text>
-          <MaterialIcons name="chevron-right" size={20} color="#DD6500" />
-        </TouchableOpacity>
-      )}
-    </View>
-  );
-}
+// コンポーネントはfeatures/homeからインポート済み
 
 export default function HomeScreen() {
   const colors = useColors();
@@ -399,48 +252,14 @@ export default function HomeScreen() {
       <SectionHeader title="📋 チャレンジ一覧" />
 
       {/* 検索バー */}
-      <View style={{ marginHorizontal: 16, marginTop: 8 }}>
-        <View style={{
-          flexDirection: "row",
-          alignItems: "center",
-          backgroundColor: "#1A1D21",
-          borderRadius: 12,
-          paddingHorizontal: 12,
-          paddingVertical: 10,
-          borderWidth: 1,
-          borderColor: searchQuery ? "#DD6500" : "#2D3139",
-        }}>
-          <MaterialIcons name="search" size={20} color="#D1D5DB" />
-          <TextInput
-            value={searchQuery}
-            onChangeText={(text) => {
-              setSearchQuery(text);
-              setIsSearching(text.length > 0);
-            }}
-            placeholder="チャレンジを検索..."
-            placeholderTextColor="#D1D5DB"
-            style={{
-              flex: 1,
-              marginLeft: 8,
-              color: colors.foreground,
-              fontSize: 14,
-              paddingVertical: 8,
-            }}
-            returnKeyType="search"
-            autoCorrect={false}
-            autoCapitalize="none"
-            autoComplete="off"
-            spellCheck={false}
-            textContentType="none"
-            keyboardType="default"
-          />
-          {searchQuery.length > 0 && (
-            <TouchableOpacity onPress={() => { setSearchQuery(""); setIsSearching(false); }}>
-              <MaterialIcons name="close" size={20} color="#D1D5DB" />
-            </TouchableOpacity>
-          )}
-        </View>
-      </View>
+      <SearchBar
+        value={searchQuery}
+        onChangeText={(text) => {
+          setSearchQuery(text);
+          setIsSearching(text.length > 0);
+        }}
+        onClear={() => { setSearchQuery(""); setIsSearching(false); }}
+      />
       
       {/* タイプフィルター */}
       <View style={{ flexDirection: "row", marginTop: 16, marginHorizontal: 16, flexWrap: "wrap", gap: 8 }}>
@@ -451,52 +270,11 @@ export default function HomeScreen() {
       </View>
 
       {/* カテゴリフィルター */}
-      {categoriesData && categoriesData.length > 0 && (
-        <ScrollView 
-          horizontal 
-          showsHorizontalScrollIndicator={false}
-          nestedScrollEnabled={true}
-          style={{ marginTop: 8, marginHorizontal: 16 }}
-          contentContainerStyle={{ paddingRight: 16 }}
-        >
-          <TouchableOpacity
-            onPress={() => setCategoryFilter(null)}
-            activeOpacity={0.7}
-            style={{
-              paddingHorizontal: 12,
-              paddingVertical: 8,
-              borderRadius: 16,
-              backgroundColor: categoryFilter === null ? "#8B5CF6" : "#1E293B",
-              marginRight: 8,
-              flexDirection: "row",
-              alignItems: "center",
-              minHeight: 36,
-            }}
-          >
-            <Text style={{ color: colors.foreground, fontSize: 12 }}>全カテゴリ</Text>
-          </TouchableOpacity>
-          {categoriesData.map((cat) => (
-            <TouchableOpacity
-              key={cat.id}
-              onPress={() => setCategoryFilter(cat.id)}
-              activeOpacity={0.7}
-              style={{
-                paddingHorizontal: 12,
-                paddingVertical: 8,
-                borderRadius: 16,
-                backgroundColor: categoryFilter === cat.id ? "#8B5CF6" : "#1E293B",
-                marginRight: 8,
-                flexDirection: "row",
-                alignItems: "center",
-                minHeight: 36,
-              }}
-            >
-              <Text style={{ marginRight: 4 }}>{cat.icon}</Text>
-              <Text style={{ color: colors.foreground, fontSize: 12 }}>{cat.name}</Text>
-            </TouchableOpacity>
-          ))}
-        </ScrollView>
-      )}
+      <CategoryFilter
+        categories={categoriesData}
+        selectedCategory={categoryFilter}
+        onSelectCategory={setCategoryFilter}
+      />
 
       {/* 3ステップ説明（初回訪問時のみ表示） */}
       {!isLoading && displayChallenges.length === 0 && (
@@ -647,7 +425,7 @@ export default function HomeScreen() {
           updateCellsBatchingPeriod={50}
         />
       ) : (
-        <EmptyState onGenerateSamples={refetch} />
+        <HomeEmptyState onGenerateSamples={refetch} />
       )}
 
       {/* v5.60: FABボタン（チャレンジ作成へ） */}

@@ -2645,3 +2645,11 @@ features/create/
 - [x] UIコンポーネントの分離（BadgeSection, ParticipationSection, HostedChallengeSection）
 - [x] mypage.tsxの薄型化（365行 → 238行、約35%削減）
 - [x] テスト実行と動作確認
+
+
+### index.tsx（ホーム画面）分割（GPT推奨構造）
+- [x] index.tsxの現状分析
+- [x] features/home/ディレクトリ構造の作成
+- [x] UIコンポーネントの分離（RecommendedHostsSection, FilterButton, SectionHeader, SearchBar, CategoryFilter, HomeEmptyState）
+- [x] index.tsxの薄型化（671行 → 449行、約33%削減）
+- [x] テスト実行と動作確認
