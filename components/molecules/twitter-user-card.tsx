@@ -131,7 +131,7 @@ export function TwitterUserCard({
           )}
           {showFollowers && user.followersCount !== undefined && (
             <Text
-              style={{ fontSize: config.followersSize, color: '#E5E7EB' }}
+              style={{ fontSize: config.followersSize, color: '#FFFFFF' }}
             >
               {user.followersCount.toLocaleString()} フォロワー
             </Text>
