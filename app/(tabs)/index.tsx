@@ -37,8 +37,11 @@ import {
   CategoryFilter,
   HomeEmptyState,
   RecommendedHostsSection,
-  ResponsiveFilterRow
+  ResponsiveFilterRow,
+  RankingTop3,
+  RankingRow
 } from "@/features/home";
+import { sortByMomentum } from "@/features/home/utils/momentum";
 import type { Challenge, FilterType } from "@/types/challenge";
 import { eventTypeBadge } from "@/types/challenge";
 
@@ -287,6 +290,15 @@ export default function HomeScreen() {
     return displayChallenges.filter(c => c.id !== featuredChallenge.id);
   }, [displayChallenges, featuredChallenge]);
 
+  // v6.15: 勢いスコアでソートしたランキング
+  const rankedChallenges = useMemo(() => {
+    return sortByMomentum(otherChallenges);
+  }, [otherChallenges]);
+
+  // Top3 + 残り
+  const top3 = rankedChallenges.slice(0, 3);
+  const rest = rankedChallenges.slice(3);
+
   // ヘッダーコンポーネント（FlatListのListHeaderComponent用）
   // v5.33: 初期表示を高速化 - 検索バーとフィルターを最初に表示
   const ListHeader = () => (
@@ -320,6 +332,14 @@ export default function HomeScreen() {
         selectedCategory={categoryFilter}
         onSelectCategory={setCategoryFilter}
       />
+
+      {/* v6.15: ランキングTop3（今熱いチャレンジ） */}
+      {!isSearching && top3.length > 0 && (
+        <RankingTop3
+          top3={top3}
+          onPress={(id) => handleChallengePress(id)}
+        />
+      )}
 
       {/* 3ステップ説明（初回訪問時のみ表示） */}
       {!isLoading && displayChallenges.length === 0 && (
@@ -386,44 +406,42 @@ export default function HomeScreen() {
       {/* v5.34: スケルトンを完全に削除し、常にFlatListを表示 */}
       {displayChallenges.length > 0 || isDataLoading ? (
         <FlatList
-          key={`grid-${numColumns}`}
-          data={isSearching ? displayChallenges : otherChallenges}
+          key={isSearching ? `grid-${numColumns}` : "ranking-list"}
+          data={isSearching ? displayChallenges : rest}
           keyExtractor={(item) => item.id.toString()}
-          numColumns={numColumns}
+          numColumns={isSearching ? numColumns : 1}
           ListHeaderComponent={ListHeader}
           renderItem={({ item, index }) => {
-            // v5.60: カラフルカードと通常カードの切り替え
-            // v5.61: お気に入り機能を追加
-            // v4.6: useGridLayoutからのitemWidthを渡す
-            // v6.07: 運営者向け編集・削除機能を追加
-            const cardProps = {
-              challenge: item as Challenge,
-              onPress: () => handleChallengePress(item.id),
-              numColumns,
-              width: grid.itemWidth,
-              colorIndex: index,
-              isFavorite: isFavorite(item.id),
-              onToggleFavorite: toggleFavorite,
-              currentUserTwitterId: user?.twitterId,
-              onEdit: handleChallengeEdit,
-              onDelete: handleChallengeDelete,
-            };
-            // 最初のアイテムのみチュートリアルハイライト対象
-            if (index === 0) {
-              return (
-                <TutorialHighlightTarget tutorialStep={1} userType="fan" style={{ flex: 1 }}>
-                  {useColorfulCards ? (
-                    <ColorfulChallengeCard {...cardProps} />
-                  ) : (
-                    <ChallengeCard {...cardProps} />
-                  )}
-                </TutorialHighlightTarget>
+            // v6.15: 検索時は従来のカード表示、それ以外はランキング行表示
+            if (isSearching) {
+              // 検索時は従来のカード表示
+              const cardProps = {
+                challenge: item as Challenge,
+                onPress: () => handleChallengePress(item.id),
+                numColumns,
+                width: grid.itemWidth,
+                colorIndex: index,
+                isFavorite: isFavorite(item.id),
+                onToggleFavorite: toggleFavorite,
+                currentUserTwitterId: user?.twitterId,
+                onEdit: handleChallengeEdit,
+                onDelete: handleChallengeDelete,
+              };
+              return useColorfulCards ? (
+                <ColorfulChallengeCard {...cardProps} />
+              ) : (
+                <ChallengeCard {...cardProps} />
               );
             }
-            return useColorfulCards ? (
-              <ColorfulChallengeCard {...cardProps} />
-            ) : (
-              <ChallengeCard {...cardProps} />
+            // v6.15: ランキング行表示（4位以降）
+            return (
+              <View style={{ marginHorizontal: 16, marginTop: 10 }}>
+                <RankingRow
+                  rank={index + 4}
+                  challenge={item as Challenge}
+                  onPress={() => handleChallengePress(item.id)}
+                />
+              </View>
             );
           }}
           refreshControl={

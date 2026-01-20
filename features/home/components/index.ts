@@ -21,3 +21,7 @@ export { ResponsiveFilterRow } from "./ResponsiveFilterRow";
 
 // セクションコンポーネント
 export { RecommendedHostsSection } from "./sections";
+
+// ランキングコンポーネント
+export { RankingTop3 } from "./RankingTop3";
+export { RankingRow } from "./RankingRow";
