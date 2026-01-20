@@ -13,10 +13,10 @@ export type ConfirmationModalProps = {
   
   // ユーザー情報
   user: {
-    name?: string;
-    username?: string;
-    profileImage?: string;
-    followersCount?: number;
+    name?: string | null;
+    username?: string | null;
+    profileImage?: string | null;
+    followersCount?: number | null;
   } | null;
   
   // フォームデータ
@@ -77,7 +77,7 @@ export function ConfirmationModal({
                 {user?.username && (
                   <Text style={styles.userHandle}>@{user.username}</Text>
                 )}
-                {user?.followersCount !== undefined && user.followersCount > 0 && (
+                {user?.followersCount != null && user.followersCount > 0 && (
                   <Text style={styles.userFollowers}>
                     {user.followersCount.toLocaleString()} フォロワー
                   </Text>

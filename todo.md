@@ -3142,3 +3142,23 @@ features/create/
 - [ ] モーダル・ダイアログコンポーネントを抽出
 - [ ] メインファイルをリファクタリング
 - [ ] テスト実行と動作確認
+
+
+## コードリファクタリング（v6.12）
+
+### event/[id].tsxファイル分割
+- [x] 現在のファイル構造を分析し、分割計画を立てる
+- [x] EventHeader - ヘッダーコンポーネント
+- [x] ProgressSection - 進捗表示セクション
+- [x] EventInfoSection - イベント情報セクション
+- [x] ParticipantsSection - 参加者一覧セクション
+- [x] ActionButtonsSection - アクションボタンセクション
+- [x] EventTabs - タブナビゲーション
+- [x] MessagesSection - 応援メッセージセクション（男女比表示、フィルター機能含む）
+- [x] ParticipationForm - 参加表明フォーム（友人追加、Twitter検索機能含む）
+- [x] ConfirmationModal - 参加確認モーダル
+- [x] DeleteParticipationModal - 参加取消確認モーダル
+- [x] CountdownSection - カウントダウン表示セクション
+- [x] ShareButtons - シェアボタンセクション
+- [x] event/[id].tsxを新しいコンポーネントで統合・リファクタリング（2540行 → 1855行、685行削減）
+- [x] テスト実行と動作確認（428テストパス）
