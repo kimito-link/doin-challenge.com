@@ -47,11 +47,11 @@ const ACHIEVEMENTS = [
 
 // レアリティの色（ダークモード専用・高視認性）
 const RARITY_COLORS: Record<string, { bg: string; border: string; text: string; badgeBg: string; badgeText: string }> = {
-  common: { bg: color.border, border: "#A0AEC0", text: "#E2E8F0", badgeBg: "#718096", badgeText: color.textWhite },
-  uncommon: { bg: "#1A4731", border: "#48BB78", text: "#9AE6B4", badgeBg: "#38A169", badgeText: color.textWhite },
-  rare: { bg: "#1A365D", border: "#63B3ED", text: "#90CDF4", badgeBg: "#4299E1", badgeText: color.textWhite },
-  epic: { bg: "#44337A", border: "#B794F4", text: "#D6BCFA", badgeBg: "#9F7AEA", badgeText: color.textWhite },
-  legendary: { bg: "#744210", border: "#F6E05E", text: "#FAF089", badgeBg: "#ECC94B", badgeText: "#1A202C" },
+  common: { bg: color.border, border: color.rarityCommonBorder, text: color.rarityCommonText, badgeBg: color.rarityCommonBadgeBg, badgeText: color.textWhite },
+  uncommon: { bg: color.rarityUncommonBg, border: color.rarityUncommonBorder, text: color.rarityUncommonText, badgeBg: color.rarityUncommonBadgeBg, badgeText: color.textWhite },
+  rare: { bg: color.rarityRareBg, border: color.rarityRareBorder, text: color.rarityRareText, badgeBg: color.rarityRareBadgeBg, badgeText: color.textWhite },
+  epic: { bg: color.rarityEpicBg, border: color.rarityEpicBorder, text: color.rarityEpicText, badgeBg: color.rarityEpicBadgeBg, badgeText: color.textWhite },
+  legendary: { bg: color.rarityLegendaryBg, border: color.rarityLegendaryBorder, text: color.rarityLegendaryText, badgeBg: color.rarityLegendaryBadgeBg, badgeText: color.rarityLegendaryBadgeText },
 };
 
 // レアリティの日本語名
@@ -132,7 +132,7 @@ function AchievementCard({
               </Text>
             </View>
           </View>
-          <Text style={{ color: "#E2E8F0", fontSize: 13 }}>
+          <Text style={{ color: color.rarityCommonText, fontSize: 13 }}>
             {achievement.description}
           </Text>
           {/* 進捗バー（未解除の場合） */}

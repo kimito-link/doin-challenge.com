@@ -281,7 +281,7 @@ export function GrowthTrajectoryChart({ data, targetCount, title = "動員まで
           <Defs>
             <LinearGradient id="lineGradient" x1="0" y1="0" x2="1" y2="0">
               <Stop offset="0" stopColor={color.coral} stopOpacity="1" />
-              <Stop offset="1" stopColor="#FF8E53" stopOpacity="1" />
+              <Stop offset="1" stopColor={color.orange400} stopOpacity="1" />
             </LinearGradient>
             <LinearGradient id="areaGradient" x1="0" y1="0" x2="0" y2="1">
               <Stop offset="0" stopColor={color.coral} stopOpacity="0.3" />
@@ -365,7 +365,7 @@ export function GrowthTrajectoryChart({ data, targetCount, title = "動員まで
               <SvgText
                 x={m.x}
                 y={m.y - 15}
-                fill="#333333"
+                fill={color.mapText}
                 fontSize={config.fontSize - 1}
                 fontWeight="bold"
                 textAnchor="middle"

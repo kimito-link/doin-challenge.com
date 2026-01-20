@@ -235,7 +235,7 @@ function PreviewContent({ type }: { type: ExperienceSlide["previewType"] }) {
             </View>
           </View>
           <View style={[styles.followButton, { backgroundColor: color.rankGold }]}>
-            <Text style={[styles.followButtonText, { color: "#1a1a2e" }]}>フォローする</Text>
+            <Text style={[styles.followButtonText, { color: color.overlayDark }]}>フォローする</Text>
           </View>
         </View>
       );
@@ -594,7 +594,7 @@ export function ExperienceOverlay() {
           { 
             paddingTop: insets.top + 16,
             paddingBottom: insets.bottom + 16,
-            backgroundColor: currentSlide.backgroundColor || "#1a1a2e",
+            backgroundColor: currentSlide.backgroundColor || color.overlayDark,
           }
         ]}
       >
@@ -857,7 +857,7 @@ const styles = StyleSheet.create({
   messageText: {
     fontSize: 18,
     fontWeight: "bold",
-    color: "#1a1a2e",
+    color: color.overlayDark,
     textAlign: "center",
   },
   subMessageText: {
@@ -1004,7 +1004,7 @@ const styles = StyleSheet.create({
   notificationTitle: {
     fontSize: 14,
     fontWeight: "bold",
-    color: "#1a1a2e",
+    color: color.overlayDark,
   },
   notificationBody: {
     fontSize: 12,
@@ -1145,7 +1145,7 @@ const styles = StyleSheet.create({
     fontWeight: "bold",
   },
   inviteButtonTextActive: {
-    color: "#1a1a2e",
+    color: color.overlayDark,
   },
   inviteCount: {
     fontSize: 32,

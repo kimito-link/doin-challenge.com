@@ -83,7 +83,7 @@ interface JapanHeatmapProps {
 // 参加者がいない場合はピンク系の薄い色
 function getHeatColor(count: number, maxCount: number): string {
   if (count === 0) {
-    return "#E8D4D4"; // 参加者なし（薄いピンク/ベージュ）
+    return color.heatmapNone; // 参加者なし（薄いピンク/ベージュ）
   }
   
   // 最大値に対する割合で色を決定
@@ -93,25 +93,25 @@ function getHeatColor(count: number, maxCount: number): string {
   // 黄色(少) → オレンジ → 赤 → 濃い赤/茶色(多)
   if (ratio <= 0.15) {
     // 薄い黄色
-    return "#FFF9C4";
+    return color.heatmapLevel1;
   } else if (ratio <= 0.25) {
     // 黄色
-    return "#FFEB3B";
+    return color.heatmapLevel2;
   } else if (ratio <= 0.35) {
     // 薄いオレンジ
-    return "#FFCC80";
+    return color.heatmapLevel3;
   } else if (ratio <= 0.50) {
     // オレンジ
-    return "#FF9800";
+    return color.heatmapLevel4;
   } else if (ratio <= 0.65) {
     // 濃いオレンジ
-    return "#F57C00";
+    return color.heatmapLevel5;
   } else if (ratio <= 0.80) {
     // 赤
-    return "#E53935";
+    return color.heatmapLevel6;
   } else {
     // 濃い赤/茶色
-    return "#B71C1C";
+    return color.heatmapLevel7;
   }
 }
 
@@ -229,14 +229,14 @@ export function JapanHeatmap({ prefectureCounts, onPrefecturePress, onRegionPres
         <Svg width={mapWidth} height={mapHeight} viewBox={`0 0 ${viewBoxWidth} ${viewBoxHeight}`}>
           {/* 海の背景 */}
           <G>
-            <Path d={`M0,0 H${viewBoxWidth} V${viewBoxHeight} H0 Z`} fill="#A8D5E5" />
+            <Path d={`M0,0 H${viewBoxWidth} V${viewBoxHeight} H0 Z`} fill={color.mapWater} />
           </G>
           
           <G transform={`translate(${offsetX}, ${offsetY}) scale(${scale})`}>
             {/* 都道府県のパス */}
             {prefecturesData.map((pref) => {
               const count = prefectureCounts47[pref.code] || 0;
-              const color = getHeatColor(count, maxPrefectureCount);
+              const heatColor = getHeatColor(count, maxPrefectureCount);
               const prefName = normalizePrefectureName(pref.name);
               
               const handlePress = () => {
@@ -257,8 +257,8 @@ export function JapanHeatmap({ prefectureCounts, onPrefecturePress, onRegionPres
                     <Path
                       key={`${pref.code}-${idx}`}
                       d={pathData}
-                      fill={color}
-                      stroke="#666666"
+                      fill={heatColor}
+                      stroke={color.mapStroke}
                       strokeWidth={0.8}
                       strokeLinejoin="round"
                       onPress={handlePress}
@@ -291,7 +291,7 @@ export function JapanHeatmap({ prefectureCounts, onPrefecturePress, onRegionPres
                   <SvgText
                     x={labelPos.x}
                     y={labelPos.y}
-                    fill="#333333"
+                    fill={color.mapText}
                     fontSize={count > 0 ? 11 : 9}
                     fontWeight={count > 0 ? "bold" : "normal"}
                     textAnchor="middle"
@@ -303,7 +303,7 @@ export function JapanHeatmap({ prefectureCounts, onPrefecturePress, onRegionPres
                     <SvgText
                       x={labelPos.x}
                       y={labelPos.y + 12}
-                      fill="#333333"
+                      fill={color.mapText}
                       fontSize={10}
                       textAnchor="middle"
                     >
@@ -320,20 +320,20 @@ export function JapanHeatmap({ prefectureCounts, onPrefecturePress, onRegionPres
       {/* 温度スケール（凡例） - 参考画像に合わせた色 */}
       <View style={styles.legend}>
         <View style={styles.legendItem}>
-          <View style={[styles.legendColor, { backgroundColor: "#FFF9C4" }]} />
+          <View style={[styles.legendColor, { backgroundColor: color.heatmapLevel1 }]} />
           <Text style={styles.legendText}>少</Text>
         </View>
         <View style={styles.legendItem}>
-          <View style={[styles.legendColor, { backgroundColor: "#FFEB3B" }]} />
+          <View style={[styles.legendColor, { backgroundColor: color.heatmapLevel2 }]} />
         </View>
         <View style={styles.legendItem}>
-          <View style={[styles.legendColor, { backgroundColor: "#FF9800" }]} />
+          <View style={[styles.legendColor, { backgroundColor: color.heatmapLevel4 }]} />
         </View>
         <View style={styles.legendItem}>
-          <View style={[styles.legendColor, { backgroundColor: "#E53935" }]} />
+          <View style={[styles.legendColor, { backgroundColor: color.heatmapLevel6 }]} />
         </View>
         <View style={styles.legendItem}>
-          <View style={[styles.legendColor, { backgroundColor: "#B71C1C" }]} />
+          <View style={[styles.legendColor, { backgroundColor: color.heatmapLevel7 }]} />
           <Text style={styles.legendText}>多</Text>
         </View>
       </View>
@@ -373,7 +373,7 @@ export function JapanHeatmap({ prefectureCounts, onPrefecturePress, onRegionPres
           const count = regionCounts[region.name] || 0;
           const intensity = maxRegionCount > 0 ? count / maxRegionCount : 0;
           const isHot = region.name === regionGroups.find(r => regionCounts[r.name] === maxRegionCount)?.name && count > 0;
-          const color = count > 0 ? getHeatColor(count, maxRegionCount) : "#E8D4D4";
+          const regionHeatColor = count > 0 ? getHeatColor(count, maxRegionCount) : color.heatmapNone;
           
           const handleRegionCardPress = () => {
             if (onRegionPress) {
@@ -392,19 +392,19 @@ export function JapanHeatmap({ prefectureCounts, onPrefecturePress, onRegionPres
               style={[
                 styles.regionCard,
                 isHot && styles.regionCardHot,
-                { borderColor: count > 0 ? color : "#E8D4D4" }
+                { borderColor: count > 0 ? regionHeatColor : color.heatmapNone }
               ]}
             >
               <View style={styles.regionCardHeader}>
-                <View style={[styles.colorDot, { backgroundColor: color }]} />
+                <View style={[styles.colorDot, { backgroundColor: regionHeatColor }]} />
                 <Text style={styles.regionName}>{region.name}</Text>
                 {isHot && <Text style={styles.hotEmoji}>🔥</Text>}
               </View>
-              <Text style={[styles.regionCount, { color: count > 0 ? "#333" : "#CBD5E0" }]}>
+              <Text style={[styles.regionCount, { color: count > 0 ? color.tutorialText : color.textSubtle }]}>
                 {count.toLocaleString()}<Text style={styles.regionUnit}>人</Text>
               </Text>
               <View style={styles.progressBar}>
-                <View style={[styles.progressFill, { width: `${intensity * 100}%`, backgroundColor: color }]} />
+                <View style={[styles.progressFill, { width: `${intensity * 100}%`, backgroundColor: regionHeatColor }]} />
               </View>
             </TouchableOpacity>
           );

@@ -114,7 +114,7 @@ function Confetti({ active }: { active: boolean }) {
       transform: [{ rotate: `${rotation.value}deg` }, { scale: scale.value }],
     }));
 
-    const confettiColors = [color.coral, "#4ECDC4", "#FFE66D", "#95E1D3", "#F38181", color.hostAccentLegacy];
+    const confettiColors = [color.coral, color.confettiTeal, color.confettiYellow, color.confettiMint, color.confettiCoral, color.hostAccentLegacy];
     const pieceColor = confettiColors[i % confettiColors.length];
 
     return (
@@ -177,27 +177,27 @@ function MapPreview() {
         {/* 簡易日本地図 */}
         <G>
           {/* 北海道 */}
-          <Circle cx={160} cy={30} r={15} fill="#FFB3B3" stroke={color.hostAccentLegacy} strokeWidth={1} />
+          <Circle cx={160} cy={30} r={15} fill={color.balloonLight} stroke={color.hostAccentLegacy} strokeWidth={1} />
           {/* 東北 */}
-          <Circle cx={150} cy={55} r={12} fill="#FFD9D9" stroke={color.hostAccentLegacy} strokeWidth={1} />
+          <Circle cx={150} cy={55} r={12} fill={color.balloonLighter} stroke={color.hostAccentLegacy} strokeWidth={1} />
           {/* 関東（赤く強調） */}
-          <Circle cx={145} cy={80} r={18} fill="#FF4444" stroke={color.hostAccentLegacy} strokeWidth={2} />
+          <Circle cx={145} cy={80} r={18} fill={color.balloonRed} stroke={color.hostAccentLegacy} strokeWidth={2} />
           {/* 中部 */}
-          <Circle cx={125} cy={85} r={14} fill="#FFCCCC" stroke={color.hostAccentLegacy} strokeWidth={1} />
+          <Circle cx={125} cy={85} r={14} fill={color.balloonPink} stroke={color.hostAccentLegacy} strokeWidth={1} />
           {/* 関西 */}
-          <Circle cx={105} cy={95} r={16} fill="#FF8888" stroke={color.hostAccentLegacy} strokeWidth={1} />
+          <Circle cx={105} cy={95} r={16} fill={color.balloonMedium} stroke={color.hostAccentLegacy} strokeWidth={1} />
           {/* 中国 */}
-          <Circle cx={75} cy={100} r={12} fill="#FFE0E0" stroke={color.hostAccentLegacy} strokeWidth={1} />
+          <Circle cx={75} cy={100} r={12} fill={color.balloonPale} stroke={color.hostAccentLegacy} strokeWidth={1} />
           {/* 四国 */}
-          <Circle cx={90} cy={115} r={10} fill="#FFD9D9" stroke={color.hostAccentLegacy} strokeWidth={1} />
+          <Circle cx={90} cy={115} r={10} fill={color.balloonLighter} stroke={color.hostAccentLegacy} strokeWidth={1} />
           {/* 九州 */}
-          <Circle cx={50} cy={115} r={14} fill="#FFCCCC" stroke={color.hostAccentLegacy} strokeWidth={1} />
+          <Circle cx={50} cy={115} r={14} fill={color.balloonPink} stroke={color.hostAccentLegacy} strokeWidth={1} />
         </G>
         {/* 凡例 */}
         <SvgText x={10} y={20} fontSize={10} fill={color.textWhite}>参加者が多い</SvgText>
-        <Rect x={10} y={25} width={15} height={8} fill="#FF4444" />
+        <Rect x={10} y={25} width={15} height={8} fill={color.balloonRed} />
         <SvgText x={10} y={50} fontSize={10} fill={color.textWhite}>参加者が少ない</SvgText>
-        <Rect x={10} y={55} width={15} height={8} fill="#FFE0E0" />
+        <Rect x={10} y={55} width={15} height={8} fill={color.balloonPale} />
       </Svg>
       <Text style={previewStyles.caption}>地域別参加者マップ</Text>
     </View>
@@ -244,7 +244,7 @@ function ChartPreview() {
           {/* 男性（青） */}
           <Path
             d="M 0 0 L 40 0 A 40 40 0 0 1 -20 34.6 Z"
-            fill="#4A90D9"
+            fill={color.tutorialBlue}
           />
           {/* 女性（ピンク） */}
           <Path
@@ -255,7 +255,7 @@ function ChartPreview() {
         {/* 凡例 */}
         <Rect x={5} y={10} width={12} height={12} fill={color.accentPrimary} />
         <SvgText x={20} y={20} fontSize={10} fill={color.textWhite}>女性 65%</SvgText>
-        <Rect x={5} y={30} width={12} height={12} fill="#4A90D9" />
+        <Rect x={5} y={30} width={12} height={12} fill={color.tutorialBlue} />
         <SvgText x={20} y={40} fontSize={10} fill={color.textWhite}>男性 35%</SvgText>
       </Svg>
       <Text style={previewStyles.caption}>参加者の男女比</Text>
@@ -611,7 +611,7 @@ const styles = StyleSheet.create({
     position: "relative",
   },
   speechText: {
-    color: "#333333",
+    color: color.tutorialText,
     fontSize: 13,
     lineHeight: 18,
   },
@@ -634,7 +634,7 @@ const styles = StyleSheet.create({
     paddingVertical: 20,
     borderRadius: 24,
     alignItems: "center",
-    shadowColor: "#000",
+    shadowColor: color.shadowBlack,
     shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.3,
     shadowRadius: 8,

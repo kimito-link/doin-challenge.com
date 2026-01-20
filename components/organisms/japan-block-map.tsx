@@ -12,13 +12,13 @@ interface JapanBlockMapProps {
 
 // 地域ごとの色設定
 const regionColors = {
-  "北海道": { bg: "#4FC3F7", text: "#000" },      // 水色
-  "東北": { bg: "#B39DDB", text: "#000" },        // 紫
-  "関東": { bg: "#81C784", text: "#000" },        // 緑
-  "中部": { bg: "#FFF176", text: "#000" },        // 黄色
-  "関西": { bg: "#FFB74D", text: "#000" },        // オレンジ
-  "中国・四国": { bg: "#F48FB1", text: "#000" },  // ピンク
-  "九州・沖縄": { bg: "#EF5350", text: color.textWhite },  // 赤
+  "北海道": { bg: color.regionHokkaido, text: color.textPrimary },      // 水色
+  "東北": { bg: color.regionTohoku, text: color.textPrimary },        // 紫
+  "関東": { bg: color.regionKanto, text: color.textPrimary },        // 緑
+  "中部": { bg: color.regionChubu, text: color.textPrimary },        // 黄色
+  "関西": { bg: color.regionKansai, text: color.textPrimary },        // オレンジ
+  "中国・四国": { bg: color.regionChugokuShikoku, text: color.textPrimary },  // ピンク
+  "九州・沖縄": { bg: color.regionKyushuOkinawa, text: color.textWhite },  // 赤
 };
 
 // 地域と都道府県のマッピング
@@ -140,7 +140,7 @@ export function JapanBlockMap({ prefectureCounts, onPrefecturePress, onRegionPre
       {/* 地域ごとのブロック表示 */}
       <View style={styles.mapContainer}>
         {regions.map((region) => {
-          const color = regionColors[region.name as keyof typeof regionColors];
+          const regionColor = regionColors[region.name as keyof typeof regionColors];
           const total = regionTotals[region.name];
           const prefectureNames = region.prefectures.map(p => p.name);
           
@@ -150,16 +150,16 @@ export function JapanBlockMap({ prefectureCounts, onPrefecturePress, onRegionPre
               style={[
                 styles.regionBlock,
                 { 
-                  backgroundColor: color.bg,
-                  borderColor: total > 0 ? "#FF6B6B" : "transparent",
+                  backgroundColor: regionColor.bg,
+                  borderColor: total > 0 ? color.mapHighlight : "transparent",
                   borderWidth: total > 0 ? 3 : 0,
                 }
               ]}
               onPress={() => onRegionPress?.(region.name, prefectureNames)}
               activeOpacity={0.7}
             >
-              <Text style={[styles.regionName, { color: color.text }]}>{region.name}</Text>
-              <Text style={[styles.regionCount, { color: color.text }]}>
+              <Text style={[styles.regionName, { color: regionColor.text }]}>{region.name}</Text>
+              <Text style={[styles.regionCount, { color: regionColor.text }]}>
                 {total > 0 ? `${total}人` : "-"}
               </Text>
               {total > 0 && (

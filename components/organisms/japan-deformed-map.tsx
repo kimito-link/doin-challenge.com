@@ -10,15 +10,15 @@ interface JapanDeformedMapProps {
 
 // 地域ごとの色設定（より鮮やかな色）
 const regionColors: { [key: string]: { bg: string; text: string; border: string } } = {
-  "北海道": { bg: "#4FC3F7", text: "#000", border: "#0288D1" },
-  "東北": { bg: "#B39DDB", text: "#000", border: "#7B1FA2" },
-  "関東": { bg: "#81C784", text: "#000", border: "#388E3C" },
-  "中部": { bg: "#FFF176", text: "#000", border: "#FBC02D" },
-  "関西": { bg: "#FFB74D", text: "#000", border: "#F57C00" },
-  "中国": { bg: "#F48FB1", text: "#000", border: "#C2185B" },
-  "四国": { bg: "#CE93D8", text: "#000", border: "#8E24AA" },
-  "九州": { bg: "#EF5350", text: color.textWhite, border: "#C62828" },
-  "沖縄": { bg: "#FF8A65", text: "#000", border: "#E64A19" },
+  "北海道": { bg: color.regionHokkaido, text: color.textPrimary, border: color.borderHokkaido },
+  "東北": { bg: color.regionTohoku, text: color.textPrimary, border: color.borderTohoku },
+  "関東": { bg: color.regionKanto, text: color.textPrimary, border: color.borderKanto },
+  "中部": { bg: color.regionChubu, text: color.textPrimary, border: color.borderChubu },
+  "関西": { bg: color.regionKansai, text: color.textPrimary, border: color.borderKansai },
+  "中国": { bg: color.regionChugoku, text: color.textPrimary, border: color.borderChugoku },
+  "四国": { bg: color.regionShikoku, text: color.textPrimary, border: color.borderShikoku },
+  "九州": { bg: color.regionKyushu, text: color.textWhite, border: color.borderKyushu },
+  "沖縄": { bg: color.regionOkinawa, text: color.textPrimary, border: color.borderOkinawa },
 };
 
 // 47都道府県のデータ（参考画像に近いグリッド配置）
@@ -103,7 +103,7 @@ function getParticipantIcon(count: number): string {
 function getHeatColor(count: number, maxCount: number, baseColor: { bg: string; text: string; border: string }) {
   if (count === 0) {
     // 参加者がいない場合は灰色
-    return { bg: "#3A3F47", text: color.textMuted, border: color.border, hasParticipants: false };
+    return { bg: color.mapInactive, text: color.textMuted, border: color.border, hasParticipants: false };
   }
   
   // 参加者がいる場合は赤系の色に（参加者数に応じて濃くなる）
@@ -111,20 +111,20 @@ function getHeatColor(count: number, maxCount: number, baseColor: { bg: string; 
   
   if (intensity >= 0.8) {
     // 最も参加者が多い（濃い赤）
-    return { bg: "#B71C1C", text: color.textWhite, border: "#7F0000", hasParticipants: true };
+    return { bg: color.heatIntense5, text: color.textWhite, border: color.heatIntenseBorder5, hasParticipants: true };
   } else if (intensity >= 0.6) {
     // 参加者が多い（赤）
-    return { bg: "#D32F2F", text: color.textWhite, border: "#B71C1C", hasParticipants: true };
+    return { bg: color.heatIntense4, text: color.textWhite, border: color.heatIntense5, hasParticipants: true };
   } else if (intensity >= 0.4) {
     // 参加者が中程度（オレンジ赤）
-    return { bg: "#F44336", text: color.textWhite, border: "#D32F2F", hasParticipants: true };
+    return { bg: color.heatIntense3, text: color.textWhite, border: color.heatIntense4, hasParticipants: true };
   } else if (intensity >= 0.2) {
     // 参加者が少なめ（オレンジ）
-    return { bg: "#FF5722", text: color.textWhite, border: "#E64A19", hasParticipants: true };
+    return { bg: color.heatIntense2, text: color.textWhite, border: color.borderOkinawa, hasParticipants: true };
   }
   
   // 参加者が少ない（薄いオレンジ）
-  return { bg: "#FF7043", text: color.textWhite, border: "#F4511E", hasParticipants: true };
+  return { bg: color.heatIntense1, text: color.textWhite, border: color.heatIntenseBorder1, hasParticipants: true };
 }
 
 // レスポンシブブレークポイント（8段階）
