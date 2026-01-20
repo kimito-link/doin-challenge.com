@@ -6,6 +6,7 @@ import { View, Text, ScrollView, TouchableOpacity } from "react-native";
 import { useRouter } from "expo-router";
 import MaterialIcons from "@expo/vector-icons/MaterialIcons";
 import { useColors } from "@/hooks/use-colors";
+import { eventText, eventFont, eventUI } from "@/features/events/ui/theme/tokens";
 import { OptimizedAvatar } from "@/components/molecules/optimized-image";
 import type { Participation, FanProfile } from "@/types/participation";
 
@@ -64,7 +65,7 @@ export function ParticipantsList({
                 <OptimizedAvatar
                   source={p.profileImage ? { uri: p.profileImage } : undefined}
                   size={50}
-                  fallbackColor="#EC4899"
+                  fallbackColor={eventUI.fallback}
                   fallbackText={p.displayName.charAt(0)}
                 />
                 <View
@@ -72,7 +73,7 @@ export function ParticipantsList({
                     position: "absolute",
                     bottom: -2,
                     right: -2,
-                    backgroundColor: "#EC4899",
+                    backgroundColor: eventUI.badge,
                     borderRadius: 8,
                     padding: 2,
                   }}
@@ -87,7 +88,7 @@ export function ParticipantsList({
                 {p.displayName}
               </Text>
               {p.followersCount && p.followersCount > 0 && (
-                <Text style={{ color: "#EC4899", fontSize: 9, fontWeight: "bold" }} numberOfLines={1}>
+                <Text style={{ color: eventText.accent, fontSize: eventFont.tiny, fontWeight: "bold" }} numberOfLines={1}>
                   {p.followersCount >= 10000
                     ? `${(p.followersCount / 10000).toFixed(1)}万`
                     : p.followersCount.toLocaleString()}
@@ -95,7 +96,7 @@ export function ParticipantsList({
                 </Text>
               )}
               {p.username && (
-                <Text style={{ color: "#9CA3AF", fontSize: 9 }} numberOfLines={1}>
+                <Text style={{ color: eventText.secondary, fontSize: eventFont.tiny }} numberOfLines={1}>
                   @{p.username}
                 </Text>
               )}
@@ -103,7 +104,7 @@ export function ParticipantsList({
           ))}
           {totalNonAnonymous > maxDisplay && (
             <View style={{ alignItems: "center", justifyContent: "center", width: 50 }}>
-              <Text style={{ color: "#9CA3AF", fontSize: 12 }}>+{totalNonAnonymous - maxDisplay}</Text>
+              <Text style={{ color: eventText.secondary, fontSize: eventFont.meta }}>+{totalNonAnonymous - maxDisplay}</Text>
             </View>
           )}
         </View>

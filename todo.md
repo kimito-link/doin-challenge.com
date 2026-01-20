@@ -2677,3 +2677,20 @@ features/create/
 - [x] ContributionRanking.tsx を直書き→トークンに置換
 - [x] MessageCard.tsx を直書き→トークンに置換
 - [x] テスト実行と動作確認
+
+
+## GPT置換表に基づくトークン化（v4.7）
+
+### 今日：ChallengeCard.tsx視認性改善
+- [x] 日付アイコン色: #DD6500 → #FBBF24
+- [x] 日付テキスト: #DD6500, 11px → #FBBF24, 12px
+
+### 今週：events内21箇所のトークン化
+- [x] tokens.tsにトークンを追加（accent, fallback, iconMuted, hint, danger）
+- [x] ContributionRanking.tsx - 残り5箇所をトークン化
+- [x] MessageCard.tsx - 残り15箇所をトークン化
+- [x] ParticipantsList.tsx - 6箇所をトークン化
+- [x] ProgressGrid.tsx - 3箇所をトークン化
+- [x] RegionMap.tsx - 2箇所をトークン化
+
+**結果: events内の直書き色（#DD6500, #EC4899, #9CA3AF）は0箇所になりました！**

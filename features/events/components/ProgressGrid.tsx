@@ -3,6 +3,7 @@
  * 目標に対する進捗を視覚的に表示するグリッド
  */
 import { View, Text, Dimensions } from "react-native";
+import { eventText, eventFont, eventUI } from "@/features/events/ui/theme/tokens";
 
 const { width: screenWidth } = Dimensions.get("window");
 
@@ -15,7 +16,7 @@ interface ProgressGridProps {
   unit: string;
   /** グリッドの最大セル数（デフォルト: 100） */
   maxCells?: number;
-  /** 塗りつぶし色（デフォルト: #EC4899） */
+  /** 塗りつぶし色（デフォルト: eventUI.badge） */
   fillColor?: string;
   /** 空セル色（デフォルト: #2D3139） */
   emptyColor?: string;
@@ -26,7 +27,7 @@ export function ProgressGrid({
   goal,
   unit,
   maxCells = 100,
-  fillColor = "#EC4899",
+  fillColor = eventUI.badge,
   emptyColor = "#2D3139",
 }: ProgressGridProps) {
   const gridSize = Math.min(goal, maxCells);
@@ -49,7 +50,7 @@ export function ProgressGrid({
           />
         ))}
       </View>
-      <Text style={{ color: "#9CA3AF", fontSize: 12, textAlign: "center", marginTop: 8 }}>
+      <Text style={{ color: eventText.secondary, fontSize: eventFont.meta, textAlign: "center", marginTop: 8 }}>
         1マス = 1{unit}
       </Text>
     </View>

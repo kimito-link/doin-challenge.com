@@ -125,8 +125,8 @@ export function ChallengeCard({
         <View style={{ flexDirection: "row", alignItems: "center", justifyContent: "space-between" }}>
           {!isDateUndecided && <Countdown targetDate={challenge.eventDate} compact />}
           <View style={{ flexDirection: "row", alignItems: "center" }}>
-            <MaterialIcons name="event" size={12} color="#DD6500" />
-            <Text style={{ color: "#DD6500", fontSize: 11, marginLeft: 2 }}>{formattedDate}</Text>
+            <MaterialIcons name="event" size={12} color="#FBBF24" />
+            <Text style={{ color: "#FBBF24", fontSize: 12, marginLeft: 2 }}>{formattedDate}</Text>
           </View>
         </View>
       </View>

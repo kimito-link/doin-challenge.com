@@ -4,6 +4,7 @@
  */
 import { View, Text } from "react-native";
 import { useColors } from "@/hooks/use-colors";
+import { eventText, eventFont } from "@/features/events/ui/theme/tokens";
 import { regionGroups, countByRegion, type RegionName } from "@/constants/prefectures";
 import type { Participation } from "@/types/participation";
 
@@ -42,8 +43,8 @@ export function RegionMap({ participations }: RegionMapProps) {
                 borderColor: count > 0 ? `rgba(236, 72, 153, ${0.3 + intensity * 0.7})` : "#2D3139",
               }}
             >
-              <Text style={{ color: "#9CA3AF", fontSize: 12 }}>{region.name}</Text>
-              <Text style={{ color: count > 0 ? "#EC4899" : "#6B7280", fontSize: 20, fontWeight: "bold" }}>
+              <Text style={{ color: eventText.secondary, fontSize: eventFont.meta }}>{region.name}</Text>
+              <Text style={{ color: count > 0 ? eventText.accent : eventText.hint, fontSize: 20, fontWeight: "bold" }}>
                 {count}人
               </Text>
             </View>

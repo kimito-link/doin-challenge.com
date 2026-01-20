@@ -6,7 +6,7 @@ import { View, Text, TouchableOpacity } from "react-native";
 import { useRouter } from "expo-router";
 import MaterialIcons from "@expo/vector-icons/MaterialIcons";
 import { useColors } from "@/hooks/use-colors";
-import { eventText, eventFont } from "@/features/events/ui/theme/tokens";
+import { eventText, eventFont, eventUI } from "@/features/events/ui/theme/tokens";
 import { OptimizedAvatar } from "@/components/molecules/optimized-image";
 import type { Participation, Companion } from "@/types/participation";
 
@@ -73,7 +73,7 @@ export function MessageCard({
               : undefined
           }
           size={40}
-          fallbackColor="#EC4899"
+          fallbackColor={eventUI.fallback}
           fallbackText={participation.displayName.charAt(0)}
         />
         <View style={{ marginLeft: 12, flex: 1 }}>
@@ -106,7 +106,7 @@ export function MessageCard({
               </TouchableOpacity>
             )}
             {participation.prefecture && (
-              <Text style={{ color: "#6B7280", fontSize: 12, marginRight: 8 }}>
+              <Text style={{ color: eventText.hint, fontSize: eventFont.meta, marginRight: 8 }}>
                 📍{participation.prefecture}
               </Text>
             )}
@@ -118,7 +118,7 @@ export function MessageCard({
           </View>
         </View>
         <View style={{ alignItems: "flex-end" }}>
-          <Text style={{ color: "#EC4899", fontSize: 14, fontWeight: "bold" }}>
+          <Text style={{ color: eventText.accent, fontSize: eventFont.body, fontWeight: "bold" }}>
             +{participation.contribution || 1}人
           </Text>
         </View>
@@ -126,7 +126,7 @@ export function MessageCard({
 
       {/* メッセージ本文 */}
       {participation.message && (
-        <Text style={{ color: "#E5E7EB", fontSize: 15, lineHeight: 22, marginBottom: 12 }}>
+        <Text style={{ color: eventText.primary, fontSize: 15, lineHeight: 22, marginBottom: 12 }}>
           {participation.message}
         </Text>
       )}
@@ -141,7 +141,7 @@ export function MessageCard({
             marginBottom: 12,
           }}
         >
-          <Text style={{ color: "#9CA3AF", fontSize: 12, marginBottom: 8 }}>一緒に参加する友人:</Text>
+          <Text style={{ color: eventText.secondary, fontSize: eventFont.meta, marginBottom: 8 }}>一緒に参加する友人:</Text>
           <View style={{ flexDirection: "row", flexWrap: "wrap", gap: 8 }}>
             {companions.map((companion) => (
               <View
@@ -161,13 +161,13 @@ export function MessageCard({
                   <OptimizedAvatar
                     source={companion.profileImage ? { uri: companion.profileImage } : undefined}
                     size={20}
-                    fallbackColor="#8B5CF6"
+                    fallbackColor={eventUI.fallbackAlt}
                     fallbackText={companion.displayName.charAt(0)}
                   />
                 </View>
                 <Text style={{ color: colors.foreground, fontSize: 12 }}>{companion.displayName}</Text>
                 {companion.twitterUsername && (
-                  <Text style={{ color: "#9CA3AF", fontSize: 11, marginLeft: 4 }}>
+                  <Text style={{ color: eventText.secondary, fontSize: eventFont.small, marginLeft: 4 }}>
                     @{companion.twitterUsername}
                   </Text>
                 )}
@@ -192,8 +192,8 @@ export function MessageCard({
               borderRadius: 16,
             }}
           >
-            <MaterialIcons name="mail" size={14} color="#9CA3AF" />
-            <Text style={{ color: "#9CA3AF", fontSize: 12, marginLeft: 4 }}>DM</Text>
+            <MaterialIcons name="mail" size={14} color={eventUI.iconMuted} />
+            <Text style={{ color: eventText.secondary, fontSize: eventFont.meta, marginLeft: 4 }}>DM</Text>
           </TouchableOpacity>
         )}
 
@@ -212,7 +212,7 @@ export function MessageCard({
           >
             <Text style={{ fontSize: 14 }}>👏</Text>
             {cheerCount !== undefined && cheerCount > 0 && (
-              <Text style={{ color: "#9CA3AF", fontSize: 12, marginLeft: 4 }}>{cheerCount}</Text>
+              <Text style={{ color: eventText.secondary, fontSize: eventFont.meta, marginLeft: 4 }}>{cheerCount}</Text>
             )}
           </TouchableOpacity>
         )}
@@ -232,8 +232,8 @@ export function MessageCard({
                   borderRadius: 16,
                 }}
               >
-                <MaterialIcons name="edit" size={14} color="#9CA3AF" />
-                <Text style={{ color: "#9CA3AF", fontSize: 12, marginLeft: 4 }}>編集</Text>
+                <MaterialIcons name="edit" size={14} color={eventUI.iconMuted} />
+                <Text style={{ color: eventText.secondary, fontSize: eventFont.meta, marginLeft: 4 }}>編集</Text>
               </TouchableOpacity>
             )}
             {onDelete && (
@@ -248,8 +248,8 @@ export function MessageCard({
                   borderRadius: 16,
                 }}
               >
-                <MaterialIcons name="delete" size={14} color="#EF4444" />
-                <Text style={{ color: "#EF4444", fontSize: 12, marginLeft: 4 }}>取消</Text>
+                <MaterialIcons name="delete" size={14} color={eventUI.iconDanger} />
+                <Text style={{ color: eventText.danger, fontSize: eventFont.meta, marginLeft: 4 }}>取消</Text>
               </TouchableOpacity>
             )}
           </>

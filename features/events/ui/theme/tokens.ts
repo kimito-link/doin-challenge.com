@@ -1,5 +1,5 @@
 /**
- * Events専用テーマトークン
+ * Events専用テーマトークン（完成形）
  * 
  * events配下のコンポーネントでは直書き色（#XXXXXX）を使用せず、
  * このトークンを使用することで視認性を保証し、再発を防止する。
@@ -25,6 +25,10 @@ export const eventText = {
   // 補助
   secondary: "#9CA3AF", // 補助テキスト（大きいサイズ用）コントラスト比: 6.66:1
   hint: "#6B7280",      // ヒントテキスト（大きいサイズ用）コントラスト比: 4.48:1
+  
+  // アクセント・強調
+  accent: "#EC4899",    // 強調（貢献度など）
+  danger: "#EF4444",    // 削除・警告
 } as const;
 
 /**
@@ -39,6 +43,28 @@ export const eventFont = {
   // 通常サイズ
   body: 14,       // 本文
   title: 16,      // タイトル
+  
+  // 小さいサイズ（大きいコントラスト色と併用時のみ）
+  small: 11,      // バッジ内テキストなど
+  tiny: 9,        // 極小（フォロワーバッジなど、高コントラスト色必須）
+} as const;
+
+/**
+ * UI要素色トークン
+ */
+export const eventUI = {
+  // アバター・アイコンのフォールバック
+  fallback: "#EC4899",      // アバター背景
+  fallbackAlt: "#8B5CF6",   // 同伴者アバター背景
+  
+  // アイコン色
+  icon: "#EC4899",          // アクセントアイコン
+  iconMuted: "#9CA3AF",     // 補助アイコン（DM、編集など）
+  iconDanger: "#EF4444",    // 削除アイコン
+  
+  // バッジ・ラベル
+  badge: "#EC4899",         // バッジ背景
+  badgeFollower: "#8B5CF6", // フォロワーバッジ背景
 } as const;
 
 /**
@@ -46,3 +72,4 @@ export const eventFont = {
  */
 export type EventTextColor = keyof typeof eventText;
 export type EventFontSize = keyof typeof eventFont;
+export type EventUIColor = keyof typeof eventUI;

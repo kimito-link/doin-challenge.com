@@ -5,7 +5,7 @@
 import { View, Text, TouchableOpacity } from "react-native";
 import { useRouter } from "expo-router";
 import { useColors } from "@/hooks/use-colors";
-import { eventText, eventFont } from "@/features/events/ui/theme/tokens";
+import { eventText, eventFont, eventUI } from "@/features/events/ui/theme/tokens";
 import { OptimizedAvatar } from "@/components/molecules/optimized-image";
 import type { Participation } from "@/types/participation";
 
@@ -90,7 +90,7 @@ export function ContributionRanking({
             <OptimizedAvatar
               source={p.profileImage && !p.isAnonymous ? { uri: p.profileImage } : undefined}
               size={36}
-              fallbackColor="#EC4899"
+              fallbackColor={eventUI.fallback}
               fallbackText={p.displayName.charAt(0)}
             />
           </View>
@@ -122,7 +122,7 @@ export function ContributionRanking({
             {/* 都道府県とユーザー名 */}
             <View style={{ flexDirection: "row", alignItems: "center", flexWrap: "wrap", gap: 4 }}>
               {p.prefecture && (
-                <Text style={{ color: "#6B7280", fontSize: 11 }}>📍{p.prefecture}</Text>
+                <Text style={{ color: eventText.hint, fontSize: eventFont.small }}>📍{p.prefecture}</Text>
               )}
               {p.username && !p.isAnonymous && (
                 <TouchableOpacity
@@ -139,8 +139,8 @@ export function ContributionRanking({
             </View>
           </View>
           <View style={{ alignItems: "flex-end" }}>
-            <Text style={{ color: "#EC4899", fontSize: 18, fontWeight: "bold" }}>+{p.contribution || 1}</Text>
-            <Text style={{ color: "#6B7280", fontSize: 10 }}>
+            <Text style={{ color: eventText.accent, fontSize: 18, fontWeight: "bold" }}>+{p.contribution || 1}</Text>
+            <Text style={{ color: eventText.hint, fontSize: eventFont.small }}>
               {p.companionCount > 0 ? `(本人+${p.companionCount}人)` : ""}
             </Text>
             {p.followersCount && p.followersCount > 0 && (
