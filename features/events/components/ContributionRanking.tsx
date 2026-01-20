@@ -5,6 +5,7 @@
 import { View, Text, TouchableOpacity } from "react-native";
 import { useRouter } from "expo-router";
 import { useColors } from "@/hooks/use-colors";
+import { eventText, eventFont } from "@/features/events/ui/theme/tokens";
 import { OptimizedAvatar } from "@/components/molecules/optimized-image";
 import type { Participation } from "@/types/participation";
 
@@ -132,7 +133,7 @@ export function ContributionRanking({
                   }}
                   style={{ flexDirection: "row", alignItems: "center" }}
                 >
-                  <Text style={{ color: "#FBBF24", fontSize: 12 }}>@{p.username}</Text>
+                  <Text style={{ color: eventText.username, fontSize: eventFont.username }}>@{p.username}</Text>
                 </TouchableOpacity>
               )}
             </View>
@@ -143,7 +144,7 @@ export function ContributionRanking({
               {p.companionCount > 0 ? `(本人+${p.companionCount}人)` : ""}
             </Text>
             {p.followersCount && p.followersCount > 0 && (
-              <Text style={{ color: "#D1D5DB", fontSize: 11, marginTop: 2 }}>
+              <Text style={{ color: eventText.muted, fontSize: eventFont.meta, marginTop: 2 }}>
                 {p.followersCount >= 10000
                   ? `${(p.followersCount / 10000).toFixed(1)}万`
                   : p.followersCount.toLocaleString()}

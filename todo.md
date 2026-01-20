@@ -2663,3 +2663,17 @@ features/create/
 - [x] MessageCard.tsx - ユーザー名色を修正（#DD6500 → #FBBF24 アンバー）
 - [x] MessageCard.tsx - フォロワー数色を修正（#EC4899 → #F472B6 明るいピンク）
 - [x] テスト実行と動作確認
+
+
+### GPT提案に基づく追加改善
+- [ ] ContributionRanking.tsx - フォロワー数フォントサイズを11px→12pxに修正
+- [ ] 直書き色の全体検索（#DD6500, #EC4899, #9CA3AF）
+- [ ] events専用テーマトークンの作成（features/events/ui/theme/tokens.ts）
+- [ ] 他ファイルの直書き色をトークンに置き換え
+
+
+### eventsテーマトークン実装（再発防止）
+- [x] features/events/ui/theme/tokens.ts を作成
+- [x] ContributionRanking.tsx を直書き→トークンに置換
+- [x] MessageCard.tsx を直書き→トークンに置換
+- [x] テスト実行と動作確認

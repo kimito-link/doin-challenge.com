@@ -6,6 +6,7 @@ import { View, Text, TouchableOpacity } from "react-native";
 import { useRouter } from "expo-router";
 import MaterialIcons from "@expo/vector-icons/MaterialIcons";
 import { useColors } from "@/hooks/use-colors";
+import { eventText, eventFont } from "@/features/events/ui/theme/tokens";
 import { OptimizedAvatar } from "@/components/molecules/optimized-image";
 import type { Participation, Companion } from "@/types/participation";
 
@@ -100,8 +101,8 @@ export function MessageCard({
                 }}
                 style={{ flexDirection: "row", alignItems: "center", marginRight: 8 }}
               >
-                <MaterialIcons name="person" size={12} color="#FBBF24" style={{ marginRight: 2 }} />
-                <Text style={{ color: "#FBBF24", fontSize: 14 }}>@{participation.username}</Text>
+                <MaterialIcons name="person" size={12} color={eventText.username} style={{ marginRight: 2 }} />
+                <Text style={{ color: eventText.username, fontSize: eventFont.body }}>@{participation.username}</Text>
               </TouchableOpacity>
             )}
             {participation.prefecture && (
@@ -110,7 +111,7 @@ export function MessageCard({
               </Text>
             )}
             {participation.followersCount && participation.followersCount > 0 && (
-              <Text style={{ color: "#F472B6", fontSize: 12 }}>
+              <Text style={{ color: eventText.follower, fontSize: eventFont.meta }}>
                 {participation.followersCount.toLocaleString()} フォロワー
               </Text>
             )}
