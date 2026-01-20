@@ -3363,3 +3363,12 @@ features/create/
 - [x] Card系コンポーネントの統一（components/ui/card.tsx）
 - [x] Modal系コンポーネントの統一（components/ui/modal.tsx）
 - [x] 画面間で重複しているUIパターンの統一（section.tsx, input.tsx, list.tsx）
+
+
+## コンポーネント置き換え（v6.20）
+
+### 既存コンポーネントを新UIに置き換え
+- [ ] Button系コンポーネントの置き換え
+- [ ] Card系コンポーネントの置き換え
+- [ ] Modal系コンポーネントの置き換え
+- [x] lib/api/client.tsのリファクタリング（803行→324行+サブモジュール）
