@@ -27,6 +27,7 @@ export { JapanBlockMap } from "./japan-block-map";
 export { JapanDeformedMap } from "./japan-deformed-map";
 export { JapanHeatmap } from "./japan-heatmap";
 export { JapanMap } from "./japan-map";
+export { JapanRegionBlocks } from "./japan-region-blocks";
 
 // Form/Input系
 export { NotificationSettingsPanel } from "./notification-settings";
