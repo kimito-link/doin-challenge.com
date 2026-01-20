@@ -3432,94 +3432,8 @@ function registerTwitterRoutes(app) {
   });
 }
 
-// server/routers.ts
-import { z as z2 } from "zod";
-
-// server/_core/systemRouter.ts
-import { z } from "zod";
-
-// server/_core/notification.ts
-init_env();
-import { TRPCError } from "@trpc/server";
-var TITLE_MAX_LENGTH = 1200;
-var CONTENT_MAX_LENGTH = 2e4;
-var trimValue = (value) => value.trim();
-var isNonEmptyString2 = (value) => typeof value === "string" && value.trim().length > 0;
-var buildEndpointUrl = (baseUrl) => {
-  const normalizedBase = baseUrl.endsWith("/") ? baseUrl : `${baseUrl}/`;
-  return new URL("webdevtoken.v1.WebDevService/SendNotification", normalizedBase).toString();
-};
-var validatePayload = (input) => {
-  if (!isNonEmptyString2(input.title)) {
-    throw new TRPCError({
-      code: "BAD_REQUEST",
-      message: "Notification title is required."
-    });
-  }
-  if (!isNonEmptyString2(input.content)) {
-    throw new TRPCError({
-      code: "BAD_REQUEST",
-      message: "Notification content is required."
-    });
-  }
-  const title = trimValue(input.title);
-  const content = trimValue(input.content);
-  if (title.length > TITLE_MAX_LENGTH) {
-    throw new TRPCError({
-      code: "BAD_REQUEST",
-      message: `Notification title must be at most ${TITLE_MAX_LENGTH} characters.`
-    });
-  }
-  if (content.length > CONTENT_MAX_LENGTH) {
-    throw new TRPCError({
-      code: "BAD_REQUEST",
-      message: `Notification content must be at most ${CONTENT_MAX_LENGTH} characters.`
-    });
-  }
-  return { title, content };
-};
-async function notifyOwner(payload) {
-  const { title, content } = validatePayload(payload);
-  if (!ENV.forgeApiUrl) {
-    throw new TRPCError({
-      code: "INTERNAL_SERVER_ERROR",
-      message: "Notification service URL is not configured."
-    });
-  }
-  if (!ENV.forgeApiKey) {
-    throw new TRPCError({
-      code: "INTERNAL_SERVER_ERROR",
-      message: "Notification service API key is not configured."
-    });
-  }
-  const endpoint = buildEndpointUrl(ENV.forgeApiUrl);
-  try {
-    const response = await fetch(endpoint, {
-      method: "POST",
-      headers: {
-        accept: "application/json",
-        authorization: `Bearer ${ENV.forgeApiKey}`,
-        "content-type": "application/json",
-        "connect-protocol-version": "1"
-      },
-      body: JSON.stringify({ title, content })
-    });
-    if (!response.ok) {
-      const detail = await response.text().catch(() => "");
-      console.warn(
-        `[Notification] Failed to notify owner (${response.status} ${response.statusText})${detail ? `: ${detail}` : ""}`
-      );
-      return false;
-    }
-    return true;
-  } catch (error) {
-    console.warn("[Notification] Error calling notification service:", error);
-    return false;
-  }
-}
-
 // server/_core/trpc.ts
-import { initTRPC, TRPCError as TRPCError2 } from "@trpc/server";
+import { initTRPC, TRPCError } from "@trpc/server";
 import superjson from "superjson";
 var t = initTRPC.context().create({
   transformer: superjson
@@ -3529,7 +3443,7 @@ var publicProcedure = t.procedure;
 var requireUser = t.middleware(async (opts) => {
   const { ctx, next } = opts;
   if (!ctx.user) {
-    throw new TRPCError2({ code: "UNAUTHORIZED", message: UNAUTHED_ERR_MSG });
+    throw new TRPCError({ code: "UNAUTHORIZED", message: UNAUTHED_ERR_MSG });
   }
   return next({
     ctx: {
@@ -3543,7 +3457,7 @@ var adminProcedure = t.procedure.use(
   t.middleware(async (opts) => {
     const { ctx, next } = opts;
     if (!ctx.user || ctx.user.role !== "admin") {
-      throw new TRPCError2({ code: "FORBIDDEN", message: NOT_ADMIN_ERR_MSG });
+      throw new TRPCError({ code: "FORBIDDEN", message: NOT_ADMIN_ERR_MSG });
     }
     return next({
       ctx: {
@@ -3554,34 +3468,394 @@ var adminProcedure = t.procedure.use(
   })
 );
 
-// shared/version.ts
-var APP_VERSION = "v6.05";
-
-// server/_core/systemRouter.ts
-var systemRouter = router({
-  // バージョン取得エンドポイント
-  version: publicProcedure.query(() => ({
-    version: APP_VERSION
-  })),
-  health: publicProcedure.input(
-    z.object({
-      timestamp: z.number().min(0, "timestamp cannot be negative")
-    })
-  ).query(() => ({
-    ok: true
-  })),
-  notifyOwner: adminProcedure.input(
-    z.object({
-      title: z.string().min(1, "title is required"),
-      content: z.string().min(1, "content is required")
-    })
-  ).mutation(async ({ input }) => {
-    const delivered = await notifyOwner(input);
-    return {
-      success: delivered
-    };
+// server/routers/auth.ts
+var authRouter = router({
+  me: publicProcedure.query((opts) => opts.ctx.user),
+  logout: publicProcedure.mutation(({ ctx }) => {
+    const cookieOptions = getSessionCookieOptions(ctx.req);
+    ctx.res.clearCookie(COOKIE_NAME, { ...cookieOptions, maxAge: -1 });
+    return { success: true };
   })
 });
+
+// server/routers/events.ts
+import { z } from "zod";
+init_db();
+var eventsRouter = router({
+  // 公開イベント一覧取得
+  list: publicProcedure.query(async () => {
+    return getAllEvents();
+  }),
+  // ページネーション対応のイベント一覧取得
+  listPaginated: publicProcedure.input(z.object({
+    cursor: z.number().optional(),
+    limit: z.number().min(1).max(50).default(20),
+    filter: z.enum(["all", "solo", "group"]).optional()
+  })).query(async ({ input }) => {
+    const { cursor = 0, limit, filter } = input;
+    const allEvents = await getAllEvents();
+    let filteredEvents = allEvents;
+    if (filter && filter !== "all") {
+      filteredEvents = allEvents.filter((e) => e.eventType === filter);
+    }
+    const items = filteredEvents.slice(cursor, cursor + limit);
+    const nextCursor = cursor + limit < filteredEvents.length ? cursor + limit : void 0;
+    return {
+      items,
+      nextCursor,
+      totalCount: filteredEvents.length
+    };
+  }),
+  // イベント詳細取得
+  getById: publicProcedure.input(z.object({ id: z.number() })).query(async ({ input }) => {
+    const event = await getEventById(input.id);
+    if (!event) return null;
+    const participantCount = await getTotalCompanionCountByEventId(input.id);
+    return { ...event, participantCount };
+  }),
+  // 自分が作成したイベント一覧
+  myEvents: protectedProcedure.query(async ({ ctx }) => {
+    return getEventsByHostTwitterId(ctx.user.openId);
+  }),
+  // イベント作成
+  create: publicProcedure.input(z.object({
+    title: z.string().min(1).max(255),
+    description: z.string().optional(),
+    eventDate: z.string(),
+    venue: z.string().optional(),
+    hostTwitterId: z.string(),
+    hostName: z.string(),
+    hostUsername: z.string().optional(),
+    hostProfileImage: z.string().optional(),
+    hostFollowersCount: z.number().optional(),
+    hostDescription: z.string().optional(),
+    goalType: z.enum(["attendance", "followers", "viewers", "points", "custom"]).optional(),
+    goalValue: z.number().optional(),
+    goalUnit: z.string().optional(),
+    eventType: z.enum(["solo", "group"]).optional(),
+    categoryId: z.number().optional(),
+    externalUrl: z.string().optional(),
+    ticketPresale: z.number().optional(),
+    ticketDoor: z.number().optional(),
+    ticketUrl: z.string().optional()
+  })).mutation(async ({ input }) => {
+    if (!input.hostTwitterId) {
+      throw new Error("\u30ED\u30B0\u30A4\u30F3\u304C\u5FC5\u8981\u3067\u3059\u3002Twitter\u3067\u30ED\u30B0\u30A4\u30F3\u3057\u3066\u304F\u3060\u3055\u3044\u3002");
+    }
+    try {
+      const eventId = await createEvent({
+        hostUserId: null,
+        hostTwitterId: input.hostTwitterId,
+        hostName: input.hostName,
+        hostUsername: input.hostUsername,
+        hostProfileImage: input.hostProfileImage,
+        hostFollowersCount: input.hostFollowersCount,
+        hostDescription: input.hostDescription,
+        title: input.title,
+        description: input.description,
+        eventDate: new Date(input.eventDate),
+        venue: input.venue,
+        isPublic: true,
+        goalType: input.goalType || "attendance",
+        goalValue: input.goalValue || 100,
+        goalUnit: input.goalUnit || "\u4EBA",
+        eventType: input.eventType || "solo",
+        categoryId: input.categoryId,
+        externalUrl: input.externalUrl,
+        ticketPresale: input.ticketPresale,
+        ticketDoor: input.ticketDoor,
+        ticketUrl: input.ticketUrl
+      });
+      return { id: eventId };
+    } catch (error) {
+      console.error("[Challenge Create] Error:", error);
+      const errorMessage = error instanceof Error ? error.message : String(error);
+      if (errorMessage.includes("Database not available") || errorMessage.includes("ECONNREFUSED")) {
+        throw new Error("\u30B5\u30FC\u30D0\u30FC\u306B\u63A5\u7D9A\u3067\u304D\u307E\u305B\u3093\u3002\u3057\u3070\u3089\u304F\u5F85\u3063\u3066\u304B\u3089\u518D\u5EA6\u304A\u8A66\u3057\u304F\u3060\u3055\u3044\u3002");
+      }
+      if (errorMessage.includes("SQL") || errorMessage.includes("Failed query") || errorMessage.includes("ER_")) {
+        throw new Error("\u30C1\u30E3\u30EC\u30F3\u30B8\u306E\u4F5C\u6210\u306B\u5931\u6557\u3057\u307E\u3057\u305F\u3002\u5165\u529B\u5185\u5BB9\u3092\u78BA\u8A8D\u3057\u3066\u518D\u5EA6\u304A\u8A66\u3057\u304F\u3060\u3055\u3044\u3002");
+      }
+      if (errorMessage.includes("Duplicate entry") || errorMessage.includes("unique constraint")) {
+        throw new Error("\u540C\u3058\u30BF\u30A4\u30C8\u30EB\u306E\u30C1\u30E3\u30EC\u30F3\u30B8\u304C\u3059\u3067\u306B\u5B58\u5728\u3057\u307E\u3059\u3002\u5225\u306E\u30BF\u30A4\u30C8\u30EB\u3092\u304A\u8A66\u3057\u304F\u3060\u3055\u3044\u3002");
+      }
+      throw new Error("\u30C1\u30E3\u30EC\u30F3\u30B8\u306E\u4F5C\u6210\u4E2D\u306B\u30A8\u30E9\u30FC\u304C\u767A\u751F\u3057\u307E\u3057\u305F\u3002\u3057\u3070\u3089\u304F\u5F85\u3063\u3066\u304B\u3089\u518D\u5EA6\u304A\u8A66\u3057\u304F\u3060\u3055\u3044\u3002");
+    }
+  }),
+  // イベント更新
+  update: protectedProcedure.input(z.object({
+    id: z.number(),
+    title: z.string().min(1).max(255).optional(),
+    description: z.string().optional(),
+    eventDate: z.string().optional(),
+    venue: z.string().optional(),
+    isPublic: z.boolean().optional(),
+    goalValue: z.number().optional(),
+    goalUnit: z.string().optional(),
+    goalType: z.enum(["attendance", "followers", "viewers", "points", "custom"]).optional(),
+    eventType: z.enum(["solo", "group"]).optional(),
+    categoryId: z.number().optional(),
+    externalUrl: z.string().optional(),
+    ticketPresale: z.number().optional(),
+    ticketDoor: z.number().optional(),
+    ticketUrl: z.string().optional()
+  })).mutation(async ({ ctx, input }) => {
+    const event = await getEventById(input.id);
+    if (!event || event.hostTwitterId !== ctx.user.openId) {
+      throw new Error("Unauthorized");
+    }
+    const { id, eventDate, ...rest } = input;
+    await updateEvent(id, {
+      ...rest,
+      ...eventDate ? { eventDate: new Date(eventDate) } : {}
+    });
+    return { success: true };
+  }),
+  // イベント削除
+  delete: protectedProcedure.input(z.object({ id: z.number() })).mutation(async ({ ctx, input }) => {
+    const event = await getEventById(input.id);
+    if (!event || event.hostTwitterId !== ctx.user.openId) {
+      throw new Error("Unauthorized");
+    }
+    await deleteEvent(input.id);
+    return { success: true };
+  })
+});
+
+// server/routers/participations.ts
+import { z as z2 } from "zod";
+init_db();
+var participationsRouter = router({
+  // イベントの参加者一覧
+  listByEvent: publicProcedure.input(z2.object({ eventId: z2.number() })).query(async ({ input }) => {
+    return getParticipationsByEventId(input.eventId);
+  }),
+  // 自分の参加一覧
+  myParticipations: protectedProcedure.query(async ({ ctx }) => {
+    return getParticipationsByUserId(ctx.user.id);
+  }),
+  // 参加登録
+  create: publicProcedure.input(z2.object({
+    challengeId: z2.number(),
+    message: z2.string().optional(),
+    companionCount: z2.number().default(0),
+    prefecture: z2.string().optional(),
+    gender: z2.enum(["male", "female", "unspecified"]).optional(),
+    twitterId: z2.string().optional(),
+    displayName: z2.string(),
+    username: z2.string().optional(),
+    profileImage: z2.string().optional(),
+    followersCount: z2.number().optional(),
+    companions: z2.array(z2.object({
+      displayName: z2.string(),
+      twitterUsername: z2.string().optional(),
+      twitterId: z2.string().optional(),
+      profileImage: z2.string().optional()
+    })).optional(),
+    invitationCode: z2.string().optional()
+  })).mutation(async ({ ctx, input }) => {
+    if (!input.twitterId) {
+      throw new Error("\u30ED\u30B0\u30A4\u30F3\u304C\u5FC5\u8981\u3067\u3059\u3002Twitter\u3067\u30ED\u30B0\u30A4\u30F3\u3057\u3066\u304F\u3060\u3055\u3044\u3002");
+    }
+    try {
+      const participationId = await createParticipation({
+        challengeId: input.challengeId,
+        userId: ctx.user?.id,
+        twitterId: input.twitterId,
+        displayName: input.displayName,
+        username: input.username,
+        profileImage: input.profileImage,
+        followersCount: input.followersCount,
+        message: input.message,
+        companionCount: input.companionCount,
+        prefecture: input.prefecture,
+        gender: input.gender || "unspecified",
+        isAnonymous: false
+      });
+      if (input.companions && input.companions.length > 0 && participationId) {
+        const companionRecords = input.companions.map((c) => ({
+          participationId,
+          challengeId: input.challengeId,
+          displayName: c.displayName,
+          twitterUsername: c.twitterUsername,
+          twitterId: c.twitterId,
+          profileImage: c.profileImage,
+          invitedByUserId: ctx.user?.id
+        }));
+        await createCompanions(companionRecords);
+      }
+      if (input.invitationCode && participationId && ctx.user?.id) {
+        const invitation = await getInvitationByCode(input.invitationCode);
+        if (invitation) {
+          await confirmInvitationUse(invitation.id, ctx.user.id, participationId);
+        }
+      }
+      return { id: participationId };
+    } catch (error) {
+      console.error("[Participation Create] Error:", error);
+      const errorMessage = error instanceof Error ? error.message : String(error);
+      if (errorMessage.includes("Database not available") || errorMessage.includes("ECONNREFUSED")) {
+        throw new Error("\u30B5\u30FC\u30D0\u30FC\u306B\u63A5\u7D9A\u3067\u304D\u307E\u305B\u3093\u3002\u3057\u3070\u3089\u304F\u5F85\u3063\u3066\u304B\u3089\u518D\u5EA6\u304A\u8A66\u3057\u304F\u3060\u3055\u3044\u3002");
+      }
+      if (errorMessage.includes("Duplicate entry") || errorMessage.includes("unique constraint")) {
+        throw new Error("\u3059\u3067\u306B\u53C2\u52A0\u8868\u660E\u6E08\u307F\u3067\u3059\u3002");
+      }
+      throw new Error("\u53C2\u52A0\u8868\u660E\u306E\u767B\u9332\u4E2D\u306B\u30A8\u30E9\u30FC\u304C\u767A\u751F\u3057\u307E\u3057\u305F\u3002\u3057\u3070\u3089\u304F\u5F85\u3063\u3066\u304B\u3089\u518D\u5EA6\u304A\u8A66\u3057\u304F\u3060\u3055\u3044\u3002");
+    }
+  }),
+  // 匿名参加登録
+  createAnonymous: publicProcedure.input(z2.object({
+    challengeId: z2.number(),
+    displayName: z2.string(),
+    message: z2.string().optional(),
+    companionCount: z2.number().default(0),
+    prefecture: z2.string().optional(),
+    companions: z2.array(z2.object({
+      displayName: z2.string(),
+      twitterUsername: z2.string().optional(),
+      twitterId: z2.string().optional(),
+      profileImage: z2.string().optional()
+    })).optional()
+  })).mutation(async ({ input }) => {
+    const participationId = await createParticipation({
+      challengeId: input.challengeId,
+      displayName: input.displayName,
+      message: input.message,
+      companionCount: input.companionCount,
+      prefecture: input.prefecture,
+      isAnonymous: true
+    });
+    if (input.companions && input.companions.length > 0 && participationId) {
+      const companionRecords = input.companions.map((c) => ({
+        participationId,
+        challengeId: input.challengeId,
+        displayName: c.displayName,
+        twitterUsername: c.twitterUsername,
+        twitterId: c.twitterId,
+        profileImage: c.profileImage
+      }));
+      await createCompanions(companionRecords);
+    }
+    return { id: participationId };
+  }),
+  // 参加表明の更新
+  update: publicProcedure.input(z2.object({
+    id: z2.number(),
+    twitterId: z2.string().optional(),
+    message: z2.string().optional(),
+    prefecture: z2.string().optional(),
+    gender: z2.enum(["male", "female", "unspecified"]).optional(),
+    companionCount: z2.number().default(0),
+    companions: z2.array(z2.object({
+      displayName: z2.string(),
+      twitterUsername: z2.string().optional(),
+      twitterId: z2.string().optional(),
+      profileImage: z2.string().optional()
+    })).optional()
+  })).mutation(async ({ input }) => {
+    const participation = await getParticipationById(input.id);
+    if (!participation) {
+      throw new Error("\u53C2\u52A0\u8868\u660E\u304C\u898B\u3064\u304B\u308A\u307E\u305B\u3093\u3002");
+    }
+    await updateParticipation(input.id, {
+      message: input.message,
+      prefecture: input.prefecture,
+      companionCount: input.companionCount,
+      gender: input.gender
+    });
+    await deleteCompanionsForParticipation(input.id);
+    if (input.companions && input.companions.length > 0) {
+      const companionRecords = input.companions.map((c) => ({
+        participationId: input.id,
+        challengeId: participation.challengeId,
+        displayName: c.displayName,
+        twitterUsername: c.twitterUsername,
+        twitterId: c.twitterId,
+        profileImage: c.profileImage
+      }));
+      await createCompanions(companionRecords);
+    }
+    return { success: true };
+  }),
+  // 参加取消
+  delete: protectedProcedure.input(z2.object({ id: z2.number() })).mutation(async ({ ctx, input }) => {
+    const participations2 = await getParticipationsByUserId(ctx.user.id);
+    const participation = participations2.find((p) => p.id === input.id);
+    if (!participation) {
+      throw new Error("Unauthorized");
+    }
+    await deleteParticipation(input.id);
+    return { success: true };
+  }),
+  // 参加をキャンセル（チケット譲渡オプション付き）
+  cancel: protectedProcedure.input(z2.object({
+    participationId: z2.number(),
+    createTransfer: z2.boolean().default(false),
+    transferComment: z2.string().max(500).optional(),
+    userUsername: z2.string().optional()
+  })).mutation(async ({ ctx, input }) => {
+    const result = await cancelParticipation(input.participationId, ctx.user.id);
+    if (!result.success) {
+      return result;
+    }
+    if (input.createTransfer && result.challengeId) {
+      await createTicketTransfer({
+        challengeId: result.challengeId,
+        userId: ctx.user.id,
+        userName: ctx.user.name || "\u533F\u540D",
+        userUsername: input.userUsername,
+        userImage: null,
+        ticketCount: result.contribution || 1,
+        priceType: "face_value",
+        comment: input.transferComment || "\u53C2\u52A0\u30AD\u30E3\u30F3\u30BB\u30EB\u306E\u305F\u3081\u8B72\u6E21\u3057\u307E\u3059"
+      });
+      const waitlistUsers = await getWaitlistUsersForNotification(result.challengeId);
+    }
+    return { success: true, challengeId: result.challengeId };
+  })
+});
+
+// server/routers/notifications.ts
+import { z as z3 } from "zod";
+init_db();
+var notificationsRouter = router({
+  // 通知設定取得
+  getSettings: protectedProcedure.input(z3.object({ challengeId: z3.number() })).query(async ({ ctx, input }) => {
+    const settings = await getNotificationSettings(ctx.user.id);
+    return settings;
+  }),
+  // 通知設定更新
+  updateSettings: protectedProcedure.input(z3.object({
+    challengeId: z3.number(),
+    onGoalReached: z3.boolean().optional(),
+    onMilestone25: z3.boolean().optional(),
+    onMilestone50: z3.boolean().optional(),
+    onMilestone75: z3.boolean().optional(),
+    onNewParticipant: z3.boolean().optional(),
+    expoPushToken: z3.string().optional()
+  })).mutation(async ({ ctx, input }) => {
+    const { challengeId, ...settings } = input;
+    await upsertNotificationSettings(ctx.user.id, challengeId, settings);
+    return { success: true };
+  }),
+  // 通知履歴取得
+  list: protectedProcedure.query(async ({ ctx }) => {
+    return getNotificationsByUserId(ctx.user.id);
+  }),
+  // 通知を既読にする
+  markAsRead: protectedProcedure.input(z3.object({ id: z3.number() })).mutation(async ({ input }) => {
+    await markNotificationAsRead(input.id);
+    return { success: true };
+  }),
+  // 全ての通知を既読にする
+  markAllAsRead: protectedProcedure.mutation(async ({ ctx }) => {
+    await markAllNotificationsAsRead(ctx.user.id);
+    return { success: true };
+  })
+});
+
+// server/routers/ogp.ts
+import { z as z4 } from "zod";
 
 // server/storage.ts
 init_env();
@@ -3674,409 +3948,20 @@ async function generateImage(options) {
   };
 }
 
-// server/routers.ts
+// server/routers/ogp.ts
 init_db();
-var appRouter = router({
-  system: systemRouter,
-  auth: router({
-    me: publicProcedure.query((opts) => opts.ctx.user),
-    logout: publicProcedure.mutation(({ ctx }) => {
-      const cookieOptions = getSessionCookieOptions(ctx.req);
-      ctx.res.clearCookie(COOKIE_NAME, { ...cookieOptions, maxAge: -1 });
-      return { success: true };
-    })
-  }),
-  // イベント関連API
-  events: router({
-    // 公開イベント一覧取得
-    list: publicProcedure.query(async () => {
-      return getAllEvents();
-    }),
-    // ページネーション対応のイベント一覧取得
-    listPaginated: publicProcedure.input(z2.object({
-      cursor: z2.number().optional(),
-      // 次のページの開始位置
-      limit: z2.number().min(1).max(50).default(20),
-      filter: z2.enum(["all", "solo", "group"]).optional()
-    })).query(async ({ input }) => {
-      const { cursor = 0, limit, filter } = input;
-      const allEvents = await getAllEvents();
-      let filteredEvents = allEvents;
-      if (filter && filter !== "all") {
-        filteredEvents = allEvents.filter((e) => e.eventType === filter);
-      }
-      const items = filteredEvents.slice(cursor, cursor + limit);
-      const nextCursor = cursor + limit < filteredEvents.length ? cursor + limit : void 0;
-      return {
-        items,
-        nextCursor,
-        totalCount: filteredEvents.length
-      };
-    }),
-    // イベント詳細取得
-    getById: publicProcedure.input(z2.object({ id: z2.number() })).query(async ({ input }) => {
-      const event = await getEventById(input.id);
-      if (!event) return null;
-      const participantCount = await getTotalCompanionCountByEventId(input.id);
-      return { ...event, participantCount };
-    }),
-    // 自分が作成したイベント一覧
-    myEvents: protectedProcedure.query(async ({ ctx }) => {
-      return getEventsByHostTwitterId(ctx.user.openId);
-    }),
-    // イベント作成（publicProcedureでフロントエンドのユーザー情報を使用）
-    create: publicProcedure.input(z2.object({
-      title: z2.string().min(1).max(255),
-      description: z2.string().optional(),
-      eventDate: z2.string(),
-      venue: z2.string().optional(),
-      hostTwitterId: z2.string(),
-      // 必須に変更
-      hostName: z2.string(),
-      hostUsername: z2.string().optional(),
-      hostProfileImage: z2.string().optional(),
-      hostFollowersCount: z2.number().optional(),
-      hostDescription: z2.string().optional(),
-      // 追加フィールド
-      goalType: z2.enum(["attendance", "followers", "viewers", "points", "custom"]).optional(),
-      goalValue: z2.number().optional(),
-      goalUnit: z2.string().optional(),
-      eventType: z2.enum(["solo", "group"]).optional(),
-      categoryId: z2.number().optional(),
-      externalUrl: z2.string().optional(),
-      ticketPresale: z2.number().optional(),
-      ticketDoor: z2.number().optional(),
-      ticketUrl: z2.string().optional()
-    })).mutation(async ({ input }) => {
-      if (!input.hostTwitterId) {
-        throw new Error("\u30ED\u30B0\u30A4\u30F3\u304C\u5FC5\u8981\u3067\u3059\u3002Twitter\u3067\u30ED\u30B0\u30A4\u30F3\u3057\u3066\u304F\u3060\u3055\u3044\u3002");
-      }
-      try {
-        const eventId = await createEvent({
-          hostUserId: null,
-          // セッションに依存しない
-          hostTwitterId: input.hostTwitterId,
-          hostName: input.hostName,
-          hostUsername: input.hostUsername,
-          hostProfileImage: input.hostProfileImage,
-          hostFollowersCount: input.hostFollowersCount,
-          hostDescription: input.hostDescription,
-          title: input.title,
-          description: input.description,
-          eventDate: new Date(input.eventDate),
-          venue: input.venue,
-          isPublic: true,
-          goalType: input.goalType || "attendance",
-          goalValue: input.goalValue || 100,
-          goalUnit: input.goalUnit || "\u4EBA",
-          eventType: input.eventType || "solo",
-          categoryId: input.categoryId,
-          externalUrl: input.externalUrl,
-          ticketPresale: input.ticketPresale,
-          ticketDoor: input.ticketDoor,
-          ticketUrl: input.ticketUrl
-        });
-        return { id: eventId };
-      } catch (error) {
-        console.error("[Challenge Create] Error:", error);
-        const errorMessage = error instanceof Error ? error.message : String(error);
-        if (errorMessage.includes("Database not available") || errorMessage.includes("ECONNREFUSED")) {
-          throw new Error("\u30B5\u30FC\u30D0\u30FC\u306B\u63A5\u7D9A\u3067\u304D\u307E\u305B\u3093\u3002\u3057\u3070\u3089\u304F\u5F85\u3063\u3066\u304B\u3089\u518D\u5EA6\u304A\u8A66\u3057\u304F\u3060\u3055\u3044\u3002");
-        }
-        if (errorMessage.includes("SQL") || errorMessage.includes("Failed query") || errorMessage.includes("ER_")) {
-          throw new Error("\u30C1\u30E3\u30EC\u30F3\u30B8\u306E\u4F5C\u6210\u306B\u5931\u6557\u3057\u307E\u3057\u305F\u3002\u5165\u529B\u5185\u5BB9\u3092\u78BA\u8A8D\u3057\u3066\u518D\u5EA6\u304A\u8A66\u3057\u304F\u3060\u3055\u3044\u3002");
-        }
-        if (errorMessage.includes("Duplicate entry") || errorMessage.includes("unique constraint")) {
-          throw new Error("\u540C\u3058\u30BF\u30A4\u30C8\u30EB\u306E\u30C1\u30E3\u30EC\u30F3\u30B8\u304C\u3059\u3067\u306B\u5B58\u5728\u3057\u307E\u3059\u3002\u5225\u306E\u30BF\u30A4\u30C8\u30EB\u3092\u304A\u8A66\u3057\u304F\u3060\u3055\u3044\u3002");
-        }
-        throw new Error("\u30C1\u30E3\u30EC\u30F3\u30B8\u306E\u4F5C\u6210\u4E2D\u306B\u30A8\u30E9\u30FC\u304C\u767A\u751F\u3057\u307E\u3057\u305F\u3002\u3057\u3070\u3089\u304F\u5F85\u3063\u3066\u304B\u3089\u518D\u5EA6\u304A\u8A66\u3057\u304F\u3060\u3055\u3044\u3002");
-      }
-    }),
-    // イベント更新
-    update: protectedProcedure.input(z2.object({
-      id: z2.number(),
-      title: z2.string().min(1).max(255).optional(),
-      description: z2.string().optional(),
-      eventDate: z2.string().optional(),
-      venue: z2.string().optional(),
-      isPublic: z2.boolean().optional(),
-      goalValue: z2.number().optional(),
-      goalUnit: z2.string().optional(),
-      goalType: z2.enum(["attendance", "followers", "viewers", "points", "custom"]).optional(),
-      eventType: z2.enum(["solo", "group"]).optional(),
-      categoryId: z2.number().optional(),
-      externalUrl: z2.string().optional(),
-      ticketPresale: z2.number().optional(),
-      ticketDoor: z2.number().optional(),
-      ticketUrl: z2.string().optional()
-    })).mutation(async ({ ctx, input }) => {
-      const event = await getEventById(input.id);
-      if (!event || event.hostTwitterId !== ctx.user.openId) {
-        throw new Error("Unauthorized");
-      }
-      const { id, eventDate, ...rest } = input;
-      await updateEvent(id, {
-        ...rest,
-        ...eventDate ? { eventDate: new Date(eventDate) } : {}
-      });
-      return { success: true };
-    }),
-    // イベント削除
-    delete: protectedProcedure.input(z2.object({ id: z2.number() })).mutation(async ({ ctx, input }) => {
-      const event = await getEventById(input.id);
-      if (!event || event.hostTwitterId !== ctx.user.openId) {
-        throw new Error("Unauthorized");
-      }
-      await deleteEvent(input.id);
-      return { success: true };
-    })
-  }),
-  // 参加登録関連API
-  participations: router({
-    // イベントの参加者一覧
-    listByEvent: publicProcedure.input(z2.object({ eventId: z2.number() })).query(async ({ input }) => {
-      return getParticipationsByEventId(input.eventId);
-    }),
-    // 自分の参加一覧
-    myParticipations: protectedProcedure.query(async ({ ctx }) => {
-      return getParticipationsByUserId(ctx.user.id);
-    }),
-    // 参加登録（ログインユーザー - publicProcedureでクライアントからユーザー情報を受け取る）
-    create: publicProcedure.input(z2.object({
-      challengeId: z2.number(),
-      message: z2.string().optional(),
-      companionCount: z2.number().default(0),
-      prefecture: z2.string().optional(),
-      gender: z2.enum(["male", "female", "unspecified"]).optional(),
-      // v5.86: 性別を追加
-      twitterId: z2.string().optional(),
-      displayName: z2.string(),
-      username: z2.string().optional(),
-      profileImage: z2.string().optional(),
-      followersCount: z2.number().optional(),
-      // 一緒に参加する友人（名前付き）
-      companions: z2.array(z2.object({
-        displayName: z2.string(),
-        twitterUsername: z2.string().optional(),
-        twitterId: z2.string().optional(),
-        profileImage: z2.string().optional()
-      })).optional(),
-      // v6.08: 招待コード（招待経由の参加の場合）
-      invitationCode: z2.string().optional()
-    })).mutation(async ({ ctx, input }) => {
-      if (!input.twitterId) {
-        throw new Error("\u30ED\u30B0\u30A4\u30F3\u304C\u5FC5\u8981\u3067\u3059\u3002Twitter\u3067\u30ED\u30B0\u30A4\u30F3\u3057\u3066\u304F\u3060\u3055\u3044\u3002");
-      }
-      try {
-        const participationId = await createParticipation({
-          challengeId: input.challengeId,
-          userId: ctx.user?.id,
-          // セッションがあれば使用、なくてもOK
-          twitterId: input.twitterId,
-          displayName: input.displayName,
-          username: input.username,
-          profileImage: input.profileImage,
-          followersCount: input.followersCount,
-          message: input.message,
-          companionCount: input.companionCount,
-          prefecture: input.prefecture,
-          gender: input.gender || "unspecified",
-          // v5.86: 性別を保存
-          isAnonymous: false
-        });
-        if (input.companions && input.companions.length > 0 && participationId) {
-          const companionRecords = input.companions.map((c) => ({
-            participationId,
-            challengeId: input.challengeId,
-            displayName: c.displayName,
-            twitterUsername: c.twitterUsername,
-            twitterId: c.twitterId,
-            profileImage: c.profileImage,
-            invitedByUserId: ctx.user?.id
-          }));
-          await createCompanions(companionRecords);
-        }
-        if (input.invitationCode && participationId && ctx.user?.id) {
-          const invitation = await getInvitationByCode(input.invitationCode);
-          if (invitation) {
-            await confirmInvitationUse(invitation.id, ctx.user.id, participationId);
-          }
-        }
-        return { id: participationId };
-      } catch (error) {
-        console.error("[Participation Create] Error:", error);
-        const errorMessage = error instanceof Error ? error.message : String(error);
-        if (errorMessage.includes("Database not available") || errorMessage.includes("ECONNREFUSED")) {
-          throw new Error("\u30B5\u30FC\u30D0\u30FC\u306B\u63A5\u7D9A\u3067\u304D\u307E\u305B\u3093\u3002\u3057\u3070\u3089\u304F\u5F85\u3063\u3066\u304B\u3089\u518D\u5EA6\u304A\u8A66\u3057\u304F\u3060\u3055\u3044\u3002");
-        }
-        if (errorMessage.includes("Duplicate entry") || errorMessage.includes("unique constraint")) {
-          throw new Error("\u3059\u3067\u306B\u53C2\u52A0\u8868\u660E\u6E08\u307F\u3067\u3059\u3002");
-        }
-        throw new Error("\u53C2\u52A0\u8868\u660E\u306E\u767B\u9332\u4E2D\u306B\u30A8\u30E9\u30FC\u304C\u767A\u751F\u3057\u307E\u3057\u305F\u3002\u3057\u3070\u3089\u304F\u5F85\u3063\u3066\u304B\u3089\u518D\u5EA6\u304A\u8A66\u3057\u304F\u3060\u3055\u3044\u3002");
-      }
-    }),
-    // 匿名参加登録
-    createAnonymous: publicProcedure.input(z2.object({
-      challengeId: z2.number(),
-      displayName: z2.string(),
-      message: z2.string().optional(),
-      companionCount: z2.number().default(0),
-      prefecture: z2.string().optional(),
-      // 一緒に参加する友人（名前付き）
-      companions: z2.array(z2.object({
-        displayName: z2.string(),
-        twitterUsername: z2.string().optional(),
-        twitterId: z2.string().optional(),
-        profileImage: z2.string().optional()
-      })).optional()
-    })).mutation(async ({ input }) => {
-      const participationId = await createParticipation({
-        challengeId: input.challengeId,
-        displayName: input.displayName,
-        message: input.message,
-        companionCount: input.companionCount,
-        prefecture: input.prefecture,
-        isAnonymous: true
-      });
-      if (input.companions && input.companions.length > 0 && participationId) {
-        const companionRecords = input.companions.map((c) => ({
-          participationId,
-          challengeId: input.challengeId,
-          displayName: c.displayName,
-          twitterUsername: c.twitterUsername,
-          twitterId: c.twitterId,
-          profileImage: c.profileImage
-        }));
-        await createCompanions(companionRecords);
-      }
-      return { id: participationId };
-    }),
-    // 参加表明の更新（都道府県・コメント・一緒に参加する人の変更）
-    update: publicProcedure.input(z2.object({
-      id: z2.number(),
-      twitterId: z2.string().optional(),
-      message: z2.string().optional(),
-      prefecture: z2.string().optional(),
-      gender: z2.enum(["male", "female", "unspecified"]).optional(),
-      companionCount: z2.number().default(0),
-      companions: z2.array(z2.object({
-        displayName: z2.string(),
-        twitterUsername: z2.string().optional(),
-        twitterId: z2.string().optional(),
-        profileImage: z2.string().optional()
-      })).optional()
-    })).mutation(async ({ input }) => {
-      const participation = await getParticipationById(input.id);
-      if (!participation) {
-        throw new Error("\u53C2\u52A0\u8868\u660E\u304C\u898B\u3064\u304B\u308A\u307E\u305B\u3093\u3002");
-      }
-      await updateParticipation(input.id, {
-        message: input.message,
-        prefecture: input.prefecture,
-        companionCount: input.companionCount,
-        gender: input.gender
-      });
-      await deleteCompanionsForParticipation(input.id);
-      if (input.companions && input.companions.length > 0) {
-        const companionRecords = input.companions.map((c) => ({
-          participationId: input.id,
-          challengeId: participation.challengeId,
-          displayName: c.displayName,
-          twitterUsername: c.twitterUsername,
-          twitterId: c.twitterId,
-          profileImage: c.profileImage
-        }));
-        await createCompanions(companionRecords);
-      }
-      return { success: true };
-    }),
-    // 参加取消
-    delete: protectedProcedure.input(z2.object({ id: z2.number() })).mutation(async ({ ctx, input }) => {
-      const participations2 = await getParticipationsByUserId(ctx.user.id);
-      const participation = participations2.find((p) => p.id === input.id);
-      if (!participation) {
-        throw new Error("Unauthorized");
-      }
-      await deleteParticipation(input.id);
-      return { success: true };
-    }),
-    // 参加をキャンセル（チケット譲渡オプション付き）
-    cancel: protectedProcedure.input(z2.object({
-      participationId: z2.number(),
-      createTransfer: z2.boolean().default(false),
-      // チケット譲渡投稿を同時に作成するか
-      transferComment: z2.string().max(500).optional(),
-      userUsername: z2.string().optional()
-    })).mutation(async ({ ctx, input }) => {
-      const result = await cancelParticipation(input.participationId, ctx.user.id);
-      if (!result.success) {
-        return result;
-      }
-      if (input.createTransfer && result.challengeId) {
-        await createTicketTransfer({
-          challengeId: result.challengeId,
-          userId: ctx.user.id,
-          userName: ctx.user.name || "\u533F\u540D",
-          userUsername: input.userUsername,
-          userImage: null,
-          ticketCount: result.contribution || 1,
-          priceType: "face_value",
-          comment: input.transferComment || "\u53C2\u52A0\u30AD\u30E3\u30F3\u30BB\u30EB\u306E\u305F\u3081\u8B72\u6E21\u3057\u307E\u3059"
-        });
-        const waitlistUsers = await getWaitlistUsersForNotification(result.challengeId);
-      }
-      return { success: true, challengeId: result.challengeId };
-    })
-  }),
-  // 通知関連API
-  notifications: router({
-    // 通知設定取得
-    getSettings: protectedProcedure.input(z2.object({ challengeId: z2.number() })).query(async ({ ctx, input }) => {
-      const settings = await getNotificationSettings(ctx.user.id);
-      return settings;
-    }),
-    // 通知設定更新
-    updateSettings: protectedProcedure.input(z2.object({
-      challengeId: z2.number(),
-      onGoalReached: z2.boolean().optional(),
-      onMilestone25: z2.boolean().optional(),
-      onMilestone50: z2.boolean().optional(),
-      onMilestone75: z2.boolean().optional(),
-      onNewParticipant: z2.boolean().optional(),
-      expoPushToken: z2.string().optional()
-    })).mutation(async ({ ctx, input }) => {
-      const { challengeId, ...settings } = input;
-      await upsertNotificationSettings(ctx.user.id, challengeId, settings);
-      return { success: true };
-    }),
-    // 通知履歴取得
-    list: protectedProcedure.query(async ({ ctx }) => {
-      return getNotificationsByUserId(ctx.user.id);
-    }),
-    // 通知を既読にする
-    markAsRead: protectedProcedure.input(z2.object({ id: z2.number() })).mutation(async ({ input }) => {
-      await markNotificationAsRead(input.id);
-      return { success: true };
-    }),
-    // 全ての通知を既読にする
-    markAllAsRead: protectedProcedure.mutation(async ({ ctx }) => {
-      await markAllNotificationsAsRead(ctx.user.id);
-      return { success: true };
-    })
-  }),
-  // OGP画像生成API
-  ogp: router({
-    // チャレンジのシェア用OGP画像を生成
-    generateChallengeOgp: publicProcedure.input(z2.object({ challengeId: z2.number() })).mutation(async ({ input }) => {
-      const challenge = await getEventById(input.challengeId);
-      if (!challenge) {
-        throw new Error("Challenge not found");
-      }
-      const currentValue = challenge.currentValue || 0;
-      const goalValue = challenge.goalValue || 100;
-      const progress = Math.min(Math.round(currentValue / goalValue * 100), 100);
-      const unit = challenge.goalUnit || "\u4EBA";
-      const prompt = `Create a vibrant social media share card for a Japanese idol fan challenge app called "\u52D5\u54E1\u3061\u3083\u308C\u3093\u3058". 
+var ogpRouter = router({
+  // チャレンジのシェア用OGP画像を生成
+  generateChallengeOgp: publicProcedure.input(z4.object({ challengeId: z4.number() })).mutation(async ({ input }) => {
+    const challenge = await getEventById(input.challengeId);
+    if (!challenge) {
+      throw new Error("Challenge not found");
+    }
+    const currentValue = challenge.currentValue || 0;
+    const goalValue = challenge.goalValue || 100;
+    const progress = Math.min(Math.round(currentValue / goalValue * 100), 100);
+    const unit = challenge.goalUnit || "\u4EBA";
+    const prompt = `Create a vibrant social media share card for a Japanese idol fan challenge app called "\u52D5\u54E1\u3061\u3083\u308C\u3093\u3058". 
 
 Design requirements:
 - Modern dark theme with pink to purple gradient accents (#EC4899 to #8B5CF6)
@@ -4089,32 +3974,32 @@ Design requirements:
 - Aspect ratio 1200x630 (Twitter/OGP standard)
 - Text should be large and readable
 - Include "#\u52D5\u54E1\u3061\u3083\u308C\u3093\u3058" hashtag at bottom`;
-      try {
-        const result = await generateImage({ prompt });
-        return { url: result.url };
-      } catch (error) {
-        console.error("OGP image generation failed:", error);
-        throw new Error("Failed to generate OGP image");
-      }
-    }),
-    // v6.10: 招待リンク用OGP画像を生成
-    generateInviteOgp: publicProcedure.input(z2.object({ code: z2.string() })).mutation(async ({ input }) => {
-      const invitation = await getInvitationByCode(input.code);
-      if (!invitation) {
-        throw new Error("Invitation not found");
-      }
-      const challenge = await getEventById(invitation.challengeId);
-      if (!challenge) {
-        throw new Error("Challenge not found");
-      }
-      const currentValue = challenge.currentValue || 0;
-      const goalValue = challenge.goalValue || 100;
-      const progress = Math.min(Math.round(currentValue / goalValue * 100), 100);
-      const unit = challenge.goalUnit || "\u4EBA";
-      const inviterName = invitation.inviterName || "\u53CB\u9054";
-      const customTitle = invitation.customTitle || challenge.title;
-      const customMessage = invitation.customMessage || "";
-      const prompt = `Create a personalized invitation card for a Japanese idol fan challenge app called "\u52D5\u54E1\u3061\u3083\u308C\u3093\u3058".
+    try {
+      const result = await generateImage({ prompt });
+      return { url: result.url };
+    } catch (error) {
+      console.error("OGP image generation failed:", error);
+      throw new Error("Failed to generate OGP image");
+    }
+  }),
+  // 招待リンク用OGP画像を生成
+  generateInviteOgp: publicProcedure.input(z4.object({ code: z4.string() })).mutation(async ({ input }) => {
+    const invitation = await getInvitationByCode(input.code);
+    if (!invitation) {
+      throw new Error("Invitation not found");
+    }
+    const challenge = await getEventById(invitation.challengeId);
+    if (!challenge) {
+      throw new Error("Challenge not found");
+    }
+    const currentValue = challenge.currentValue || 0;
+    const goalValue = challenge.goalValue || 100;
+    const progress = Math.min(Math.round(currentValue / goalValue * 100), 100);
+    const unit = challenge.goalUnit || "\u4EBA";
+    const inviterName = invitation.inviterName || "\u53CB\u9054";
+    const customTitle = invitation.customTitle || challenge.title;
+    const customMessage = invitation.customMessage || "";
+    const prompt = `Create a personalized invitation card for a Japanese idol fan challenge app called "\u52D5\u54E1\u3061\u3083\u308C\u3093\u3058".
 
 Design requirements:
 - Modern dark theme with pink to purple gradient accents (#EC4899 to #8B5CF6)
@@ -4129,951 +4014,1035 @@ ${customMessage ? `- Personal message in speech bubble: "${customMessage.substri
 - Text should be large and readable
 - Include "#\u52D5\u54E1\u3061\u3083\u308C\u3093\u3058" hashtag at bottom
 - Make it feel personal and welcoming`;
-      try {
-        const result = await generateImage({ prompt });
-        return {
-          url: result.url,
-          title: `${inviterName}\u3055\u3093\u304B\u3089\u300C${customTitle}\u300D\u3078\u306E\u62DB\u5F85`,
-          description: customMessage || `\u4E00\u7DD2\u306B\u30C1\u30E3\u30EC\u30F3\u30B8\u306B\u53C2\u52A0\u3057\u3088\u3046\uFF01\u76EE\u6A19: ${goalValue}${unit}`
-        };
-      } catch (error) {
-        console.error("Invite OGP image generation failed:", error);
-        throw new Error("Failed to generate invite OGP image");
-      }
-    }),
-    // v6.10: 招待リンクのOGP情報を取得（画像生成なし、メタデータのみ）
-    getInviteOgpMeta: publicProcedure.input(z2.object({ code: z2.string() })).query(async ({ input }) => {
-      const invitation = await getInvitationByCode(input.code);
-      if (!invitation) {
-        return null;
-      }
-      const challenge = await getEventById(invitation.challengeId);
-      if (!challenge) {
-        return null;
-      }
-      const goalValue = challenge.goalValue || 100;
-      const unit = challenge.goalUnit || "\u4EBA";
-      const inviterName = invitation.inviterName || "\u53CB\u9054";
-      const customTitle = invitation.customTitle || challenge.title;
-      const customMessage = invitation.customMessage || "";
+    try {
+      const result = await generateImage({ prompt });
       return {
+        url: result.url,
         title: `${inviterName}\u3055\u3093\u304B\u3089\u300C${customTitle}\u300D\u3078\u306E\u62DB\u5F85`,
-        description: customMessage || `\u4E00\u7DD2\u306B\u30C1\u30E3\u30EC\u30F3\u30B8\u306B\u53C2\u52A0\u3057\u3088\u3046\uFF01\u76EE\u6A19: ${goalValue}${unit}`,
-        inviterName,
-        challengeTitle: customTitle,
-        originalTitle: challenge.title,
-        customMessage,
-        challengeId: challenge.id
+        description: customMessage || `\u4E00\u7DD2\u306B\u30C1\u30E3\u30EC\u30F3\u30B8\u306B\u53C2\u52A0\u3057\u3088\u3046\uFF01\u76EE\u6A19: ${goalValue}${unit}`
       };
-    })
+    } catch (error) {
+      console.error("Invite OGP image generation failed:", error);
+      throw new Error("Failed to generate invite OGP image");
+    }
   }),
-  // バッジ関連API
-  badges: router({
-    // 全バッジ一覧
-    list: publicProcedure.query(async () => {
-      return getAllBadges();
-    }),
-    // ユーザーのバッジ一覧
-    myBadges: protectedProcedure.query(async ({ ctx }) => {
-      return getUserBadgesWithDetails(ctx.user.id);
-    }),
-    // バッジ付与（管理者用）
-    award: protectedProcedure.input(z2.object({
-      userId: z2.number(),
-      badgeId: z2.number(),
-      challengeId: z2.number().optional()
-    })).mutation(async ({ ctx, input }) => {
-      if (ctx.user.role !== "admin") {
-        throw new Error("Admin access required");
-      }
-      const result = await awardBadge(input.userId, input.badgeId, input.challengeId);
-      return { success: !!result, id: result };
-    })
+  // 招待リンクのOGP情報を取得（画像生成なし、メタデータのみ）
+  getInviteOgpMeta: publicProcedure.input(z4.object({ code: z4.string() })).query(async ({ input }) => {
+    const invitation = await getInvitationByCode(input.code);
+    if (!invitation) {
+      return null;
+    }
+    const challenge = await getEventById(invitation.challengeId);
+    if (!challenge) {
+      return null;
+    }
+    const goalValue = challenge.goalValue || 100;
+    const unit = challenge.goalUnit || "\u4EBA";
+    const inviterName = invitation.inviterName || "\u53CB\u9054";
+    const customTitle = invitation.customTitle || challenge.title;
+    const customMessage = invitation.customMessage || "";
+    return {
+      title: `${inviterName}\u3055\u3093\u304B\u3089\u300C${customTitle}\u300D\u3078\u306E\u62DB\u5F85`,
+      description: customMessage || `\u4E00\u7DD2\u306B\u30C1\u30E3\u30EC\u30F3\u30B8\u306B\u53C2\u52A0\u3057\u3088\u3046\uFF01\u76EE\u6A19: ${goalValue}${unit}`,
+      inviterName,
+      challengeTitle: customTitle,
+      originalTitle: challenge.title,
+      customMessage,
+      challengeId: challenge.id
+    };
+  })
+});
+
+// server/routers/badges.ts
+import { z as z5 } from "zod";
+init_db();
+var badgesRouter = router({
+  // 全バッジ一覧
+  list: publicProcedure.query(async () => {
+    return getAllBadges();
   }),
-  // ピックアップコメント関連API
-  pickedComments: router({
-    // チャレンジのピックアップコメント一覧
-    list: publicProcedure.input(z2.object({ challengeId: z2.number() })).query(async ({ input }) => {
-      return getPickedCommentsWithParticipation(input.challengeId);
-    }),
-    // コメントをピックアップ（管理者/ホスト用）
-    pick: protectedProcedure.input(z2.object({
-      participationId: z2.number(),
-      challengeId: z2.number(),
-      reason: z2.string().optional()
-    })).mutation(async ({ ctx, input }) => {
-      const challenge = await getEventById(input.challengeId);
-      if (!challenge) throw new Error("Challenge not found");
-      if (challenge.hostUserId !== ctx.user.id && ctx.user.role !== "admin") {
-        throw new Error("Permission denied");
-      }
-      const result = await pickComment(input.participationId, input.challengeId, ctx.user.id, input.reason);
-      return { success: !!result, id: result };
-    }),
-    // ピックアップ解除
-    unpick: protectedProcedure.input(z2.object({ participationId: z2.number(), challengeId: z2.number() })).mutation(async ({ ctx, input }) => {
-      const challenge = await getEventById(input.challengeId);
-      if (!challenge) throw new Error("Challenge not found");
-      if (challenge.hostUserId !== ctx.user.id && ctx.user.role !== "admin") {
-        throw new Error("Permission denied");
-      }
-      await unpickComment(input.participationId);
-      return { success: true };
-    }),
-    // 動画使用済みにマーク
-    markAsUsed: protectedProcedure.input(z2.object({ id: z2.number(), challengeId: z2.number() })).mutation(async ({ ctx, input }) => {
-      const challenge = await getEventById(input.challengeId);
-      if (!challenge) throw new Error("Challenge not found");
-      if (challenge.hostUserId !== ctx.user.id && ctx.user.role !== "admin") {
-        throw new Error("Permission denied");
-      }
-      await markCommentAsUsedInVideo(input.id);
-      return { success: true };
-    }),
-    // コメントがピックアップされているかチェック
-    isPicked: publicProcedure.input(z2.object({ participationId: z2.number() })).query(async ({ input }) => {
-      return isCommentPicked(input.participationId);
-    })
+  // ユーザーのバッジ一覧
+  myBadges: protectedProcedure.query(async ({ ctx }) => {
+    return getUserBadgesWithDetails(ctx.user.id);
   }),
-  // 地域統計API
-  prefectures: router({
-    // 地域ランキング
-    ranking: publicProcedure.input(z2.object({ challengeId: z2.number() })).query(async ({ input }) => {
-      return getPrefectureRanking(input.challengeId);
-    }),
-    // 地域フィルター付き参加者一覧
-    participations: publicProcedure.input(z2.object({ challengeId: z2.number(), prefecture: z2.string() })).query(async ({ input }) => {
-      return getParticipationsByPrefectureFilter(input.challengeId, input.prefecture);
-    })
+  // バッジ付与（管理者用）
+  award: protectedProcedure.input(z5.object({
+    userId: z5.number(),
+    badgeId: z5.number(),
+    challengeId: z5.number().optional()
+  })).mutation(async ({ ctx, input }) => {
+    if (ctx.user.role !== "admin") {
+      throw new Error("Admin access required");
+    }
+    const result = await awardBadge(input.userId, input.badgeId, input.challengeId);
+    return { success: !!result, id: result };
+  })
+});
+
+// server/routers/picked-comments.ts
+import { z as z6 } from "zod";
+init_db();
+var pickedCommentsRouter = router({
+  // チャレンジのピックアップコメント一覧
+  list: publicProcedure.input(z6.object({ challengeId: z6.number() })).query(async ({ input }) => {
+    return getPickedCommentsWithParticipation(input.challengeId);
   }),
-  // エール（参加者同士の応援）API
-  cheers: router({
-    // エールを送る
-    send: protectedProcedure.input(z2.object({
-      toParticipationId: z2.number(),
-      toUserId: z2.number().optional(),
-      challengeId: z2.number(),
-      message: z2.string().optional(),
-      emoji: z2.string().default("\u{1F44F}")
-    })).mutation(async ({ ctx, input }) => {
-      const result = await sendCheer({
-        fromUserId: ctx.user.id,
-        fromUserName: ctx.user.name || "\u533F\u540D",
-        fromUserImage: null,
-        toParticipationId: input.toParticipationId,
-        toUserId: input.toUserId,
-        challengeId: input.challengeId,
-        message: input.message,
-        emoji: input.emoji
-      });
-      return { success: !!result, id: result };
-    }),
-    // 参加者へのエール一覧
-    forParticipation: publicProcedure.input(z2.object({ participationId: z2.number() })).query(async ({ input }) => {
-      return getCheersForParticipation(input.participationId);
-    }),
-    // チャレンジのエール一覧
-    forChallenge: publicProcedure.input(z2.object({ challengeId: z2.number() })).query(async ({ input }) => {
-      return getCheersForChallenge(input.challengeId);
-    }),
-    // エール数を取得
-    count: publicProcedure.input(z2.object({ participationId: z2.number() })).query(async ({ input }) => {
-      return getCheerCountForParticipation(input.participationId);
-    }),
-    // 自分が受けたエール
-    received: protectedProcedure.query(async ({ ctx }) => {
-      return getCheersReceivedByUser(ctx.user.id);
-    }),
-    // 自分が送ったエール
-    sent: protectedProcedure.query(async ({ ctx }) => {
-      return getCheersSentByUser(ctx.user.id);
-    })
+  // コメントをピックアップ（管理者/ホスト用）
+  pick: protectedProcedure.input(z6.object({
+    participationId: z6.number(),
+    challengeId: z6.number(),
+    reason: z6.string().optional()
+  })).mutation(async ({ ctx, input }) => {
+    const challenge = await getEventById(input.challengeId);
+    if (!challenge) throw new Error("Challenge not found");
+    if (challenge.hostUserId !== ctx.user.id && ctx.user.role !== "admin") {
+      throw new Error("Permission denied");
+    }
+    const result = await pickComment(input.participationId, input.challengeId, ctx.user.id, input.reason);
+    return { success: !!result, id: result };
   }),
-  // 達成記念ページAPI
-  achievements: router({
-    // 達成記念ページを作成
-    create: protectedProcedure.input(z2.object({
-      challengeId: z2.number(),
-      title: z2.string(),
-      message: z2.string().optional()
-    })).mutation(async ({ ctx, input }) => {
-      const challenge = await getEventById(input.challengeId);
-      if (!challenge) throw new Error("Challenge not found");
-      if (challenge.hostUserId !== ctx.user.id && ctx.user.role !== "admin") {
-        throw new Error("Permission denied");
+  // ピックアップ解除
+  unpick: protectedProcedure.input(z6.object({ participationId: z6.number(), challengeId: z6.number() })).mutation(async ({ ctx, input }) => {
+    const challenge = await getEventById(input.challengeId);
+    if (!challenge) throw new Error("Challenge not found");
+    if (challenge.hostUserId !== ctx.user.id && ctx.user.role !== "admin") {
+      throw new Error("Permission denied");
+    }
+    await unpickComment(input.participationId);
+    return { success: true };
+  }),
+  // 動画使用済みにマーク
+  markAsUsed: protectedProcedure.input(z6.object({ id: z6.number(), challengeId: z6.number() })).mutation(async ({ ctx, input }) => {
+    const challenge = await getEventById(input.challengeId);
+    if (!challenge) throw new Error("Challenge not found");
+    if (challenge.hostUserId !== ctx.user.id && ctx.user.role !== "admin") {
+      throw new Error("Permission denied");
+    }
+    await markCommentAsUsedInVideo(input.id);
+    return { success: true };
+  }),
+  // コメントがピックアップされているかチェック
+  isPicked: publicProcedure.input(z6.object({ participationId: z6.number() })).query(async ({ input }) => {
+    return isCommentPicked(input.participationId);
+  })
+});
+
+// server/routers/prefectures.ts
+import { z as z7 } from "zod";
+init_db();
+var prefecturesRouter = router({
+  // 地域ランキング
+  ranking: publicProcedure.input(z7.object({ challengeId: z7.number() })).query(async ({ input }) => {
+    return getPrefectureRanking(input.challengeId);
+  }),
+  // 地域フィルター付き参加者一覧
+  participations: publicProcedure.input(z7.object({ challengeId: z7.number(), prefecture: z7.string() })).query(async ({ input }) => {
+    return getParticipationsByPrefectureFilter(input.challengeId, input.prefecture);
+  })
+});
+
+// server/routers/cheers.ts
+import { z as z8 } from "zod";
+init_db();
+var cheersRouter = router({
+  // エールを送る
+  send: protectedProcedure.input(z8.object({
+    toParticipationId: z8.number(),
+    toUserId: z8.number().optional(),
+    challengeId: z8.number(),
+    message: z8.string().optional(),
+    emoji: z8.string().default("\u{1F44F}")
+  })).mutation(async ({ ctx, input }) => {
+    const result = await sendCheer({
+      fromUserId: ctx.user.id,
+      fromUserName: ctx.user.name || "\u533F\u540D",
+      fromUserImage: null,
+      toParticipationId: input.toParticipationId,
+      toUserId: input.toUserId,
+      challengeId: input.challengeId,
+      message: input.message,
+      emoji: input.emoji
+    });
+    return { success: !!result, id: result };
+  }),
+  // 参加者へのエール一覧
+  forParticipation: publicProcedure.input(z8.object({ participationId: z8.number() })).query(async ({ input }) => {
+    return getCheersForParticipation(input.participationId);
+  }),
+  // チャレンジのエール一覧
+  forChallenge: publicProcedure.input(z8.object({ challengeId: z8.number() })).query(async ({ input }) => {
+    return getCheersForChallenge(input.challengeId);
+  }),
+  // エール数を取得
+  count: publicProcedure.input(z8.object({ participationId: z8.number() })).query(async ({ input }) => {
+    return getCheerCountForParticipation(input.participationId);
+  }),
+  // 自分が受けたエール
+  received: protectedProcedure.query(async ({ ctx }) => {
+    return getCheersReceivedByUser(ctx.user.id);
+  }),
+  // 自分が送ったエール
+  sent: protectedProcedure.query(async ({ ctx }) => {
+    return getCheersSentByUser(ctx.user.id);
+  })
+});
+
+// server/routers/achievements.ts
+import { z as z9 } from "zod";
+init_db();
+var achievementsRouter = router({
+  // 達成記念ページを作成
+  create: protectedProcedure.input(z9.object({
+    challengeId: z9.number(),
+    title: z9.string(),
+    message: z9.string().optional()
+  })).mutation(async ({ ctx, input }) => {
+    const challenge = await getEventById(input.challengeId);
+    if (!challenge) throw new Error("Challenge not found");
+    if (challenge.hostUserId !== ctx.user.id && ctx.user.role !== "admin") {
+      throw new Error("Permission denied");
+    }
+    const participations2 = await getParticipationsByEventId(input.challengeId);
+    const result = await createAchievementPage({
+      challengeId: input.challengeId,
+      achievedAt: /* @__PURE__ */ new Date(),
+      finalValue: challenge.currentValue || 0,
+      goalValue: challenge.goalValue || 100,
+      totalParticipants: participations2.length,
+      title: input.title,
+      message: input.message,
+      isPublic: true
+    });
+    return { success: !!result, id: result };
+  }),
+  // 達成記念ページを取得
+  get: publicProcedure.input(z9.object({ challengeId: z9.number() })).query(async ({ input }) => {
+    return getAchievementPage(input.challengeId);
+  }),
+  // 達成記念ページを更新
+  update: protectedProcedure.input(z9.object({
+    challengeId: z9.number(),
+    title: z9.string().optional(),
+    message: z9.string().optional(),
+    isPublic: z9.boolean().optional()
+  })).mutation(async ({ ctx, input }) => {
+    const challenge = await getEventById(input.challengeId);
+    if (!challenge) throw new Error("Challenge not found");
+    if (challenge.hostUserId !== ctx.user.id && ctx.user.role !== "admin") {
+      throw new Error("Permission denied");
+    }
+    await updateAchievementPage(input.challengeId, {
+      title: input.title,
+      message: input.message,
+      isPublic: input.isPublic
+    });
+    return { success: true };
+  }),
+  // 公開中の達成記念ページ一覧
+  public: publicProcedure.query(async () => {
+    return getPublicAchievementPages();
+  })
+});
+
+// server/routers/reminders.ts
+import { z as z10 } from "zod";
+init_db();
+var remindersRouter = router({
+  // リマインダーを作成
+  create: protectedProcedure.input(z10.object({
+    challengeId: z10.number(),
+    reminderType: z10.enum(["day_before", "day_of", "hour_before", "custom"]),
+    customTime: z10.string().optional()
+  })).mutation(async ({ ctx, input }) => {
+    const result = await createReminder({
+      challengeId: input.challengeId,
+      userId: ctx.user.id,
+      reminderType: input.reminderType,
+      customTime: input.customTime ? new Date(input.customTime) : void 0
+    });
+    return { success: !!result, id: result };
+  }),
+  // ユーザーのリマインダー一覧
+  list: protectedProcedure.query(async ({ ctx }) => {
+    return getRemindersForUser(ctx.user.id);
+  }),
+  // チャレンジのリマインダー設定を取得
+  getForChallenge: protectedProcedure.input(z10.object({ challengeId: z10.number() })).query(async ({ ctx, input }) => {
+    return getUserReminderForChallenge(ctx.user.id, input.challengeId);
+  }),
+  // リマインダーを更新
+  update: protectedProcedure.input(z10.object({
+    id: z10.number(),
+    reminderType: z10.enum(["day_before", "day_of", "hour_before", "custom"]).optional(),
+    customTime: z10.string().optional()
+  })).mutation(async ({ input }) => {
+    await updateReminder(input.id, {
+      reminderType: input.reminderType,
+      customTime: input.customTime ? new Date(input.customTime) : void 0
+    });
+    return { success: true };
+  }),
+  // リマインダーを削除
+  delete: protectedProcedure.input(z10.object({ id: z10.number() })).mutation(async ({ input }) => {
+    await deleteReminder(input.id);
+    return { success: true };
+  })
+});
+
+// server/routers/dm.ts
+import { z as z11 } from "zod";
+init_db();
+var dmRouter = router({
+  // DMを送信
+  send: protectedProcedure.input(z11.object({
+    toUserId: z11.number(),
+    challengeId: z11.number(),
+    message: z11.string().min(1).max(1e3)
+  })).mutation(async ({ ctx, input }) => {
+    const result = await sendDirectMessage({
+      fromUserId: ctx.user.id,
+      fromUserName: ctx.user.name || "\u533F\u540D",
+      fromUserImage: null,
+      toUserId: input.toUserId,
+      challengeId: input.challengeId,
+      message: input.message
+    });
+    return { success: !!result, id: result };
+  }),
+  // 会話一覧を取得
+  conversations: protectedProcedure.query(async ({ ctx }) => {
+    return getConversationList(ctx.user.id);
+  }),
+  // 特定の会話を取得
+  getConversation: protectedProcedure.input(z11.object({
+    partnerId: z11.number(),
+    challengeId: z11.number()
+  })).query(async ({ ctx, input }) => {
+    return getConversation(ctx.user.id, input.partnerId, input.challengeId);
+  }),
+  // 未読メッセージ数を取得
+  unreadCount: protectedProcedure.query(async ({ ctx }) => {
+    return getUnreadMessageCount(ctx.user.id);
+  }),
+  // メッセージを既読にする
+  markAsRead: protectedProcedure.input(z11.object({ id: z11.number() })).mutation(async ({ input }) => {
+    await markMessageAsRead(input.id);
+    return { success: true };
+  }),
+  // 特定の相手からのメッセージを全て既読にする
+  markAllAsRead: protectedProcedure.input(z11.object({ fromUserId: z11.number() })).mutation(async ({ ctx, input }) => {
+    await markAllMessagesAsRead(ctx.user.id, input.fromUserId);
+    return { success: true };
+  })
+});
+
+// server/routers/templates.ts
+import { z as z12 } from "zod";
+init_db();
+var templatesRouter = router({
+  // テンプレートを作成
+  create: protectedProcedure.input(z12.object({
+    name: z12.string().min(1).max(100),
+    description: z12.string().optional(),
+    goalType: z12.enum(["attendance", "followers", "viewers", "points", "custom"]),
+    goalValue: z12.number().min(1),
+    goalUnit: z12.string().default("\u4EBA"),
+    eventType: z12.enum(["solo", "group"]),
+    ticketPresale: z12.number().optional(),
+    ticketDoor: z12.number().optional(),
+    isPublic: z12.boolean().default(false)
+  })).mutation(async ({ ctx, input }) => {
+    const result = await createChallengeTemplate({
+      userId: ctx.user.id,
+      ...input
+    });
+    return { success: !!result, id: result };
+  }),
+  // ユーザーのテンプレート一覧
+  list: protectedProcedure.query(async ({ ctx }) => {
+    return getChallengeTemplatesForUser(ctx.user.id);
+  }),
+  // 公開テンプレート一覧
+  public: publicProcedure.query(async () => {
+    return getPublicChallengeTemplates();
+  }),
+  // テンプレート詳細を取得
+  get: publicProcedure.input(z12.object({ id: z12.number() })).query(async ({ input }) => {
+    return getChallengeTemplateById(input.id);
+  }),
+  // テンプレートを更新
+  update: protectedProcedure.input(z12.object({
+    id: z12.number(),
+    name: z12.string().min(1).max(100).optional(),
+    description: z12.string().optional(),
+    goalType: z12.enum(["attendance", "followers", "viewers", "points", "custom"]).optional(),
+    goalValue: z12.number().min(1).optional(),
+    goalUnit: z12.string().optional(),
+    eventType: z12.enum(["solo", "group"]).optional(),
+    ticketPresale: z12.number().optional(),
+    ticketDoor: z12.number().optional(),
+    isPublic: z12.boolean().optional()
+  })).mutation(async ({ ctx, input }) => {
+    const template = await getChallengeTemplateById(input.id);
+    if (!template) throw new Error("Template not found");
+    if (template.userId !== ctx.user.id) throw new Error("Permission denied");
+    await updateChallengeTemplate(input.id, input);
+    return { success: true };
+  }),
+  // テンプレートを削除
+  delete: protectedProcedure.input(z12.object({ id: z12.number() })).mutation(async ({ ctx, input }) => {
+    const template = await getChallengeTemplateById(input.id);
+    if (!template) throw new Error("Template not found");
+    if (template.userId !== ctx.user.id) throw new Error("Permission denied");
+    await deleteChallengeTemplate(input.id);
+    return { success: true };
+  }),
+  // テンプレートの使用回数をインクリメント
+  incrementUseCount: protectedProcedure.input(z12.object({ id: z12.number() })).mutation(async ({ input }) => {
+    await incrementTemplateUseCount(input.id);
+    return { success: true };
+  })
+});
+
+// server/routers/search.ts
+import { z as z13 } from "zod";
+init_db();
+var searchRouter = router({
+  // チャレンジを検索
+  challenges: publicProcedure.input(z13.object({ query: z13.string().min(1) })).query(async ({ input }) => {
+    return searchChallenges(input.query);
+  }),
+  // ページネーション対応の検索
+  challengesPaginated: publicProcedure.input(z13.object({
+    query: z13.string().min(1),
+    cursor: z13.number().optional(),
+    limit: z13.number().min(1).max(50).default(20)
+  })).query(async ({ input }) => {
+    const { query, cursor = 0, limit } = input;
+    const allResults = await searchChallenges(query);
+    const items = allResults.slice(cursor, cursor + limit);
+    const nextCursor = cursor + limit < allResults.length ? cursor + limit : void 0;
+    return {
+      items,
+      nextCursor,
+      totalCount: allResults.length
+    };
+  }),
+  // 検索履歴を保存
+  saveHistory: protectedProcedure.input(z13.object({ query: z13.string(), resultCount: z13.number() })).mutation(async ({ ctx, input }) => {
+    const result = await saveSearchHistory({
+      userId: ctx.user.id,
+      query: input.query,
+      resultCount: input.resultCount
+    });
+    return { success: !!result, id: result };
+  }),
+  // 検索履歴を取得
+  history: protectedProcedure.input(z13.object({ limit: z13.number().optional() })).query(async ({ ctx, input }) => {
+    return getSearchHistoryForUser(ctx.user.id, input.limit || 10);
+  }),
+  // 検索履歴をクリア
+  clearHistory: protectedProcedure.mutation(async ({ ctx }) => {
+    await clearSearchHistoryForUser(ctx.user.id);
+    return { success: true };
+  })
+});
+
+// server/routers/follows.ts
+import { z as z14 } from "zod";
+init_db();
+var followsRouter = router({
+  // フォローする
+  follow: protectedProcedure.input(z14.object({
+    followeeId: z14.number(),
+    followeeName: z14.string().optional(),
+    followeeImage: z14.string().optional()
+  })).mutation(async ({ ctx, input }) => {
+    const result = await followUser({
+      followerId: ctx.user.id,
+      followerName: ctx.user.name || "\u533F\u540D",
+      followeeId: input.followeeId,
+      followeeName: input.followeeName,
+      followeeImage: input.followeeImage
+    });
+    return { success: !!result, id: result };
+  }),
+  // フォロー解除
+  unfollow: protectedProcedure.input(z14.object({ followeeId: z14.number() })).mutation(async ({ ctx, input }) => {
+    await unfollowUser(ctx.user.id, input.followeeId);
+    return { success: true };
+  }),
+  // フォロー中のユーザー一覧
+  following: protectedProcedure.query(async ({ ctx }) => {
+    return getFollowingForUser(ctx.user.id);
+  }),
+  // フォロワー一覧（特定ユーザーまたは自分）
+  followers: publicProcedure.input(z14.object({ userId: z14.number().optional() }).optional()).query(async ({ ctx, input }) => {
+    const targetUserId = input?.userId || ctx.user?.id;
+    if (!targetUserId) return [];
+    return getFollowersForUser(targetUserId);
+  }),
+  // フォローしているかチェック
+  isFollowing: protectedProcedure.input(z14.object({ followeeId: z14.number() })).query(async ({ ctx, input }) => {
+    return isFollowing(ctx.user.id, input.followeeId);
+  }),
+  // フォロワー数を取得
+  followerCount: publicProcedure.input(z14.object({ userId: z14.number() })).query(async ({ input }) => {
+    return getFollowerCount(input.userId);
+  }),
+  // 特定ユーザーのフォロワーID一覧を取得（ランキング優先表示用）
+  followerIds: publicProcedure.input(z14.object({ userId: z14.number() })).query(async ({ input }) => {
+    return getFollowerIdsForUser(input.userId);
+  }),
+  // フォロー中の数を取得
+  followingCount: publicProcedure.input(z14.object({ userId: z14.number() })).query(async ({ input }) => {
+    return getFollowingCount(input.userId);
+  }),
+  // 新着チャレンジ通知設定を更新
+  updateNotification: protectedProcedure.input(z14.object({ followeeId: z14.number(), notify: z14.boolean() })).mutation(async ({ ctx, input }) => {
+    await updateFollowNotification(ctx.user.id, input.followeeId, input.notify);
+    return { success: true };
+  })
+});
+
+// server/routers/rankings.ts
+import { z as z15 } from "zod";
+init_db();
+var rankingsRouter = router({
+  // 貢献度ランキング
+  contribution: publicProcedure.input(z15.object({
+    period: z15.enum(["weekly", "monthly", "all"]).optional(),
+    limit: z15.number().optional()
+  })).query(async ({ input }) => {
+    return getGlobalContributionRanking(input.period || "all", input.limit || 50);
+  }),
+  // チャレンジ達成率ランキング
+  challengeAchievement: publicProcedure.input(z15.object({ limit: z15.number().optional() })).query(async ({ input }) => {
+    return getChallengeAchievementRanking(input.limit || 50);
+  }),
+  // ホストランキング
+  hosts: publicProcedure.input(z15.object({ limit: z15.number().optional() })).query(async ({ input }) => {
+    return getHostRanking(input.limit || 50);
+  }),
+  // 自分のランキング位置を取得
+  myPosition: protectedProcedure.input(z15.object({ period: z15.enum(["weekly", "monthly", "all"]).optional() })).query(async ({ ctx, input }) => {
+    return getUserRankingPosition(ctx.user.id, input.period || "all");
+  })
+});
+
+// server/routers/categories.ts
+import { z as z16 } from "zod";
+init_db();
+var categoriesRouter = router({
+  // カテゴリ一覧を取得
+  list: publicProcedure.query(async () => {
+    return getAllCategories();
+  }),
+  // カテゴリ詳細を取得
+  get: publicProcedure.input(z16.object({ id: z16.number() })).query(async ({ input }) => {
+    return getCategoryById(input.id);
+  }),
+  // カテゴリ別チャレンジ一覧
+  challenges: publicProcedure.input(z16.object({ categoryId: z16.number() })).query(async ({ input }) => {
+    return getChallengesByCategory(input.categoryId);
+  }),
+  // カテゴリ作成（管理者のみ）
+  create: protectedProcedure.input(z16.object({
+    name: z16.string().min(1).max(100),
+    slug: z16.string().min(1).max(100),
+    description: z16.string().optional(),
+    icon: z16.string().optional(),
+    sortOrder: z16.number().optional()
+  })).mutation(async ({ input, ctx }) => {
+    if (ctx.user.role !== "admin") {
+      throw new Error("\u7BA1\u7406\u8005\u6A29\u9650\u304C\u5FC5\u8981\u3067\u3059");
+    }
+    return createCategory(input);
+  }),
+  // カテゴリ更新（管理者のみ）
+  update: protectedProcedure.input(z16.object({
+    id: z16.number(),
+    name: z16.string().min(1).max(100).optional(),
+    slug: z16.string().min(1).max(100).optional(),
+    description: z16.string().optional(),
+    icon: z16.string().optional(),
+    sortOrder: z16.number().optional(),
+    isActive: z16.boolean().optional()
+  })).mutation(async ({ input, ctx }) => {
+    if (ctx.user.role !== "admin") {
+      throw new Error("\u7BA1\u7406\u8005\u6A29\u9650\u304C\u5FC5\u8981\u3067\u3059");
+    }
+    const { id, ...data } = input;
+    return updateCategory(id, data);
+  }),
+  // カテゴリ削除（管理者のみ）
+  delete: protectedProcedure.input(z16.object({ id: z16.number() })).mutation(async ({ input, ctx }) => {
+    if (ctx.user.role !== "admin") {
+      throw new Error("\u7BA1\u7406\u8005\u6A29\u9650\u304C\u5FC5\u8981\u3067\u3059");
+    }
+    return deleteCategory(input.id);
+  })
+});
+
+// server/routers/invitations.ts
+import { z as z17 } from "zod";
+init_db();
+var invitationsRouter = router({
+  // 招待リンクを作成
+  create: protectedProcedure.input(z17.object({
+    challengeId: z17.number(),
+    maxUses: z17.number().optional(),
+    expiresAt: z17.string().optional(),
+    customMessage: z17.string().max(500).optional(),
+    customTitle: z17.string().max(100).optional()
+  })).mutation(async ({ ctx, input }) => {
+    const code = Math.random().toString(36).substring(2, 10).toUpperCase();
+    const result = await createInvitation({
+      challengeId: input.challengeId,
+      inviterId: ctx.user.id,
+      inviterName: ctx.user.name || void 0,
+      code,
+      maxUses: input.maxUses,
+      expiresAt: input.expiresAt ? new Date(input.expiresAt) : void 0,
+      customMessage: input.customMessage || void 0,
+      customTitle: input.customTitle || void 0
+    });
+    return { success: !!result, id: result, code };
+  }),
+  // 招待コードで情報を取得
+  getByCode: publicProcedure.input(z17.object({ code: z17.string() })).query(async ({ input }) => {
+    return getInvitationByCode(input.code);
+  }),
+  // チャレンジの招待一覧
+  forChallenge: protectedProcedure.input(z17.object({ challengeId: z17.number() })).query(async ({ input }) => {
+    return getInvitationsForChallenge(input.challengeId);
+  }),
+  // 自分が作成した招待一覧
+  mine: protectedProcedure.query(async ({ ctx }) => {
+    return getInvitationsForUser(ctx.user.id);
+  }),
+  // 招待を使用
+  use: protectedProcedure.input(z17.object({ code: z17.string() })).mutation(async ({ ctx, input }) => {
+    const invitation = await getInvitationByCode(input.code);
+    if (!invitation) throw new Error("Invitation not found");
+    if (!invitation.isActive) throw new Error("Invitation is no longer active");
+    if (invitation.maxUses && invitation.useCount >= invitation.maxUses) {
+      throw new Error("Invitation has reached maximum uses");
+    }
+    if (invitation.expiresAt && new Date(invitation.expiresAt) < /* @__PURE__ */ new Date()) {
+      throw new Error("Invitation has expired");
+    }
+    await incrementInvitationUseCount(input.code);
+    await recordInvitationUse({
+      invitationId: invitation.id,
+      userId: ctx.user.id
+    });
+    return { success: true, challengeId: invitation.challengeId };
+  }),
+  // 招待を無効化
+  deactivate: protectedProcedure.input(z17.object({ id: z17.number() })).mutation(async ({ input }) => {
+    await deactivateInvitation(input.id);
+    return { success: true };
+  }),
+  // 招待の統計を取得
+  stats: protectedProcedure.input(z17.object({ invitationId: z17.number() })).query(async ({ input }) => {
+    return getInvitationStats(input.invitationId);
+  }),
+  // ユーザーの招待実績を取得
+  myStats: protectedProcedure.query(async ({ ctx }) => {
+    return getUserInvitationStats(ctx.user.id);
+  }),
+  // チャレンジの招待経由参加者一覧
+  invitedParticipants: protectedProcedure.input(z17.object({ challengeId: z17.number() })).query(async ({ ctx, input }) => {
+    return getInvitedParticipants(input.challengeId, ctx.user.id);
+  })
+});
+
+// server/routers/profiles.ts
+import { z as z18 } from "zod";
+init_db();
+var profilesRouter = router({
+  // ユーザーの公開プロフィールを取得
+  get: publicProcedure.input(z18.object({ userId: z18.number() })).query(async ({ input }) => {
+    return getUserPublicProfile(input.userId);
+  }),
+  // 推し活状況を取得
+  getOshikatsuStats: publicProcedure.input(z18.object({
+    userId: z18.number().optional(),
+    twitterId: z18.string().optional()
+  })).query(async ({ input }) => {
+    return getOshikatsuStats(input.userId, input.twitterId);
+  }),
+  // おすすめホスト（同じカテゴリのチャレンジを開催しているホスト）
+  recommendedHosts: publicProcedure.input(z18.object({
+    categoryId: z18.number().optional(),
+    limit: z18.number().min(1).max(10).default(5)
+  })).query(async ({ ctx, input }) => {
+    const userId = ctx.user?.id;
+    return getRecommendedHosts(userId, input.categoryId, input.limit);
+  })
+});
+
+// server/routers/companions.ts
+import { z as z19 } from "zod";
+init_db();
+var companionsRouter = router({
+  // 参加者の友人一覧を取得
+  forParticipation: publicProcedure.input(z19.object({ participationId: z19.number() })).query(async ({ input }) => {
+    return getCompanionsForParticipation(input.participationId);
+  }),
+  // チャレンジの友人一覧を取得
+  forChallenge: publicProcedure.input(z19.object({ challengeId: z19.number() })).query(async ({ input }) => {
+    return getCompanionsForChallenge(input.challengeId);
+  }),
+  // 自分が招待した友人の統計
+  myInviteStats: protectedProcedure.query(async ({ ctx }) => {
+    return getCompanionInviteStats(ctx.user.id);
+  }),
+  // 友人を削除
+  delete: protectedProcedure.input(z19.object({ id: z19.number() })).mutation(async ({ ctx, input }) => {
+    const stats2 = await getCompanionInviteStats(ctx.user.id);
+    const companion = stats2.companions.find((c) => c.id === input.id);
+    if (!companion) {
+      throw new Error("Unauthorized");
+    }
+    await deleteCompanion(input.id);
+    return { success: true };
+  })
+});
+
+// server/routers/ai.ts
+import { z as z20 } from "zod";
+init_db();
+var aiRouter = router({
+  // AI向けチャレンジ詳細取得（JOINなし・1ホップ）
+  getChallenge: publicProcedure.input(z20.object({ id: z20.number() })).query(async ({ input }) => {
+    return getChallengeForAI(input.id);
+  }),
+  // AI向け検索（意図タグベース）
+  searchByTags: publicProcedure.input(z20.object({
+    tags: z20.array(z20.string()),
+    limit: z20.number().optional()
+  })).query(async ({ input }) => {
+    return searchChallengesForAI(input.tags, input.limit || 20);
+  }),
+  // チャレンジサマリーを手動更新
+  refreshSummary: protectedProcedure.input(z20.object({ challengeId: z20.number() })).mutation(async ({ input }) => {
+    await refreshChallengeSummary(input.challengeId);
+    return { success: true };
+  }),
+  // 全チャレンジのサマリーを一括更新（管理者向け）
+  refreshAllSummaries: protectedProcedure.mutation(async () => {
+    const result = await refreshAllChallengeSummaries();
+    return result;
+  })
+});
+
+// server/routers/dev.ts
+import { z as z21 } from "zod";
+init_db();
+var devRouter = router({
+  // サンプルチャレンジを生成
+  generateSampleChallenges: publicProcedure.input(z21.object({ count: z21.number().min(1).max(20).default(6) })).mutation(async ({ input }) => {
+    const sampleChallenges = [
+      {
+        hostName: "\u308A\u3093\u304F",
+        hostUsername: "kimitolink",
+        hostProfileImage: "https://ui-avatars.com/api/?name=%E3%82%8A%E3%82%93%E3%81%8F&background=EC4899&color=fff&size=128",
+        hostFollowersCount: 5e3,
+        title: "\u751F\u8A95\u796D\u30E9\u30A4\u30D6 \u52D5\u54E1100\u4EBA\u9054\u6210\u30C1\u30E3\u30EC\u30F3\u30B8",
+        description: "\u304D\u307F\u3068\u30EA\u30F3\u30AF\u306E\u751F\u8A95\u796D\u30E9\u30A4\u30D6\u3092\u6210\u529F\u3055\u305B\u3088\u3046\uFF01\u307F\u3093\u306A\u3067100\u4EBA\u52D5\u54E1\u3092\u76EE\u6307\u3057\u307E\u3059\u3002",
+        goalType: "attendance",
+        goalValue: 100,
+        goalUnit: "\u4EBA",
+        currentValue: 45,
+        eventType: "solo",
+        eventDate: new Date(Date.now() + 30 * 24 * 60 * 60 * 1e3),
+        venue: "\u6E0B\u8C37WWW",
+        prefecture: "\u6771\u4EAC\u90FD"
+      },
+      {
+        hostName: "\u30A2\u30A4\u30C9\u30EB\u30D5\u30A1\u30F3\u30C1",
+        hostUsername: "idolfunch",
+        hostProfileImage: "https://ui-avatars.com/api/?name=%E3%82%A2%E3%82%A4%E3%83%89%E3%83%AB&background=8B5CF6&color=fff&size=128",
+        hostFollowersCount: 12e3,
+        title: "\u30B0\u30EB\u30FC\u30D7\u30E9\u30A4\u30D6 \u30D5\u30A9\u30ED\u30EF\u30FC1\u4E07\u4EBA\u30C1\u30E3\u30EC\u30F3\u30B8",
+        description: "\u30A2\u30A4\u30C9\u30EB\u30D5\u30A1\u30F3\u30C1\u306E\u30D5\u30A9\u30ED\u30EF\u30FC\u30921\u4E07\u4EBA\u306B\u3057\u3088\u3046\uFF01",
+        goalType: "followers",
+        goalValue: 1e4,
+        goalUnit: "\u4EBA",
+        currentValue: 8500,
+        eventType: "group",
+        eventDate: new Date(Date.now() + 14 * 24 * 60 * 60 * 1e3),
+        venue: "\u65B0\u5BBFBLAZE",
+        prefecture: "\u6771\u4EAC\u90FD"
+      },
+      {
+        hostName: "\u3053\u3093\u592A",
+        hostUsername: "konta_idol",
+        hostProfileImage: "https://ui-avatars.com/api/?name=%E3%81%93%E3%82%93%E5%A4%AA&background=DD6500&color=fff&size=128",
+        hostFollowersCount: 3e3,
+        title: "\u30BD\u30ED\u30E9\u30A4\u30D6 50\u4EBA\u52D5\u54E1\u30C1\u30E3\u30EC\u30F3\u30B8",
+        description: "\u521D\u3081\u3066\u306E\u30BD\u30ED\u30E9\u30A4\u30D6\uFF0150\u4EBA\u96C6\u307E\u3063\u305F\u3089\u6210\u529F\uFF01",
+        goalType: "attendance",
+        goalValue: 50,
+        goalUnit: "\u4EBA",
+        currentValue: 32,
+        eventType: "solo",
+        eventDate: new Date(Date.now() + 7 * 24 * 60 * 60 * 1e3),
+        venue: "\u4E0B\u5317\u6CA2SHELTER",
+        prefecture: "\u6771\u4EAC\u90FD"
+      },
+      {
+        hostName: "\u305F\u306C\u59C9",
+        hostUsername: "tanunee_idol",
+        hostProfileImage: "https://ui-avatars.com/api/?name=%E3%81%9F%E3%81%AC%E5%A7%89&background=22C55E&color=fff&size=128",
+        hostFollowersCount: 2500,
+        title: "\u914D\u4FE1\u30E9\u30A4\u30D6 \u540C\u6642\u8996\u8074500\u4EBA\u30C1\u30E3\u30EC\u30F3\u30B8",
+        description: "YouTube\u914D\u4FE1\u3067\u540C\u6642\u8996\u8074500\u4EBA\u3092\u76EE\u6307\u3057\u307E\u3059\uFF01",
+        goalType: "viewers",
+        goalValue: 500,
+        goalUnit: "\u4EBA",
+        currentValue: 280,
+        eventType: "solo",
+        eventDate: new Date(Date.now() + 3 * 24 * 60 * 60 * 1e3),
+        venue: "\u30AA\u30F3\u30E9\u30A4\u30F3",
+        prefecture: null
+      },
+      {
+        hostName: "\u30EA\u30F3\u30AF",
+        hostUsername: "link_official",
+        hostProfileImage: "https://ui-avatars.com/api/?name=%E3%83%AA%E3%83%B3%E3%82%AF&background=3B82F6&color=fff&size=128",
+        hostFollowersCount: 8e3,
+        title: "\u30EF\u30F3\u30DE\u30F3\u30E9\u30A4\u30D6 200\u4EBA\u52D5\u54E1\u30C1\u30E3\u30EC\u30F3\u30B8",
+        description: "\u30EF\u30F3\u30DE\u30F3\u30E9\u30A4\u30D6\u3067200\u4EBA\u52D5\u54E1\u3092\u76EE\u6307\u3057\u307E\u3059\uFF01",
+        goalType: "attendance",
+        goalValue: 200,
+        goalUnit: "\u4EBA",
+        currentValue: 156,
+        eventType: "solo",
+        eventDate: new Date(Date.now() + 21 * 24 * 60 * 60 * 1e3),
+        venue: "\u5927\u962A\u57CE\u30DB\u30FC\u30EB",
+        prefecture: "\u5927\u962A\u5E9C"
+      },
+      {
+        hostName: "\u30A2\u30A4\u30C9\u30EB\u30E6\u30CB\u30C3\u30C8A",
+        hostUsername: "idol_unit_a",
+        hostProfileImage: "https://ui-avatars.com/api/?name=Unit+A&background=F59E0B&color=fff&size=128",
+        hostFollowersCount: 15e3,
+        title: "\u30B0\u30EB\u30FC\u30D7\u30E9\u30A4\u30D6 300\u4EBA\u52D5\u54E1\u30C1\u30E3\u30EC\u30F3\u30B8",
+        description: "5\u4EBA\u7D44\u30A2\u30A4\u30C9\u30EB\u30E6\u30CB\u30C3\u30C8\u306E\u30E9\u30A4\u30D6\uFF01300\u4EBA\u52D5\u54E1\u3092\u76EE\u6307\u3057\u307E\u3059\u3002",
+        goalType: "attendance",
+        goalValue: 300,
+        goalUnit: "\u4EBA",
+        currentValue: 210,
+        eventType: "group",
+        eventDate: new Date(Date.now() + 45 * 24 * 60 * 60 * 1e3),
+        venue: "\u6A2A\u6D5C\u30A2\u30EA\u30FC\u30CA",
+        prefecture: "\u795E\u5948\u5DDD\u770C"
       }
-      const participations2 = await getParticipationsByEventId(input.challengeId);
-      const result = await createAchievementPage({
-        challengeId: input.challengeId,
-        achievedAt: /* @__PURE__ */ new Date(),
-        finalValue: challenge.currentValue || 0,
-        goalValue: challenge.goalValue || 100,
-        totalParticipants: participations2.length,
-        title: input.title,
-        message: input.message,
+    ];
+    const createdIds = [];
+    const count = Math.min(input.count, sampleChallenges.length);
+    for (let i = 0; i < count; i++) {
+      const sample = sampleChallenges[i];
+      const id = await createEvent({
+        ...sample,
         isPublic: true
       });
-      return { success: !!result, id: result };
-    }),
-    // 達成記念ページを取得
-    get: publicProcedure.input(z2.object({ challengeId: z2.number() })).query(async ({ input }) => {
-      return getAchievementPage(input.challengeId);
-    }),
-    // 達成記念ページを更新
-    update: protectedProcedure.input(z2.object({
-      challengeId: z2.number(),
-      title: z2.string().optional(),
-      message: z2.string().optional(),
-      isPublic: z2.boolean().optional()
-    })).mutation(async ({ ctx, input }) => {
-      const challenge = await getEventById(input.challengeId);
-      if (!challenge) throw new Error("Challenge not found");
-      if (challenge.hostUserId !== ctx.user.id && ctx.user.role !== "admin") {
-        throw new Error("Permission denied");
-      }
-      await updateAchievementPage(input.challengeId, {
-        title: input.title,
-        message: input.message,
-        isPublic: input.isPublic
-      });
-      return { success: true };
-    }),
-    // 公開中の達成記念ページ一覧
-    public: publicProcedure.query(async () => {
-      return getPublicAchievementPages();
-    })
+      createdIds.push(id);
+    }
+    return { success: true, createdIds, count: createdIds.length };
   }),
-  // リマインダー関連
-  reminders: router({
-    // リマインダーを作成
-    create: protectedProcedure.input(z2.object({
-      challengeId: z2.number(),
-      reminderType: z2.enum(["day_before", "day_of", "hour_before", "custom"]),
-      customTime: z2.string().optional()
-    })).mutation(async ({ ctx, input }) => {
-      const result = await createReminder({
-        challengeId: input.challengeId,
-        userId: ctx.user.id,
-        reminderType: input.reminderType,
-        customTime: input.customTime ? new Date(input.customTime) : void 0
-      });
-      return { success: !!result, id: result };
-    }),
-    // ユーザーのリマインダー一覧
-    list: protectedProcedure.query(async ({ ctx }) => {
-      return getRemindersForUser(ctx.user.id);
-    }),
-    // チャレンジのリマインダー設定を取得
-    getForChallenge: protectedProcedure.input(z2.object({ challengeId: z2.number() })).query(async ({ ctx, input }) => {
-      return getUserReminderForChallenge(ctx.user.id, input.challengeId);
-    }),
-    // リマインダーを更新
-    update: protectedProcedure.input(z2.object({
-      id: z2.number(),
-      reminderType: z2.enum(["day_before", "day_of", "hour_before", "custom"]).optional(),
-      customTime: z2.string().optional()
-    })).mutation(async ({ input }) => {
-      await updateReminder(input.id, {
-        reminderType: input.reminderType,
-        customTime: input.customTime ? new Date(input.customTime) : void 0
-      });
-      return { success: true };
-    }),
-    // リマインダーを削除
-    delete: protectedProcedure.input(z2.object({ id: z2.number() })).mutation(async ({ input }) => {
-      await deleteReminder(input.id);
-      return { success: true };
-    })
-  }),
-  // DM関連
-  dm: router({
-    // DMを送信
-    send: protectedProcedure.input(z2.object({
-      toUserId: z2.number(),
-      challengeId: z2.number(),
-      message: z2.string().min(1).max(1e3)
-    })).mutation(async ({ ctx, input }) => {
-      const result = await sendDirectMessage({
-        fromUserId: ctx.user.id,
-        fromUserName: ctx.user.name || "\u533F\u540D",
-        fromUserImage: null,
-        toUserId: input.toUserId,
-        challengeId: input.challengeId,
-        message: input.message
-      });
-      return { success: !!result, id: result };
-    }),
-    // 会話一覧を取得
-    conversations: protectedProcedure.query(async ({ ctx }) => {
-      return getConversationList(ctx.user.id);
-    }),
-    // 特定の会話を取得
-    getConversation: protectedProcedure.input(z2.object({
-      partnerId: z2.number(),
-      challengeId: z2.number()
-    })).query(async ({ ctx, input }) => {
-      return getConversation(ctx.user.id, input.partnerId, input.challengeId);
-    }),
-    // 未読メッセージ数を取得
-    unreadCount: protectedProcedure.query(async ({ ctx }) => {
-      return getUnreadMessageCount(ctx.user.id);
-    }),
-    // メッセージを既読にする
-    markAsRead: protectedProcedure.input(z2.object({ id: z2.number() })).mutation(async ({ input }) => {
-      await markMessageAsRead(input.id);
-      return { success: true };
-    }),
-    // 特定の相手からのメッセージを全て既読にする
-    markAllAsRead: protectedProcedure.input(z2.object({ fromUserId: z2.number() })).mutation(async ({ ctx, input }) => {
-      await markAllMessagesAsRead(ctx.user.id, input.fromUserId);
-      return { success: true };
-    })
-  }),
-  // テンプレート関連
-  templates: router({
-    // テンプレートを作成
-    create: protectedProcedure.input(z2.object({
-      name: z2.string().min(1).max(100),
-      description: z2.string().optional(),
-      goalType: z2.enum(["attendance", "followers", "viewers", "points", "custom"]),
-      goalValue: z2.number().min(1),
-      goalUnit: z2.string().default("\u4EBA"),
-      eventType: z2.enum(["solo", "group"]),
-      ticketPresale: z2.number().optional(),
-      ticketDoor: z2.number().optional(),
-      isPublic: z2.boolean().default(false)
-    })).mutation(async ({ ctx, input }) => {
-      const result = await createChallengeTemplate({
-        userId: ctx.user.id,
-        ...input
-      });
-      return { success: !!result, id: result };
-    }),
-    // ユーザーのテンプレート一覧
-    list: protectedProcedure.query(async ({ ctx }) => {
-      return getChallengeTemplatesForUser(ctx.user.id);
-    }),
-    // 公開テンプレート一覧
-    public: publicProcedure.query(async () => {
-      return getPublicChallengeTemplates();
-    }),
-    // テンプレート詳細を取得
-    get: publicProcedure.input(z2.object({ id: z2.number() })).query(async ({ input }) => {
-      return getChallengeTemplateById(input.id);
-    }),
-    // テンプレートを更新
-    update: protectedProcedure.input(z2.object({
-      id: z2.number(),
-      name: z2.string().min(1).max(100).optional(),
-      description: z2.string().optional(),
-      goalType: z2.enum(["attendance", "followers", "viewers", "points", "custom"]).optional(),
-      goalValue: z2.number().min(1).optional(),
-      goalUnit: z2.string().optional(),
-      eventType: z2.enum(["solo", "group"]).optional(),
-      ticketPresale: z2.number().optional(),
-      ticketDoor: z2.number().optional(),
-      isPublic: z2.boolean().optional()
-    })).mutation(async ({ ctx, input }) => {
-      const template = await getChallengeTemplateById(input.id);
-      if (!template) throw new Error("Template not found");
-      if (template.userId !== ctx.user.id) throw new Error("Permission denied");
-      await updateChallengeTemplate(input.id, input);
-      return { success: true };
-    }),
-    // テンプレートを削除
-    delete: protectedProcedure.input(z2.object({ id: z2.number() })).mutation(async ({ ctx, input }) => {
-      const template = await getChallengeTemplateById(input.id);
-      if (!template) throw new Error("Template not found");
-      if (template.userId !== ctx.user.id) throw new Error("Permission denied");
-      await deleteChallengeTemplate(input.id);
-      return { success: true };
-    }),
-    // テンプレートの使用回数をインクリメント
-    incrementUseCount: protectedProcedure.input(z2.object({ id: z2.number() })).mutation(async ({ input }) => {
-      await incrementTemplateUseCount(input.id);
-      return { success: true };
-    })
-  }),
-  // 検索関連
-  search: router({
-    // チャレンジを検索
-    challenges: publicProcedure.input(z2.object({ query: z2.string().min(1) })).query(async ({ input }) => {
-      return searchChallenges(input.query);
-    }),
-    // ページネーション対応の検索
-    challengesPaginated: publicProcedure.input(z2.object({
-      query: z2.string().min(1),
-      cursor: z2.number().optional(),
-      limit: z2.number().min(1).max(50).default(20)
-    })).query(async ({ input }) => {
-      const { query, cursor = 0, limit } = input;
-      const allResults = await searchChallenges(query);
-      const items = allResults.slice(cursor, cursor + limit);
-      const nextCursor = cursor + limit < allResults.length ? cursor + limit : void 0;
-      return {
-        items,
-        nextCursor,
-        totalCount: allResults.length
-      };
-    }),
-    // 検索履歴を保存
-    saveHistory: protectedProcedure.input(z2.object({ query: z2.string(), resultCount: z2.number() })).mutation(async ({ ctx, input }) => {
-      const result = await saveSearchHistory({
-        userId: ctx.user.id,
-        query: input.query,
-        resultCount: input.resultCount
-      });
-      return { success: !!result, id: result };
-    }),
-    // 検索履歴を取得
-    history: protectedProcedure.input(z2.object({ limit: z2.number().optional() })).query(async ({ ctx, input }) => {
-      return getSearchHistoryForUser(ctx.user.id, input.limit || 10);
-    }),
-    // 検索履歴をクリア
-    clearHistory: protectedProcedure.mutation(async ({ ctx }) => {
-      await clearSearchHistoryForUser(ctx.user.id);
-      return { success: true };
-    })
-  }),
-  // フォロー関連
-  follows: router({
-    // フォローする
-    follow: protectedProcedure.input(z2.object({
-      followeeId: z2.number(),
-      followeeName: z2.string().optional(),
-      followeeImage: z2.string().optional()
-    })).mutation(async ({ ctx, input }) => {
-      const result = await followUser({
-        followerId: ctx.user.id,
-        followerName: ctx.user.name || "\u533F\u540D",
-        followeeId: input.followeeId,
-        followeeName: input.followeeName,
-        followeeImage: input.followeeImage
-      });
-      return { success: !!result, id: result };
-    }),
-    // フォロー解除
-    unfollow: protectedProcedure.input(z2.object({ followeeId: z2.number() })).mutation(async ({ ctx, input }) => {
-      await unfollowUser(ctx.user.id, input.followeeId);
-      return { success: true };
-    }),
-    // フォロー中のユーザー一覧
-    following: protectedProcedure.query(async ({ ctx }) => {
-      return getFollowingForUser(ctx.user.id);
-    }),
-    // フォロワー一覧（特定ユーザーまたは自分）
-    followers: publicProcedure.input(z2.object({ userId: z2.number().optional() }).optional()).query(async ({ ctx, input }) => {
-      const targetUserId = input?.userId || ctx.user?.id;
-      if (!targetUserId) return [];
-      return getFollowersForUser(targetUserId);
-    }),
-    // フォローしているかチェック
-    isFollowing: protectedProcedure.input(z2.object({ followeeId: z2.number() })).query(async ({ ctx, input }) => {
-      return isFollowing(ctx.user.id, input.followeeId);
-    }),
-    // フォロワー数を取得
-    followerCount: publicProcedure.input(z2.object({ userId: z2.number() })).query(async ({ input }) => {
-      return getFollowerCount(input.userId);
-    }),
-    // 特定ユーザーのフォロワーID一覧を取得（ランキング優先表示用）
-    followerIds: publicProcedure.input(z2.object({ userId: z2.number() })).query(async ({ input }) => {
-      return getFollowerIdsForUser(input.userId);
-    }),
-    // フォロー中の数を取得
-    followingCount: publicProcedure.input(z2.object({ userId: z2.number() })).query(async ({ input }) => {
-      return getFollowingCount(input.userId);
-    }),
-    // 新着チャレンジ通知設定を更新
-    updateNotification: protectedProcedure.input(z2.object({ followeeId: z2.number(), notify: z2.boolean() })).mutation(async ({ ctx, input }) => {
-      await updateFollowNotification(ctx.user.id, input.followeeId, input.notify);
-      return { success: true };
-    })
-  }),
-  // ランキング関連
-  rankings: router({
-    // 貢献度ランキング
-    contribution: publicProcedure.input(z2.object({
-      period: z2.enum(["weekly", "monthly", "all"]).optional(),
-      limit: z2.number().optional()
-    })).query(async ({ input }) => {
-      return getGlobalContributionRanking(input.period || "all", input.limit || 50);
-    }),
-    // チャレンジ達成率ランキング
-    challengeAchievement: publicProcedure.input(z2.object({ limit: z2.number().optional() })).query(async ({ input }) => {
-      return getChallengeAchievementRanking(input.limit || 50);
-    }),
-    // ホストランキング
-    hosts: publicProcedure.input(z2.object({ limit: z2.number().optional() })).query(async ({ input }) => {
-      return getHostRanking(input.limit || 50);
-    }),
-    // 自分のランキング位置を取得
-    myPosition: protectedProcedure.input(z2.object({ period: z2.enum(["weekly", "monthly", "all"]).optional() })).query(async ({ ctx, input }) => {
-      return getUserRankingPosition(ctx.user.id, input.period || "all");
-    })
-  }),
-  // カテゴリ関連
-  categories: router({
-    // カテゴリ一覧を取得
-    list: publicProcedure.query(async () => {
-      return getAllCategories();
-    }),
-    // カテゴリ詳細を取得
-    get: publicProcedure.input(z2.object({ id: z2.number() })).query(async ({ input }) => {
-      return getCategoryById(input.id);
-    }),
-    // カテゴリ別チャレンジ一覧
-    challenges: publicProcedure.input(z2.object({ categoryId: z2.number() })).query(async ({ input }) => {
-      return getChallengesByCategory(input.categoryId);
-    }),
-    // カテゴリ作成（管理者のみ）
-    create: protectedProcedure.input(z2.object({
-      name: z2.string().min(1).max(100),
-      slug: z2.string().min(1).max(100),
-      description: z2.string().optional(),
-      icon: z2.string().optional(),
-      sortOrder: z2.number().optional()
-    })).mutation(async ({ input, ctx }) => {
-      if (ctx.user.role !== "admin") {
-        throw new Error("\u7BA1\u7406\u8005\u6A29\u9650\u304C\u5FC5\u8981\u3067\u3059");
+  // サンプルデータを削除
+  clearSampleChallenges: publicProcedure.mutation(async () => {
+    const sampleUsernames = ["kimitolink", "idolfunch", "konta_idol", "tanunee_idol", "link_official", "idol_unit_a"];
+    const allEvents = await getAllEvents();
+    let deletedCount = 0;
+    for (const event of allEvents) {
+      if (event.hostUsername && sampleUsernames.includes(event.hostUsername)) {
+        await deleteEvent(event.id);
+        deletedCount++;
       }
-      return createCategory(input);
-    }),
-    // カテゴリ更新（管理者のみ）
-    update: protectedProcedure.input(z2.object({
-      id: z2.number(),
-      name: z2.string().min(1).max(100).optional(),
-      slug: z2.string().min(1).max(100).optional(),
-      description: z2.string().optional(),
-      icon: z2.string().optional(),
-      sortOrder: z2.number().optional(),
-      isActive: z2.boolean().optional()
-    })).mutation(async ({ input, ctx }) => {
-      if (ctx.user.role !== "admin") {
-        throw new Error("\u7BA1\u7406\u8005\u6A29\u9650\u304C\u5FC5\u8981\u3067\u3059");
-      }
-      const { id, ...data } = input;
-      return updateCategory(id, data);
-    }),
-    // カテゴリ削除（管理者のみ）
-    delete: protectedProcedure.input(z2.object({ id: z2.number() })).mutation(async ({ input, ctx }) => {
-      if (ctx.user.role !== "admin") {
-        throw new Error("\u7BA1\u7406\u8005\u6A29\u9650\u304C\u5FC5\u8981\u3067\u3059");
-      }
-      return deleteCategory(input.id);
-    })
-  }),
-  // 招待関連
-  invitations: router({
-    // 招待リンクを作成
-    create: protectedProcedure.input(z2.object({
-      challengeId: z2.number(),
-      maxUses: z2.number().optional(),
-      expiresAt: z2.string().optional(),
-      // v6.09: カスタムメッセージとタイトル
-      customMessage: z2.string().max(500).optional(),
-      customTitle: z2.string().max(100).optional()
-    })).mutation(async ({ ctx, input }) => {
-      const code = Math.random().toString(36).substring(2, 10).toUpperCase();
-      const result = await createInvitation({
-        challengeId: input.challengeId,
-        inviterId: ctx.user.id,
-        inviterName: ctx.user.name || void 0,
-        code,
-        maxUses: input.maxUses,
-        expiresAt: input.expiresAt ? new Date(input.expiresAt) : void 0,
-        // v6.09: カスタムメッセージとタイトル
-        customMessage: input.customMessage || void 0,
-        customTitle: input.customTitle || void 0
-      });
-      return { success: !!result, id: result, code };
-    }),
-    // 招待コードで情報を取得
-    getByCode: publicProcedure.input(z2.object({ code: z2.string() })).query(async ({ input }) => {
-      return getInvitationByCode(input.code);
-    }),
-    // チャレンジの招待一覧
-    forChallenge: protectedProcedure.input(z2.object({ challengeId: z2.number() })).query(async ({ input }) => {
-      return getInvitationsForChallenge(input.challengeId);
-    }),
-    // 自分が作成した招待一覧
-    mine: protectedProcedure.query(async ({ ctx }) => {
-      return getInvitationsForUser(ctx.user.id);
-    }),
-    // 招待を使用
-    use: protectedProcedure.input(z2.object({ code: z2.string() })).mutation(async ({ ctx, input }) => {
-      const invitation = await getInvitationByCode(input.code);
-      if (!invitation) throw new Error("Invitation not found");
-      if (!invitation.isActive) throw new Error("Invitation is no longer active");
-      if (invitation.maxUses && invitation.useCount >= invitation.maxUses) {
-        throw new Error("Invitation has reached maximum uses");
-      }
-      if (invitation.expiresAt && new Date(invitation.expiresAt) < /* @__PURE__ */ new Date()) {
-        throw new Error("Invitation has expired");
-      }
-      await incrementInvitationUseCount(input.code);
-      await recordInvitationUse({
-        invitationId: invitation.id,
-        userId: ctx.user.id
-      });
-      return { success: true, challengeId: invitation.challengeId };
-    }),
-    // 招待を無効化
-    deactivate: protectedProcedure.input(z2.object({ id: z2.number() })).mutation(async ({ input }) => {
-      await deactivateInvitation(input.id);
-      return { success: true };
-    }),
-    // 招待の統計を取得
-    stats: protectedProcedure.input(z2.object({ invitationId: z2.number() })).query(async ({ input }) => {
-      return getInvitationStats(input.invitationId);
-    }),
-    // v6.08: ユーザーの招待実績を取得
-    myStats: protectedProcedure.query(async ({ ctx }) => {
-      return getUserInvitationStats(ctx.user.id);
-    }),
-    // v6.08: チャレンジの招待経由参加者一覧
-    invitedParticipants: protectedProcedure.input(z2.object({ challengeId: z2.number() })).query(async ({ ctx, input }) => {
-      return getInvitedParticipants(input.challengeId, ctx.user.id);
-    })
-  }),
-  // 公開プロフィール関連
-  profiles: router({
-    // ユーザーの公開プロフィールを取得
-    get: publicProcedure.input(z2.object({ userId: z2.number() })).query(async ({ input }) => {
-      return getUserPublicProfile(input.userId);
-    }),
-    // 推し活状況を取得
-    getOshikatsuStats: publicProcedure.input(z2.object({
-      userId: z2.number().optional(),
-      twitterId: z2.string().optional()
-    })).query(async ({ input }) => {
-      return getOshikatsuStats(input.userId, input.twitterId);
-    }),
-    // おすすめホスト（同じカテゴリのチャレンジを開催しているホスト）
-    recommendedHosts: publicProcedure.input(z2.object({
-      categoryId: z2.number().optional(),
-      limit: z2.number().min(1).max(10).default(5)
-    })).query(async ({ ctx, input }) => {
-      const userId = ctx.user?.id;
-      return getRecommendedHosts(userId, input.categoryId, input.limit);
-    })
-  }),
-  // 友人（コンパニオン）関連
-  companions: router({
-    // 参加者の友人一覧を取得
-    forParticipation: publicProcedure.input(z2.object({ participationId: z2.number() })).query(async ({ input }) => {
-      return getCompanionsForParticipation(input.participationId);
-    }),
-    // チャレンジの友人一覧を取得
-    forChallenge: publicProcedure.input(z2.object({ challengeId: z2.number() })).query(async ({ input }) => {
-      return getCompanionsForChallenge(input.challengeId);
-    }),
-    // 自分が招待した友人の統計
-    myInviteStats: protectedProcedure.query(async ({ ctx }) => {
-      return getCompanionInviteStats(ctx.user.id);
-    }),
-    // 友人を削除
-    delete: protectedProcedure.input(z2.object({ id: z2.number() })).mutation(async ({ ctx, input }) => {
-      const stats2 = await getCompanionInviteStats(ctx.user.id);
-      const companion = stats2.companions.find((c) => c.id === input.id);
-      if (!companion) {
-        throw new Error("Unauthorized");
-      }
-      await deleteCompanion(input.id);
-      return { success: true };
-    })
-  }),
-  // AI向け最適化API（1ホップ取得・非正規化サマリー）
-  ai: router({
-    // AI向けチャレンジ詳細取得（JOINなし・1ホップ）
-    getChallenge: publicProcedure.input(z2.object({ id: z2.number() })).query(async ({ input }) => {
-      return getChallengeForAI(input.id);
-    }),
-    // AI向け検索（意図タグベース）
-    searchByTags: publicProcedure.input(z2.object({
-      tags: z2.array(z2.string()),
-      limit: z2.number().optional()
-    })).query(async ({ input }) => {
-      return searchChallengesForAI(input.tags, input.limit || 20);
-    }),
-    // チャレンジサマリーを手動更新
-    refreshSummary: protectedProcedure.input(z2.object({ challengeId: z2.number() })).mutation(async ({ input }) => {
-      await refreshChallengeSummary(input.challengeId);
-      return { success: true };
-    }),
-    // 全チャレンジのサマリーを一括更新（管理者向け）
-    refreshAllSummaries: protectedProcedure.mutation(async () => {
-      const result = await refreshAllChallengeSummaries();
-      return result;
-    })
-  }),
-  // 開発者向けサンプルデータ生成API
-  dev: router({
-    // サンプルチャレンジを生成
-    generateSampleChallenges: publicProcedure.input(z2.object({ count: z2.number().min(1).max(20).default(6) })).mutation(async ({ input }) => {
-      const sampleChallenges = [
-        {
-          hostName: "\u308A\u3093\u304F",
-          hostUsername: "kimitolink",
-          hostProfileImage: "https://ui-avatars.com/api/?name=%E3%82%8A%E3%82%93%E3%81%8F&background=EC4899&color=fff&size=128",
-          hostFollowersCount: 5e3,
-          title: "\u751F\u8A95\u796D\u30E9\u30A4\u30D6 \u52D5\u54E1100\u4EBA\u9054\u6210\u30C1\u30E3\u30EC\u30F3\u30B8",
-          description: "\u304D\u307F\u3068\u30EA\u30F3\u30AF\u306E\u751F\u8A95\u796D\u30E9\u30A4\u30D6\u3092\u6210\u529F\u3055\u305B\u3088\u3046\uFF01\u307F\u3093\u306A\u3067100\u4EBA\u52D5\u54E1\u3092\u76EE\u6307\u3057\u307E\u3059\u3002",
-          goalType: "attendance",
-          goalValue: 100,
-          goalUnit: "\u4EBA",
-          currentValue: 45,
-          eventType: "solo",
-          eventDate: new Date(Date.now() + 30 * 24 * 60 * 60 * 1e3),
-          venue: "\u6E0B\u8C37WWW",
-          prefecture: "\u6771\u4EAC\u90FD"
-        },
-        {
-          hostName: "\u30A2\u30A4\u30C9\u30EB\u30D5\u30A1\u30F3\u30C1",
-          hostUsername: "idolfunch",
-          hostProfileImage: "https://ui-avatars.com/api/?name=%E3%82%A2%E3%82%A4%E3%83%89%E3%83%AB&background=8B5CF6&color=fff&size=128",
-          hostFollowersCount: 12e3,
-          title: "\u30B0\u30EB\u30FC\u30D7\u30E9\u30A4\u30D6 \u30D5\u30A9\u30ED\u30EF\u30FC1\u4E07\u4EBA\u30C1\u30E3\u30EC\u30F3\u30B8",
-          description: "\u30A2\u30A4\u30C9\u30EB\u30D5\u30A1\u30F3\u30C1\u306E\u30D5\u30A9\u30ED\u30EF\u30FC\u30921\u4E07\u4EBA\u306B\u3057\u3088\u3046\uFF01",
-          goalType: "followers",
-          goalValue: 1e4,
-          goalUnit: "\u4EBA",
-          currentValue: 8500,
-          eventType: "group",
-          eventDate: new Date(Date.now() + 14 * 24 * 60 * 60 * 1e3),
-          venue: "\u65B0\u5BBFBLAZE",
-          prefecture: "\u6771\u4EAC\u90FD"
-        },
-        {
-          hostName: "\u3053\u3093\u592A",
-          hostUsername: "konta_idol",
-          hostProfileImage: "https://ui-avatars.com/api/?name=%E3%81%93%E3%82%93%E5%A4%AA&background=DD6500&color=fff&size=128",
-          hostFollowersCount: 3e3,
-          title: "\u30BD\u30ED\u30E9\u30A4\u30D6 50\u4EBA\u52D5\u54E1\u30C1\u30E3\u30EC\u30F3\u30B8",
-          description: "\u521D\u3081\u3066\u306E\u30BD\u30ED\u30E9\u30A4\u30D6\uFF0150\u4EBA\u96C6\u307E\u3063\u305F\u3089\u6210\u529F\uFF01",
-          goalType: "attendance",
-          goalValue: 50,
-          goalUnit: "\u4EBA",
-          currentValue: 32,
-          eventType: "solo",
-          eventDate: new Date(Date.now() + 7 * 24 * 60 * 60 * 1e3),
-          venue: "\u4E0B\u5317\u6CA2SHELTER",
-          prefecture: "\u6771\u4EAC\u90FD"
-        },
-        {
-          hostName: "\u305F\u306C\u59C9",
-          hostUsername: "tanunee_idol",
-          hostProfileImage: "https://ui-avatars.com/api/?name=%E3%81%9F%E3%81%AC%E5%A7%89&background=22C55E&color=fff&size=128",
-          hostFollowersCount: 2500,
-          title: "\u914D\u4FE1\u30E9\u30A4\u30D6 \u540C\u6642\u8996\u8074500\u4EBA\u30C1\u30E3\u30EC\u30F3\u30B8",
-          description: "YouTube\u914D\u4FE1\u3067\u540C\u6642\u8996\u8074500\u4EBA\u3092\u76EE\u6307\u3057\u307E\u3059\uFF01",
-          goalType: "viewers",
-          goalValue: 500,
-          goalUnit: "\u4EBA",
-          currentValue: 280,
-          eventType: "solo",
-          eventDate: new Date(Date.now() + 3 * 24 * 60 * 60 * 1e3),
-          venue: "\u30AA\u30F3\u30E9\u30A4\u30F3",
-          prefecture: null
-        },
-        {
-          hostName: "\u30EA\u30F3\u30AF",
-          hostUsername: "link_official",
-          hostProfileImage: "https://ui-avatars.com/api/?name=%E3%83%AA%E3%83%B3%E3%82%AF&background=3B82F6&color=fff&size=128",
-          hostFollowersCount: 8e3,
-          title: "\u30EF\u30F3\u30DE\u30F3\u30E9\u30A4\u30D6 200\u4EBA\u52D5\u54E1\u30C1\u30E3\u30EC\u30F3\u30B8",
-          description: "\u30EF\u30F3\u30DE\u30F3\u30E9\u30A4\u30D6\u3067200\u4EBA\u52D5\u54E1\u3092\u76EE\u6307\u3057\u307E\u3059\uFF01",
-          goalType: "attendance",
-          goalValue: 200,
-          goalUnit: "\u4EBA",
-          currentValue: 156,
-          eventType: "solo",
-          eventDate: new Date(Date.now() + 21 * 24 * 60 * 60 * 1e3),
-          venue: "\u5927\u962A\u57CE\u30DB\u30FC\u30EB",
-          prefecture: "\u5927\u962A\u5E9C"
-        },
-        {
-          hostName: "\u30A2\u30A4\u30C9\u30EB\u30E6\u30CB\u30C3\u30C8A",
-          hostUsername: "idol_unit_a",
-          hostProfileImage: "https://ui-avatars.com/api/?name=Unit+A&background=F59E0B&color=fff&size=128",
-          hostFollowersCount: 15e3,
-          title: "\u30B0\u30EB\u30FC\u30D7\u30E9\u30A4\u30D6 300\u4EBA\u52D5\u54E1\u30C1\u30E3\u30EC\u30F3\u30B8",
-          description: "5\u4EBA\u7D44\u30A2\u30A4\u30C9\u30EB\u30E6\u30CB\u30C3\u30C8\u306E\u30E9\u30A4\u30D6\uFF01300\u4EBA\u52D5\u54E1\u3092\u76EE\u6307\u3057\u307E\u3059\u3002",
-          goalType: "attendance",
-          goalValue: 300,
-          goalUnit: "\u4EBA",
-          currentValue: 210,
-          eventType: "group",
-          eventDate: new Date(Date.now() + 45 * 24 * 60 * 60 * 1e3),
-          venue: "\u6A2A\u6D5C\u30A2\u30EA\u30FC\u30CA",
-          prefecture: "\u795E\u5948\u5DDD\u770C"
-        }
-      ];
-      const createdIds = [];
-      const count = Math.min(input.count, sampleChallenges.length);
-      for (let i = 0; i < count; i++) {
-        const sample = sampleChallenges[i];
-        const id = await createEvent({
-          ...sample,
-          isPublic: true
-        });
-        createdIds.push(id);
-      }
-      return { success: true, createdIds, count: createdIds.length };
-    }),
-    // サンプルデータを削除
-    clearSampleChallenges: publicProcedure.mutation(async () => {
-      const sampleUsernames = ["kimitolink", "idolfunch", "konta_idol", "tanunee_idol", "link_official", "idol_unit_a"];
-      const allEvents = await getAllEvents();
-      let deletedCount = 0;
-      for (const event of allEvents) {
-        if (event.hostUsername && sampleUsernames.includes(event.hostUsername)) {
-          await deleteEvent(event.id);
-          deletedCount++;
-        }
-      }
-      return { success: true, deletedCount };
-    })
-  }),
-  // チケット譲渡関連
-  ticketTransfer: router({
-    // 譲渡投稿を作成
-    create: protectedProcedure.input(z2.object({
-      challengeId: z2.number(),
-      ticketCount: z2.number().min(1).max(10).default(1),
-      priceType: z2.enum(["face_value", "negotiable", "free"]).default("face_value"),
-      comment: z2.string().max(500).optional(),
-      userUsername: z2.string().optional()
-      // XのDM用ユーザー名
-    })).mutation(async ({ ctx, input }) => {
-      const result = await createTicketTransfer({
-        challengeId: input.challengeId,
-        userId: ctx.user.id,
-        userName: ctx.user.name || "\u533F\u540D",
-        userUsername: input.userUsername,
-        userImage: null,
-        ticketCount: input.ticketCount,
-        priceType: input.priceType,
-        comment: input.comment
-      });
-      const waitlistUsers = await getWaitlistUsersForNotification(input.challengeId);
-      return { success: !!result, id: result, notifiedCount: waitlistUsers.length };
-    }),
-    // チャレンジの譲渡投稿一覧を取得
-    listByChallenge: publicProcedure.input(z2.object({ challengeId: z2.number() })).query(async ({ input }) => {
-      return getTicketTransfersForChallenge(input.challengeId);
-    }),
-    // 自分の譲渡投稿一覧を取得
-    myTransfers: protectedProcedure.query(async ({ ctx }) => {
-      return getTicketTransfersForUser(ctx.user.id);
-    }),
-    // 譲渡投稿のステータスを更新
-    updateStatus: protectedProcedure.input(z2.object({
-      id: z2.number(),
-      status: z2.enum(["available", "reserved", "completed", "cancelled"])
-    })).mutation(async ({ ctx, input }) => {
-      await updateTicketTransferStatus(input.id, input.status);
-      return { success: true };
-    }),
-    // 譲渡投稿をキャンセル
-    cancel: protectedProcedure.input(z2.object({ id: z2.number() })).mutation(async ({ ctx, input }) => {
-      const result = await cancelTicketTransfer(input.id, ctx.user.id);
-      return { success: result };
-    })
-  }),
-  // チケット待機リスト関連
-  ticketWaitlist: router({
-    // 待機リストに登録
-    add: protectedProcedure.input(z2.object({
-      challengeId: z2.number(),
-      desiredCount: z2.number().min(1).max(10).default(1),
-      userUsername: z2.string().optional()
-      // XのDM用ユーザー名
-    })).mutation(async ({ ctx, input }) => {
-      const result = await addToTicketWaitlist({
-        challengeId: input.challengeId,
-        userId: ctx.user.id,
-        userName: ctx.user.name || "\u533F\u540D",
-        userUsername: input.userUsername,
-        userImage: null,
-        desiredCount: input.desiredCount
-      });
-      return { success: !!result, id: result };
-    }),
-    // 待機リストから削除
-    remove: protectedProcedure.input(z2.object({ challengeId: z2.number() })).mutation(async ({ ctx, input }) => {
-      const result = await removeFromTicketWaitlist(input.challengeId, ctx.user.id);
-      return { success: result };
-    }),
-    // チャレンジの待機リストを取得
-    listByChallenge: publicProcedure.input(z2.object({ challengeId: z2.number() })).query(async ({ input }) => {
-      return getTicketWaitlistForChallenge(input.challengeId);
-    }),
-    // 自分の待機リストを取得
-    myWaitlist: protectedProcedure.query(async ({ ctx }) => {
-      return getTicketWaitlistForUser(ctx.user.id);
-    }),
-    // 待機リストに登録しているかチェック
-    isInWaitlist: protectedProcedure.input(z2.object({ challengeId: z2.number() })).query(async ({ ctx, input }) => {
-      return isUserInWaitlist(input.challengeId, ctx.user.id);
-    })
-  }),
-  // 管理者用ユーザー管理API
-  admin: router({
-    // ユーザー一覧取得
-    users: protectedProcedure.query(async ({ ctx }) => {
-      if (ctx.user.role !== "admin") {
-        throw new Error("\u7BA1\u7406\u8005\u6A29\u9650\u304C\u5FC5\u8981\u3067\u3059");
-      }
-      return getAllUsers();
-    }),
-    // ユーザー権限変更
-    updateUserRole: protectedProcedure.input(z2.object({
-      userId: z2.number(),
-      role: z2.enum(["user", "admin"])
-    })).mutation(async ({ ctx, input }) => {
-      if (ctx.user.role !== "admin") {
-        throw new Error("\u7BA1\u7406\u8005\u6A29\u9650\u304C\u5FC5\u8981\u3067\u3059");
-      }
-      await updateUserRole(input.userId, input.role);
-      return { success: true };
-    }),
-    // ユーザー詳細取得
-    getUser: protectedProcedure.input(z2.object({ userId: z2.number() })).query(async ({ ctx, input }) => {
-      if (ctx.user.role !== "admin") {
-        throw new Error("\u7BA1\u7406\u8005\u6A29\u9650\u304C\u5FC5\u8981\u3067\u3059");
-      }
-      return getUserById(input.userId);
-    }),
-    // データ整合性レポート取得
-    getDataIntegrityReport: protectedProcedure.query(async ({ ctx }) => {
-      if (ctx.user.role !== "admin") {
-        throw new Error("\u7BA1\u7406\u8005\u6A29\u9650\u304C\u5FC5\u8981\u3067\u3059");
-      }
-      return getDataIntegrityReport();
-    }),
-    // チャレンジのcurrentValueを再計算して修正
-    recalculateCurrentValues: protectedProcedure.mutation(async ({ ctx }) => {
-      if (ctx.user.role !== "admin") {
-        throw new Error("\u7BA1\u7406\u8005\u6A29\u9650\u304C\u5FC5\u8981\u3067\u3059");
-      }
-      const results = await recalculateChallengeCurrentValues();
-      return { success: true, fixedCount: results.length, details: results };
-    }),
-    // DB構造確認API
-    getDbSchema: protectedProcedure.query(async ({ ctx }) => {
-      if (ctx.user.role !== "admin") {
-        throw new Error("\u7BA1\u7406\u8005\u6A29\u9650\u304C\u5FC5\u8981\u3067\u3059");
-      }
-      return getDbSchema();
-    }),
-    // テーブル構造とコードの比較
-    compareSchemas: protectedProcedure.query(async ({ ctx }) => {
-      if (ctx.user.role !== "admin") {
-        throw new Error("\u7BA1\u7406\u8005\u6A29\u9650\u304C\u5FC5\u8981\u3067\u3059");
-      }
-      return compareSchemas();
-    })
+    }
+    return { success: true, deletedCount };
   })
+});
+
+// server/routers/ticket-transfer.ts
+import { z as z22 } from "zod";
+init_db();
+var ticketTransferRouter = router({
+  // 譲渡投稿を作成
+  create: protectedProcedure.input(z22.object({
+    challengeId: z22.number(),
+    ticketCount: z22.number().min(1).max(10).default(1),
+    priceType: z22.enum(["face_value", "negotiable", "free"]).default("face_value"),
+    comment: z22.string().max(500).optional(),
+    userUsername: z22.string().optional()
+  })).mutation(async ({ ctx, input }) => {
+    const result = await createTicketTransfer({
+      challengeId: input.challengeId,
+      userId: ctx.user.id,
+      userName: ctx.user.name || "\u533F\u540D",
+      userUsername: input.userUsername,
+      userImage: null,
+      ticketCount: input.ticketCount,
+      priceType: input.priceType,
+      comment: input.comment
+    });
+    const waitlistUsers = await getWaitlistUsersForNotification(input.challengeId);
+    return { success: !!result, id: result, notifiedCount: waitlistUsers.length };
+  }),
+  // チャレンジの譲渡投稿一覧を取得
+  listByChallenge: publicProcedure.input(z22.object({ challengeId: z22.number() })).query(async ({ input }) => {
+    return getTicketTransfersForChallenge(input.challengeId);
+  }),
+  // 自分の譲渡投稿一覧を取得
+  myTransfers: protectedProcedure.query(async ({ ctx }) => {
+    return getTicketTransfersForUser(ctx.user.id);
+  }),
+  // 譲渡投稿のステータスを更新
+  updateStatus: protectedProcedure.input(z22.object({
+    id: z22.number(),
+    status: z22.enum(["available", "reserved", "completed", "cancelled"])
+  })).mutation(async ({ ctx, input }) => {
+    await updateTicketTransferStatus(input.id, input.status);
+    return { success: true };
+  }),
+  // 譲渡投稿をキャンセル
+  cancel: protectedProcedure.input(z22.object({ id: z22.number() })).mutation(async ({ ctx, input }) => {
+    const result = await cancelTicketTransfer(input.id, ctx.user.id);
+    return { success: result };
+  })
+});
+
+// server/routers/ticket-waitlist.ts
+import { z as z23 } from "zod";
+init_db();
+var ticketWaitlistRouter = router({
+  // 待機リストに登録
+  add: protectedProcedure.input(z23.object({
+    challengeId: z23.number(),
+    desiredCount: z23.number().min(1).max(10).default(1),
+    userUsername: z23.string().optional()
+  })).mutation(async ({ ctx, input }) => {
+    const result = await addToTicketWaitlist({
+      challengeId: input.challengeId,
+      userId: ctx.user.id,
+      userName: ctx.user.name || "\u533F\u540D",
+      userUsername: input.userUsername,
+      userImage: null,
+      desiredCount: input.desiredCount
+    });
+    return { success: !!result, id: result };
+  }),
+  // 待機リストから削除
+  remove: protectedProcedure.input(z23.object({ challengeId: z23.number() })).mutation(async ({ ctx, input }) => {
+    const result = await removeFromTicketWaitlist(input.challengeId, ctx.user.id);
+    return { success: result };
+  }),
+  // チャレンジの待機リストを取得
+  listByChallenge: publicProcedure.input(z23.object({ challengeId: z23.number() })).query(async ({ input }) => {
+    return getTicketWaitlistForChallenge(input.challengeId);
+  }),
+  // 自分の待機リストを取得
+  myWaitlist: protectedProcedure.query(async ({ ctx }) => {
+    return getTicketWaitlistForUser(ctx.user.id);
+  }),
+  // 待機リストに登録しているかチェック
+  isInWaitlist: protectedProcedure.input(z23.object({ challengeId: z23.number() })).query(async ({ ctx, input }) => {
+    return isUserInWaitlist(input.challengeId, ctx.user.id);
+  })
+});
+
+// server/routers/admin.ts
+import { z as z24 } from "zod";
+init_db();
+var adminRouter = router({
+  // ユーザー一覧取得
+  users: protectedProcedure.query(async ({ ctx }) => {
+    if (ctx.user.role !== "admin") {
+      throw new Error("\u7BA1\u7406\u8005\u6A29\u9650\u304C\u5FC5\u8981\u3067\u3059");
+    }
+    return getAllUsers();
+  }),
+  // ユーザー権限変更
+  updateUserRole: protectedProcedure.input(z24.object({
+    userId: z24.number(),
+    role: z24.enum(["user", "admin"])
+  })).mutation(async ({ ctx, input }) => {
+    if (ctx.user.role !== "admin") {
+      throw new Error("\u7BA1\u7406\u8005\u6A29\u9650\u304C\u5FC5\u8981\u3067\u3059");
+    }
+    await updateUserRole(input.userId, input.role);
+    return { success: true };
+  }),
+  // ユーザー詳細取得
+  getUser: protectedProcedure.input(z24.object({ userId: z24.number() })).query(async ({ ctx, input }) => {
+    if (ctx.user.role !== "admin") {
+      throw new Error("\u7BA1\u7406\u8005\u6A29\u9650\u304C\u5FC5\u8981\u3067\u3059");
+    }
+    return getUserById(input.userId);
+  }),
+  // データ整合性レポート取得
+  getDataIntegrityReport: protectedProcedure.query(async ({ ctx }) => {
+    if (ctx.user.role !== "admin") {
+      throw new Error("\u7BA1\u7406\u8005\u6A29\u9650\u304C\u5FC5\u8981\u3067\u3059");
+    }
+    return getDataIntegrityReport();
+  }),
+  // チャレンジのcurrentValueを再計算して修正
+  recalculateCurrentValues: protectedProcedure.mutation(async ({ ctx }) => {
+    if (ctx.user.role !== "admin") {
+      throw new Error("\u7BA1\u7406\u8005\u6A29\u9650\u304C\u5FC5\u8981\u3067\u3059");
+    }
+    const results = await recalculateChallengeCurrentValues();
+    return { success: true, fixedCount: results.length, details: results };
+  }),
+  // DB構造確認API
+  getDbSchema: protectedProcedure.query(async ({ ctx }) => {
+    if (ctx.user.role !== "admin") {
+      throw new Error("\u7BA1\u7406\u8005\u6A29\u9650\u304C\u5FC5\u8981\u3067\u3059");
+    }
+    return getDbSchema();
+  }),
+  // テーブル構造とコードの比較
+  compareSchemas: protectedProcedure.query(async ({ ctx }) => {
+    if (ctx.user.role !== "admin") {
+      throw new Error("\u7BA1\u7406\u8005\u6A29\u9650\u304C\u5FC5\u8981\u3067\u3059");
+    }
+    return compareSchemas();
+  })
+});
+
+// server/routers/index.ts
+var appRouter = router({
+  auth: authRouter,
+  events: eventsRouter,
+  participations: participationsRouter,
+  notifications: notificationsRouter,
+  ogp: ogpRouter,
+  badges: badgesRouter,
+  pickedComments: pickedCommentsRouter,
+  prefectures: prefecturesRouter,
+  cheers: cheersRouter,
+  achievements: achievementsRouter,
+  reminders: remindersRouter,
+  dm: dmRouter,
+  templates: templatesRouter,
+  search: searchRouter,
+  follows: followsRouter,
+  rankings: rankingsRouter,
+  categories: categoriesRouter,
+  invitations: invitationsRouter,
+  profiles: profilesRouter,
+  companions: companionsRouter,
+  ai: aiRouter,
+  dev: devRouter,
+  ticketTransfer: ticketTransferRouter,
+  ticketWaitlist: ticketWaitlistRouter,
+  admin: adminRouter
 });
 
 // server/_core/context.ts

@@ -3218,3 +3218,38 @@ features/create/
 - [ ] lib/api/client.ts (803行) - APIクライアント
 - [ ] drizzle/schema.ts (784行) - DBスキーマ
 - [ ] ticket-transfer-section.tsx (772行) - チケット譲渡セクション
+
+
+## 追加リファクタリング（v6.14）
+
+### server/routers.ts分割
+- [ ] ファイル構造を分析
+- [ ] 26個のサブルーターを個別ファイルに分割
+- [ ] index.tsで統合・再エクスポート
+- [ ] テスト実行と動作確認
+
+### ParticipationForm.tsx分割
+- [ ] ファイル構造を分析
+- [ ] フォームセクションを小さなコンポーネントに分割
+- [ ] テスト実行と動作確認
+
+### useEventDetailScreen.ts分割
+- [ ] ファイル構造を分析
+- [ ] カスタムフックを機能別に分割
+- [ ] テスト実行と動作確認
+
+
+## コードリファクタリング（v6.14）
+
+### server/routers.tsの分割
+- [x] 26個のサブルーターを個別ファイルに分割（1817行 → 26モジュール）
+
+### ParticipationForm.tsxの分割
+- [x] スタイル定義を分離 (styles.ts: 439行)
+- [x] 型定義を分離 (types.ts: 70行)
+- [x] メインコンポーネントを整理 (ParticipationForm.tsx: 448行)
+
+### useEventDetailScreen.tsの分割
+- [x] 型定義を分離 (types.ts: 239行)
+- [x] データ変換ロジックを分離 (useEventData.ts: 209行)
+- [x] メインフックを整理 (useEventDetailScreen.ts: 632行)

@@ -1,7 +1,10 @@
-// features/events/hooks/useEventDetailScreen.ts
-// イベント詳細画面用のカスタムフック（GPTテンプレートベース）
-
-import { useState, useMemo, useCallback, useRef } from "react";
+/**
+ * features/events/hooks/useEventDetailScreen.ts
+ * 
+ * イベント詳細画面用のカスタムフック
+ * 型定義とデータ変換ロジックは event-detail-screen/ に分割
+ */
+import { useState, useCallback, useRef } from "react";
 import { Alert, ScrollView, View } from "react-native";
 import { useRouter } from "expo-router";
 import { trpc } from "@/lib/trpc";
@@ -9,206 +12,35 @@ import { useAuth } from "@/hooks/use-auth";
 import { useFavorites } from "@/hooks/use-favorites";
 import { lookupTwitterUser, getErrorMessage } from "@/lib/api";
 
-import { toEventDetailVM, type EventDetailVM } from "../mappers/eventDetailVM";
-import { 
-  toParticipationVMList, 
-  toCompanionVMList,
-  toFanVM,
-  type ParticipationVM, 
-  type CompanionVM,
-  type FanVM,
-} from "../mappers/participationVM";
-import { regionGroups, normalizePrefecture } from "../utils/prefectures";
-import type { ProgressItemVM } from "../components/ProgressGrid";
+import { useEventData } from "./event-detail-screen/useEventData";
+import type { 
+  ParticipationFormState,
+  CompanionInput,
+  UiState,
+  ModalState,
+  ModalTargets,
+  UseEventDetailScreenStatus,
+  UseEventDetailScreenActions,
+  UseEventDetailScreenResult,
+} from "./event-detail-screen/types";
+import type { ParticipationVM, FanVM } from "../mappers/participationVM";
 import type { RegionGroupVM } from "../components/RegionMap";
-import type { RankingItemVM } from "../components/ContributionRanking";
-import type { MessageVM } from "../components/MessageCard";
 
-// ========================================
-// 型定義
-// ========================================
-
-/**
- * フォーム入力状態
- */
-export type ParticipationFormState = {
-  message: string;
-  displayName: string;
-  companionCount: number;
-  prefecture: string;
-  gender: "male" | "female" | "unspecified" | "";
-  allowVideoUse: boolean;
-  companions: CompanionInput[];
-};
-
-export type CompanionInput = {
-  id: string;
-  displayName: string;
-  twitterUsername: string;
-  twitterId?: string;
-  profileImage?: string;
-};
-
-/**
- * UI制御状態
- */
-export type UiState = {
-  showForm: boolean;
-  showPrefectureList: boolean;
-  showPrefectureFilterList: boolean;
-  showConfirmation: boolean;
-  justSubmitted: boolean;
-  isEditMode: boolean;
-  editingParticipationId: number | null;
-  selectedPrefectureFilter: string;
-  showAddCompanionForm: boolean;
-  newCompanionName: string;
-  newCompanionTwitter: string;
-  isLookingUpTwitter: boolean;
-  lookupError: string | null;
-  lookedUpProfile: {
-    id: string;
-    name: string;
-    username: string;
-    profileImage: string;
-  } | null;
-};
-
-/**
- * モーダル表示状態
- */
-export type ModalState = {
-  showSharePrompt: boolean;
-  showHostProfileModal: boolean;
-  showDeleteParticipationModal: boolean;
-  selectedPrefectureForModal: string | null;
-  selectedRegion: { name: string; prefectures: string[] } | null;
-};
-
-/**
- * モーダルターゲット
- */
-export type ModalTargets = {
-  selectedFan: FanVM | null;
-  deleteTargetParticipation: ParticipationVM | null;
-  lastParticipation: {
-    name: string;
-    username?: string;
-    image?: string;
-    message?: string;
-    contribution: number;
-  } | null;
-};
-
-/**
- * ステータス
- */
-export type UseEventDetailScreenStatus = {
-  isLoading: boolean;
-  isError: boolean;
-  errorMessage: string | null;
-  isMutating: boolean;
-  isGeneratingOgp: boolean;
-};
-
-/**
- * アクション
- */
-export type UseEventDetailScreenActions = {
-  // フォーム操作
-  setMessage: (v: string) => void;
-  setDisplayName: (v: string) => void;
-  setCompanionCount: (v: number) => void;
-  setPrefecture: (v: string) => void;
-  setGender: (v: "male" | "female" | "unspecified" | "") => void;
-  setAllowVideoUse: (v: boolean) => void;
-  
-  // UI操作
-  openParticipationForm: () => void;
-  closeParticipationForm: () => void;
-  openEditMode: (participation: ParticipationVM) => void;
-  togglePrefectureList: () => void;
-  togglePrefectureFilterList: () => void;
-  setSelectedPrefectureFilter: (v: string) => void;
-  
-  // 友人追加
-  openAddCompanionForm: () => void;
-  closeAddCompanionForm: () => void;
-  setNewCompanionName: (v: string) => void;
-  setNewCompanionTwitter: (v: string) => void;
-  lookupTwitterProfile: (input: string) => Promise<void>;
-  addCompanion: () => void;
-  removeCompanion: (id: string) => void;
-  
-  // モーダル操作
-  openSharePrompt: () => void;
-  closeSharePrompt: () => void;
-  openHostProfile: () => void;
-  closeHostProfile: () => void;
-  openFanProfile: (fan: FanVM) => void;
-  closeFanProfile: () => void;
-  openPrefectureParticipants: (prefecture: string) => void;
-  closePrefectureParticipants: () => void;
-  openRegionParticipants: (region: RegionGroupVM) => void;
-  closeRegionParticipants: () => void;
-  openDeleteParticipation: (participation: ParticipationVM) => void;
-  closeDeleteParticipation: () => void;
-  
-  // ミューテーション
-  submitParticipation: () => void;
-  submitAnonymousParticipation: () => void;
-  updateParticipation: () => void;
-  deleteParticipation: () => void;
-  toggleFollow: () => void;
-  toggleFavorite: () => void;
-  sendCheer: (participationId: number, toUserId?: number) => void;
-  generateOgp: () => Promise<string | null>;
-  
-  // ナビゲーション
-  goBack: () => void;
-  
-  // Ref
-  scrollViewRef: React.RefObject<ScrollView | null>;
-  messagesRef: React.RefObject<View | null>;
-};
-
-/**
- * フック返り値
- */
-export type UseEventDetailScreenResult = {
-  vm: EventDetailVM | undefined;
-  participations: ParticipationVM[];
-  companions: CompanionVM[];
-  myParticipation: ParticipationVM | null;
-  
-  // 集計済みVM
-  progressItems: ProgressItemVM[];
-  regions: RegionGroupVM[];
-  ranking: RankingItemVM[];
-  messages: MessageVM[];
-  momentum: { recent24h: number; recent1h: number; isHot: boolean };
-  
-  // フォロー関連
-  isFollowingHost: boolean;
-  followerIdSet: Set<string>;
-  isFavorite: boolean;
-  
-  // 状態
-  form: ParticipationFormState;
-  ui: UiState;
-  modals: ModalState;
-  targets: ModalTargets;
-  status: UseEventDetailScreenStatus;
-  actions: UseEventDetailScreenActions;
-};
-
-// ========================================
-// フック本体
-// ========================================
+// 型を再エクスポート
+export type {
+  ParticipationFormState,
+  CompanionInput,
+  UiState,
+  ModalState,
+  ModalTargets,
+  UseEventDetailScreenStatus,
+  UseEventDetailScreenActions,
+  UseEventDetailScreenResult,
+} from "./event-detail-screen/types";
 
 export function useEventDetailScreen(challengeId: number): UseEventDetailScreenResult {
   const router = useRouter();
-  const { user, login } = useAuth();
+  const { user } = useAuth();
   const { isFavorite: checkFavorite, toggleFavorite: toggleFav } = useFavorites();
   
   // Refs
@@ -307,6 +139,28 @@ export function useEventDetailScreen(challengeId: number): UseEventDetailScreenR
   const { data: followerIdsData } = trpc.follows.followerIds.useQuery(
     { userId: hostUserId! },
     { enabled: !!hostUserId }
+  );
+  
+  // ========================================
+  // データ変換（分割したフックを使用）
+  // ========================================
+  const {
+    vm,
+    participations,
+    companionsVM,
+    myParticipation,
+    momentum,
+    progressItems,
+    regions,
+    ranking,
+    messages,
+    followerIdSet,
+  } = useEventData(
+    challengeData,
+    participationsData,
+    challengeCompanions,
+    followerIdsData,
+    user
   );
   
   // ========================================
@@ -409,169 +263,12 @@ export function useEventDetailScreen(challengeId: number): UseEventDetailScreenR
     setGender("");
     setCompanions([]);
     setShowForm(false);
+    setShowAddCompanionForm(false);
+    setNewCompanionName("");
+    setNewCompanionTwitter("");
+    setLookedUpProfile(null);
+    setLookupError(null);
   }, []);
-  
-  // ========================================
-  // データ変換（VM化）
-  // ========================================
-  const vm = useMemo(() => {
-    if (!challengeData) return undefined;
-    return toEventDetailVM(challengeData as any);
-  }, [challengeData]);
-  
-  const participations = useMemo(() => {
-    if (!participationsData) return [];
-    return toParticipationVMList(participationsData as any);
-  }, [participationsData]);
-  
-  const companionsVM = useMemo(() => {
-    if (!challengeCompanions) return [];
-    return toCompanionVMList(challengeCompanions as any);
-  }, [challengeCompanions]);
-  
-  // 自分の参加表明
-  const myParticipation = useMemo(() => {
-    if (!user || !participations.length) return null;
-    const twitterId = user.openId?.startsWith("twitter:") 
-      ? user.openId.replace("twitter:", "") 
-      : user.openId;
-    return participations.find(p => p.twitterId === twitterId) || null;
-  }, [user, participations]);
-  
-  // 勢い計算
-  const momentum = useMemo(() => {
-    if (!participations.length) return { recent24h: 0, recent1h: 0, isHot: false };
-    const now = new Date();
-    const recent24h = participations.filter(p => {
-      return (now.getTime() - p.createdAt.getTime()) < 24 * 60 * 60 * 1000;
-    }).length;
-    const recent1h = participations.filter(p => {
-      return (now.getTime() - p.createdAt.getTime()) < 60 * 60 * 1000;
-    }).length;
-    return {
-      recent24h,
-      recent1h,
-      isHot: recent24h >= 5 || recent1h >= 2,
-    };
-  }, [participations]);
-  
-  // 進捗グリッド
-  const progressItems = useMemo((): ProgressItemVM[] => {
-    const participantCount = participations.length;
-    const goalTarget = vm?.goalTarget ?? 0;
-    const progressPercent = goalTarget > 0 
-      ? Math.min(100, Math.round((participantCount / goalTarget) * 100)) 
-      : 0;
-    
-    // 都道府県数
-    const prefectureSet = new Set(
-      participations
-        .map(p => p.prefectureNormalized)
-        .filter(Boolean)
-    );
-    
-    // 総貢献度（参加者 + 同行者）
-    const totalContribution = participations.reduce(
-      (sum, p) => sum + 1 + (p.companionCount || 0), 
-      0
-    );
-    
-    return [
-      {
-        key: "participants",
-        label: "参加者",
-        valueText: `${participantCount}人`,
-        subText: goalTarget > 0 ? `目標: ${goalTarget}人` : undefined,
-      },
-      {
-        key: "progress",
-        label: "達成率",
-        valueText: `${progressPercent}%`,
-        subText: goalTarget > 0 && participantCount < goalTarget 
-          ? `あと${goalTarget - participantCount}人` 
-          : undefined,
-      },
-      {
-        key: "prefectures",
-        label: "都道府県",
-        valueText: `${prefectureSet.size}`,
-        subText: "地域から参加",
-      },
-      {
-        key: "contribution",
-        label: "総動員",
-        valueText: `${totalContribution}人`,
-        subText: "参加者+同行者",
-      },
-    ];
-  }, [participations, vm]);
-  
-  // 地域グループ（参加者数付き）
-  const regions = useMemo((): RegionGroupVM[] => {
-    const countsByPref = new Map<string, number>();
-    for (const p of participations) {
-      const key = p.prefectureNormalized;
-      if (!key) continue;
-      countsByPref.set(key, (countsByPref.get(key) ?? 0) + 1);
-    }
-    
-    return regionGroups.map((r) => {
-      const count = r.prefectures.reduce((sum, pref) => {
-        const key = normalizePrefecture(pref);
-        return sum + (countsByPref.get(key) ?? 0);
-      }, 0);
-      
-      return {
-        id: r.id,
-        name: r.name,
-        prefectures: r.prefectures,
-        count,
-        countText: count > 0 ? `${count}人` : undefined,
-      };
-    });
-  }, [participations]);
-  
-  // 貢献ランキング
-  const ranking = useMemo((): RankingItemVM[] => {
-    const rows = [...participations]
-      .map((p) => {
-        // 貢献度 = 1（自分） + 同行者数
-        const value = 1 + (p.companionCount || 0);
-        return { p, value };
-      })
-      .sort((a, b) => b.value - a.value)
-      .slice(0, 10);
-    
-    return rows.map(({ p, value }, idx) => ({
-      key: p.id,
-      rank: idx + 1,
-      twitterId: p.twitterId,
-      displayName: p.displayName,
-      username: p.username ?? undefined,
-      profileImage: p.profileImage ?? undefined,
-      valueText: `${value}人`,
-    }));
-  }, [participations]);
-  
-  // メッセージ一覧
-  const messages = useMemo((): MessageVM[] => {
-    return participations
-      .filter((p) => !!p.message)
-      .map((p) => ({
-        id: `p-${p.id}`,
-        twitterId: p.twitterId,
-        displayName: p.displayName,
-        username: p.username ?? undefined,
-        profileImage: p.profileImage ?? undefined,
-        message: p.message ?? "",
-        createdAtText: p.createdAtText ?? undefined,
-      }));
-  }, [participations]);
-  
-  // フォロワーIDセット
-  const followerIdSet = useMemo(() => {
-    return new Set((followerIdsData ?? []).map(String));
-  }, [followerIdsData]);
   
   // ========================================
   // アクション
@@ -610,7 +307,7 @@ export function useEventDetailScreen(challengeId: number): UseEventDetailScreenR
           setNewCompanionName(result.data.name);
         }
       }
-    } catch (error) {
+    } catch {
       setLookupError("検索に失敗しました");
       setLookedUpProfile(null);
     } finally {
@@ -649,7 +346,6 @@ export function useEventDetailScreen(challengeId: number): UseEventDetailScreenR
       return;
     }
     
-    // tRPCの型定義に合わせて必須フィールドを追加
     const twitterId = user.openId?.startsWith("twitter:") 
       ? user.openId.replace("twitter:", "") 
       : user.openId;
@@ -711,7 +407,7 @@ export function useEventDetailScreen(challengeId: number): UseEventDetailScreenR
         profileImage: c.profileImage,
       })),
     });
-  }, [editingParticipationId, message, companions, prefecture, gender, allowVideoUse, updateParticipationMutation]);
+  }, [editingParticipationId, message, companions, prefecture, gender, updateParticipationMutation]);
   
   const deleteParticipation = useCallback(() => {
     if (!deleteTargetParticipation) return;
@@ -768,7 +464,7 @@ export function useEventDetailScreen(challengeId: number): UseEventDetailScreenR
     } finally {
       setIsGeneratingOgp(false);
     }
-  }, [challengeData, challengeId, participations.length, generateOgpMutation]);
+  }, [challengeData, challengeId, generateOgpMutation]);
   
   const openEditMode = useCallback((participation: ParticipationVM) => {
     setMessage(participation.message || "");
@@ -884,7 +580,7 @@ export function useEventDetailScreen(challengeId: number): UseEventDetailScreenR
     closeFanProfile: () => setSelectedFan(null),
     openPrefectureParticipants: (pref) => setSelectedPrefectureForModal(pref),
     closePrefectureParticipants: () => setSelectedPrefectureForModal(null),
-    openRegionParticipants: (region) => setSelectedRegion({ name: region.name, prefectures: region.prefectures }),
+    openRegionParticipants: (region: RegionGroupVM) => setSelectedRegion({ name: region.name, prefectures: region.prefectures }),
     closeRegionParticipants: () => setSelectedRegion(null),
     openDeleteParticipation: (p) => {
       setDeleteTargetParticipation(p);
