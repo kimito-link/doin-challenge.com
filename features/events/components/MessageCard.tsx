@@ -100,8 +100,8 @@ export function MessageCard({
                 }}
                 style={{ flexDirection: "row", alignItems: "center", marginRight: 8 }}
               >
-                <MaterialIcons name="person" size={12} color="#DD6500" style={{ marginRight: 2 }} />
-                <Text style={{ color: "#DD6500", fontSize: 14 }}>@{participation.username}</Text>
+                <MaterialIcons name="person" size={12} color="#FBBF24" style={{ marginRight: 2 }} />
+                <Text style={{ color: "#FBBF24", fontSize: 14 }}>@{participation.username}</Text>
               </TouchableOpacity>
             )}
             {participation.prefecture && (
@@ -110,7 +110,7 @@ export function MessageCard({
               </Text>
             )}
             {participation.followersCount && participation.followersCount > 0 && (
-              <Text style={{ color: "#EC4899", fontSize: 11 }}>
+              <Text style={{ color: "#F472B6", fontSize: 12 }}>
                 {participation.followersCount.toLocaleString()} フォロワー
               </Text>
             )}

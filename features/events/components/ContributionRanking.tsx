@@ -132,7 +132,7 @@ export function ContributionRanking({
                   }}
                   style={{ flexDirection: "row", alignItems: "center" }}
                 >
-                  <Text style={{ color: "#DD6500", fontSize: 11 }}>@{p.username}</Text>
+                  <Text style={{ color: "#FBBF24", fontSize: 12 }}>@{p.username}</Text>
                 </TouchableOpacity>
               )}
             </View>
@@ -143,7 +143,7 @@ export function ContributionRanking({
               {p.companionCount > 0 ? `(本人+${p.companionCount}人)` : ""}
             </Text>
             {p.followersCount && p.followersCount > 0 && (
-              <Text style={{ color: "#9CA3AF", fontSize: 10, marginTop: 2 }}>
+              <Text style={{ color: "#D1D5DB", fontSize: 11, marginTop: 2 }}>
                 {p.followersCount >= 10000
                   ? `${(p.followersCount / 10000).toFixed(1)}万`
                   : p.followersCount.toLocaleString()}

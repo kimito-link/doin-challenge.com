@@ -2653,3 +2653,13 @@ features/create/
 - [x] UIコンポーネントの分離（RecommendedHostsSection, FilterButton, SectionHeader, SearchBar, CategoryFilter, HomeEmptyState）
 - [x] index.tsxの薄型化（671行 → 449行、約33%削減）
 - [x] テスト実行と動作確認
+
+
+## 視認性問題の修正（v4.6）
+
+### イベント詳細画面の視認性改善
+- [x] ContributionRanking.tsx - ユーザー名色を修正（#DD6500 → #FBBF24 アンバー）
+- [x] ContributionRanking.tsx - フォロワー数色を修正（#9CA3AF → #D1D5DB 明るいグレー）
+- [x] MessageCard.tsx - ユーザー名色を修正（#DD6500 → #FBBF24 アンバー）
+- [x] MessageCard.tsx - フォロワー数色を修正（#EC4899 → #F472B6 明るいピンク）
+- [x] テスト実行と動作確認
