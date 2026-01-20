@@ -53,15 +53,29 @@ export function MessageCard({
   const colors = useColors();
   const router = useRouter();
 
+  // 性別による背景色
+  const getGenderStyle = () => {
+    switch (participation.gender) {
+      case "male":
+        return { backgroundColor: "rgba(59, 130, 246, 0.12)", borderColor: "#3B82F6" };
+      case "female":
+        return { backgroundColor: "rgba(236, 72, 153, 0.12)", borderColor: "#EC4899" };
+      default:
+        return { backgroundColor: "#1A1D21", borderColor: "#2D3139" };
+    }
+  };
+  const genderStyle = getGenderStyle();
+
   return (
     <View
       style={{
-        backgroundColor: "#1A1D21",
+        backgroundColor: genderStyle.backgroundColor,
         borderRadius: 12,
         padding: 16,
         marginBottom: 12,
         borderWidth: 1,
-        borderColor: "#2D3139",
+        borderColor: genderStyle.borderColor,
+        borderLeftWidth: participation.gender && participation.gender !== "unspecified" ? 3 : 1,
       }}
     >
       {/* ヘッダー部分 */}

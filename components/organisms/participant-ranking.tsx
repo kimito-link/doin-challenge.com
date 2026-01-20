@@ -16,6 +16,7 @@ interface Participant {
   message: string | null;
   isAnonymous: boolean;
   createdAt: Date;
+  gender?: "male" | "female" | "unspecified" | null;
 }
 
 interface ParticipantRankingProps {
@@ -73,11 +74,23 @@ interface RankItemProps {
   showBadge: boolean;
 }
 
+// 性別による背景色
+const GENDER_COLORS = {
+  male: { bg: "rgba(59, 130, 246, 0.15)", border: "#3B82F6" },    // 青
+  female: { bg: "rgba(236, 72, 153, 0.15)", border: "#EC4899" },  // ピンク
+  unspecified: { bg: "transparent", border: "transparent" },       // グレー（デフォルト）
+};
+
 function RankItem({ participant, rank, showBadge }: RankItemProps) {
   const isTopThree = rank <= 3;
+  const genderStyle = GENDER_COLORS[participant.gender || "unspecified"];
   
   return (
-    <View style={[styles.rankItem, isTopThree && styles.rankItemTop]}>
+    <View style={[
+      styles.rankItem, 
+      isTopThree && styles.rankItemTop,
+      { backgroundColor: genderStyle.bg, borderLeftWidth: 3, borderLeftColor: genderStyle.border }
+    ]}>
       {/* 順位バッジ */}
       <RankBadge rank={rank} />
 
