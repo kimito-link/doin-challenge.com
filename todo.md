@@ -3162,3 +3162,33 @@ features/create/
 - [x] ShareButtons - シェアボタンセクション
 - [x] event/[id].tsxを新しいコンポーネントで統合・リファクタリング（2540行 → 1855行、685行削減）
 - [x] テスト実行と動作確認（428テストパス）
+
+
+## 500行以上のファイルリファクタリング（v6.13）
+
+### 対象ファイル一覧（500行以上）
+- [ ] server/db.ts (2295行) - データベース関数
+- [ ] components/organisms/experience-overlay.tsx (2018行) - 経験値オーバーレイ
+- [ ] server/routers.ts (1817行) - APIルーター
+- [ ] components/organisms/japan-region-blocks.tsx (1052行) - 日本地図ブロック
+- [ ] features/events/components/ParticipationForm.tsx (938行) - 参加フォーム
+- [ ] features/events/hooks/useEventDetailScreen.ts (936行) - イベント詳細フック
+- [ ] components/organisms/tutorial-overlay.tsx (842行) - チュートリアルオーバーレイ
+- [ ] lib/api/client.ts (803行) - APIクライアント
+- [ ] drizzle/schema.ts (784行) - DBスキーマ
+- [ ] components/organisms/ticket-transfer-section.tsx (772行) - チケット譲渡セクション
+- [ ] app/settings.tsx (668行) - 設定画面
+- [ ] lib/experience-context.tsx (667行) - 経験値コンテキスト
+- [ ] app/(tabs)/create.tsx (655行) - チャレンジ作成画面
+- [ ] app/admin/errors.tsx (653行) - エラー管理画面
+- [ ] lib/prefecture-paths.ts (605行) - 都道府県パス
+- [ ] components/organisms/japan-heatmap.tsx (592行) - 日本ヒートマップ
+- [ ] app/invite/[id].tsx (583行) - 招待画面
+- [ ] components/organisms/participant-ranking.tsx (575行) - 参加者ランキング
+- [ ] features/events/components/MessagesSection.tsx (570行) - メッセージセクション
+- [ ] app/dashboard/[id].tsx (565行) - ダッシュボード
+- [ ] app/event/edit/[id].tsx (559行) - イベント編集画面
+- [ ] components/organisms/growth-trajectory-chart.tsx (521行) - 成長軌跡チャート
+- [ ] lib/tutorial-context.tsx (511行) - チュートリアルコンテキスト
+- [ ] server/openapi.ts (507行) - OpenAPI定義
+- [ ] app/(tabs)/index.tsx (501行) - ホーム画面
