@@ -2752,3 +2752,23 @@ features/create/
 - [x] features/home のトークン化（47箇所→0箇所）
 - [ ] features/create のトークン化（13箇所/5ファイル）
 - [ ] features/mypage のトークン化（12箇所/6ファイル）
+
+
+## レスポンシブレイアウト改善（v4.6）
+
+### FlatList列数自動計算
+- [x] getCols(width) 関数の実装（<480:2列, 480-768:2列, 768-1024:3列, >=1024:4列）
+- [x] getCardWidth() 関数の実装（gap考慮のピクセル計算）
+- [x] useGridLayout() フックの実装
+
+### チャレンジカードのレスポンシブ対応
+- [x] ChallengeCard.tsx に itemWidth props を追加
+- [x] パーセンテージ幅からピクセル幅に変更
+
+### カテゴリフィルターの大画面対応
+- [x] デスクトップ: flexWrap で一覧表示
+- [x] スマホ/タブレット: 横スクロール維持
+
+### ホーム画面の更新
+- [x] useGridLayout() を使用したFlatList更新
+- [x] columnWrapperStyle の gap 調整

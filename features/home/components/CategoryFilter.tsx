@@ -1,11 +1,14 @@
 /**
  * カテゴリフィルターコンポーネント
  * ホーム画面でカテゴリによるフィルタリングに使用
+ * - デスクトップ: flexWrapで一覧表示
+ * - スマホ/タブレット: 横スクロール
  */
 
 import { View, Text, ScrollView, TouchableOpacity } from "react-native";
 import { useColors } from "@/hooks/use-colors";
-import { homeUI } from "@/features/home/ui/theme/tokens";
+import { useResponsive } from "@/hooks/use-responsive";
+import { homeUI, homeText } from "@/features/home/ui/theme/tokens";
 
 interface Category {
   id: number;
@@ -19,10 +22,77 @@ interface CategoryFilterProps {
   onSelectCategory: (categoryId: number | null) => void;
 }
 
-export function CategoryFilter({ categories, selectedCategory, onSelectCategory }: CategoryFilterProps) {
+// カテゴリチップコンポーネント
+function CategoryChip({ 
+  active, 
+  children, 
+  onPress 
+}: { 
+  active: boolean; 
+  children: React.ReactNode; 
+  onPress: () => void;
+}) {
   const colors = useColors();
   
+  return (
+    <TouchableOpacity
+      onPress={onPress}
+      activeOpacity={0.7}
+      style={{
+        paddingHorizontal: 12,
+        paddingVertical: 8,
+        borderRadius: 16,
+        backgroundColor: active ? homeUI.activeFilter : homeUI.inactiveFilter,
+        minHeight: 36,
+        flexDirection: "row",
+        alignItems: "center",
+        gap: 6,
+      }}
+    >
+      <Text style={{ color: colors.foreground, fontSize: 12 }}>{children}</Text>
+    </TouchableOpacity>
+  );
+}
+
+export function CategoryFilter({ categories, selectedCategory, onSelectCategory }: CategoryFilterProps) {
+  const { isDesktop } = useResponsive();
+  
   if (!categories || categories.length === 0) return null;
+  
+  // チップコンテンツ
+  const content = (
+    <View style={{ 
+      flexDirection: "row", 
+      flexWrap: isDesktop ? "wrap" : "nowrap", 
+      gap: 8 
+    }}>
+      <CategoryChip 
+        active={selectedCategory === null} 
+        onPress={() => onSelectCategory(null)}
+      >
+        全カテゴリ
+      </CategoryChip>
+      
+      {categories.map((cat) => (
+        <CategoryChip 
+          key={cat.id} 
+          active={selectedCategory === cat.id} 
+          onPress={() => onSelectCategory(cat.id)}
+        >
+          {cat.icon ? `${cat.icon} ${cat.name}` : cat.name}
+        </CategoryChip>
+      ))}
+    </View>
+  );
+  
+  // デスクトップはwrap、モバイルは横スクロール
+  if (isDesktop) {
+    return (
+      <View style={{ marginTop: 8, marginHorizontal: 16 }}>
+        {content}
+      </View>
+    );
+  }
   
   return (
     <ScrollView 
@@ -32,42 +102,7 @@ export function CategoryFilter({ categories, selectedCategory, onSelectCategory 
       style={{ marginTop: 8, marginHorizontal: 16 }}
       contentContainerStyle={{ paddingRight: 16 }}
     >
-      <TouchableOpacity
-        onPress={() => onSelectCategory(null)}
-        activeOpacity={0.7}
-        style={{
-          paddingHorizontal: 12,
-          paddingVertical: 8,
-          borderRadius: 16,
-          backgroundColor: selectedCategory === null ? homeUI.activeFilter : homeUI.inactiveFilter,
-          marginRight: 8,
-          flexDirection: "row",
-          alignItems: "center",
-          minHeight: 36,
-        }}
-      >
-        <Text style={{ color: colors.foreground, fontSize: 12 }}>全カテゴリ</Text>
-      </TouchableOpacity>
-      {categories.map((cat) => (
-        <TouchableOpacity
-          key={cat.id}
-          onPress={() => onSelectCategory(cat.id)}
-          activeOpacity={0.7}
-          style={{
-            paddingHorizontal: 12,
-            paddingVertical: 8,
-            borderRadius: 16,
-            backgroundColor: selectedCategory === cat.id ? homeUI.activeFilter : homeUI.inactiveFilter,
-            marginRight: 8,
-            flexDirection: "row",
-            alignItems: "center",
-            minHeight: 36,
-          }}
-        >
-          <Text style={{ marginRight: 4 }}>{cat.icon}</Text>
-          <Text style={{ color: colors.foreground, fontSize: 12 }}>{cat.name}</Text>
-        </TouchableOpacity>
-      ))}
+      {content}
     </ScrollView>
   );
 }

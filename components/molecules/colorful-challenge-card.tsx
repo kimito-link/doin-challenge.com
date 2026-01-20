@@ -31,6 +31,7 @@ interface ColorfulChallengeCardProps {
   challenge: Challenge;
   onPress: () => void;
   numColumns?: number;
+  width?: number; // px幅（useGridLayoutから渡す）
   colorIndex?: number;
   isFavorite?: boolean;
   onToggleFavorite?: (challengeId: number) => void;
@@ -62,6 +63,7 @@ export function ColorfulChallengeCard({
   challenge, 
   onPress, 
   numColumns = 2,
+  width,
   colorIndex,
   isFavorite = false,
   onToggleFavorite,
@@ -77,8 +79,9 @@ export function ColorfulChallengeCard({
   const unit = challenge.goalUnit || goalConfig.unit;
   const remaining = Math.max(challenge.goalValue - challenge.currentValue, 0);
 
-  // カラム数に応じた幅を計算
-  const cardWidth = numColumns === 3 ? "31%" : numColumns === 2 ? "47%" : "100%";
+  // width(px)が来たらそれを使用、来なければ従来互換でフォールバック
+  const fallbackCardWidth = numColumns === 3 ? "31%" : numColumns === 2 ? "47%" : "100%";
+  const cardWidth = width ?? fallbackCardWidth;
   
   // カードの色を決定（IDベースで一貫性を保つ）
   const cardColorIdx = colorIndex !== undefined ? colorIndex : challenge.id % CARD_COLORS.length;
@@ -90,8 +93,8 @@ export function ColorfulChallengeCard({
       scaleAmount={0.97}
       style={{
         borderRadius: 16,
-        marginHorizontal: isDesktop ? 4 : 4,
-        marginVertical: 6,
+        // marginは0にしてgapで管理（FlatListのcolumnWrapperStyleで制御）
+        marginBottom: 8, // 行間の余白
         overflow: "hidden",
         width: cardWidth as any,
         // UXガイドライン: 軽いドロップシャドウ

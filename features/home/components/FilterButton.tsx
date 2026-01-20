@@ -25,7 +25,6 @@ export function FilterButton({ label, active, onPress }: FilterButtonProps) {
         paddingVertical: 12,
         borderRadius: 22,
         backgroundColor: active ? homeText.accent : homeUI.border,
-        marginRight: 8,
         justifyContent: "center",
         alignItems: "center",
       }}

@@ -17,6 +17,7 @@ export { SectionHeader } from "./SectionHeader";
 export { SearchBar } from "./SearchBar";
 export { CategoryFilter } from "./CategoryFilter";
 export { HomeEmptyState } from "./HomeEmptyState";
+export { ResponsiveFilterRow } from "./ResponsiveFilterRow";
 
 // セクションコンポーネント
 export { RecommendedHostsSection } from "./sections";

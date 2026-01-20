@@ -5,7 +5,7 @@ import { ScreenContainer } from "@/components/organisms/screen-container";
 import { OnboardingSteps } from "@/components/organisms/onboarding-steps";
 import { trpc } from "@/lib/trpc";
 import { useColors } from "@/hooks/use-colors";
-import { useResponsive, useGridColumns } from "@/hooks/use-responsive";
+import { useResponsive, useGridLayout } from "@/hooks/use-responsive";
 import { AppHeader } from "@/components/organisms/app-header";
 import { CachedDataIndicator } from "@/components/organisms/offline-banner";
 import { useNetworkStatus } from "@/hooks/use-offline-cache";
@@ -33,7 +33,8 @@ import {
   SearchBar,
   CategoryFilter,
   HomeEmptyState,
-  RecommendedHostsSection
+  RecommendedHostsSection,
+  ResponsiveFilterRow
 } from "@/features/home";
 import type { Challenge, FilterType } from "@/types/challenge";
 import { eventTypeBadge } from "@/types/challenge";
@@ -67,8 +68,10 @@ const logoImage = require("@/assets/images/logo/logo-color.jpg");
 export default function HomeScreen() {
   const colors = useColors();
   const router = useRouter();
-  const { isDesktop, isTablet, width } = useResponsive();
-  const numColumns = isDesktop ? 3 : isTablet ? 2 : 2;
+  const { isDesktop } = useResponsive();
+  // v4.6: useGridLayoutでレスポンシブなグリッドレイアウトを計算
+  const grid = useGridLayout({ minItemWidth: 280, maxColumns: 4, desktopMaxWidth: 1200 });
+  const numColumns = grid.numColumns;
   const [refreshing, setRefreshing] = useState(false);
   const [filter, setFilter] = useState<FilterType>("all");
   const [searchQuery, setSearchQuery] = useState("");
@@ -261,12 +264,14 @@ export default function HomeScreen() {
         onClear={() => { setSearchQuery(""); setIsSearching(false); }}
       />
       
-      {/* タイプフィルター */}
-      <View style={{ flexDirection: "row", marginTop: 16, marginHorizontal: 16, flexWrap: "wrap", gap: 8 }}>
-        <FilterButton label="すべて" active={filter === "all"} onPress={() => setFilter("all")} />
-        <FilterButton label="⭐ お気に入り" active={filter === "favorites"} onPress={() => setFilter("favorites")} />
-        <FilterButton label="グループ" active={filter === "group"} onPress={() => setFilter("group")} />
-        <FilterButton label="ソロ" active={filter === "solo"} onPress={() => setFilter("solo")} />
+      {/* タイプフィルター（v4.6: ResponsiveFilterRowでwrap/scroll切替） */}
+      <View style={{ marginTop: 16, marginHorizontal: 16 }}>
+        <ResponsiveFilterRow itemCount={4}>
+          <FilterButton label="すべて" active={filter === "all"} onPress={() => setFilter("all")} />
+          <FilterButton label="⭐ お気に入り" active={filter === "favorites"} onPress={() => setFilter("favorites")} />
+          <FilterButton label="グループ" active={filter === "group"} onPress={() => setFilter("group")} />
+          <FilterButton label="ソロ" active={filter === "solo"} onPress={() => setFilter("solo")} />
+        </ResponsiveFilterRow>
       </View>
 
       {/* カテゴリフィルター */}
@@ -349,10 +354,12 @@ export default function HomeScreen() {
           renderItem={({ item, index }) => {
             // v5.60: カラフルカードと通常カードの切り替え
             // v5.61: お気に入り機能を追加
+            // v4.6: useGridLayoutからのitemWidthを渡す
             const cardProps = {
               challenge: item as Challenge,
               onPress: () => handleChallengePress(item.id),
               numColumns,
+              width: grid.itemWidth,
               colorIndex: index,
               isFavorite: isFavorite(item.id),
               onToggleFavorite: toggleFavorite,
@@ -407,16 +414,17 @@ export default function HomeScreen() {
               <ListFooterSections />
             </>
           }
+          // v4.6: useGridLayoutの値を使用
           contentContainerStyle={{ 
-            paddingHorizontal: isDesktop ? 24 : 8, 
+            paddingHorizontal: grid.paddingHorizontal, 
             paddingBottom: 100,
             backgroundColor: "#0D1117",
-            maxWidth: isDesktop ? 1200 : undefined,
-            alignSelf: isDesktop ? "center" : undefined,
-            width: isDesktop ? "100%" : undefined,
+            maxWidth: grid.maxWidth,
+            alignSelf: grid.maxWidth ? "center" : undefined,
+            width: grid.maxWidth ? "100%" : undefined,
           }}
           style={{ backgroundColor: "#0D1117" }}
-          columnWrapperStyle={{ justifyContent: "flex-start", gap: isDesktop ? 16 : 8 }}
+          columnWrapperStyle={numColumns > 1 ? { justifyContent: "flex-start", gap: grid.gap } : undefined}
           // パフォーマンス最適化
           windowSize={5}
           maxToRenderPerBatch={6}

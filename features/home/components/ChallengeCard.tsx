@@ -19,6 +19,7 @@ interface ChallengeCardProps {
   challenge: Challenge;
   onPress: () => void;
   numColumns?: number;
+  width?: number; // px幅（useGridLayoutから渡す）
   colorIndex?: number;
   isFavorite?: boolean;
   onToggleFavorite?: (id: number) => void;
@@ -28,6 +29,7 @@ export function ChallengeCard({
   challenge,
   onPress,
   numColumns = 2,
+  width,
   colorIndex: _colorIndex,
   isFavorite: _isFavorite = false,
   onToggleFavorite: _onToggleFavorite,
@@ -44,7 +46,9 @@ export function ChallengeCard({
   const unit = challenge.goalUnit || goalConfig.unit;
   const remaining = Math.max(challenge.goalValue - challenge.currentValue, 0);
 
-  const cardWidth = numColumns === 3 ? "31%" : numColumns === 2 ? "47%" : "100%";
+  // width(px)が来たらそれを使用、来なければ従来互換でフォールバック
+  const fallbackCardWidth = numColumns === 3 ? "31%" : numColumns === 2 ? "47%" : "100%";
+  const cardWidth = width ?? fallbackCardWidth;
 
   return (
     <AnimatedCard
@@ -53,12 +57,12 @@ export function ChallengeCard({
       style={{
         backgroundColor: homeUI.surface,
         borderRadius: 12,
-        marginHorizontal: isDesktop ? 4 : 4,
-        marginVertical: 6,
+        // marginは0にしてgapで管理（FlatListのcolumnWrapperStyleで制御）
         overflow: "hidden",
         borderWidth: 1,
         borderColor: homeUI.border,
         width: cardWidth as any,
+        marginBottom: 8, // 行間の余白
         shadowColor: "#000",
         shadowOffset: { width: 0, height: 2 },
         shadowOpacity: 0.1,
@@ -103,7 +107,7 @@ export function ChallengeCard({
         <Text style={{ color: colors.foreground, fontSize: 14, fontWeight: "bold", marginBottom: 4 }} numberOfLines={2}>
           {challenge.title}
         </Text>
-        <Text style={{ color: homeText.muted, fontSize: 12, marginBottom: 8 }}>{challenge.hostName}</Text>
+        <Text style={{ color: homeText.muted, fontSize: 12, marginBottom: 8 }} numberOfLines={1}>{challenge.hostName}</Text>
         <View style={{ marginBottom: 8 }}>
           <View style={{ flexDirection: "row", justifyContent: "space-between", marginBottom: 4 }}>
             <Text style={{ color: colors.foreground, fontSize: 18, fontWeight: "bold" }}>
