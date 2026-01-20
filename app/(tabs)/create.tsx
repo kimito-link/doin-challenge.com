@@ -19,8 +19,6 @@ import { showAlert } from "@/lib/web-alert";
 import { TwitterUserCard } from "@/components/molecules/twitter-user-card";
 import { CharacterGroupValidationError } from "@/components/molecules/character-validation-error";
 import { InlineValidationError } from "@/components/molecules/inline-validation-error";
-import { goalTypeOptions, eventTypeOptions } from "@/constants/goal-types";
-import { prefectures } from "@/constants/prefectures";
 
 // キャラクター画像
 const characterImages = {
@@ -29,6 +27,31 @@ const characterImages = {
   tanune: require("@/assets/images/characters/tanune.png"),
 };
 
+// 目標タイプの設定
+const goalTypes = [
+  { id: "attendance", label: "動員", icon: "people", unit: "人", description: "ライブ・イベントの参加者数" },
+  { id: "followers", label: "フォロワー", icon: "person-add", unit: "人", description: "SNSのフォロワー増加目標" },
+  { id: "viewers", label: "同時視聴", icon: "visibility", unit: "人", description: "配信・プレミア公開の同接" },
+  { id: "points", label: "ポイント", icon: "star", unit: "pt", description: "ミクチャ等のイベントポイント" },
+  { id: "custom", label: "カスタム", icon: "flag", unit: "", description: "自由な目標を設定" },
+];
+
+// イベントタイプの設定
+const eventTypes = [
+  { id: "solo", label: "ソロ", color: "#EC4899" },
+  { id: "group", label: "グループ", color: "#8B5CF6" },
+];
+
+// 都道府県リスト
+const prefectures = [
+  "北海道", "青森県", "岩手県", "宮城県", "秋田県", "山形県", "福島県",
+  "茨城県", "栃木県", "群馬県", "埼玉県", "千葉県", "東京都", "神奈川県",
+  "新潟県", "富山県", "石川県", "福井県", "山梨県", "長野県", "岐阜県",
+  "静岡県", "愛知県", "三重県", "滋賀県", "京都府", "大阪府", "兵庫県",
+  "奈良県", "和歌山県", "鳥取県", "島根県", "岡山県", "広島県", "山口県",
+  "徳島県", "香川県", "愛媛県", "高知県", "福岡県", "佐賀県", "長崎県",
+  "熊本県", "大分県", "宮崎県", "鹿児島県", "沖縄県", "オンライン"
+];
 
 export default function CreateChallengeScreen() {
   const router = useRouter();

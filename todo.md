@@ -2575,18 +2575,3 @@
 - types/participation.ts: 参加者型定義
 
 ### 合計削減行数: 約1,150行
-
-
-## mypage.tsx & create.tsx の分割（v6.18+）
-
-### mypage.tsx の分割（1,104行 → 365行、**-739行、67%削減**）
-- [x] 構造分析とコンポーネント特定
-- [x] LoginScreenコンポーネントの分離（features/mypage/components/）
-- [x] ProfileCardコンポーネントの分離（features/mypage/components/）
-- [x] SettingsLinkItemコンポーネントの分離（features/mypage/components/）
-- [x] メインファイルでの置き換え
-
-### create.tsx の分割（994行）
-- [ ] 構造分析とコンポーネント特定
-- [ ] ローカルコンポーネントの分離
-- [ ] メインファイルでの置き換え
