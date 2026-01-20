@@ -9,6 +9,7 @@ import { useColors } from "@/hooks/use-colors";
 import { useResponsive } from "@/hooks/use-responsive";
 import { FollowStatusBadge } from "@/components/molecules/follow-gate";
 import { TwitterUserCard } from "@/components/molecules/twitter-user-card";
+import { mypageUI, mypageText, mypageGradient } from "../ui/theme/tokens";
 
 interface ProfileCardProps {
   user: {
@@ -42,19 +43,19 @@ export function ProfileCard({
   return (
     <View
       style={{
-        backgroundColor: "#1A1D21",
+        backgroundColor: mypageUI.cardBg,
         marginHorizontal: isDesktop ? "auto" : 16,
         marginVertical: 16,
         borderRadius: 16,
         overflow: "hidden",
         borderWidth: 1,
-        borderColor: "#2D3139",
+        borderColor: mypageUI.cardBorder,
         maxWidth: isDesktop ? 800 : undefined,
         width: isDesktop ? "100%" : undefined,
       }}
     >
       <LinearGradient
-        colors={["#EC4899", "#8B5CF6"]}
+        colors={[...mypageGradient.profileHeader]}
         start={{ x: 0, y: 0 }}
         end={{ x: 1, y: 0 }}
         style={{ height: 4 }}
@@ -91,10 +92,10 @@ export function ProfileCard({
               alignItems: "center",
             }}
           >
-            <Text style={{ color: "#EC4899", fontSize: 24, fontWeight: "bold" }}>
+            <Text style={{ color: mypageText.statPink, fontSize: 24, fontWeight: "bold" }}>
               {totalContribution}
             </Text>
-            <Text style={{ color: "#D1D5DB", fontSize: 12 }}>総貢献度</Text>
+            <Text style={{ color: mypageText.muted, fontSize: 12 }}>総貢献度</Text>
           </View>
           <View
             style={{
@@ -105,10 +106,10 @@ export function ProfileCard({
               alignItems: "center",
             }}
           >
-            <Text style={{ color: "#8B5CF6", fontSize: 24, fontWeight: "bold" }}>
+            <Text style={{ color: mypageText.statPurple, fontSize: 24, fontWeight: "bold" }}>
               {participationsCount}
             </Text>
-            <Text style={{ color: "#D1D5DB", fontSize: 12 }}>参加チャレンジ</Text>
+            <Text style={{ color: mypageText.muted, fontSize: 12 }}>参加チャレンジ</Text>
           </View>
           <View
             style={{
@@ -119,10 +120,10 @@ export function ProfileCard({
               alignItems: "center",
             }}
           >
-            <Text style={{ color: "#DD6500", fontSize: 24, fontWeight: "bold" }}>
+            <Text style={{ color: mypageText.statOrange, fontSize: 24, fontWeight: "bold" }}>
               {challengesCount}
             </Text>
-            <Text style={{ color: "#D1D5DB", fontSize: 12 }}>主催</Text>
+            <Text style={{ color: mypageText.muted, fontSize: 12 }}>主催</Text>
           </View>
         </View>
 
@@ -130,7 +131,7 @@ export function ProfileCard({
         <TouchableOpacity
           onPress={onAccountSwitch}
           style={{
-            backgroundColor: "#1E293B",
+            backgroundColor: mypageUI.switchAccountBg,
             borderRadius: 8,
             padding: 12,
             marginTop: 16,
@@ -139,8 +140,8 @@ export function ProfileCard({
             justifyContent: "center",
           }}
         >
-          <MaterialIcons name="swap-horiz" size={20} color="#93C5FD" />
-          <Text style={{ color: "#93C5FD", fontSize: 14, marginLeft: 8 }}>
+          <MaterialIcons name="swap-horiz" size={20} color={mypageText.switchAccount} />
+          <Text style={{ color: mypageText.switchAccount, fontSize: 14, marginLeft: 8 }}>
             別のアカウントでログイン
           </Text>
         </TouchableOpacity>
@@ -157,8 +158,8 @@ export function ProfileCard({
             justifyContent: "center",
           }}
         >
-          <MaterialIcons name="logout" size={20} color="#EF4444" />
-          <Text style={{ color: "#EF4444", fontSize: 14, marginLeft: 8 }}>
+          <MaterialIcons name="logout" size={20} color={mypageText.logout} />
+          <Text style={{ color: mypageText.logout, fontSize: 14, marginLeft: 8 }}>
             ログアウト
           </Text>
         </TouchableOpacity>

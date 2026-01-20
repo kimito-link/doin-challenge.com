@@ -7,6 +7,7 @@
 import { View, Text, TextInput, TouchableOpacity } from "react-native";
 import MaterialIcons from "@expo/vector-icons/MaterialIcons";
 import { useColors } from "@/hooks/use-colors";
+import { createUI, createText } from "../theme/tokens";
 
 interface TemplateSaveSectionProps {
   saveAsTemplate: boolean;
@@ -28,13 +29,13 @@ export function TemplateSaveSection({
   const colors = useColors();
 
   return (
-    <View style={{ marginBottom: 16, backgroundColor: "#1A1D21", borderRadius: 12, padding: 16, borderWidth: 1, borderColor: "#2D3139" }}>
+    <View style={{ marginBottom: 16, backgroundColor: createUI.inputBg, borderRadius: 12, padding: 16, borderWidth: 1, borderColor: createUI.inputBorder }}>
       <TouchableOpacity
         onPress={() => onSaveAsTemplateChange(!saveAsTemplate)}
         style={{ flexDirection: "row", alignItems: "center", justifyContent: "space-between" }}
       >
         <View style={{ flexDirection: "row", alignItems: "center" }}>
-          <MaterialIcons name="bookmark" size={20} color="#8B5CF6" />
+          <MaterialIcons name="bookmark" size={20} color={createText.purple} />
           <Text style={{ color: colors.foreground, fontSize: 14, fontWeight: "600", marginLeft: 8 }}>
             テンプレートとして保存
           </Text>
@@ -44,8 +45,8 @@ export function TemplateSaveSection({
           height: 24,
           borderRadius: 4,
           borderWidth: 2,
-          borderColor: saveAsTemplate ? "#8B5CF6" : "#6B7280",
-          backgroundColor: saveAsTemplate ? "#8B5CF6" : "transparent",
+          borderColor: saveAsTemplate ? createUI.purpleAccent : createUI.checkboxBorder,
+          backgroundColor: saveAsTemplate ? createUI.purpleAccent : "transparent",
           alignItems: "center",
           justifyContent: "center",
         }}>
@@ -59,14 +60,14 @@ export function TemplateSaveSection({
             value={templateName}
             onChangeText={onTemplateNameChange}
             placeholder="テンプレート名"
-            placeholderTextColor="#9CA3AF"
+            placeholderTextColor={createText.placeholder}
             style={{
               backgroundColor: colors.background,
               borderRadius: 8,
               padding: 12,
               color: colors.foreground,
               borderWidth: 1,
-              borderColor: "#2D3139",
+              borderColor: createUI.inputBorder,
               marginBottom: 8,
             }}
           />
@@ -79,8 +80,8 @@ export function TemplateSaveSection({
               height: 20,
               borderRadius: 4,
               borderWidth: 2,
-              borderColor: templateIsPublic ? "#22C55E" : "#6B7280",
-              backgroundColor: templateIsPublic ? "#22C55E" : "transparent",
+              borderColor: templateIsPublic ? createUI.successAccent : createUI.checkboxBorder,
+              backgroundColor: templateIsPublic ? createUI.successAccent : "transparent",
               alignItems: "center",
               justifyContent: "center",
               marginRight: 8,

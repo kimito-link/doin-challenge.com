@@ -5,6 +5,7 @@
 
 import { View, Text } from "react-native";
 import { useColors } from "@/hooks/use-colors";
+import { mypageUI, mypageText } from "../../ui/theme/tokens";
 
 interface Badge {
   id: number;
@@ -33,17 +34,17 @@ export function BadgeSection({ badges }: BadgeSectionProps) {
             <View
               key={userBadge.id}
               style={{
-                backgroundColor: "#1A1D21",
+                backgroundColor: mypageUI.cardBg,
                 borderRadius: 12,
                 padding: 12,
                 alignItems: "center",
                 width: 80,
                 borderWidth: 1,
-                borderColor: "#2D3139",
+                borderColor: mypageUI.cardBorder,
               }}
             >
               <Text style={{ fontSize: 32 }}>{userBadge.badge?.icon || "🏅"}</Text>
-              <Text style={{ color: "#D1D5DB", fontSize: 10, marginTop: 4, textAlign: "center" }}>
+              <Text style={{ color: mypageText.muted, fontSize: 10, marginTop: 4, textAlign: "center" }}>
                 {userBadge.badge?.name || "バッジ"}
               </Text>
             </View>
@@ -52,16 +53,16 @@ export function BadgeSection({ badges }: BadgeSectionProps) {
       ) : (
         <View
           style={{
-            backgroundColor: "#1A1D21",
+            backgroundColor: mypageUI.cardBg,
             borderRadius: 12,
             padding: 24,
             alignItems: "center",
             borderWidth: 1,
-            borderColor: "#2D3139",
+            borderColor: mypageUI.cardBorder,
           }}
         >
           <Text style={{ fontSize: 32, marginBottom: 8 }}>🏅</Text>
-          <Text style={{ color: "#D1D5DB", fontSize: 14 }}>
+          <Text style={{ color: mypageText.muted, fontSize: 14 }}>
             まだバッジを獲得していません
           </Text>
         </View>

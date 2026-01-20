@@ -2772,3 +2772,33 @@ features/create/
 ### ホーム画面の更新
 - [x] useGridLayout() を使用したFlatList更新
 - [x] columnWrapperStyle の gap 調整
+
+
+## features/create トークン化（v4.7）
+
+### 直書き色の調査結果（32箇所/5ファイル）
+- [x] CategorySelector.tsx: 5箇所（#2D3139, #9CA3AF, #EC4899）
+- [x] EventTypeSelector.tsx: 1箇所（#2D3139）
+- [x] GoalTypeSelector.tsx: 4箇所（#EC4899, #2D3139, #9CA3AF）
+- [x] TemplateSaveSection.tsx: 8箇所（#1A1D21, #2D3139, #8B5CF6, #6B7280, #9CA3AF, #22C55E）
+- [x] TicketInfoSection.tsx: 14箇所（#2D3139, #EC4899, #4B5563, #9CA3AF, #1A1D21）
+
+### トークン定義
+- [x] createUI: UI要素色（inputBg, inputBorder, placeholder, activeAccent, checkboxBorder, checkboxActive）
+- [x] createText: テキスト色（muted, accent, success）
+
+
+## features/mypage トークン化（v4.7）
+
+### 直書き色の調査結果（58箇所/6ファイル）
+- [x] LoginScreen.tsx: 20箇所（グラデーション、アクセント色、ボーダー）
+- [x] ProfileCard.tsx: 16箇所（背景、グラデーション、統計数値、ボタン）
+- [x] SettingsLinkItem.tsx: 4箇所（背景、ボーダー、テキスト）
+- [x] BadgeSection.tsx: 6箇所（背景、ボーダー、テキスト）
+- [x] ParticipationSection.tsx: 5箇所（背景、ボーダー、テキスト）
+- [x] HostedChallengeSection.tsx: 7箇所（背景、ボーダー、主催バッジ）
+
+### トークン定義
+- [x] mypageUI: UI要素色（cardBg, cardBorder, buttonBg）
+- [x] mypageText: テキスト色（muted, accent, stats）
+- [x] mypageGradient: グラデーション色

@@ -6,6 +6,7 @@
 
 import { View, Text, TouchableOpacity } from "react-native";
 import { useColors } from "@/hooks/use-colors";
+import { createUI } from "../theme/tokens";
 import { eventTypeOptions } from "@/constants/goal-types";
 
 interface EventTypeSelectorProps {
@@ -33,7 +34,7 @@ export function EventTypeSelector({ value, onChange }: EventTypeSelectorProps) {
               padding: 12,
               alignItems: "center",
               borderWidth: 2,
-              borderColor: value === type.id ? type.color : "#2D3139",
+              borderColor: value === type.id ? type.color : createUI.inputBorder,
             }}
           >
             <Text

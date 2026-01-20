@@ -5,6 +5,7 @@
 import { View, Text, TouchableOpacity } from "react-native";
 import MaterialIcons from "@expo/vector-icons/MaterialIcons";
 import { useColors } from "@/hooks/use-colors";
+import { mypageUI, mypageText } from "../ui/theme/tokens";
 
 interface SettingsLinkItemProps {
   icon: keyof typeof MaterialIcons.glyphMap;
@@ -27,7 +28,7 @@ export function SettingsLinkItem({
     <TouchableOpacity
       onPress={onPress}
       style={{
-        backgroundColor: "#1A1D21",
+        backgroundColor: mypageUI.cardBg,
         marginHorizontal: 16,
         marginBottom: 16,
         borderRadius: 12,
@@ -35,7 +36,7 @@ export function SettingsLinkItem({
         flexDirection: "row",
         alignItems: "center",
         borderWidth: 1,
-        borderColor: "#2D3139",
+        borderColor: mypageUI.cardBorder,
       }}
     >
       <View
@@ -55,11 +56,11 @@ export function SettingsLinkItem({
         <Text style={{ color: colors.foreground, fontSize: 16, fontWeight: "bold" }}>
           {title}
         </Text>
-        <Text style={{ color: "#D1D5DB", fontSize: 12 }}>
+        <Text style={{ color: mypageText.muted, fontSize: 12 }}>
           {description}
         </Text>
       </View>
-      <MaterialIcons name="chevron-right" size={24} color="#D1D5DB" />
+      <MaterialIcons name="chevron-right" size={24} color={mypageText.muted} />
     </TouchableOpacity>
   );
 }

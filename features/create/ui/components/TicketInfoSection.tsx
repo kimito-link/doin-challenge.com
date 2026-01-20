@@ -7,6 +7,7 @@
 import { View, Text, TextInput, Pressable } from "react-native";
 import MaterialIcons from "@expo/vector-icons/MaterialIcons";
 import { useColors } from "@/hooks/use-colors";
+import { createUI, createText } from "../theme/tokens";
 
 interface TicketInfoSectionProps {
   ticketPresale: string;
@@ -47,11 +48,11 @@ export function TicketInfoSection({
         padding: 16,
         marginBottom: 16,
         borderWidth: 1,
-        borderColor: "#2D3139",
+        borderColor: createUI.inputBorder,
       }}
     >
       <View style={{ flexDirection: "row", alignItems: "center", marginBottom: 12 }}>
-        <MaterialIcons name="confirmation-number" size={20} color="#EC4899" />
+        <MaterialIcons name="confirmation-number" size={20} color={createText.accent} />
         <Text style={{ color: colors.foreground, fontSize: 16, fontWeight: "600", marginLeft: 8 }}>
           チケット情報（任意）
         </Text>
@@ -73,8 +74,8 @@ export function TicketInfoSection({
             height: 20,
             borderRadius: 10,
             borderWidth: 2,
-            borderColor: isUndecided ? "#EC4899" : "#4B5563",
-            backgroundColor: isUndecided ? "#EC4899" : "transparent",
+            borderColor: isUndecided ? createUI.activeAccent : createUI.checkboxActiveBorder,
+            backgroundColor: isUndecided ? createUI.activeAccent : "transparent",
             marginRight: 8,
             justifyContent: "center",
             alignItems: "center",
@@ -90,7 +91,7 @@ export function TicketInfoSection({
       </Pressable>
       
       {isUndecided ? (
-        <Text style={{ color: "#9CA3AF", fontSize: 12 }}>
+        <Text style={{ color: createText.muted, fontSize: 12 }}>
           ※ 決まり次第、後から編集できます
         </Text>
       ) : (
@@ -105,15 +106,15 @@ export function TicketInfoSection({
                   value={ticketPresale}
                   onChangeText={onTicketPresaleChange}
                   placeholder="3000"
-                  placeholderTextColor="#9CA3AF"
+                  placeholderTextColor={createText.placeholder}
                   keyboardType="numeric"
                   style={{
-                    backgroundColor: "#1A1D21",
+                    backgroundColor: createUI.inputBg,
                     borderRadius: 8,
                     padding: 10,
                     color: colors.foreground,
                     borderWidth: 1,
-                    borderColor: "#2D3139",
+                    borderColor: createUI.inputBorder,
                     flex: 1,
                   }}
                 />
@@ -129,15 +130,15 @@ export function TicketInfoSection({
                   value={ticketDoor}
                   onChangeText={onTicketDoorChange}
                   placeholder="3500"
-                  placeholderTextColor="#9CA3AF"
+                  placeholderTextColor={createText.placeholder}
                   keyboardType="numeric"
                   style={{
-                    backgroundColor: "#1A1D21",
+                    backgroundColor: createUI.inputBg,
                     borderRadius: 8,
                     padding: 10,
                     color: colors.foreground,
                     borderWidth: 1,
-                    borderColor: "#2D3139",
+                    borderColor: createUI.inputBorder,
                     flex: 1,
                   }}
                 />
@@ -154,14 +155,14 @@ export function TicketInfoSection({
               value={ticketUrl}
               onChangeText={onTicketUrlChange}
               placeholder="https://tiget.net/events/..."
-              placeholderTextColor="#9CA3AF"
+              placeholderTextColor={createText.placeholder}
               style={{
-                backgroundColor: "#1A1D21",
+                backgroundColor: createUI.inputBg,
                 borderRadius: 8,
                 padding: 10,
                 color: colors.foreground,
                 borderWidth: 1,
-                borderColor: "#2D3139",
+                borderColor: createUI.inputBorder,
               }}
             />
           </View>

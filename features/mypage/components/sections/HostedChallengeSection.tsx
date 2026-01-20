@@ -5,6 +5,7 @@
 
 import { View, Text, TouchableOpacity } from "react-native";
 import { useColors } from "@/hooks/use-colors";
+import { mypageUI, mypageText } from "../../ui/theme/tokens";
 import MaterialIcons from "@expo/vector-icons/MaterialIcons";
 
 interface Challenge {
@@ -35,28 +36,28 @@ export function HostedChallengeSection({ challenges, onChallengePress }: HostedC
               key={challenge.id}
               onPress={() => onChallengePress(challenge.id)}
               style={{
-                backgroundColor: "#1A1D21",
+                backgroundColor: mypageUI.cardBg,
                 borderRadius: 12,
                 padding: 16,
                 borderWidth: 1,
-                borderColor: "#DD6500",
+                borderColor: mypageUI.hostBorder,
               }}
             >
               <View style={{ flexDirection: "row", justifyContent: "space-between", alignItems: "center" }}>
                 <View style={{ flex: 1 }}>
                   <View style={{ flexDirection: "row", alignItems: "center", marginBottom: 4 }}>
-                    <View style={{ backgroundColor: "#DD6500", borderRadius: 4, paddingHorizontal: 6, paddingVertical: 2, marginRight: 8 }}>
+                    <View style={{ backgroundColor: mypageUI.hostBadgeBg, borderRadius: 4, paddingHorizontal: 6, paddingVertical: 2, marginRight: 8 }}>
                       <Text style={{ color: colors.foreground, fontSize: 10, fontWeight: "bold" }}>主催</Text>
                     </View>
                     <Text style={{ color: colors.foreground, fontSize: 16, fontWeight: "bold" }}>
                       {challenge.title}
                     </Text>
                   </View>
-                  <Text style={{ color: "#D1D5DB", fontSize: 12 }}>
+                  <Text style={{ color: mypageText.muted, fontSize: 12 }}>
                     {challenge.currentCount || 0} / {challenge.goalCount || 0} 人
                   </Text>
                 </View>
-                <MaterialIcons name="chevron-right" size={24} color="#D1D5DB" />
+                <MaterialIcons name="chevron-right" size={24} color={mypageText.muted} />
               </View>
             </TouchableOpacity>
           ))}
@@ -64,16 +65,16 @@ export function HostedChallengeSection({ challenges, onChallengePress }: HostedC
       ) : (
         <View
           style={{
-            backgroundColor: "#1A1D21",
+            backgroundColor: mypageUI.cardBg,
             borderRadius: 12,
             padding: 24,
             alignItems: "center",
             borderWidth: 1,
-            borderColor: "#2D3139",
+            borderColor: mypageUI.cardBorder,
           }}
         >
           <Text style={{ fontSize: 32, marginBottom: 8 }}>🎯</Text>
-          <Text style={{ color: "#D1D5DB", fontSize: 14 }}>
+          <Text style={{ color: mypageText.muted, fontSize: 14 }}>
             まだチャレンジを主催していません
           </Text>
         </View>

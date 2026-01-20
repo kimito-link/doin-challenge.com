@@ -7,6 +7,7 @@
 import { View, Text, TouchableOpacity, ScrollView, TextInput } from "react-native";
 import MaterialIcons from "@expo/vector-icons/MaterialIcons";
 import { useColors } from "@/hooks/use-colors";
+import { createUI, createText } from "../theme/tokens";
 import { goalTypeOptions } from "@/constants/goal-types";
 
 interface GoalTypeSelectorProps {
@@ -42,7 +43,7 @@ export function GoalTypeSelector({
               key={type.id}
               onPress={() => onGoalTypeChange(type.id, type.unit)}
               style={{
-                backgroundColor: goalType === type.id ? "#EC4899" : colors.background,
+                backgroundColor: goalType === type.id ? createUI.activeAccent : colors.background,
                 borderRadius: 20,
                 paddingHorizontal: 16,
                 paddingVertical: 8,
@@ -50,7 +51,7 @@ export function GoalTypeSelector({
                 flexDirection: "row",
                 alignItems: "center",
                 borderWidth: 1,
-                borderColor: goalType === type.id ? "#EC4899" : "#2D3139",
+                borderColor: goalType === type.id ? createUI.activeAccent : createUI.inputBorder,
               }}
             >
               <MaterialIcons
@@ -87,14 +88,14 @@ export function GoalTypeSelector({
             value={goalUnit}
             onChangeText={onGoalUnitChange}
             placeholder="例: 人、pt、回"
-            placeholderTextColor="#9CA3AF"
+            placeholderTextColor={createText.placeholder}
             style={{
               backgroundColor: colors.background,
               borderRadius: 8,
               padding: 12,
               color: colors.foreground,
               borderWidth: 1,
-              borderColor: "#2D3139",
+              borderColor: createUI.inputBorder,
             }}
           />
         </View>

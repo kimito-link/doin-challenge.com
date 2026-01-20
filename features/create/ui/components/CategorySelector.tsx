@@ -7,6 +7,7 @@
 import { View, Text, TouchableOpacity, ScrollView } from "react-native";
 import MaterialIcons from "@expo/vector-icons/MaterialIcons";
 import { useColors } from "@/hooks/use-colors";
+import { createUI, createText } from "../theme/tokens";
 
 interface Category {
   id: number;
@@ -44,13 +45,13 @@ export function CategorySelector({
           borderRadius: 8,
           padding: 12,
           borderWidth: 1,
-          borderColor: "#2D3139",
+          borderColor: createUI.inputBorder,
           flexDirection: "row",
           justifyContent: "space-between",
           alignItems: "center",
         }}
       >
-        <Text style={{ color: categoryId ? colors.foreground : "#9CA3AF", fontSize: 14 }}>
+        <Text style={{ color: categoryId ? colors.foreground : createText.placeholder, fontSize: 14 }}>
           {selectedCategory?.name || "カテゴリを選択"}
         </Text>
         <MaterialIcons
@@ -66,7 +67,7 @@ export function CategorySelector({
             borderRadius: 8,
             marginTop: 4,
             borderWidth: 1,
-            borderColor: "#2D3139",
+            borderColor: createUI.inputBorder,
             maxHeight: 200,
           }}
         >
@@ -79,14 +80,14 @@ export function CategorySelector({
                 style={{
                   padding: 12,
                   borderBottomWidth: 1,
-                  borderBottomColor: "#2D3139",
+                  borderBottomColor: createUI.inputBorder,
                   minHeight: 44,
                   justifyContent: "center",
                 }}
               >
                 <Text
                   style={{
-                    color: categoryId === category.id ? "#EC4899" : colors.foreground,
+                    color: categoryId === category.id ? createText.accent : colors.foreground,
                     fontSize: 14,
                   }}
                 >

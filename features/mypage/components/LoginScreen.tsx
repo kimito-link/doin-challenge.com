@@ -7,6 +7,7 @@ import { Image } from "expo-image";
 import MaterialIcons from "@expo/vector-icons/MaterialIcons";
 import { LinearGradient } from "expo-linear-gradient";
 import { useColors } from "@/hooks/use-colors";
+import { mypageUI, mypageText, mypageGradient, mypageAccent } from "../ui/theme/tokens";
 
 // キャラクター画像
 const characterImages = {
@@ -31,8 +32,8 @@ export const loginPatterns = [
     title: "みんな、ちょっと聞いて！😊✨",
     message: "あなたの「推し」が、大きなステージに立つ瞬間を\n一緒に作りたいんだ。",
     highlight: "その景色を、一緒に作ろう！",
-    gradientColors: ["#EC4899", "#8B5CF6"] as const,
-    accentColor: "#EC4899",
+    gradientColors: mypageGradient.linkPink,
+    accentColor: mypageAccent.linkPink,
   },
   {
     id: 2,
@@ -40,8 +41,8 @@ export const loginPatterns = [
     title: "声を届けよう！🎙️✨",
     message: "あなたの応援の声が、\n誰かの心を動かす。",
     highlight: "一緒に推しの夢を叶えよう！",
-    gradientColors: ["#8B5CF6", "#3B82F6"] as const,
-    accentColor: "#8B5CF6",
+    gradientColors: mypageGradient.linkPurple,
+    accentColor: mypageAccent.linkPurple,
   },
   {
     id: 3,
@@ -49,8 +50,8 @@ export const loginPatterns = [
     title: "ようこそ！🎉",
     message: "動員ちゃれんじへようこそ！\nみんなの想いを集めて、推しの夢を叶えよう。",
     highlight: "さあ、始めよう！",
-    gradientColors: ["#F59E0B", "#EF4444"] as const,
-    accentColor: "#F59E0B",
+    gradientColors: mypageGradient.kontaOrange,
+    accentColor: mypageAccent.kontaOrange,
   },
   {
     id: 4,
@@ -58,8 +59,8 @@ export const loginPatterns = [
     title: "コンタだよ！🦊",
     message: "友達を誘って、みんなで盛り上げよう！\n一人の参加が、大きな波になるんだ。",
     highlight: "一緒に盛り上げよう！",
-    gradientColors: ["#DD6500", "#F59E0B"] as const,
-    accentColor: "#DD6500",
+    gradientColors: mypageGradient.kontaGold,
+    accentColor: mypageAccent.kontaGold,
   },
   {
     id: 5,
@@ -67,8 +68,8 @@ export const loginPatterns = [
     title: "たぬねだよ！🦝",
     message: "チャレンジを作って、\nみんなで目標達成を目指そう！",
     highlight: "目標達成でお祝い！🎉",
-    gradientColors: ["#10B981", "#3B82F6"] as const,
-    accentColor: "#10B981",
+    gradientColors: mypageGradient.tanuneGreen,
+    accentColor: mypageAccent.tanuneGreen,
   },
   {
     id: 6,
@@ -76,8 +77,8 @@ export const loginPatterns = [
     title: "ステージへの道！🎭✨",
     message: "客席を埋め尽くすファンの声援、\nリアルタイムで流れる応援コメント…",
     highlight: "その感動を、一緒に！",
-    gradientColors: ["#EC4899", "#F43F5E"] as const,
-    accentColor: "#F43F5E",
+    gradientColors: mypageGradient.tanunePink,
+    accentColor: mypageAccent.tanunePink,
   },
 ];
 
@@ -105,7 +106,7 @@ export function LoginScreen({
     <View style={{ flex: 1, backgroundColor: colors.background }}>
       {/* グラデーション背景 */}
       <LinearGradient
-        colors={["#1a237e", "#0D1117"]}
+        colors={[...mypageGradient.loginBg]}
         start={{ x: 0, y: 0 }}
         end={{ x: 0, y: 1 }}
         style={{
@@ -146,7 +147,7 @@ export function LoginScreen({
           動員ちゃれんじ
         </Text>
         <Text style={{ 
-          color: "#D1D5DB", 
+          color: mypageText.muted, 
           fontSize: 14,
           marginBottom: 24,
           textAlign: "center",
@@ -167,7 +168,7 @@ export function LoginScreen({
               height: 56, 
               borderRadius: 28, 
               borderWidth: 2, 
-              borderColor: "#EC4899",
+              borderColor: mypageAccent.linkPink,
               overflow: "hidden",
             }}>
               <Image 
@@ -185,7 +186,7 @@ export function LoginScreen({
               height: 64, 
               borderRadius: 32, 
               borderWidth: 3, 
-              borderColor: "#F59E0B",
+              borderColor: mypageAccent.kontaOrange,
               overflow: "hidden",
             }}>
               <Image 
@@ -203,7 +204,7 @@ export function LoginScreen({
               height: 56, 
               borderRadius: 28, 
               borderWidth: 2, 
-              borderColor: "#10B981",
+              borderColor: mypageAccent.tanuneGreen,
               overflow: "hidden",
             }}>
               <Image 
@@ -269,7 +270,7 @@ export function LoginScreen({
           onPress={onLogin}
           disabled={isLoggingIn}
           style={{
-            backgroundColor: "#1DA1F2",
+            backgroundColor: mypageUI.twitterBg,
             borderRadius: 12,
             paddingVertical: 14,
             paddingHorizontal: 24,
@@ -314,7 +315,7 @@ export function LoginScreen({
             borderColor: "rgba(236, 72, 153, 0.3)",
           }}>
             <Text style={{ 
-              color: "#E5E7EB", 
+              color: mypageText.mutedLight, 
               fontSize: 13, 
               lineHeight: 20,
             }}>
@@ -335,8 +336,8 @@ export function LoginScreen({
             marginTop: 16,
           }}
         >
-          <MaterialIcons name="refresh" size={18} color="#D1D5DB" />
-          <Text style={{ color: "#D1D5DB", fontSize: 13, marginLeft: 6 }}>
+          <MaterialIcons name="refresh" size={18} color={mypageText.muted} />
+          <Text style={{ color: mypageText.muted, fontSize: 13, marginLeft: 6 }}>
             他のキャラクターのメッセージを見る
           </Text>
         </TouchableOpacity>
@@ -351,7 +352,7 @@ export function LoginScreen({
                 width: 8,
                 height: 8,
                 borderRadius: 4,
-                backgroundColor: p.id === loginPattern.id ? "#EC4899" : "#3D4148",
+                backgroundColor: p.id === loginPattern.id ? mypageUI.patternActiveBg : mypageUI.patternInactiveBg,
               }}
             />
           ))}
