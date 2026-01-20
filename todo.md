@@ -2538,3 +2538,40 @@
   - ExperienceOverlay: 180行
   - StyleSheet: 1,280行（共有）
 - [x] 分割不要と判断（スタイル依存関係が複雑なため現状維持）
+
+
+## コンポーネント置き換え実装 Phase 2（v6.17+）
+
+### index.tsxの完全置き換え（1,350行 → 1,059行、-291行）
+- [x] FeaturedChallengeをfeatures/homeからインポートして置き換え
+- [x] ChallengeCardをfeatures/homeからインポートして置き換え
+- [x] ローカル定義の削除（FeaturedChallenge, ChallengeCard, Challenge型, eventTypeBadge, regionGroups）
+
+### 残りのローカルコンポーネントの分離（index.tsx: 1,059行 → 671行、-388行）
+- [x] EngagementSectionの分離（features/home/components/）
+- [x] CatchCopySectionの分離（features/home/components/）
+- [x] FeatureListSectionの分離（features/home/components/）
+- [x] ExperienceBannerの分離（features/home/components/）
+
+### カスタムフックの抽出
+- [x] ホーム画面のビジネスロジックの抽出は見送り（複雑な依存関係のためリスクが高い）
+
+
+## リファクタリング完了サマリー
+
+### index.tsx
+- 元: 1,350行 → 現在: 671行（**-679行、50%削減**）
+- 分離コンポーネント: FeaturedChallenge, ChallengeCard, EngagementSection, CatchCopySection, FeatureListSection, ExperienceBanner
+
+### event/[id].tsx
+- 元: 2,953行 → 現在: 2,484行（**-469行**）
+- 分離コンポーネント: RegionMap, ParticipantsList, ContributionRanking, MessageCard
+
+### 共通定数・型定義
+- constants/prefectures.ts: 都道府県リスト、地域グループ
+- constants/goal-types.ts: 目標タイプ設定
+- constants/event-types.ts: イベントタイプバッジ
+- types/challenge.ts: Challenge型定義
+- types/participation.ts: 参加者型定義
+
+### 合計削減行数: 約1,150行
