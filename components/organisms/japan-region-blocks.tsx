@@ -516,45 +516,89 @@ export function JapanRegionBlocks({ prefectureCounts, onPrefecturePress, onRegio
                   </Text>
 
                   <ScrollView style={styles.prefectureList}>
-                    {selectedRegion.prefectures.map((pref) => {
-                      const count = prefectureCounts[pref.name] || prefectureCounts[pref.short] || 0;
-                      const hasParticipants = count > 0;
+                    {/* 都道府県別ランキング（参加者数順） */}
+                    {(() => {
+                      // 参加者数でソート
+                      const sortedPrefectures = [...selectedRegion.prefectures]
+                        .map(pref => ({
+                          ...pref,
+                          count: prefectureCounts[pref.name] || prefectureCounts[pref.short] || 0
+                        }))
+                        .sort((a, b) => b.count - a.count);
                       
-                      return (
-                        <TouchableOpacity
-                          key={pref.name}
-                          style={[
-                            styles.prefectureItem,
-                            { backgroundColor: hasParticipants ? selectedRegion.color : color.surface }
-                          ]}
-                          onPress={() => {
-                            closeModal();
-                            onPrefecturePress?.(pref.name);
-                          }}
-                          activeOpacity={0.7}
-                        >
-                          <Text style={[
-                            styles.prefectureName,
-                            { color: hasParticipants ? color.textWhite : color.textPrimary }
-                          ]}>
-                            {pref.short}
-                          </Text>
-                          <View style={styles.prefectureCountContainer}>
-                            {hasParticipants ? (
-                              <Text style={styles.prefectureFire}>🔥</Text>
-                            ) : (
-                              <Text style={styles.prefectureWaiting}>😐</Text>
-                            )}
-                            <Text style={[
-                              styles.prefectureCount,
-                              { color: hasParticipants ? color.textWhite : color.textMuted }
-                            ]}>
-                              {count > 0 ? `${count}人` : "待機中"}
-                            </Text>
-                          </View>
-                        </TouchableOpacity>
-                      );
-                    })}
+                      // 最大参加者数（プログレスバー用）
+                      const maxPrefCount = Math.max(...sortedPrefectures.map(p => p.count), 1);
+                      
+                      return sortedPrefectures.map((pref, index) => {
+                        const hasParticipants = pref.count > 0;
+                        const rankEmoji = index === 0 && hasParticipants ? "🥇" : 
+                                          index === 1 && hasParticipants ? "🥈" : 
+                                          index === 2 && hasParticipants ? "🥉" : 
+                                          hasParticipants ? `${index + 1}` : "-";
+                        const barWidth = maxPrefCount > 0 ? (pref.count / maxPrefCount) * 100 : 0;
+                        const isUserPref = pref.name === userPrefecture || pref.short === userPrefecture;
+                        
+                        return (
+                          <Animated.View
+                            key={pref.name}
+                            entering={FadeIn.delay(index * 30).duration(200)}
+                            layout={LinearTransition.springify().damping(15).stiffness(100)}
+                          >
+                            <TouchableOpacity
+                              style={[
+                                styles.prefectureRankItem,
+                                isUserPref && styles.prefectureRankItemHighlight
+                              ]}
+                              onPress={() => {
+                                closeModal();
+                                onPrefecturePress?.(pref.name);
+                              }}
+                              activeOpacity={0.7}
+                            >
+                              <View style={styles.prefectureRankLeft}>
+                                <Text style={[
+                                  styles.prefectureRankEmoji,
+                                  !hasParticipants && { opacity: 0.4 }
+                                ]}>
+                                  {rankEmoji}
+                                </Text>
+                                <Text style={[
+                                  styles.prefectureRankName,
+                                  isUserPref && styles.prefectureRankNameHighlight
+                                ]}>
+                                  {pref.short}
+                                </Text>
+                                {isUserPref && (
+                                  <View style={styles.prefectureUserBadge}>
+                                    <Text style={styles.prefectureUserBadgeText}>あなた</Text>
+                                  </View>
+                                )}
+                              </View>
+                              <View style={styles.prefectureRankRight}>
+                                <View style={styles.prefectureBarContainer}>
+                                  <Animated.View
+                                    layout={LinearTransition.springify().damping(12).stiffness(80)}
+                                    style={[
+                                      styles.prefectureBar,
+                                      {
+                                        width: `${barWidth}%`,
+                                        backgroundColor: hasParticipants ? selectedRegion.color : color.borderAlt,
+                                      }
+                                    ]}
+                                  />
+                                </View>
+                                <Text style={[
+                                  styles.prefectureRankCount,
+                                  !hasParticipants && { color: color.textMuted }
+                                ]}>
+                                  {hasParticipants ? `${pref.count}人` : "-"}
+                                </Text>
+                              </View>
+                            </TouchableOpacity>
+                          </Animated.View>
+                        );
+                      });
+                    })()}
                   </ScrollView>
 
                   <TouchableOpacity
@@ -933,5 +977,76 @@ const styles = StyleSheet.create({
     color: color.textWhite,
     fontSize: 16,
     fontWeight: "bold",
+  },
+  // 都道府県ランキングスタイル
+  prefectureRankItem: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+    paddingVertical: 10,
+    paddingHorizontal: 8,
+    borderBottomWidth: 1,
+    borderBottomColor: color.surfaceAlt,
+  },
+  prefectureRankItemHighlight: {
+    backgroundColor: "rgba(236, 72, 153, 0.15)",
+    borderRadius: 8,
+    marginHorizontal: -4,
+    paddingHorizontal: 12,
+  },
+  prefectureRankLeft: {
+    flexDirection: "row",
+    alignItems: "center",
+    flex: 1,
+  },
+  prefectureRankEmoji: {
+    fontSize: 16,
+    width: 28,
+    textAlign: "center",
+  },
+  prefectureRankName: {
+    fontSize: 15,
+    fontWeight: "600",
+    color: color.textPrimary,
+    marginLeft: 4,
+  },
+  prefectureRankNameHighlight: {
+    color: color.accentPrimary,
+  },
+  prefectureUserBadge: {
+    backgroundColor: color.accentPrimary,
+    borderRadius: 4,
+    paddingHorizontal: 6,
+    paddingVertical: 2,
+    marginLeft: 8,
+  },
+  prefectureUserBadgeText: {
+    fontSize: 10,
+    fontWeight: "bold",
+    color: color.textWhite,
+  },
+  prefectureRankRight: {
+    flexDirection: "row",
+    alignItems: "center",
+    flex: 1.5,
+  },
+  prefectureBarContainer: {
+    flex: 1,
+    height: 8,
+    backgroundColor: color.surfaceAlt,
+    borderRadius: 4,
+    overflow: "hidden",
+    marginRight: 8,
+  },
+  prefectureBar: {
+    height: "100%",
+    borderRadius: 4,
+  },
+  prefectureRankCount: {
+    fontSize: 14,
+    fontWeight: "bold",
+    color: color.textPrimary,
+    width: 40,
+    textAlign: "right",
   },
 });
