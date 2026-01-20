@@ -386,6 +386,23 @@ export function JapanRegionBlocks({ prefectureCounts, onPrefecturePress, onRegio
         </View>
       </View>
 
+      {/* ヒートマップ凡例 */}
+      <View style={styles.legendContainer}>
+        <Text style={styles.legendTitle}>色の濃さ = 参加者数</Text>
+        <View style={styles.legendBar}>
+          <View style={[styles.legendSegment, { backgroundColor: color.mapInactive, opacity: 0.3 }]} />
+          <View style={[styles.legendSegment, { backgroundColor: color.accentPrimary, opacity: 0.5 }]} />
+          <View style={[styles.legendSegment, { backgroundColor: color.accentPrimary, opacity: 0.65 }]} />
+          <View style={[styles.legendSegment, { backgroundColor: color.accentPrimary, opacity: 0.8 }]} />
+          <View style={[styles.legendSegment, { backgroundColor: color.accentPrimary, opacity: 0.9 }]} />
+          <View style={[styles.legendSegment, { backgroundColor: color.accentPrimary, opacity: 1.0 }]} />
+        </View>
+        <View style={styles.legendLabels}>
+          <Text style={styles.legendLabel}>少</Text>
+          <Text style={styles.legendLabel}>多</Text>
+        </View>
+      </View>
+
       {/* 熱い地域ハイライト */}
       {stats.hotPrefecture && stats.maxCount > 0 && (
         <View style={styles.hotHighlight}>
@@ -629,6 +646,36 @@ const styles = StyleSheet.create({
     width: 1,
     height: 40,
     backgroundColor: color.textSubtle,
+  },
+  legendContainer: {
+    backgroundColor: color.border,
+    borderRadius: 12,
+    padding: 12,
+    marginBottom: 12,
+  },
+  legendTitle: {
+    fontSize: 12,
+    color: color.textSecondary,
+    textAlign: "center",
+    marginBottom: 8,
+  },
+  legendBar: {
+    flexDirection: "row",
+    height: 12,
+    borderRadius: 6,
+    overflow: "hidden",
+  },
+  legendSegment: {
+    flex: 1,
+  },
+  legendLabels: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    marginTop: 4,
+  },
+  legendLabel: {
+    fontSize: 10,
+    color: color.textMuted,
   },
   hotHighlight: {
     flexDirection: "row",
