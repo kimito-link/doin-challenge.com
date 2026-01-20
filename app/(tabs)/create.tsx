@@ -26,9 +26,12 @@ import {
   EventTypeSelector,
   GoalTypeSelector,
   CategorySelector,
+  GenreSelector,
+  PurposeSelector,
   TicketInfoSection,
   TemplateSaveSection,
 } from "@/features/create";
+import { type GenreId, type PurposeId } from "@/constants/event-categories";
 
 // キャラクター画像
 const characterImages = {
@@ -66,6 +69,9 @@ export default function CreateChallengeScreen() {
   const [categoryId, setCategoryId] = useState<number | null>(null);
   const [showCategoryList, setShowCategoryList] = useState(false);
   const [showValidationError, setShowValidationError] = useState(false);
+  // ジャンル・目的（3軸カテゴリシステム）
+  const [genre, setGenre] = useState<GenreId | null>(null);
+  const [purpose, setPurpose] = useState<PurposeId | null>(null);
   
   // ScrollViewのref（バリデーションエラー時にスクロールするため）
   const scrollViewRef = useRef<ScrollView>(null);
@@ -355,6 +361,18 @@ export default function CreateChallengeScreen() {
                   setCategoryId(id);
                   setShowCategoryList(false);
                 }}
+              />
+
+              {/* ジャンル選択（3軸カテゴリシステム） */}
+              <GenreSelector
+                selectedGenre={genre}
+                onSelect={setGenre}
+              />
+
+              {/* 目的選択（3軸カテゴリシステム） */}
+              <PurposeSelector
+                selectedPurpose={purpose}
+                onSelect={setPurpose}
               />
 
               {/* チャレンジ名 */}

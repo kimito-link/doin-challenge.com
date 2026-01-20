@@ -15,6 +15,8 @@ export {
   EventTypeSelector,
   GoalTypeSelector,
   CategorySelector,
+  GenreSelector,
+  PurposeSelector,
   TicketInfoSection,
   TemplateSaveSection,
 } from "./ui/components";
