@@ -64,7 +64,7 @@ export function normalizePrefecture(input: string): Prefecture | null {
  * 都道府県から地域グループを取得
  */
 export function getRegionByPrefecture(prefecture: string): RegionGroup | null {
-  return regionGroups.find(r => (r.prefectures as readonly string[]).includes(prefecture)) || null;
+  return regionGroups.find(r => (r.prefectures as unknown as string[]).includes(prefecture)) || null;
 }
 
 /**

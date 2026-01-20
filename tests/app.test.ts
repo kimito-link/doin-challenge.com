@@ -19,7 +19,7 @@ describe("動員ちゃれんじ App Configuration", () => {
 
 describe("Theme Configuration", () => {
   it("should have KimitoLink brand colors", () => {
-    const { themeColors } = require("../theme.config");
+    const { themeColors } = require("../theme.config.cjs");
     
     // Primary color should be KimitoLink blue
     expect(themeColors.primary.light).toBe("#00427B");
