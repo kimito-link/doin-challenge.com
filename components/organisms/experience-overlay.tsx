@@ -1,4 +1,5 @@
-import { View, Text, Pressable, StyleSheet, Dimensions, ScrollView } from "react-native";
+import { View, Text, Pressable, StyleSheet, Dimensions, ScrollView, TouchableOpacity, Platform } from "react-native";
+import * as Haptics from "expo-haptics";
 import { Image } from "expo-image";
 import Animated, { 
   FadeIn, 
@@ -572,6 +573,14 @@ export function ExperienceOverlay() {
   } = useExperience();
   const insets = useSafeAreaInsets();
 
+  // 画面タップで次に進む
+  const handleTap = () => {
+    if (Platform.OS !== "web") {
+      Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+    }
+    nextSlide();
+  };
+
   if (!isActive || !currentSlide) {
     return null;
   }
@@ -584,17 +593,24 @@ export function ExperienceOverlay() {
     <Animated.View 
       entering={FadeIn.duration(300)}
       exiting={FadeOut.duration(300)}
-      style={[
-        styles.overlay, 
-        { 
-          paddingTop: insets.top + 16,
-          paddingBottom: insets.bottom + 16,
-          backgroundColor: currentSlide.backgroundColor || "#1a1a2e",
-        }
-      ]}
+      style={[styles.overlay]}
     >
-      {/* ヘッダー */}
-      <View style={styles.header}>
+      <TouchableOpacity
+        activeOpacity={1}
+        onPress={handleTap}
+        style={[
+          styles.touchableArea,
+          { 
+            paddingTop: insets.top + 16,
+            paddingBottom: insets.bottom + 16,
+          }
+        ]}
+      >
+        {/* 暗いオーバーレイ背景 */}
+        <View style={[styles.darkOverlay, { backgroundColor: currentSlide.backgroundColor || "rgba(26, 26, 46, 0.95)" }]} />
+
+        {/* ヘッダー */}
+        <View style={styles.header}>
         <View>
           <Text style={styles.title}>{title}</Text>
           {currentSlide.stepTitle && (
@@ -617,17 +633,18 @@ export function ExperienceOverlay() {
         </Pressable>
       </View>
 
-      {/* プログレスバー（ステップ表示） */}
-      <View style={styles.progressContainer}>
-        <View style={styles.progressBarWrapper}>
-          <View 
+      {/* ステップインジケーター（ドット表示） */}
+      <View style={styles.stepIndicator}>
+        {Array.from({ length: totalSlides }).map((_, i) => (
+          <View
+            key={i}
             style={[
-              styles.progressBarFillHeader, 
-              { width: `${((currentSlideIndex + 1) / totalSlides) * 100}%` }
-            ]} 
+              styles.stepDot,
+              i === currentSlideIndex && styles.stepDotActive,
+              i < currentSlideIndex && styles.stepDotCompleted,
+            ]}
           />
-        </View>
-        <Text style={styles.progressText}>{currentSlideIndex + 1} / {totalSlides}</Text>
+        ))}
       </View>
 
       {/* コンテンツ */}
@@ -728,6 +745,7 @@ export function ExperienceOverlay() {
           </Pressable>
         </View>
       </ScrollView>
+      </TouchableOpacity>
     </Animated.View>
   );
 }
@@ -740,7 +758,14 @@ const styles = StyleSheet.create({
     right: 0,
     bottom: 0,
     zIndex: 1000,
+  },
+  touchableArea: {
+    flex: 1,
     paddingHorizontal: 20,
+  },
+  darkOverlay: {
+    ...StyleSheet.absoluteFillObject,
+    zIndex: -1,
   },
   header: {
     flexDirection: "row",
@@ -771,29 +796,24 @@ const styles = StyleSheet.create({
     color: "#ffffff",
     fontSize: 16,
   },
-  progressContainer: {
+  stepIndicator: {
     flexDirection: "row",
-    alignItems: "center",
-    gap: 12,
+    justifyContent: "center",
     marginBottom: 16,
+    gap: 8,
   },
-  progressBarWrapper: {
-    flex: 1,
-    height: 4,
-    backgroundColor: "rgba(255, 255, 255, 0.2)",
-    borderRadius: 2,
-    overflow: "hidden",
+  stepDot: {
+    width: 8,
+    height: 8,
+    borderRadius: 4,
+    backgroundColor: "rgba(255, 255, 255, 0.3)",
   },
-  progressBarFillHeader: {
-    height: "100%",
+  stepDotActive: {
     backgroundColor: "#FF6B9D",
-    borderRadius: 2,
+    width: 24,
   },
-  progressText: {
-    fontSize: 12,
-    color: "rgba(255, 255, 255, 0.6)",
-    minWidth: 50,
-    textAlign: "right",
+  stepDotCompleted: {
+    backgroundColor: "#22C55E",
   },
   scrollContent: {
     paddingBottom: 40,

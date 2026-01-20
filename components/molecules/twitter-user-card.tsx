@@ -131,7 +131,7 @@ export function TwitterUserCard({
           )}
           {showFollowers && user.followersCount !== undefined && (
             <Text
-              style={{ fontSize: config.followersSize, color: '#9CA3AF' }}
+              style={{ fontSize: config.followersSize, color: '#E5E7EB' }}
             >
               {user.followersCount.toLocaleString()} フォロワー
             </Text>
@@ -141,7 +141,7 @@ export function TwitterUserCard({
         {/* description */}
         {showDescription && user.description && (
           <Text
-            style={{ fontSize: config.descriptionSize, lineHeight: config.descriptionSize * 1.5, color: '#D1D5DB', marginTop: 4 }}
+            style={{ fontSize: config.descriptionSize, lineHeight: config.descriptionSize * 1.5, color: '#F3F4F6', marginTop: 4 }}
             numberOfLines={2}
           >
             {user.description}
