@@ -1,12 +1,24 @@
 import { View, Text, StyleSheet, TouchableOpacity, useWindowDimensions, Modal, ScrollView, Pressable } from "react-native";
 import { color } from "@/theme/tokens";
-import { useMemo, useState } from "react";
-import Animated, { FadeIn, FadeOut, SlideInDown, SlideOutDown } from "react-native-reanimated";
+import { useMemo, useState, useEffect } from "react";
+import Animated, { 
+  FadeIn, 
+  FadeOut, 
+  SlideInDown, 
+  SlideOutDown,
+  useSharedValue,
+  useAnimatedStyle,
+  withRepeat,
+  withSequence,
+  withTiming,
+  Easing,
+} from "react-native-reanimated";
 
 interface JapanRegionBlocksProps {
   prefectureCounts: { [key: string]: number };
   onPrefecturePress?: (prefecture: string) => void;
   onRegionPress?: (regionName: string, prefectures: string[]) => void;
+  userPrefecture?: string; // ユーザーの都道府県（強調表示用）
 }
 
 // 地域データ（6ブロック）
@@ -128,9 +140,42 @@ function getParticipantIcon(count: number): string {
   return "🔥🔥🔥";
 }
 
-export function JapanRegionBlocks({ prefectureCounts, onPrefecturePress, onRegionPress }: JapanRegionBlocksProps) {
+export function JapanRegionBlocks({ prefectureCounts, onPrefecturePress, onRegionPress, userPrefecture }: JapanRegionBlocksProps) {
   const { width: screenWidth } = useWindowDimensions();
   const [selectedRegion, setSelectedRegion] = useState<typeof regions[0] | null>(null);
+  
+  // ユーザーの地域を特定
+  const userRegionId = useMemo(() => {
+    if (!userPrefecture) return null;
+    for (const region of regions) {
+      if (region.prefectures.some(p => p.name === userPrefecture || p.short === userPrefecture)) {
+        return region.id;
+      }
+    }
+    return null;
+  }, [userPrefecture]);
+  
+  // パルスアニメーション用の値
+  const pulseScale = useSharedValue(1);
+  
+  // ユーザーの地域がある場合、パルスアニメーションを開始
+  useEffect(() => {
+    if (userRegionId) {
+      pulseScale.value = withRepeat(
+        withSequence(
+          withTiming(1.03, { duration: 800, easing: Easing.inOut(Easing.ease) }),
+          withTiming(1, { duration: 800, easing: Easing.inOut(Easing.ease) })
+        ),
+        -1, // 無限リピート
+        true
+      );
+    }
+  }, [userRegionId]);
+  
+  // パルスアニメーションスタイル
+  const pulseAnimatedStyle = useAnimatedStyle(() => ({
+    transform: [{ scale: pulseScale.value }],
+  }));
 
   // 統計情報を計算
   const stats = useMemo(() => {
@@ -173,7 +218,16 @@ export function JapanRegionBlocks({ prefectureCounts, onPrefecturePress, onRegio
     <View style={styles.container}>
       <View style={styles.header}>
         <Text style={styles.title}>🗾 地域別参加者マップ</Text>
-        <Text style={styles.subtitle}>合計 {stats.totalParticipants}人</Text>
+      </View>
+      
+      {/* 合計人数のメッセージ化 */}
+      <View style={styles.totalMessage}>
+        <Text style={styles.totalMessageText}>
+          全国から <Text style={styles.totalMessageCount}>{stats.totalParticipants}人</Text> が参加中
+        </Text>
+        {stats.totalParticipants < 10 && (
+          <Text style={styles.totalMessageSub}>まだ少ない今がチャンス！</Text>
+        )}
       </View>
 
       {/* 6地域ブロック（2列×3行） */}
@@ -182,6 +236,58 @@ export function JapanRegionBlocks({ prefectureCounts, onPrefecturePress, onRegio
           const total = regionTotals[region.id];
           const hasParticipants = total > 0;
           const fireIcon = getParticipantIcon(total);
+          const isUserRegion = region.id === userRegionId;
+          
+          const blockContent = (
+            <>
+              {isUserRegion && (
+                <View style={styles.userRegionBadge}>
+                  <Text style={styles.userRegionBadgeText}>あなたの地域</Text>
+                </View>
+              )}
+              <Text style={styles.regionEmoji}>{region.emoji}</Text>
+              <Text style={[
+                styles.regionName,
+                { color: hasParticipants ? color.textWhite : color.textMuted }
+              ]}>
+                {region.shortName}
+              </Text>
+              <Text style={[
+                styles.regionCount,
+                { color: hasParticipants ? color.textWhite : color.textMuted }
+              ]}>
+                {total > 0 ? `${total}人` : "-"}
+              </Text>
+              {fireIcon && (
+                <Text style={styles.fireIcon}>{fireIcon}</Text>
+              )}
+            </>
+          );
+          
+          // ユーザーの地域はアニメーション付き
+          if (isUserRegion) {
+            return (
+              <Animated.View key={region.id} style={pulseAnimatedStyle}>
+                <TouchableOpacity
+                  style={[
+                    styles.regionBlock,
+                    styles.userRegionBlock,
+                    {
+                      width: actualBlockSize,
+                      height: actualBlockSize,
+                      backgroundColor: region.color,
+                      borderColor: color.accentPrimary,
+                      borderWidth: 4,
+                    },
+                  ]}
+                  onPress={() => handleRegionPress(region)}
+                  activeOpacity={0.7}
+                >
+                  {blockContent}
+                </TouchableOpacity>
+              </Animated.View>
+            );
+          }
           
           return (
             <TouchableOpacity
@@ -199,22 +305,7 @@ export function JapanRegionBlocks({ prefectureCounts, onPrefecturePress, onRegio
               onPress={() => handleRegionPress(region)}
               activeOpacity={0.7}
             >
-              <Text style={styles.regionEmoji}>{region.emoji}</Text>
-              <Text style={[
-                styles.regionName,
-                { color: hasParticipants ? color.textWhite : color.textMuted }
-              ]}>
-                {region.shortName}
-              </Text>
-              <Text style={[
-                styles.regionCount,
-                { color: hasParticipants ? color.textWhite : color.textMuted }
-              ]}>
-                {total > 0 ? `${total}人` : "-"}
-              </Text>
-              {fireIcon && (
-                <Text style={styles.fireIcon}>{fireIcon}</Text>
-              )}
+              {blockContent}
             </TouchableOpacity>
           );
         })}
@@ -302,12 +393,16 @@ export function JapanRegionBlocks({ prefectureCounts, onPrefecturePress, onRegio
                             {pref.short}
                           </Text>
                           <View style={styles.prefectureCountContainer}>
-                            {hasParticipants && <Text style={styles.prefectureFire}>🔥</Text>}
+                            {hasParticipants ? (
+                              <Text style={styles.prefectureFire}>🔥</Text>
+                            ) : (
+                              <Text style={styles.prefectureWaiting}>😐</Text>
+                            )}
                             <Text style={[
                               styles.prefectureCount,
                               { color: hasParticipants ? color.textWhite : color.textMuted }
                             ]}>
-                              {count > 0 ? `${count}人` : "-"}
+                              {count > 0 ? `${count}人` : "待機中"}
                             </Text>
                           </View>
                         </TouchableOpacity>
@@ -358,6 +453,25 @@ const styles = StyleSheet.create({
     fontSize: 14,
     color: color.textSecondary,
   },
+  totalMessage: {
+    alignItems: "center",
+    marginBottom: 16,
+    paddingVertical: 8,
+  },
+  totalMessageText: {
+    fontSize: 16,
+    color: color.textSecondary,
+  },
+  totalMessageCount: {
+    fontSize: 20,
+    fontWeight: "bold",
+    color: color.accentPrimary,
+  },
+  totalMessageSub: {
+    fontSize: 12,
+    color: color.textMuted,
+    marginTop: 4,
+  },
   gridContainer: {
     flexDirection: "row",
     flexWrap: "wrap",
@@ -375,6 +489,25 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.1,
     shadowRadius: 4,
     elevation: 3,
+  },
+  userRegionBlock: {
+    shadowColor: color.accentPrimary,
+    shadowOpacity: 0.4,
+    shadowRadius: 8,
+    elevation: 6,
+  },
+  userRegionBadge: {
+    position: "absolute",
+    top: -8,
+    backgroundColor: color.accentPrimary,
+    paddingHorizontal: 8,
+    paddingVertical: 2,
+    borderRadius: 8,
+  },
+  userRegionBadgeText: {
+    fontSize: 10,
+    fontWeight: "bold",
+    color: color.textWhite,
   },
   regionEmoji: {
     fontSize: 28,
@@ -515,6 +648,9 @@ const styles = StyleSheet.create({
     gap: 4,
   },
   prefectureFire: {
+    fontSize: 14,
+  },
+  prefectureWaiting: {
     fontSize: 14,
   },
   prefectureCount: {
