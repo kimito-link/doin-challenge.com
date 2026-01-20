@@ -228,6 +228,8 @@ export const appRouter = router({
           twitterId: z.string().optional(),
           profileImage: z.string().optional(),
         })).optional(),
+        // v6.08: 招待コード（招待経由の参加の場合）
+        invitationCode: z.string().optional(),
       }))
       .mutation(async ({ ctx, input }) => {
         // クライアントから送信されたユーザー情報を使用（セッション認証に依存しない）
@@ -264,6 +266,14 @@ export const appRouter = router({
               invitedByUserId: ctx.user?.id,
             }));
             await db.createCompanions(companionRecords);
+          }
+          
+          // v6.08: 招待経由の参加の場合、招待使用を確認
+          if (input.invitationCode && participationId && ctx.user?.id) {
+            const invitation = await db.getInvitationByCode(input.invitationCode);
+            if (invitation) {
+              await db.confirmInvitationUse(invitation.id, ctx.user.id, participationId);
+            }
           }
           
           return { id: participationId };
@@ -1264,6 +1274,19 @@ Design requirements:
       .input(z.object({ invitationId: z.number() }))
       .query(async ({ input }) => {
         return db.getInvitationStats(input.invitationId);
+      }),
+
+    // v6.08: ユーザーの招待実績を取得
+    myStats: protectedProcedure
+      .query(async ({ ctx }) => {
+        return db.getUserInvitationStats(ctx.user.id);
+      }),
+
+    // v6.08: チャレンジの招待経由参加者一覧
+    invitedParticipants: protectedProcedure
+      .input(z.object({ challengeId: z.number() }))
+      .query(async ({ ctx, input }) => {
+        return db.getInvitedParticipants(input.challengeId, ctx.user.id);
       }),
   }),
 

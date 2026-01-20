@@ -88,6 +88,11 @@ export default function MyPageScreen() {
     enabled: isAuthenticated,
   });
 
+  // v6.08: 招待実績を取得
+  const { data: invitationStats } = trpc.invitations.myStats.useQuery(undefined, {
+    enabled: isAuthenticated,
+  });
+
   const handleLogout = () => {
     setShowLogoutModal(true);
   };
@@ -154,6 +159,7 @@ export default function MyPageScreen() {
             totalContribution={totalContribution}
             participationsCount={myParticipations?.length || 0}
             challengesCount={myChallenges?.length || 0}
+            invitationStats={invitationStats}
             onAccountSwitch={() => setShowAccountSwitcher(true)}
             onLogout={handleLogout}
           />

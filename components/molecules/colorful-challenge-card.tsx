@@ -1,4 +1,5 @@
-import { View, Text, StyleSheet, TouchableOpacity } from "react-native";
+import { View, Text, StyleSheet, TouchableOpacity, Modal, Pressable } from "react-native";
+import { useState } from "react";
 import { color, palette } from "@/theme/tokens";
 import { LinearGradient } from "expo-linear-gradient";
 import MaterialIcons from "@expo/vector-icons/MaterialIcons";
@@ -15,6 +16,7 @@ interface Challenge {
   hostUsername: string | null;
   hostProfileImage: string | null;
   hostFollowersCount: number | null;
+  hostTwitterId?: string | null;
   title: string;
   description: string | null;
   goalType: string;
@@ -36,6 +38,12 @@ interface ColorfulChallengeCardProps {
   colorIndex?: number;
   isFavorite?: boolean;
   onToggleFavorite?: (challengeId: number) => void;
+  /** 現在ログイン中のユーザーのTwitter ID（運営者判定用） */
+  currentUserTwitterId?: string | null;
+  /** 編集ボタン押下時のコールバック */
+  onEdit?: (challengeId: number) => void;
+  /** 削除ボタン押下時のコールバック */
+  onDelete?: (challengeId: number) => void;
 }
 
 // 「しゃべった！」風のカラフルなカラーパレット
@@ -59,6 +67,8 @@ const eventTypeBadge: Record<string, { label: string; color: string }> = {
 /**
  * カラフルなチャレンジカードコンポーネント
  * 「しゃべった！」アプリを参考にした、鮮やかな色のカード型UI
+ * 
+ * v6.07: 運営者向け編集・削除機能を追加
  */
 export function ColorfulChallengeCard({ 
   challenge, 
@@ -68,6 +78,9 @@ export function ColorfulChallengeCard({
   colorIndex,
   isFavorite = false,
   onToggleFavorite,
+  currentUserTwitterId,
+  onEdit,
+  onDelete,
 }: ColorfulChallengeCardProps) {
   const colors = useColors();
   const { isDesktop } = useResponsive();
@@ -88,121 +101,203 @@ export function ColorfulChallengeCard({
   const cardColorIdx = colorIndex !== undefined ? colorIndex : challenge.id % CARD_COLORS.length;
   const cardColor = CARD_COLORS[cardColorIdx];
 
+  // 運営者（作成者）かどうかを判定
+  const isOwner = currentUserTwitterId && challenge.hostTwitterId === currentUserTwitterId;
+
+  // メニューモーダルの状態
+  const [showMenu, setShowMenu] = useState(false);
+
+  const handleMenuPress = () => {
+    setShowMenu(true);
+  };
+
+  const handleEdit = () => {
+    setShowMenu(false);
+    onEdit?.(challenge.id);
+  };
+
+  const handleDelete = () => {
+    setShowMenu(false);
+    onDelete?.(challenge.id);
+  };
+
   return (
-    <AnimatedCard
-      onPress={onPress}
-      scaleAmount={0.97}
-      style={{
-        borderRadius: 16,
-        // marginは0にしてgapで管理（FlatListのcolumnWrapperStyleで制御）
-        marginBottom: 8, // 行間の余白
-        overflow: "hidden",
-        width: cardWidth as any,
-        // UXガイドライン: 軽いドロップシャドウ
-        shadowColor: cardColor.bg,
-        shadowOffset: { width: 0, height: 4 },
-        shadowOpacity: 0.3,
-        shadowRadius: 8,
-        elevation: 5,
-      }}
-    >
-      <LinearGradient
-        colors={cardColor.gradient as [string, string]}
-        start={{ x: 0, y: 0 }}
-        end={{ x: 1, y: 1 }}
-        style={styles.cardGradient}
+    <>
+      <AnimatedCard
+        onPress={onPress}
+        scaleAmount={0.97}
+        style={{
+          borderRadius: 16,
+          // marginは0にしてgapで管理（FlatListのcolumnWrapperStyleで制御）
+          marginBottom: 8, // 行間の余白
+          overflow: "hidden",
+          width: cardWidth as any,
+          // UXガイドライン: 軽いドロップシャドウ
+          shadowColor: cardColor.bg,
+          shadowOffset: { width: 0, height: 4 },
+          shadowOpacity: 0.3,
+          shadowRadius: 8,
+          elevation: 5,
+        }}
       >
-        {/* お気に入りアイコン（左上） */}
-        <TouchableOpacity 
-          style={styles.favoriteIcon}
-          onPress={(e) => {
-            e.stopPropagation?.();
-            onToggleFavorite?.(challenge.id);
-          }}
-          hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
+        <LinearGradient
+          colors={cardColor.gradient as [string, string]}
+          start={{ x: 0, y: 0 }}
+          end={{ x: 1, y: 1 }}
+          style={styles.cardGradient}
         >
-          <MaterialIcons 
-            name={isFavorite ? "star" : "star-outline"} 
-            size={20} 
-            color={isFavorite ? color.rankGold : "rgba(255,255,255,0.6)"} 
-          />
-        </TouchableOpacity>
-
-        {/* メニューアイコン（右上） */}
-        <View style={styles.menuIcon}>
-          <MaterialIcons name="more-horiz" size={20} color="rgba(255,255,255,0.6)" />
-        </View>
-
-        {/* メインコンテンツ */}
-        <View style={styles.content}>
-          {/* タイトル（大きく中央に） */}
-          <Text style={styles.title} numberOfLines={2}>
-            {challenge.title}
-          </Text>
-
-          {/* 作成者情報 */}
-          <View style={styles.hostContainer}>
-            <LazyAvatar
-              source={challenge.hostProfileImage ? { uri: challenge.hostProfileImage } : undefined}
-              size={20}
-              fallbackColor="rgba(255,255,255,0.3)"
-              fallbackText={(challenge.hostName || "?").charAt(0)}
+          {/* お気に入りアイコン（左上） */}
+          <TouchableOpacity 
+            style={styles.favoriteIcon}
+            onPress={(e) => {
+              e.stopPropagation?.();
+              onToggleFavorite?.(challenge.id);
+            }}
+            hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
+          >
+            <MaterialIcons 
+              name={isFavorite ? "star" : "star-outline"} 
+              size={20} 
+              color={isFavorite ? color.rankGold : "rgba(255,255,255,0.6)"} 
             />
-            <View style={styles.hostInfo}>
-              <Text style={styles.hostName} numberOfLines={1}>
-                {challenge.hostName}
-              </Text>
-              {challenge.hostUsername && (
-                <Text style={styles.hostUsername} numberOfLines={1}>
-                  @{challenge.hostUsername}
-                </Text>
-              )}
-            </View>
-          </View>
+          </TouchableOpacity>
 
-          {/* タグ/バッジ（タイプ表示） */}
-          <View style={styles.badgeContainer}>
-            <View style={[styles.badge, { backgroundColor: typeBadge.color }]}>
-              <Text style={styles.badgeText}>{typeBadge.label}</Text>
-            </View>
-            {challenge.venue && (
-              <View style={[styles.badge, { backgroundColor: "rgba(0,0,0,0.2)" }]}>
-                <MaterialIcons name="place" size={10} color={color.textWhite} />
-                <Text style={[styles.badgeText, { marginLeft: 2 }]} numberOfLines={1}>
-                  {challenge.venue}
-                </Text>
+          {/* メニューアイコン（右上）- 運営者の場合は編集・削除メニューを表示 */}
+          <TouchableOpacity 
+            style={styles.menuIcon}
+            onPress={(e) => {
+              e.stopPropagation?.();
+              if (isOwner) {
+                handleMenuPress();
+              }
+            }}
+            hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
+          >
+            <MaterialIcons 
+              name="more-horiz" 
+              size={20} 
+              color={isOwner ? "rgba(255,255,255,0.9)" : "rgba(255,255,255,0.6)"} 
+            />
+            {/* 運営者バッジ */}
+            {isOwner && (
+              <View style={styles.ownerBadge}>
+                <Text style={styles.ownerBadgeText}>主催</Text>
               </View>
             )}
-          </View>
+          </TouchableOpacity>
 
-          {/* 進捗情報 */}
-          <View style={styles.progressContainer}>
-            <Text style={styles.progressText}>
-              {challenge.currentValue.toLocaleString()} / {challenge.goalValue.toLocaleString()}{unit}
+          {/* メインコンテンツ */}
+          <View style={styles.content}>
+            {/* タイトル（大きく中央に） */}
+            <Text style={styles.title} numberOfLines={2}>
+              {challenge.title}
             </Text>
-            <View style={styles.progressBar}>
-              <View 
-                style={[
-                  styles.progressFill, 
-                  { width: `${progress}%` }
-                ]} 
+
+            {/* 作成者情報 */}
+            <View style={styles.hostContainer}>
+              <LazyAvatar
+                source={challenge.hostProfileImage ? { uri: challenge.hostProfileImage } : undefined}
+                size={20}
+                fallbackColor="rgba(255,255,255,0.3)"
+                fallbackText={(challenge.hostName || "?").charAt(0)}
               />
+              <View style={styles.hostInfo}>
+                <Text style={styles.hostName} numberOfLines={1}>
+                  {challenge.hostName}
+                </Text>
+                {challenge.hostUsername && (
+                  <Text style={styles.hostUsername} numberOfLines={1}>
+                    @{challenge.hostUsername}
+                  </Text>
+                )}
+              </View>
+            </View>
+
+            {/* タグ/バッジ（タイプ表示） */}
+            <View style={styles.badgeContainer}>
+              <View style={[styles.badge, { backgroundColor: typeBadge.color }]}>
+                <Text style={styles.badgeText}>{typeBadge.label}</Text>
+              </View>
+              {challenge.venue && (
+                <View style={[styles.badge, { backgroundColor: "rgba(0,0,0,0.2)" }]}>
+                  <MaterialIcons name="place" size={10} color={color.textWhite} />
+                  <Text style={[styles.badgeText, { marginLeft: 2 }]} numberOfLines={1}>
+                    {challenge.venue}
+                  </Text>
+                </View>
+              )}
+            </View>
+
+            {/* 進捗情報 */}
+            <View style={styles.progressContainer}>
+              <Text style={styles.progressText}>
+                {challenge.currentValue.toLocaleString()} / {challenge.goalValue.toLocaleString()}{unit}
+              </Text>
+              <View style={styles.progressBar}>
+                <View 
+                  style={[
+                    styles.progressFill, 
+                    { width: `${progress}%` }
+                  ]} 
+                />
+              </View>
+            </View>
+
+            {/* 日付（右下） */}
+            <View style={styles.dateContainer}>
+              <MaterialIcons name="event" size={14} color="rgba(255,255,255,0.8)" />
+              <Text style={styles.dateText}>{formattedDate}</Text>
             </View>
           </View>
 
-          {/* 日付（右下） */}
-          <View style={styles.dateContainer}>
-            <MaterialIcons name="event" size={14} color="rgba(255,255,255,0.8)" />
-            <Text style={styles.dateText}>{formattedDate}</Text>
+          {/* コメントアイコン（右下） */}
+          <View style={styles.commentIcon}>
+            <MaterialIcons name="chat-bubble-outline" size={18} color="rgba(255,255,255,0.6)" />
           </View>
-        </View>
+        </LinearGradient>
+      </AnimatedCard>
 
-        {/* コメントアイコン（右下） */}
-        <View style={styles.commentIcon}>
-          <MaterialIcons name="chat-bubble-outline" size={18} color="rgba(255,255,255,0.6)" />
-        </View>
-      </LinearGradient>
-    </AnimatedCard>
+      {/* 運営者向けメニューモーダル */}
+      <Modal
+        visible={showMenu}
+        transparent
+        animationType="fade"
+        onRequestClose={() => setShowMenu(false)}
+      >
+        <Pressable 
+          style={styles.modalOverlay}
+          onPress={() => setShowMenu(false)}
+        >
+          <View style={styles.menuModal}>
+            <Text style={styles.menuTitle}>{challenge.title}</Text>
+            <Text style={styles.menuSubtitle}>チャレンジを管理</Text>
+            
+            <TouchableOpacity 
+              style={styles.menuItem}
+              onPress={handleEdit}
+            >
+              <MaterialIcons name="edit" size={24} color={colors.foreground} />
+              <Text style={[styles.menuItemText, { color: colors.foreground }]}>編集する</Text>
+            </TouchableOpacity>
+            
+            <TouchableOpacity 
+              style={styles.menuItem}
+              onPress={handleDelete}
+            >
+              <MaterialIcons name="delete" size={24} color={color.danger} />
+              <Text style={[styles.menuItemText, { color: color.danger }]}>削除する</Text>
+            </TouchableOpacity>
+            
+            <TouchableOpacity 
+              style={[styles.menuItem, styles.menuItemCancel]}
+              onPress={() => setShowMenu(false)}
+            >
+              <Text style={[styles.menuItemText, { color: colors.muted }]}>キャンセル</Text>
+            </TouchableOpacity>
+          </View>
+        </Pressable>
+      </Modal>
+    </>
   );
 }
 
@@ -221,6 +316,20 @@ const styles = StyleSheet.create({
     position: "absolute",
     top: 12,
     right: 12,
+    flexDirection: "row",
+    alignItems: "center",
+  },
+  ownerBadge: {
+    backgroundColor: "rgba(255,255,255,0.3)",
+    paddingHorizontal: 6,
+    paddingVertical: 2,
+    borderRadius: 8,
+    marginLeft: 4,
+  },
+  ownerBadgeText: {
+    color: color.textWhite,
+    fontSize: 9,
+    fontWeight: "600",
   },
   content: {
     flex: 1,
@@ -315,6 +424,53 @@ const styles = StyleSheet.create({
   hostUsername: {
     color: "rgba(255,255,255,0.7)",
     fontSize: 9,
+  },
+  // モーダルスタイル
+  modalOverlay: {
+    flex: 1,
+    backgroundColor: "rgba(0,0,0,0.5)",
+    justifyContent: "center",
+    alignItems: "center",
+    padding: 20,
+  },
+  menuModal: {
+    backgroundColor: color.surface,
+    borderRadius: 16,
+    padding: 20,
+    width: "100%",
+    maxWidth: 320,
+  },
+  menuTitle: {
+    color: color.textWhite,
+    fontSize: 16,
+    fontWeight: "bold",
+    textAlign: "center",
+    marginBottom: 4,
+  },
+  menuSubtitle: {
+    color: color.textMuted,
+    fontSize: 12,
+    textAlign: "center",
+    marginBottom: 16,
+  },
+  menuItem: {
+    flexDirection: "row",
+    alignItems: "center",
+    paddingVertical: 14,
+    paddingHorizontal: 12,
+    borderRadius: 12,
+    marginBottom: 8,
+    backgroundColor: color.bg,
+  },
+  menuItemText: {
+    fontSize: 16,
+    fontWeight: "500",
+    marginLeft: 12,
+  },
+  menuItemCancel: {
+    justifyContent: "center",
+    backgroundColor: "transparent",
+    marginTop: 8,
   },
 });
 

@@ -7,6 +7,8 @@ import { OnboardingSteps } from "@/components/organisms/onboarding-steps";
 import { trpc } from "@/lib/trpc";
 import { useColors } from "@/hooks/use-colors";
 import { useResponsive, useGridLayout } from "@/hooks/use-responsive";
+import { useAuth } from "@/hooks/use-auth";
+import { showAlert } from "@/lib/web-alert";
 import { AppHeader } from "@/components/organisms/app-header";
 import { CachedDataIndicator } from "@/components/organisms/offline-banner";
 import { useNetworkStatus } from "@/hooks/use-offline-cache";
@@ -70,6 +72,8 @@ export default function HomeScreen() {
   const colors = useColors();
   const router = useRouter();
   const { isDesktop } = useResponsive();
+  // v6.07: 運営者向け編集・削除機能のためにユーザー情報を取得
+  const { user } = useAuth();
   // v4.6: useGridLayoutでレスポンシブなグリッドレイアウトを計算
   const grid = useGridLayout({ minItemWidth: 280, maxColumns: 4, desktopMaxWidth: 1200 });
   const numColumns = grid.numColumns;
@@ -162,6 +166,17 @@ export default function HomeScreen() {
     enabled: !isOffline,
   });
 
+  // v6.07: チャレンジ削除ミューテーション
+  const deleteChallengeMutation = trpc.events.delete.useMutation({
+    onSuccess: () => {
+      refetch();
+      showAlert("削除完了", "チャレンジを削除しました");
+    },
+    onError: (error) => {
+      showAlert("エラー", error.message || "削除に失敗しました");
+    },
+  });
+
   // チャレンジデータをキャッシュに保存（両方のキャッシュシステムに保存）
   useEffect(() => {
     if (apiChallenges && apiChallenges.length > 0) {
@@ -209,6 +224,30 @@ export default function HomeScreen() {
       pathname: "/event/[id]",
       params: { id: challengeId.toString() },
     });
+  };
+
+  // v6.07: チャレンジ編集ハンドラー
+  const handleChallengeEdit = (challengeId: number) => {
+    router.push({
+      pathname: "/event/edit/[id]" as any,
+      params: { id: challengeId.toString() },
+    });
+  };
+
+  // v6.07: チャレンジ削除ハンドラー（確認ダイアログ付き）
+  const handleChallengeDelete = (challengeId: number) => {
+    showAlert(
+      "チャレンジを削除",
+      "このチャレンジを削除しますか？\n参加者のデータも全て削除されます。",
+      [
+        { text: "キャンセル", style: "cancel" },
+        {
+          text: "削除する",
+          style: "destructive",
+          onPress: () => deleteChallengeMutation.mutate({ id: challengeId }),
+        },
+      ]
+    );
   };
 
   // フィルター適用
@@ -356,6 +395,7 @@ export default function HomeScreen() {
             // v5.60: カラフルカードと通常カードの切り替え
             // v5.61: お気に入り機能を追加
             // v4.6: useGridLayoutからのitemWidthを渡す
+            // v6.07: 運営者向け編集・削除機能を追加
             const cardProps = {
               challenge: item as Challenge,
               onPress: () => handleChallengePress(item.id),
@@ -364,6 +404,9 @@ export default function HomeScreen() {
               colorIndex: index,
               isFavorite: isFavorite(item.id),
               onToggleFavorite: toggleFavorite,
+              currentUserTwitterId: user?.twitterId,
+              onEdit: handleChallengeEdit,
+              onDelete: handleChallengeDelete,
             };
             // 最初のアイテムのみチュートリアルハイライト対象
             if (index === 0) {

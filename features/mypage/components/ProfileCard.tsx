@@ -24,6 +24,11 @@ interface ProfileCardProps {
   totalContribution: number;
   participationsCount: number;
   challengesCount: number;
+  // v6.08: 招待実績
+  invitationStats?: {
+    totalInvited: number;
+    confirmedCount: number;
+  };
   onAccountSwitch: () => void;
   onLogout: () => void;
 }
@@ -34,6 +39,7 @@ export function ProfileCard({
   totalContribution,
   participationsCount,
   challengesCount,
+  invitationStats,
   onAccountSwitch,
   onLogout,
 }: ProfileCardProps) {
@@ -126,6 +132,48 @@ export function ProfileCard({
             <Text style={{ color: mypageText.muted, fontSize: 12 }}>主催</Text>
           </View>
         </View>
+
+        {/* v6.08: 招待実績 */}
+        {invitationStats && (invitationStats.totalInvited > 0 || invitationStats.confirmedCount > 0) && (
+          <View style={{ marginTop: 16 }}>
+            <View style={{ flexDirection: "row", alignItems: "center", marginBottom: 8 }}>
+              <MaterialIcons name="people" size={18} color={mypageText.muted} />
+              <Text style={{ color: mypageText.muted, fontSize: 14, marginLeft: 4, fontWeight: "600" }}>
+                友達招待実績
+              </Text>
+            </View>
+            <View style={{ flexDirection: "row", gap: 12 }}>
+              <View
+                style={{
+                  flex: 1,
+                  backgroundColor: colors.background,
+                  borderRadius: 12,
+                  padding: 12,
+                  alignItems: "center",
+                }}
+              >
+                <Text style={{ color: "#10B981", fontSize: 24, fontWeight: "bold" }}>
+                  {invitationStats.totalInvited}
+                </Text>
+                <Text style={{ color: mypageText.muted, fontSize: 12 }}>招待した人数</Text>
+              </View>
+              <View
+                style={{
+                  flex: 1,
+                  backgroundColor: colors.background,
+                  borderRadius: 12,
+                  padding: 12,
+                  alignItems: "center",
+                }}
+              >
+                <Text style={{ color: "#3B82F6", fontSize: 24, fontWeight: "bold" }}>
+                  {invitationStats.confirmedCount}
+                </Text>
+                <Text style={{ color: mypageText.muted, fontSize: 12 }}>参加表明済み</Text>
+              </View>
+            </View>
+          </View>
+        )}
 
         {/* アカウント切り替えボタン */}
         <TouchableOpacity

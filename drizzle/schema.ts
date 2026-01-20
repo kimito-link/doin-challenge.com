@@ -427,8 +427,13 @@ export const invitationUses = mysqlTable("invitation_uses", {
   // 招待された人
   userId: int("userId"),
   displayName: varchar("displayName", { length: 255 }),
+  twitterId: varchar("twitterId", { length: 64 }),
+  twitterUsername: varchar("twitterUsername", { length: 255 }),
   // 参加情報
   participationId: int("participationId"),
+  // v6.08: 本人が参加表明したかどうか
+  isConfirmed: boolean("isConfirmed").default(false).notNull(),
+  confirmedAt: timestamp("confirmedAt"),
   // メタデータ
   createdAt: timestamp("createdAt").defaultNow().notNull(),
 });

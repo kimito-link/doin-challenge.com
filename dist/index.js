@@ -309,8 +309,13 @@ var init_schema = __esm({
       // 招待された人
       userId: int("userId"),
       displayName: varchar("displayName", { length: 255 }),
+      twitterId: varchar("twitterId", { length: 64 }),
+      twitterUsername: varchar("twitterUsername", { length: 255 }),
       // 参加情報
       participationId: int("participationId"),
+      // v6.08: 本人が参加表明したかどうか
+      isConfirmed: boolean("isConfirmed").default(false).notNull(),
+      confirmedAt: timestamp("confirmedAt"),
       // メタデータ
       createdAt: timestamp("createdAt").defaultNow().notNull()
     });
@@ -590,6 +595,7 @@ __export(db_exports, {
   checkAndAwardBadges: () => checkAndAwardBadges,
   clearSearchHistoryForUser: () => clearSearchHistoryForUser,
   compareSchemas: () => compareSchemas,
+  confirmInvitationUse: () => confirmInvitationUse,
   createAchievementPage: () => createAchievementPage,
   createBadge: () => createBadge,
   createCategory: () => createCategory,
@@ -655,6 +661,7 @@ __export(db_exports, {
   getInvitationUses: () => getInvitationUses,
   getInvitationsForChallenge: () => getInvitationsForChallenge,
   getInvitationsForUser: () => getInvitationsForUser,
+  getInvitedParticipants: () => getInvitedParticipants,
   getNotificationSettings: () => getNotificationSettings,
   getNotificationsByUserId: () => getNotificationsByUserId,
   getOshikatsuStats: () => getOshikatsuStats,
@@ -684,6 +691,7 @@ __export(db_exports, {
   getUserBadgesWithDetails: () => getUserBadgesWithDetails,
   getUserById: () => getUserById,
   getUserByOpenId: () => getUserByOpenId,
+  getUserInvitationStats: () => getUserInvitationStats,
   getUserPublicProfile: () => getUserPublicProfile,
   getUserRankingPosition: () => getUserRankingPosition,
   getUserReminderForChallenge: () => getUserReminderForChallenge,
@@ -1639,6 +1647,53 @@ async function recordInvitationUse(use) {
   if (!db) return null;
   const result = await db.insert(invitationUses).values(use);
   return result[0].insertId;
+}
+async function confirmInvitationUse(invitationId, userId, participationId) {
+  const db = await getDb();
+  if (!db) return false;
+  await db.update(invitationUses).set({
+    isConfirmed: true,
+    confirmedAt: /* @__PURE__ */ new Date(),
+    participationId
+  }).where(and(
+    eq(invitationUses.invitationId, invitationId),
+    eq(invitationUses.userId, userId)
+  ));
+  return true;
+}
+async function getUserInvitationStats(userId) {
+  const db = await getDb();
+  if (!db) return { totalInvited: 0, confirmedCount: 0 };
+  const invitationsList = await db.select({ id: invitations.id }).from(invitations).where(eq(invitations.inviterId, userId));
+  if (invitationsList.length === 0) return { totalInvited: 0, confirmedCount: 0 };
+  const invitationIds = invitationsList.map((i) => i.id);
+  const totalResult = await db.select({ count: sql`count(*)` }).from(invitationUses).where(sql`${invitationUses.invitationId} IN (${sql.join(invitationIds.map((id) => sql`${id}`), sql`, `)})`);
+  const confirmedResult = await db.select({ count: sql`count(*)` }).from(invitationUses).where(and(
+    sql`${invitationUses.invitationId} IN (${sql.join(invitationIds.map((id) => sql`${id}`), sql`, `)})`,
+    eq(invitationUses.isConfirmed, true)
+  ));
+  return {
+    totalInvited: totalResult[0]?.count || 0,
+    confirmedCount: confirmedResult[0]?.count || 0
+  };
+}
+async function getInvitedParticipants(challengeId, inviterId) {
+  const db = await getDb();
+  if (!db) return [];
+  const invitationsList = await db.select({ id: invitations.id }).from(invitations).where(and(
+    eq(invitations.challengeId, challengeId),
+    eq(invitations.inviterId, inviterId)
+  ));
+  if (invitationsList.length === 0) return [];
+  const invitationIds = invitationsList.map((i) => i.id);
+  return db.select({
+    id: invitationUses.id,
+    displayName: invitationUses.displayName,
+    twitterUsername: invitationUses.twitterUsername,
+    isConfirmed: invitationUses.isConfirmed,
+    confirmedAt: invitationUses.confirmedAt,
+    createdAt: invitationUses.createdAt
+  }).from(invitationUses).where(sql`${invitationUses.invitationId} IN (${sql.join(invitationIds.map((id) => sql`${id}`), sql`, `)})`).orderBy(desc(invitationUses.createdAt));
 }
 async function getInvitationUses(invitationId) {
   const db = await getDb();
@@ -3801,7 +3856,9 @@ var appRouter = router({
         twitterUsername: z2.string().optional(),
         twitterId: z2.string().optional(),
         profileImage: z2.string().optional()
-      })).optional()
+      })).optional(),
+      // v6.08: 招待コード（招待経由の参加の場合）
+      invitationCode: z2.string().optional()
     })).mutation(async ({ ctx, input }) => {
       if (!input.twitterId) {
         throw new Error("\u30ED\u30B0\u30A4\u30F3\u304C\u5FC5\u8981\u3067\u3059\u3002Twitter\u3067\u30ED\u30B0\u30A4\u30F3\u3057\u3066\u304F\u3060\u3055\u3044\u3002");
@@ -3834,6 +3891,12 @@ var appRouter = router({
             invitedByUserId: ctx.user?.id
           }));
           await createCompanions(companionRecords);
+        }
+        if (input.invitationCode && participationId && ctx.user?.id) {
+          const invitation = await getInvitationByCode(input.invitationCode);
+          if (invitation) {
+            await confirmInvitationUse(invitation.id, ctx.user.id, participationId);
+          }
         }
         return { id: participationId };
       } catch (error) {
@@ -4582,6 +4645,14 @@ Design requirements:
     // 招待の統計を取得
     stats: protectedProcedure.input(z2.object({ invitationId: z2.number() })).query(async ({ input }) => {
       return getInvitationStats(input.invitationId);
+    }),
+    // v6.08: ユーザーの招待実績を取得
+    myStats: protectedProcedure.query(async ({ ctx }) => {
+      return getUserInvitationStats(ctx.user.id);
+    }),
+    // v6.08: チャレンジの招待経由参加者一覧
+    invitedParticipants: protectedProcedure.input(z2.object({ challengeId: z2.number() })).query(async ({ ctx, input }) => {
+      return getInvitedParticipants(input.challengeId, ctx.user.id);
     })
   }),
   // 公開プロフィール関連

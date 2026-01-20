@@ -16,6 +16,8 @@ interface CompanionDisplay {
   displayName: string;
   twitterUsername: string | null;
   profileImage: string | null;
+  // v6.08: 本人参加確認フラグ
+  isConfirmed?: boolean;
 }
 
 interface MessageCardProps {
@@ -163,19 +165,19 @@ export function MessageCard({
                 style={{
                   flexDirection: "row",
                   alignItems: "center",
-                  backgroundColor: "#1A1D21",
+                  backgroundColor: companion.isConfirmed ? "rgba(16, 185, 129, 0.15)" : "#1A1D21",
                   borderRadius: 16,
                   paddingHorizontal: 10,
                   paddingVertical: 6,
                   borderWidth: 1,
-                  borderColor: "#2D3139",
+                  borderColor: companion.isConfirmed ? "#10B981" : "#2D3139",
                 }}
               >
                 <View style={{ marginRight: 6 }}>
                   <OptimizedAvatar
                     source={companion.profileImage ? { uri: companion.profileImage } : undefined}
                     size={20}
-                    fallbackColor={eventUI.fallbackAlt}
+                    fallbackColor={companion.isConfirmed ? "#10B981" : eventUI.fallbackAlt}
                     fallbackText={companion.displayName.charAt(0)}
                   />
                 </View>
@@ -184,6 +186,12 @@ export function MessageCard({
                   <Text style={{ color: eventText.secondary, fontSize: eventFont.small, marginLeft: 4 }}>
                     @{companion.twitterUsername}
                   </Text>
+                )}
+                {/* v6.08: 本人参加確認バッジ */}
+                {companion.isConfirmed && (
+                  <View style={{ marginLeft: 4, flexDirection: "row", alignItems: "center" }}>
+                    <MaterialIcons name="verified" size={12} color="#10B981" />
+                  </View>
                 )}
               </View>
             ))}
