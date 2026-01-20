@@ -3192,3 +3192,24 @@ features/create/
 - [ ] lib/tutorial-context.tsx (511行) - チュートリアルコンテキスト
 - [ ] server/openapi.ts (507行) - OpenAPI定義
 - [ ] app/(tabs)/index.tsx (501行) - ホーム画面
+
+
+## コードリファクタリング（v6.13）
+
+### 500行以上のファイル分割
+- [x] event/[id].tsx (2540行 → 1855行) - 12コンポーネントに分割
+- [x] server/db.ts (2295行 → 18モジュール) - データベース関数を機能別に分割
+- [ ] experience-overlay.tsx (2018行) - 経験値オーバーレイ
+- [ ] server/routers.ts (1817行) - APIルーター（26サブルーター）
+- [x] japan-region-blocks.tsx (1052行 → 5モジュール) - 日本地図ブロック
+  - [x] 地域データを別ファイルに抽出 (region-data.ts: 156行)
+  - [x] ヒートマップユーティリティを分離 (heat-utils.ts: 61行)
+  - [x] スタイル定義を分離 (styles.ts: 431行)
+  - [x] メインコンポーネントを整理 (JapanRegionBlocks.tsx: 463行)
+  - [x] テスト実行と動作確認 (428テストパス)
+- [ ] ParticipationForm.tsx (938行) - 参加フォーム
+- [ ] useEventDetailScreen.ts (936行) - イベント詳細フック
+- [ ] tutorial-overlay.tsx (842行) - チュートリアルオーバーレイ
+- [ ] lib/api/client.ts (803行) - APIクライアント
+- [ ] drizzle/schema.ts (784行) - DBスキーマ
+- [ ] ticket-transfer-section.tsx (772行) - チケット譲渡セクション
