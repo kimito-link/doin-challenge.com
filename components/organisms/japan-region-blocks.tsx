@@ -12,6 +12,8 @@ import Animated, {
   withSequence,
   withTiming,
   Easing,
+  Layout,
+  LinearTransition,
 } from "react-native-reanimated";
 
 interface JapanRegionBlocksProps {
@@ -424,12 +426,22 @@ export function JapanRegionBlocks({ prefectureCounts, onPrefecturePress, onRegio
             const barWidth = maxRegionCount > 0 ? (region.total / maxRegionCount) * 100 : 0;
             
             return (
-              <View key={region.id} style={[
-                styles.rankingItem,
-                isUserRegion && styles.rankingItemHighlight
-              ]}>
+              <Animated.View 
+                key={region.id} 
+                layout={LinearTransition.springify().damping(15).stiffness(100)}
+                entering={FadeIn.delay(index * 50).duration(300)}
+                style={[
+                  styles.rankingItem,
+                  isUserRegion && styles.rankingItemHighlight
+                ]}
+              >
                 <View style={styles.rankingLeft}>
-                  <Text style={styles.rankingRank}>{rankEmoji}</Text>
+                  <Animated.Text 
+                    layout={LinearTransition.springify()}
+                    style={styles.rankingRank}
+                  >
+                    {rankEmoji}
+                  </Animated.Text>
                   <Text style={styles.rankingEmoji}>{region.emoji}</Text>
                   <Text style={[
                     styles.rankingName,
@@ -440,17 +452,25 @@ export function JapanRegionBlocks({ prefectureCounts, onPrefecturePress, onRegio
                 </View>
                 <View style={styles.rankingRight}>
                   <View style={styles.rankingBarContainer}>
-                    <View style={[
-                      styles.rankingBar,
-                      { 
-                        width: `${barWidth}%`,
-                        backgroundColor: region.color,
-                      }
-                    ]} />
+                    <Animated.View 
+                      layout={LinearTransition.springify().damping(12).stiffness(80)}
+                      style={[
+                        styles.rankingBar,
+                        { 
+                          width: `${barWidth}%`,
+                          backgroundColor: region.color,
+                        }
+                      ]} 
+                    />
                   </View>
-                  <Text style={styles.rankingCount}>{region.total}人</Text>
+                  <Animated.Text 
+                    layout={LinearTransition.springify()}
+                    style={styles.rankingCount}
+                  >
+                    {region.total}人
+                  </Animated.Text>
                 </View>
-              </View>
+              </Animated.View>
             );
           })}
         </View>
