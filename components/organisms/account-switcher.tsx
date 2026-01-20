@@ -5,6 +5,7 @@
  */
 
 import React, { useState } from "react";
+import { color, palette } from "@/theme/tokens";
 import {
   View,
   Text,
@@ -327,10 +328,10 @@ export function AccountSwitcher({ visible, onClose }: AccountSwitcherProps) {
             disabled={isLoading}
           >
             {isLoading ? (
-              <ActivityIndicator color="#FFFFFF" size="small" />
+              <ActivityIndicator color={color.textWhite} size="small" />
             ) : (
               <>
-                <MaterialIcons name="add" size={20} color="#FFFFFF" />
+                <MaterialIcons name="add" size={20} color={color.textWhite} />
                 <Text style={styles.switchButtonText}>
                   新しいアカウントを追加
                 </Text>
@@ -425,7 +426,7 @@ const styles = StyleSheet.create({
     borderRadius: 12,
   },
   currentBadgeText: {
-    color: "#fff",
+    color: color.textWhite,
     fontSize: 12,
     fontWeight: "600",
   },
@@ -459,7 +460,7 @@ const styles = StyleSheet.create({
     gap: 8,
   },
   switchButtonText: {
-    color: "#fff",
+    color: color.textWhite,
     fontSize: 16,
     fontWeight: "600",
   },

@@ -1,4 +1,5 @@
 import { Text, View, TouchableOpacity, ScrollView, Dimensions } from "react-native";
+import { color, palette } from "@/theme/tokens";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import { ScreenContainer } from "@/components/organisms/screen-container";
 import { trpc } from "@/lib/trpc";
@@ -16,13 +17,13 @@ const { width: screenWidth } = Dimensions.get("window");
 // ダッシュボード用地域グループ（色付き）
 // 注: 共通のdashboardRegionGroupsとは分割が異なる（北海道が単独、東北が別）
 const dashboardRegionGroups = [
-  { name: "北海道", prefectures: ["北海道"], color: "#3B82F6" },
-  { name: "東北", prefectures: ["青森県", "岩手県", "宮城県", "秋田県", "山形県", "福島県"], color: "#60A5FA" },
-  { name: "関東", prefectures: ["茨城県", "栃木県", "群馬県", "埼玉県", "千葉県", "東京都", "神奈川県"], color: "#EC4899" },
-  { name: "中部", prefectures: ["新潟県", "富山県", "石川県", "福井県", "山梨県", "長野県", "岐阜県", "静岡県", "愛知県"], color: "#10B981" },
-  { name: "近畿", prefectures: ["三重県", "滋賀県", "京都府", "大阪府", "兵庫県", "奈良県", "和歌山県"], color: "#F59E0B" },
-  { name: "中国・四国", prefectures: ["鳥取県", "島根県", "岡山県", "広島県", "山口県", "徳島県", "香川県", "愛媛県", "高知県"], color: "#8B5CF6" },
-  { name: "九州・沖縄", prefectures: ["福岡県", "佐賀県", "長崎県", "熊本県", "大分県", "宮崎県", "鹿児島県", "沖縄県"], color: "#EF4444" },
+  { name: "北海道", prefectures: ["北海道"], color: color.info },
+  { name: "東北", prefectures: ["青森県", "岩手県", "宮城県", "秋田県", "山形県", "福島県"], color: color.blue400 },
+  { name: "関東", prefectures: ["茨城県", "栃木県", "群馬県", "埼玉県", "千葉県", "東京都", "神奈川県"], color: color.accentPrimary },
+  { name: "中部", prefectures: ["新潟県", "富山県", "石川県", "福井県", "山梨県", "長野県", "岐阜県", "静岡県", "愛知県"], color: color.successDark },
+  { name: "近畿", prefectures: ["三重県", "滋賀県", "京都府", "大阪府", "兵庫県", "奈良県", "和歌山県"], color: color.warning },
+  { name: "中国・四国", prefectures: ["鳥取県", "島根県", "岡山県", "広島県", "山口県", "徳島県", "香川県", "愛媛県", "高知県"], color: color.accentAlt },
+  { name: "九州・沖縄", prefectures: ["福岡県", "佐賀県", "長崎県", "熊本県", "大分県", "宮崎県", "鹿児島県", "沖縄県"], color: color.danger },
 ];
 
 type Participation = {
@@ -55,7 +56,7 @@ function TimeHeatmap({ participations }: { participations: Participation[] }) {
 
   return (
     <View style={{ marginVertical: 16 }}>
-      <Text style={{ color: "#fff", fontSize: 16, fontWeight: "bold", marginBottom: 12 }}>
+      <Text style={{ color: color.textWhite, fontSize: 16, fontWeight: "bold", marginBottom: 12 }}>
         ⏰ 時間帯別参加分布
       </Text>
       <View style={{ flexDirection: "row", flexWrap: "wrap", justifyContent: "center" }}>
@@ -71,16 +72,16 @@ function TimeHeatmap({ participations }: { participations: Participation[] }) {
                 borderRadius: 4,
                 backgroundColor: count > 0 
                   ? `rgba(236, 72, 153, ${0.2 + intensity * 0.8})` 
-                  : "#1A1D21",
+                  : color.surface,
                 alignItems: "center",
                 justifyContent: "center",
               }}
             >
-              <Text style={{ color: count > 0 ? "#fff" : "#CBD5E0", fontSize: 10 }}>
+              <Text style={{ color: count > 0 ? color.textWhite : color.textSubtle, fontSize: 10 }}>
                 {hour}時
               </Text>
               {count > 0 && (
-                <Text style={{ color: "#fff", fontSize: 10, fontWeight: "bold" }}>
+                <Text style={{ color: color.textWhite, fontSize: 10, fontWeight: "bold" }}>
                   {count}
                 </Text>
               )}
@@ -88,7 +89,7 @@ function TimeHeatmap({ participations }: { participations: Participation[] }) {
           );
         })}
       </View>
-      <Text style={{ color: "#D1D5DB", fontSize: 12, textAlign: "center", marginTop: 8 }}>
+      <Text style={{ color: color.textMuted, fontSize: 12, textAlign: "center", marginTop: 8 }}>
         参加登録が多い時間帯ほど濃いピンクで表示
       </Text>
     </View>
@@ -127,11 +128,11 @@ function DailyTrendChart({ participations }: { participations: Participation[] }
   if (dailyData.length === 0) {
     return (
       <View style={{ marginVertical: 16 }}>
-        <Text style={{ color: "#fff", fontSize: 16, fontWeight: "bold", marginBottom: 12 }}>
+        <Text style={{ color: color.textWhite, fontSize: 16, fontWeight: "bold", marginBottom: 12 }}>
           📈 参加者数推移
         </Text>
-        <View style={{ backgroundColor: "#1A1D21", borderRadius: 8, padding: 24, alignItems: "center" }}>
-          <Text style={{ color: "#CBD5E0" }}>まだ参加者がいません</Text>
+        <View style={{ backgroundColor: color.surface, borderRadius: 8, padding: 24, alignItems: "center" }}>
+          <Text style={{ color: color.textSubtle }}>まだ参加者がいません</Text>
         </View>
       </View>
     );
@@ -139,10 +140,10 @@ function DailyTrendChart({ participations }: { participations: Participation[] }
 
   return (
     <View style={{ marginVertical: 16 }}>
-      <Text style={{ color: "#fff", fontSize: 16, fontWeight: "bold", marginBottom: 12 }}>
+      <Text style={{ color: color.textWhite, fontSize: 16, fontWeight: "bold", marginBottom: 12 }}>
         📈 参加者数推移
       </Text>
-      <View style={{ backgroundColor: "#1A1D21", borderRadius: 8, padding: 16 }}>
+      <View style={{ backgroundColor: color.surface, borderRadius: 8, padding: 16 }}>
         {/* グラフエリア */}
         <View style={{ height: chartHeight, flexDirection: "row", alignItems: "flex-end" }}>
           {dailyData.map((d, index) => {
@@ -157,7 +158,7 @@ function DailyTrendChart({ participations }: { participations: Participation[] }
                 }}
               >
                 <LinearGradient
-                  colors={["#EC4899", "#8B5CF6"]}
+                  colors={[color.accentPrimary, color.accentAlt]}
                   style={{
                     width: "80%",
                     height: barHeight,
@@ -173,17 +174,17 @@ function DailyTrendChart({ participations }: { participations: Participation[] }
           {dailyData.length <= 7 ? (
             dailyData.map((d, index) => (
               <View key={d.date} style={{ flex: 1, alignItems: "center" }}>
-                <Text style={{ color: "#CBD5E0", fontSize: 8 }}>
+                <Text style={{ color: color.textSubtle, fontSize: 8 }}>
                   {d.date.slice(5)}
                 </Text>
               </View>
             ))
           ) : (
             <>
-              <Text style={{ color: "#CBD5E0", fontSize: 10, flex: 1 }}>
+              <Text style={{ color: color.textSubtle, fontSize: 10, flex: 1 }}>
                 {dailyData[0]?.date.slice(5)}
               </Text>
-              <Text style={{ color: "#CBD5E0", fontSize: 10, flex: 1, textAlign: "right" }}>
+              <Text style={{ color: color.textSubtle, fontSize: 10, flex: 1, textAlign: "right" }}>
                 {dailyData[dailyData.length - 1]?.date.slice(5)}
               </Text>
             </>
@@ -192,16 +193,16 @@ function DailyTrendChart({ participations }: { participations: Participation[] }
         {/* 統計サマリー */}
         <View style={{ flexDirection: "row", marginTop: 16, justifyContent: "space-around" }}>
           <View style={{ alignItems: "center" }}>
-            <Text style={{ color: "#CBD5E0", fontSize: 12 }}>合計</Text>
-            <Text style={{ color: "#EC4899", fontSize: 20, fontWeight: "bold" }}>{cumulative}人</Text>
+            <Text style={{ color: color.textSubtle, fontSize: 12 }}>合計</Text>
+            <Text style={{ color: color.accentPrimary, fontSize: 20, fontWeight: "bold" }}>{cumulative}人</Text>
           </View>
           <View style={{ alignItems: "center" }}>
-            <Text style={{ color: "#CBD5E0", fontSize: 12 }}>日数</Text>
-            <Text style={{ color: "#fff", fontSize: 20, fontWeight: "bold" }}>{dailyData.length}日</Text>
+            <Text style={{ color: color.textSubtle, fontSize: 12 }}>日数</Text>
+            <Text style={{ color: color.textWhite, fontSize: 20, fontWeight: "bold" }}>{dailyData.length}日</Text>
           </View>
           <View style={{ alignItems: "center" }}>
-            <Text style={{ color: "#CBD5E0", fontSize: 12 }}>平均/日</Text>
-            <Text style={{ color: "#fff", fontSize: 20, fontWeight: "bold" }}>
+            <Text style={{ color: color.textSubtle, fontSize: 12 }}>平均/日</Text>
+            <Text style={{ color: color.textWhite, fontSize: 20, fontWeight: "bold" }}>
               {(cumulative / dailyData.length).toFixed(1)}人
             </Text>
           </View>
@@ -241,11 +242,11 @@ function RegionPieChart({ participations }: { participations: Participation[] })
   if (regionData.length === 0) {
     return (
       <View style={{ marginVertical: 16 }}>
-        <Text style={{ color: "#fff", fontSize: 16, fontWeight: "bold", marginBottom: 12 }}>
+        <Text style={{ color: color.textWhite, fontSize: 16, fontWeight: "bold", marginBottom: 12 }}>
           🗾 地域分布
         </Text>
-        <View style={{ backgroundColor: "#1A1D21", borderRadius: 8, padding: 24, alignItems: "center" }}>
-          <Text style={{ color: "#CBD5E0" }}>地域データがありません</Text>
+        <View style={{ backgroundColor: color.surface, borderRadius: 8, padding: 24, alignItems: "center" }}>
+          <Text style={{ color: color.textSubtle }}>地域データがありません</Text>
         </View>
       </View>
     );
@@ -253,20 +254,20 @@ function RegionPieChart({ participations }: { participations: Participation[] })
 
   return (
     <View style={{ marginVertical: 16 }}>
-      <Text style={{ color: "#fff", fontSize: 16, fontWeight: "bold", marginBottom: 12 }}>
+      <Text style={{ color: color.textWhite, fontSize: 16, fontWeight: "bold", marginBottom: 12 }}>
         🗾 地域分布
       </Text>
-      <View style={{ backgroundColor: "#1A1D21", borderRadius: 8, padding: 16 }}>
+      <View style={{ backgroundColor: color.surface, borderRadius: 8, padding: 16 }}>
         {/* 横棒グラフ */}
         {regionData.map((region, index) => (
           <View key={region.name} style={{ marginBottom: 12 }}>
             <View style={{ flexDirection: "row", justifyContent: "space-between", marginBottom: 4 }}>
-              <Text style={{ color: "#fff", fontSize: 14 }}>{region.name}</Text>
-              <Text style={{ color: "#D1D5DB", fontSize: 14 }}>
+              <Text style={{ color: color.textWhite, fontSize: 14 }}>{region.name}</Text>
+              <Text style={{ color: color.textMuted, fontSize: 14 }}>
                 {region.count}人 ({region.percentage}%)
               </Text>
             </View>
-            <View style={{ height: 8, backgroundColor: "#2D3139", borderRadius: 4, overflow: "hidden" }}>
+            <View style={{ height: 8, backgroundColor: color.border, borderRadius: 4, overflow: "hidden" }}>
               <View
                 style={{
                   height: "100%",
@@ -279,10 +280,10 @@ function RegionPieChart({ participations }: { participations: Participation[] })
           </View>
         ))}
         {/* 合計 */}
-        <View style={{ borderTopWidth: 1, borderTopColor: "#2D3139", paddingTop: 12, marginTop: 8 }}>
+        <View style={{ borderTopWidth: 1, borderTopColor: color.border, paddingTop: 12, marginTop: 8 }}>
           <View style={{ flexDirection: "row", justifyContent: "space-between" }}>
-            <Text style={{ color: "#D1D5DB", fontSize: 14 }}>合計</Text>
-            <Text style={{ color: "#EC4899", fontSize: 16, fontWeight: "bold" }}>{total}人</Text>
+            <Text style={{ color: color.textMuted, fontSize: 14 }}>合計</Text>
+            <Text style={{ color: color.accentPrimary, fontSize: 16, fontWeight: "bold" }}>{total}人</Text>
           </View>
         </View>
       </View>
@@ -311,10 +312,10 @@ function PrefectureRanking({ participations }: { participations: Participation[]
 
   return (
     <View style={{ marginVertical: 16 }}>
-      <Text style={{ color: "#fff", fontSize: 16, fontWeight: "bold", marginBottom: 12 }}>
+      <Text style={{ color: color.textWhite, fontSize: 16, fontWeight: "bold", marginBottom: 12 }}>
         🏆 都道府県別ランキング TOP10
       </Text>
-      <View style={{ backgroundColor: "#1A1D21", borderRadius: 8, padding: 16 }}>
+      <View style={{ backgroundColor: color.surface, borderRadius: 8, padding: 16 }}>
         {prefectureData.map((pref, index) => (
           <View
             key={pref.name}
@@ -323,7 +324,7 @@ function PrefectureRanking({ participations }: { participations: Participation[]
               alignItems: "center",
               paddingVertical: 8,
               borderBottomWidth: index < prefectureData.length - 1 ? 1 : 0,
-              borderBottomColor: "#2D3139",
+              borderBottomColor: color.border,
             }}
           >
             <View
@@ -331,18 +332,18 @@ function PrefectureRanking({ participations }: { participations: Participation[]
                 width: 24,
                 height: 24,
                 borderRadius: 12,
-                backgroundColor: index === 0 ? "#FFD700" : index === 1 ? "#C0C0C0" : index === 2 ? "#CD7F32" : "#2D3139",
+                backgroundColor: index === 0 ? color.rankGold : index === 1 ? color.rankSilver : index === 2 ? color.rankBronze : color.border,
                 alignItems: "center",
                 justifyContent: "center",
                 marginRight: 12,
               }}
             >
-              <Text style={{ color: index < 3 ? "#000" : "#fff", fontSize: 12, fontWeight: "bold" }}>
+              <Text style={{ color: index < 3 ? "#000" : color.textWhite, fontSize: 12, fontWeight: "bold" }}>
                 {index + 1}
               </Text>
             </View>
-            <Text style={{ color: "#fff", fontSize: 14, flex: 1 }}>{pref.name}</Text>
-            <Text style={{ color: "#EC4899", fontSize: 16, fontWeight: "bold" }}>{pref.count}人</Text>
+            <Text style={{ color: color.textWhite, fontSize: 14, flex: 1 }}>{pref.name}</Text>
+            <Text style={{ color: color.accentPrimary, fontSize: 16, fontWeight: "bold" }}>{pref.count}人</Text>
           </View>
         ))}
       </View>
@@ -372,36 +373,36 @@ function StatsSummary({ challenge, participations }: { challenge: any; participa
 
   return (
     <View style={{ marginVertical: 16 }}>
-      <Text style={{ color: "#fff", fontSize: 16, fontWeight: "bold", marginBottom: 12 }}>
+      <Text style={{ color: color.textWhite, fontSize: 16, fontWeight: "bold", marginBottom: 12 }}>
         📊 統計サマリー
       </Text>
       <View style={{ flexDirection: "row", flexWrap: "wrap", justifyContent: "space-between" }}>
-        <View style={{ width: "48%", backgroundColor: "#1A1D21", borderRadius: 8, padding: 16, marginBottom: 8 }}>
-          <Text style={{ color: "#CBD5E0", fontSize: 12 }}>総動員数</Text>
-          <Text style={{ color: "#EC4899", fontSize: 24, fontWeight: "bold" }}>{stats.total}人</Text>
+        <View style={{ width: "48%", backgroundColor: color.surface, borderRadius: 8, padding: 16, marginBottom: 8 }}>
+          <Text style={{ color: color.textSubtle, fontSize: 12 }}>総動員数</Text>
+          <Text style={{ color: color.accentPrimary, fontSize: 24, fontWeight: "bold" }}>{stats.total}人</Text>
         </View>
-        <View style={{ width: "48%", backgroundColor: "#1A1D21", borderRadius: 8, padding: 16, marginBottom: 8 }}>
-          <Text style={{ color: "#CBD5E0", fontSize: 12 }}>参加者数</Text>
-          <Text style={{ color: "#fff", fontSize: 24, fontWeight: "bold" }}>{stats.uniqueParticipants}人</Text>
+        <View style={{ width: "48%", backgroundColor: color.surface, borderRadius: 8, padding: 16, marginBottom: 8 }}>
+          <Text style={{ color: color.textSubtle, fontSize: 12 }}>参加者数</Text>
+          <Text style={{ color: color.textWhite, fontSize: 24, fontWeight: "bold" }}>{stats.uniqueParticipants}人</Text>
         </View>
-        <View style={{ width: "48%", backgroundColor: "#1A1D21", borderRadius: 8, padding: 16, marginBottom: 8 }}>
-          <Text style={{ color: "#CBD5E0", fontSize: 12 }}>平均貢献度</Text>
-          <Text style={{ color: "#fff", fontSize: 24, fontWeight: "bold" }}>{stats.avgContribution.toFixed(1)}人</Text>
+        <View style={{ width: "48%", backgroundColor: color.surface, borderRadius: 8, padding: 16, marginBottom: 8 }}>
+          <Text style={{ color: color.textSubtle, fontSize: 12 }}>平均貢献度</Text>
+          <Text style={{ color: color.textWhite, fontSize: 24, fontWeight: "bold" }}>{stats.avgContribution.toFixed(1)}人</Text>
         </View>
-        <View style={{ width: "48%", backgroundColor: "#1A1D21", borderRadius: 8, padding: 16, marginBottom: 8 }}>
-          <Text style={{ color: "#CBD5E0", fontSize: 12 }}>同伴率</Text>
-          <Text style={{ color: "#fff", fontSize: 24, fontWeight: "bold" }}>{stats.companionRate.toFixed(0)}%</Text>
+        <View style={{ width: "48%", backgroundColor: color.surface, borderRadius: 8, padding: 16, marginBottom: 8 }}>
+          <Text style={{ color: color.textSubtle, fontSize: 12 }}>同伴率</Text>
+          <Text style={{ color: color.textWhite, fontSize: 24, fontWeight: "bold" }}>{stats.companionRate.toFixed(0)}%</Text>
         </View>
-        <View style={{ width: "100%", backgroundColor: "#1A1D21", borderRadius: 8, padding: 16 }}>
+        <View style={{ width: "100%", backgroundColor: color.surface, borderRadius: 8, padding: 16 }}>
           <View style={{ flexDirection: "row", justifyContent: "space-between", marginBottom: 8 }}>
-            <Text style={{ color: "#CBD5E0", fontSize: 12 }}>目標達成率</Text>
-            <Text style={{ color: "#EC4899", fontSize: 14, fontWeight: "bold" }}>
+            <Text style={{ color: color.textSubtle, fontSize: 12 }}>目標達成率</Text>
+            <Text style={{ color: color.accentPrimary, fontSize: 14, fontWeight: "bold" }}>
               {stats.progressRate.toFixed(1)}%
             </Text>
           </View>
-          <View style={{ height: 12, backgroundColor: "#2D3139", borderRadius: 6, overflow: "hidden" }}>
+          <View style={{ height: 12, backgroundColor: color.border, borderRadius: 6, overflow: "hidden" }}>
             <LinearGradient
-              colors={["#EC4899", "#8B5CF6"]}
+              colors={[color.accentPrimary, color.accentAlt]}
               start={{ x: 0, y: 0 }}
               end={{ x: 1, y: 0 }}
               style={{
@@ -411,7 +412,7 @@ function StatsSummary({ challenge, participations }: { challenge: any; participa
               }}
             />
           </View>
-          <Text style={{ color: "#D1D5DB", fontSize: 12, textAlign: "center", marginTop: 4 }}>
+          <Text style={{ color: color.textMuted, fontSize: 12, textAlign: "center", marginTop: 4 }}>
             {stats.total} / {challenge?.goalValue || 0} {challenge?.goalUnit || "人"}
           </Text>
         </View>
@@ -446,7 +447,7 @@ export default function DashboardScreen() {
     return (
       <ScreenContainer className="p-4">
         <View style={{ flex: 1, alignItems: "center", justifyContent: "center" }}>
-          <Text style={{ color: "#D1D5DB" }}>読み込み中...</Text>
+          <Text style={{ color: color.textMuted }}>読み込み中...</Text>
         </View>
       </ScreenContainer>
     );
@@ -456,12 +457,12 @@ export default function DashboardScreen() {
     return (
       <ScreenContainer className="p-4">
         <View style={{ flex: 1, alignItems: "center", justifyContent: "center" }}>
-          <Text style={{ color: "#D1D5DB" }}>チャレンジが見つかりません</Text>
+          <Text style={{ color: color.textMuted }}>チャレンジが見つかりません</Text>
           <TouchableOpacity
             onPress={() => router.back()}
             style={{ marginTop: 16, padding: 12 }}
           >
-            <Text style={{ color: "#EC4899" }}>戻る</Text>
+            <Text style={{ color: color.accentPrimary }}>戻る</Text>
           </TouchableOpacity>
         </View>
       </ScreenContainer>
@@ -480,18 +481,18 @@ export default function DashboardScreen() {
               onPress={() => router.back()}
               style={{ flexDirection: "row", alignItems: "center" }}
             >
-              <MaterialIcons name="arrow-back" size={24} color="#fff" />
-              <Text style={{ color: "#fff", marginLeft: 8 }}>戻る</Text>
+              <MaterialIcons name="arrow-back" size={24} color={color.textWhite} />
+              <Text style={{ color: color.textWhite, marginLeft: 8 }}>戻る</Text>
             </TouchableOpacity>
           }
         />
         <View style={{ marginBottom: 16 }}>
           <View style={{ flexDirection: "row", justifyContent: "space-between", alignItems: "center" }}>
             <View style={{ flex: 1 }}>
-              <Text style={{ color: "#fff", fontSize: 18, fontWeight: "bold" }}>
+              <Text style={{ color: color.textWhite, fontSize: 18, fontWeight: "bold" }}>
                 統計ダッシュボード
               </Text>
-              <Text style={{ color: "#D1D5DB", fontSize: 14 }} numberOfLines={1}>
+              <Text style={{ color: color.textMuted, fontSize: 14 }} numberOfLines={1}>
                 {challenge.title}
               </Text>
             </View>
@@ -521,8 +522,8 @@ export default function DashboardScreen() {
 
         {/* 主催者限定メッセージ */}
         {!isHost && (
-          <View style={{ backgroundColor: "#1A1D21", borderRadius: 8, padding: 16, marginBottom: 16 }}>
-            <Text style={{ color: "#F59E0B", fontSize: 14 }}>
+          <View style={{ backgroundColor: color.surface, borderRadius: 8, padding: 16, marginBottom: 16 }}>
+            <Text style={{ color: color.warning, fontSize: 14 }}>
               ⚠️ 一部の詳細データは主催者のみ閲覧できます
             </Text>
           </View>

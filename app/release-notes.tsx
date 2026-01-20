@@ -1,4 +1,5 @@
 import { ScrollView, Text, View, TouchableOpacity, StyleSheet } from "react-native";
+import { color, palette } from "@/theme/tokens";
 import { useRouter } from "expo-router";
 import { ScreenContainer } from "@/components/organisms/screen-container";
 import { AppHeader } from "@/components/organisms/app-header";
@@ -87,10 +88,10 @@ const releaseNotes = [
 
 // 変更タイプのスタイル
 const changeTypeStyles: Record<string, { icon: string; color: string; label: string }> = {
-  new: { icon: "add-circle", color: "#4ADE80", label: "新機能" },
-  improve: { icon: "trending-up", color: "#60A5FA", label: "改善" },
-  fix: { icon: "build", color: "#FBBF24", label: "修正" },
-  change: { icon: "swap-horiz", color: "#A78BFA", label: "変更" },
+  new: { icon: "add-circle", color: color.successLight, label: "新機能" },
+  improve: { icon: "trending-up", color: color.blue400, label: "改善" },
+  fix: { icon: "build", color: palette.amber400, label: "修正" },
+  change: { icon: "swap-horiz", color: color.purple400, label: "変更" },
 };
 
 export default function ReleaseNotesScreen() {
@@ -106,8 +107,8 @@ export default function ReleaseNotesScreen() {
             onPress={() => router.back()}
             style={{ flexDirection: "row", alignItems: "center" }}
           >
-            <MaterialIcons name="arrow-back" size={24} color="#fff" />
-            <Text style={{ color: "#fff", marginLeft: 8 }}>戻る</Text>
+            <MaterialIcons name="arrow-back" size={24} color={color.textWhite} />
+            <Text style={{ color: color.textWhite, marginLeft: 8 }}>戻る</Text>
           </TouchableOpacity>
         }
       />
@@ -184,10 +185,10 @@ const styles = StyleSheet.create({
     paddingHorizontal: 16,
     paddingVertical: 12,
     borderBottomWidth: 1,
-    borderBottomColor: "#2D3139",
+    borderBottomColor: color.border,
   },
   headerTitle: {
-    color: "#fff",
+    color: color.textWhite,
     fontSize: 18,
     fontWeight: "bold",
   },
@@ -197,12 +198,12 @@ const styles = StyleSheet.create({
     marginTop: 4,
   },
   releaseCard: {
-    backgroundColor: "#1A1D21",
+    backgroundColor: color.surface,
     borderRadius: 16,
     padding: 16,
     marginBottom: 16,
     borderWidth: 1,
-    borderColor: "#2D3139",
+    borderColor: color.border,
   },
   releaseHeader: {
     flexDirection: "row",
@@ -211,13 +212,13 @@ const styles = StyleSheet.create({
     gap: 8,
   },
   versionBadge: {
-    backgroundColor: "#DD6500",
+    backgroundColor: color.hostAccentLegacy,
     paddingHorizontal: 10,
     paddingVertical: 4,
     borderRadius: 8,
   },
   versionText: {
-    color: "#fff",
+    color: color.textWhite,
     fontSize: 14,
     fontWeight: "bold",
   },
@@ -226,7 +227,7 @@ const styles = StyleSheet.create({
     fontSize: 12,
   },
   latestBadge: {
-    backgroundColor: "#4ADE80",
+    backgroundColor: color.successLight,
     paddingHorizontal: 8,
     paddingVertical: 2,
     borderRadius: 4,
@@ -281,7 +282,7 @@ const styles = StyleSheet.create({
     textAlign: "center",
   },
   footerHandle: {
-    color: "#DD6500",
+    color: color.hostAccentLegacy,
     fontSize: 14,
     fontWeight: "bold",
     marginTop: 4,

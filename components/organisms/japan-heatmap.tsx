@@ -1,4 +1,5 @@
 import { View, Text, StyleSheet, Dimensions, Platform, TouchableOpacity } from "react-native";
+import { color, palette } from "@/theme/tokens";
 import Svg, { Path, G, Text as SvgText } from "react-native-svg";
 import { useMemo } from "react";
 import * as Haptics from "expo-haptics";
@@ -423,12 +424,12 @@ const styles = StyleSheet.create({
     marginBottom: 12,
   },
   title: {
-    color: "#fff",
+    color: color.textWhite,
     fontSize: 16,
     fontWeight: "bold",
   },
   subtitle: {
-    color: "#D1D5DB",
+    color: color.textMuted,
     fontSize: 12,
     marginLeft: 8,
   },
@@ -440,7 +441,7 @@ const styles = StyleSheet.create({
     fontSize: 48,
   },
   emptyText: {
-    color: "#D1D5DB",
+    color: color.textMuted,
     fontSize: 14,
     marginTop: 8,
     textAlign: "center",
@@ -473,7 +474,7 @@ const styles = StyleSheet.create({
     borderColor: "#666",
   },
   legendText: {
-    color: "#D1D5DB",
+    color: color.textMuted,
     fontSize: 11,
     marginHorizontal: 4,
   },
@@ -481,7 +482,7 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     justifyContent: "center",
     alignItems: "center",
-    backgroundColor: "#1A1D21",
+    backgroundColor: color.surface,
     borderRadius: 12,
     padding: 16,
     marginBottom: 16,
@@ -491,19 +492,19 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   statValue: {
-    color: "#fff",
+    color: color.textWhite,
     fontSize: 24,
     fontWeight: "bold",
   },
   statLabel: {
-    color: "#D1D5DB",
+    color: color.textMuted,
     fontSize: 11,
     marginTop: 2,
   },
   statDivider: {
     width: 1,
     height: 30,
-    backgroundColor: "#2D3139",
+    backgroundColor: color.border,
   },
   hotRegionCard: {
     backgroundColor: "rgba(239, 68, 68, 0.15)",
@@ -523,12 +524,12 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   hotTitle: {
-    color: "#EF4444",
+    color: color.danger,
     fontSize: 14,
     fontWeight: "bold",
   },
   hotSubtitle: {
-    color: "#D1D5DB",
+    color: color.textMuted,
     fontSize: 12,
     marginTop: 2,
   },
@@ -539,7 +540,7 @@ const styles = StyleSheet.create({
   },
   regionCard: {
     width: "48%",
-    backgroundColor: "#1A1D21",
+    backgroundColor: color.surface,
     borderRadius: 12,
     padding: 12,
     marginBottom: 8,
@@ -560,7 +561,7 @@ const styles = StyleSheet.create({
     marginRight: 6,
   },
   regionName: {
-    color: "#fff",
+    color: color.textWhite,
     fontSize: 12,
     fontWeight: "500",
     flex: 1,
@@ -579,7 +580,7 @@ const styles = StyleSheet.create({
   },
   progressBar: {
     height: 4,
-    backgroundColor: "#2D3139",
+    backgroundColor: color.border,
     borderRadius: 2,
     marginTop: 8,
     overflow: "hidden",

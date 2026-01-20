@@ -5,6 +5,7 @@
  */
 
 import { useEffect, useState } from "react";
+import { color, palette } from "@/theme/tokens";
 import {
   Modal,
   View,
@@ -264,11 +265,11 @@ export function FanProfileModal({
                 {/* Twitterで見るボタン */}
                 {username && (
                   <TouchableOpacity
-                    style={[styles.twitterButton, { backgroundColor: "#1DA1F2" }]}
+                    style={[styles.twitterButton, { backgroundColor: color.twitter }]}
                     onPress={handleOpenTwitter}
                     activeOpacity={0.8}
                   >
-                    <MaterialIcons name="open-in-new" size={18} color="#fff" />
+                    <MaterialIcons name="open-in-new" size={18} color={color.textWhite} />
                     <Text style={styles.twitterButtonText}>Xで見る</Text>
                   </TouchableOpacity>
                 )}
@@ -334,7 +335,7 @@ const styles = StyleSheet.create({
     borderRadius: 8,
   },
   retryButtonText: {
-    color: "#fff",
+    color: color.textWhite,
     fontSize: 14,
     fontWeight: "600",
   },
@@ -462,7 +463,7 @@ const styles = StyleSheet.create({
     width: "100%",
   },
   twitterButtonText: {
-    color: "#fff",
+    color: color.textWhite,
     fontSize: 15,
     fontWeight: "600",
   },

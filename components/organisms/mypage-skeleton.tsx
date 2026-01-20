@@ -1,4 +1,5 @@
 import { View, StyleSheet } from "react-native";
+import { color, palette } from "@/theme/tokens";
 import { Skeleton } from "@/components/atoms/skeleton-loader";
 import { BlinkingLink } from "@/components/atoms/blinking-character";
 
@@ -101,7 +102,7 @@ const styles = StyleSheet.create({
     alignItems: "center",
     marginBottom: 24,
     padding: 16,
-    backgroundColor: "#1A1D21",
+    backgroundColor: color.surface,
     borderRadius: 16,
   },
   profileInfo: {
@@ -116,7 +117,7 @@ const styles = StyleSheet.create({
   },
   statCard: {
     flex: 1,
-    backgroundColor: "#1A1D21",
+    backgroundColor: color.surface,
     borderRadius: 12,
     padding: 16,
     alignItems: "center",
@@ -127,13 +128,13 @@ const styles = StyleSheet.create({
   badgeContainer: {
     flexDirection: "row",
     gap: 12,
-    backgroundColor: "#1A1D21",
+    backgroundColor: color.surface,
     borderRadius: 12,
     padding: 16,
   },
   challengeItem: {
     flexDirection: "row",
-    backgroundColor: "#1A1D21",
+    backgroundColor: color.surface,
     borderRadius: 12,
     padding: 12,
     marginBottom: 12,

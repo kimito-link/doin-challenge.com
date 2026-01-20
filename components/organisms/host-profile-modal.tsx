@@ -5,6 +5,7 @@
  */
 
 import { useEffect, useState } from "react";
+import { color, palette } from "@/theme/tokens";
 import {
   Modal,
   View,
@@ -145,7 +146,7 @@ export function HostProfileModal({
                 )}
                 {/* 主催者バッジ */}
                 <View style={[styles.hostBadge, { backgroundColor: colors.secondary }]}>
-                  <MaterialIcons name="star" size={14} color="#fff" />
+                  <MaterialIcons name="star" size={14} color={color.textWhite} />
                   <Text style={styles.hostBadgeText}>主催者</Text>
                 </View>
               </View>
@@ -191,11 +192,11 @@ export function HostProfileModal({
 
               {/* Twitterで見るボタン */}
               <TouchableOpacity
-                style={[styles.twitterButton, { backgroundColor: "#1DA1F2" }]}
+                style={[styles.twitterButton, { backgroundColor: color.twitter }]}
                 onPress={handleOpenTwitter}
                 activeOpacity={0.8}
               >
-                <MaterialIcons name="open-in-new" size={18} color="#fff" />
+                <MaterialIcons name="open-in-new" size={18} color={color.textWhite} />
                 <Text style={styles.twitterButtonText}>Xで見る</Text>
               </TouchableOpacity>
             </>
@@ -252,7 +253,7 @@ const styles = StyleSheet.create({
     borderRadius: 8,
   },
   retryButtonText: {
-    color: "#fff",
+    color: color.textWhite,
     fontSize: 14,
     fontWeight: "600",
   },
@@ -281,7 +282,7 @@ const styles = StyleSheet.create({
     gap: 2,
   },
   hostBadgeText: {
-    color: "#fff",
+    color: color.textWhite,
     fontSize: 11,
     fontWeight: "600",
   },
@@ -337,7 +338,7 @@ const styles = StyleSheet.create({
     width: "100%",
   },
   twitterButtonText: {
-    color: "#fff",
+    color: color.textWhite,
     fontSize: 15,
     fontWeight: "600",
   },

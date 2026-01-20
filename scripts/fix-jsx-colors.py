@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """
 JSX属性内の色置換による構文エラーを修正するスクリプト
-color=color.xxx を color={color.xxx} に修正
+xxxColor=color.xxx を xxxColor={color.xxx} に修正
 """
 
 import os
@@ -10,50 +10,42 @@ from pathlib import Path
 
 def fix_jsx_color_attributes(content: str) -> str:
     """JSX属性内の色を正しい形式に修正"""
-    # パターン: color=color.xxx または color=palette.xxx
-    # 修正後: color={color.xxx} または color={palette.xxx}
     
-    # color=color.xxx → color={color.xxx}
-    content = re.sub(
-        r'(\s)color=color\.(\w+)',
-        r'\1color={color.\2}',
-        content
-    )
+    # 一般的なパターン: xxxColor=color.xxx → xxxColor={color.xxx}
+    # または xxx=color.xxx → xxx={color.xxx}
     
-    # color=palette.xxx → color={palette.xxx}
-    content = re.sub(
-        r'(\s)color=palette\.(\w+)',
-        r'\1color={palette.\2}',
-        content
-    )
+    # 属性名のリスト
+    attributes = [
+        'color',
+        'tintColor',
+        'progressBackgroundColor',
+        'fallbackColor',
+        'fill',
+        'stroke',
+        'stopColor',
+        'placeholderTextColor',
+        'backgroundColor',
+        'borderColor',
+        'textColor',
+        'iconColor',
+        'activeColor',
+        'inactiveColor',
+        'underlayColor',
+    ]
     
-    # tintColor=color.xxx → tintColor={color.xxx}
-    content = re.sub(
-        r'(\s)tintColor=color\.(\w+)',
-        r'\1tintColor={color.\2}',
-        content
-    )
-    
-    # colors={[color.xxx]} の配列形式を修正
-    content = re.sub(
-        r'colors=\{\[color\.(\w+)\]\}',
-        r'colors={[color.\1]}',
-        content
-    )
-    
-    # progressBackgroundColor=color.xxx → progressBackgroundColor={color.xxx}
-    content = re.sub(
-        r'(\s)progressBackgroundColor=color\.(\w+)',
-        r'\1progressBackgroundColor={color.\2}',
-        content
-    )
-    
-    # fallbackColor=color.xxx → fallbackColor={color.xxx}
-    content = re.sub(
-        r'(\s)fallbackColor=color\.(\w+)',
-        r'\1fallbackColor={color.\2}',
-        content
-    )
+    for attr in attributes:
+        # attr=color.xxx → attr={color.xxx}
+        content = re.sub(
+            rf'(\s){attr}=color\.(\w+)',
+            rf'\1{attr}={{color.\2}}',
+            content
+        )
+        # attr=palette.xxx → attr={palette.xxx}
+        content = re.sub(
+            rf'(\s){attr}=palette\.(\w+)',
+            rf'\1{attr}={{palette.\2}}',
+            content
+        )
     
     return content
 
@@ -69,21 +61,27 @@ def process_file(filepath: Path) -> int:
         with open(filepath, 'w', encoding='utf-8') as f:
             f.write(content)
         # 修正数をカウント（大まかな推定）
-        return original_content.count('color=color.') + original_content.count('color=palette.')
+        return original_content.count('=color.') + original_content.count('=palette.')
     
     return 0
 
 def main():
-    molecules_dir = Path('/home/ubuntu/birthday-celebration/components/molecules')
+    base_dir = Path('/home/ubuntu/birthday-celebration')
+    targets = [
+        base_dir / 'components/organisms',
+        base_dir / 'app',
+    ]
     
     total_fixes = 0
     fixed_files = []
     
-    for filepath in molecules_dir.glob('*.tsx'):
-        count = process_file(filepath)
-        if count > 0:
-            fixed_files.append((filepath.name, count))
-            total_fixes += count
+    for target_dir in targets:
+        for filepath in target_dir.rglob('*.tsx'):
+            count = process_file(filepath)
+            if count > 0:
+                rel_path = filepath.relative_to(base_dir)
+                fixed_files.append((str(rel_path), count))
+                total_fixes += count
     
     print(f"\n=== JSX属性修正完了 ===")
     print(f"修正ファイル数: {len(fixed_files)}")

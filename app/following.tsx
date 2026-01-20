@@ -1,4 +1,5 @@
 import { FlatList, Text, View, TouchableOpacity, RefreshControl, Platform } from "react-native";
+import { color, palette } from "@/theme/tokens";
 import { Image } from "expo-image";
 import { useRouter } from "expo-router";
 import { useState } from "react";
@@ -37,8 +38,8 @@ export default function FollowingScreen() {
             onPress={() => router.back()}
             style={{ flexDirection: "row", alignItems: "center" }}
           >
-            <MaterialIcons name="arrow-back" size={24} color="#fff" />
-            <Text style={{ color: "#fff", marginLeft: 8 }}>戻る</Text>
+            <MaterialIcons name="arrow-back" size={24} color={color.textWhite} />
+            <Text style={{ color: color.textWhite, marginLeft: 8 }}>戻る</Text>
           </TouchableOpacity>
         }
       />
@@ -46,16 +47,16 @@ export default function FollowingScreen() {
         paddingHorizontal: 16, 
         paddingVertical: 12,
         borderBottomWidth: 1,
-        borderBottomColor: "#2D3139",
+        borderBottomColor: color.border,
       }}>
-        <Text style={{ color: "#fff", fontSize: 18, fontWeight: "bold" }}>
+        <Text style={{ color: color.textWhite, fontSize: 18, fontWeight: "bold" }}>
           フォロー中
         </Text>
       </View>
 
       {isLoading ? (
         <View style={{ flex: 1, alignItems: "center", justifyContent: "center" }}>
-          <Text style={{ color: "#D1D5DB" }}>読み込み中...</Text>
+          <Text style={{ color: color.textMuted }}>読み込み中...</Text>
         </View>
       ) : following && following.length > 0 ? (
         <FlatList
@@ -67,7 +68,7 @@ export default function FollowingScreen() {
               alignItems: "center",
               padding: 16,
               borderBottomWidth: 1,
-              borderBottomColor: "#2D3139",
+              borderBottomColor: color.border,
             }}>
               {item.followeeImage ? (
                 <Image
@@ -79,21 +80,21 @@ export default function FollowingScreen() {
                   width: 48,
                   height: 48,
                   borderRadius: 24,
-                  backgroundColor: "#DD6500",
+                  backgroundColor: color.hostAccentLegacy,
                   alignItems: "center",
                   justifyContent: "center",
                 }}>
-                  <Text style={{ color: "#fff", fontSize: 20, fontWeight: "bold" }}>
+                  <Text style={{ color: color.textWhite, fontSize: 20, fontWeight: "bold" }}>
                     {(item.followeeName || "?")[0]}
                   </Text>
                 </View>
               )}
               
               <View style={{ flex: 1, marginLeft: 12 }}>
-                <Text style={{ color: "#fff", fontSize: 16, fontWeight: "600" }}>
+                <Text style={{ color: color.textWhite, fontSize: 16, fontWeight: "600" }}>
                   {item.followeeName || "不明なユーザー"}
                 </Text>
-                <Text style={{ color: "#D1D5DB", fontSize: 12, marginTop: 2 }}>
+                <Text style={{ color: color.textMuted, fontSize: 12, marginTop: 2 }}>
                   {new Date(item.createdAt).toLocaleDateString("ja-JP")} からフォロー中
                 </Text>
               </View>
@@ -106,17 +107,17 @@ export default function FollowingScreen() {
                   paddingHorizontal: 20,
                   paddingVertical: 12,
                   borderRadius: 22,
-                  backgroundColor: "#2D3139",
+                  backgroundColor: color.border,
                   alignItems: "center",
                   justifyContent: "center",
                 }}
               >
-                <Text style={{ color: "#fff", fontSize: 14, fontWeight: "500" }}>フォロー解除</Text>
+                <Text style={{ color: color.textWhite, fontSize: 14, fontWeight: "500" }}>フォロー解除</Text>
               </TouchableOpacity>
             </View>
           )}
           refreshControl={
-            <RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor="#DD6500" />
+            <RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={color.hostAccentLegacy} />
           }
           contentContainerStyle={{ paddingBottom: 100 }}
           // パフォーマンス最適化
@@ -128,11 +129,11 @@ export default function FollowingScreen() {
         />
       ) : (
         <View style={{ flex: 1, alignItems: "center", justifyContent: "center", padding: 32 }}>
-          <MaterialIcons name="person-add" size={64} color="#CBD5E0" />
-          <Text style={{ color: "#fff", fontSize: 18, fontWeight: "bold", marginTop: 16, marginBottom: 8 }}>
+          <MaterialIcons name="person-add" size={64} color={color.textSubtle} />
+          <Text style={{ color: color.textWhite, fontSize: 18, fontWeight: "bold", marginTop: 16, marginBottom: 8 }}>
             まだ誰もフォローしていません
           </Text>
-          <Text style={{ color: "#D1D5DB", fontSize: 14, textAlign: "center" }}>
+          <Text style={{ color: color.textMuted, fontSize: 14, textAlign: "center" }}>
             チャレンジ詳細画面から主催者をフォローすると{"\n"}新着チャレンジの通知を受け取れます
           </Text>
         </View>

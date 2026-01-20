@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { color, palette } from "@/theme/tokens";
 import { View, Text, TouchableOpacity, TextInput, Modal, Alert, Linking, FlatList } from "react-native";
 import { Image } from "expo-image";
 import MaterialIcons from "@expo/vector-icons/MaterialIcons";
@@ -14,9 +15,9 @@ const priceTypeLabels: Record<PriceType, string> = {
 };
 
 const priceTypeColors: Record<PriceType, string> = {
-  face_value: "#10B981",
-  negotiable: "#F59E0B",
-  free: "#EC4899",
+  face_value: color.successDark,
+  negotiable: color.warning,
+  free: color.accentPrimary,
 };
 
 type TicketTransfer = {
@@ -125,22 +126,22 @@ export function TicketTransferSection({ challengeId, challengeTitle }: TicketTra
     <View style={{ marginTop: 24 }}>
       {/* セクションヘッダー */}
       <View style={{ flexDirection: "row", alignItems: "center", marginBottom: 16 }}>
-        <MaterialIcons name="swap-horiz" size={24} color="#EC4899" />
-        <Text style={{ color: "#fff", fontSize: 18, fontWeight: "bold", marginLeft: 8 }}>
+        <MaterialIcons name="swap-horiz" size={24} color={color.accentPrimary} />
+        <Text style={{ color: color.textWhite, fontSize: 18, fontWeight: "bold", marginLeft: 8 }}>
           チケット譲渡
         </Text>
       </View>
       
       {/* 説明文 */}
       <View style={{
-        backgroundColor: "#1A1D21",
+        backgroundColor: color.surface,
         borderRadius: 12,
         padding: 12,
         marginBottom: 16,
         borderWidth: 1,
-        borderColor: "#2D3139",
+        borderColor: color.border,
       }}>
-        <Text style={{ color: "#D1D5DB", fontSize: 12, lineHeight: 18 }}>
+        <Text style={{ color: color.textMuted, fontSize: 12, lineHeight: 18 }}>
           急な予定変更でライブに行けなくなった方と、チケットを探している方をつなぐコーナーです。
           連絡はX（Twitter）のDMで行ってください。
         </Text>
@@ -152,7 +153,7 @@ export function TicketTransferSection({ challengeId, challengeTitle }: TicketTra
           onPress={() => setActiveTab("transfers")}
           style={{
             flex: 1,
-            backgroundColor: activeTab === "transfers" ? "#EC4899" : "#1A1D21",
+            backgroundColor: activeTab === "transfers" ? color.accentPrimary : color.surface,
             borderRadius: 12,
             minHeight: 48,
             paddingVertical: 14,
@@ -160,10 +161,10 @@ export function TicketTransferSection({ challengeId, challengeTitle }: TicketTra
             alignItems: "center",
             justifyContent: "center",
             borderWidth: activeTab === "transfers" ? 0 : 1,
-            borderColor: "#2D3139",
+            borderColor: color.border,
           }}
         >
-          <Text style={{ color: "#fff", fontSize: 15, fontWeight: activeTab === "transfers" ? "bold" : "500" }}>
+          <Text style={{ color: color.textWhite, fontSize: 15, fontWeight: activeTab === "transfers" ? "bold" : "500" }}>
             🎫 譲りたい ({transfers?.length || 0})
           </Text>
         </TouchableOpacity>
@@ -171,7 +172,7 @@ export function TicketTransferSection({ challengeId, challengeTitle }: TicketTra
           onPress={() => setActiveTab("waitlist")}
           style={{
             flex: 1,
-            backgroundColor: activeTab === "waitlist" ? "#8B5CF6" : "#1A1D21",
+            backgroundColor: activeTab === "waitlist" ? color.accentAlt : color.surface,
             borderRadius: 12,
             minHeight: 48,
             paddingVertical: 14,
@@ -179,10 +180,10 @@ export function TicketTransferSection({ challengeId, challengeTitle }: TicketTra
             alignItems: "center",
             justifyContent: "center",
             borderWidth: activeTab === "waitlist" ? 0 : 1,
-            borderColor: "#2D3139",
+            borderColor: color.border,
           }}
         >
-          <Text style={{ color: "#fff", fontSize: 15, fontWeight: activeTab === "waitlist" ? "bold" : "500" }}>
+          <Text style={{ color: color.textWhite, fontSize: 15, fontWeight: activeTab === "waitlist" ? "bold" : "500" }}>
             🔔 欲しい ({waitlist?.length || 0})
           </Text>
         </TouchableOpacity>
@@ -200,7 +201,7 @@ export function TicketTransferSection({ challengeId, challengeTitle }: TicketTra
               setShowCreateModal(true);
             }}
             style={{
-              backgroundColor: "#EC4899",
+              backgroundColor: color.accentPrimary,
               borderRadius: 16,
               minHeight: 52,
               paddingVertical: 16,
@@ -208,15 +209,15 @@ export function TicketTransferSection({ challengeId, challengeTitle }: TicketTra
               flexDirection: "row",
               alignItems: "center",
               justifyContent: "center",
-              shadowColor: "#EC4899",
+              shadowColor: color.accentPrimary,
               shadowOffset: { width: 0, height: 4 },
               shadowOpacity: 0.3,
               shadowRadius: 8,
               elevation: 4,
             }}
           >
-            <MaterialIcons name="add-circle" size={24} color="#fff" />
-            <Text style={{ color: "#fff", fontSize: 16, fontWeight: "bold", marginLeft: 10 }}>
+            <MaterialIcons name="add-circle" size={24} color={color.textWhite} />
+            <Text style={{ color: color.textWhite, fontSize: 16, fontWeight: "bold", marginLeft: 10 }}>
               チケットを譲る
             </Text>
           </TouchableOpacity>
@@ -241,7 +242,7 @@ export function TicketTransferSection({ challengeId, challengeTitle }: TicketTra
               }
             }}
             style={{
-              backgroundColor: isInWaitlist ? "#CBD5E0" : "#8B5CF6",
+              backgroundColor: isInWaitlist ? color.textSubtle : color.accentAlt,
               borderRadius: 16,
               minHeight: 52,
               paddingVertical: 16,
@@ -249,15 +250,15 @@ export function TicketTransferSection({ challengeId, challengeTitle }: TicketTra
               flexDirection: "row",
               alignItems: "center",
               justifyContent: "center",
-              shadowColor: isInWaitlist ? "#CBD5E0" : "#8B5CF6",
+              shadowColor: isInWaitlist ? color.textSubtle : color.accentAlt,
               shadowOffset: { width: 0, height: 4 },
               shadowOpacity: 0.3,
               shadowRadius: 8,
               elevation: 4,
             }}
           >
-            <MaterialIcons name={isInWaitlist ? "notifications-off" : "notifications-active"} size={24} color="#fff" />
-            <Text style={{ color: "#fff", fontSize: 16, fontWeight: "bold", marginLeft: 10 }}>
+            <MaterialIcons name={isInWaitlist ? "notifications-off" : "notifications-active"} size={24} color={color.textWhite} />
+            <Text style={{ color: color.textWhite, fontSize: 16, fontWeight: "bold", marginLeft: 10 }}>
               {isInWaitlist ? "待機リスト解除" : "チケットが欲しい"}
             </Text>
           </TouchableOpacity>
@@ -272,11 +273,11 @@ export function TicketTransferSection({ challengeId, challengeTitle }: TicketTra
               <View
                 key={transfer.id}
                 style={{
-                  backgroundColor: "#1A1D21",
+                  backgroundColor: color.surface,
                   borderRadius: 12,
                   padding: 16,
                   borderWidth: 1,
-                  borderColor: "#2D3139",
+                  borderColor: color.border,
                 }}
               >
                 <View style={{ flexDirection: "row", alignItems: "center", marginBottom: 12 }}>
@@ -290,46 +291,46 @@ export function TicketTransferSection({ challengeId, challengeTitle }: TicketTra
                       width: 40,
                       height: 40,
                       borderRadius: 20,
-                      backgroundColor: "#EC4899",
+                      backgroundColor: color.accentPrimary,
                       alignItems: "center",
                       justifyContent: "center",
                     }}>
-                      <Text style={{ color: "#fff", fontSize: 16, fontWeight: "bold" }}>
+                      <Text style={{ color: color.textWhite, fontSize: 16, fontWeight: "bold" }}>
                         {(transfer.userName || "?")[0]}
                       </Text>
                     </View>
                   )}
                   <View style={{ flex: 1, marginLeft: 12 }}>
-                    <Text style={{ color: "#fff", fontSize: 14, fontWeight: "600" }}>
+                    <Text style={{ color: color.textWhite, fontSize: 14, fontWeight: "600" }}>
                       {transfer.userName || "匿名"}
                     </Text>
                     {transfer.userUsername && (
-                      <Text style={{ color: "#D1D5DB", fontSize: 12 }}>
+                      <Text style={{ color: color.textMuted, fontSize: 12 }}>
                         @{transfer.userUsername}
                       </Text>
                     )}
                   </View>
                   <View style={{
-                    backgroundColor: priceTypeColors[transfer.priceType as PriceType] || "#CBD5E0",
+                    backgroundColor: priceTypeColors[transfer.priceType as PriceType] || color.textSubtle,
                     paddingHorizontal: 10,
                     paddingVertical: 4,
                     borderRadius: 12,
                   }}>
-                    <Text style={{ color: "#fff", fontSize: 12, fontWeight: "bold" }}>
+                    <Text style={{ color: color.textWhite, fontSize: 12, fontWeight: "bold" }}>
                       {priceTypeLabels[transfer.priceType as PriceType] || transfer.priceType}
                     </Text>
                   </View>
                 </View>
                 
                 <View style={{ flexDirection: "row", alignItems: "center", marginBottom: 8 }}>
-                  <MaterialIcons name="confirmation-number" size={16} color="#EC4899" />
-                  <Text style={{ color: "#fff", fontSize: 16, fontWeight: "bold", marginLeft: 8 }}>
+                  <MaterialIcons name="confirmation-number" size={16} color={color.accentPrimary} />
+                  <Text style={{ color: color.textWhite, fontSize: 16, fontWeight: "bold", marginLeft: 8 }}>
                     {transfer.ticketCount}枚
                   </Text>
                 </View>
                 
                 {transfer.comment && (
-                  <Text style={{ color: "#D1D5DB", fontSize: 13, marginBottom: 12 }}>
+                  <Text style={{ color: color.textMuted, fontSize: 13, marginBottom: 12 }}>
                     {transfer.comment}
                   </Text>
                 )}
@@ -352,8 +353,8 @@ export function TicketTransferSection({ challengeId, challengeTitle }: TicketTra
                         borderColor: "#333",
                       }}
                     >
-                      <Text style={{ color: "#fff", fontSize: 16, fontWeight: "bold" }}>𝕏</Text>
-                      <Text style={{ color: "#fff", fontSize: 14, fontWeight: "600", marginLeft: 8 }}>DMで連絡</Text>
+                      <Text style={{ color: color.textWhite, fontSize: 16, fontWeight: "bold" }}>𝕏</Text>
+                      <Text style={{ color: color.textWhite, fontSize: 14, fontWeight: "600", marginLeft: 8 }}>DMで連絡</Text>
                     </TouchableOpacity>
                   )}
                   {user && transfer.userId === user.id && (
@@ -369,7 +370,7 @@ export function TicketTransferSection({ challengeId, challengeTitle }: TicketTra
                         );
                       }}
                       style={{
-                        backgroundColor: "#EF4444",
+                        backgroundColor: color.danger,
                         borderRadius: 12,
                         minHeight: 44,
                         paddingVertical: 12,
@@ -378,7 +379,7 @@ export function TicketTransferSection({ challengeId, challengeTitle }: TicketTra
                         justifyContent: "center",
                       }}
                     >
-                      <Text style={{ color: "#fff", fontSize: 14, fontWeight: "600" }}>取消</Text>
+                      <Text style={{ color: color.textWhite, fontSize: 14, fontWeight: "600" }}>取消</Text>
                     </TouchableOpacity>
                   )}
                 </View>
@@ -387,8 +388,8 @@ export function TicketTransferSection({ challengeId, challengeTitle }: TicketTra
           </View>
         ) : (
           <View style={{ alignItems: "center", paddingVertical: 32 }}>
-            <MaterialIcons name="confirmation-number" size={48} color="#CBD5E0" />
-            <Text style={{ color: "#D1D5DB", fontSize: 14, marginTop: 12, textAlign: "center" }}>
+            <MaterialIcons name="confirmation-number" size={48} color={color.textSubtle} />
+            <Text style={{ color: color.textMuted, fontSize: 14, marginTop: 12, textAlign: "center" }}>
               現在、チケット譲渡の投稿はありません
             </Text>
           </View>
@@ -400,11 +401,11 @@ export function TicketTransferSection({ challengeId, challengeTitle }: TicketTra
               <View
                 key={item.id}
                 style={{
-                  backgroundColor: "#1A1D21",
+                  backgroundColor: color.surface,
                   borderRadius: 12,
                   padding: 16,
                   borderWidth: 1,
-                  borderColor: "#2D3139",
+                  borderColor: color.border,
                   flexDirection: "row",
                   alignItems: "center",
                 }}
@@ -419,20 +420,20 @@ export function TicketTransferSection({ challengeId, challengeTitle }: TicketTra
                     width: 40,
                     height: 40,
                     borderRadius: 20,
-                    backgroundColor: "#8B5CF6",
+                    backgroundColor: color.accentAlt,
                     alignItems: "center",
                     justifyContent: "center",
                   }}>
-                    <Text style={{ color: "#fff", fontSize: 16, fontWeight: "bold" }}>
+                    <Text style={{ color: color.textWhite, fontSize: 16, fontWeight: "bold" }}>
                       {(item.userName || "?")[0]}
                     </Text>
                   </View>
                 )}
                 <View style={{ flex: 1, marginLeft: 12 }}>
-                  <Text style={{ color: "#fff", fontSize: 14, fontWeight: "600" }}>
+                  <Text style={{ color: color.textWhite, fontSize: 14, fontWeight: "600" }}>
                     {item.userName || "匿名"}
                   </Text>
-                  <Text style={{ color: "#D1D5DB", fontSize: 12 }}>
+                  <Text style={{ color: color.textMuted, fontSize: 12 }}>
                     {item.desiredCount}枚希望
                   </Text>
                 </View>
@@ -453,8 +454,8 @@ export function TicketTransferSection({ challengeId, challengeTitle }: TicketTra
                       borderColor: "#333",
                     }}
                   >
-                    <Text style={{ color: "#fff", fontSize: 14, fontWeight: "bold" }}>𝕏</Text>
-                    <Text style={{ color: "#fff", fontSize: 13, fontWeight: "600", marginLeft: 6 }}>DM</Text>
+                    <Text style={{ color: color.textWhite, fontSize: 14, fontWeight: "bold" }}>𝕏</Text>
+                    <Text style={{ color: color.textWhite, fontSize: 13, fontWeight: "600", marginLeft: 6 }}>DM</Text>
                   </TouchableOpacity>
                 )}
               </View>
@@ -462,8 +463,8 @@ export function TicketTransferSection({ challengeId, challengeTitle }: TicketTra
           </View>
         ) : (
           <View style={{ alignItems: "center", paddingVertical: 32 }}>
-            <MaterialIcons name="people" size={48} color="#CBD5E0" />
-            <Text style={{ color: "#D1D5DB", fontSize: 14, marginTop: 12, textAlign: "center" }}>
+            <MaterialIcons name="people" size={48} color={color.textSubtle} />
+            <Text style={{ color: color.textMuted, fontSize: 14, marginTop: 12, textAlign: "center" }}>
               現在、チケットを探している人はいません
             </Text>
           </View>
@@ -528,20 +529,20 @@ function CreateTransferModal({
         padding: 20,
       }}>
         <View style={{
-          backgroundColor: "#1A1D21",
+          backgroundColor: color.surface,
           borderRadius: 16,
           padding: 20,
           width: "100%",
           maxWidth: 400,
           borderWidth: 1,
-          borderColor: "#2D3139",
+          borderColor: color.border,
         }}>
-          <Text style={{ color: "#fff", fontSize: 20, fontWeight: "bold", marginBottom: 20 }}>
+          <Text style={{ color: color.textWhite, fontSize: 20, fontWeight: "bold", marginBottom: 20 }}>
             チケットを譲る
           </Text>
           
           {/* 枚数 */}
-          <Text style={{ color: "#D1D5DB", fontSize: 14, marginBottom: 8 }}>枚数</Text>
+          <Text style={{ color: color.textMuted, fontSize: 14, marginBottom: 8 }}>枚数</Text>
           <View style={{ flexDirection: "row", gap: 8, marginBottom: 16 }}>
             {[1, 2, 3, 4, 5].map((n) => (
               <TouchableOpacity
@@ -549,15 +550,15 @@ function CreateTransferModal({
                 onPress={() => setTicketCount(n)}
                 style={{
                   flex: 1,
-                  backgroundColor: ticketCount === n ? "#EC4899" : "#0D1117",
+                  backgroundColor: ticketCount === n ? color.accentPrimary : color.bg,
                   borderRadius: 8,
                   padding: 12,
                   alignItems: "center",
                   borderWidth: 1,
-                  borderColor: ticketCount === n ? "#EC4899" : "#2D3139",
+                  borderColor: ticketCount === n ? color.accentPrimary : color.border,
                 }}
               >
-                <Text style={{ color: "#fff", fontWeight: ticketCount === n ? "bold" : "normal" }}>
+                <Text style={{ color: color.textWhite, fontWeight: ticketCount === n ? "bold" : "normal" }}>
                   {n}枚
                 </Text>
               </TouchableOpacity>
@@ -565,7 +566,7 @@ function CreateTransferModal({
           </View>
           
           {/* 価格タイプ */}
-          <Text style={{ color: "#D1D5DB", fontSize: 14, marginBottom: 8 }}>価格</Text>
+          <Text style={{ color: color.textMuted, fontSize: 14, marginBottom: 8 }}>価格</Text>
           <View style={{ flexDirection: "row", gap: 8, marginBottom: 16 }}>
             {(["face_value", "negotiable", "free"] as PriceType[]).map((type) => (
               <TouchableOpacity
@@ -573,15 +574,15 @@ function CreateTransferModal({
                 onPress={() => setPriceType(type)}
                 style={{
                   flex: 1,
-                  backgroundColor: priceType === type ? priceTypeColors[type] : "#0D1117",
+                  backgroundColor: priceType === type ? priceTypeColors[type] : color.bg,
                   borderRadius: 8,
                   padding: 12,
                   alignItems: "center",
                   borderWidth: 1,
-                  borderColor: priceType === type ? priceTypeColors[type] : "#2D3139",
+                  borderColor: priceType === type ? priceTypeColors[type] : color.border,
                 }}
               >
-                <Text style={{ color: "#fff", fontWeight: priceType === type ? "bold" : "normal" }}>
+                <Text style={{ color: color.textWhite, fontWeight: priceType === type ? "bold" : "normal" }}>
                   {priceTypeLabels[type]}
                 </Text>
               </TouchableOpacity>
@@ -589,21 +590,21 @@ function CreateTransferModal({
           </View>
           
           {/* コメント */}
-          <Text style={{ color: "#D1D5DB", fontSize: 14, marginBottom: 8 }}>コメント（任意）</Text>
+          <Text style={{ color: color.textMuted, fontSize: 14, marginBottom: 8 }}>コメント（任意）</Text>
           <TextInput
             value={comment}
             onChangeText={setComment}
             placeholder="例: 急な仕事で行けなくなりました..."
-            placeholderTextColor="#CBD5E0"
+            placeholderTextColor={color.textSubtle}
             multiline
             numberOfLines={3}
             style={{
-              backgroundColor: "#0D1117",
+              backgroundColor: color.bg,
               borderRadius: 8,
               padding: 12,
-              color: "#fff",
+              color: color.textWhite,
               borderWidth: 1,
-              borderColor: "#2D3139",
+              borderColor: color.border,
               minHeight: 80,
               textAlignVertical: "top",
               marginBottom: 16,
@@ -617,7 +618,7 @@ function CreateTransferModal({
             padding: 12,
             marginBottom: 20,
           }}>
-            <Text style={{ color: "#F59E0B", fontSize: 12, lineHeight: 18 }}>
+            <Text style={{ color: color.warning, fontSize: 12, lineHeight: 18 }}>
               ⚠️ 連絡はX（Twitter）のDMで行われます。{"\n"}
               金銭のやり取りは当事者間で行ってください。
             </Text>
@@ -629,27 +630,27 @@ function CreateTransferModal({
               onPress={onClose}
               style={{
                 flex: 1,
-                backgroundColor: "#2D3139",
+                backgroundColor: color.border,
                 borderRadius: 12,
                 padding: 16,
                 alignItems: "center",
               }}
             >
-              <Text style={{ color: "#fff", fontSize: 16 }}>キャンセル</Text>
+              <Text style={{ color: color.textWhite, fontSize: 16 }}>キャンセル</Text>
             </TouchableOpacity>
             <TouchableOpacity
               onPress={handleSubmit}
               disabled={isLoading}
               style={{
                 flex: 1,
-                backgroundColor: "#EC4899",
+                backgroundColor: color.accentPrimary,
                 borderRadius: 12,
                 padding: 16,
                 alignItems: "center",
                 opacity: isLoading ? 0.5 : 1,
               }}
             >
-              <Text style={{ color: "#fff", fontSize: 16, fontWeight: "bold" }}>
+              <Text style={{ color: color.textWhite, fontSize: 16, fontWeight: "bold" }}>
                 {isLoading ? "投稿中..." : "投稿する"}
               </Text>
             </TouchableOpacity>
@@ -693,24 +694,24 @@ function WaitlistModal({
         padding: 20,
       }}>
         <View style={{
-          backgroundColor: "#1A1D21",
+          backgroundColor: color.surface,
           borderRadius: 16,
           padding: 20,
           width: "100%",
           maxWidth: 400,
           borderWidth: 1,
-          borderColor: "#2D3139",
+          borderColor: color.border,
         }}>
-          <Text style={{ color: "#fff", fontSize: 20, fontWeight: "bold", marginBottom: 20 }}>
+          <Text style={{ color: color.textWhite, fontSize: 20, fontWeight: "bold", marginBottom: 20 }}>
             チケットを探す
           </Text>
           
-          <Text style={{ color: "#D1D5DB", fontSize: 14, marginBottom: 16 }}>
+          <Text style={{ color: color.textMuted, fontSize: 14, marginBottom: 16 }}>
             待機リストに登録すると、新しい譲渡投稿があった時に通知を受け取れます。
           </Text>
           
           {/* 希望枚数 */}
-          <Text style={{ color: "#D1D5DB", fontSize: 14, marginBottom: 8 }}>希望枚数</Text>
+          <Text style={{ color: color.textMuted, fontSize: 14, marginBottom: 8 }}>希望枚数</Text>
           <View style={{ flexDirection: "row", gap: 8, marginBottom: 20 }}>
             {[1, 2, 3, 4, 5].map((n) => (
               <TouchableOpacity
@@ -718,15 +719,15 @@ function WaitlistModal({
                 onPress={() => setDesiredCount(n)}
                 style={{
                   flex: 1,
-                  backgroundColor: desiredCount === n ? "#8B5CF6" : "#0D1117",
+                  backgroundColor: desiredCount === n ? color.accentAlt : color.bg,
                   borderRadius: 8,
                   padding: 12,
                   alignItems: "center",
                   borderWidth: 1,
-                  borderColor: desiredCount === n ? "#8B5CF6" : "#2D3139",
+                  borderColor: desiredCount === n ? color.accentAlt : color.border,
                 }}
               >
-                <Text style={{ color: "#fff", fontWeight: desiredCount === n ? "bold" : "normal" }}>
+                <Text style={{ color: color.textWhite, fontWeight: desiredCount === n ? "bold" : "normal" }}>
                   {n}枚
                 </Text>
               </TouchableOpacity>
@@ -739,27 +740,27 @@ function WaitlistModal({
               onPress={onClose}
               style={{
                 flex: 1,
-                backgroundColor: "#2D3139",
+                backgroundColor: color.border,
                 borderRadius: 12,
                 padding: 16,
                 alignItems: "center",
               }}
             >
-              <Text style={{ color: "#fff", fontSize: 16 }}>キャンセル</Text>
+              <Text style={{ color: color.textWhite, fontSize: 16 }}>キャンセル</Text>
             </TouchableOpacity>
             <TouchableOpacity
               onPress={handleSubmit}
               disabled={isLoading}
               style={{
                 flex: 1,
-                backgroundColor: "#8B5CF6",
+                backgroundColor: color.accentAlt,
                 borderRadius: 12,
                 padding: 16,
                 alignItems: "center",
                 opacity: isLoading ? 0.5 : 1,
               }}
             >
-              <Text style={{ color: "#fff", fontSize: 16, fontWeight: "bold" }}>
+              <Text style={{ color: color.textWhite, fontSize: 16, fontWeight: "bold" }}>
                 {isLoading ? "登録中..." : "登録する"}
               </Text>
             </TouchableOpacity>

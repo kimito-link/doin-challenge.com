@@ -1,4 +1,5 @@
 import { View, Text, TouchableOpacity, StyleSheet, Platform } from "react-native";
+import { color, palette } from "@/theme/tokens";
 import { Image } from "expo-image";
 import { useRouter } from "expo-router";
 import { useColors } from "@/hooks/use-colors";
@@ -110,18 +111,18 @@ const styles = StyleSheet.create({
     marginBottom: 32,
   },
   button: {
-    backgroundColor: "#DD6500",
+    backgroundColor: color.hostAccentLegacy,
     paddingHorizontal: 32,
     paddingVertical: 16,
     borderRadius: 24,
-    shadowColor: "#DD6500",
+    shadowColor: color.hostAccentLegacy,
     shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.3,
     shadowRadius: 8,
     elevation: 4,
   },
   buttonText: {
-    color: "#FFFFFF",
+    color: color.textWhite,
     fontSize: 16,
     fontWeight: "bold",
   },

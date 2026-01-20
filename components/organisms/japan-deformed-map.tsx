@@ -1,4 +1,5 @@
 import { View, Text, StyleSheet, TouchableOpacity, Dimensions, useWindowDimensions } from "react-native";
+import { color, palette } from "@/theme/tokens";
 import { useMemo } from "react";
 
 interface JapanDeformedMapProps {
@@ -16,7 +17,7 @@ const regionColors: { [key: string]: { bg: string; text: string; border: string 
   "関西": { bg: "#FFB74D", text: "#000", border: "#F57C00" },
   "中国": { bg: "#F48FB1", text: "#000", border: "#C2185B" },
   "四国": { bg: "#CE93D8", text: "#000", border: "#8E24AA" },
-  "九州": { bg: "#EF5350", text: "#fff", border: "#C62828" },
+  "九州": { bg: "#EF5350", text: color.textWhite, border: "#C62828" },
   "沖縄": { bg: "#FF8A65", text: "#000", border: "#E64A19" },
 };
 
@@ -102,7 +103,7 @@ function getParticipantIcon(count: number): string {
 function getHeatColor(count: number, maxCount: number, baseColor: { bg: string; text: string; border: string }) {
   if (count === 0) {
     // 参加者がいない場合は灰色
-    return { bg: "#3A3F47", text: "#D1D5DB", border: "#2D3139", hasParticipants: false };
+    return { bg: "#3A3F47", text: color.textMuted, border: color.border, hasParticipants: false };
   }
   
   // 参加者がいる場合は赤系の色に（参加者数に応じて濃くなる）
@@ -110,20 +111,20 @@ function getHeatColor(count: number, maxCount: number, baseColor: { bg: string; 
   
   if (intensity >= 0.8) {
     // 最も参加者が多い（濃い赤）
-    return { bg: "#B71C1C", text: "#fff", border: "#7F0000", hasParticipants: true };
+    return { bg: "#B71C1C", text: color.textWhite, border: "#7F0000", hasParticipants: true };
   } else if (intensity >= 0.6) {
     // 参加者が多い（赤）
-    return { bg: "#D32F2F", text: "#fff", border: "#B71C1C", hasParticipants: true };
+    return { bg: "#D32F2F", text: color.textWhite, border: "#B71C1C", hasParticipants: true };
   } else if (intensity >= 0.4) {
     // 参加者が中程度（オレンジ赤）
-    return { bg: "#F44336", text: "#fff", border: "#D32F2F", hasParticipants: true };
+    return { bg: "#F44336", text: color.textWhite, border: "#D32F2F", hasParticipants: true };
   } else if (intensity >= 0.2) {
     // 参加者が少なめ（オレンジ）
-    return { bg: "#FF5722", text: "#fff", border: "#E64A19", hasParticipants: true };
+    return { bg: "#FF5722", text: color.textWhite, border: "#E64A19", hasParticipants: true };
   }
   
   // 参加者が少ない（薄いオレンジ）
-  return { bg: "#FF7043", text: "#fff", border: "#F4511E", hasParticipants: true };
+  return { bg: "#FF7043", text: color.textWhite, border: "#F4511E", hasParticipants: true };
 }
 
 // レスポンシブブレークポイント（8段階）
@@ -350,7 +351,7 @@ export function JapanDeformedMap({ prefectureCounts, onPrefecturePress, onRegion
 
 const styles = StyleSheet.create({
   container: {
-    backgroundColor: "#1E2022",
+    backgroundColor: color.surface,
     borderRadius: 16,
     marginVertical: 8,
   },
@@ -363,11 +364,11 @@ const styles = StyleSheet.create({
   title: {
     fontSize: 18,
     fontWeight: "bold",
-    color: "#ECEDEE",
+    color: color.textPrimary,
   },
   subtitle: {
     fontSize: 14,
-    color: "#9BA1A6",
+    color: color.textSecondary,
   },
   mapContainer: {
     position: "relative",
@@ -393,7 +394,7 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     justifyContent: "center",
     alignItems: "center",
-    backgroundColor: "#2D3139",
+    backgroundColor: color.border,
     borderRadius: 12,
     padding: 16,
     marginBottom: 12,
@@ -405,17 +406,17 @@ const styles = StyleSheet.create({
   statValue: {
     fontSize: 24,
     fontWeight: "bold",
-    color: "#ECEDEE",
+    color: color.textPrimary,
   },
   statLabel: {
     fontSize: 12,
-    color: "#9BA1A6",
+    color: color.textSecondary,
     marginTop: 4,
   },
   statDivider: {
     width: 1,
     height: 40,
-    backgroundColor: "#CBD5E0",
+    backgroundColor: color.textSubtle,
   },
   hotHighlight: {
     flexDirection: "row",
@@ -434,15 +435,15 @@ const styles = StyleSheet.create({
   hotTitle: {
     fontSize: 16,
     fontWeight: "bold",
-    color: "#FF6B6B",
+    color: color.coral,
   },
   hotSubtitle: {
     fontSize: 12,
-    color: "#9BA1A6",
+    color: color.textSecondary,
   },
   iconLegend: {
     marginBottom: 12,
-    backgroundColor: "#2D3139",
+    backgroundColor: color.border,
     borderRadius: 12,
     padding: 12,
   },
@@ -459,7 +460,7 @@ const styles = StyleSheet.create({
   },
   iconLegendText: {
     fontSize: 10,
-    color: "#9BA1A6",
+    color: color.textSecondary,
     marginTop: 4,
   },
   legend: {
@@ -467,7 +468,7 @@ const styles = StyleSheet.create({
   },
   legendTitle: {
     fontSize: 12,
-    color: "#9BA1A6",
+    color: color.textSecondary,
     marginBottom: 8,
   },
   legendItems: {
@@ -487,6 +488,6 @@ const styles = StyleSheet.create({
   },
   legendText: {
     fontSize: 10,
-    color: "#9BA1A6",
+    color: color.textSecondary,
   },
 });

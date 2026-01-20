@@ -1,4 +1,5 @@
 import { Text, View, TouchableOpacity, Platform } from "react-native";
+import { color, palette } from "@/theme/tokens";
 import { Image } from "expo-image";
 import { useRouter } from "expo-router";
 import { ScreenContainer } from "@/components/organisms/screen-container";
@@ -74,7 +75,7 @@ export default function NotFoundScreen() {
             className="bg-primary rounded-xl py-4 px-6 flex-row items-center justify-center"
             activeOpacity={0.8}
           >
-            <MaterialIcons name="home" size={20} color="#fff" />
+            <MaterialIcons name="home" size={20} color={color.textWhite} />
             <Text className="text-white text-base font-bold ml-2">
               ホームに戻る
             </Text>
@@ -85,7 +86,7 @@ export default function NotFoundScreen() {
             className="bg-surface rounded-xl py-4 px-6 flex-row items-center justify-center border border-border"
             activeOpacity={0.8}
           >
-            <MaterialIcons name="arrow-back" size={20} color="#CBD5E0" />
+            <MaterialIcons name="arrow-back" size={20} color={color.textSubtle} />
             <Text className="text-muted text-base font-bold ml-2">
               前のページに戻る
             </Text>

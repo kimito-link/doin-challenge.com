@@ -1,4 +1,5 @@
 import { Text, View, TouchableOpacity, ScrollView, ActivityIndicator, Alert, TextInput } from "react-native";
+import { color, palette } from "@/theme/tokens";
 import { useRouter, useLocalSearchParams } from "expo-router";
 import { useState } from "react";
 import { ScreenContainer } from "@/components/organisms/screen-container";
@@ -69,8 +70,8 @@ export default function ManageCommentsScreen() {
     return (
       <ScreenContainer edges={["top", "left", "right"]} containerClassName="bg-background">
         <View style={{ flex: 1, alignItems: "center", justifyContent: "center", padding: 24 }}>
-          <MaterialIcons name="lock" size={64} color="#CBD5E0" />
-          <Text style={{ color: "#D1D5DB", fontSize: 16, marginTop: 16, textAlign: "center" }}>
+          <MaterialIcons name="lock" size={64} color={color.textSubtle} />
+          <Text style={{ color: color.textMuted, fontSize: 16, marginTop: 16, textAlign: "center" }}>
             この機能はチャレンジの主催者または管理者のみ利用できます
           </Text>
         </View>
@@ -139,7 +140,7 @@ export default function ManageCommentsScreen() {
             <Text style={{ color: colors.foreground, fontSize: 18, fontWeight: "bold" }}>
               コメント管理
             </Text>
-            <Text style={{ color: "#D1D5DB", fontSize: 12 }} numberOfLines={1}>
+            <Text style={{ color: color.textMuted, fontSize: 12 }} numberOfLines={1}>
               {challenge?.title}
             </Text>
           </View>
@@ -152,7 +153,7 @@ export default function ManageCommentsScreen() {
                 flex: 1,
                 paddingVertical: 12,
                 borderRadius: 8,
-                backgroundColor: selectedTab === "all" ? "#EC4899" : "#1A1D21",
+                backgroundColor: selectedTab === "all" ? color.accentPrimary : color.surface,
                 alignItems: "center",
               }}
             >
@@ -166,7 +167,7 @@ export default function ManageCommentsScreen() {
                 flex: 1,
                 paddingVertical: 12,
                 borderRadius: 8,
-                backgroundColor: selectedTab === "picked" ? "#EC4899" : "#1A1D21",
+                backgroundColor: selectedTab === "picked" ? color.accentPrimary : color.surface,
                 alignItems: "center",
               }}
             >
@@ -189,12 +190,12 @@ export default function ManageCommentsScreen() {
                   <View
                     key={participation.id}
                     style={{
-                      backgroundColor: isPicked ? "#1E2530" : "#1A1D21",
+                      backgroundColor: isPicked ? "#1E2530" : color.surface,
                       borderRadius: 12,
                       padding: 16,
                       marginBottom: 12,
                       borderWidth: isPicked ? 2 : 1,
-                      borderColor: isPicked ? "#EC4899" : "#2D3139",
+                      borderColor: isPicked ? color.accentPrimary : color.border,
                     }}
                   >
                     {/* ユーザー情報 */}
@@ -210,7 +211,7 @@ export default function ManageCommentsScreen() {
                             width: 40,
                             height: 40,
                             borderRadius: 20,
-                            backgroundColor: "#EC4899",
+                            backgroundColor: color.accentPrimary,
                             alignItems: "center",
                             justifyContent: "center",
                           }}
@@ -225,7 +226,7 @@ export default function ManageCommentsScreen() {
                           {participation.isAnonymous ? "匿名" : participation.displayName}
                         </Text>
                         {participation.prefecture && (
-                          <Text style={{ color: "#D1D5DB", fontSize: 12 }}>
+                          <Text style={{ color: color.textMuted, fontSize: 12 }}>
                             {participation.prefecture}
                           </Text>
                         )}
@@ -233,7 +234,7 @@ export default function ManageCommentsScreen() {
                       {isPicked && (
                         <View
                           style={{
-                            backgroundColor: "#EC4899",
+                            backgroundColor: color.accentPrimary,
                             borderRadius: 4,
                             paddingHorizontal: 8,
                             paddingVertical: 4,
@@ -247,7 +248,7 @@ export default function ManageCommentsScreen() {
                     </View>
 
                     {/* コメント */}
-                    <Text style={{ color: "#E5E7EB", fontSize: 14, lineHeight: 20, marginBottom: 12 }}>
+                    <Text style={{ color: color.textPrimary, fontSize: 14, lineHeight: 20, marginBottom: 12 }}>
                       {participation.message}
                     </Text>
 
@@ -258,14 +259,14 @@ export default function ManageCommentsScreen() {
                           value={pickReason}
                           onChangeText={setPickReason}
                           placeholder="ピックアップ理由（任意）"
-                          placeholderTextColor="#CBD5E0"
+                          placeholderTextColor={color.textSubtle}
                           style={{
                             backgroundColor: colors.background,
                             borderRadius: 8,
                             padding: 12,
                             color: colors.foreground,
                             borderWidth: 1,
-                            borderColor: "#EC4899",
+                            borderColor: color.accentPrimary,
                           }}
                           multiline
                         />
@@ -279,7 +280,7 @@ export default function ManageCommentsScreen() {
                           onPress={() => handleUnpick(participation.id)}
                           style={{
                             flex: 1,
-                            backgroundColor: "#374151",
+                            backgroundColor: color.borderAlt,
                             borderRadius: 8,
                             paddingVertical: 10,
                             alignItems: "center",
@@ -296,7 +297,7 @@ export default function ManageCommentsScreen() {
                               onPress={() => setPickingId(null)}
                               style={{
                                 flex: 1,
-                                backgroundColor: "#374151",
+                                backgroundColor: color.borderAlt,
                                 borderRadius: 8,
                                 paddingVertical: 10,
                                 alignItems: "center",
@@ -310,7 +311,7 @@ export default function ManageCommentsScreen() {
                             disabled={pickMutation.isPending}
                             style={{
                               flex: 1,
-                              backgroundColor: "#EC4899",
+                              backgroundColor: color.accentPrimary,
                               borderRadius: 8,
                               paddingVertical: 10,
                               alignItems: "center",
@@ -328,8 +329,8 @@ export default function ManageCommentsScreen() {
               })
             ) : (
               <View style={{ alignItems: "center", paddingVertical: 40 }}>
-                <MaterialIcons name="chat-bubble-outline" size={64} color="#CBD5E0" />
-                <Text style={{ color: "#D1D5DB", fontSize: 16, marginTop: 16 }}>
+                <MaterialIcons name="chat-bubble-outline" size={64} color={color.textSubtle} />
+                <Text style={{ color: color.textMuted, fontSize: 16, marginTop: 16 }}>
                   コメントがありません
                 </Text>
               </View>
@@ -346,7 +347,7 @@ export default function ManageCommentsScreen() {
                     padding: 16,
                     marginBottom: 12,
                     borderWidth: 2,
-                    borderColor: picked.isUsedInVideo ? "#4ADE80" : "#EC4899",
+                    borderColor: picked.isUsedInVideo ? color.successLight : color.accentPrimary,
                   }}
                 >
                   {/* ユーザー情報 */}
@@ -362,7 +363,7 @@ export default function ManageCommentsScreen() {
                           width: 40,
                           height: 40,
                           borderRadius: 20,
-                          backgroundColor: "#EC4899",
+                          backgroundColor: color.accentPrimary,
                           alignItems: "center",
                           justifyContent: "center",
                         }}
@@ -377,7 +378,7 @@ export default function ManageCommentsScreen() {
                         {picked.participation?.isAnonymous ? "匿名" : picked.participation?.displayName}
                       </Text>
                       {picked.reason && (
-                        <Text style={{ color: "#EC4899", fontSize: 12 }}>
+                        <Text style={{ color: color.accentPrimary, fontSize: 12 }}>
                           理由: {picked.reason}
                         </Text>
                       )}
@@ -385,7 +386,7 @@ export default function ManageCommentsScreen() {
                     {picked.isUsedInVideo && (
                       <View
                         style={{
-                          backgroundColor: "#4ADE80",
+                          backgroundColor: color.successLight,
                           borderRadius: 4,
                           paddingHorizontal: 8,
                           paddingVertical: 4,
@@ -399,7 +400,7 @@ export default function ManageCommentsScreen() {
                   </View>
 
                   {/* コメント */}
-                  <Text style={{ color: "#E5E7EB", fontSize: 14, lineHeight: 20, marginBottom: 12 }}>
+                  <Text style={{ color: color.textPrimary, fontSize: 14, lineHeight: 20, marginBottom: 12 }}>
                     {picked.participation?.message}
                   </Text>
 
@@ -409,7 +410,7 @@ export default function ManageCommentsScreen() {
                       onPress={() => handleUnpick(picked.participationId)}
                       style={{
                         flex: 1,
-                        backgroundColor: "#374151",
+                        backgroundColor: color.borderAlt,
                         borderRadius: 8,
                         paddingVertical: 10,
                         alignItems: "center",
@@ -422,7 +423,7 @@ export default function ManageCommentsScreen() {
                         onPress={() => handleMarkAsUsed(picked.id)}
                         style={{
                           flex: 1,
-                          backgroundColor: "#4ADE80",
+                          backgroundColor: color.successLight,
                           borderRadius: 8,
                           paddingVertical: 10,
                           alignItems: "center",
@@ -438,8 +439,8 @@ export default function ManageCommentsScreen() {
               ))
             ) : (
               <View style={{ alignItems: "center", paddingVertical: 40 }}>
-                <MaterialIcons name="star-outline" size={64} color="#CBD5E0" />
-                <Text style={{ color: "#D1D5DB", fontSize: 16, marginTop: 16 }}>
+                <MaterialIcons name="star-outline" size={64} color={color.textSubtle} />
+                <Text style={{ color: color.textMuted, fontSize: 16, marginTop: 16 }}>
                   ピックアップしたコメントはありません
                 </Text>
               </View>

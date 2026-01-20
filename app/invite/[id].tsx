@@ -1,4 +1,5 @@
 import { Text, View, ScrollView, TouchableOpacity, Share, Platform } from "react-native";
+import { color, palette } from "@/theme/tokens";
 import { Image } from "expo-image";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import { useState, useEffect } from "react";
@@ -84,7 +85,7 @@ export default function InviteScreen() {
     return (
       <ScreenContainer containerClassName="bg-background">
         <View style={{ flex: 1, alignItems: "center", justifyContent: "center" }}>
-          <Text style={{ color: "#D1D5DB" }}>読み込み中...</Text>
+          <Text style={{ color: color.textMuted }}>読み込み中...</Text>
         </View>
       </ScreenContainer>
     );
@@ -94,12 +95,12 @@ export default function InviteScreen() {
     return (
       <ScreenContainer containerClassName="bg-background">
         <View style={{ flex: 1, alignItems: "center", justifyContent: "center" }}>
-          <Text style={{ color: "#D1D5DB" }}>チャレンジが見つかりません</Text>
+          <Text style={{ color: color.textMuted }}>チャレンジが見つかりません</Text>
           <TouchableOpacity
             onPress={() => router.back()}
             style={{ marginTop: 16, padding: 12 }}
           >
-            <Text style={{ color: "#DD6500" }}>戻る</Text>
+            <Text style={{ color: color.hostAccentLegacy }}>戻る</Text>
           </TouchableOpacity>
         </View>
       </ScreenContainer>
@@ -118,20 +119,20 @@ export default function InviteScreen() {
               onPress={() => router.back()}
               style={{ flexDirection: "row", alignItems: "center" }}
             >
-              <MaterialIcons name="arrow-back" size={24} color="#fff" />
-              <Text style={{ color: "#fff", marginLeft: 8 }}>戻る</Text>
+              <MaterialIcons name="arrow-back" size={24} color={color.textWhite} />
+              <Text style={{ color: color.textWhite, marginLeft: 8 }}>戻る</Text>
             </TouchableOpacity>
           }
         />
         <LinearGradient
-          colors={["#DD6500", "#EC4899", "#8B5CF6"]}
+          colors={[color.hostAccentLegacy, color.accentPrimary, color.accentAlt]}
           start={{ x: 0, y: 0 }}
           end={{ x: 1, y: 1 }}
           style={{ padding: 20, paddingTop: 16 }}
         >
           <View style={{ alignItems: "center" }}>
-            <MaterialIcons name="share" size={48} color="#fff" />
-            <Text style={{ color: "#fff", fontSize: 24, fontWeight: "bold", marginTop: 12 }}>
+            <MaterialIcons name="share" size={48} color={color.textWhite} />
+            <Text style={{ color: color.textWhite, fontSize: 24, fontWeight: "bold", marginTop: 12 }}>
               友達を招待
             </Text>
             <Text style={{ color: "rgba(255,255,255,0.8)", fontSize: 14, marginTop: 4, textAlign: "center" }}>
@@ -144,26 +145,26 @@ export default function InviteScreen() {
         <View style={{ padding: 16 }}>
           <View
             style={{
-              backgroundColor: "#161B22",
+              backgroundColor: color.surfaceDark,
               borderRadius: 12,
               padding: 16,
               borderWidth: 1,
-              borderColor: "#2D3139",
+              borderColor: color.border,
             }}
           >
-            <Text style={{ color: "#fff", fontSize: 18, fontWeight: "bold", marginBottom: 8 }}>
+            <Text style={{ color: color.textWhite, fontSize: 18, fontWeight: "bold", marginBottom: 8 }}>
               {challenge.title}
             </Text>
             <View style={{ flexDirection: "row", alignItems: "center" }}>
-              <MaterialIcons name="people" size={16} color="#D1D5DB" />
-              <Text style={{ color: "#D1D5DB", fontSize: 14, marginLeft: 4 }}>
+              <MaterialIcons name="people" size={16} color={color.textMuted} />
+              <Text style={{ color: color.textMuted, fontSize: 14, marginLeft: 4 }}>
                 目標: {challenge.targetCount}人
               </Text>
             </View>
             {challenge.venue && (
               <View style={{ flexDirection: "row", alignItems: "center", marginTop: 4 }}>
-                <MaterialIcons name="location-on" size={16} color="#D1D5DB" />
-                <Text style={{ color: "#D1D5DB", fontSize: 14, marginLeft: 4 }}>
+                <MaterialIcons name="location-on" size={16} color={color.textMuted} />
+                <Text style={{ color: color.textMuted, fontSize: 14, marginLeft: 4 }}>
                   {challenge.venue}
                 </Text>
               </View>
@@ -173,7 +174,7 @@ export default function InviteScreen() {
 
         {/* 招待リンク */}
         <View style={{ padding: 16 }}>
-          <Text style={{ color: "#fff", fontSize: 16, fontWeight: "bold", marginBottom: 12 }}>
+          <Text style={{ color: color.textWhite, fontSize: 16, fontWeight: "bold", marginBottom: 12 }}>
             招待リンク
           </Text>
           
@@ -181,15 +182,15 @@ export default function InviteScreen() {
             <>
               <View
                 style={{
-                  backgroundColor: "#161B22",
+                  backgroundColor: color.surfaceDark,
                   borderRadius: 8,
                   padding: 12,
                   borderWidth: 1,
-                  borderColor: "#2D3139",
+                  borderColor: color.border,
                   marginBottom: 12,
                 }}
               >
-                <Text style={{ color: "#D1D5DB", fontSize: 12 }} numberOfLines={1}>
+                <Text style={{ color: color.textMuted, fontSize: 12 }} numberOfLines={1}>
                   {inviteUrl}
                 </Text>
               </View>
@@ -197,7 +198,7 @@ export default function InviteScreen() {
               <TouchableOpacity
                 onPress={handleCopyLink}
                 style={{
-                  backgroundColor: copied ? "#22C55E" : "#DD6500",
+                  backgroundColor: copied ? color.success : color.hostAccentLegacy,
                   borderRadius: 8,
                   padding: 14,
                   alignItems: "center",
@@ -209,9 +210,9 @@ export default function InviteScreen() {
                 <MaterialIcons 
                   name={copied ? "check" : "content-copy"} 
                   size={20} 
-                  color="#fff" 
+                  color={color.textWhite} 
                 />
-                <Text style={{ color: "#fff", fontWeight: "600", marginLeft: 8 }}>
+                <Text style={{ color: color.textWhite, fontWeight: "600", marginLeft: 8 }}>
                   {copied ? "コピーしました！" : "リンクをコピー"}
                 </Text>
               </TouchableOpacity>
@@ -219,7 +220,7 @@ export default function InviteScreen() {
               <TouchableOpacity
                 onPress={handleShare}
                 style={{
-                  backgroundColor: "#2D3139",
+                  backgroundColor: color.border,
                   borderRadius: 8,
                   padding: 14,
                   alignItems: "center",
@@ -228,8 +229,8 @@ export default function InviteScreen() {
                   marginBottom: 12,
                 }}
               >
-                <MaterialIcons name="share" size={20} color="#fff" />
-                <Text style={{ color: "#fff", fontWeight: "600", marginLeft: 8 }}>
+                <MaterialIcons name="share" size={20} color={color.textWhite} />
+                <Text style={{ color: color.textWhite, fontWeight: "600", marginLeft: 8 }}>
                   シェアする
                 </Text>
               </TouchableOpacity>
@@ -237,7 +238,7 @@ export default function InviteScreen() {
               <TouchableOpacity
                 onPress={handleShareTwitter}
                 style={{
-                  backgroundColor: "#1DA1F2",
+                  backgroundColor: color.twitter,
                   borderRadius: 8,
                   padding: 14,
                   alignItems: "center",
@@ -246,26 +247,26 @@ export default function InviteScreen() {
                 }}
               >
                 <Text style={{ fontSize: 20 }}>𝕏</Text>
-                <Text style={{ color: "#fff", fontWeight: "600", marginLeft: 8 }}>
+                <Text style={{ color: color.textWhite, fontWeight: "600", marginLeft: 8 }}>
                   Xでシェア
                 </Text>
               </TouchableOpacity>
             </>
           ) : (
             <View style={{ alignItems: "center", padding: 20 }}>
-              <Text style={{ color: "#D1D5DB" }}>招待リンクを生成中...</Text>
+              <Text style={{ color: color.textMuted }}>招待リンクを生成中...</Text>
             </View>
           )}
         </View>
 
         {/* QRコード風のプレースホルダー */}
         <View style={{ padding: 16 }}>
-          <Text style={{ color: "#fff", fontSize: 16, fontWeight: "bold", marginBottom: 12 }}>
+          <Text style={{ color: color.textWhite, fontSize: 16, fontWeight: "bold", marginBottom: 12 }}>
             QRコード
           </Text>
           <View
             style={{
-              backgroundColor: "#fff",
+              backgroundColor: color.textWhite,
               borderRadius: 12,
               padding: 20,
               alignItems: "center",
@@ -294,20 +295,20 @@ export default function InviteScreen() {
         <View style={{ padding: 16 }}>
           <View
             style={{
-              backgroundColor: "#161B22",
+              backgroundColor: color.surfaceDark,
               borderRadius: 12,
               padding: 16,
               borderWidth: 1,
-              borderColor: "#DD6500",
+              borderColor: color.hostAccentLegacy,
             }}
           >
             <View style={{ flexDirection: "row", alignItems: "center", marginBottom: 8 }}>
-              <MaterialIcons name="card-giftcard" size={24} color="#DD6500" />
-              <Text style={{ color: "#DD6500", fontSize: 16, fontWeight: "bold", marginLeft: 8 }}>
+              <MaterialIcons name="card-giftcard" size={24} color={color.hostAccentLegacy} />
+              <Text style={{ color: color.hostAccentLegacy, fontSize: 16, fontWeight: "bold", marginLeft: 8 }}>
                 招待特典
               </Text>
             </View>
-            <Text style={{ color: "#D1D5DB", fontSize: 14, lineHeight: 20 }}>
+            <Text style={{ color: color.textMuted, fontSize: 14, lineHeight: 20 }}>
               友達を招待すると、あなたの貢献度が+1されます！{"\n"}
               たくさん招待して、チャレンジを盛り上げよう！
             </Text>

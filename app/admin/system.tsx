@@ -5,6 +5,7 @@
  */
 
 import { ScreenContainer } from "@/components/organisms/screen-container";
+import { color, palette } from "@/theme/tokens";
 import { useColors } from "@/hooks/use-colors";
 import { apiGet, getErrorMessage } from "@/lib/api";
 import { useCallback, useEffect, useState } from "react";
@@ -195,7 +196,7 @@ export default function SystemStatusScreen() {
         {/* Twitter API */}
         <View className="bg-surface rounded-xl p-4 border border-border mb-4">
           <View className="flex-row items-center mb-3">
-            <Ionicons name="logo-twitter" size={24} color="#1DA1F2" />
+            <Ionicons name="logo-twitter" size={24} color={color.twitter} />
             <Text className="text-lg font-semibold text-foreground ml-2">
               Twitter API
             </Text>

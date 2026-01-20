@@ -6,6 +6,7 @@
  */
 
 import { ScreenContainer } from "@/components/organisms/screen-container";
+import { color, palette } from "@/theme/tokens";
 import { useColors } from "@/hooks/use-colors";
 import { apiGet, apiPost, apiDelete, getErrorMessage } from "@/lib/api";
 import { useCallback, useEffect, useState } from "react";
@@ -58,18 +59,18 @@ interface ErrorStats {
 }
 
 const categoryLabels: Record<string, { label: string; icon: keyof typeof Ionicons.glyphMap; color: string }> = {
-  database: { label: "データベース", icon: "server-outline", color: "#EF4444" },
-  api: { label: "API", icon: "cloud-outline", color: "#F59E0B" },
-  auth: { label: "認証", icon: "lock-closed-outline", color: "#8B5CF6" },
-  twitter: { label: "Twitter", icon: "logo-twitter", color: "#1DA1F2" },
-  validation: { label: "バリデーション", icon: "alert-circle-outline", color: "#EC4899" },
-  unknown: { label: "その他", icon: "help-circle-outline", color: "#CBD5E0" },
+  database: { label: "データベース", icon: "server-outline", color: color.danger },
+  api: { label: "API", icon: "cloud-outline", color: color.warning },
+  auth: { label: "認証", icon: "lock-closed-outline", color: color.accentAlt },
+  twitter: { label: "Twitter", icon: "logo-twitter", color: color.twitter },
+  validation: { label: "バリデーション", icon: "alert-circle-outline", color: color.accentPrimary },
+  unknown: { label: "その他", icon: "help-circle-outline", color: color.textSubtle },
 };
 
 const severityColors: Record<string, string> = {
-  low: "#22C55E",
-  medium: "#F59E0B",
-  high: "#EF4444",
+  low: color.success,
+  medium: color.warning,
+  high: color.danger,
   critical: "#DC2626",
 };
 
@@ -280,7 +281,7 @@ export default function ErrorLogsScreen() {
                   opacity: pressed ? 0.8 : 1,
                 })}
               >
-                <Text style={{ color: !selectedCategory ? "#fff" : colors.foreground }}>
+                <Text style={{ color: !selectedCategory ? color.textWhite : colors.foreground }}>
                   すべて
                 </Text>
               </Pressable>
@@ -298,7 +299,7 @@ export default function ErrorLogsScreen() {
                     opacity: pressed ? 0.8 : 1,
                   })}
                 >
-                  <Text style={{ color: selectedCategory === key ? "#fff" : colors.foreground }}>
+                  <Text style={{ color: selectedCategory === key ? "#FFFFFF" : colors.foreground }}>
                     {label} {stats?.byCategory[key] ? `(${stats.byCategory[key]})` : ""}
                   </Text>
                 </Pressable>

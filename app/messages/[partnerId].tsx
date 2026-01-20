@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef } from "react";
+import { color, palette } from "@/theme/tokens";
 import { View, Text, FlatList, TextInput, TouchableOpacity, KeyboardAvoidingView, Platform } from "react-native";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import { ScreenContainer } from "@/components/organisms/screen-container";
@@ -155,7 +156,7 @@ export default function ConversationScreen() {
             value={message}
             onChangeText={setMessage}
             placeholder="メッセージを入力..."
-            placeholderTextColor="#9BA1A6"
+            placeholderTextColor={color.textSecondary}
             multiline
             maxLength={1000}
             className="flex-1 bg-surface rounded-2xl px-4 py-3 text-foreground mr-3 max-h-24"

@@ -1,4 +1,5 @@
 import { View, Text, TouchableOpacity, Modal, StyleSheet, Image, Animated } from "react-native";
+import { color, palette } from "@/theme/tokens";
 import MaterialIcons from "@expo/vector-icons/MaterialIcons";
 import { useEffect, useRef } from "react";
 import * as Haptics from "expo-haptics";
@@ -113,7 +114,7 @@ export function ErrorDialog({
 
           {/* エラーアイコン */}
           <View style={styles.iconContainer}>
-            <MaterialIcons name="error-outline" size={32} color="#EF4444" />
+            <MaterialIcons name="error-outline" size={32} color={color.danger} />
           </View>
 
           {/* タイトル */}
@@ -137,7 +138,7 @@ export function ErrorDialog({
                 onPress={handleRetry}
                 activeOpacity={0.8}
               >
-                <MaterialIcons name="refresh" size={20} color="#fff" />
+                <MaterialIcons name="refresh" size={20} color={color.textWhite} />
                 <Text style={styles.retryButtonText}>もう一度試す</Text>
               </TouchableOpacity>
             )}
@@ -231,14 +232,14 @@ const styles = StyleSheet.create({
     padding: 24,
   },
   dialog: {
-    backgroundColor: "#1E2022",
+    backgroundColor: color.surface,
     borderRadius: 20,
     padding: 24,
     width: "100%",
     maxWidth: 340,
     alignItems: "center",
     borderWidth: 1,
-    borderColor: "#334155",
+    borderColor: color.borderAlt,
   },
   characterContainer: {
     position: "absolute",
@@ -261,13 +262,13 @@ const styles = StyleSheet.create({
   title: {
     fontSize: 18,
     fontWeight: "bold",
-    color: "#fff",
+    color: color.textWhite,
     marginBottom: 8,
     textAlign: "center",
   },
   message: {
     fontSize: 14,
-    color: "#D1D5DB",
+    color: color.textMuted,
     textAlign: "center",
     lineHeight: 22,
     marginBottom: 16,
@@ -281,7 +282,7 @@ const styles = StyleSheet.create({
   },
   encourageText: {
     fontSize: 13,
-    color: "#9BA1A6",
+    color: color.textSecondary,
     textAlign: "center",
     fontStyle: "italic",
   },
@@ -295,13 +296,13 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "center",
-    backgroundColor: "#DD6500",
+    backgroundColor: color.hostAccentLegacy,
     borderRadius: 12,
     paddingVertical: 14,
     gap: 8,
   },
   retryButtonText: {
-    color: "#fff",
+    color: color.textWhite,
     fontSize: 15,
     fontWeight: "600",
   },
@@ -309,7 +310,7 @@ const styles = StyleSheet.create({
     flex: 1,
     alignItems: "center",
     justifyContent: "center",
-    backgroundColor: "#374151",
+    backgroundColor: color.borderAlt,
     borderRadius: 12,
     paddingVertical: 14,
   },
@@ -317,7 +318,7 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   closeButtonText: {
-    color: "#D1D5DB",
+    color: color.textMuted,
     fontSize: 15,
     fontWeight: "600",
   },

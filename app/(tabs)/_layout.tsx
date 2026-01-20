@@ -1,4 +1,5 @@
 import { Tabs } from "expo-router";
+import { color, palette } from "@/theme/tokens";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 import { HapticTab } from "@/components/atoms/haptic-tab";
@@ -34,7 +35,7 @@ export default function TabLayout() {
   return (
     <Tabs
       screenOptions={{
-        tabBarActiveTintColor: "#DD6500",
+        tabBarActiveTintColor: color.hostAccentLegacy,
         tabBarInactiveTintColor: colors.muted,
         headerShown: false,
         tabBarButton: HapticTab,

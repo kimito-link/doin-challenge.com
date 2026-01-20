@@ -1,4 +1,5 @@
 import { Text, View, ScrollView, TouchableOpacity, FlatList, RefreshControl, Alert } from "react-native";
+import { color, palette } from "@/theme/tokens";
 import { Image } from "expo-image";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import { useState } from "react";
@@ -109,7 +110,7 @@ export default function ProfileScreen() {
     return (
       <ScreenContainer containerClassName="bg-background">
         <View style={{ flex: 1, alignItems: "center", justifyContent: "center" }}>
-          <Text style={{ color: "#D1D5DB" }}>読み込み中...</Text>
+          <Text style={{ color: color.textMuted }}>読み込み中...</Text>
         </View>
       </ScreenContainer>
     );
@@ -119,12 +120,12 @@ export default function ProfileScreen() {
     return (
       <ScreenContainer containerClassName="bg-background">
         <View style={{ flex: 1, alignItems: "center", justifyContent: "center" }}>
-          <Text style={{ color: "#D1D5DB" }}>プロフィールが見つかりません</Text>
+          <Text style={{ color: color.textMuted }}>プロフィールが見つかりません</Text>
           <TouchableOpacity
             onPress={() => router.back()}
             style={{ marginTop: 16, padding: 12 }}
           >
-            <Text style={{ color: "#DD6500" }}>戻る</Text>
+            <Text style={{ color: color.hostAccentLegacy }}>戻る</Text>
           </TouchableOpacity>
         </View>
       </ScreenContainer>
@@ -135,7 +136,7 @@ export default function ProfileScreen() {
     <ScreenContainer containerClassName="bg-background">
       <ScrollView
         refreshControl={
-          <RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor="#DD6500" />
+          <RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={color.hostAccentLegacy} />
         }
       >
         {/* ヘッダー */}
@@ -153,7 +154,7 @@ export default function ProfileScreen() {
           }
         />
         <LinearGradient
-          colors={["#DD6500", "#EC4899", "#8B5CF6"]}
+          colors={[color.hostAccentLegacy, color.accentPrimary, color.accentAlt]}
           start={{ x: 0, y: 0 }}
           end={{ x: 1, y: 1 }}
           style={{ padding: 20, paddingTop: 16 }}
@@ -163,7 +164,7 @@ export default function ProfileScreen() {
             {(profile.user as any)?.profileImage ? (
               <Image
                 source={{ uri: (profile.user as any).profileImage }}
-                style={{ width: 100, height: 100, borderRadius: 50, borderWidth: 3, borderColor: "#fff" }}
+                style={{ width: 100, height: 100, borderRadius: 50, borderWidth: 3, borderColor: color.textWhite }}
               />
             ) : (
               <View
@@ -175,7 +176,7 @@ export default function ProfileScreen() {
                   alignItems: "center",
                   justifyContent: "center",
                   borderWidth: 3,
-                  borderColor: "#fff",
+                  borderColor: color.textWhite,
                 }}
               >
                 <Text style={{ color: colors.foreground, fontSize: 40, fontWeight: "bold" }}>
@@ -205,7 +206,7 @@ export default function ProfileScreen() {
                   paddingHorizontal: 28,
                   paddingVertical: 14,
                   borderRadius: 24,
-                  backgroundColor: isFollowing ? "rgba(255,255,255,0.2)" : "#fff",
+                  backgroundColor: isFollowing ? "rgba(255,255,255,0.2)" : color.textWhite,
                   flexDirection: "row",
                   alignItems: "center",
                   justifyContent: "center",
@@ -220,10 +221,10 @@ export default function ProfileScreen() {
                 <MaterialIcons 
                   name={isFollowing ? "check" : "person-add"} 
                   size={20} 
-                  color={isFollowing ? "#fff" : "#DD6500"} 
+                  color={isFollowing ? color.textWhite : color.hostAccentLegacy} 
                 />
                 <Text style={{ 
-                  color: isFollowing ? "#fff" : "#DD6500", 
+                  color: isFollowing ? color.textWhite : color.hostAccentLegacy, 
                   fontSize: 15, 
                   fontWeight: "bold",
                   marginLeft: 8,
@@ -238,11 +239,11 @@ export default function ProfileScreen() {
         {/* フォロー数・フォロワー数 */}
         <View style={{ 
           flexDirection: "row", 
-          backgroundColor: "#161B22", 
+          backgroundColor: color.surfaceDark, 
           paddingVertical: 8,
           paddingHorizontal: 16,
           borderBottomWidth: 1,
-          borderBottomColor: "#2D3139",
+          borderBottomColor: color.border,
           gap: 12,
         }}>
           <TouchableOpacity 
@@ -259,7 +260,7 @@ export default function ProfileScreen() {
             <Text style={{ color: colors.foreground, fontSize: 18, fontWeight: "bold" }}>
               {followingCount || 0}
             </Text>
-            <Text style={{ color: "#D1D5DB", fontSize: 14, marginLeft: 6 }}>
+            <Text style={{ color: color.textMuted, fontSize: 14, marginLeft: 6 }}>
               フォロー中
             </Text>
           </TouchableOpacity>
@@ -277,38 +278,38 @@ export default function ProfileScreen() {
             <Text style={{ color: colors.foreground, fontSize: 18, fontWeight: "bold" }}>
               {followerCount || 0}
             </Text>
-            <Text style={{ color: "#D1D5DB", fontSize: 14, marginLeft: 6 }}>
+            <Text style={{ color: color.textMuted, fontSize: 14, marginLeft: 6 }}>
               フォロワー
             </Text>
           </TouchableOpacity>
         </View>
 
         {/* 統計 */}
-        <View style={{ flexDirection: "row", backgroundColor: "#161B22", padding: 16 }}>
+        <View style={{ flexDirection: "row", backgroundColor: color.surfaceDark, padding: 16 }}>
           <View style={{ flex: 1, alignItems: "center" }}>
-            <Text style={{ color: "#DD6500", fontSize: 24, fontWeight: "bold" }}>
+            <Text style={{ color: color.hostAccentLegacy, fontSize: 24, fontWeight: "bold" }}>
               {profile.stats?.totalContribution || 0}
             </Text>
-            <Text style={{ color: "#D1D5DB", fontSize: 12 }}>総貢献度</Text>
+            <Text style={{ color: color.textMuted, fontSize: 12 }}>総貢献度</Text>
           </View>
-          <View style={{ width: 1, backgroundColor: "#2D3139" }} />
+          <View style={{ width: 1, backgroundColor: color.border }} />
           <View style={{ flex: 1, alignItems: "center" }}>
-            <Text style={{ color: "#EC4899", fontSize: 24, fontWeight: "bold" }}>
+            <Text style={{ color: color.accentPrimary, fontSize: 24, fontWeight: "bold" }}>
               {profile.stats?.participationCount || 0}
             </Text>
-            <Text style={{ color: "#D1D5DB", fontSize: 12 }}>参加チャレンジ</Text>
+            <Text style={{ color: color.textMuted, fontSize: 12 }}>参加チャレンジ</Text>
           </View>
-          <View style={{ width: 1, backgroundColor: "#2D3139" }} />
+          <View style={{ width: 1, backgroundColor: color.border }} />
           <View style={{ flex: 1, alignItems: "center" }}>
-            <Text style={{ color: "#8B5CF6", fontSize: 24, fontWeight: "bold" }}>
+            <Text style={{ color: color.accentAlt, fontSize: 24, fontWeight: "bold" }}>
               {profile.stats?.hostedCount || 0}
             </Text>
-            <Text style={{ color: "#D1D5DB", fontSize: 12 }}>主催数</Text>
+            <Text style={{ color: color.textMuted, fontSize: 12 }}>主催数</Text>
           </View>
         </View>
 
         {/* タブ */}
-        <View style={{ flexDirection: "row", backgroundColor: colors.background, borderBottomWidth: 1, borderBottomColor: "#2D3139" }}>
+        <View style={{ flexDirection: "row", backgroundColor: colors.background, borderBottomWidth: 1, borderBottomColor: color.border }}>
           <TouchableOpacity
             onPress={() => setActiveTab("challenges")}
             style={{
@@ -316,10 +317,10 @@ export default function ProfileScreen() {
               paddingVertical: 12,
               alignItems: "center",
               borderBottomWidth: 2,
-              borderBottomColor: activeTab === "challenges" ? "#DD6500" : "transparent",
+              borderBottomColor: activeTab === "challenges" ? color.hostAccentLegacy : "transparent",
             }}
           >
-            <Text style={{ color: activeTab === "challenges" ? "#DD6500" : "#D1D5DB", fontWeight: "600" }}>
+            <Text style={{ color: activeTab === "challenges" ? color.hostAccentLegacy : color.textMuted, fontWeight: "600" }}>
               参加履歴
             </Text>
           </TouchableOpacity>
@@ -330,10 +331,10 @@ export default function ProfileScreen() {
               paddingVertical: 12,
               alignItems: "center",
               borderBottomWidth: 2,
-              borderBottomColor: activeTab === "badges" ? "#DD6500" : "transparent",
+              borderBottomColor: activeTab === "badges" ? color.hostAccentLegacy : "transparent",
             }}
           >
-            <Text style={{ color: activeTab === "badges" ? "#DD6500" : "#D1D5DB", fontWeight: "600" }}>
+            <Text style={{ color: activeTab === "badges" ? color.hostAccentLegacy : color.textMuted, fontWeight: "600" }}>
               バッジ
             </Text>
           </TouchableOpacity>
@@ -351,26 +352,26 @@ export default function ProfileScreen() {
                     params: { id: participation.challengeId?.toString() || "0" },
                   })}
                   style={{
-                    backgroundColor: "#161B22",
+                    backgroundColor: color.surfaceDark,
                     borderRadius: 12,
                     padding: 16,
                     marginBottom: 12,
                     borderWidth: 1,
-                    borderColor: "#2D3139",
+                    borderColor: color.border,
                   }}
                 >
                   <Text style={{ color: colors.foreground, fontSize: 16, fontWeight: "600", marginBottom: 4 }}>
                     {participation.challengeTitle || "チャレンジ"}
                   </Text>
                   <View style={{ flexDirection: "row", alignItems: "center", marginTop: 8 }}>
-                    <MaterialIcons name="people" size={16} color="#D1D5DB" />
-                    <Text style={{ color: "#D1D5DB", fontSize: 12, marginLeft: 4 }}>
+                    <MaterialIcons name="people" size={16} color={color.textMuted} />
+                    <Text style={{ color: color.textMuted, fontSize: 12, marginLeft: 4 }}>
                       貢献度: {participation.contribution || 0}
                     </Text>
                     {participation.friendsCount > 0 && (
                       <>
-                        <Text style={{ color: "#CBD5E0", marginHorizontal: 8 }}>•</Text>
-                        <Text style={{ color: "#D1D5DB", fontSize: 12 }}>
+                        <Text style={{ color: color.textSubtle, marginHorizontal: 8 }}>•</Text>
+                        <Text style={{ color: color.textMuted, fontSize: 12 }}>
                           +{participation.friendsCount}人連れ
                         </Text>
                       </>
@@ -380,8 +381,8 @@ export default function ProfileScreen() {
               ))
             ) : (
               <View style={{ alignItems: "center", padding: 32 }}>
-                <MaterialIcons name="event-busy" size={48} color="#CBD5E0" />
-                <Text style={{ color: "#D1D5DB", marginTop: 12 }}>参加履歴がありません</Text>
+                <MaterialIcons name="event-busy" size={48} color={color.textSubtle} />
+                <Text style={{ color: color.textMuted, marginTop: 12 }}>参加履歴がありません</Text>
               </View>
             )
           ) : (
@@ -401,7 +402,7 @@ export default function ProfileScreen() {
                         width: 64,
                         height: 64,
                         borderRadius: 32,
-                        backgroundColor: badge.color || "#DD6500",
+                        backgroundColor: badge.color || color.hostAccentLegacy,
                         alignItems: "center",
                         justifyContent: "center",
                         marginBottom: 8,
@@ -412,7 +413,7 @@ export default function ProfileScreen() {
                     <Text style={{ color: colors.foreground, fontSize: 12, fontWeight: "600", textAlign: "center" }}>
                       {badge.name}
                     </Text>
-                    <Text style={{ color: "#D1D5DB", fontSize: 10, textAlign: "center", marginTop: 2 }}>
+                    <Text style={{ color: color.textMuted, fontSize: 10, textAlign: "center", marginTop: 2 }}>
                       {new Date(badge.earnedAt).toLocaleDateString("ja-JP")}
                     </Text>
                   </View>
@@ -420,8 +421,8 @@ export default function ProfileScreen() {
               </View>
             ) : (
               <View style={{ alignItems: "center", padding: 32 }}>
-                <MaterialIcons name="emoji-events" size={48} color="#CBD5E0" />
-                <Text style={{ color: "#D1D5DB", marginTop: 12 }}>バッジがありません</Text>
+                <MaterialIcons name="emoji-events" size={48} color={color.textSubtle} />
+                <Text style={{ color: color.textMuted, marginTop: 12 }}>バッジがありません</Text>
               </View>
             )
           )}
@@ -433,7 +434,7 @@ export default function ProfileScreen() {
             <TouchableOpacity
               onPress={() => router.back()}
               style={{
-                backgroundColor: "#2D3139",
+                backgroundColor: color.border,
                 borderRadius: 8,
                 padding: 12,
                 alignItems: "center",

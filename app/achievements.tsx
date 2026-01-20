@@ -1,4 +1,5 @@
 import { Text, View, TouchableOpacity, ScrollView, Dimensions } from "react-native";
+import { color, palette } from "@/theme/tokens";
 import { useRouter } from "expo-router";
 import { ScreenContainer } from "@/components/organisms/screen-container";
 import { trpc } from "@/lib/trpc";
@@ -46,10 +47,10 @@ const ACHIEVEMENTS = [
 
 // レアリティの色（ダークモード専用・高視認性）
 const RARITY_COLORS: Record<string, { bg: string; border: string; text: string; badgeBg: string; badgeText: string }> = {
-  common: { bg: "#2D3748", border: "#A0AEC0", text: "#E2E8F0", badgeBg: "#718096", badgeText: "#FFFFFF" },
-  uncommon: { bg: "#1A4731", border: "#48BB78", text: "#9AE6B4", badgeBg: "#38A169", badgeText: "#FFFFFF" },
-  rare: { bg: "#1A365D", border: "#63B3ED", text: "#90CDF4", badgeBg: "#4299E1", badgeText: "#FFFFFF" },
-  epic: { bg: "#44337A", border: "#B794F4", text: "#D6BCFA", badgeBg: "#9F7AEA", badgeText: "#FFFFFF" },
+  common: { bg: color.border, border: "#A0AEC0", text: "#E2E8F0", badgeBg: "#718096", badgeText: color.textWhite },
+  uncommon: { bg: "#1A4731", border: "#48BB78", text: "#9AE6B4", badgeBg: "#38A169", badgeText: color.textWhite },
+  rare: { bg: "#1A365D", border: "#63B3ED", text: "#90CDF4", badgeBg: "#4299E1", badgeText: color.textWhite },
+  epic: { bg: "#44337A", border: "#B794F4", text: "#D6BCFA", badgeBg: "#9F7AEA", badgeText: color.textWhite },
   legendary: { bg: "#744210", border: "#F6E05E", text: "#FAF089", badgeBg: "#ECC94B", badgeText: "#1A202C" },
 };
 
@@ -89,12 +90,12 @@ function AchievementCard({
   return (
     <View
       style={{
-        backgroundColor: isUnlocked ? colors.bg : "#1A1D21",
+        backgroundColor: isUnlocked ? colors.bg : color.surface,
         borderRadius: 12,
         padding: 16,
         marginBottom: 12,
         borderWidth: 2,
-        borderColor: isUnlocked ? colors.border : "#2D3139",
+        borderColor: isUnlocked ? colors.border : color.border,
         opacity: isUnlocked ? 1 : 0.6,
       }}
     >
@@ -104,7 +105,7 @@ function AchievementCard({
             width: 48,
             height: 48,
             borderRadius: 24,
-            backgroundColor: isUnlocked ? colors.border : "#2D3139",
+            backgroundColor: isUnlocked ? colors.border : color.border,
             alignItems: "center",
             justifyContent: "center",
             marginRight: 12,
@@ -114,7 +115,7 @@ function AchievementCard({
         </View>
         <View style={{ flex: 1 }}>
           <View style={{ flexDirection: "row", alignItems: "center", marginBottom: 4 }}>
-            <Text style={{ color: isUnlocked ? colors.text : "#CBD5E0", fontSize: 16, fontWeight: "bold" }}>
+            <Text style={{ color: isUnlocked ? colors.text : color.textSubtle, fontSize: 16, fontWeight: "bold" }}>
               {achievement.name}
             </Text>
             <View
@@ -137,7 +138,7 @@ function AchievementCard({
           {/* 進捗バー（未解除の場合） */}
           {!isUnlocked && progress !== undefined && maxProgress !== undefined && (
             <View style={{ marginTop: 8 }}>
-              <View style={{ height: 4, backgroundColor: "#2D3139", borderRadius: 2, overflow: "hidden" }}>
+              <View style={{ height: 4, backgroundColor: color.border, borderRadius: 2, overflow: "hidden" }}>
                 <View
                   style={{
                     height: "100%",
@@ -147,17 +148,17 @@ function AchievementCard({
                   }}
                 />
               </View>
-              <Text style={{ color: "#CBD5E0", fontSize: 11, marginTop: 4 }}>
+              <Text style={{ color: color.textSubtle, fontSize: 11, marginTop: 4 }}>
                 {progress} / {maxProgress}
               </Text>
             </View>
           )}
         </View>
         <View style={{ alignItems: "flex-end" }}>
-          <Text style={{ color: isUnlocked ? "#FFD700" : "#CBD5E0", fontSize: 14, fontWeight: "bold" }}>
+          <Text style={{ color: isUnlocked ? color.rankGold : color.textSubtle, fontSize: 14, fontWeight: "bold" }}>
             +{achievement.points}
           </Text>
-          <Text style={{ color: "#CBD5E0", fontSize: 10 }}>ポイント</Text>
+          <Text style={{ color: color.textSubtle, fontSize: 10 }}>ポイント</Text>
         </View>
       </View>
     </View>
@@ -326,12 +327,12 @@ export default function AchievementsScreen() {
     return (
       <ScreenContainer className="p-4">
         <View style={{ flex: 1, alignItems: "center", justifyContent: "center" }}>
-          <Text style={{ color: "#D1D5DB", fontSize: 16 }}>ログインしてください</Text>
+          <Text style={{ color: color.textMuted, fontSize: 16 }}>ログインしてください</Text>
           <TouchableOpacity
             onPress={() => router.push("/mypage")}
             style={{ marginTop: 16, padding: 12 }}
           >
-            <Text style={{ color: "#EC4899" }}>ログイン画面へ</Text>
+            <Text style={{ color: color.accentPrimary }}>ログイン画面へ</Text>
           </TouchableOpacity>
         </View>
       </ScreenContainer>
@@ -350,25 +351,25 @@ export default function AchievementsScreen() {
               onPress={() => router.back()}
               style={{ flexDirection: "row", alignItems: "center" }}
             >
-              <MaterialIcons name="arrow-back" size={24} color="#fff" />
-              <Text style={{ color: "#fff", marginLeft: 8 }}>戻る</Text>
+              <MaterialIcons name="arrow-back" size={24} color={color.textWhite} />
+              <Text style={{ color: color.textWhite, marginLeft: 8 }}>戻る</Text>
             </TouchableOpacity>
           }
         />
-        <Text style={{ color: "#fff", fontSize: 20, fontWeight: "bold", marginBottom: 16 }}>
+        <Text style={{ color: color.textWhite, fontSize: 20, fontWeight: "bold", marginBottom: 16 }}>
           アチーブメント
         </Text>
 
         {/* 統計サマリー */}
         <LinearGradient
-          colors={["#EC4899", "#8B5CF6"]}
+          colors={[color.accentPrimary, color.accentAlt]}
           start={{ x: 0, y: 0 }}
           end={{ x: 1, y: 0 }}
           style={{ borderRadius: 12, padding: 20, marginBottom: 24 }}
         >
           <View style={{ flexDirection: "row", justifyContent: "space-around" }}>
             <View style={{ alignItems: "center" }}>
-              <Text style={{ color: "#fff", fontSize: 28, fontWeight: "bold" }}>
+              <Text style={{ color: color.textWhite, fontSize: 28, fontWeight: "bold" }}>
                 {stats.unlocked}
               </Text>
               <Text style={{ color: "rgba(255,255,255,0.8)", fontSize: 12 }}>
@@ -376,7 +377,7 @@ export default function AchievementsScreen() {
               </Text>
             </View>
             <View style={{ alignItems: "center" }}>
-              <Text style={{ color: "#fff", fontSize: 28, fontWeight: "bold" }}>
+              <Text style={{ color: color.textWhite, fontSize: 28, fontWeight: "bold" }}>
                 {stats.total}
               </Text>
               <Text style={{ color: "rgba(255,255,255,0.8)", fontSize: 12 }}>
@@ -384,7 +385,7 @@ export default function AchievementsScreen() {
               </Text>
             </View>
             <View style={{ alignItems: "center" }}>
-              <Text style={{ color: "#FFD700", fontSize: 28, fontWeight: "bold" }}>
+              <Text style={{ color: color.rankGold, fontSize: 28, fontWeight: "bold" }}>
                 {stats.points}
               </Text>
               <Text style={{ color: "rgba(255,255,255,0.8)", fontSize: 12 }}>
@@ -399,7 +400,7 @@ export default function AchievementsScreen() {
                 style={{
                   height: "100%",
                   width: `${(stats.unlocked / stats.total) * 100}%`,
-                  backgroundColor: "#fff",
+                  backgroundColor: color.textWhite,
                   borderRadius: 4,
                 }}
               />
@@ -413,7 +414,7 @@ export default function AchievementsScreen() {
         {/* タイプ別アチーブメント */}
         {Object.entries(groupedAchievements).map(([type, achievements]) => (
           <View key={type} style={{ marginBottom: 24 }}>
-            <Text style={{ color: "#fff", fontSize: 18, fontWeight: "bold", marginBottom: 12 }}>
+            <Text style={{ color: color.textWhite, fontSize: 18, fontWeight: "bold", marginBottom: 12 }}>
               {TYPE_NAMES[type] || type}
             </Text>
             {achievements.map(achievement => (

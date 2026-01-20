@@ -1,4 +1,5 @@
 import { Text, View, ScrollView } from "react-native";
+import { color, palette } from "@/theme/tokens";
 import { useState, useEffect, useRef } from "react";
 import { useRouter } from "expo-router";
 import { ScreenContainer } from "@/components/organisms/screen-container";
@@ -171,21 +172,21 @@ export default function MyPageScreen() {
           {/* 設定リンク */}
           <SettingsLinkItem
             icon="emoji-events"
-            iconColor="#FFD700"
+            iconColor={color.rankGold}
             title="アチーブメント"
             description="実績を解除してポイントを獲得しよう"
             onPress={() => router.push("/achievements")}
           />
           <SettingsLinkItem
             icon="notifications"
-            iconColor="#DD6500"
+            iconColor={color.hostAccentLegacy}
             title="通知設定"
             description="目標達成やマイルストーンの通知を管理"
             onPress={() => router.push("/notification-settings")}
           />
           <SettingsLinkItem
             icon="palette"
-            iconColor="#8B5CF6"
+            iconColor={color.accentAlt}
             title="テーマ設定"
             description="ライト/ダークモードを切り替え"
             onPress={() => router.push("/theme-settings")}
@@ -198,7 +199,7 @@ export default function MyPageScreen() {
 
           <SettingsLinkItem
             icon="analytics"
-            iconColor="#3B82F6"
+            iconColor={color.info}
             title="API使用量"
             description="Twitter APIのレート制限状況"
             onPress={() => router.push("/admin/api-usage")}

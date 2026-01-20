@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { color, palette } from "@/theme/tokens";
 import { View, Text, TouchableOpacity, Platform } from "react-native";
 import { Image } from "expo-image";
 import { useRouter } from "expo-router";
@@ -57,7 +58,7 @@ export function AppHeader({
   
   return (
     <>
-      <View style={{ paddingHorizontal: 16, paddingTop: 16, paddingBottom: 8, backgroundColor: "#0D1117" }}>
+      <View style={{ paddingHorizontal: 16, paddingTop: 16, paddingBottom: 8, backgroundColor: color.bg }}>
         <View style={{ flexDirection: "row", alignItems: "center", justifyContent: "space-between" }}>
           <TouchableOpacity 
             onPress={handleTitlePress}
@@ -73,7 +74,7 @@ export function AppHeader({
             )}
             <View style={{ marginLeft: showLogo ? 8 : 0 }}>
               <Text style={{ 
-                color: "#fff", 
+                color: color.textWhite, 
                 fontSize: isDesktop ? 16 : 13, 
                 fontWeight: "bold",
               }}>
@@ -124,7 +125,7 @@ export function AppHeader({
                 }}
                 activeOpacity={0.7}
               >
-                <MaterialIcons name="menu" size={24} color="#fff" />
+                <MaterialIcons name="menu" size={24} color={color.textWhite} />
               </TouchableOpacity>
             )}
           </View>
@@ -153,15 +154,15 @@ export function AppHeader({
                 contentFit="cover"
               />
             )}
-            <Text style={{ color: "#10B981", fontSize: 12, fontWeight: "600" }}>
+            <Text style={{ color: color.successDark, fontSize: 12, fontWeight: "600" }}>
               {user.name || user.username || "ゲスト"}でログイン中
             </Text>
-            <MaterialIcons name="expand-more" size={16} color="#10B981" style={{ marginLeft: 4 }} />
+            <MaterialIcons name="expand-more" size={16} color={color.successDark} style={{ marginLeft: 4 }} />
           </TouchableOpacity>
         )}
         
         {subtitle && (
-          <Text style={{ color: "#D1D5DB", fontSize: 14, marginTop: 4 }}>
+          <Text style={{ color: color.textMuted, fontSize: 14, marginTop: 4 }}>
             {subtitle}
           </Text>
         )}

@@ -2884,3 +2884,45 @@ features/create/
 - [x] share-prompt-modal.tsx
 - [x] theme-settings.tsx
 - [x] twitter-user-card.tsx
+
+
+## organisms/ と app/ トークン化（v4.11）
+
+### Phase 1: organisms/
+- [ ] 一括置換スクリプトを適用
+- [ ] 残りを手動トークン化
+
+### Phase 2: app/（主要4画面）
+- [ ] 一括置換スクリプトを適用
+- [ ] index.tsx（ホーム）
+- [ ] [id].tsx（詳細）
+- [ ] create.tsx（作成）
+- [ ] mypage.tsx（マイページ）
+
+### Phase 3: ESLint
+- [ ] 直書き色を禁止するルールを追加
+
+
+## デザインシステム統合・トークン化（v4.11）
+
+### Phase 1: theme/tokens/ 作成
+- [x] palette.ts（プリミティブ色）
+- [x] semantic.ts（セマンティック色）
+- [x] gradients.ts（グラデーション）
+- [x] layout.ts（spacing, borderRadius, touchTarget, shadows, animation, zIndex）
+- [x] index.ts（エクスポート集約）
+
+### Phase 2: design-system.ts 薄いラッパー化
+- [x] constants/design-system.ts を theme/tokens からの再エクスポートに書き換え
+- [x] 後方互換性を維持
+
+### Phase 3: コンポーネントトークン化
+- [x] atoms/（0箇所残存）
+- [x] molecules/（1箇所残存、99.6%削減）
+- [x] organisms/（一括置換 + 手動修正）
+- [x] app/（一括置換 + 手動修正）
+
+### 一括置換スクリプト実績
+- [x] 1357箇所/58ファイルを自動置換
+- [x] 182箇所/40ファイルのJSX属性エラーを修正
+- [x] 変数名衝突を修正（tutorial-overlay, global-menu, japan-maps, admin/errors等）

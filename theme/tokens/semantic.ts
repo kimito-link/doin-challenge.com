@@ -75,6 +75,12 @@ export const color = {
   // Social
   twitter: palette.twitter,
   line: palette.line,
+
+  // Additional colors for charts/maps
+  coral: "#FF6B6B",
+  hotPink: "#FF6B9D",
+  emerald400: "#34D399",
+  textDisabled: "#4B5563",
 } as const;
 
 export type SemanticColor = typeof color;

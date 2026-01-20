@@ -5,6 +5,7 @@
  */
 
 import { ScreenContainer } from "@/components/organisms/screen-container";
+import { color, palette } from "@/theme/tokens";
 import { useColors } from "@/hooks/use-colors";
 import { trpc } from "@/lib/trpc";
 import { View, Text, ScrollView, Pressable, ActivityIndicator } from "react-native";
@@ -46,7 +47,7 @@ export default function AdminDashboard() {
       title: "公開中",
       value: challenges?.filter((c: any) => c.isPublic).length ?? 0,
       icon: "eye-outline",
-      color: "#3B82F6",
+      color: color.info,
     },
     {
       title: "非公開",
@@ -174,9 +175,9 @@ export default function AdminDashboard() {
             >
               <View
                 className="w-10 h-10 rounded-full items-center justify-center mr-3"
-                style={{ backgroundColor: "#3B82F6" + "20" }}
+                style={{ backgroundColor: color.info + "20" }}
               >
-                <Ionicons name="trophy-outline" size={20} color="#3B82F6" />
+                <Ionicons name="trophy-outline" size={20} color={color.info} />
               </View>
               <View className="flex-1">
                 <Text className="font-semibold text-foreground">チャレンジを管理</Text>

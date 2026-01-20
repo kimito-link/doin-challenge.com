@@ -5,6 +5,7 @@
  */
 
 import { useCallback, useEffect, useState } from "react";
+import { color, palette } from "@/theme/tokens";
 import {
   View,
   Text,
@@ -310,10 +311,10 @@ export default function DemoScreen() {
               })}
             >
               {joining ? (
-                <ActivityIndicator color="#fff" />
+                <ActivityIndicator color={color.textWhite} />
               ) : (
                 <View className="flex-row items-center">
-                  <Ionicons name="hand-right" size={24} color="#fff" />
+                  <Ionicons name="hand-right" size={24} color={color.textWhite} />
                   <Text className="text-white text-lg font-bold ml-2">
                     参加する（お試し）
                   </Text>
@@ -434,7 +435,7 @@ export default function DemoScreen() {
             })}
           >
             <View className="flex-row items-center">
-              <Ionicons name="log-in" size={20} color="#fff" />
+              <Ionicons name="log-in" size={20} color={color.textWhite} />
               <Text className="text-white font-bold ml-2">
                 ログインして始める
               </Text>

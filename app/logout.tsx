@@ -1,4 +1,5 @@
 import { Text, View, TouchableOpacity } from "react-native";
+import { color, palette } from "@/theme/tokens";
 import { useState, useEffect } from "react";
 import { Image } from "expo-image";
 import { useRouter } from "expo-router";
@@ -66,7 +67,7 @@ export default function LogoutScreen() {
     <ScreenContainer containerClassName="bg-background">
       {/* グラデーション背景 */}
       <LinearGradient
-        colors={["#1E40AF", "#0D1117"]}
+        colors={["#1E40AF", color.bg]}
         start={{ x: 0, y: 0 }}
         end={{ x: 0, y: 1 }}
         style={{
@@ -122,7 +123,7 @@ export default function LogoutScreen() {
             marginBottom: 16,
           }}>
             <Text style={{ 
-              color: "#EC4899", 
+              color: color.accentPrimary, 
               fontSize: 18, 
               fontWeight: "bold",
               textAlign: "center",
@@ -137,21 +138,21 @@ export default function LogoutScreen() {
               width: 64,
               height: 64,
               borderRadius: 32,
-              backgroundColor: "#10B981",
+              backgroundColor: color.successDark,
               alignItems: "center",
               justifyContent: "center",
               marginBottom: 16,
               borderWidth: 3,
-              borderColor: "#34D399",
+              borderColor: color.emerald400,
             }}>
-              <MaterialIcons name="check" size={40} color="#fff" />
+              <MaterialIcons name="check" size={40} color={color.textWhite} />
             </View>
           )}
         </View>
 
         {/* メインメッセージ */}
         <Text style={{ 
-          color: "#fff", 
+          color: color.textWhite, 
           fontSize: 24, 
           fontWeight: "bold",
           marginBottom: 8,
@@ -161,7 +162,7 @@ export default function LogoutScreen() {
         </Text>
 
         <Text style={{ 
-          color: "#D1D5DB", 
+          color: color.textMuted, 
           fontSize: 14,
           marginBottom: 24,
           textAlign: "center",
@@ -185,12 +186,12 @@ export default function LogoutScreen() {
             borderColor: "#2563EB",
           }}>
             <View style={{ flexDirection: "row", alignItems: "center", marginBottom: 8 }}>
-              <MaterialIcons name="info" size={18} color="#60A5FA" />
-              <Text style={{ color: "#60A5FA", fontSize: 14, fontWeight: "bold", marginLeft: 8 }}>
+              <MaterialIcons name="info" size={18} color={color.blue400} />
+              <Text style={{ color: color.blue400, fontSize: 14, fontWeight: "bold", marginLeft: 8 }}>
                 ログアウトについて
               </Text>
             </View>
-            <Text style={{ color: "#E5E7EB", fontSize: 13, lineHeight: 20 }}>
+            <Text style={{ color: color.textPrimary, fontSize: 13, lineHeight: 20 }}>
               アカウント情報は安全に保護されました。{"\n"}
               別のアカウントでログインする場合は、下の「ログイン」ボタンをクリックしてください。{"\n"}
               同じアカウントで再度ログインすることもできます。
@@ -205,7 +206,7 @@ export default function LogoutScreen() {
             <TouchableOpacity
               onPress={() => router.replace("/")}
               style={{
-                backgroundColor: "#3B82F6",
+                backgroundColor: color.info,
                 borderRadius: 12,
                 paddingVertical: 14,
                 paddingHorizontal: 24,
@@ -214,8 +215,8 @@ export default function LogoutScreen() {
                 justifyContent: "center",
               }}
             >
-              <MaterialIcons name="home" size={20} color="#fff" />
-              <Text style={{ color: "#fff", fontSize: 16, fontWeight: "bold", marginLeft: 8 }}>
+              <MaterialIcons name="home" size={20} color={color.textWhite} />
+              <Text style={{ color: color.textWhite, fontSize: 16, fontWeight: "bold", marginLeft: 8 }}>
                 ホームページに戻る
               </Text>
             </TouchableOpacity>
@@ -224,7 +225,7 @@ export default function LogoutScreen() {
             <TouchableOpacity
               onPress={handleSameAccountLogin}
               style={{
-                backgroundColor: "#10B981",
+                backgroundColor: color.successDark,
                 borderRadius: 12,
                 paddingVertical: 14,
                 paddingHorizontal: 24,
@@ -233,8 +234,8 @@ export default function LogoutScreen() {
                 justifyContent: "center",
               }}
             >
-              <MaterialIcons name="refresh" size={20} color="#fff" />
-              <Text style={{ color: "#fff", fontSize: 16, fontWeight: "bold", marginLeft: 8 }}>
+              <MaterialIcons name="refresh" size={20} color={color.textWhite} />
+              <Text style={{ color: color.textWhite, fontSize: 16, fontWeight: "bold", marginLeft: 8 }}>
                 同じアカウントで再ログイン
               </Text>
             </TouchableOpacity>
@@ -251,11 +252,11 @@ export default function LogoutScreen() {
                 alignItems: "center",
                 justifyContent: "center",
                 borderWidth: 1,
-                borderColor: "#3B82F6",
+                borderColor: color.info,
               }}
             >
-              <MaterialIcons name="swap-horiz" size={20} color="#3B82F6" />
-              <Text style={{ color: "#3B82F6", fontSize: 16, fontWeight: "bold", marginLeft: 8 }}>
+              <MaterialIcons name="swap-horiz" size={20} color={color.info} />
+              <Text style={{ color: color.info, fontSize: 16, fontWeight: "bold", marginLeft: 8 }}>
                 別のアカウントでログイン
               </Text>
             </TouchableOpacity>
@@ -265,7 +266,7 @@ export default function LogoutScreen() {
         {/* サブメッセージ */}
         {logoutComplete && (
           <Text style={{ 
-            color: "#CBD5E0", 
+            color: color.textSubtle, 
             fontSize: 13,
             marginTop: 24,
             textAlign: "center",

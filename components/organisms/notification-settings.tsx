@@ -1,4 +1,5 @@
 import { View, Text, Switch, StyleSheet, Platform, TouchableOpacity, Alert } from "react-native";
+import { color, palette } from "@/theme/tokens";
 import { useState, useEffect, useCallback } from "react";
 import MaterialIcons from "@expo/vector-icons/MaterialIcons";
 import * as Haptics from "expo-haptics";
@@ -42,7 +43,7 @@ function SettingItem({
   return (
     <View style={[styles.settingItem, disabled && styles.settingItemDisabled]}>
       <View style={[styles.iconContainer, { backgroundColor: iconColor }]}>
-        <MaterialIcons name={icon as any} size={20} color="#fff" />
+        <MaterialIcons name={icon as any} size={20} color={color.textWhite} />
       </View>
       <View style={styles.settingInfo}>
         <Text style={[styles.settingTitle, disabled && styles.textDisabled]}>{title}</Text>
@@ -54,8 +55,8 @@ function SettingItem({
         value={value}
         onValueChange={handleChange}
         disabled={disabled}
-        trackColor={{ false: "#3A3F47", true: "#DD6500" }}
-        thumbColor={value ? "#fff" : "#D1D5DB"}
+        trackColor={{ false: "#3A3F47", true: color.hostAccentLegacy }}
+        thumbColor={value ? color.textWhite : color.textMuted}
         ios_backgroundColor="#3A3F47"
       />
     </View>
@@ -144,7 +145,7 @@ export function NotificationSettingsPanel({ onClose }: NotificationSettingsProps
         <Text style={styles.headerTitle}>通知設定</Text>
         {onClose && (
           <TouchableOpacity onPress={onClose} style={styles.closeButton}>
-            <MaterialIcons name="close" size={24} color="#D1D5DB" />
+            <MaterialIcons name="close" size={24} color={color.textMuted} />
           </TouchableOpacity>
         )}
       </View>
@@ -152,7 +153,7 @@ export function NotificationSettingsPanel({ onClose }: NotificationSettingsProps
       {/* Web版の注意 */}
       {isWebPlatform && (
         <View style={styles.webNotice}>
-          <MaterialIcons name="info" size={20} color="#F59E0B" />
+          <MaterialIcons name="info" size={20} color={color.warning} />
           <Text style={styles.webNoticeText}>
             プッシュ通知はモバイルアプリでのみ利用可能です
           </Text>
@@ -162,7 +163,7 @@ export function NotificationSettingsPanel({ onClose }: NotificationSettingsProps
       {/* メイン通知スイッチ */}
       <View style={styles.mainToggle}>
         <View style={styles.mainToggleInfo}>
-          <MaterialIcons name="notifications" size={28} color="#DD6500" />
+          <MaterialIcons name="notifications" size={28} color={color.hostAccentLegacy} />
           <View style={styles.mainToggleText}>
             <Text style={styles.mainToggleTitle}>プッシュ通知</Text>
             <Text style={styles.mainToggleDescription}>
@@ -180,8 +181,8 @@ export function NotificationSettingsPanel({ onClose }: NotificationSettingsProps
                 updateSetting("enabled", value);
               }
             }}
-            trackColor={{ false: "#3A3F47", true: "#DD6500" }}
-            thumbColor={settings.enabled ? "#fff" : "#D1D5DB"}
+            trackColor={{ false: "#3A3F47", true: color.hostAccentLegacy }}
+            thumbColor={settings.enabled ? color.textWhite : color.textMuted}
             ios_backgroundColor="#3A3F47"
           />
         )}
@@ -193,7 +194,7 @@ export function NotificationSettingsPanel({ onClose }: NotificationSettingsProps
 
         <SettingItem
           icon="emoji-events"
-          iconColor="#F59E0B"
+          iconColor={color.warning}
           title="目標達成"
           description="チャレンジが目標を達成したとき"
           value={settings.goalReached}
@@ -203,7 +204,7 @@ export function NotificationSettingsPanel({ onClose }: NotificationSettingsProps
 
         <SettingItem
           icon="flag"
-          iconColor="#10B981"
+          iconColor={color.successDark}
           title="マイルストーン"
           description="25%、50%、75%達成時"
           value={settings.milestones}
@@ -213,7 +214,7 @@ export function NotificationSettingsPanel({ onClose }: NotificationSettingsProps
 
         <SettingItem
           icon="person-add"
-          iconColor="#3B82F6"
+          iconColor={color.info}
           title="新規参加者"
           description="誰かがチャレンジに参加したとき"
           value={settings.newParticipants}
@@ -223,7 +224,7 @@ export function NotificationSettingsPanel({ onClose }: NotificationSettingsProps
 
         <SettingItem
           icon="update"
-          iconColor="#8B5CF6"
+          iconColor={color.accentAlt}
           title="チャレンジ更新"
           description="イベントリマインダーなど"
           value={settings.challengeUpdates}
@@ -246,10 +247,10 @@ export function NotificationSettingsPanel({ onClose }: NotificationSettingsProps
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: "#151718",
+    backgroundColor: color.surfaceDark,
   },
   loadingText: {
-    color: "#D1D5DB",
+    color: color.textMuted,
     textAlign: "center",
     marginTop: 40,
   },
@@ -259,10 +260,10 @@ const styles = StyleSheet.create({
     justifyContent: "space-between",
     padding: 16,
     borderBottomWidth: 1,
-    borderBottomColor: "#2D3139",
+    borderBottomColor: color.border,
   },
   headerTitle: {
-    color: "#fff",
+    color: color.textWhite,
     fontSize: 20,
     fontWeight: "bold",
   },
@@ -279,7 +280,7 @@ const styles = StyleSheet.create({
     gap: 8,
   },
   webNoticeText: {
-    color: "#F59E0B",
+    color: color.warning,
     fontSize: 14,
     flex: 1,
   },
@@ -287,7 +288,7 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "space-between",
-    backgroundColor: "#1A1D21",
+    backgroundColor: color.surface,
     padding: 16,
     margin: 16,
     borderRadius: 12,
@@ -301,19 +302,19 @@ const styles = StyleSheet.create({
     gap: 2,
   },
   mainToggleTitle: {
-    color: "#fff",
+    color: color.textWhite,
     fontSize: 18,
     fontWeight: "600",
   },
   mainToggleDescription: {
-    color: "#D1D5DB",
+    color: color.textMuted,
     fontSize: 14,
   },
   settingsList: {
     padding: 16,
   },
   sectionTitle: {
-    color: "#D1D5DB",
+    color: color.textMuted,
     fontSize: 13,
     fontWeight: "600",
     textTransform: "uppercase",
@@ -322,7 +323,7 @@ const styles = StyleSheet.create({
   settingItem: {
     flexDirection: "row",
     alignItems: "center",
-    backgroundColor: "#1A1D21",
+    backgroundColor: color.surface,
     padding: 12,
     borderRadius: 12,
     marginBottom: 8,
@@ -343,23 +344,23 @@ const styles = StyleSheet.create({
     gap: 2,
   },
   settingTitle: {
-    color: "#fff",
+    color: color.textWhite,
     fontSize: 16,
     fontWeight: "500",
   },
   settingDescription: {
-    color: "#D1D5DB",
+    color: color.textMuted,
     fontSize: 13,
   },
   textDisabled: {
-    color: "#CBD5E0",
+    color: color.textSubtle,
   },
   footer: {
     padding: 16,
     marginTop: "auto",
   },
   footerText: {
-    color: "#CBD5E0",
+    color: color.textSubtle,
     fontSize: 13,
     textAlign: "center",
     lineHeight: 18,

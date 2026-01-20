@@ -1,4 +1,5 @@
 import { FlatList, Text, View, TouchableOpacity, RefreshControl, Platform } from "react-native";
+import { color, palette } from "@/theme/tokens";
 import { Image } from "expo-image";
 import { useRouter, useLocalSearchParams } from "expo-router";
 import { useState } from "react";
@@ -39,8 +40,8 @@ export default function FollowersScreen() {
             onPress={() => router.back()}
             style={{ flexDirection: "row", alignItems: "center" }}
           >
-            <MaterialIcons name="arrow-back" size={24} color="#fff" />
-            <Text style={{ color: "#fff", marginLeft: 8 }}>戻る</Text>
+            <MaterialIcons name="arrow-back" size={24} color={color.textWhite} />
+            <Text style={{ color: color.textWhite, marginLeft: 8 }}>戻る</Text>
           </TouchableOpacity>
         }
       />
@@ -48,16 +49,16 @@ export default function FollowersScreen() {
         paddingHorizontal: 16, 
         paddingVertical: 12,
         borderBottomWidth: 1,
-        borderBottomColor: "#2D3139",
+        borderBottomColor: color.border,
       }}>
-        <Text style={{ color: "#fff", fontSize: 18, fontWeight: "bold" }}>
+        <Text style={{ color: color.textWhite, fontSize: 18, fontWeight: "bold" }}>
           フォロワー
         </Text>
       </View>
 
       {isLoading ? (
         <View style={{ flex: 1, alignItems: "center", justifyContent: "center" }}>
-          <Text style={{ color: "#D1D5DB" }}>読み込み中...</Text>
+          <Text style={{ color: color.textMuted }}>読み込み中...</Text>
         </View>
       ) : followers && followers.length > 0 ? (
         <FlatList
@@ -77,7 +78,7 @@ export default function FollowersScreen() {
                 paddingHorizontal: 16,
                 paddingVertical: 14,
                 borderBottomWidth: 1,
-                borderBottomColor: "#2D3139",
+                borderBottomColor: color.border,
               }}
             >
               {item.followerImage ? (
@@ -90,30 +91,30 @@ export default function FollowersScreen() {
                   width: 48,
                   height: 48,
                   borderRadius: 24,
-                  backgroundColor: "#EC4899",
+                  backgroundColor: color.accentPrimary,
                   alignItems: "center",
                   justifyContent: "center",
                 }}>
-                  <Text style={{ color: "#fff", fontSize: 20, fontWeight: "bold" }}>
+                  <Text style={{ color: color.textWhite, fontSize: 20, fontWeight: "bold" }}>
                     {(item.followerName || "?")[0]}
                   </Text>
                 </View>
               )}
               
               <View style={{ flex: 1, marginLeft: 12 }}>
-                <Text style={{ color: "#fff", fontSize: 16, fontWeight: "600" }}>
+                <Text style={{ color: color.textWhite, fontSize: 16, fontWeight: "600" }}>
                   {item.followerName || "不明なユーザー"}
                 </Text>
-                <Text style={{ color: "#D1D5DB", fontSize: 12, marginTop: 2 }}>
+                <Text style={{ color: color.textMuted, fontSize: 12, marginTop: 2 }}>
                   {new Date(item.createdAt).toLocaleDateString("ja-JP")} からフォロー
                 </Text>
               </View>
               
-              <MaterialIcons name="chevron-right" size={24} color="#D1D5DB" />
+              <MaterialIcons name="chevron-right" size={24} color={color.textMuted} />
             </TouchableOpacity>
           )}
           refreshControl={
-            <RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor="#DD6500" />
+            <RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={color.hostAccentLegacy} />
           }
           contentContainerStyle={{ paddingBottom: 100 }}
           // パフォーマンス最適化
@@ -125,11 +126,11 @@ export default function FollowersScreen() {
         />
       ) : (
         <View style={{ flex: 1, alignItems: "center", justifyContent: "center", padding: 32 }}>
-          <MaterialIcons name="people-outline" size={64} color="#CBD5E0" />
-          <Text style={{ color: "#fff", fontSize: 18, fontWeight: "bold", marginTop: 16, marginBottom: 8 }}>
+          <MaterialIcons name="people-outline" size={64} color={color.textSubtle} />
+          <Text style={{ color: color.textWhite, fontSize: 18, fontWeight: "bold", marginTop: 16, marginBottom: 8 }}>
             まだフォロワーがいません
           </Text>
-          <Text style={{ color: "#D1D5DB", fontSize: 14, textAlign: "center" }}>
+          <Text style={{ color: color.textMuted, fontSize: 14, textAlign: "center" }}>
             チャレンジを作成して{"\n"}フォロワーを増やしましょう
           </Text>
         </View>

@@ -1,4 +1,5 @@
 import { Text, View, TouchableOpacity, ScrollView, Switch, ActivityIndicator } from "react-native";
+import { color, palette } from "@/theme/tokens";
 import { useRouter } from "expo-router";
 import { useState, useEffect } from "react";
 import { ScreenContainer } from "@/components/organisms/screen-container";
@@ -83,17 +84,17 @@ export default function NotificationsScreen() {
   const getNotificationColor = (type: string) => {
     switch (type) {
       case "goal_reached":
-        return "#FFD700";
+        return color.rankGold;
       case "milestone_25":
-        return "#4ADE80";
+        return color.successLight;
       case "milestone_50":
-        return "#60A5FA";
+        return color.blue400;
       case "milestone_75":
-        return "#A78BFA";
+        return color.purple400;
       case "new_participant":
-        return "#EC4899";
+        return color.accentPrimary;
       default:
-        return "#D1D5DB";
+        return color.textMuted;
     }
   };
 
@@ -101,8 +102,8 @@ export default function NotificationsScreen() {
     return (
       <ScreenContainer edges={["top", "left", "right"]} containerClassName="bg-background">
         <View style={{ flex: 1, alignItems: "center", justifyContent: "center", padding: 24 }}>
-          <MaterialIcons name="notifications-off" size={64} color="#CBD5E0" />
-          <Text style={{ color: "#D1D5DB", fontSize: 16, marginTop: 16, textAlign: "center" }}>
+          <MaterialIcons name="notifications-off" size={64} color={color.textSubtle} />
+          <Text style={{ color: color.textMuted, fontSize: 16, marginTop: 16, textAlign: "center" }}>
             通知を受け取るにはログインが必要です
           </Text>
         </View>
@@ -135,7 +136,7 @@ export default function NotificationsScreen() {
             {unreadCount > 0 && (
               <View
                 style={{
-                  backgroundColor: "#EC4899",
+                  backgroundColor: color.accentPrimary,
                   borderRadius: 12,
                   paddingHorizontal: 8,
                   paddingVertical: 2,
@@ -152,13 +153,13 @@ export default function NotificationsScreen() {
               <TouchableOpacity
                 onPress={() => markAllAsReadMutation.mutate()}
                 style={{
-                  backgroundColor: "#1A1D21",
+                  backgroundColor: color.surface,
                   borderRadius: 8,
                   paddingHorizontal: 12,
                   paddingVertical: 8,
                 }}
               >
-                <Text style={{ color: "#EC4899", fontSize: 12 }}>すべて既読</Text>
+                <Text style={{ color: color.accentPrimary, fontSize: 12 }}>すべて既読</Text>
               </TouchableOpacity>
             )}
           </View>
@@ -168,22 +169,22 @@ export default function NotificationsScreen() {
         {Platform.OS !== "web" && !notificationPermission && (
           <View
             style={{
-              backgroundColor: "#1A1D21",
+              backgroundColor: color.surface,
               borderRadius: 12,
               padding: 16,
               marginHorizontal: 16,
               marginBottom: 16,
               borderWidth: 1,
-              borderColor: "#F59E0B",
+              borderColor: color.warning,
             }}
           >
             <View style={{ flexDirection: "row", alignItems: "center" }}>
-              <MaterialIcons name="warning" size={24} color="#F59E0B" />
+              <MaterialIcons name="warning" size={24} color={color.warning} />
               <View style={{ flex: 1, marginLeft: 12 }}>
                 <Text style={{ color: colors.foreground, fontSize: 14, fontWeight: "bold" }}>
                   プッシュ通知が無効です
                 </Text>
-                <Text style={{ color: "#D1D5DB", fontSize: 12, marginTop: 4 }}>
+                <Text style={{ color: color.textMuted, fontSize: 12, marginTop: 4 }}>
                   設定からプッシュ通知を有効にしてください
                 </Text>
               </View>
@@ -195,7 +196,7 @@ export default function NotificationsScreen() {
         <View style={{ paddingHorizontal: 16 }}>
           {isLoading ? (
             <View style={{ alignItems: "center", paddingVertical: 40 }}>
-              <ActivityIndicator size="large" color="#EC4899" />
+              <ActivityIndicator size="large" color={color.accentPrimary} />
             </View>
           ) : notificationList && notificationList.length > 0 ? (
             notificationList.map((notification) => (
@@ -208,12 +209,12 @@ export default function NotificationsScreen() {
                   router.push(`/event/${notification.challengeId}`);
                 }}
                 style={{
-                  backgroundColor: notification.isRead ? "#1A1D21" : "#1E2530",
+                  backgroundColor: notification.isRead ? color.surface : "#1E2530",
                   borderRadius: 12,
                   padding: 16,
                   marginBottom: 12,
                   borderWidth: 1,
-                  borderColor: notification.isRead ? "#2D3139" : "#EC4899",
+                  borderColor: notification.isRead ? color.border : color.accentPrimary,
                 }}
               >
                 <View style={{ flexDirection: "row", alignItems: "flex-start" }}>
@@ -237,10 +238,10 @@ export default function NotificationsScreen() {
                     <Text style={{ color: colors.foreground, fontSize: 14, fontWeight: "bold" }}>
                       {notification.title}
                     </Text>
-                    <Text style={{ color: "#D1D5DB", fontSize: 13, marginTop: 4, lineHeight: 18 }}>
+                    <Text style={{ color: color.textMuted, fontSize: 13, marginTop: 4, lineHeight: 18 }}>
                       {notification.body}
                     </Text>
-                    <Text style={{ color: "#CBD5E0", fontSize: 11, marginTop: 8 }}>
+                    <Text style={{ color: color.textSubtle, fontSize: 11, marginTop: 8 }}>
                       {new Date(notification.sentAt).toLocaleString("ja-JP")}
                     </Text>
                   </View>
@@ -250,7 +251,7 @@ export default function NotificationsScreen() {
                         width: 8,
                         height: 8,
                         borderRadius: 4,
-                        backgroundColor: "#EC4899",
+                        backgroundColor: color.accentPrimary,
                       }}
                     />
                   )}
@@ -259,8 +260,8 @@ export default function NotificationsScreen() {
             ))
           ) : (
             <View style={{ alignItems: "center", paddingVertical: 40 }}>
-              <MaterialIcons name="notifications-none" size={64} color="#CBD5E0" />
-              <Text style={{ color: "#D1D5DB", fontSize: 16, marginTop: 16 }}>
+              <MaterialIcons name="notifications-none" size={64} color={color.textSubtle} />
+              <Text style={{ color: color.textMuted, fontSize: 16, marginTop: 16 }}>
                 通知はありません
               </Text>
             </View>

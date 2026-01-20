@@ -1,4 +1,5 @@
 import { View, Text, TouchableOpacity, StyleSheet, Dimensions } from "react-native";
+import { color, palette } from "@/theme/tokens";
 import { useEffect } from "react";
 import Animated, {
   FadeIn,
@@ -152,7 +153,7 @@ export function UserTypeSelector({ visible, onSelect, onSkip }: UserTypeSelector
                 onPressIn={() => handlePressIn("fan")}
                 onPressOut={() => handlePressOut("fan")}
                 onPress={() => handleSelect("fan")}
-                style={[styles.optionCard, { backgroundColor: "#EC4899" }]}
+                style={[styles.optionCard, { backgroundColor: color.accentPrimary }]}
                 activeOpacity={1}
               >
                 <View style={styles.optionImageContainer}>
@@ -176,7 +177,7 @@ export function UserTypeSelector({ visible, onSelect, onSkip }: UserTypeSelector
                 onPressIn={() => handlePressIn("host")}
                 onPressOut={() => handlePressOut("host")}
                 onPress={() => handleSelect("host")}
-                style={[styles.optionCard, { backgroundColor: "#DD6500" }]}
+                style={[styles.optionCard, { backgroundColor: color.hostAccentLegacy }]}
                 activeOpacity={1}
               >
                 <View style={styles.optionImageContainer}>
@@ -238,7 +239,7 @@ const styles = StyleSheet.create({
   sparkle: {
     position: "absolute",
     fontSize: 20,
-    color: "#FFD700",
+    color: color.rankGold,
   },
   sparkle1: {
     top: -10,
@@ -253,7 +254,7 @@ const styles = StyleSheet.create({
     right: -20,
   },
   title: {
-    color: "#FFFFFF",
+    color: color.textWhite,
     fontSize: 32,
     fontWeight: "bold",
     marginBottom: 8,
@@ -296,7 +297,7 @@ const styles = StyleSheet.create({
     height: 60,
   },
   optionTitle: {
-    color: "#FFFFFF",
+    color: color.textWhite,
     fontSize: 20,
     fontWeight: "bold",
     marginBottom: 4,
@@ -314,7 +315,7 @@ const styles = StyleSheet.create({
     borderRadius: 10,
   },
   optionBadgeText: {
-    color: "#FFFFFF",
+    color: color.textWhite,
     fontSize: 10,
     fontWeight: "600",
   },

@@ -1,4 +1,5 @@
 import { View, Text, Pressable, StyleSheet, Dimensions, ScrollView } from "react-native";
+import { color, palette } from "@/theme/tokens";
 import { Image } from "expo-image";
 import Animated, { 
   FadeIn, 
@@ -30,19 +31,19 @@ function PreviewContent({ type }: { type: ExperienceSlide["previewType"] }) {
               <Text style={styles.mapTitle}>地域別参加者</Text>
             </View>
             <View style={styles.mapGrid}>
-              <View style={[styles.mapRegion, { backgroundColor: "#EC4899" }]}>
+              <View style={[styles.mapRegion, { backgroundColor: color.accentPrimary }]}>
                 <Text style={styles.mapRegionName}>東京</Text>
                 <Text style={styles.mapRegionCount}>25人</Text>
               </View>
-              <View style={[styles.mapRegion, { backgroundColor: "#8B5CF6" }]}>
+              <View style={[styles.mapRegion, { backgroundColor: color.accentAlt }]}>
                 <Text style={styles.mapRegionName}>大阪</Text>
                 <Text style={styles.mapRegionCount}>18人</Text>
               </View>
-              <View style={[styles.mapRegion, { backgroundColor: "#3B82F6" }]}>
+              <View style={[styles.mapRegion, { backgroundColor: color.info }]}>
                 <Text style={styles.mapRegionName}>福岡</Text>
                 <Text style={styles.mapRegionCount}>12人</Text>
               </View>
-              <View style={[styles.mapRegion, { backgroundColor: "#10B981" }]}>
+              <View style={[styles.mapRegion, { backgroundColor: color.successDark }]}>
                 <Text style={styles.mapRegionName}>北海道</Text>
                 <Text style={styles.mapRegionCount}>8人</Text>
               </View>
@@ -55,21 +56,21 @@ function PreviewContent({ type }: { type: ExperienceSlide["previewType"] }) {
         <View style={styles.previewContainer}>
           <View style={styles.participantRow}>
             <View style={styles.participantCard}>
-              <View style={[styles.participantAvatar, { backgroundColor: "#EC4899" }]}>
+              <View style={[styles.participantAvatar, { backgroundColor: color.accentPrimary }]}>
                 <Text style={styles.participantInitial}>田</Text>
               </View>
               <Text style={styles.participantName}>田中さん</Text>
               <Text style={styles.participantPref}>東京都</Text>
             </View>
             <View style={styles.participantCard}>
-              <View style={[styles.participantAvatar, { backgroundColor: "#8B5CF6" }]}>
+              <View style={[styles.participantAvatar, { backgroundColor: color.accentAlt }]}>
                 <Text style={styles.participantInitial}>佐</Text>
               </View>
               <Text style={styles.participantName}>佐藤さん</Text>
               <Text style={styles.participantPref}>千葉県</Text>
             </View>
             <View style={styles.participantCard}>
-              <View style={[styles.participantAvatar, { backgroundColor: "#3B82F6" }]}>
+              <View style={[styles.participantAvatar, { backgroundColor: color.info }]}>
                 <Text style={styles.participantInitial}>鈴</Text>
               </View>
               <Text style={styles.participantName}>鈴木さん</Text>
@@ -85,19 +86,19 @@ function PreviewContent({ type }: { type: ExperienceSlide["previewType"] }) {
             <Text style={styles.chartTitle}>カテゴリ別チャレンジ</Text>
             <View style={styles.chartBars}>
               <View style={styles.chartBarItem}>
-                <View style={[styles.chartBarFill, { height: 60, backgroundColor: "#EC4899" }]} />
+                <View style={[styles.chartBarFill, { height: 60, backgroundColor: color.accentPrimary }]} />
                 <Text style={styles.chartBarLabel}>アイドル</Text>
               </View>
               <View style={styles.chartBarItem}>
-                <View style={[styles.chartBarFill, { height: 45, backgroundColor: "#8B5CF6" }]} />
+                <View style={[styles.chartBarFill, { height: 45, backgroundColor: color.accentAlt }]} />
                 <Text style={styles.chartBarLabel}>バンド</Text>
               </View>
               <View style={styles.chartBarItem}>
-                <View style={[styles.chartBarFill, { height: 35, backgroundColor: "#3B82F6" }]} />
+                <View style={[styles.chartBarFill, { height: 35, backgroundColor: color.info }]} />
                 <Text style={styles.chartBarLabel}>VTuber</Text>
               </View>
               <View style={styles.chartBarItem}>
-                <View style={[styles.chartBarFill, { height: 25, backgroundColor: "#10B981" }]} />
+                <View style={[styles.chartBarFill, { height: 25, backgroundColor: color.successDark }]} />
                 <Text style={styles.chartBarLabel}>その他</Text>
               </View>
             </View>
@@ -133,7 +134,7 @@ function PreviewContent({ type }: { type: ExperienceSlide["previewType"] }) {
       return (
         <View style={styles.commentPreview}>
           <View style={styles.commentHeader}>
-            <View style={[styles.commentAvatar, { backgroundColor: "#EC4899" }]}>
+            <View style={[styles.commentAvatar, { backgroundColor: color.accentPrimary }]}>
               <Text style={styles.commentAvatarText}>M</Text>
             </View>
             <View>
@@ -204,7 +205,7 @@ function PreviewContent({ type }: { type: ExperienceSlide["previewType"] }) {
       return (
         <View style={styles.profilePreview}>
           <View style={styles.profileHeader}>
-            <View style={[styles.profileAvatar, { backgroundColor: "#8B5CF6" }]}>
+            <View style={[styles.profileAvatar, { backgroundColor: color.accentAlt }]}>
               <Text style={styles.profileAvatarText}>M</Text>
             </View>
             <View style={styles.profileInfo}>
@@ -222,7 +223,7 @@ function PreviewContent({ type }: { type: ExperienceSlide["previewType"] }) {
       return (
         <View style={styles.profilePreview}>
           <View style={styles.profileHeader}>
-            <View style={[styles.profileAvatar, { backgroundColor: "#FFD700" }]}>
+            <View style={[styles.profileAvatar, { backgroundColor: color.rankGold }]}>
               <Text style={styles.profileAvatarText}>S</Text>
             </View>
             <View style={styles.profileInfo}>
@@ -233,7 +234,7 @@ function PreviewContent({ type }: { type: ExperienceSlide["previewType"] }) {
               <Text style={styles.profileFollowers}>フォロワー 12,500人</Text>
             </View>
           </View>
-          <View style={[styles.followButton, { backgroundColor: "#FFD700" }]}>
+          <View style={[styles.followButton, { backgroundColor: color.rankGold }]}>
             <Text style={[styles.followButtonText, { color: "#1a1a2e" }]}>フォローする</Text>
           </View>
         </View>
@@ -243,20 +244,20 @@ function PreviewContent({ type }: { type: ExperienceSlide["previewType"] }) {
         <View style={styles.genderPreview}>
           <Text style={styles.genderTitle}>参加者の男女比</Text>
           <View style={styles.genderChart}>
-            <View style={[styles.genderBar, { flex: 6, backgroundColor: "#3B82F6" }]}>
+            <View style={[styles.genderBar, { flex: 6, backgroundColor: color.info }]}>
               <Text style={styles.genderText}>男性 60%</Text>
             </View>
-            <View style={[styles.genderBar, { flex: 4, backgroundColor: "#EC4899" }]}>
+            <View style={[styles.genderBar, { flex: 4, backgroundColor: color.accentPrimary }]}>
               <Text style={styles.genderText}>女性 40%</Text>
             </View>
           </View>
           <View style={styles.genderLegend}>
             <View style={styles.genderLegendItem}>
-              <View style={[styles.genderLegendDot, { backgroundColor: "#3B82F6" }]} />
+              <View style={[styles.genderLegendDot, { backgroundColor: color.info }]} />
               <Text style={styles.genderLegendText}>男性: 60人</Text>
             </View>
             <View style={styles.genderLegendItem}>
-              <View style={[styles.genderLegendDot, { backgroundColor: "#EC4899" }]} />
+              <View style={[styles.genderLegendDot, { backgroundColor: color.accentPrimary }]} />
               <Text style={styles.genderLegendText}>女性: 40人</Text>
             </View>
           </View>
@@ -273,7 +274,7 @@ function PreviewContent({ type }: { type: ExperienceSlide["previewType"] }) {
           </View>
           <Text style={styles.challengeCardTitle}>りんくの100人動員チャレンジ</Text>
           <View style={styles.challengeCardHost}>
-            <View style={[styles.challengeCardAvatar, { backgroundColor: "#EC4899" }]}>
+            <View style={[styles.challengeCardAvatar, { backgroundColor: color.accentPrimary }]}>
               <Text style={styles.challengeCardAvatarText}>り</Text>
             </View>
             <Text style={styles.challengeCardHostName}>@kimito_link</Text>
@@ -362,10 +363,10 @@ function PreviewContent({ type }: { type: ExperienceSlide["previewType"] }) {
         <View style={styles.sharePreview}>
           <Text style={styles.shareTitle}>SNSでシェア</Text>
           <View style={styles.shareButtons}>
-            <View style={[styles.shareButton, { backgroundColor: "#1DA1F2" }]}>
+            <View style={[styles.shareButton, { backgroundColor: color.twitter }]}>
               <Text style={styles.shareButtonText}>𝕏 でシェア</Text>
             </View>
-            <View style={[styles.shareButton, { backgroundColor: "#06C755" }]}>
+            <View style={[styles.shareButton, { backgroundColor: color.line }]}>
               <Text style={styles.shareButtonText}>LINE</Text>
             </View>
           </View>
@@ -381,7 +382,7 @@ function PreviewContent({ type }: { type: ExperienceSlide["previewType"] }) {
           <View style={styles.rankingList}>
             <View style={styles.rankingItem}>
               <Text style={styles.rankingPosition}>🥇</Text>
-              <View style={[styles.rankingAvatar, { backgroundColor: "#FFD700" }]}>
+              <View style={[styles.rankingAvatar, { backgroundColor: color.rankGold }]}>
                 <Text style={styles.rankingAvatarText}>S</Text>
               </View>
               <Text style={styles.rankingName}>@super_fan</Text>
@@ -389,7 +390,7 @@ function PreviewContent({ type }: { type: ExperienceSlide["previewType"] }) {
             </View>
             <View style={styles.rankingItem}>
               <Text style={styles.rankingPosition}>🥈</Text>
-              <View style={[styles.rankingAvatar, { backgroundColor: "#C0C0C0" }]}>
+              <View style={[styles.rankingAvatar, { backgroundColor: color.rankSilver }]}>
                 <Text style={styles.rankingAvatarText}>M</Text>
               </View>
               <Text style={styles.rankingName}>@music_lover</Text>
@@ -397,7 +398,7 @@ function PreviewContent({ type }: { type: ExperienceSlide["previewType"] }) {
             </View>
             <View style={[styles.rankingItem, styles.rankingItemHighlight]}>
               <Text style={styles.rankingPosition}>5</Text>
-              <View style={[styles.rankingAvatar, { backgroundColor: "#EC4899" }]}>
+              <View style={[styles.rankingAvatar, { backgroundColor: color.accentPrimary }]}>
                 <Text style={styles.rankingAvatarText}>あ</Text>
               </View>
               <Text style={styles.rankingName}>あなた</Text>
@@ -756,11 +757,11 @@ const styles = StyleSheet.create({
   title: {
     fontSize: 18,
     fontWeight: "bold",
-    color: "#ffffff",
+    color: color.textWhite,
   },
   stepTitle: {
     fontSize: 12,
-    color: "#FF6B9D",
+    color: color.hotPink,
     marginTop: 4,
     fontWeight: "600",
   },
@@ -773,7 +774,7 @@ const styles = StyleSheet.create({
     alignItems: "center",
   },
   closeButtonText: {
-    color: "#ffffff",
+    color: color.textWhite,
     fontSize: 16,
   },
   progressContainer: {
@@ -791,7 +792,7 @@ const styles = StyleSheet.create({
   },
   progressBarFillHeader: {
     height: "100%",
-    backgroundColor: "#FF6B9D",
+    backgroundColor: color.hotPink,
     borderRadius: 2,
   },
   progressText: {
@@ -841,12 +842,12 @@ const styles = StyleSheet.create({
   },
   thoughtText: {
     fontSize: 14,
-    color: "#ffffff",
+    color: color.textWhite,
     lineHeight: 22,
     fontStyle: "italic",
   },
   speechBubble: {
-    backgroundColor: "#ffffff",
+    backgroundColor: color.textWhite,
     borderRadius: 20,
     paddingHorizontal: 24,
     paddingVertical: 16,
@@ -885,7 +886,7 @@ const styles = StyleSheet.create({
   mapTitle: {
     fontSize: 14,
     fontWeight: "bold",
-    color: "#ffffff",
+    color: color.textWhite,
   },
   mapGrid: {
     flexDirection: "row",
@@ -900,12 +901,12 @@ const styles = StyleSheet.create({
   },
   mapRegionName: {
     fontSize: 12,
-    color: "#ffffff",
+    color: color.textWhite,
     fontWeight: "bold",
   },
   mapRegionCount: {
     fontSize: 16,
-    color: "#ffffff",
+    color: color.textWhite,
     fontWeight: "bold",
     marginTop: 4,
   },
@@ -933,11 +934,11 @@ const styles = StyleSheet.create({
   participantInitial: {
     fontSize: 16,
     fontWeight: "bold",
-    color: "#ffffff",
+    color: color.textWhite,
   },
   participantName: {
     fontSize: 12,
-    color: "#ffffff",
+    color: color.textWhite,
     fontWeight: "bold",
   },
   participantPref: {
@@ -953,7 +954,7 @@ const styles = StyleSheet.create({
   chartTitle: {
     fontSize: 14,
     fontWeight: "bold",
-    color: "#ffffff",
+    color: color.textWhite,
     marginBottom: 12,
   },
   chartBars: {
@@ -977,7 +978,7 @@ const styles = StyleSheet.create({
   
   // Notification preview
   notificationPreview: {
-    backgroundColor: "#ffffff",
+    backgroundColor: color.textWhite,
     borderRadius: 12,
     padding: 16,
     flexDirection: "row",
@@ -990,7 +991,7 @@ const styles = StyleSheet.create({
     width: 48,
     height: 48,
     borderRadius: 24,
-    backgroundColor: "#EC4899",
+    backgroundColor: color.accentPrimary,
     justifyContent: "center",
     alignItems: "center",
   },
@@ -1025,7 +1026,7 @@ const styles = StyleSheet.create({
     width: 64,
     height: 64,
     borderRadius: 32,
-    backgroundColor: "#FFD700",
+    backgroundColor: color.rankGold,
     justifyContent: "center",
     alignItems: "center",
     marginBottom: 12,
@@ -1036,7 +1037,7 @@ const styles = StyleSheet.create({
   badgeTitle: {
     fontSize: 16,
     fontWeight: "bold",
-    color: "#ffffff",
+    color: color.textWhite,
     marginBottom: 4,
   },
   badgeDesc: {
@@ -1066,7 +1067,7 @@ const styles = StyleSheet.create({
   },
   badgeName: {
     fontSize: 10,
-    color: "#ffffff",
+    color: color.textWhite,
   },
   
   // Comment preview
@@ -1093,12 +1094,12 @@ const styles = StyleSheet.create({
   commentAvatarText: {
     fontSize: 16,
     fontWeight: "bold",
-    color: "#ffffff",
+    color: color.textWhite,
   },
   commentName: {
     fontSize: 14,
     fontWeight: "bold",
-    color: "#ffffff",
+    color: color.textWhite,
   },
   commentTime: {
     fontSize: 10,
@@ -1106,7 +1107,7 @@ const styles = StyleSheet.create({
   },
   commentText: {
     fontSize: 14,
-    color: "#ffffff",
+    color: color.textWhite,
     lineHeight: 22,
   },
   
@@ -1118,7 +1119,7 @@ const styles = StyleSheet.create({
   inviteTitle: {
     fontSize: 16,
     fontWeight: "bold",
-    color: "#ffffff",
+    color: color.textWhite,
     marginBottom: 16,
   },
   inviteCounter: {
@@ -1136,11 +1137,11 @@ const styles = StyleSheet.create({
     alignItems: "center",
   },
   inviteButtonActive: {
-    backgroundColor: "#4ADE80",
+    backgroundColor: color.successLight,
   },
   inviteButtonText: {
     fontSize: 24,
-    color: "#ffffff",
+    color: color.textWhite,
     fontWeight: "bold",
   },
   inviteButtonTextActive: {
@@ -1149,7 +1150,7 @@ const styles = StyleSheet.create({
   inviteCount: {
     fontSize: 32,
     fontWeight: "bold",
-    color: "#4ADE80",
+    color: color.successLight,
   },
   inviteDesc: {
     fontSize: 12,
@@ -1181,7 +1182,7 @@ const styles = StyleSheet.create({
   },
   formInputText: {
     fontSize: 14,
-    color: "#ffffff",
+    color: color.textWhite,
   },
   formSelect: {
     backgroundColor: "rgba(255, 255, 255, 0.1)",
@@ -1195,7 +1196,7 @@ const styles = StyleSheet.create({
   },
   formSelectText: {
     fontSize: 14,
-    color: "#ffffff",
+    color: color.textWhite,
   },
   formSelectArrow: {
     fontSize: 12,
@@ -1206,7 +1207,7 @@ const styles = StyleSheet.create({
   prefectureTitle: {
     fontSize: 14,
     fontWeight: "bold",
-    color: "#ffffff",
+    color: color.textWhite,
     marginBottom: 12,
   },
   prefectureGrid: {
@@ -1224,8 +1225,8 @@ const styles = StyleSheet.create({
     borderColor: "rgba(255, 255, 255, 0.2)",
   },
   prefectureButtonSelected: {
-    backgroundColor: "#EC4899",
-    borderColor: "#EC4899",
+    backgroundColor: color.accentPrimary,
+    borderColor: color.accentPrimary,
   },
   prefectureText: {
     fontSize: 14,
@@ -1233,7 +1234,7 @@ const styles = StyleSheet.create({
   },
   prefectureTextSelected: {
     fontSize: 14,
-    color: "#ffffff",
+    color: color.textWhite,
     fontWeight: "bold",
   },
   
@@ -1261,7 +1262,7 @@ const styles = StyleSheet.create({
   profileAvatarText: {
     fontSize: 20,
     fontWeight: "bold",
-    color: "#ffffff",
+    color: color.textWhite,
   },
   profileInfo: {
     flex: 1,
@@ -1269,7 +1270,7 @@ const styles = StyleSheet.create({
   profileName: {
     fontSize: 14,
     fontWeight: "bold",
-    color: "#ffffff",
+    color: color.textWhite,
   },
   profileBio: {
     fontSize: 12,
@@ -1278,7 +1279,7 @@ const styles = StyleSheet.create({
   },
   profileFollowers: {
     fontSize: 12,
-    color: "#FFD700",
+    color: color.rankGold,
     marginTop: 4,
   },
   influencerBadge: {
@@ -1291,11 +1292,11 @@ const styles = StyleSheet.create({
   },
   influencerBadgeText: {
     fontSize: 10,
-    color: "#FFD700",
+    color: color.rankGold,
     fontWeight: "bold",
   },
   followButton: {
-    backgroundColor: "#1DA1F2",
+    backgroundColor: color.twitter,
     borderRadius: 20,
     paddingVertical: 10,
     alignItems: "center",
@@ -1303,7 +1304,7 @@ const styles = StyleSheet.create({
   followButtonText: {
     fontSize: 14,
     fontWeight: "bold",
-    color: "#ffffff",
+    color: color.textWhite,
   },
   
   // Gender preview
@@ -1314,7 +1315,7 @@ const styles = StyleSheet.create({
   genderTitle: {
     fontSize: 14,
     fontWeight: "bold",
-    color: "#ffffff",
+    color: color.textWhite,
     marginBottom: 12,
     textAlign: "center",
   },
@@ -1332,7 +1333,7 @@ const styles = StyleSheet.create({
   genderText: {
     fontSize: 12,
     fontWeight: "bold",
-    color: "#ffffff",
+    color: color.textWhite,
   },
   genderLegend: {
     flexDirection: "row",
@@ -1372,7 +1373,7 @@ const styles = StyleSheet.create({
   },
   challengeCardCategory: {
     fontSize: 12,
-    color: "#EC4899",
+    color: color.accentPrimary,
     backgroundColor: "rgba(236, 72, 153, 0.2)",
     paddingHorizontal: 8,
     paddingVertical: 4,
@@ -1380,7 +1381,7 @@ const styles = StyleSheet.create({
   },
   challengeCardDays: {
     fontSize: 12,
-    color: "#ffffff",
+    color: color.textWhite,
     backgroundColor: "rgba(255, 255, 255, 0.2)",
     paddingHorizontal: 8,
     paddingVertical: 4,
@@ -1389,7 +1390,7 @@ const styles = StyleSheet.create({
   challengeCardTitle: {
     fontSize: 16,
     fontWeight: "bold",
-    color: "#ffffff",
+    color: color.textWhite,
     marginBottom: 12,
   },
   challengeCardHost: {
@@ -1408,7 +1409,7 @@ const styles = StyleSheet.create({
   challengeCardAvatarText: {
     fontSize: 12,
     fontWeight: "bold",
-    color: "#ffffff",
+    color: color.textWhite,
   },
   challengeCardHostName: {
     fontSize: 12,
@@ -1425,13 +1426,13 @@ const styles = StyleSheet.create({
   },
   challengeCardProgressFill: {
     height: "100%",
-    backgroundColor: "#4ADE80",
+    backgroundColor: color.successLight,
     borderRadius: 4,
   },
   challengeCardProgressText: {
     fontSize: 14,
     fontWeight: "bold",
-    color: "#ffffff",
+    color: color.textWhite,
     textAlign: "center",
   },
   
@@ -1443,7 +1444,7 @@ const styles = StyleSheet.create({
   progressBarTitle: {
     fontSize: 14,
     fontWeight: "bold",
-    color: "#ffffff",
+    color: color.textWhite,
     marginBottom: 12,
     textAlign: "center",
   },
@@ -1459,7 +1460,7 @@ const styles = StyleSheet.create({
   },
   progressBarFill: {
     height: "100%",
-    backgroundColor: "#4ADE80",
+    backgroundColor: color.successLight,
     borderRadius: 8,
   },
   progressBarLabels: {
@@ -1470,7 +1471,7 @@ const styles = StyleSheet.create({
   progressBarCurrent: {
     fontSize: 24,
     fontWeight: "bold",
-    color: "#4ADE80",
+    color: color.successLight,
   },
   progressBarGoal: {
     fontSize: 16,
@@ -1491,7 +1492,7 @@ const styles = StyleSheet.create({
   },
   progressBarMilestoneText: {
     fontSize: 10,
-    color: "#ffffff",
+    color: color.textWhite,
   },
   
   // Countdown preview
@@ -1521,7 +1522,7 @@ const styles = StyleSheet.create({
   countdownNumber: {
     fontSize: 28,
     fontWeight: "bold",
-    color: "#ffffff",
+    color: color.textWhite,
   },
   countdownLabel: {
     fontSize: 10,
@@ -1547,7 +1548,7 @@ const styles = StyleSheet.create({
     width: 80,
     height: 80,
     borderRadius: 40,
-    backgroundColor: "#FFD700",
+    backgroundColor: color.rankGold,
     justifyContent: "center",
     alignItems: "center",
     marginBottom: 12,
@@ -1558,7 +1559,7 @@ const styles = StyleSheet.create({
   achievementTitle: {
     fontSize: 18,
     fontWeight: "bold",
-    color: "#ffffff",
+    color: color.textWhite,
     marginBottom: 4,
   },
   achievementDesc: {
@@ -1574,7 +1575,7 @@ const styles = StyleSheet.create({
   },
   achievementName: {
     fontSize: 12,
-    color: "#ffffff",
+    color: color.textWhite,
     backgroundColor: "rgba(255, 255, 255, 0.1)",
     paddingHorizontal: 8,
     paddingVertical: 4,
@@ -1596,7 +1597,7 @@ const styles = StyleSheet.create({
   shareTitle: {
     fontSize: 14,
     fontWeight: "bold",
-    color: "#ffffff",
+    color: color.textWhite,
     marginBottom: 12,
   },
   shareButtons: {
@@ -1612,7 +1613,7 @@ const styles = StyleSheet.create({
   shareButtonText: {
     fontSize: 14,
     fontWeight: "bold",
-    color: "#ffffff",
+    color: color.textWhite,
   },
   shareCard: {
     backgroundColor: "rgba(255, 255, 255, 0.1)",
@@ -1622,7 +1623,7 @@ const styles = StyleSheet.create({
   },
   shareCardText: {
     fontSize: 12,
-    color: "#ffffff",
+    color: color.textWhite,
     textAlign: "center",
   },
   
@@ -1634,7 +1635,7 @@ const styles = StyleSheet.create({
   rankingTitle: {
     fontSize: 14,
     fontWeight: "bold",
-    color: "#ffffff",
+    color: color.textWhite,
     marginBottom: 12,
     textAlign: "center",
   },
@@ -1652,12 +1653,12 @@ const styles = StyleSheet.create({
   rankingItemHighlight: {
     backgroundColor: "rgba(236, 72, 153, 0.3)",
     borderWidth: 1,
-    borderColor: "#EC4899",
+    borderColor: color.accentPrimary,
   },
   rankingPosition: {
     fontSize: 16,
     fontWeight: "bold",
-    color: "#ffffff",
+    color: color.textWhite,
     width: 24,
     textAlign: "center",
   },
@@ -1671,17 +1672,17 @@ const styles = StyleSheet.create({
   rankingAvatarText: {
     fontSize: 14,
     fontWeight: "bold",
-    color: "#ffffff",
+    color: color.textWhite,
   },
   rankingName: {
     flex: 1,
     fontSize: 14,
-    color: "#ffffff",
+    color: color.textWhite,
   },
   rankingScore: {
     fontSize: 14,
     fontWeight: "bold",
-    color: "#4ADE80",
+    color: color.successLight,
   },
   
   // DM preview
@@ -1692,7 +1693,7 @@ const styles = StyleSheet.create({
   dmTitle: {
     fontSize: 14,
     fontWeight: "bold",
-    color: "#ffffff",
+    color: color.textWhite,
     marginBottom: 12,
     textAlign: "center",
   },
@@ -1708,7 +1709,7 @@ const styles = StyleSheet.create({
     alignSelf: "flex-start",
   },
   dmMessageSent: {
-    backgroundColor: "#EC4899",
+    backgroundColor: color.accentPrimary,
     borderRadius: 12,
     borderTopRightRadius: 4,
     padding: 12,
@@ -1717,7 +1718,7 @@ const styles = StyleSheet.create({
   },
   dmMessageText: {
     fontSize: 14,
-    color: "#ffffff",
+    color: color.textWhite,
   },
   
   // Reminder preview
@@ -1728,7 +1729,7 @@ const styles = StyleSheet.create({
   reminderTitle: {
     fontSize: 14,
     fontWeight: "bold",
-    color: "#ffffff",
+    color: color.textWhite,
     marginBottom: 12,
     textAlign: "center",
   },
@@ -1745,7 +1746,7 @@ const styles = StyleSheet.create({
   },
   reminderOptionText: {
     fontSize: 14,
-    color: "#ffffff",
+    color: color.textWhite,
   },
   reminderToggle: {
     width: 44,
@@ -1755,13 +1756,13 @@ const styles = StyleSheet.create({
     padding: 2,
   },
   reminderToggleOn: {
-    backgroundColor: "#4ADE80",
+    backgroundColor: color.successLight,
   },
   reminderToggleKnob: {
     width: 20,
     height: 20,
     borderRadius: 10,
-    backgroundColor: "#ffffff",
+    backgroundColor: color.textWhite,
   },
   
   // Ticket preview
@@ -1772,7 +1773,7 @@ const styles = StyleSheet.create({
   ticketTitle: {
     fontSize: 14,
     fontWeight: "bold",
-    color: "#ffffff",
+    color: color.textWhite,
     marginBottom: 12,
     textAlign: "center",
   },
@@ -1790,15 +1791,15 @@ const styles = StyleSheet.create({
   },
   ticketType: {
     fontSize: 14,
-    color: "#ffffff",
+    color: color.textWhite,
   },
   ticketPrice: {
     fontSize: 16,
     fontWeight: "bold",
-    color: "#4ADE80",
+    color: color.successLight,
   },
   ticketButton: {
-    backgroundColor: "#EC4899",
+    backgroundColor: color.accentPrimary,
     borderRadius: 8,
     padding: 12,
     alignItems: "center",
@@ -1806,7 +1807,7 @@ const styles = StyleSheet.create({
   ticketButtonText: {
     fontSize: 14,
     fontWeight: "bold",
-    color: "#ffffff",
+    color: color.textWhite,
   },
   
   // Cheer preview
@@ -1818,7 +1819,7 @@ const styles = StyleSheet.create({
   cheerTitle: {
     fontSize: 14,
     fontWeight: "bold",
-    color: "#ffffff",
+    color: color.textWhite,
     marginBottom: 12,
   },
   cheerButtons: {
@@ -1838,7 +1839,7 @@ const styles = StyleSheet.create({
   },
   cheerCount: {
     fontSize: 12,
-    color: "#ffffff",
+    color: color.textWhite,
     fontWeight: "bold",
   },
   
@@ -1850,7 +1851,7 @@ const styles = StyleSheet.create({
   statsTitle: {
     fontSize: 14,
     fontWeight: "bold",
-    color: "#ffffff",
+    color: color.textWhite,
     marginBottom: 12,
     textAlign: "center",
   },
@@ -1870,7 +1871,7 @@ const styles = StyleSheet.create({
   statsValue: {
     fontSize: 24,
     fontWeight: "bold",
-    color: "#ffffff",
+    color: color.textWhite,
   },
   statsLabel: {
     fontSize: 10,
@@ -1891,12 +1892,12 @@ const styles = StyleSheet.create({
   celebrationTitle: {
     fontSize: 24,
     fontWeight: "bold",
-    color: "#FFD700",
+    color: color.rankGold,
     marginBottom: 8,
   },
   celebrationSubtitle: {
     fontSize: 14,
-    color: "#ffffff",
+    color: color.textWhite,
     marginBottom: 16,
   },
   celebrationConfetti: {
@@ -1946,7 +1947,7 @@ const styles = StyleSheet.create({
     backgroundColor: "rgba(255, 255, 255, 0.08)",
   },
   navBubblePrimary: {
-    backgroundColor: "#FF6B9D",
+    backgroundColor: color.hotPink,
   },
   navBubbleTailLeft: {
     position: "absolute",
@@ -1972,10 +1973,10 @@ const styles = StyleSheet.create({
     borderBottomWidth: 6,
     borderBottomColor: "transparent",
     borderLeftWidth: 6,
-    borderLeftColor: "#FF6B9D",
+    borderLeftColor: color.hotPink,
   },
   navBubbleText: {
-    color: "#ffffff",
+    color: color.textWhite,
     fontSize: 14,
     fontWeight: "600",
   },
@@ -1983,7 +1984,7 @@ const styles = StyleSheet.create({
     color: "rgba(255, 255, 255, 0.4)",
   },
   navBubbleTextPrimary: {
-    color: "#ffffff",
+    color: color.textWhite,
     fontSize: 14,
     fontWeight: "bold",
   },
@@ -1999,10 +2000,10 @@ const styles = StyleSheet.create({
     opacity: 0.3,
   },
   navButtonPrimary: {
-    backgroundColor: "#FF6B9D",
+    backgroundColor: color.hotPink,
   },
   navButtonText: {
-    color: "#ffffff",
+    color: color.textWhite,
     fontSize: 14,
     fontWeight: "600",
   },
@@ -2010,7 +2011,7 @@ const styles = StyleSheet.create({
     color: "rgba(255, 255, 255, 0.5)",
   },
   navButtonTextPrimary: {
-    color: "#ffffff",
+    color: color.textWhite,
     fontSize: 14,
     fontWeight: "bold",
   },

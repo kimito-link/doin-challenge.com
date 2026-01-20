@@ -1,4 +1,5 @@
 import { useState, useCallback, useEffect } from "react";
+import { color, palette } from "@/theme/tokens";
 import {
   View,
   Text,
@@ -158,7 +159,7 @@ export default function SettingsScreen() {
                   />
                 ) : (
                   <View style={[styles.avatar, styles.avatarPlaceholder]}>
-                    <MaterialIcons name="person" size={24} color="#D1D5DB" />
+                    <MaterialIcons name="person" size={24} color={color.textMuted} />
                   </View>
                 )}
                 <View style={styles.accountInfo}>
@@ -182,7 +183,7 @@ export default function SettingsScreen() {
                   <MaterialIcons 
                     name={sessionExpiry.isExpired ? "warning" : "schedule"} 
                     size={14} 
-                    color={sessionExpiry.isExpired ? "#EF4444" : "#D1D5DB"} 
+                    color={sessionExpiry.isExpired ? color.danger : color.textMuted} 
                   />
                   <Text style={[
                     styles.sessionExpiryText,
@@ -195,7 +196,7 @@ export default function SettingsScreen() {
             </View>
           ) : (
             <View style={styles.notLoggedIn}>
-              <MaterialIcons name="person-outline" size={32} color="#CBD5E0" />
+              <MaterialIcons name="person-outline" size={32} color={color.textSubtle} />
               <Text style={styles.notLoggedInText}>ログインしていません</Text>
             </View>
           )}
@@ -207,7 +208,7 @@ export default function SettingsScreen() {
             activeOpacity={0.7}
           >
             <View style={styles.menuItemIcon}>
-              <MaterialIcons name="swap-horiz" size={24} color="#DD6500" />
+              <MaterialIcons name="swap-horiz" size={24} color={color.hostAccentLegacy} />
             </View>
             <View style={styles.menuItemContent}>
               <Text style={styles.menuItemTitle}>アカウントを切り替え</Text>
@@ -217,7 +218,7 @@ export default function SettingsScreen() {
                   : "別のアカウントでログイン"}
               </Text>
             </View>
-            <MaterialIcons name="chevron-right" size={24} color="#CBD5E0" />
+            <MaterialIcons name="chevron-right" size={24} color={color.textSubtle} />
           </TouchableOpacity>
 
           {/* 保存済みアカウント一覧（簡易表示） */}
@@ -235,7 +236,7 @@ export default function SettingsScreen() {
                       />
                     ) : (
                       <View style={[styles.savedAccountAvatarImage, styles.avatarPlaceholder]}>
-                        <MaterialIcons name="person" size={12} color="#D1D5DB" />
+                        <MaterialIcons name="person" size={12} color={color.textMuted} />
                       </View>
                     )}
                   </View>
@@ -257,12 +258,12 @@ export default function SettingsScreen() {
               activeOpacity={0.7}
             >
               <View style={[styles.menuItemIcon, styles.logoutIcon]}>
-                <MaterialIcons name="logout" size={24} color="#EF4444" />
+                <MaterialIcons name="logout" size={24} color={color.danger} />
               </View>
               <View style={styles.menuItemContent}>
                 <Text style={[styles.menuItemTitle, styles.logoutText]}>ログアウト</Text>
               </View>
-              <MaterialIcons name="chevron-right" size={24} color="#CBD5E0" />
+              <MaterialIcons name="chevron-right" size={24} color={color.textSubtle} />
             </TouchableOpacity>
           )}
         </View>
@@ -280,7 +281,7 @@ export default function SettingsScreen() {
               <MaterialIcons
                 name={getThemeModeIcon(themeMode) as any}
                 size={24}
-                color="#DD6500"
+                color={color.hostAccentLegacy}
               />
             </View>
             <View style={styles.menuItemContent}>
@@ -289,7 +290,7 @@ export default function SettingsScreen() {
                 ダークモード
               </Text>
             </View>
-            <MaterialIcons name="chevron-right" size={24} color="#CBD5E0" />
+            <MaterialIcons name="chevron-right" size={24} color={color.textSubtle} />
           </TouchableOpacity>
         </View>
 
@@ -303,7 +304,7 @@ export default function SettingsScreen() {
             activeOpacity={0.7}
           >
             <View style={styles.menuItemIcon}>
-              <MaterialIcons name="notifications" size={24} color="#DD6500" />
+              <MaterialIcons name="notifications" size={24} color={color.hostAccentLegacy} />
             </View>
             <View style={styles.menuItemContent}>
               <Text style={styles.menuItemTitle}>通知設定</Text>
@@ -311,7 +312,7 @@ export default function SettingsScreen() {
                 プッシュ通知やリマインダーの設定
               </Text>
             </View>
-            <MaterialIcons name="chevron-right" size={24} color="#CBD5E0" />
+            <MaterialIcons name="chevron-right" size={24} color={color.textSubtle} />
           </TouchableOpacity>
         </View>
 
@@ -325,7 +326,7 @@ export default function SettingsScreen() {
             activeOpacity={0.7}
           >
             <View style={styles.menuItemIcon}>
-              <MaterialIcons name="help-outline" size={24} color="#DD6500" />
+              <MaterialIcons name="help-outline" size={24} color={color.hostAccentLegacy} />
             </View>
             <View style={styles.menuItemContent}>
               <Text style={styles.menuItemTitle}>使い方ガイド</Text>
@@ -333,7 +334,7 @@ export default function SettingsScreen() {
                 アプリの使い方とよくある質問
               </Text>
             </View>
-            <MaterialIcons name="chevron-right" size={24} color="#CBD5E0" />
+            <MaterialIcons name="chevron-right" size={24} color={color.textSubtle} />
           </TouchableOpacity>
 
           <TouchableOpacity
@@ -342,7 +343,7 @@ export default function SettingsScreen() {
             activeOpacity={0.7}
           >
             <View style={[styles.menuItemIcon, { backgroundColor: "rgba(236, 72, 153, 0.1)" }]}>
-              <MaterialIcons name="replay" size={24} color="#EC4899" />
+              <MaterialIcons name="replay" size={24} color={color.accentPrimary} />
             </View>
             <View style={styles.menuItemContent}>
               <Text style={styles.menuItemTitle}>チュートリアルを見返す</Text>
@@ -350,7 +351,7 @@ export default function SettingsScreen() {
                 はじめの説明をもう一度見る
               </Text>
             </View>
-            <MaterialIcons name="chevron-right" size={24} color="#CBD5E0" />
+            <MaterialIcons name="chevron-right" size={24} color={color.textSubtle} />
           </TouchableOpacity>
 
           {/* v5.37: キャッシュクリアボタン */}
@@ -360,7 +361,7 @@ export default function SettingsScreen() {
             activeOpacity={0.7}
           >
             <View style={[styles.menuItemIcon, { backgroundColor: "rgba(59, 130, 246, 0.1)" }]}>
-              <MaterialIcons name="cached" size={24} color="#3B82F6" />
+              <MaterialIcons name="cached" size={24} color={color.info} />
             </View>
             <View style={styles.menuItemContent}>
               <Text style={styles.menuItemTitle}>キャッシュをクリア</Text>
@@ -368,7 +369,7 @@ export default function SettingsScreen() {
                 古いデータを削除して最新の情報を取得
               </Text>
             </View>
-            <MaterialIcons name="chevron-right" size={24} color="#CBD5E0" />
+            <MaterialIcons name="chevron-right" size={24} color={color.textSubtle} />
           </TouchableOpacity>
         </View>
 
@@ -387,7 +388,7 @@ export default function SettingsScreen() {
           
           <View style={styles.footerLinks}>
             <TouchableOpacity onPress={handleTwitter} style={styles.footerLink}>
-              <MaterialIcons name="alternate-email" size={16} color="#1DA1F2" />
+              <MaterialIcons name="alternate-email" size={16} color={color.twitter} />
               <Text style={styles.footerLinkText}>@doin_challenge</Text>
             </TouchableOpacity>
           </View>
@@ -414,7 +415,7 @@ const styles = StyleSheet.create({
     justifyContent: "space-between",
     padding: 16,
     borderBottomWidth: 1,
-    borderBottomColor: "#2D3139",
+    borderBottomColor: color.border,
   },
   backButton: {
     width: 40,
@@ -424,7 +425,7 @@ const styles = StyleSheet.create({
     borderRadius: 20,
   },
   headerTitle: {
-    color: "#fff",
+    color: color.textWhite,
     fontSize: 18,
     fontWeight: "bold",
   },
@@ -440,17 +441,17 @@ const styles = StyleSheet.create({
   section: {
     padding: 16,
     borderBottomWidth: 1,
-    borderBottomColor: "#2D3139",
+    borderBottomColor: color.border,
   },
   sectionTitle: {
-    color: "#D1D5DB",
+    color: color.textMuted,
     fontSize: 13,
     fontWeight: "600",
     textTransform: "uppercase",
     marginBottom: 12,
   },
   currentAccount: {
-    backgroundColor: "#1A1D21",
+    backgroundColor: color.surface,
     borderRadius: 12,
     padding: 16,
     marginBottom: 12,
@@ -466,7 +467,7 @@ const styles = StyleSheet.create({
     marginRight: 12,
   },
   avatarPlaceholder: {
-    backgroundColor: "#374151",
+    backgroundColor: color.borderAlt,
     alignItems: "center",
     justifyContent: "center",
   },
@@ -474,12 +475,12 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   accountName: {
-    color: "#fff",
+    color: color.textWhite,
     fontSize: 16,
     fontWeight: "600",
   },
   accountUsername: {
-    color: "#D1D5DB",
+    color: color.textMuted,
     fontSize: 14,
     marginTop: 2,
   },
@@ -490,26 +491,26 @@ const styles = StyleSheet.create({
     borderRadius: 12,
   },
   currentBadgeText: {
-    color: "#10B981",
+    color: color.successDark,
     fontSize: 12,
     fontWeight: "600",
   },
   notLoggedIn: {
-    backgroundColor: "#1A1D21",
+    backgroundColor: color.surface,
     borderRadius: 12,
     padding: 24,
     alignItems: "center",
     marginBottom: 12,
   },
   notLoggedInText: {
-    color: "#CBD5E0",
+    color: color.textSubtle,
     fontSize: 14,
     marginTop: 8,
   },
   menuItem: {
     flexDirection: "row",
     alignItems: "center",
-    backgroundColor: "#1A1D21",
+    backgroundColor: color.surface,
     padding: 16,
     borderRadius: 12,
     marginBottom: 8,
@@ -527,12 +528,12 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   menuItemTitle: {
-    color: "#fff",
+    color: color.textWhite,
     fontSize: 16,
     fontWeight: "500",
   },
   menuItemDescription: {
-    color: "#D1D5DB",
+    color: color.textMuted,
     fontSize: 13,
     marginTop: 2,
   },
@@ -544,7 +545,7 @@ const styles = StyleSheet.create({
     marginBottom: 8,
   },
   savedAccountsLabel: {
-    color: "#CBD5E0",
+    color: color.textSubtle,
     fontSize: 12,
     marginRight: 8,
   },
@@ -560,21 +561,21 @@ const styles = StyleSheet.create({
     height: 24,
     borderRadius: 12,
     borderWidth: 2,
-    borderColor: "#151718",
+    borderColor: color.surfaceDark,
   },
   moreAccountsBadge: {
     width: 24,
     height: 24,
     borderRadius: 12,
-    backgroundColor: "#374151",
+    backgroundColor: color.borderAlt,
     alignItems: "center",
     justifyContent: "center",
     marginLeft: -8,
     borderWidth: 2,
-    borderColor: "#151718",
+    borderColor: color.surfaceDark,
   },
   moreAccountsText: {
-    color: "#D1D5DB",
+    color: color.textMuted,
     fontSize: 10,
     fontWeight: "600",
   },
@@ -585,7 +586,7 @@ const styles = StyleSheet.create({
     backgroundColor: "rgba(239, 68, 68, 0.1)",
   },
   logoutText: {
-    color: "#EF4444",
+    color: color.danger,
   },
   sessionExpiryRow: {
     flexDirection: "row",
@@ -593,22 +594,22 @@ const styles = StyleSheet.create({
     marginTop: 12,
     paddingTop: 12,
     borderTopWidth: 1,
-    borderTopColor: "#2D3139",
+    borderTopColor: color.border,
   },
   sessionExpiryText: {
-    color: "#D1D5DB",
+    color: color.textMuted,
     fontSize: 12,
     marginLeft: 6,
   },
   sessionExpiryExpired: {
-    color: "#EF4444",
+    color: color.danger,
   },
   footer: {
     padding: 24,
     paddingTop: 32,
     alignItems: "center",
     borderTopWidth: 1,
-    borderTopColor: "#2D3139",
+    borderTopColor: color.border,
     marginTop: 16,
   },
   footerLogoContainer: {
@@ -622,22 +623,22 @@ const styles = StyleSheet.create({
     borderRadius: 8,
   },
   footerAppName: {
-    color: "#fff",
+    color: color.textWhite,
     fontSize: 16,
     fontWeight: "bold",
     marginLeft: 8,
   },
   footerVersion: {
-    color: "#D1D5DB",
+    color: color.textMuted,
     fontSize: 12,
     marginBottom: 4,
   },
   footerText: {
-    color: "#CBD5E0",
+    color: color.textSubtle,
     fontSize: 14,
   },
   footerSubtext: {
-    color: "#CBD5E0",
+    color: color.textSubtle,
     fontSize: 12,
     marginTop: 4,
   },
@@ -655,12 +656,12 @@ const styles = StyleSheet.create({
     backgroundColor: "rgba(29, 161, 242, 0.1)",
   },
   footerLinkText: {
-    color: "#1DA1F2",
+    color: color.twitter,
     fontSize: 13,
     marginLeft: 4,
   },
   footerCopyright: {
-    color: "#CBD5E0",
+    color: color.textSubtle,
     fontSize: 11,
     marginTop: 16,
   },

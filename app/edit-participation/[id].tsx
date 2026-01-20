@@ -1,4 +1,5 @@
 import { View, Text, ScrollView, TextInput, TouchableOpacity, KeyboardAvoidingView, Platform, ActivityIndicator } from "react-native";
+import { color, palette } from "@/theme/tokens";
 import { useRouter, useLocalSearchParams } from "expo-router";
 import { useState, useEffect } from "react";
 import { ScreenContainer } from "@/components/organisms/screen-container";
@@ -256,12 +257,12 @@ export default function EditParticipationScreen() {
                       borderRadius: 12,
                       backgroundColor: gender === "male" ? "#3B82F620" : colors.surface,
                       borderWidth: 2,
-                      borderColor: gender === "male" ? "#3B82F6" : colors.border,
+                      borderColor: gender === "male" ? color.info : colors.border,
                     }}
                   >
                     <Text style={{ fontSize: 20 }}>👨</Text>
                     <Text style={{
-                      color: gender === "male" ? "#3B82F6" : colors.foreground,
+                      color: gender === "male" ? color.info : colors.foreground,
                       fontSize: 16,
                       fontWeight: gender === "male" ? "600" : "400",
                     }}>
@@ -281,12 +282,12 @@ export default function EditParticipationScreen() {
                       borderRadius: 12,
                       backgroundColor: gender === "female" ? "#EC489920" : colors.surface,
                       borderWidth: 2,
-                      borderColor: gender === "female" ? "#EC4899" : colors.border,
+                      borderColor: gender === "female" ? color.accentPrimary : colors.border,
                     }}
                   >
                     <Text style={{ fontSize: 20 }}>👩</Text>
                     <Text style={{
-                      color: gender === "female" ? "#EC4899" : colors.foreground,
+                      color: gender === "female" ? color.accentPrimary : colors.foreground,
                       fontSize: 16,
                       fontWeight: gender === "female" ? "600" : "400",
                     }}>
@@ -306,7 +307,7 @@ export default function EditParticipationScreen() {
                 }}
               >
                 <LinearGradient
-                  colors={["#EC4899", "#8B5CF6"]}
+                  colors={[color.accentPrimary, color.accentAlt]}
                   start={{ x: 0, y: 0 }}
                   end={{ x: 1, y: 0 }}
                   style={{
@@ -317,9 +318,9 @@ export default function EditParticipationScreen() {
                   }}
                 >
                   {updateParticipationMutation.isPending ? (
-                    <ActivityIndicator color="#fff" />
+                    <ActivityIndicator color={color.textWhite} />
                   ) : (
-                    <Text style={{ color: "#fff", fontSize: 18, fontWeight: "bold" }}>
+                    <Text style={{ color: color.textWhite, fontSize: 18, fontWeight: "bold" }}>
                       更新する
                     </Text>
                   )}

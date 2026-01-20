@@ -1,4 +1,5 @@
 import { View, Text, ScrollView, TextInput, TouchableOpacity, KeyboardAvoidingView, Platform, ActivityIndicator } from "react-native";
+import { color, palette } from "@/theme/tokens";
 import { Image } from "expo-image";
 import { useRouter, useLocalSearchParams } from "expo-router";
 import { useState, useEffect } from "react";
@@ -32,8 +33,8 @@ const goalTypes = [
 
 // イベントタイプの設定
 const eventTypes = [
-  { id: "solo", label: "ソロ", color: "#EC4899" },
-  { id: "group", label: "グループ", color: "#8B5CF6" },
+  { id: "solo", label: "ソロ", color: color.accentPrimary },
+  { id: "group", label: "グループ", color: color.accentAlt },
 ];
 
 // 都道府県リスト
@@ -294,11 +295,11 @@ export default function EditChallengeScreen() {
                       <MaterialIcons
                         name={type.icon as any}
                         size={18}
-                        color={goalType === type.id ? "#fff" : colors.muted}
+                        color={goalType === type.id ? color.textWhite : colors.muted}
                       />
                       <Text
                         style={{
-                          color: goalType === type.id ? "#fff" : colors.foreground,
+                          color: goalType === type.id ? color.textWhite : colors.foreground,
                           fontSize: 14,
                           fontWeight: "500",
                         }}
@@ -405,7 +406,7 @@ export default function EditChallengeScreen() {
                 }}
               >
                 <LinearGradient
-                  colors={["#EC4899", "#8B5CF6"]}
+                  colors={[color.accentPrimary, color.accentAlt]}
                   start={{ x: 0, y: 0 }}
                   end={{ x: 1, y: 0 }}
                   style={{
@@ -416,9 +417,9 @@ export default function EditChallengeScreen() {
                   }}
                 >
                   {updateChallengeMutation.isPending ? (
-                    <ActivityIndicator color="#fff" />
+                    <ActivityIndicator color={color.textWhite} />
                   ) : (
-                    <Text style={{ color: "#fff", fontSize: 18, fontWeight: "bold" }}>
+                    <Text style={{ color: color.textWhite, fontSize: 18, fontWeight: "bold" }}>
                       更新する
                     </Text>
                   )}

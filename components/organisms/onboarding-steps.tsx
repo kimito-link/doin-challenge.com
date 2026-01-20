@@ -1,4 +1,5 @@
 import { Text, View } from "react-native";
+import { color, palette } from "@/theme/tokens";
 import MaterialIcons from "@expo/vector-icons/MaterialIcons";
 import { useResponsive } from "@/hooks/use-responsive";
 
@@ -34,7 +35,7 @@ export function OnboardingSteps() {
   return (
     <View
       style={{
-        backgroundColor: "#1A1D21",
+        backgroundColor: color.surface,
         borderRadius: 16,
         padding: containerPadding,
         marginHorizontal: isDesktop ? 24 : 16,
@@ -47,7 +48,7 @@ export function OnboardingSteps() {
     >
       <Text
         style={{
-          color: "#fff",
+          color: color.textWhite,
           fontSize: isDesktop ? 18 : 16,
           fontWeight: "bold",
           textAlign: "center",
@@ -71,13 +72,13 @@ export function OnboardingSteps() {
                 width: isDesktop ? 64 : 56,
                 height: isDesktop ? 64 : 56,
                 borderRadius: isDesktop ? 32 : 28,
-                backgroundColor: "#DD6500",
+                backgroundColor: color.hostAccentLegacy,
                 alignItems: "center",
                 justifyContent: "center",
                 marginBottom: 8,
               }}
             >
-              <MaterialIcons name={step.icon} size={iconSize} color="#fff" />
+              <MaterialIcons name={step.icon} size={iconSize} color={color.textWhite} />
             </View>
             {/* ステップ番号 */}
             <View
@@ -93,14 +94,14 @@ export function OnboardingSteps() {
                 justifyContent: "center",
               }}
             >
-              <Text style={{ color: "#fff", fontSize: 12, fontWeight: "bold" }}>
+              <Text style={{ color: color.textWhite, fontSize: 12, fontWeight: "bold" }}>
                 {index + 1}
               </Text>
             </View>
             {/* タイトル */}
             <Text
               style={{
-                color: "#fff",
+                color: color.textWhite,
                 fontSize: isDesktop ? 15 : 14,
                 fontWeight: "bold",
                 marginBottom: 4,
@@ -111,7 +112,7 @@ export function OnboardingSteps() {
             {/* 説明 */}
             <Text
               style={{
-                color: "#D1D5DB",
+                color: color.textMuted,
                 fontSize: isDesktop ? 13 : 11,
                 textAlign: "center",
               }}
@@ -130,7 +131,7 @@ export function OnboardingSteps() {
                 <MaterialIcons
                   name="chevron-right"
                   size={isDesktop ? 28 : 24}
-                  color="#CBD5E0"
+                  color={color.textSubtle}
                 />
               </View>
             )}

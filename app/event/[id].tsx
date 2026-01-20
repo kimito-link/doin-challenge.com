@@ -1,4 +1,5 @@
 import { Text, View, TouchableOpacity, TextInput, ScrollView, KeyboardAvoidingView, Platform, Alert, Share, Dimensions, Linking, Modal } from "react-native";
+import { color, palette } from "@/theme/tokens";
 import { Image } from "expo-image";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import { useState, useRef, useMemo } from "react";
@@ -77,12 +78,12 @@ function ProgressGrid({ current, goal, unit }: { current: number; goal: number; 
               height: cellSize - 2,
               margin: 1,
               borderRadius: 2,
-              backgroundColor: index < filledCount ? "#EC4899" : "#2D3139",
+              backgroundColor: index < filledCount ? color.accentPrimary : color.border,
             }}
           />
         ))}
       </View>
-      <Text style={{ color: "#9CA3AF", fontSize: 12, textAlign: "center", marginTop: 8 }}>
+      <Text style={{ color: color.textSecondary, fontSize: 12, textAlign: "center", marginTop: 8 }}>
         1マス = 1{unit}
       </Text>
     </View>
@@ -513,7 +514,7 @@ export default function ChallengeDetailScreen() {
     return (
       <ScreenContainer containerClassName="bg-background">
         <View style={{ flex: 1, alignItems: "center", justifyContent: "center", backgroundColor: colors.background }}>
-          <Text style={{ color: "#9CA3AF" }}>チャレンジが見つかりません</Text>
+          <Text style={{ color: color.textSecondary }}>チャレンジが見つかりません</Text>
         </View>
       </ScreenContainer>
     );
@@ -592,7 +593,7 @@ export default function ChallengeDetailScreen() {
 
           {/* ヘッダー画像 */}
           <LinearGradient
-            colors={["#EC4899", "#8B5CF6"]}
+            colors={[color.accentPrimary, color.accentAlt]}
             start={{ x: 0, y: 0 }}
             end={{ x: 1, y: 1 }}
             style={{ marginHorizontal: 16, borderRadius: 16, padding: 20, position: "relative" }}
@@ -619,7 +620,7 @@ export default function ChallengeDetailScreen() {
                     zIndex: 10,
                   }}
                 >
-                  <MaterialIcons name="edit" size={20} color="#fff" />
+                  <MaterialIcons name="edit" size={20} color={color.textWhite} />
                 </TouchableOpacity>
               ) : null;
             })()}
@@ -642,7 +643,7 @@ export default function ChallengeDetailScreen() {
               <MaterialIcons
                 name={isChallengeFavorite ? "star" : "star-outline"}
                 size={24}
-                color={isChallengeFavorite ? "#FFD700" : "#fff"}
+                color={isChallengeFavorite ? color.rankGold : color.textWhite}
               />
             </TouchableOpacity>
             {/* ホスト情報（クリックでプロフィールモーダル表示） */}
@@ -671,11 +672,11 @@ export default function ChallengeDetailScreen() {
                     paddingHorizontal: 16,
                     paddingVertical: 8,
                     borderRadius: 20,
-                    backgroundColor: isFollowing ? "rgba(255,255,255,0.2)" : "#fff",
+                    backgroundColor: isFollowing ? "rgba(255,255,255,0.2)" : color.textWhite,
                   }}
                 >
                   <Text style={{ 
-                    color: isFollowing ? "#fff" : "#EC4899", 
+                    color: isFollowing ? color.textWhite : color.accentPrimary, 
                     fontSize: 13, 
                     fontWeight: "bold" 
                   }}>
@@ -694,10 +695,10 @@ export default function ChallengeDetailScreen() {
           <View style={{ paddingHorizontal: 16, paddingTop: 16 }}>
             <View
               style={{
-                backgroundColor: "#1A1D21",
+                backgroundColor: color.surface,
                 borderRadius: 16,
                 borderWidth: 1,
-                borderColor: "#2D3139",
+                borderColor: color.border,
                 overflow: "hidden",
               }}
             >
@@ -712,7 +713,7 @@ export default function ChallengeDetailScreen() {
                 </LinearGradient>
               ) : (
                 <View style={{ paddingVertical: 8, paddingHorizontal: 12 }}>
-                  <Text style={{ color: "#EC4899", fontSize: 14, fontWeight: "bold" }}>日程未定</Text>
+                  <Text style={{ color: color.accentPrimary, fontSize: 14, fontWeight: "bold" }}>日程未定</Text>
                 </View>
               )}
             </View>
@@ -722,20 +723,20 @@ export default function ChallengeDetailScreen() {
           <View style={{ padding: 16 }}>
             <View
               style={{
-                backgroundColor: "#1A1D21",
+                backgroundColor: color.surface,
                 borderRadius: 16,
                 padding: 20,
                 borderWidth: 1,
-                borderColor: "#2D3139",
+                borderColor: color.border,
               }}
             >
               <View style={{ alignItems: "center", marginBottom: 16 }}>
-                <Text style={{ color: "#9CA3AF", fontSize: 14 }}>現在の達成状況</Text>
+                <Text style={{ color: color.textSecondary, fontSize: 14 }}>現在の達成状況</Text>
                 <View style={{ flexDirection: "row", alignItems: "baseline" }}>
-                  <Text style={{ color: "#EC4899", fontSize: 48, fontWeight: "bold" }}>
+                  <Text style={{ color: color.accentPrimary, fontSize: 48, fontWeight: "bold" }}>
                     {currentValue}
                   </Text>
-                  <Text style={{ color: "#6B7280", fontSize: 20, marginLeft: 4 }}>
+                  <Text style={{ color: color.textHint, fontSize: 20, marginLeft: 4 }}>
                     / {goalValue}{unit}
                   </Text>
                 </View>
@@ -745,14 +746,14 @@ export default function ChallengeDetailScreen() {
               <View
                 style={{
                   height: 12,
-                  backgroundColor: "#2D3139",
+                  backgroundColor: color.border,
                   borderRadius: 6,
                   overflow: "hidden",
                   marginBottom: 8,
                 }}
               >
                 <LinearGradient
-                  colors={["#EC4899", "#8B5CF6"]}
+                  colors={[color.accentPrimary, color.accentAlt]}
                   start={{ x: 0, y: 0 }}
                   end={{ x: 1, y: 0 }}
                   style={{
@@ -774,7 +775,7 @@ export default function ChallengeDetailScreen() {
                   <TouchableOpacity
                     onPress={() => router.push(`/achievement/${challengeId}`)}
                     style={{
-                      backgroundColor: "#EC4899",
+                      backgroundColor: color.accentPrimary,
                       paddingVertical: 12,
                       paddingHorizontal: 24,
                       borderRadius: 24,
@@ -788,8 +789,8 @@ export default function ChallengeDetailScreen() {
                   </TouchableOpacity>
                 </View>
               ) : (
-                <Text style={{ color: "#9CA3AF", fontSize: 14, textAlign: "center" }}>
-                  あと<Text style={{ color: "#EC4899", fontWeight: "bold" }}>{remaining}{unit}</Text>で目標達成！
+                <Text style={{ color: color.textSecondary, fontSize: 14, textAlign: "center" }}>
+                  あと<Text style={{ color: color.accentPrimary, fontWeight: "bold" }}>{remaining}{unit}</Text>で目標達成！
                 </Text>
               )}
 
@@ -846,16 +847,16 @@ export default function ChallengeDetailScreen() {
             {/* イベント情報 */}
             <View
               style={{
-                backgroundColor: "#1A1D21",
+                backgroundColor: color.surface,
                 borderRadius: 16,
                 padding: 16,
                 marginTop: 16,
                 borderWidth: 1,
-                borderColor: "#2D3139",
+                borderColor: color.border,
               }}
             >
               <View style={{ flexDirection: "row", alignItems: "center", marginBottom: 12 }}>
-                <MaterialIcons name="event" size={20} color="#DD6500" />
+                <MaterialIcons name="event" size={20} color={color.hostAccentLegacy} />
                 <Text style={{ color: colors.foreground, fontSize: 16, marginLeft: 8 }}>
                   {formattedDate}
                 </Text>
@@ -863,7 +864,7 @@ export default function ChallengeDetailScreen() {
 
               {challenge.venue && (
                 <View style={{ flexDirection: "row", alignItems: "center", marginBottom: 12 }}>
-                  <MaterialIcons name="place" size={20} color="#DD6500" />
+                  <MaterialIcons name="place" size={20} color={color.hostAccentLegacy} />
                   <Text style={{ color: colors.foreground, fontSize: 16, marginLeft: 8 }}>
                     {challenge.venue}
                   </Text>
@@ -871,7 +872,7 @@ export default function ChallengeDetailScreen() {
               )}
 
               {challenge.description && (
-                <Text style={{ color: "#9CA3AF", fontSize: 15, lineHeight: 22 }}>
+                <Text style={{ color: color.textSecondary, fontSize: 15, lineHeight: 22 }}>
                   {challenge.description}
                 </Text>
               )}
@@ -881,16 +882,16 @@ export default function ChallengeDetailScreen() {
             {(challenge.ticketPresale || challenge.ticketDoor || challenge.ticketUrl) && (
               <View
                 style={{
-                  backgroundColor: "#1A1D21",
+                  backgroundColor: color.surface,
                   borderRadius: 16,
                   padding: 16,
                   marginTop: 16,
                   borderWidth: 1,
-                  borderColor: "#2D3139",
+                  borderColor: color.border,
                 }}
               >
                 <View style={{ flexDirection: "row", alignItems: "center", marginBottom: 12 }}>
-                  <MaterialIcons name="confirmation-number" size={20} color="#EC4899" />
+                  <MaterialIcons name="confirmation-number" size={20} color={color.accentPrimary} />
                   <Text style={{ color: colors.foreground, fontSize: 16, fontWeight: "bold", marginLeft: 8 }}>
                     チケット情報
                   </Text>
@@ -899,7 +900,7 @@ export default function ChallengeDetailScreen() {
                 <View style={{ flexDirection: "row", gap: 16 }}>
                   {challenge.ticketPresale && (
                     <View style={{ flex: 1, backgroundColor: colors.background, borderRadius: 12, padding: 12 }}>
-                      <Text style={{ color: "#9CA3AF", fontSize: 12, marginBottom: 4 }}>前売り券</Text>
+                      <Text style={{ color: color.textSecondary, fontSize: 12, marginBottom: 4 }}>前売り券</Text>
                       <Text style={{ color: colors.foreground, fontSize: 18, fontWeight: "bold" }}>
                         ¥{challenge.ticketPresale.toLocaleString()}
                       </Text>
@@ -907,7 +908,7 @@ export default function ChallengeDetailScreen() {
                   )}
                   {challenge.ticketDoor && (
                     <View style={{ flex: 1, backgroundColor: colors.background, borderRadius: 12, padding: 12 }}>
-                      <Text style={{ color: "#9CA3AF", fontSize: 12, marginBottom: 4 }}>当日券</Text>
+                      <Text style={{ color: color.textSecondary, fontSize: 12, marginBottom: 4 }}>当日券</Text>
                       <Text style={{ color: colors.foreground, fontSize: 18, fontWeight: "bold" }}>
                         ¥{challenge.ticketDoor.toLocaleString()}
                       </Text>
@@ -919,7 +920,7 @@ export default function ChallengeDetailScreen() {
                   <TouchableOpacity
                     onPress={() => Linking.openURL(challenge.ticketUrl!)}
                     style={{
-                      backgroundColor: "#EC4899",
+                      backgroundColor: color.accentPrimary,
                       borderRadius: 12,
                       padding: 14,
                       marginTop: 12,
@@ -943,7 +944,7 @@ export default function ChallengeDetailScreen() {
                 <TouchableOpacity
                   onPress={() => router.push(`/dashboard/${challengeId}`)}
                   style={{
-                    backgroundColor: "#10B981",
+                    backgroundColor: color.successDark,
                     borderRadius: 12,
                     padding: 14,
                     flexDirection: "row",
@@ -959,7 +960,7 @@ export default function ChallengeDetailScreen() {
                 <TouchableOpacity
                   onPress={() => router.push(`/manage-comments/${challengeId}`)}
                   style={{
-                    backgroundColor: "#8B5CF6",
+                    backgroundColor: color.accentAlt,
                     borderRadius: 12,
                     padding: 14,
                     flexDirection: "row",
@@ -993,7 +994,7 @@ export default function ChallengeDetailScreen() {
                       );
                     }}
                     style={{
-                      backgroundColor: "#EC4899",
+                      backgroundColor: color.accentPrimary,
                       borderRadius: 12,
                       padding: 14,
                       flexDirection: "row",
@@ -1010,7 +1011,7 @@ export default function ChallengeDetailScreen() {
                 <TouchableOpacity
                   onPress={() => router.push(`/collaborators/${challengeId}`)}
                   style={{
-                    backgroundColor: "#3B82F6",
+                    backgroundColor: color.info,
                     borderRadius: 12,
                     padding: 14,
                     flexDirection: "row",
@@ -1030,7 +1031,7 @@ export default function ChallengeDetailScreen() {
             <TouchableOpacity
               onPress={() => router.push(`/invite/${challengeId}`)}
               style={{
-                backgroundColor: "#DD6500",
+                backgroundColor: color.hostAccentLegacy,
                 borderRadius: 12,
                 padding: 14,
                 marginTop: 16,
@@ -1072,9 +1073,9 @@ export default function ChallengeDetailScreen() {
             {/* 参加者ランキング（トップ3） */}
             {participations && participations.length >= 3 && (
               <View style={{ marginTop: 16, marginHorizontal: 16 }}>
-                <View style={{ backgroundColor: "#1A1D21", borderRadius: 16, padding: 16 }}>
+                <View style={{ backgroundColor: color.surface, borderRadius: 16, padding: 16 }}>
                   <View style={{ flexDirection: "row", alignItems: "center", gap: 8, marginBottom: 8 }}>
-                    <MaterialIcons name="emoji-events" size={24} color="#FFD700" />
+                    <MaterialIcons name="emoji-events" size={24} color={color.rankGold} />
                     <Text style={{ color: colors.foreground, fontSize: 18, fontWeight: "bold" }}>貢献トップ3</Text>
                   </View>
                   <TopThreeRanking participants={participations as Participation[]} />
@@ -1088,13 +1089,13 @@ export default function ChallengeDetailScreen() {
                 {/* 参加表明完了時のハイライト表示 */}
                 {justSubmitted && (
                   <View style={{
-                    backgroundColor: "#10B981",
+                    backgroundColor: color.successDark,
                     borderRadius: 16,
                     padding: 20,
                     marginBottom: 20,
                     borderWidth: 3,
-                    borderColor: "#34D399",
-                    shadowColor: "#10B981",
+                    borderColor: color.emerald400,
+                    shadowColor: color.successDark,
                     shadowOffset: { width: 0, height: 4 },
                     shadowOpacity: 0.3,
                     shadowRadius: 8,
@@ -1143,15 +1144,15 @@ export default function ChallengeDetailScreen() {
                   
                   return (
                     <View style={{
-                      backgroundColor: "#1A1D21",
+                      backgroundColor: color.surface,
                       borderRadius: 12,
                       padding: 12,
                       marginBottom: 16,
                       borderWidth: 1,
-                      borderColor: "#2D3139",
+                      borderColor: color.border,
                     }}>
                       <View style={{ flexDirection: "row", alignItems: "center", marginBottom: 8 }}>
-                        <MaterialIcons name="people" size={16} color="#EC4899" />
+                        <MaterialIcons name="people" size={16} color={color.accentPrimary} />
                         <Text style={{ color: colors.foreground, fontSize: 14, fontWeight: "bold", marginLeft: 8 }}>
                           男女比
                         </Text>
@@ -1169,7 +1170,7 @@ export default function ChallengeDetailScreen() {
                         {maleCount > 0 && (
                           <View style={{
                             width: `${malePercent}%`,
-                            backgroundColor: "#3B82F6",
+                            backgroundColor: color.info,
                             justifyContent: "center",
                             alignItems: "center",
                           }}>
@@ -1183,7 +1184,7 @@ export default function ChallengeDetailScreen() {
                         {femaleCount > 0 && (
                           <View style={{
                             width: `${femalePercent}%`,
-                            backgroundColor: "#EC4899",
+                            backgroundColor: color.accentPrimary,
                             justifyContent: "center",
                             alignItems: "center",
                           }}>
@@ -1197,7 +1198,7 @@ export default function ChallengeDetailScreen() {
                         {unspecifiedCount > 0 && (
                           <View style={{
                             width: `${unspecifiedPercent}%`,
-                            backgroundColor: "#6B7280",
+                            backgroundColor: color.textHint,
                             justifyContent: "center",
                             alignItems: "center",
                           }}>
@@ -1213,16 +1214,16 @@ export default function ChallengeDetailScreen() {
                       {/* 凡例 */}
                       <View style={{ flexDirection: "row", justifyContent: "center", gap: 16 }}>
                         <View style={{ flexDirection: "row", alignItems: "center" }}>
-                          <View style={{ width: 12, height: 12, borderRadius: 6, backgroundColor: "#3B82F6", marginRight: 6 }} />
-                          <Text style={{ color: "#9CA3AF", fontSize: 12 }}>男性 {maleCount}人</Text>
+                          <View style={{ width: 12, height: 12, borderRadius: 6, backgroundColor: color.info, marginRight: 6 }} />
+                          <Text style={{ color: color.textSecondary, fontSize: 12 }}>男性 {maleCount}人</Text>
                         </View>
                         <View style={{ flexDirection: "row", alignItems: "center" }}>
-                          <View style={{ width: 12, height: 12, borderRadius: 6, backgroundColor: "#EC4899", marginRight: 6 }} />
-                          <Text style={{ color: "#9CA3AF", fontSize: 12 }}>女性 {femaleCount}人</Text>
+                          <View style={{ width: 12, height: 12, borderRadius: 6, backgroundColor: color.accentPrimary, marginRight: 6 }} />
+                          <Text style={{ color: color.textSecondary, fontSize: 12 }}>女性 {femaleCount}人</Text>
                         </View>
                         <View style={{ flexDirection: "row", alignItems: "center" }}>
-                          <View style={{ width: 12, height: 12, borderRadius: 6, backgroundColor: "#6B7280", marginRight: 6 }} />
-                          <Text style={{ color: "#9CA3AF", fontSize: 12 }}>未設定 {unspecifiedCount}人</Text>
+                          <View style={{ width: 12, height: 12, borderRadius: 6, backgroundColor: color.textHint, marginRight: 6 }} />
+                          <Text style={{ color: color.textSecondary, fontSize: 12 }}>未設定 {unspecifiedCount}人</Text>
                         </View>
                       </View>
                     </View>
@@ -1238,18 +1239,18 @@ export default function ChallengeDetailScreen() {
                   <TouchableOpacity
                     onPress={() => setShowPrefectureFilterList(!showPrefectureFilterList)}
                     style={{
-                      backgroundColor: "#1A1D21",
+                      backgroundColor: color.surface,
                       borderRadius: 8,
                       paddingHorizontal: 12,
                       paddingVertical: 8,
                       flexDirection: "row",
                       alignItems: "center",
                       borderWidth: 1,
-                      borderColor: selectedPrefectureFilter !== "all" ? "#EC4899" : "#2D3139",
+                      borderColor: selectedPrefectureFilter !== "all" ? color.accentPrimary : color.border,
                     }}
                   >
-                    <MaterialIcons name="filter-list" size={16} color={selectedPrefectureFilter !== "all" ? "#EC4899" : "#9CA3AF"} />
-                    <Text style={{ color: selectedPrefectureFilter !== "all" ? "#EC4899" : "#9CA3AF", fontSize: 12, marginLeft: 4 }}>
+                    <MaterialIcons name="filter-list" size={16} color={selectedPrefectureFilter !== "all" ? color.accentPrimary : color.textSecondary} />
+                    <Text style={{ color: selectedPrefectureFilter !== "all" ? color.accentPrimary : color.textSecondary, fontSize: 12, marginLeft: 4 }}>
                       {selectedPrefectureFilter === "all" ? "地域" : selectedPrefectureFilter}
                     </Text>
                   </TouchableOpacity>
@@ -1257,12 +1258,12 @@ export default function ChallengeDetailScreen() {
 
                 {/* 地域フィルターリスト */}
                 {showPrefectureFilterList && (
-                  <View style={{ backgroundColor: "#1A1D21", borderRadius: 12, padding: 12, marginBottom: 12, borderWidth: 1, borderColor: "#2D3139" }}>
+                  <View style={{ backgroundColor: color.surface, borderRadius: 12, padding: 12, marginBottom: 12, borderWidth: 1, borderColor: color.border }}>
                     <ScrollView horizontal showsHorizontalScrollIndicator={false} style={{ marginBottom: 8 }}>
                       <TouchableOpacity
                         onPress={() => { setSelectedPrefectureFilter("all"); setShowPrefectureFilterList(false); }}
                         style={{
-                          backgroundColor: selectedPrefectureFilter === "all" ? "#EC4899" : "#2D3139",
+                          backgroundColor: selectedPrefectureFilter === "all" ? color.accentPrimary : color.border,
                           borderRadius: 16,
                           paddingHorizontal: 12,
                           paddingVertical: 6,
@@ -1276,7 +1277,7 @@ export default function ChallengeDetailScreen() {
                           key={region.name}
                           onPress={() => { setSelectedPrefectureFilter(region.name); setShowPrefectureFilterList(false); }}
                           style={{
-                            backgroundColor: selectedPrefectureFilter === region.name ? "#EC4899" : "#2D3139",
+                            backgroundColor: selectedPrefectureFilter === region.name ? color.accentPrimary : color.border,
                             borderRadius: 16,
                             paddingHorizontal: 12,
                             paddingVertical: 6,
@@ -1293,13 +1294,13 @@ export default function ChallengeDetailScreen() {
                           key={pref}
                           onPress={() => { setSelectedPrefectureFilter(pref); setShowPrefectureFilterList(false); }}
                           style={{
-                            backgroundColor: selectedPrefectureFilter === pref ? "#EC4899" : "#0D1117",
+                            backgroundColor: selectedPrefectureFilter === pref ? color.accentPrimary : color.bg,
                             borderRadius: 8,
                             paddingHorizontal: 10,
                             paddingVertical: 6,
                           }}
                         >
-                          <Text style={{ color: selectedPrefectureFilter === pref ? "#fff" : "#9CA3AF", fontSize: 11 }}>{pref}</Text>
+                          <Text style={{ color: selectedPrefectureFilter === pref ? color.textWhite : color.textSecondary, fontSize: 11 }}>{pref}</Text>
                         </TouchableOpacity>
                       ))}
                     </View>
@@ -1329,10 +1330,10 @@ export default function ChallengeDetailScreen() {
                     return (
                       <View key={p.id} style={isOwnPost && justSubmitted ? {
                         borderWidth: 3,
-                        borderColor: "#10B981",
+                        borderColor: color.successDark,
                         borderRadius: 16,
                         marginBottom: 8,
-                        shadowColor: "#10B981",
+                        shadowColor: color.successDark,
                         shadowOffset: { width: 0, height: 2 },
                         shadowOpacity: 0.3,
                         shadowRadius: 4,
@@ -1340,7 +1341,7 @@ export default function ChallengeDetailScreen() {
                       } : undefined}>
                         {isOwnPost && justSubmitted && (
                           <View style={{
-                            backgroundColor: "#10B981",
+                            backgroundColor: color.successDark,
                             paddingVertical: 10,
                             paddingHorizontal: 16,
                             borderTopLeftRadius: 13,
@@ -1378,8 +1379,8 @@ export default function ChallengeDetailScreen() {
                   return p.prefecture === selectedPrefectureFilter;
                 }).length === 0 && selectedPrefectureFilter !== "all" && (
                   <View style={{ alignItems: "center", paddingVertical: 24 }}>
-                    <MaterialIcons name="search-off" size={48} color="#6B7280" />
-                    <Text style={{ color: "#9CA3AF", fontSize: 14, marginTop: 8 }}>
+                    <MaterialIcons name="search-off" size={48} color={color.textHint} />
+                    <Text style={{ color: color.textSecondary, fontSize: 14, marginTop: 8 }}>
                       {selectedPrefectureFilter}からの参加者はまだいません
                     </Text>
                   </View>
@@ -1391,12 +1392,12 @@ export default function ChallengeDetailScreen() {
             {showForm ? (
               <View
                 style={{
-                  backgroundColor: "#1A1D21",
+                  backgroundColor: color.surface,
                   borderRadius: 16,
                   padding: 16,
                   marginTop: 16,
                   borderWidth: 1,
-                  borderColor: "#2D3139",
+                  borderColor: color.border,
                 }}
               >
                 <Text style={{ color: colors.foreground, fontSize: 18, fontWeight: "bold", marginBottom: 16 }}>
@@ -1405,8 +1406,8 @@ export default function ChallengeDetailScreen() {
 
                 {/* ログインユーザーの場合はTwitterアカウント情報を表示 */}
                 {user && (
-                  <View style={{ marginBottom: 16, backgroundColor: colors.background, borderRadius: 12, padding: 16, borderWidth: 1, borderColor: "#2D3139" }}>
-                    <Text style={{ color: "#9CA3AF", fontSize: 12, marginBottom: 8 }}>
+                  <View style={{ marginBottom: 16, backgroundColor: colors.background, borderRadius: 12, padding: 16, borderWidth: 1, borderColor: color.border }}>
+                    <Text style={{ color: color.textSecondary, fontSize: 12, marginBottom: 8 }}>
                       参加者
                     </Text>
                     <View style={{ flexDirection: "row", alignItems: "center", gap: 12 }}>
@@ -1418,7 +1419,7 @@ export default function ChallengeDetailScreen() {
                           contentFit="cover"
                         />
                       ) : (
-                        <View style={{ width: 48, height: 48, borderRadius: 24, backgroundColor: "#EC4899", justifyContent: "center", alignItems: "center" }}>
+                        <View style={{ width: 48, height: 48, borderRadius: 24, backgroundColor: color.accentPrimary, justifyContent: "center", alignItems: "center" }}>
                           <Text style={{ color: colors.foreground, fontSize: 20, fontWeight: "bold" }}>
                             {(user.name || user.username || "ゲ")?.charAt(0).toUpperCase()}
                           </Text>
@@ -1429,12 +1430,12 @@ export default function ChallengeDetailScreen() {
                           {user.name || user.username || "ゲスト"}
                         </Text>
                         {user.username && (
-                          <Text style={{ color: "#9CA3AF", fontSize: 14, marginTop: 2 }}>
+                          <Text style={{ color: color.textSecondary, fontSize: 14, marginTop: 2 }}>
                             @{user.username}
                           </Text>
                         )}
                         {user.followersCount !== undefined && user.followersCount > 0 && (
-                          <Text style={{ color: "#EC4899", fontSize: 12, marginTop: 4 }}>
+                          <Text style={{ color: color.accentPrimary, fontSize: 12, marginTop: 4 }}>
                             {user.followersCount.toLocaleString()} フォロワー
                           </Text>
                         )}
@@ -1445,17 +1446,17 @@ export default function ChallengeDetailScreen() {
 
                 {/* 未ログインの場合はログインを促す */}
                 {!user && (
-                  <View style={{ marginBottom: 16, backgroundColor: "rgba(236, 72, 153, 0.1)", borderRadius: 12, padding: 16, borderWidth: 1, borderColor: "#EC4899" }}>
-                    <Text style={{ color: "#EC4899", fontSize: 14, fontWeight: "600", marginBottom: 8 }}>
+                  <View style={{ marginBottom: 16, backgroundColor: "rgba(236, 72, 153, 0.1)", borderRadius: 12, padding: 16, borderWidth: 1, borderColor: color.accentPrimary }}>
+                    <Text style={{ color: color.accentPrimary, fontSize: 14, fontWeight: "600", marginBottom: 8 }}>
                       ログインが必要です
                     </Text>
-                    <Text style={{ color: "#9CA3AF", fontSize: 13, marginBottom: 12 }}>
+                    <Text style={{ color: color.textSecondary, fontSize: 13, marginBottom: 12 }}>
                       参加表明にはTwitterログインが必要です。
                     </Text>
                     <TouchableOpacity
                       onPress={() => login()}
                       style={{
-                        backgroundColor: "#1DA1F2",
+                        backgroundColor: color.twitter,
                         borderRadius: 8,
                         paddingVertical: 12,
                         paddingHorizontal: 16,
@@ -1475,10 +1476,10 @@ export default function ChallengeDetailScreen() {
 
                 <View style={{ marginBottom: 16 }}>
                   <View style={{ flexDirection: "row", alignItems: "center", marginBottom: 8 }}>
-                    <Text style={{ color: "#9CA3AF", fontSize: 14 }}>
+                    <Text style={{ color: color.textSecondary, fontSize: 14 }}>
                       都道府県
                     </Text>
-                    <Text style={{ color: "#EC4899", fontSize: 12, marginLeft: 6, fontWeight: "bold" }}>
+                    <Text style={{ color: color.accentPrimary, fontSize: 12, marginLeft: 6, fontWeight: "bold" }}>
                       必須
                     </Text>
                   </View>
@@ -1489,16 +1490,16 @@ export default function ChallengeDetailScreen() {
                       borderRadius: 8,
                       padding: 12,
                       borderWidth: 1,
-                      borderColor: prefecture ? "#22C55E" : "#EC4899",
+                      borderColor: prefecture ? color.success : color.accentPrimary,
                       flexDirection: "row",
                       justifyContent: "space-between",
                       alignItems: "center",
                     }}
                   >
-                    <Text style={{ color: prefecture ? "#fff" : "#6B7280" }}>
+                    <Text style={{ color: prefecture ? color.textWhite : color.textHint }}>
                       {prefecture || "選択してください"}
                     </Text>
-                    <MaterialIcons name="arrow-drop-down" size={24} color="#6B7280" />
+                    <MaterialIcons name="arrow-drop-down" size={24} color={color.textHint} />
                   </TouchableOpacity>
                   {showPrefectureList && (
                     <View
@@ -1508,7 +1509,7 @@ export default function ChallengeDetailScreen() {
                         marginTop: 4,
                         maxHeight: 200,
                         borderWidth: 1,
-                        borderColor: "#2D3139",
+                        borderColor: color.border,
                       }}
                     >
                       <ScrollView nestedScrollEnabled>
@@ -1522,7 +1523,7 @@ export default function ChallengeDetailScreen() {
                             style={{
                               padding: 12,
                               borderBottomWidth: 1,
-                              borderBottomColor: "#2D3139",
+                              borderBottomColor: color.border,
                             }}
                           >
                             <Text style={{ color: colors.foreground }}>{pref}</Text>
@@ -1536,10 +1537,10 @@ export default function ChallengeDetailScreen() {
                 {/* v5.86: 性別選択（必須） */}
                 <View style={{ marginBottom: 16 }}>
                   <View style={{ flexDirection: "row", alignItems: "center", marginBottom: 8 }}>
-                    <Text style={{ color: "#9CA3AF", fontSize: 14 }}>
+                    <Text style={{ color: color.textSecondary, fontSize: 14 }}>
                       性別
                     </Text>
-                    <Text style={{ color: "#EC4899", fontSize: 12, marginLeft: 6, fontWeight: "bold" }}>
+                    <Text style={{ color: color.accentPrimary, fontSize: 12, marginLeft: 6, fontWeight: "bold" }}>
                       必須
                     </Text>
                   </View>
@@ -1548,16 +1549,16 @@ export default function ChallengeDetailScreen() {
                       onPress={() => setGender("male")}
                       style={{
                         flex: 1,
-                        backgroundColor: gender === "male" ? "#3B82F6" : colors.background,
+                        backgroundColor: gender === "male" ? color.info : colors.background,
                         borderRadius: 12,
                         padding: 16,
                         alignItems: "center",
                         borderWidth: 2,
-                        borderColor: gender === "male" ? "#3B82F6" : gender === "" ? "#EC4899" : "#2D3139",
+                        borderColor: gender === "male" ? color.info : gender === "" ? color.accentPrimary : color.border,
                       }}
                     >
                       <Text style={{ fontSize: 24, marginBottom: 4 }}>👨</Text>
-                      <Text style={{ color: gender === "male" ? "#fff" : "#9CA3AF", fontSize: 14, fontWeight: "600" }}>
+                      <Text style={{ color: gender === "male" ? color.textWhite : color.textSecondary, fontSize: 14, fontWeight: "600" }}>
                         男性
                       </Text>
                     </TouchableOpacity>
@@ -1565,22 +1566,22 @@ export default function ChallengeDetailScreen() {
                       onPress={() => setGender("female")}
                       style={{
                         flex: 1,
-                        backgroundColor: gender === "female" ? "#EC4899" : colors.background,
+                        backgroundColor: gender === "female" ? color.accentPrimary : colors.background,
                         borderRadius: 12,
                         padding: 16,
                         alignItems: "center",
                         borderWidth: 2,
-                        borderColor: gender === "female" ? "#EC4899" : gender === "" ? "#EC4899" : "#2D3139",
+                        borderColor: gender === "female" ? color.accentPrimary : gender === "" ? color.accentPrimary : color.border,
                       }}
                     >
                       <Text style={{ fontSize: 24, marginBottom: 4 }}>👩</Text>
-                      <Text style={{ color: gender === "female" ? "#fff" : "#9CA3AF", fontSize: 14, fontWeight: "600" }}>
+                      <Text style={{ color: gender === "female" ? color.textWhite : color.textSecondary, fontSize: 14, fontWeight: "600" }}>
                         女性
                       </Text>
                     </TouchableOpacity>
                   </View>
                   {gender === "" && (
-                    <Text style={{ color: "#EF4444", fontSize: 12, marginTop: 8 }}>
+                    <Text style={{ color: color.danger, fontSize: 12, marginTop: 8 }}>
                       性別を選択してください
                     </Text>
                   )}
@@ -1595,7 +1596,7 @@ export default function ChallengeDetailScreen() {
                     <TouchableOpacity
                       onPress={() => setShowAddCompanionForm(true)}
                       style={{
-                        backgroundColor: "#2D3139",
+                        backgroundColor: color.border,
                         borderRadius: 8,
                         paddingHorizontal: 12,
                         paddingVertical: 8,
@@ -1603,8 +1604,8 @@ export default function ChallengeDetailScreen() {
                         alignItems: "center",
                       }}
                     >
-                      <MaterialIcons name="person-add" size={16} color="#EC4899" />
-                      <Text style={{ color: "#EC4899", fontSize: 14, marginLeft: 6 }}>友人を追加</Text>
+                      <MaterialIcons name="person-add" size={16} color={color.accentPrimary} />
+                      <Text style={{ color: color.accentPrimary, fontSize: 14, marginLeft: 6 }}>友人を追加</Text>
                     </TouchableOpacity>
                   </View>
 
@@ -1616,13 +1617,13 @@ export default function ChallengeDetailScreen() {
                       padding: 16,
                       marginBottom: 12,
                       borderWidth: 1,
-                      borderColor: "#EC4899",
+                      borderColor: color.accentPrimary,
                     }}>
                       {/* Twitterユーザー名入力（優先） */}
-                      <Text style={{ color: "#9CA3AF", fontSize: 14, marginBottom: 4 }}>
+                      <Text style={{ color: color.textSecondary, fontSize: 14, marginBottom: 4 }}>
                         Twitterユーザー名またはURL
                       </Text>
-                      <Text style={{ color: "#6B7280", fontSize: 12, marginBottom: 8 }}>
+                      <Text style={{ color: color.textHint, fontSize: 12, marginBottom: 8 }}>
                         @username または https://x.com/username
                       </Text>
                       <View style={{ flexDirection: "row", gap: 8, marginBottom: 12 }}>
@@ -1634,23 +1635,23 @@ export default function ChallengeDetailScreen() {
                             setLookupError(null);
                           }}
                           placeholder="@idolfunch または https://x.com/idolfunch"
-                          placeholderTextColor="#6B7280"
+                          placeholderTextColor={color.textHint}
                           autoCapitalize="none"
                           style={{
                             flex: 1,
-                            backgroundColor: "#1A1D21",
+                            backgroundColor: color.surface,
                             borderRadius: 8,
                             padding: 12,
-                            color: "#1DA1F2",
+                            color: color.twitter,
                             borderWidth: 1,
-                            borderColor: lookedUpProfile ? "#22C55E" : "#2D3139",
+                            borderColor: lookedUpProfile ? color.success : color.border,
                           }}
                         />
                         <TouchableOpacity
                           onPress={() => lookupTwitterProfile(newCompanionTwitter)}
                           disabled={isLookingUpTwitter || !newCompanionTwitter.trim()}
                           style={{
-                            backgroundColor: isLookingUpTwitter ? "#2D3139" : "#1DA1F2",
+                            backgroundColor: isLookingUpTwitter ? color.border : color.twitter,
                             borderRadius: 8,
                             paddingHorizontal: 16,
                             justifyContent: "center",
@@ -1659,7 +1660,7 @@ export default function ChallengeDetailScreen() {
                           }}
                         >
                           {isLookingUpTwitter ? (
-                            <Text style={{ color: "#9CA3AF", fontSize: 14 }}>検索中...</Text>
+                            <Text style={{ color: color.textSecondary, fontSize: 14 }}>検索中...</Text>
                           ) : (
                             <Text style={{ color: colors.foreground, fontSize: 14, fontWeight: "bold" }}>検索</Text>
                           )}
@@ -1676,8 +1677,8 @@ export default function ChallengeDetailScreen() {
                           flexDirection: "row",
                           alignItems: "center",
                         }}>
-                          <MaterialIcons name="error-outline" size={20} color="#EF4444" />
-                          <Text style={{ color: "#EF4444", fontSize: 14, marginLeft: 8 }}>{lookupError}</Text>
+                          <MaterialIcons name="error-outline" size={20} color={color.danger} />
+                          <Text style={{ color: color.danger, fontSize: 14, marginLeft: 8 }}>{lookupError}</Text>
                         </View>
                       )}
 
@@ -1691,7 +1692,7 @@ export default function ChallengeDetailScreen() {
                           flexDirection: "row",
                           alignItems: "center",
                           borderWidth: 1,
-                          borderColor: "#22C55E",
+                          borderColor: color.success,
                         }}>
                           <Image
                             source={{ uri: lookedUpProfile.profileImage }}
@@ -1701,11 +1702,11 @@ export default function ChallengeDetailScreen() {
                             <Text style={{ color: colors.foreground, fontSize: 16, fontWeight: "bold" }}>
                               {lookedUpProfile.name}
                             </Text>
-                            <Text style={{ color: "#1DA1F2", fontSize: 14 }}>
+                            <Text style={{ color: color.twitter, fontSize: 14 }}>
                               @{lookedUpProfile.username}
                             </Text>
                           </View>
-                          <MaterialIcons name="check-circle" size={24} color="#22C55E" />
+                          <MaterialIcons name="check-circle" size={24} color={color.success} />
                         </View>
                       )}
 
@@ -1717,27 +1718,27 @@ export default function ChallengeDetailScreen() {
                             alignItems: "center", 
                             marginVertical: 12,
                           }}>
-                            <View style={{ flex: 1, height: 1, backgroundColor: "#2D3139" }} />
-                            <Text style={{ color: "#6B7280", fontSize: 12, marginHorizontal: 12 }}>
+                            <View style={{ flex: 1, height: 1, backgroundColor: color.border }} />
+                            <Text style={{ color: color.textHint, fontSize: 12, marginHorizontal: 12 }}>
                               または名前で追加
                             </Text>
-                            <View style={{ flex: 1, height: 1, backgroundColor: "#2D3139" }} />
+                            <View style={{ flex: 1, height: 1, backgroundColor: color.border }} />
                           </View>
-                          <Text style={{ color: "#9CA3AF", fontSize: 14, marginBottom: 8 }}>
+                          <Text style={{ color: color.textSecondary, fontSize: 14, marginBottom: 8 }}>
                             友人の名前
                           </Text>
                           <TextInput
                             value={newCompanionName}
                             onChangeText={setNewCompanionName}
                             placeholder="ニックネーム"
-                            placeholderTextColor="#6B7280"
+                            placeholderTextColor={color.textHint}
                             style={{
-                              backgroundColor: "#1A1D21",
+                              backgroundColor: color.surface,
                               borderRadius: 8,
                               padding: 12,
                               color: colors.foreground,
                               borderWidth: 1,
-                              borderColor: "#2D3139",
+                              borderColor: color.border,
                               marginBottom: 12,
                             }}
                           />
@@ -1755,20 +1756,20 @@ export default function ChallengeDetailScreen() {
                           }}
                           style={{
                             flex: 1,
-                            backgroundColor: "#2D3139",
+                            backgroundColor: color.border,
                             borderRadius: 8,
                             padding: 12,
                             alignItems: "center",
                           }}
                         >
-                          <Text style={{ color: "#9CA3AF" }}>キャンセル</Text>
+                          <Text style={{ color: color.textSecondary }}>キャンセル</Text>
                         </TouchableOpacity>
                         <TouchableOpacity
                           onPress={handleAddCompanion}
                           disabled={!lookedUpProfile && !newCompanionName.trim()}
                           style={{
                             flex: 1,
-                            backgroundColor: (!lookedUpProfile && !newCompanionName.trim()) ? "#2D3139" : "#EC4899",
+                            backgroundColor: (!lookedUpProfile && !newCompanionName.trim()) ? color.border : color.accentPrimary,
                             borderRadius: 8,
                             padding: 12,
                             alignItems: "center",
@@ -1793,7 +1794,7 @@ export default function ChallengeDetailScreen() {
                             flexDirection: "row",
                             alignItems: "center",
                             borderWidth: 1,
-                            borderColor: companion.profileImage ? "#1DA1F2" : "#2D3139",
+                            borderColor: companion.profileImage ? color.twitter : color.border,
                           }}
                         >
                           {companion.profileImage ? (
@@ -1812,7 +1813,7 @@ export default function ChallengeDetailScreen() {
                                 width: 40,
                                 height: 40,
                                 borderRadius: 20,
-                                backgroundColor: "#EC4899",
+                                backgroundColor: color.accentPrimary,
                                 alignItems: "center",
                                 justifyContent: "center",
                                 marginRight: 12,
@@ -1828,7 +1829,7 @@ export default function ChallengeDetailScreen() {
                               {companion.displayName}
                             </Text>
                             {companion.twitterUsername && (
-                              <Text style={{ color: "#9CA3AF", fontSize: 12 }}>
+                              <Text style={{ color: color.textSecondary, fontSize: 12 }}>
                                 @{companion.twitterUsername}
                               </Text>
                             )}
@@ -1837,7 +1838,7 @@ export default function ChallengeDetailScreen() {
                             onPress={() => handleRemoveCompanion(companion.id)}
                             style={{ padding: 8 }}
                           >
-                            <MaterialIcons name="close" size={20} color="#6B7280" />
+                            <MaterialIcons name="close" size={20} color={color.textHint} />
                           </TouchableOpacity>
                         </View>
                       ))}
@@ -1854,30 +1855,30 @@ export default function ChallengeDetailScreen() {
                     alignItems: "center",
                     justifyContent: "space-between",
                   }}>
-                    <Text style={{ color: "#9CA3AF", fontSize: 14 }}>
+                    <Text style={{ color: color.textSecondary, fontSize: 14 }}>
                       あなたの貢献
                     </Text>
                     <View style={{ flexDirection: "row", alignItems: "baseline" }}>
-                      <Text style={{ color: "#EC4899", fontSize: 24, fontWeight: "bold" }}>
+                      <Text style={{ color: color.accentPrimary, fontSize: 24, fontWeight: "bold" }}>
                         {1 + companions.length}
                       </Text>
-                      <Text style={{ color: "#9CA3AF", fontSize: 14, marginLeft: 4 }}>人</Text>
+                      <Text style={{ color: color.textSecondary, fontSize: 14, marginLeft: 4 }}>人</Text>
                     </View>
                   </View>
-                  <Text style={{ color: "#6B7280", fontSize: 11, marginTop: 8 }}>
+                  <Text style={{ color: color.textHint, fontSize: 11, marginTop: 8 }}>
                     ※ 自分 + 友人{companions.length}人 = {1 + companions.length}人の貢献になります
                   </Text>
                 </View>
 
                 <View style={{ marginBottom: 16 }}>
-                  <Text style={{ color: "#9CA3AF", fontSize: 14, marginBottom: 8 }}>
+                  <Text style={{ color: color.textSecondary, fontSize: 14, marginBottom: 8 }}>
                     応援メッセージ（任意）
                   </Text>
                   <TextInput
                     value={message}
                     onChangeText={setMessage}
                     placeholder="応援メッセージを書いてね"
-                    placeholderTextColor="#6B7280"
+                    placeholderTextColor={color.textHint}
                     multiline
                     numberOfLines={3}
                     style={{
@@ -1886,7 +1887,7 @@ export default function ChallengeDetailScreen() {
                       padding: 12,
                       color: colors.foreground,
                       borderWidth: 1,
-                      borderColor: "#2D3139",
+                      borderColor: color.border,
                       minHeight: 80,
                       textAlignVertical: "top",
                     }}
@@ -1901,43 +1902,43 @@ export default function ChallengeDetailScreen() {
                     padding: 16,
                     marginBottom: 16,
                     borderWidth: 1,
-                    borderColor: "#2D3139",
+                    borderColor: color.border,
                   }}
                 >
                   <View style={{ flexDirection: "row", alignItems: "center", marginBottom: 12 }}>
                     <Text style={{ fontSize: 16 }}>🌈</Text>
-                    <Text style={{ color: "#EC4899", fontSize: 14, fontWeight: "bold", marginLeft: 8 }}>
+                    <Text style={{ color: color.accentPrimary, fontSize: 14, fontWeight: "bold", marginLeft: 8 }}>
                       みんなで楽しく応援するためのお約束
                     </Text>
                   </View>
-                  <View style={{ backgroundColor: "#1A1D21", borderRadius: 8, padding: 12, marginBottom: 12 }}>
-                    <Text style={{ color: "#9CA3AF", fontSize: 12, lineHeight: 18 }}>
+                  <View style={{ backgroundColor: color.surface, borderRadius: 8, padding: 12, marginBottom: 12 }}>
+                    <Text style={{ color: color.textSecondary, fontSize: 12, lineHeight: 18 }}>
                       りんくからのお願いだよ～！{"\n"}
                       みんなで仲良く、楽しく応援していこうね♪
                     </Text>
                   </View>
                   <View style={{ gap: 8 }}>
                     <View style={{ flexDirection: "row", alignItems: "flex-start" }}>
-                      <Text style={{ color: "#EC4899", marginRight: 8 }}>✱</Text>
-                      <Text style={{ color: "#9CA3AF", fontSize: 11, flex: 1, lineHeight: 16 }}>
+                      <Text style={{ color: color.accentPrimary, marginRight: 8 }}>✱</Text>
+                      <Text style={{ color: color.textSecondary, fontSize: 11, flex: 1, lineHeight: 16 }}>
                         このサイトは「アイドル応援ちゃんねる」が愛情たっぷりで運営してるよ！
                       </Text>
                     </View>
                     <View style={{ flexDirection: "row", alignItems: "flex-start" }}>
-                      <Text style={{ color: "#EC4899", marginRight: 8 }}>✱</Text>
-                      <Text style={{ color: "#9CA3AF", fontSize: 11, flex: 1, lineHeight: 16 }}>
+                      <Text style={{ color: color.accentPrimary, marginRight: 8 }}>✱</Text>
+                      <Text style={{ color: color.textSecondary, fontSize: 11, flex: 1, lineHeight: 16 }}>
                         素敵なコメントは、応援動画を作るときに使わせてもらうかも！
                       </Text>
                     </View>
                     <View style={{ flexDirection: "row", alignItems: "flex-start" }}>
-                      <Text style={{ color: "#EC4899", marginRight: 8 }}>✱</Text>
-                      <Text style={{ color: "#9CA3AF", fontSize: 11, flex: 1, lineHeight: 16 }}>
+                      <Text style={{ color: color.accentPrimary, marginRight: 8 }}>✱</Text>
+                      <Text style={{ color: color.textSecondary, fontSize: 11, flex: 1, lineHeight: 16 }}>
                         アイドルちゃんを傷つけるコメントや、迷惑なコメントは絶対ダメだよ～！
                       </Text>
                     </View>
                     <View style={{ flexDirection: "row", alignItems: "flex-start" }}>
-                      <Text style={{ color: "#EC4899", marginRight: 8 }}>✱</Text>
-                      <Text style={{ color: "#9CA3AF", fontSize: 11, flex: 1, lineHeight: 16 }}>
+                      <Text style={{ color: color.accentPrimary, marginRight: 8 }}>✱</Text>
+                      <Text style={{ color: color.textSecondary, fontSize: 11, flex: 1, lineHeight: 16 }}>
                         みんなの「応援のキモチ」で、アイドルちゃんたちをキラキラさせちゃおう！
                       </Text>
                     </View>
@@ -1947,7 +1948,7 @@ export default function ChallengeDetailScreen() {
                 {/* 参加条件 */}
                 <View
                   style={{
-                    backgroundColor: user?.isFollowingTarget ? "#10B981" : "#1DA1F2",
+                    backgroundColor: user?.isFollowingTarget ? color.successDark : color.twitter,
                     borderRadius: 12,
                     padding: 12,
                     marginBottom: 16,
@@ -1993,7 +1994,7 @@ export default function ChallengeDetailScreen() {
                     onPress={() => setShowForm(false)}
                     style={{
                       flex: 1,
-                      backgroundColor: "#2D3139",
+                      backgroundColor: color.border,
                       borderRadius: 12,
                       padding: 16,
                       alignItems: "center",
@@ -2014,7 +2015,7 @@ export default function ChallengeDetailScreen() {
                     }}
                   >
                     <LinearGradient
-                      colors={(!prefecture || !gender) ? ["#6B7280", "#4B5563"] : ["#EC4899", "#8B5CF6"]}
+                      colors={(!prefecture || !gender) ? [color.textHint, color.textDisabled] : [color.accentPrimary, color.accentAlt]}
                       start={{ x: 0, y: 0 }}
                       end={{ x: 1, y: 0 }}
                       style={{
@@ -2039,14 +2040,14 @@ export default function ChallengeDetailScreen() {
                     onPress={handleShare}
                     style={{
                       flex: 1,
-                      backgroundColor: "#1A1D21",
+                      backgroundColor: color.surface,
                       borderRadius: 12,
                       padding: 14,
                       alignItems: "center",
                       flexDirection: "row",
                       justifyContent: "center",
                       borderWidth: 1,
-                      borderColor: "#2D3139",
+                      borderColor: color.border,
                     }}
                   >
                     <MaterialIcons name="share" size={18} color={colors.foreground} />
@@ -2089,7 +2090,7 @@ export default function ChallengeDetailScreen() {
                   }}
                 >
                   <LinearGradient
-                    colors={["#EC4899", "#8B5CF6"]}
+                    colors={[color.accentPrimary, color.accentAlt]}
                     start={{ x: 0, y: 0 }}
                     end={{ x: 1, y: 0 }}
                     style={{
@@ -2127,13 +2128,13 @@ export default function ChallengeDetailScreen() {
           padding: 20,
         }}>
           <View style={{
-            backgroundColor: "#1A1D21",
+            backgroundColor: color.surface,
             borderRadius: 16,
             padding: 20,
             width: "100%",
             maxWidth: 400,
             borderWidth: 1,
-            borderColor: "#2D3139",
+            borderColor: color.border,
           }}>
             <Text style={{ color: colors.foreground, fontSize: 20, fontWeight: "bold", marginBottom: 16, textAlign: "center" }}>
               この内容でいいですか？
@@ -2146,9 +2147,9 @@ export default function ChallengeDetailScreen() {
               padding: 16,
               marginBottom: 16,
               borderWidth: 1,
-              borderColor: "#2D3139",
+              borderColor: color.border,
             }}>
-              <Text style={{ color: "#9CA3AF", fontSize: 12, marginBottom: 8 }}>参加者</Text>
+              <Text style={{ color: color.textSecondary, fontSize: 12, marginBottom: 8 }}>参加者</Text>
               <View style={{ flexDirection: "row", alignItems: "center", gap: 12 }}>
                 {user?.profileImage ? (
                   <Image
@@ -2157,7 +2158,7 @@ export default function ChallengeDetailScreen() {
                     contentFit="cover"
                   />
                 ) : (
-                  <View style={{ width: 48, height: 48, borderRadius: 24, backgroundColor: "#EC4899", justifyContent: "center", alignItems: "center" }}>
+                  <View style={{ width: 48, height: 48, borderRadius: 24, backgroundColor: color.accentPrimary, justifyContent: "center", alignItems: "center" }}>
                     <Text style={{ color: colors.foreground, fontSize: 20, fontWeight: "bold" }}>
                       {(user?.name || user?.username || "ゲ")?.charAt(0).toUpperCase()}
                     </Text>
@@ -2168,12 +2169,12 @@ export default function ChallengeDetailScreen() {
                     {user?.name || user?.username || "ゲスト"}
                   </Text>
                   {user?.username && (
-                    <Text style={{ color: "#9CA3AF", fontSize: 14, marginTop: 2 }}>
+                    <Text style={{ color: color.textSecondary, fontSize: 14, marginTop: 2 }}>
                       @{user.username}
                     </Text>
                   )}
                   {user?.followersCount !== undefined && user.followersCount > 0 && (
-                    <Text style={{ color: "#EC4899", fontSize: 12, marginTop: 4 }}>
+                    <Text style={{ color: color.accentPrimary, fontSize: 12, marginTop: 4 }}>
                       {user.followersCount.toLocaleString()} フォロワー
                     </Text>
                   )}
@@ -2189,9 +2190,9 @@ export default function ChallengeDetailScreen() {
                 padding: 12,
                 marginBottom: 12,
                 borderWidth: 1,
-                borderColor: "#2D3139",
+                borderColor: color.border,
               }}>
-                <Text style={{ color: "#9CA3AF", fontSize: 12, marginBottom: 4 }}>都道府県</Text>
+                <Text style={{ color: color.textSecondary, fontSize: 12, marginBottom: 4 }}>都道府県</Text>
                 <Text style={{ color: colors.foreground, fontSize: 16 }}>{prefecture}</Text>
               </View>
             )}
@@ -2204,22 +2205,22 @@ export default function ChallengeDetailScreen() {
                 padding: 12,
                 marginBottom: 12,
                 borderWidth: 1,
-                borderColor: "#2D3139",
+                borderColor: color.border,
               }}>
-                <Text style={{ color: "#9CA3AF", fontSize: 12, marginBottom: 8 }}>一緒に参加する友人（{companions.length}人）</Text>
+                <Text style={{ color: color.textSecondary, fontSize: 12, marginBottom: 8 }}>一緒に参加する友人（{companions.length}人）</Text>
                 <View style={{ gap: 8 }}>
                   {companions.map((c) => (
                     <View key={c.id} style={{ flexDirection: "row", alignItems: "center", gap: 8 }}>
                       {c.profileImage ? (
                         <Image source={{ uri: c.profileImage }} style={{ width: 24, height: 24, borderRadius: 12 }} />
                       ) : (
-                        <View style={{ width: 24, height: 24, borderRadius: 12, backgroundColor: "#8B5CF6", justifyContent: "center", alignItems: "center" }}>
+                        <View style={{ width: 24, height: 24, borderRadius: 12, backgroundColor: color.accentAlt, justifyContent: "center", alignItems: "center" }}>
                           <Text style={{ color: colors.foreground, fontSize: 10 }}>{c.displayName.charAt(0)}</Text>
                         </View>
                       )}
                       <Text style={{ color: colors.foreground, fontSize: 14 }}>{c.displayName}</Text>
                       {c.twitterUsername && (
-                        <Text style={{ color: "#9CA3AF", fontSize: 12 }}>@{c.twitterUsername}</Text>
+                        <Text style={{ color: color.textSecondary, fontSize: 12 }}>@{c.twitterUsername}</Text>
                       )}
                     </View>
                   ))}
@@ -2235,9 +2236,9 @@ export default function ChallengeDetailScreen() {
                 padding: 12,
                 marginBottom: 12,
                 borderWidth: 1,
-                borderColor: "#2D3139",
+                borderColor: color.border,
               }}>
-                <Text style={{ color: "#9CA3AF", fontSize: 12, marginBottom: 4 }}>応援メッセージ</Text>
+                <Text style={{ color: color.textSecondary, fontSize: 12, marginBottom: 4 }}>応援メッセージ</Text>
                 <Text style={{ color: colors.foreground, fontSize: 14 }}>{message}</Text>
               </View>
             )}
@@ -2252,14 +2253,14 @@ export default function ChallengeDetailScreen() {
               alignItems: "center",
               justifyContent: "space-between",
               borderWidth: 1,
-              borderColor: "#2D3139",
+              borderColor: color.border,
             }}>
-              <Text style={{ color: "#9CA3AF", fontSize: 14 }}>あなたの貢献</Text>
+              <Text style={{ color: color.textSecondary, fontSize: 14 }}>あなたの貢献</Text>
               <View style={{ flexDirection: "row", alignItems: "baseline" }}>
-                <Text style={{ color: "#EC4899", fontSize: 24, fontWeight: "bold" }}>
+                <Text style={{ color: color.accentPrimary, fontSize: 24, fontWeight: "bold" }}>
                   {1 + companions.length}
                 </Text>
-                <Text style={{ color: "#9CA3AF", fontSize: 14, marginLeft: 4 }}>人</Text>
+                <Text style={{ color: color.textSecondary, fontSize: 14, marginLeft: 4 }}>人</Text>
               </View>
             </View>
 
@@ -2269,7 +2270,7 @@ export default function ChallengeDetailScreen() {
                 onPress={() => setShowConfirmation(false)}
                 style={{
                   flex: 1,
-                  backgroundColor: "#2D3139",
+                  backgroundColor: color.border,
                   borderRadius: 12,
                   padding: 16,
                   alignItems: "center",
@@ -2289,7 +2290,7 @@ export default function ChallengeDetailScreen() {
                 }}
               >
                 <LinearGradient
-                  colors={["#EC4899", "#8B5CF6"]}
+                  colors={[color.accentPrimary, color.accentAlt]}
                   start={{ x: 0, y: 0 }}
                   end={{ x: 1, y: 0 }}
                   style={{
@@ -2401,20 +2402,20 @@ export default function ChallengeDetailScreen() {
           padding: 20,
         }}>
           <View style={{
-            backgroundColor: "#1A1D21",
+            backgroundColor: color.surface,
             borderRadius: 16,
             padding: 24,
             width: "100%",
             maxWidth: 400,
             borderWidth: 1,
-            borderColor: "#2D3139",
+            borderColor: color.border,
           }}>
             <View style={{ alignItems: "center", marginBottom: 20 }}>
-              <MaterialIcons name="warning" size={48} color="#EF4444" />
+              <MaterialIcons name="warning" size={48} color={color.danger} />
               <Text style={{ color: colors.foreground, fontSize: 20, fontWeight: "bold", marginTop: 12 }}>
                 参加表明を取り消しますか？
               </Text>
-              <Text style={{ color: "#9CA3AF", fontSize: 14, textAlign: "center", marginTop: 8 }}>
+              <Text style={{ color: color.textSecondary, fontSize: 14, textAlign: "center", marginTop: 8 }}>
                 この操作は取り消すことができません。
               </Text>
             </View>
@@ -2426,13 +2427,13 @@ export default function ChallengeDetailScreen() {
                 padding: 12,
                 marginBottom: 20,
                 borderWidth: 1,
-                borderColor: "#2D3139",
+                borderColor: color.border,
               }}>
                 <Text style={{ color: colors.foreground, fontSize: 14, fontWeight: "600" }}>
                   {deleteTargetParticipation.displayName}
                 </Text>
                 {deleteTargetParticipation.message && (
-                  <Text style={{ color: "#9CA3AF", fontSize: 13, marginTop: 4 }} numberOfLines={2}>
+                  <Text style={{ color: color.textSecondary, fontSize: 13, marginTop: 4 }} numberOfLines={2}>
                     {deleteTargetParticipation.message}
                   </Text>
                 )}
@@ -2447,7 +2448,7 @@ export default function ChallengeDetailScreen() {
                 }}
                 style={{
                   flex: 1,
-                  backgroundColor: "#2D3139",
+                  backgroundColor: color.border,
                   borderRadius: 12,
                   padding: 16,
                   alignItems: "center",
@@ -2464,7 +2465,7 @@ export default function ChallengeDetailScreen() {
                 disabled={deleteParticipationMutation.isPending}
                 style={{
                   flex: 1,
-                  backgroundColor: "#EF4444",
+                  backgroundColor: color.danger,
                   borderRadius: 12,
                   padding: 16,
                   alignItems: "center",

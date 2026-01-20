@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { color, palette } from "@/theme/tokens";
 import { View, Text, ScrollView, TouchableOpacity, Switch, Alert } from "react-native";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import { ScreenContainer } from "@/components/organisms/screen-container";
@@ -160,8 +161,8 @@ export default function ReminderSettingsScreen() {
             <Switch
               value={dayBefore}
               onValueChange={(value) => handleToggle("day_before", value)}
-              trackColor={{ false: "#334155", true: "#f472b6" }}
-              thumbColor={dayBefore ? "#ec4899" : "#94a3b8"}
+              trackColor={{ false: color.borderAlt, true: color.pink400 }}
+              thumbColor={dayBefore ? color.accentPrimary : "#94a3b8"}
             />
           </View>
 
@@ -178,8 +179,8 @@ export default function ReminderSettingsScreen() {
             <Switch
               value={dayOf}
               onValueChange={(value) => handleToggle("day_of", value)}
-              trackColor={{ false: "#334155", true: "#f472b6" }}
-              thumbColor={dayOf ? "#ec4899" : "#94a3b8"}
+              trackColor={{ false: color.borderAlt, true: color.pink400 }}
+              thumbColor={dayOf ? color.accentPrimary : "#94a3b8"}
             />
           </View>
 
@@ -196,8 +197,8 @@ export default function ReminderSettingsScreen() {
             <Switch
               value={hourBefore}
               onValueChange={(value) => handleToggle("hour_before", value)}
-              trackColor={{ false: "#334155", true: "#f472b6" }}
-              thumbColor={hourBefore ? "#ec4899" : "#94a3b8"}
+              trackColor={{ false: color.borderAlt, true: color.pink400 }}
+              thumbColor={hourBefore ? color.accentPrimary : "#94a3b8"}
             />
           </View>
         </View>

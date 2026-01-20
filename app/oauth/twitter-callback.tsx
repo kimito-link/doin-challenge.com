@@ -1,4 +1,5 @@
 import { ThemedView } from "@/components/atoms/themed-view";
+import { color, palette } from "@/theme/tokens";
 // v5.39: description field support
 import { FollowSuccessModal } from "@/components/molecules/follow-success-modal";
 import * as Auth from "@/lib/_core/auth";
@@ -242,7 +243,7 @@ export default function TwitterOAuthCallback() {
               style={{ marginVertical: 12 }}
             />
             
-            <ActivityIndicator size="large" color="#F97316" />
+            <ActivityIndicator size="large" color={color.orange500} />
             <Text className="mt-2 text-base leading-6 text-center text-foreground">
               認証を完了しています...
             </Text>

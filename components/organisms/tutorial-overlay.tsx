@@ -1,4 +1,5 @@
 import { View, Text, TouchableOpacity, Dimensions, StyleSheet, Platform } from "react-native";
+import { color, palette } from "@/theme/tokens";
 import { useEffect, useState } from "react";
 import Animated, {
   useSharedValue,
@@ -113,12 +114,12 @@ function Confetti({ active }: { active: boolean }) {
       transform: [{ rotate: `${rotation.value}deg` }, { scale: scale.value }],
     }));
 
-    const colors = ["#FF6B6B", "#4ECDC4", "#FFE66D", "#95E1D3", "#F38181", "#DD6500"];
-    const color = colors[i % colors.length];
+    const confettiColors = [color.coral, "#4ECDC4", "#FFE66D", "#95E1D3", "#F38181", color.hostAccentLegacy];
+    const pieceColor = confettiColors[i % confettiColors.length];
 
     return (
       <Animated.View key={i} style={style}>
-        <View style={{ width: 10, height: 10, backgroundColor: color, borderRadius: 2 }} />
+        <View style={{ width: 10, height: 10, backgroundColor: pieceColor, borderRadius: 2 }} />
       </Animated.View>
     );
   });
@@ -157,7 +158,7 @@ function Sparkles({ active }: { active: boolean }) {
 
     return (
       <Animated.View key={i} style={[style, { left: x, top: y }]}>
-        <Text style={{ fontSize: 20, color: "#FFD700" }}>✦</Text>
+        <Text style={{ fontSize: 20, color: color.rankGold }}>✦</Text>
       </Animated.View>
     );
   });
@@ -176,26 +177,26 @@ function MapPreview() {
         {/* 簡易日本地図 */}
         <G>
           {/* 北海道 */}
-          <Circle cx={160} cy={30} r={15} fill="#FFB3B3" stroke="#DD6500" strokeWidth={1} />
+          <Circle cx={160} cy={30} r={15} fill="#FFB3B3" stroke={color.hostAccentLegacy} strokeWidth={1} />
           {/* 東北 */}
-          <Circle cx={150} cy={55} r={12} fill="#FFD9D9" stroke="#DD6500" strokeWidth={1} />
+          <Circle cx={150} cy={55} r={12} fill="#FFD9D9" stroke={color.hostAccentLegacy} strokeWidth={1} />
           {/* 関東（赤く強調） */}
-          <Circle cx={145} cy={80} r={18} fill="#FF4444" stroke="#DD6500" strokeWidth={2} />
+          <Circle cx={145} cy={80} r={18} fill="#FF4444" stroke={color.hostAccentLegacy} strokeWidth={2} />
           {/* 中部 */}
-          <Circle cx={125} cy={85} r={14} fill="#FFCCCC" stroke="#DD6500" strokeWidth={1} />
+          <Circle cx={125} cy={85} r={14} fill="#FFCCCC" stroke={color.hostAccentLegacy} strokeWidth={1} />
           {/* 関西 */}
-          <Circle cx={105} cy={95} r={16} fill="#FF8888" stroke="#DD6500" strokeWidth={1} />
+          <Circle cx={105} cy={95} r={16} fill="#FF8888" stroke={color.hostAccentLegacy} strokeWidth={1} />
           {/* 中国 */}
-          <Circle cx={75} cy={100} r={12} fill="#FFE0E0" stroke="#DD6500" strokeWidth={1} />
+          <Circle cx={75} cy={100} r={12} fill="#FFE0E0" stroke={color.hostAccentLegacy} strokeWidth={1} />
           {/* 四国 */}
-          <Circle cx={90} cy={115} r={10} fill="#FFD9D9" stroke="#DD6500" strokeWidth={1} />
+          <Circle cx={90} cy={115} r={10} fill="#FFD9D9" stroke={color.hostAccentLegacy} strokeWidth={1} />
           {/* 九州 */}
-          <Circle cx={50} cy={115} r={14} fill="#FFCCCC" stroke="#DD6500" strokeWidth={1} />
+          <Circle cx={50} cy={115} r={14} fill="#FFCCCC" stroke={color.hostAccentLegacy} strokeWidth={1} />
         </G>
         {/* 凡例 */}
-        <SvgText x={10} y={20} fontSize={10} fill="#FFFFFF">参加者が多い</SvgText>
+        <SvgText x={10} y={20} fontSize={10} fill={color.textWhite}>参加者が多い</SvgText>
         <Rect x={10} y={25} width={15} height={8} fill="#FF4444" />
-        <SvgText x={10} y={50} fontSize={10} fill="#FFFFFF">参加者が少ない</SvgText>
+        <SvgText x={10} y={50} fontSize={10} fill={color.textWhite}>参加者が少ない</SvgText>
         <Rect x={10} y={55} width={15} height={8} fill="#FFE0E0" />
       </Svg>
       <Text style={previewStyles.caption}>地域別参加者マップ</Text>
@@ -248,14 +249,14 @@ function ChartPreview() {
           {/* 女性（ピンク） */}
           <Path
             d="M 0 0 L -20 34.6 A 40 40 0 1 1 40 0 Z"
-            fill="#EC4899"
+            fill={color.accentPrimary}
           />
         </G>
         {/* 凡例 */}
-        <Rect x={5} y={10} width={12} height={12} fill="#EC4899" />
-        <SvgText x={20} y={20} fontSize={10} fill="#FFFFFF">女性 65%</SvgText>
+        <Rect x={5} y={10} width={12} height={12} fill={color.accentPrimary} />
+        <SvgText x={20} y={20} fontSize={10} fill={color.textWhite}>女性 65%</SvgText>
         <Rect x={5} y={30} width={12} height={12} fill="#4A90D9" />
-        <SvgText x={20} y={40} fontSize={10} fill="#FFFFFF">男性 35%</SvgText>
+        <SvgText x={20} y={40} fontSize={10} fill={color.textWhite}>男性 35%</SvgText>
       </Svg>
       <Text style={previewStyles.caption}>参加者の男女比</Text>
     </View>
@@ -602,7 +603,7 @@ const styles = StyleSheet.create({
     height: 120,
   },
   speechBubble: {
-    backgroundColor: "#FFFFFF",
+    backgroundColor: color.textWhite,
     paddingHorizontal: 16,
     paddingVertical: 10,
     borderRadius: 16,
@@ -625,10 +626,10 @@ const styles = StyleSheet.create({
     borderBottomWidth: 8,
     borderBottomColor: "transparent",
     borderRightWidth: 10,
-    borderRightColor: "#FFFFFF",
+    borderRightColor: color.textWhite,
   },
   messageBubble: {
-    backgroundColor: "#DD6500",
+    backgroundColor: color.hostAccentLegacy,
     paddingHorizontal: 28,
     paddingVertical: 20,
     borderRadius: 24,
@@ -640,7 +641,7 @@ const styles = StyleSheet.create({
     elevation: 8,
   },
   messageText: {
-    color: "#FFFFFF",
+    color: color.textWhite,
     fontSize: 24,
     fontWeight: "bold",
     textAlign: "center",
@@ -665,11 +666,11 @@ const styles = StyleSheet.create({
     backgroundColor: "rgba(255, 255, 255, 0.3)",
   },
   stepDotActive: {
-    backgroundColor: "#DD6500",
+    backgroundColor: color.hostAccentLegacy,
     width: 24,
   },
   stepDotCompleted: {
-    backgroundColor: "#22C55E",
+    backgroundColor: color.success,
   },
   tapHintContainer: {
     marginTop: 16,
@@ -715,7 +716,7 @@ const styles = StyleSheet.create({
     backgroundColor: "rgba(255, 255, 255, 0.08)",
   },
   navBubblePrimary: {
-    backgroundColor: "#FF6B9D",
+    backgroundColor: color.hotPink,
   },
   navBubbleTailLeft: {
     position: "absolute",
@@ -741,10 +742,10 @@ const styles = StyleSheet.create({
     borderBottomWidth: 5,
     borderBottomColor: "transparent",
     borderLeftWidth: 6,
-    borderLeftColor: "#FF6B9D",
+    borderLeftColor: color.hotPink,
   },
   navBubbleText: {
-    color: "#FFFFFF",
+    color: color.textWhite,
     fontSize: 13,
     fontWeight: "600",
   },
@@ -752,7 +753,7 @@ const styles = StyleSheet.create({
     color: "rgba(255, 255, 255, 0.4)",
   },
   navBubbleTextPrimary: {
-    color: "#FFFFFF",
+    color: color.textWhite,
     fontSize: 13,
     fontWeight: "700",
   },
@@ -785,14 +786,14 @@ const previewStyles = StyleSheet.create({
     width: 32,
     height: 32,
     borderRadius: 16,
-    backgroundColor: "#DD6500",
+    backgroundColor: color.hostAccentLegacy,
     marginRight: 10,
   },
   listItemContent: {
     flex: 1,
   },
   listItemName: {
-    color: "#FFFFFF",
+    color: color.textWhite,
     fontSize: 12,
     fontWeight: "600",
   },
@@ -812,7 +813,7 @@ const previewStyles = StyleSheet.create({
     fontSize: 24,
   },
   notificationTitle: {
-    color: "#FFFFFF",
+    color: color.textWhite,
     fontSize: 12,
     fontWeight: "bold",
   },
@@ -829,7 +830,7 @@ const previewStyles = StyleSheet.create({
     marginBottom: 8,
   },
   crownText: {
-    color: "#FFD700",
+    color: color.rankGold,
     fontSize: 16,
     fontWeight: "bold",
   },

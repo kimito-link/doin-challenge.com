@@ -1,4 +1,5 @@
 import { View, Text, StyleSheet, TouchableOpacity, Dimensions } from "react-native";
+import { color, palette } from "@/theme/tokens";
 import { useMemo } from "react";
 
 const screenWidth = Dimensions.get("window").width;
@@ -17,7 +18,7 @@ const regionColors = {
   "中部": { bg: "#FFF176", text: "#000" },        // 黄色
   "関西": { bg: "#FFB74D", text: "#000" },        // オレンジ
   "中国・四国": { bg: "#F48FB1", text: "#000" },  // ピンク
-  "九州・沖縄": { bg: "#EF5350", text: "#fff" },  // 赤
+  "九州・沖縄": { bg: "#EF5350", text: color.textWhite },  // 赤
 };
 
 // 地域と都道府県のマッピング
@@ -218,7 +219,7 @@ export function JapanBlockMap({ prefectureCounts, onPrefecturePress, onRegionPre
 
 const styles = StyleSheet.create({
   container: {
-    backgroundColor: "#1E2022",
+    backgroundColor: color.surface,
     borderRadius: 16,
     padding: 16,
     marginVertical: 8,
@@ -232,11 +233,11 @@ const styles = StyleSheet.create({
   title: {
     fontSize: 18,
     fontWeight: "bold",
-    color: "#ECEDEE",
+    color: color.textPrimary,
   },
   subtitle: {
     fontSize: 14,
-    color: "#9BA1A6",
+    color: color.textSecondary,
   },
   mapContainer: {
     flexDirection: "row",
@@ -273,7 +274,7 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     justifyContent: "center",
     alignItems: "center",
-    backgroundColor: "#2D3139",
+    backgroundColor: color.border,
     borderRadius: 12,
     padding: 16,
     marginBottom: 12,
@@ -285,17 +286,17 @@ const styles = StyleSheet.create({
   statValue: {
     fontSize: 24,
     fontWeight: "bold",
-    color: "#ECEDEE",
+    color: color.textPrimary,
   },
   statLabel: {
     fontSize: 12,
-    color: "#9BA1A6",
+    color: color.textSecondary,
     marginTop: 4,
   },
   statDivider: {
     width: 1,
     height: 40,
-    backgroundColor: "#CBD5E0",
+    backgroundColor: color.textSubtle,
   },
   hotHighlight: {
     flexDirection: "row",
@@ -314,18 +315,18 @@ const styles = StyleSheet.create({
   hotTitle: {
     fontSize: 16,
     fontWeight: "bold",
-    color: "#FF6B6B",
+    color: color.coral,
   },
   hotSubtitle: {
     fontSize: 12,
-    color: "#9BA1A6",
+    color: color.textSecondary,
   },
   legend: {
     marginTop: 8,
   },
   legendTitle: {
     fontSize: 12,
-    color: "#9BA1A6",
+    color: color.textSecondary,
     marginBottom: 8,
   },
   legendItems: {
@@ -345,6 +346,6 @@ const styles = StyleSheet.create({
   },
   legendText: {
     fontSize: 10,
-    color: "#9BA1A6",
+    color: color.textSecondary,
   },
 });

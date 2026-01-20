@@ -1,4 +1,5 @@
 import { View, Text, StyleSheet, Animated } from "react-native";
+import { color, palette } from "@/theme/tokens";
 import MaterialIcons from "@expo/vector-icons/MaterialIcons";
 import { useEffect, useRef, useState } from "react";
 import { addNetworkListener, initNetworkMonitoring } from "@/lib/offline-cache";
@@ -54,7 +55,7 @@ export function OfflineBanner() {
         { transform: [{ translateY: slideAnim }] },
       ]}
     >
-      <MaterialIcons name="wifi-off" size={16} color="#fff" />
+      <MaterialIcons name="wifi-off" size={16} color={color.textWhite} />
       <Text style={styles.text}>
         オフラインです。一部の機能が制限されます。
       </Text>
@@ -68,7 +69,7 @@ export function OfflineBanner() {
 export function OfflinePlaceholder({ message }: { message?: string }) {
   return (
     <View style={styles.placeholder}>
-      <MaterialIcons name="cloud-off" size={48} color="#CBD5E0" />
+      <MaterialIcons name="cloud-off" size={48} color={color.textSubtle} />
       <Text style={styles.placeholderTitle}>オフラインです</Text>
       <Text style={styles.placeholderText}>
         {message || "インターネット接続を確認してください"}
@@ -85,7 +86,7 @@ export function CachedDataIndicator({ isStale }: { isStale: boolean }) {
 
   return (
     <View style={styles.cachedIndicator}>
-      <MaterialIcons name="history" size={12} color="#F59E0B" />
+      <MaterialIcons name="history" size={12} color={color.warning} />
       <Text style={styles.cachedText}>キャッシュデータを表示中</Text>
     </View>
   );
@@ -97,7 +98,7 @@ const styles = StyleSheet.create({
     top: 0,
     left: 0,
     right: 0,
-    backgroundColor: "#EF4444",
+    backgroundColor: color.danger,
     paddingVertical: 8,
     paddingHorizontal: 16,
     flexDirection: "row",
@@ -107,7 +108,7 @@ const styles = StyleSheet.create({
     zIndex: 1000,
   },
   text: {
-    color: "#fff",
+    color: color.textWhite,
     fontSize: 12,
     fontWeight: "500",
   },
@@ -118,13 +119,13 @@ const styles = StyleSheet.create({
     padding: 32,
   },
   placeholderTitle: {
-    color: "#fff",
+    color: color.textWhite,
     fontSize: 18,
     fontWeight: "bold",
     marginTop: 16,
   },
   placeholderText: {
-    color: "#D1D5DB",
+    color: color.textMuted,
     fontSize: 14,
     marginTop: 8,
     textAlign: "center",
@@ -139,7 +140,7 @@ const styles = StyleSheet.create({
     borderRadius: 4,
   },
   cachedText: {
-    color: "#F59E0B",
+    color: color.warning,
     fontSize: 10,
   },
 });

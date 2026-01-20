@@ -5,6 +5,7 @@
  */
 
 import { ScreenContainer } from "@/components/organisms/screen-container";
+import { color, palette } from "@/theme/tokens";
 import { useColors } from "@/hooks/use-colors";
 import { trpc } from "@/lib/trpc";
 import { useCallback, useState } from "react";
@@ -146,7 +147,7 @@ export default function ChallengesScreen() {
             >
               <Text
                 style={{
-                  color: filter === item.key ? "#fff" : colors.foreground,
+                  color: filter === item.key ? color.textWhite : colors.foreground,
                   fontWeight: filter === item.key ? "600" : "400",
                 }}
               >

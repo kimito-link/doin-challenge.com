@@ -1,4 +1,5 @@
 import { ScrollView, Text, View, TouchableOpacity, Share, Alert } from "react-native";
+import { color, palette } from "@/theme/tokens";
 import { Image } from "expo-image";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import { ScreenContainer } from "@/components/organisms/screen-container";
@@ -52,7 +53,7 @@ export default function AchievementPage() {
     return (
       <ScreenContainer containerClassName="bg-background">
         <View style={{ flex: 1, alignItems: "center", justifyContent: "center", backgroundColor: colors.background }}>
-          <Text style={{ color: "#D1D5DB" }}>読み込み中...</Text>
+          <Text style={{ color: color.textMuted }}>読み込み中...</Text>
         </View>
       </ScreenContainer>
     );
@@ -62,7 +63,7 @@ export default function AchievementPage() {
     return (
       <ScreenContainer containerClassName="bg-background">
         <View style={{ flex: 1, alignItems: "center", justifyContent: "center", backgroundColor: colors.background }}>
-          <Text style={{ color: "#D1D5DB" }}>チャレンジが見つかりません</Text>
+          <Text style={{ color: color.textMuted }}>チャレンジが見つかりません</Text>
         </View>
       </ScreenContainer>
     );
@@ -72,10 +73,10 @@ export default function AchievementPage() {
     return (
       <ScreenContainer containerClassName="bg-background">
         <View style={{ flex: 1, alignItems: "center", justifyContent: "center", backgroundColor: colors.background }}>
-          <Text style={{ color: "#D1D5DB" }}>達成記念ページはまだ作成されていません</Text>
+          <Text style={{ color: color.textMuted }}>達成記念ページはまだ作成されていません</Text>
           <TouchableOpacity
             onPress={() => router.back()}
-            style={{ marginTop: 16, paddingHorizontal: 24, paddingVertical: 12, backgroundColor: "#EC4899", borderRadius: 24 }}
+            style={{ marginTop: 16, paddingHorizontal: 24, paddingVertical: 12, backgroundColor: color.accentPrimary, borderRadius: 24 }}
           >
             <Text style={{ color: colors.foreground, fontWeight: "bold" }}>戻る</Text>
           </TouchableOpacity>
@@ -118,7 +119,7 @@ export default function AchievementPage() {
 
         {/* 達成バナー */}
         <LinearGradient
-          colors={["#EC4899", "#8B5CF6", "#6366F1"]}
+          colors={[color.accentPrimary, color.accentAlt, "#6366F1"]}
           start={{ x: 0, y: 0 }}
           end={{ x: 1, y: 1 }}
           style={{ marginHorizontal: 16, borderRadius: 24, padding: 24, alignItems: "center" }}
@@ -136,53 +137,53 @@ export default function AchievementPage() {
         <View style={{ padding: 16 }}>
           <View
             style={{
-              backgroundColor: "#1A1D21",
+              backgroundColor: color.surface,
               borderRadius: 16,
               padding: 20,
               borderWidth: 1,
-              borderColor: "#2D3139",
+              borderColor: color.border,
             }}
           >
             <View style={{ flexDirection: "row", justifyContent: "space-around", marginBottom: 20 }}>
               <View style={{ alignItems: "center" }}>
-                <Text style={{ color: "#EC4899", fontSize: 36, fontWeight: "bold" }}>
+                <Text style={{ color: color.accentPrimary, fontSize: 36, fontWeight: "bold" }}>
                   {achievementPage.finalValue}
                 </Text>
-                <Text style={{ color: "#D1D5DB", fontSize: 12 }}>
+                <Text style={{ color: color.textMuted, fontSize: 12 }}>
                   達成{challenge.goalUnit || "人"}数
                 </Text>
               </View>
-              <View style={{ width: 1, backgroundColor: "#2D3139" }} />
+              <View style={{ width: 1, backgroundColor: color.border }} />
               <View style={{ alignItems: "center" }}>
-                <Text style={{ color: "#8B5CF6", fontSize: 36, fontWeight: "bold" }}>
+                <Text style={{ color: color.accentAlt, fontSize: 36, fontWeight: "bold" }}>
                   {achievementPage.totalParticipants}
                 </Text>
-                <Text style={{ color: "#D1D5DB", fontSize: 12 }}>
+                <Text style={{ color: color.textMuted, fontSize: 12 }}>
                   参加者数
                 </Text>
               </View>
-              <View style={{ width: 1, backgroundColor: "#2D3139" }} />
+              <View style={{ width: 1, backgroundColor: color.border }} />
               <View style={{ alignItems: "center" }}>
                 <Text style={{ color: "#6366F1", fontSize: 36, fontWeight: "bold" }}>
                   {Math.round((achievementPage.finalValue / achievementPage.goalValue) * 100)}%
                 </Text>
-                <Text style={{ color: "#D1D5DB", fontSize: 12 }}>
+                <Text style={{ color: color.textMuted, fontSize: 12 }}>
                   達成率
                 </Text>
               </View>
             </View>
 
-            <View style={{ borderTopWidth: 1, borderTopColor: "#2D3139", paddingTop: 16 }}>
+            <View style={{ borderTopWidth: 1, borderTopColor: color.border, paddingTop: 16 }}>
               <View style={{ flexDirection: "row", alignItems: "center", marginBottom: 8 }}>
-                <MaterialIcons name="event" size={16} color="#DD6500" />
-                <Text style={{ color: "#D1D5DB", fontSize: 14, marginLeft: 8 }}>
+                <MaterialIcons name="event" size={16} color={color.hostAccentLegacy} />
+                <Text style={{ color: color.textMuted, fontSize: 14, marginLeft: 8 }}>
                   達成日: {formattedDate}
                 </Text>
               </View>
               {challenge.venue && (
                 <View style={{ flexDirection: "row", alignItems: "center" }}>
-                  <MaterialIcons name="place" size={16} color="#D1D5DB" />
-                  <Text style={{ color: "#D1D5DB", fontSize: 14, marginLeft: 8 }}>
+                  <MaterialIcons name="place" size={16} color={color.textMuted} />
+                  <Text style={{ color: color.textMuted, fontSize: 14, marginLeft: 8 }}>
                     {challenge.venue}
                   </Text>
                 </View>
@@ -196,11 +197,11 @@ export default function AchievementPage() {
           <View style={{ paddingHorizontal: 16, marginBottom: 16 }}>
             <View
               style={{
-                backgroundColor: "#1A1D21",
+                backgroundColor: color.surface,
                 borderRadius: 16,
                 padding: 20,
                 borderWidth: 1,
-                borderColor: "#2D3139",
+                borderColor: color.border,
               }}
             >
               <Text style={{ color: colors.foreground, fontSize: 16, lineHeight: 24 }}>
@@ -214,20 +215,20 @@ export default function AchievementPage() {
         <View style={{ padding: 16 }}>
           <View
             style={{
-              backgroundColor: "#1A1D21",
+              backgroundColor: color.surface,
               borderRadius: 16,
               padding: 20,
               borderWidth: 1,
-              borderColor: "#2D3139",
+              borderColor: color.border,
             }}
           >
             <View style={{ flexDirection: "row", alignItems: "center", marginBottom: 16 }}>
-              <MaterialIcons name="people" size={24} color="#EC4899" />
+              <MaterialIcons name="people" size={24} color={color.accentPrimary} />
               <Text style={{ color: colors.foreground, fontSize: 18, fontWeight: "bold", marginLeft: 8 }}>
                 参加者の皆さん
               </Text>
               <View style={{ flex: 1 }} />
-              <Text style={{ color: "#D1D5DB", fontSize: 14 }}>
+              <Text style={{ color: color.textMuted, fontSize: 14 }}>
                 {participations?.length || 0}人
               </Text>
             </View>
@@ -254,7 +255,7 @@ export default function AchievementPage() {
                         width: 48,
                         height: 48,
                         borderRadius: 24,
-                        backgroundColor: "#EC4899",
+                        backgroundColor: color.accentPrimary,
                         alignItems: "center",
                         justifyContent: "center",
                         marginBottom: 4,
@@ -266,13 +267,13 @@ export default function AchievementPage() {
                     </View>
                   )}
                   <Text
-                    style={{ color: "#D1D5DB", fontSize: 10, textAlign: "center" }}
+                    style={{ color: color.textMuted, fontSize: 10, textAlign: "center" }}
                     numberOfLines={1}
                   >
                     {p.isAnonymous ? "匿名" : p.displayName}
                   </Text>
                   {p.contribution > 1 && (
-                    <Text style={{ color: "#EC4899", fontSize: 10 }}>
+                    <Text style={{ color: color.accentPrimary, fontSize: 10 }}>
                       +{p.contribution}
                     </Text>
                   )}
@@ -287,12 +288,12 @@ export default function AchievementPage() {
                 style={{
                   marginTop: 16,
                   paddingVertical: 12,
-                  backgroundColor: "#2D3139",
+                  backgroundColor: color.border,
                   borderRadius: 12,
                   alignItems: "center",
                 }}
               >
-                <Text style={{ color: "#EC4899", fontWeight: "bold" }}>
+                <Text style={{ color: color.accentPrimary, fontWeight: "bold" }}>
                   すべての参加者を見る ({participations.length - 20}人)
                 </Text>
               </TouchableOpacity>
@@ -312,7 +313,7 @@ export default function AchievementPage() {
             <Text style={{ color: colors.foreground, fontSize: 18, fontWeight: "bold", textAlign: "center", marginBottom: 8 }}>
               ありがとうございました！
             </Text>
-            <Text style={{ color: "#D1D5DB", fontSize: 14, textAlign: "center", lineHeight: 22 }}>
+            <Text style={{ color: color.textMuted, fontSize: 14, textAlign: "center", lineHeight: 22 }}>
               皆さんの応援のおかげで目標を達成することができました。{"\n"}
               これからも一緒に応援していきましょう！
             </Text>
@@ -327,7 +328,7 @@ export default function AchievementPage() {
               flexDirection: "row",
               alignItems: "center",
               justifyContent: "center",
-              backgroundColor: "#1DA1F2",
+              backgroundColor: color.twitter,
               paddingVertical: 16,
               borderRadius: 24,
             }}

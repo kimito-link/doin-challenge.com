@@ -1,4 +1,5 @@
 import { View, ScrollView, Dimensions, StyleSheet } from "react-native";
+import { color, palette } from "@/theme/tokens";
 import { Skeleton } from "@/components/atoms/skeleton-loader";
 import { ScreenContainer } from "@/components/organisms/screen-container";
 import { AppHeader } from "@/components/organisms/app-header";
@@ -12,7 +13,7 @@ export function EventDetailSkeleton() {
   return (
     <ScreenContainer containerClassName="bg-[#0D1117]">
       <AppHeader title="" />
-      <ScrollView style={{ flex: 1, backgroundColor: "#0D1117" }}>
+      <ScrollView style={{ flex: 1, backgroundColor: color.bg }}>
         {/* ヘッダー画像エリア */}
         <View style={styles.headerArea}>
           <Skeleton width={screenWidth} height={200} borderRadius={0} />
@@ -134,17 +135,17 @@ const styles = StyleSheet.create({
     padding: 16,
   },
   progressCard: {
-    backgroundColor: "#1A1D21",
+    backgroundColor: color.surface,
     borderRadius: 12,
     padding: 16,
   },
   formCard: {
-    backgroundColor: "#1A1D21",
+    backgroundColor: color.surface,
     borderRadius: 12,
     padding: 16,
   },
   participantCard: {
-    backgroundColor: "#1A1D21",
+    backgroundColor: color.surface,
     borderRadius: 12,
     padding: 12,
     marginBottom: 8,

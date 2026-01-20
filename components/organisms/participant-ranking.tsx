@@ -1,4 +1,5 @@
 import { View, Text, FlatList, StyleSheet, Platform } from "react-native";
+import { color, palette } from "@/theme/tokens";
 import { useMemo, useCallback } from "react";
 import { Image } from "expo-image";
 import MaterialIcons from "@expo/vector-icons/MaterialIcons";
@@ -26,9 +27,9 @@ interface ParticipantRankingProps {
 
 // ランキングバッジの色
 const RANK_COLORS = {
-  1: { bg: "#FFD700", text: "#000", gradient: ["#FFD700", "#FFA500"] as const },
-  2: { bg: "#C0C0C0", text: "#000", gradient: ["#E8E8E8", "#C0C0C0"] as const },
-  3: { bg: "#CD7F32", text: "#fff", gradient: ["#CD7F32", "#8B4513"] as const },
+  1: { bg: color.rankGold, text: "#000", gradient: [color.rankGold, "#FFA500"] as const },
+  2: { bg: color.rankSilver, text: "#000", gradient: ["#E8E8E8", color.rankSilver] as const },
+  3: { bg: color.rankBronze, text: color.textWhite, gradient: [color.rankBronze, "#8B4513"] as const },
 };
 
 // ランキングバッジのアイコン
@@ -93,7 +94,7 @@ function RankItem({ participant, rank, showBadge }: RankItemProps) {
             <MaterialIcons
               name={participant.isAnonymous ? "person-off" : "person"}
               size={isTopThree ? 24 : 20}
-              color="#CBD5E0"
+              color={color.textSubtle}
             />
           </View>
         )}
@@ -176,7 +177,7 @@ export function ParticipantRanking({
       <View style={styles.container}>
         <Text style={styles.title}>{title}</Text>
         <View style={styles.emptyState}>
-          <MaterialIcons name="emoji-events" size={48} color="#CBD5E0" />
+          <MaterialIcons name="emoji-events" size={48} color={color.textSubtle} />
           <Text style={styles.emptyText}>まだ参加者がいません</Text>
         </View>
       </View>
@@ -194,7 +195,7 @@ export function ParticipantRanking({
       {/* ヘッダー */}
       <View style={styles.header}>
         <View style={styles.headerLeft}>
-          <MaterialIcons name="emoji-events" size={24} color="#FFD700" />
+          <MaterialIcons name="emoji-events" size={24} color={color.rankGold} />
           <Text style={styles.title}>{title}</Text>
         </View>
         <View style={styles.headerStats}>
@@ -255,7 +256,7 @@ export function TopThreeRanking({ participants }: { participants: Participant[] 
                 contentFit="cover"
               />
             ) : (
-              <MaterialIcons name="person" size={24} color="#CBD5E0" />
+              <MaterialIcons name="person" size={24} color={color.textSubtle} />
             )}
           </View>
           <Text style={styles.topThreeName} numberOfLines={1}>
@@ -279,7 +280,7 @@ export function TopThreeRanking({ participants }: { participants: Participant[] 
                 contentFit="cover"
               />
             ) : (
-              <MaterialIcons name="person" size={32} color="#CBD5E0" />
+              <MaterialIcons name="person" size={32} color={color.textSubtle} />
             )}
           </View>
           <Text style={[styles.topThreeName, styles.topThreeNameFirst]} numberOfLines={1}>
@@ -305,7 +306,7 @@ export function TopThreeRanking({ participants }: { participants: Participant[] 
                 contentFit="cover"
               />
             ) : (
-              <MaterialIcons name="person" size={24} color="#CBD5E0" />
+              <MaterialIcons name="person" size={24} color={color.textSubtle} />
             )}
           </View>
           <Text style={styles.topThreeName} numberOfLines={1}>
@@ -320,7 +321,7 @@ export function TopThreeRanking({ participants }: { participants: Participant[] 
 
 const styles = StyleSheet.create({
   container: {
-    backgroundColor: "#1A1D21",
+    backgroundColor: color.surface,
     borderRadius: 16,
     padding: 16,
     marginBottom: 16,
@@ -337,17 +338,17 @@ const styles = StyleSheet.create({
     gap: 8,
   },
   headerStats: {
-    backgroundColor: "#2D3139",
+    backgroundColor: color.border,
     paddingHorizontal: 10,
     paddingVertical: 4,
     borderRadius: 12,
   },
   statText: {
-    color: "#D1D5DB",
+    color: color.textMuted,
     fontSize: 12,
   },
   title: {
-    color: "#fff",
+    color: color.textWhite,
     fontSize: 18,
     fontWeight: "bold",
   },
@@ -357,7 +358,7 @@ const styles = StyleSheet.create({
   rankItem: {
     flexDirection: "row",
     alignItems: "center",
-    backgroundColor: "#0D1117",
+    backgroundColor: color.bg,
     borderRadius: 12,
     padding: 12,
     gap: 12,
@@ -381,12 +382,12 @@ const styles = StyleSheet.create({
     width: 36,
     height: 36,
     borderRadius: 18,
-    backgroundColor: "#2D3139",
+    backgroundColor: color.border,
     alignItems: "center",
     justifyContent: "center",
   },
   rankText: {
-    color: "#D1D5DB",
+    color: color.textMuted,
     fontSize: 14,
     fontWeight: "bold",
   },
@@ -402,7 +403,7 @@ const styles = StyleSheet.create({
     borderRadius: 20,
   },
   avatarPlaceholder: {
-    backgroundColor: "#2D3139",
+    backgroundColor: color.border,
     alignItems: "center",
     justifyContent: "center",
   },
@@ -420,7 +421,7 @@ const styles = StyleSheet.create({
     gap: 2,
   },
   userName: {
-    color: "#fff",
+    color: color.textWhite,
     fontSize: 14,
     fontWeight: "600",
   },
@@ -428,14 +429,14 @@ const styles = StyleSheet.create({
     fontSize: 15,
   },
   userHandle: {
-    color: "#CBD5E0",
+    color: color.textSubtle,
     fontSize: 12,
   },
   contributionContainer: {
     alignItems: "flex-end",
   },
   contributionValue: {
-    color: "#DD6500",
+    color: color.hostAccentLegacy,
     fontSize: 18,
     fontWeight: "bold",
   },
@@ -443,7 +444,7 @@ const styles = StyleSheet.create({
     fontSize: 20,
   },
   contributionLabel: {
-    color: "#CBD5E0",
+    color: color.textSubtle,
     fontSize: 11,
   },
   achievementBadge: {
@@ -460,18 +461,18 @@ const styles = StyleSheet.create({
     gap: 12,
   },
   emptyText: {
-    color: "#CBD5E0",
+    color: color.textSubtle,
     fontSize: 14,
   },
   moreIndicator: {
     alignItems: "center",
     paddingTop: 12,
     borderTopWidth: 1,
-    borderTopColor: "#2D3139",
+    borderTopColor: color.border,
     marginTop: 8,
   },
   moreText: {
-    color: "#CBD5E0",
+    color: color.textSubtle,
     fontSize: 13,
   },
   // トップ3表示用スタイル
@@ -512,7 +513,7 @@ const styles = StyleSheet.create({
     width: 48,
     height: 48,
     borderRadius: 24,
-    backgroundColor: "#2D3139",
+    backgroundColor: color.border,
     alignItems: "center",
     justifyContent: "center",
     overflow: "hidden",
@@ -522,13 +523,13 @@ const styles = StyleSheet.create({
     width: 64,
     height: 64,
     borderRadius: 32,
-    backgroundColor: "#2D3139",
+    backgroundColor: color.border,
     alignItems: "center",
     justifyContent: "center",
     overflow: "hidden",
     marginBottom: 8,
     borderWidth: 3,
-    borderColor: "#FFD700",
+    borderColor: color.rankGold,
   },
   topThreeAvatarImg: {
     width: 48,
@@ -539,7 +540,7 @@ const styles = StyleSheet.create({
     height: 64,
   },
   topThreeName: {
-    color: "#fff",
+    color: color.textWhite,
     fontSize: 12,
     fontWeight: "500",
     textAlign: "center",
@@ -550,7 +551,7 @@ const styles = StyleSheet.create({
     fontWeight: "bold",
   },
   topThreeScore: {
-    color: "#DD6500",
+    color: color.hostAccentLegacy,
     fontSize: 14,
     fontWeight: "bold",
     marginTop: 4,

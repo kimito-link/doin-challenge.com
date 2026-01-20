@@ -1,4 +1,5 @@
 import { Text, View, TouchableOpacity, TextInput, ScrollView, KeyboardAvoidingView, Platform, Linking, Pressable } from "react-native";
+import { color, palette } from "@/theme/tokens";
 import { Image } from "expo-image";
 import { useRouter } from "expo-router";
 import { useState, useMemo, useRef, useEffect } from "react";
@@ -272,19 +273,19 @@ export default function CreateChallengeScreen() {
           {/* フォーム */}
           <View
             style={{
-              backgroundColor: "#1A1D21",
+              backgroundColor: color.surface,
               marginHorizontal: isDesktop ? "auto" : 16,
               marginVertical: 16,
               borderRadius: 16,
               overflow: "hidden",
               borderWidth: 1,
-              borderColor: "#2D3139",
+              borderColor: color.border,
               maxWidth: isDesktop ? 800 : undefined,
               width: isDesktop ? "100%" : undefined,
             }}
           >
             <LinearGradient
-              colors={["#EC4899", "#8B5CF6"]}
+              colors={[color.accentPrimary, color.accentAlt]}
               start={{ x: 0, y: 0 }}
               end={{ x: 1, y: 0 }}
               style={{ height: 4 }}
@@ -295,7 +296,7 @@ export default function CreateChallengeScreen() {
                 <TouchableOpacity
                   onPress={() => login()}
                   style={{
-                    backgroundColor: "#1DA1F2",
+                    backgroundColor: color.twitter,
                     borderRadius: 12,
                     padding: 16,
                     flexDirection: "row",
@@ -304,7 +305,7 @@ export default function CreateChallengeScreen() {
                     marginBottom: 16,
                   }}
                 >
-                  <MaterialIcons name="login" size={20} color="#fff" />
+                  <MaterialIcons name="login" size={20} color={color.textWhite} />
                   <Text style={{ color: colors.foreground, fontSize: 16, fontWeight: "bold", marginLeft: 8 }}>
                     Twitterでログインして作成
                   </Text>
@@ -321,7 +322,7 @@ export default function CreateChallengeScreen() {
                     alignItems: "center",
                     marginBottom: 16,
                     borderWidth: 1,
-                    borderColor: "#2D3139",
+                    borderColor: color.border,
                   }}
                 >
                   <TwitterUserCard
@@ -365,14 +366,14 @@ export default function CreateChallengeScreen() {
                   value={title}
                   onChangeText={handleTitleChange}
                   placeholder="例: ○○ワンマンライブ動員チャレンジ"
-                  placeholderTextColor="#9CA3AF"
+                  placeholderTextColor={color.textSecondary}
                   style={{
                     backgroundColor: colors.background,
                     borderRadius: 8,
                     padding: 12,
                     color: colors.foreground,
                     borderWidth: 1,
-                    borderColor: !title.trim() && showValidationError ? "#EC4899" : "#2D3139",
+                    borderColor: !title.trim() && showValidationError ? color.accentPrimary : color.border,
                   }}
                 />
                 <InlineValidationError
@@ -430,15 +431,15 @@ export default function CreateChallengeScreen() {
                       height: 20,
                       borderRadius: 10,
                       borderWidth: 2,
-                      borderColor: eventDateStr === "9999-12-31" ? "#EC4899" : "#4B5563",
-                      backgroundColor: eventDateStr === "9999-12-31" ? "#EC4899" : "transparent",
+                      borderColor: eventDateStr === "9999-12-31" ? color.accentPrimary : color.textDisabled,
+                      backgroundColor: eventDateStr === "9999-12-31" ? color.accentPrimary : "transparent",
                       marginRight: 8,
                       justifyContent: "center",
                       alignItems: "center",
                     }}
                   >
                     {eventDateStr === "9999-12-31" && (
-                      <View style={{ width: 8, height: 8, borderRadius: 4, backgroundColor: "#fff" }} />
+                      <View style={{ width: 8, height: 8, borderRadius: 4, backgroundColor: color.textWhite }} />
                     )}
                   </View>
                   <Text style={{ color: colors.muted, fontSize: 14 }}>
@@ -446,11 +447,11 @@ export default function CreateChallengeScreen() {
                   </Text>
                 </Pressable>
                 {eventDateStr === "9999-12-31" ? (
-                  <Text style={{ color: "#9CA3AF", fontSize: 12 }}>
+                  <Text style={{ color: color.textSecondary, fontSize: 12 }}>
                     ※ 日程が決まり次第、後から編集できます
                   </Text>
                 ) : (
-                  <View style={{ borderWidth: !eventDateStr.trim() && showValidationError ? 1 : 0, borderColor: "#EC4899", borderRadius: 8 }}>
+                  <View style={{ borderWidth: !eventDateStr.trim() && showValidationError ? 1 : 0, borderColor: color.accentPrimary, borderRadius: 8 }}>
                     <DatePicker
                       value={eventDateStr}
                       onChange={handleDateChange}
@@ -479,15 +480,15 @@ export default function CreateChallengeScreen() {
                       height: 20,
                       borderRadius: 10,
                       borderWidth: 2,
-                      borderColor: venue === "まだ決まっていない" ? "#EC4899" : "#4B5563",
-                      backgroundColor: venue === "まだ決まっていない" ? "#EC4899" : "transparent",
+                      borderColor: venue === "まだ決まっていない" ? color.accentPrimary : color.textDisabled,
+                      backgroundColor: venue === "まだ決まっていない" ? color.accentPrimary : "transparent",
                       marginRight: 8,
                       justifyContent: "center",
                       alignItems: "center",
                     }}
                   >
                     {venue === "まだ決まっていない" && (
-                      <View style={{ width: 8, height: 8, borderRadius: 4, backgroundColor: "#fff" }} />
+                      <View style={{ width: 8, height: 8, borderRadius: 4, backgroundColor: color.textWhite }} />
                     )}
                   </View>
                   <Text style={{ color: colors.muted, fontSize: 14 }}>
@@ -499,19 +500,19 @@ export default function CreateChallengeScreen() {
                     value={venue}
                     onChangeText={setVenue}
                     placeholder="例: 渋谷○○ホール / YouTube / ミクチャ"
-                    placeholderTextColor="#9CA3AF"
+                    placeholderTextColor={color.textSecondary}
                     style={{
                       backgroundColor: colors.background,
                       borderRadius: 8,
                       padding: 12,
                       color: colors.foreground,
                       borderWidth: 1,
-                      borderColor: "#2D3139",
+                      borderColor: color.border,
                     }}
                   />
                 )}
                 {venue === "まだ決まっていない" && (
-                  <Text style={{ color: "#9CA3AF", fontSize: 12, marginTop: 4 }}>
+                  <Text style={{ color: color.textSecondary, fontSize: 12, marginTop: 4 }}>
                     ※ 決まり次第、後から編集できます
                   </Text>
                 )}
@@ -525,14 +526,14 @@ export default function CreateChallengeScreen() {
                   value={externalUrl}
                   onChangeText={setExternalUrl}
                   placeholder="YouTubeプレミア公開URL等"
-                  placeholderTextColor="#9CA3AF"
+                  placeholderTextColor={color.textSecondary}
                   style={{
                     backgroundColor: colors.background,
                     borderRadius: 8,
                     padding: 12,
                     color: colors.foreground,
                     borderWidth: 1,
-                    borderColor: "#2D3139",
+                    borderColor: color.border,
                   }}
                 />
               </View>
@@ -557,7 +558,7 @@ export default function CreateChallengeScreen() {
                   value={description}
                   onChangeText={setDescription}
                   placeholder="チャレンジの詳細を書いてね"
-                  placeholderTextColor="#9CA3AF"
+                  placeholderTextColor={color.textSecondary}
                   multiline
                   numberOfLines={4}
                   style={{
@@ -566,7 +567,7 @@ export default function CreateChallengeScreen() {
                     padding: 12,
                     color: colors.foreground,
                     borderWidth: 1,
-                    borderColor: "#2D3139",
+                    borderColor: color.border,
                     minHeight: 100,
                     textAlignVertical: "top",
                   }}
@@ -596,7 +597,7 @@ export default function CreateChallengeScreen() {
                 }}
               >
                 <LinearGradient
-                  colors={createChallengeMutation.isPending ? ["#6B7280", "#6B7280"] : ["#EC4899", "#8B5CF6"]}
+                  colors={createChallengeMutation.isPending ? [color.textHint, color.textHint] : [color.accentPrimary, color.accentAlt]}
                   start={{ x: 0, y: 0 }}
                   end={{ x: 1, y: 0 }}
                   style={{
@@ -621,7 +622,7 @@ export default function CreateChallengeScreen() {
                   alignItems: "center",
                 }}
               >
-                <Text style={{ color: "#8B5CF6", fontSize: 14 }}>
+                <Text style={{ color: color.accentAlt, fontSize: 14 }}>
                   📁 テンプレートから作成
                 </Text>
               </TouchableOpacity>

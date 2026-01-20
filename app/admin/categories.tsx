@@ -5,6 +5,7 @@
  */
 
 import { ScreenContainer } from "@/components/organisms/screen-container";
+import { color, palette } from "@/theme/tokens";
 import { useColors } from "@/hooks/use-colors";
 import { trpc } from "@/lib/trpc";
 import { useCallback, useState } from "react";
@@ -180,7 +181,7 @@ export default function CategoriesScreen() {
             <Ionicons
               name={showAddForm ? "close" : "add"}
               size={20}
-              color="#fff"
+              color={color.textWhite}
             />
             <Text className="text-white font-semibold ml-1">
               {showAddForm ? "閉じる" : "追加"}
@@ -243,7 +244,7 @@ export default function CategoriesScreen() {
               })}
             >
               {createMutation.isPending ? (
-                <ActivityIndicator color="#fff" />
+                <ActivityIndicator color={color.textWhite} />
               ) : (
                 <Text className="text-white font-semibold">作成</Text>
               )}
@@ -318,7 +319,7 @@ export default function CategoriesScreen() {
                         })}
                       >
                         {updateMutation.isPending ? (
-                          <ActivityIndicator color="#fff" size="small" />
+                          <ActivityIndicator color={color.textWhite} size="small" />
                         ) : (
                           <Text className="text-white font-semibold">保存</Text>
                         )}

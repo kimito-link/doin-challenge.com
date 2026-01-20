@@ -1,4 +1,5 @@
 import { useState, useCallback } from "react";
+import { color, palette } from "@/theme/tokens";
 import {
   View,
   Text,
@@ -88,7 +89,7 @@ export default function HelpScreen() {
       {/* ヘッダー */}
       <View style={styles.header}>
         <TouchableOpacity onPress={handleBack} style={styles.backButton}>
-          <MaterialIcons name="arrow-back" size={24} color="#fff" />
+          <MaterialIcons name="arrow-back" size={24} color={color.textWhite} />
         </TouchableOpacity>
         <Text style={styles.headerTitle}>ヘルプ</Text>
         <View style={styles.headerSpacer} />
@@ -118,7 +119,7 @@ export default function HelpScreen() {
             activeOpacity={0.8}
           >
             <View style={styles.tutorialButtonIcon}>
-              <MaterialIcons name="replay" size={28} color="#EC4899" />
+              <MaterialIcons name="replay" size={28} color={color.accentPrimary} />
             </View>
             <View style={styles.tutorialButtonContent}>
               <Text style={styles.tutorialButtonTitle}>チュートリアルを見返す</Text>
@@ -126,7 +127,7 @@ export default function HelpScreen() {
                 はじめの説明をもう一度見る
               </Text>
             </View>
-            <MaterialIcons name="chevron-right" size={24} color="#CBD5E0" />
+            <MaterialIcons name="chevron-right" size={24} color={color.textSubtle} />
           </TouchableOpacity>
         </Animated.View>
 
@@ -149,7 +150,7 @@ export default function HelpScreen() {
                 <MaterialIcons 
                   name={expandedIndex === index ? "expand-less" : "expand-more"} 
                   size={24} 
-                  color="#CBD5E0" 
+                  color={color.textSubtle} 
                 />
               </View>
               {expandedIndex === index && (
@@ -170,7 +171,7 @@ export default function HelpScreen() {
           
           <View style={styles.tipCard}>
             <View style={styles.tipIcon}>
-              <MaterialIcons name="lightbulb" size={24} color="#F59E0B" />
+              <MaterialIcons name="lightbulb" size={24} color={color.warning} />
             </View>
             <View style={styles.tipContent}>
               <Text style={styles.tipTitle}>ファンの方へ</Text>
@@ -182,7 +183,7 @@ export default function HelpScreen() {
 
           <View style={styles.tipCard}>
             <View style={[styles.tipIcon, { backgroundColor: "rgba(221, 101, 0, 0.1)" }]}>
-              <MaterialIcons name="star" size={24} color="#DD6500" />
+              <MaterialIcons name="star" size={24} color={color.hostAccentLegacy} />
             </View>
             <View style={styles.tipContent}>
               <Text style={styles.tipTitle}>主催者の方へ</Text>
@@ -212,7 +213,7 @@ const styles = StyleSheet.create({
     justifyContent: "space-between",
     padding: 16,
     borderBottomWidth: 1,
-    borderBottomColor: "#2D3139",
+    borderBottomColor: color.border,
   },
   backButton: {
     width: 40,
@@ -222,7 +223,7 @@ const styles = StyleSheet.create({
     borderRadius: 20,
   },
   headerTitle: {
-    color: "#fff",
+    color: color.textWhite,
     fontSize: 18,
     fontWeight: "bold",
   },
@@ -254,7 +255,7 @@ const styles = StyleSheet.create({
   tutorialButton: {
     flexDirection: "row",
     alignItems: "center",
-    backgroundColor: "#1A1D21",
+    backgroundColor: color.surface,
     padding: 16,
     borderRadius: 16,
     marginBottom: 24,
@@ -274,17 +275,17 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   tutorialButtonTitle: {
-    color: "#fff",
+    color: color.textWhite,
     fontSize: 16,
     fontWeight: "600",
   },
   tutorialButtonDescription: {
-    color: "#D1D5DB",
+    color: color.textMuted,
     fontSize: 13,
     marginTop: 2,
   },
   sectionTitle: {
-    color: "#D1D5DB",
+    color: color.textMuted,
     fontSize: 13,
     fontWeight: "600",
     textTransform: "uppercase",
@@ -292,7 +293,7 @@ const styles = StyleSheet.create({
     marginTop: 8,
   },
   faqItem: {
-    backgroundColor: "#1A1D21",
+    backgroundColor: color.surface,
     borderRadius: 12,
     marginBottom: 8,
     overflow: "hidden",
@@ -312,13 +313,13 @@ const styles = StyleSheet.create({
     marginRight: 12,
   },
   faqQuestionIconText: {
-    color: "#EC4899",
+    color: color.accentPrimary,
     fontSize: 14,
     fontWeight: "bold",
   },
   faqQuestion: {
     flex: 1,
-    color: "#fff",
+    color: color.textWhite,
     fontSize: 15,
     fontWeight: "500",
   },
@@ -338,19 +339,19 @@ const styles = StyleSheet.create({
     marginRight: 12,
   },
   faqAnswerIconText: {
-    color: "#DD6500",
+    color: color.hostAccentLegacy,
     fontSize: 14,
     fontWeight: "bold",
   },
   faqAnswerText: {
     flex: 1,
-    color: "#D1D5DB",
+    color: color.textMuted,
     fontSize: 14,
     lineHeight: 22,
   },
   tipCard: {
     flexDirection: "row",
-    backgroundColor: "#1A1D21",
+    backgroundColor: color.surface,
     padding: 16,
     borderRadius: 12,
     marginBottom: 8,
@@ -368,13 +369,13 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   tipTitle: {
-    color: "#fff",
+    color: color.textWhite,
     fontSize: 15,
     fontWeight: "600",
     marginBottom: 4,
   },
   tipText: {
-    color: "#D1D5DB",
+    color: color.textMuted,
     fontSize: 13,
     lineHeight: 20,
   },
@@ -383,13 +384,13 @@ const styles = StyleSheet.create({
     alignItems: "center",
   },
   footerText: {
-    color: "#CBD5E0",
+    color: color.textSubtle,
     fontSize: 13,
     textAlign: "center",
     lineHeight: 20,
   },
   footerLink: {
-    color: "#EC4899",
+    color: color.accentPrimary,
     fontWeight: "600",
   },
 });

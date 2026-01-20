@@ -1,4 +1,5 @@
 import { View, Text, StyleSheet, useWindowDimensions } from "react-native";
+import { color, palette } from "@/theme/tokens";
 import Svg, { Path, Line, Circle, Text as SvgText, Defs, LinearGradient, Stop, G } from "react-native-svg";
 import { useMemo } from "react";
 
@@ -279,12 +280,12 @@ export function GrowthTrajectoryChart({ data, targetCount, title = "動員まで
         <Svg width={chartWidth} height={chartHeight}>
           <Defs>
             <LinearGradient id="lineGradient" x1="0" y1="0" x2="1" y2="0">
-              <Stop offset="0" stopColor="#FF6B6B" stopOpacity="1" />
+              <Stop offset="0" stopColor={color.coral} stopOpacity="1" />
               <Stop offset="1" stopColor="#FF8E53" stopOpacity="1" />
             </LinearGradient>
             <LinearGradient id="areaGradient" x1="0" y1="0" x2="0" y2="1">
-              <Stop offset="0" stopColor="#FF6B6B" stopOpacity="0.3" />
-              <Stop offset="1" stopColor="#FF6B6B" stopOpacity="0.05" />
+              <Stop offset="0" stopColor={color.coral} stopOpacity="0.3" />
+              <Stop offset="1" stopColor={color.coral} stopOpacity="0.05" />
             </LinearGradient>
           </Defs>
 
@@ -296,7 +297,7 @@ export function GrowthTrajectoryChart({ data, targetCount, title = "動員まで
               y1={label.y}
               x2={chartWidth - paddingRight}
               y2={label.y}
-              stroke="#E5E7EB"
+              stroke={color.textPrimary}
               strokeWidth={1}
               strokeDasharray="4,4"
             />
@@ -308,14 +309,14 @@ export function GrowthTrajectoryChart({ data, targetCount, title = "動員まで
             y1={targetY}
             x2={chartWidth - paddingRight}
             y2={targetY}
-            stroke="#10B981"
+            stroke={color.successDark}
             strokeWidth={2}
             strokeDasharray="8,4"
           />
           <SvgText
             x={chartWidth - paddingRight - 5}
             y={targetY - 8}
-            fill="#10B981"
+            fill={color.successDark}
             fontSize={config.fontSize}
             fontWeight="bold"
             textAnchor="end"
@@ -350,15 +351,15 @@ export function GrowthTrajectoryChart({ data, targetCount, title = "動員まで
                 cx={m.x}
                 cy={m.y}
                 r={8}
-                fill="#FFFFFF"
-                stroke="#FF6B6B"
+                fill={color.textWhite}
+                stroke={color.coral}
                 strokeWidth={2}
               />
               <Circle
                 cx={m.x}
                 cy={m.y}
                 r={4}
-                fill="#FF6B6B"
+                fill={color.coral}
               />
               {/* マイルストーンラベル */}
               <SvgText
@@ -381,14 +382,14 @@ export function GrowthTrajectoryChart({ data, targetCount, title = "動員まで
                 cx={paddingLeft + graphWidth}
                 cy={paddingTop + graphHeight - (currentCount / (Math.max(targetCount, currentCount) * 1.1)) * graphHeight}
                 r={10}
-                fill="#FFFFFF"
-                stroke="#FF6B6B"
+                fill={color.textWhite}
+                stroke={color.coral}
                 strokeWidth={3}
               />
               <SvgText
                 x={paddingLeft + graphWidth}
                 y={paddingTop + graphHeight - (currentCount / (Math.max(targetCount, currentCount) * 1.1)) * graphHeight + 4}
-                fill="#FF6B6B"
+                fill={color.coral}
                 fontSize={config.fontSize - 2}
                 fontWeight="bold"
                 textAnchor="middle"
@@ -404,7 +405,7 @@ export function GrowthTrajectoryChart({ data, targetCount, title = "動員まで
               key={`y-label-${i}`}
               x={paddingLeft - 8}
               y={label.y + 4}
-              fill="#CBD5E0"
+              fill={color.textSubtle}
               fontSize={config.fontSize}
               textAnchor="end"
             >
@@ -418,7 +419,7 @@ export function GrowthTrajectoryChart({ data, targetCount, title = "動員まで
               key={`x-label-${i}`}
               x={label.x}
               y={chartHeight - paddingBottom + 20}
-              fill="#CBD5E0"
+              fill={color.textSubtle}
               fontSize={config.fontSize}
               textAnchor="middle"
             >
@@ -432,7 +433,7 @@ export function GrowthTrajectoryChart({ data, targetCount, title = "動員まで
             y1={paddingTop}
             x2={paddingLeft}
             y2={paddingTop + graphHeight}
-            stroke="#E5E7EB"
+            stroke={color.textPrimary}
             strokeWidth={1}
           />
           <Line
@@ -440,7 +441,7 @@ export function GrowthTrajectoryChart({ data, targetCount, title = "動員まで
             y1={paddingTop + graphHeight}
             x2={chartWidth - paddingRight}
             y2={paddingTop + graphHeight}
-            stroke="#E5E7EB"
+            stroke={color.textPrimary}
             strokeWidth={1}
           />
         </Svg>
@@ -449,11 +450,11 @@ export function GrowthTrajectoryChart({ data, targetCount, title = "動員まで
       {/* 凡例 */}
       <View style={styles.legend}>
         <View style={styles.legendItem}>
-          <View style={[styles.legendLine, { backgroundColor: "#FF6B6B" }]} />
+          <View style={[styles.legendLine, { backgroundColor: color.coral }]} />
           <Text style={[styles.legendText, { fontSize: config.legendSize }]}>参加者数の推移</Text>
         </View>
         <View style={styles.legendItem}>
-          <View style={[styles.legendLine, { backgroundColor: "#10B981", borderStyle: "dashed" }]} />
+          <View style={[styles.legendLine, { backgroundColor: color.successDark, borderStyle: "dashed" }]} />
           <Text style={[styles.legendText, { fontSize: config.legendSize }]}>目標ライン</Text>
         </View>
       </View>
@@ -463,7 +464,7 @@ export function GrowthTrajectoryChart({ data, targetCount, title = "動員まで
 
 const styles = StyleSheet.create({
   container: {
-    backgroundColor: "#1E2022",
+    backgroundColor: color.surface,
     borderRadius: 16,
     marginVertical: 8,
   },
@@ -472,15 +473,15 @@ const styles = StyleSheet.create({
   },
   title: {
     fontWeight: "bold",
-    color: "#ECEDEE",
+    color: color.textPrimary,
     marginBottom: 4,
   },
   subtitle: {
-    color: "#9BA1A6",
+    color: color.textSecondary,
   },
   chartContainer: {
     alignItems: "center",
-    backgroundColor: "#FFFFFF",
+    backgroundColor: color.textWhite,
     borderRadius: 12,
     padding: 8,
   },
@@ -501,7 +502,7 @@ const styles = StyleSheet.create({
     borderRadius: 2,
   },
   legendText: {
-    color: "#9BA1A6",
+    color: color.textSecondary,
   },
   emptyState: {
     alignItems: "center",
@@ -513,7 +514,7 @@ const styles = StyleSheet.create({
     marginBottom: 12,
   },
   emptyText: {
-    color: "#9BA1A6",
+    color: color.textSecondary,
     textAlign: "center",
     lineHeight: 22,
   },

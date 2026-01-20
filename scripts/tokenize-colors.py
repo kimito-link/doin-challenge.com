@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-molecules/ 内の直書き色をトークンに一括置換するスクリプト
+organisms/ と app/ 内の直書き色をトークンに一括置換するスクリプト
 GPTの推奨に基づいて作成
 """
 
@@ -19,9 +19,13 @@ COLOR_MAP = {
     '"#D1D5DB"': 'color.textMuted',
     '"#CBD5E0"': 'color.textSubtle',
     '"#E5E7EB"': 'color.textPrimary',
+    '"#ECEDEE"': 'color.textPrimary',
     '"#9CA3AF"': 'color.textSecondary',
+    '"#9BA1A6"': 'color.textSecondary',
     '"#6B7280"': 'color.textHint',
+    '"#4B5563"': 'color.textDisabled',
     '"#FFFFFF"': 'color.textWhite',
+    '"#ffffff"': 'color.textWhite',
     '"#fff"': 'color.textWhite',
     
     # Surface/Background
@@ -30,25 +34,41 @@ COLOR_MAP = {
     '"#1E2022"': 'color.surface',
     '"#1F2937"': 'color.surfaceAlt',
     '"#161B22"': 'color.surfaceDark',
+    '"#151718"': 'color.surfaceDark',
     
     # Border
     '"#2D3139"': 'color.border',
     '"#374151"': 'color.borderAlt',
+    '"#334155"': 'color.borderAlt',
     '"#2D3748"': 'color.border',
     
     # Status
     '"#22C55E"': 'color.success',
     '"#10B981"': 'color.successDark',
+    '"#4ADE80"': 'color.successLight',
     '"#EF4444"': 'color.danger',
     '"#F59E0B"': 'color.warning',
     '"#3B82F6"': 'color.info',
     
     # Social
     '"#1DA1F2"': 'color.twitter',
+    '"#06C755"': 'color.line',
     
     # Rank
     '"#FFD700"': 'color.rankGold',
+    '"#C0C0C0"': 'color.rankSilver',
+    '"#CD7F32"': 'color.rankBronze',
     '"#FBBF24"': 'palette.amber400',
+    
+    # Additional colors
+    '"#F472B6"': 'color.pink400',
+    '"#A78BFA"': 'color.purple400',
+    '"#34D399"': 'color.emerald400',
+    '"#60A5FA"': 'color.blue400',
+    '"#FB923C"': 'color.orange400',
+    '"#F97316"': 'color.orange500',
+    '"#FF6B6B"': 'color.coral',
+    '"#FF6B9D"': 'color.hotPink',
 }
 
 # インポート文
@@ -64,12 +84,13 @@ def process_file(filepath: Path) -> tuple[int, bool]:
     
     # 色の置換
     for old, new in COLOR_MAP.items():
-        # 大文字小文字を区別しない置換
-        pattern = re.compile(re.escape(old), re.IGNORECASE)
-        new_content = pattern.sub(new, content)
-        if new_content != content:
-            replacement_count += content.count(old.lower()) + content.count(old.upper()) + content.count(old)
-            content = new_content
+        if old.lower() in content.lower():
+            # 大文字小文字を区別しない置換
+            pattern = re.compile(re.escape(old), re.IGNORECASE)
+            matches = pattern.findall(content)
+            if matches:
+                replacement_count += len(matches)
+                content = pattern.sub(new, content)
     
     # 変更があった場合のみ処理
     if content != original_content:
@@ -91,19 +112,25 @@ def process_file(filepath: Path) -> tuple[int, bool]:
     return 0, False
 
 def main():
-    molecules_dir = Path('/home/ubuntu/birthday-celebration/components/molecules')
+    base_dir = Path('/home/ubuntu/birthday-celebration')
+    targets = [
+        base_dir / 'components/organisms',
+        base_dir / 'app',
+    ]
     
     total_replacements = 0
     total_imports_added = 0
     processed_files = []
     
-    for filepath in molecules_dir.glob('*.tsx'):
-        count, import_added = process_file(filepath)
-        if count > 0:
-            processed_files.append((filepath.name, count, import_added))
-            total_replacements += count
-            if import_added:
-                total_imports_added += 1
+    for target_dir in targets:
+        for filepath in target_dir.rglob('*.tsx'):
+            count, import_added = process_file(filepath)
+            if count > 0:
+                rel_path = filepath.relative_to(base_dir)
+                processed_files.append((str(rel_path), count, import_added))
+                total_replacements += count
+                if import_added:
+                    total_imports_added += 1
     
     print(f"\n=== 一括置換完了 ===")
     print(f"処理ファイル数: {len(processed_files)}")

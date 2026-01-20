@@ -1,4 +1,5 @@
 import { FlatList, Text, View, TouchableOpacity, RefreshControl, ScrollView, TextInput, Platform } from "react-native";
+import { color, palette } from "@/theme/tokens";
 import { useRouter } from "expo-router";
 import { useState, useMemo, useEffect } from "react";
 import { ScreenContainer } from "@/components/organisms/screen-container";
@@ -292,7 +293,7 @@ export default function HomeScreen() {
       {/* データ読み込み中のインジケーター */}
       {isDataLoading && (
         <View style={{ padding: 20, alignItems: "center" }}>
-          <Text style={{ color: "#D1D5DB" }}>読み込み中...</Text>
+          <Text style={{ color: color.textMuted }}>読み込み中...</Text>
         </View>
       )}
     </>
@@ -403,11 +404,11 @@ export default function HomeScreen() {
               {/* ページネーションインジケーター */}
               {(isSearching ? isFetchingNextSearchPage : isFetchingNextPage) ? (
                 <View style={{ padding: 20, alignItems: "center" }}>
-                  <Text style={{ color: "#D1D5DB" }}>読み込み中...</Text>
+                  <Text style={{ color: color.textMuted }}>読み込み中...</Text>
                 </View>
               ) : (isSearching ? hasNextSearchPage : hasNextPage) ? (
                 <View style={{ padding: 20, alignItems: "center" }}>
-                  <Text style={{ color: "#D1D5DB" }}>スクロールしてもっと見る</Text>
+                  <Text style={{ color: color.textMuted }}>スクロールしてもっと見る</Text>
                 </View>
               ) : null}
               {/* 追加セクション（チャレンジ一覧の後に表示） */}
@@ -418,12 +419,12 @@ export default function HomeScreen() {
           contentContainerStyle={{ 
             paddingHorizontal: grid.paddingHorizontal, 
             paddingBottom: 100,
-            backgroundColor: "#0D1117",
+            backgroundColor: color.bg,
             maxWidth: grid.maxWidth,
             alignSelf: grid.maxWidth ? "center" : undefined,
             width: grid.maxWidth ? "100%" : undefined,
           }}
-          style={{ backgroundColor: "#0D1117" }}
+          style={{ backgroundColor: color.bg }}
           columnWrapperStyle={numColumns > 1 ? { justifyContent: "flex-start", gap: grid.gap } : undefined}
           // パフォーマンス最適化
           windowSize={5}
@@ -440,7 +441,7 @@ export default function HomeScreen() {
       <FloatingActionButton
         onPress={() => router.push("/(tabs)/create")}
         icon="add"
-        gradientColors={["#EC4899", "#8B5CF6"]}
+        gradientColors={[color.accentPrimary, color.accentAlt]}
         size="large"
       />
 

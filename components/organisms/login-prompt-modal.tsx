@@ -1,4 +1,5 @@
 import { View, Text, TouchableOpacity, StyleSheet, Modal, Platform } from "react-native";
+import { color, palette } from "@/theme/tokens";
 import { Image } from "expo-image";
 import { useColors } from "@/hooks/use-colors";
 import { useAuth } from "@/hooks/use-auth";
@@ -124,7 +125,7 @@ export function LoginPromptModal({ visible, onLogin, onSkip }: LoginPromptModalP
         >
           {/* 背景グラデーション */}
           <LinearGradient
-            colors={["#1A1D21", "#0D1117"]}
+            colors={[color.surface, color.bg]}
             style={styles.gradient}
           />
           
@@ -159,7 +160,7 @@ export function LoginPromptModal({ visible, onLogin, onSkip }: LoginPromptModalP
             activeOpacity={0.8}
           >
             <LinearGradient
-              colors={isHost ? ["#DD6500", "#F59E0B"] : ["#EC4899", "#F472B6"]}
+              colors={isHost ? [color.hostAccentLegacy, color.warning] : [color.accentPrimary, color.pink400]}
               start={{ x: 0, y: 0 }}
               end={{ x: 1, y: 0 }}
               style={styles.mainButtonGradient}
@@ -252,7 +253,7 @@ const styles = StyleSheet.create({
     width: "100%",
     borderRadius: 16,
     overflow: "hidden",
-    shadowColor: "#EC4899",
+    shadowColor: color.accentPrimary,
     shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.4,
     shadowRadius: 12,
@@ -264,7 +265,7 @@ const styles = StyleSheet.create({
     alignItems: "center",
   },
   mainButtonText: {
-    color: "#FFFFFF",
+    color: color.textWhite,
     fontSize: 17,
     fontWeight: "bold",
   },

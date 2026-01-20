@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { color, palette } from "@/theme/tokens";
 import {
   View,
   Text,
@@ -96,7 +97,7 @@ export function GlobalMenu({ isVisible, onClose }: GlobalMenuProps) {
               right: 0,
               width: 280,
               height: "100%",
-              backgroundColor: "#1A1D21",
+              backgroundColor: color.surface,
               shadowColor: "#000",
               shadowOffset: { width: -2, height: 0 },
               shadowOpacity: 0.3,
@@ -111,11 +112,11 @@ export function GlobalMenu({ isVisible, onClose }: GlobalMenuProps) {
                 style={{
                   padding: 20,
                   borderBottomWidth: 1,
-                  borderBottomColor: "#374151",
+                  borderBottomColor: color.borderAlt,
                 }}
               >
                 <View style={{ flexDirection: "row", alignItems: "center", justifyContent: "space-between" }}>
-                  <Text style={{ color: "#fff", fontSize: 18, fontWeight: "bold" }}>
+                  <Text style={{ color: color.textWhite, fontSize: 18, fontWeight: "bold" }}>
                     メニュー
                   </Text>
                   <TouchableOpacity
@@ -124,12 +125,12 @@ export function GlobalMenu({ isVisible, onClose }: GlobalMenuProps) {
                       width: 32,
                       height: 32,
                       borderRadius: 16,
-                      backgroundColor: "#374151",
+                      backgroundColor: color.borderAlt,
                       alignItems: "center",
                       justifyContent: "center",
                     }}
                   >
-                    <MaterialIcons name="close" size={20} color="#D1D5DB" />
+                    <MaterialIcons name="close" size={20} color={color.textMuted} />
                   </TouchableOpacity>
                 </View>
               </View>
@@ -139,7 +140,7 @@ export function GlobalMenu({ isVisible, onClose }: GlobalMenuProps) {
                 style={{
                   padding: 20,
                   borderBottomWidth: 1,
-                  borderBottomColor: "#374151",
+                  borderBottomColor: color.borderAlt,
                 }}
               >
                 {isAuthenticated && user ? (
@@ -161,19 +162,19 @@ export function GlobalMenu({ isVisible, onClose }: GlobalMenuProps) {
                           width: 48,
                           height: 48,
                           borderRadius: 24,
-                          backgroundColor: "#374151",
+                          backgroundColor: color.borderAlt,
                           alignItems: "center",
                           justifyContent: "center",
                           marginRight: 12,
                         }}
                       >
-                        <MaterialIcons name="person" size={24} color="#D1D5DB" />
+                        <MaterialIcons name="person" size={24} color={color.textMuted} />
                       </View>
                     )}
                     <View style={{ flex: 1 }}>
                       <Text
                         style={{
-                          color: "#fff",
+                          color: color.textWhite,
                           fontSize: 16,
                           fontWeight: "600",
                         }}
@@ -184,7 +185,7 @@ export function GlobalMenu({ isVisible, onClose }: GlobalMenuProps) {
                       {user.username && (
                         <Text
                           style={{
-                            color: "#D1D5DB",
+                            color: color.textMuted,
                             fontSize: 14,
                           }}
                           numberOfLines={1}
@@ -204,11 +205,11 @@ export function GlobalMenu({ isVisible, onClose }: GlobalMenuProps) {
                             width: 8,
                             height: 8,
                             borderRadius: 4,
-                            backgroundColor: "#10B981",
+                            backgroundColor: color.successDark,
                             marginRight: 6,
                           }}
                         />
-                        <Text style={{ color: "#10B981", fontSize: 12 }}>
+                        <Text style={{ color: color.successDark, fontSize: 12 }}>
                           ログイン中
                         </Text>
                       </View>
@@ -223,7 +224,7 @@ export function GlobalMenu({ isVisible, onClose }: GlobalMenuProps) {
                     />
                     <Text
                       style={{
-                        color: "#D1D5DB",
+                        color: color.textMuted,
                         fontSize: 14,
                         textAlign: "center",
                         marginBottom: 12,
@@ -238,7 +239,7 @@ export function GlobalMenu({ isVisible, onClose }: GlobalMenuProps) {
                         flexDirection: "row",
                         alignItems: "center",
                         justifyContent: "center",
-                        backgroundColor: "#1DA1F2",
+                        backgroundColor: color.twitter,
                         paddingHorizontal: 20,
                         paddingVertical: 12,
                         borderRadius: 24,
@@ -249,12 +250,12 @@ export function GlobalMenu({ isVisible, onClose }: GlobalMenuProps) {
                       <MaterialIcons
                         name="login"
                         size={20}
-                        color="#fff"
+                        color={color.textWhite}
                         style={{ marginRight: 8 }}
                       />
                       <Text
                         style={{
-                          color: "#fff",
+                          color: color.textWhite,
                           fontSize: 16,
                           fontWeight: "600",
                         }}
@@ -287,10 +288,10 @@ export function GlobalMenu({ isVisible, onClose }: GlobalMenuProps) {
                       <MaterialIcons
                         name={item.icon as any}
                         size={24}
-                        color="#D1D5DB"
+                        color={color.textMuted}
                         style={{ marginRight: 16 }}
                       />
-                      <Text style={{ color: "#fff", fontSize: 16 }}>
+                      <Text style={{ color: color.textWhite, fontSize: 16 }}>
                         {item.label}
                       </Text>
                     </View>
@@ -304,7 +305,7 @@ export function GlobalMenu({ isVisible, onClose }: GlobalMenuProps) {
                   style={{
                     padding: 12,
                     borderTopWidth: 1,
-                    borderTopColor: "#374151",
+                    borderTopColor: color.borderAlt,
                     marginTop: 12,
                   }}
                 >
@@ -324,12 +325,12 @@ export function GlobalMenu({ isVisible, onClose }: GlobalMenuProps) {
                     <MaterialIcons
                       name="logout"
                       size={20}
-                      color="#EF4444"
+                      color={color.danger}
                       style={{ marginRight: 8 }}
                     />
                     <Text
                       style={{
-                        color: "#EF4444",
+                        color: color.danger,
                         fontSize: 16,
                         fontWeight: "600",
                       }}
@@ -358,13 +359,13 @@ export function GlobalMenu({ isVisible, onClose }: GlobalMenuProps) {
 interface HamburgerButtonProps {
   onPress: () => void;
   size?: number;
-  color?: string;
+  buttonColor?: string;
 }
 
 export function HamburgerButton({
   onPress,
   size = 24,
-  color = "#fff",
+  buttonColor = color.textWhite,
 }: HamburgerButtonProps) {
   const handlePress = () => {
     if (Platform.OS !== "web") {
@@ -385,7 +386,7 @@ export function HamburgerButton({
       }}
       activeOpacity={0.7}
     >
-      <MaterialIcons name="menu" size={size} color={color} />
+      <MaterialIcons name="menu" size={size} color={buttonColor} />
     </TouchableOpacity>
   );
 }
