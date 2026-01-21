@@ -3701,3 +3701,28 @@ features/create/
 - [x] CompanionList.tsx - 友人リスト（125行）
 - [x] ContributionDisplay.tsx - 貢献人数表示（49行）
 - [x] CompanionAddSection.tsx - リファクタリング後のメインコンポーネント（389行→128行）
+
+## 包括的リファクタリング（v6.24）
+
+### 1. 汎用UIコンポーネントの抽出
+- [x] PrefectureSelector → components/ui/prefecture-selector.tsx
+- [x] GenderSelector → components/ui/gender-selector.tsx
+- [x] ContributionDisplay → components/ui/contribution-display.tsx
+- [x] 既存のインポートパスを更新（ラッパーコンポーネント化）
+
+### 2. カスタムフックのユニットテスト
+- [x] useEventDetail.test.ts（24テスト）
+- [x] useParticipationForm.test.ts（29テスト）
+- [x] useEventActions.test.ts（12テスト）
+- [x] useModalState.test.ts（13テスト）
+
+### 3. 大きな画面のリファクタリング
+- [x] ホーム画面（app/(tabs)/index.tsx）の分割（530行→209行）
+  - useHomeData.ts（265行）: データ取得・キャッシュ管理
+  - useHomeActions.ts（76行）: ナビゲーション・削除アクション
+  - HomeListHeader.tsx（126行）: リストヘッダー
+  - HomeListFooter.tsx（93行）: リストフッター
+- [x] マイページ（app/(tabs)/mypage.tsx）の分割（245行→114行）
+  - useMypageData.ts（65行）: データ取得
+  - useMypageActions.ts（150行）: アクション・ナビゲーション
+  - AuthenticatedContent.tsx（148行）: ログイン済みコンテンツ

@@ -10,3 +10,6 @@ export { SettingsLinkItem } from "./SettingsLinkItem";
 
 // セクションコンポーネント
 export { BadgeSection, ParticipationSection, HostedChallengeSection } from "./sections";
+
+// メインコンテンツ
+export { AuthenticatedContent } from "./AuthenticatedContent";

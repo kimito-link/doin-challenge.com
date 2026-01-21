@@ -28,3 +28,7 @@ export { RankingRow } from "./RankingRow";
 
 // 地域マップ
 export { SimpleRegionMap } from "./SimpleRegionMap";
+
+// リストコンポーネント
+export { HomeListHeader } from "./HomeListHeader";
+export { HomeListFooter } from "./HomeListFooter";
