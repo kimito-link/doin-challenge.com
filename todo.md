@@ -3892,6 +3892,13 @@ features/create/
 
 ## 安全柵（v6.41）
 
-- [ ] サーバーガードテスト: 他人のparticipationをupdate/deleteできないこと
-- [ ] サーバーガードテスト: deletedAt済みparticipationをupdateできないこと
-- [ ] UIエラー表示: mutation失敗時にrequestIdをtoastに表示
+- [x] サーバーガードテスト: 他人のparticipationをupdate/deleteできないこと
+- [x] サーバーガードテスト: deletedAt済みparticipationをupdateできないこと
+- [x] UIエラー表示: mutation失敗時にrequestIdをtoastに表示
+
+
+## UI改善（v6.41）
+
+- [x] 編集/削除失敗時にrequestIdを表示
+- [x] 編集/削除成功後にinvalidateで即反映（refetch → invalidate統一）
+- [x] smoke test（表示→編集→削除→再表示）

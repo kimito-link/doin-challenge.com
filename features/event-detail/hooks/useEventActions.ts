@@ -40,6 +40,22 @@ interface UseEventActionsReturn {
   isDeleting: boolean;
 }
 
+/**
+ * エラーメッセージにrequestIdを付与して表示
+ */
+function showErrorWithRequestId(title: string, error: unknown, fallbackMessage: string) {
+  const errorObj = error as { message?: string; data?: { requestId?: string } };
+  const message = errorObj?.message || fallbackMessage;
+  const requestId = errorObj?.data?.requestId;
+  
+  if (requestId && __DEV__) {
+    // 開発モードではrequestIdを表示
+    Alert.alert(title, `${message}\n\n[requestId: ${requestId}]`);
+  } else {
+    Alert.alert(title, message);
+  }
+}
+
 export function useEventActions({
   challengeId,
   challengeTitle,
@@ -48,7 +64,6 @@ export function useEventActions({
   unit,
   progress,
   remaining,
-  refetch,
 }: UseEventActionsOptions): UseEventActionsReturn {
   // OGP generation state
   const [isGeneratingOgp, setIsGeneratingOgp] = useState(false);
@@ -57,27 +72,35 @@ export function useEventActions({
   const [showDeleteParticipationModal, setShowDeleteParticipationModal] = useState(false);
   const [deleteTargetParticipation, setDeleteTargetParticipation] = useState<Participation | null>(null);
   
+  // tRPC utils for invalidation
+  const utils = trpc.useUtils();
+  
   // Mutations
   const generateOgpMutation = trpc.ogp.generateChallengeOgp.useMutation();
   
   const sendCheerMutation = trpc.cheers.send.useMutation({
     onSuccess: () => {
       Alert.alert("👏", "エールを送りました！");
+      // エール数を更新
+      utils.participations.listByEvent.invalidate({ eventId: challengeId });
     },
     onError: (error) => {
-      Alert.alert("エラー", error.message || "エールの送信に失敗しました");
+      showErrorWithRequestId("エラー", error, "エールの送信に失敗しました");
     },
   });
   
   const deleteParticipationMutation = trpc.participations.delete.useMutation({
-    onSuccess: async () => {
+    onSuccess: () => {
       Alert.alert("参加取消", "参加表明を取り消しました");
       setShowDeleteParticipationModal(false);
       setDeleteTargetParticipation(null);
-      await refetch();
+      // invalidateで即反映
+      utils.participations.listByEvent.invalidate({ eventId: challengeId });
+      utils.participations.myParticipations.invalidate();
+      utils.events.getById.invalidate({ id: challengeId });
     },
     onError: (error) => {
-      Alert.alert("エラー", error.message || "削除に失敗しました");
+      showErrorWithRequestId("エラー", error, "削除に失敗しました");
     },
   });
   

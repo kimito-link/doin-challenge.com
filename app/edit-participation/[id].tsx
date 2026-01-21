@@ -66,7 +66,9 @@ export default function EditParticipationScreen() {
 
   const updateParticipationMutation = trpc.participations.update.useMutation({
     onSuccess: () => {
+      // invalidateで即反映
       utils.participations.listByEvent.invalidate({ eventId: parseInt(challengeId || "0") });
+      utils.participations.myParticipations.invalidate();
       showAlert("成功", "参加表明を更新しました！", [
         {
           text: "OK",
@@ -77,7 +79,15 @@ export default function EditParticipationScreen() {
       ]);
     },
     onError: (error) => {
-      showAlert("エラー", error.message);
+      // requestIdを含めてエラー表示
+      const errorObj = error as { message?: string; data?: { requestId?: string } };
+      const message = errorObj?.message || "更新に失敗しました";
+      const requestId = errorObj?.data?.requestId;
+      if (requestId && __DEV__) {
+        showAlert("エラー", `${message}\n\n[requestId: ${requestId}]`);
+      } else {
+        showAlert("エラー", message);
+      }
     },
   });
 

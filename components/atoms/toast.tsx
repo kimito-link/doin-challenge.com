@@ -187,9 +187,11 @@ import { createContext, useContext, useState, useCallback, ReactNode } from "rea
 interface ToastContextType {
   showToast: (message: string, type?: ToastType, duration?: number) => void;
   showSuccess: (message: string) => void;
-  showError: (message: string) => void;
+  showError: (message: string, requestId?: string) => void;
   showWarning: (message: string) => void;
   showInfo: (message: string) => void;
+  /** 開発モードでrequestId付きエラーを表示 (v6.41) */
+  showErrorWithRequestId: (message: string, requestId?: string) => void;
 }
 
 const ToastContext = createContext<ToastContextType | null>(null);
@@ -212,16 +214,38 @@ export function ToastProvider({ children }: { children: ReactNode }) {
   }, []);
 
   const showSuccess = useCallback((message: string) => showToast(message, "success"), [showToast]);
-  const showError = useCallback((message: string) => showToast(message, "error"), [showToast]);
+  
+  // v6.41: requestId対応のエラー表示
+  const showError = useCallback((message: string, requestId?: string) => {
+    // 開発モードではrequestIdを表示
+    if (__DEV__ && requestId) {
+      showToast(`${message} [${requestId}]`, "error", 5000);
+    } else {
+      showToast(message, "error");
+    }
+  }, [showToast]);
+  
   const showWarning = useCallback((message: string) => showToast(message, "warning"), [showToast]);
   const showInfo = useCallback((message: string) => showToast(message, "info"), [showToast]);
+  
+  // v6.41: requestId付きエラー表示（明示的に呼び出す場合）
+  const showErrorWithRequestId = useCallback((message: string, requestId?: string) => {
+    if (requestId) {
+      // 開発モード: 完全なrequestIdを表示
+      // 本番モード: 短縮版を表示（ユーザーがサポートに報告できるように）
+      const displayId = __DEV__ ? requestId : requestId.slice(-8);
+      showToast(`${message} [ID: ${displayId}]`, "error", 5000);
+    } else {
+      showToast(message, "error");
+    }
+  }, [showToast]);
 
   const hideToast = useCallback(() => {
     setToastState((prev) => ({ ...prev, visible: false }));
   }, []);
 
   return (
-    <ToastContext.Provider value={{ showToast, showSuccess, showError, showWarning, showInfo }}>
+    <ToastContext.Provider value={{ showToast, showSuccess, showError, showWarning, showInfo, showErrorWithRequestId }}>
       {children}
       <Toast
         visible={toastState.visible}
