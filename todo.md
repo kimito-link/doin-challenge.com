@@ -3695,3 +3695,9 @@ features/create/
 - [x] GenderSelector.tsx - 性別選択ラジオボタン（79行）
 - [x] TermsAndPermissions.tsx - お約束・動画許可・メッセージ入力（184行）
 - [x] FormInputSection.tsx - リファクタリング後のメインコンポーネント（462行→83行）
+
+### CompanionAddSection.tsx分割
+- [x] TwitterSearchForm.tsx - Twitter検索フォーム（258行）
+- [x] CompanionList.tsx - 友人リスト（125行）
+- [x] ContributionDisplay.tsx - 貢献人数表示（49行）
+- [x] CompanionAddSection.tsx - リファクタリング後のメインコンポーネント（389行→128行）
