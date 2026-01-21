@@ -11,7 +11,7 @@ import { LinearGradient } from "expo-linear-gradient";
 import { color } from "@/theme/tokens";
 import { useColors } from "@/hooks/use-colors";
 import { prefectures } from "@/constants/prefectures";
-import { styles } from "./styles";
+import { styles } from "./ParticipationForm.styles";
 import type { ParticipationFormProps } from "./types";
 
 export function ParticipationForm({

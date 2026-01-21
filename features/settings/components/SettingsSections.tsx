@@ -6,7 +6,7 @@ import { View, Text } from "react-native";
 import { Image } from "expo-image";
 import MaterialIcons from "@expo/vector-icons/MaterialIcons";
 import { color } from "@/theme/tokens";
-import { settingsStyles as styles } from "../styles";
+import { settingsStyles as styles } from "./SettingsSections.styles";
 import { Button } from "@/components/ui/button";
 import type { SessionExpiryInfo } from "@/lib/token-manager";
 

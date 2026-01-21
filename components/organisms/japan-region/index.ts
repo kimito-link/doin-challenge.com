@@ -10,5 +10,3 @@ export type { HeatLevel } from "./heat-utils";
 export { JapanRegionBlocks } from "./JapanRegionBlocks";
 export type { JapanRegionBlocksProps } from "./JapanRegionBlocks";
 
-// スタイル（必要な場合のみ）
-export { styles } from "./styles";

@@ -17,7 +17,7 @@ import { useExperience } from "@/lib/experience-context";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { CHARACTER_IMAGES } from "./constants";
 import { PreviewContent } from "./preview-content";
-import { styles } from "./styles";
+import { styles } from "./ExperienceOverlay.styles";
 
 export function ExperienceOverlay() {
   const { 

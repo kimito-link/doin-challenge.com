@@ -18,7 +18,7 @@ import Animated, {
 // 分割したモジュールからインポート
 import { regions, Region, findRegionByPrefecture } from "./region-data";
 import { getParticipantIcon, getHeatLevel, getHeatOpacity, getHeatBorderWidth } from "./heat-utils";
-import { styles } from "./styles";
+import { styles } from "./JapanRegionBlocks.styles";
 
 export interface JapanRegionBlocksProps {
   prefectureCounts: { [key: string]: number };

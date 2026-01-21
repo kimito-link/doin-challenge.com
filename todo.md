@@ -3871,10 +3871,10 @@ features/create/
 - [ ] ベストプラクティスの確認
 
 ### Phase 3: リファクタリング実施
-- [ ] ブランチ refactor/style-colocation 作成
-- [ ] experience-overlay のスタイルコロケーション
-- [ ] japan-region のスタイルコロケーション
-- [ ] participation-form のスタイルコロケーション
-- [ ] settings のスタイルコロケーション
+- [x] ブランチ refactor/style-colocation 作成
+- [x] experience-overlay のスタイルコロケーション
+- [x] japan-region のスタイルコロケーション
+- [x] participation-form のスタイルコロケーション
+- [x] settings のスタイルコロケーション
 - [ ] 動作確認（見た目が変わらないこと）
 - [ ] mainブランチにマージ
