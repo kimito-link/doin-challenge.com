@@ -3979,3 +3979,8 @@ features/create/
 - [x] slug不一致時の正規URLリダイレクト
 - [x] 共有ボタンの更新（新URLを使用）
 - [x] E2Eテスト追加（slug違いでも通る・正規化される）
+
+
+## Dependabot設定追加（v6.49）
+
+- [x] Dependabot設定ファイルの作成（.github/dependabot.yml）
