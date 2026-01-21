@@ -3688,3 +3688,10 @@ features/create/
 - [x] CompanionAddSection.tsx - 友人追加部分（友人リスト、追加フォーム、Twitter検索、貢献人数表示）
 - [x] FormButtonsSection.tsx - ボタン部分（キャンセル、送信）
 - [x] ParticipationFormSection.tsx - リファクタリング後のメインコンポーネント（919行→161行）
+
+### FormInputSection.tsx分割
+- [x] UserInfoSection.tsx - ユーザー情報表示・ログイン促進（114行）
+- [x] PrefectureSelector.tsx - 都道府県選択ドロップダウン（93行）
+- [x] GenderSelector.tsx - 性別選択ラジオボタン（79行）
+- [x] TermsAndPermissions.tsx - お約束・動画許可・メッセージ入力（184行）
+- [x] FormInputSection.tsx - リファクタリング後のメインコンポーネント（462行→83行）
