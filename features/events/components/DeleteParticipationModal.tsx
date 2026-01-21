@@ -37,7 +37,7 @@ export function DeleteParticipationModal({
               参加表明を取り消しますか？
             </Text>
             <Text style={styles.subtitle}>
-              この操作は取り消すことができません。
+              参加表明を取り消すと、応援メッセージが非表示になります。{"\n"}主催者には引き続き表示されます。
             </Text>
           </View>
 
@@ -70,7 +70,7 @@ export function DeleteParticipationModal({
               style={styles.deleteButton}
             >
               <Text style={[styles.deleteButtonText, { color: colors.foreground }]}>
-                {isDeleting ? "削除中..." : "取り消す"}
+                {isDeleting ? "処理中..." : "参加を取り消す"}
               </Text>
             </Button>
           </View>

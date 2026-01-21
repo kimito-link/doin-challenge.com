@@ -178,7 +178,8 @@ export default function ParticipationsScreen() {
       return;
     }
 
-    const confirmMessage = `フィルター条件に一致する全ての削除済み参加を復元しますか？`;
+    const count = deletedParticipations?.length || 0;
+    const confirmMessage = `${count}件の削除済み参加表明を復元しますか？`;
     if (Platform.OS === "web") {
       if (window.confirm(confirmMessage)) {
         bulkRestoreMutation.mutate({
@@ -212,7 +213,7 @@ export default function ParticipationsScreen() {
       return;
     }
 
-    const confirmMessage = `フィルター条件に一致する全ての有効な参加をソフトデリートしますか？\nこの操作は後で復元できます。`;
+    const confirmMessage = `フィルター条件に一致する参加表明を非表示にしますか？\nこの操作は後で復元できます。`;
     if (Platform.OS === "web") {
       if (window.confirm(confirmMessage)) {
         bulkDeleteMutation.mutate({
