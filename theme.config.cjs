@@ -1,17 +1,18 @@
 /** @type {const} */
+// v6.22: ダークモード専用（ライトモードは同じ値を設定）
 const themeColors = {
-  // KimitoLink ブランドカラー
-  primary: { light: '#00427B', dark: '#4A90D9' },      // ブルー（メイン）
-  secondary: { light: '#B85400', dark: '#FF8C33' },   // オレンジ（アクセント）- ライトモードでWCAG AA準拠
-  background: { light: '#ffffff', dark: '#0D1117' },
-  surface: { light: '#F8F9FA', dark: '#161B22' },
-  foreground: { light: '#1F2937', dark: '#E6EDF3' },
-  muted: { light: '#6B7280', dark: '#E5E7EB' },  // v5.75: ダークモードでさらに明るく（視認性改善）
-  border: { light: '#E5E7EB', dark: '#30363D' },
-  success: { light: '#22C55E', dark: '#4ADE80' },
-  warning: { light: '#F59E0B', dark: '#FBBF24' },
-  error: { light: '#EF4444', dark: '#F87171' },
-  accent: { light: '#DD6500', dark: '#FF8C33' },       // オレンジ（アクセント）
+  // KimitoLink ブランドカラー（ダークモード専用）
+  primary: { light: '#4A90D9', dark: '#4A90D9' },      // ブルー（メイン）
+  secondary: { light: '#FF8C33', dark: '#FF8C33' },   // オレンジ（アクセント）
+  background: { light: '#0D1117', dark: '#0D1117' },
+  surface: { light: '#161B22', dark: '#161B22' },
+  foreground: { light: '#E6EDF3', dark: '#E6EDF3' },
+  muted: { light: '#E5E7EB', dark: '#E5E7EB' },
+  border: { light: '#30363D', dark: '#30363D' },
+  success: { light: '#4ADE80', dark: '#4ADE80' },
+  warning: { light: '#FBBF24', dark: '#FBBF24' },
+  error: { light: '#F87171', dark: '#F87171' },
+  accent: { light: '#FF8C33', dark: '#FF8C33' },       // オレンジ（アクセント）
 };
 
 module.exports = { themeColors };

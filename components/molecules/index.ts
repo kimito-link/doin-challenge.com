@@ -2,11 +2,32 @@
  * Molecules - 複合コンポーネント
  * 
  * Atomsを組み合わせた再利用可能なコンポーネント群
- * 例: Card、Avatar、ListItem、Form要素の組み合わせ
+ * v6.22: components/ui/からの再エクスポートに統一
  */
 
+// ===== 新UIコンポーネント（components/ui/から再エクスポート） =====
 // Card系
-export { Card, CardHeader, CardFooter } from "./card";
+export { 
+  Card, 
+  CardHeader, 
+  CardFooter, 
+  CardSection,
+  type CardProps, 
+  type CardHeaderProps, 
+  type CardFooterProps,
+  type CardSectionProps,
+} from "@/components/ui/card";
+
+// Modal系
+export { 
+  ConfirmModal, 
+  AlertModal,
+  type ConfirmModalProps,
+  type AlertModalProps,
+} from "@/components/ui/modal";
+
+// ===== レガシーコンポーネント（段階的に移行） =====
+// Card系（レガシー）
 export { HoverableCard } from "./hoverable-card";
 export { PressableCard } from "./pressable-card";
 export * from "./animated-pressable";
@@ -19,20 +40,23 @@ export { ProgressiveImage } from "./progressive-image";
 // ListItem系
 export { HoverableListItem } from "./hoverable-list-item";
 
-// Modal系
-export { ConfirmModal } from "./confirm-modal";
+// Modal系（レガシー）
 export { FollowSuccessModal } from "./follow-success-modal";
 export { PrefectureParticipantsModal } from "./prefecture-participants-modal";
 export { RegionParticipantsModal } from "./region-participants-modal";
 export { LoginSuccessModal } from "./login-success-modal";
 export { LoginSuccessModalWrapper } from "./login-success-modal-wrapper";
 export { SharePromptModal } from "./share-prompt-modal";
+export { LogoutConfirmModal } from "./logout-confirm-modal";
+export { EncouragementModal, useEncouragementModal } from "./encouragement-modal";
 
 // Form系
 export { DatePicker } from "./date-picker";
 export { ExportButton } from "./export-button";
 export { ReminderButton } from "./reminder-button";
 export { ShareButton } from "./share-button";
+export { NumberStepper } from "./number-stepper";
+export { FilterTabs } from "./filter-tabs";
 
 // Character系
 export { BlinkingCharacter, BlinkingLink } from "@/components/atoms/blinking-character";
@@ -52,3 +76,7 @@ export { LoadingScreen } from "./loading-screen";
 export { MemoizedChallengeCard } from "./memoized-challenge-card";
 export { ResponsiveContainer } from "./responsive-container";
 export { ThemeSettingsPanel } from "./theme-settings";
+export { TutorialResetButton } from "./tutorial-reset-button";
+export { ColorfulChallengeCard } from "./colorful-challenge-card";
+export { TwitterUserCard } from "./twitter-user-card";
+export { InlineValidationError } from "./inline-validation-error";

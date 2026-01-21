@@ -3497,3 +3497,27 @@ features/create/
 - [ ] Pressableのスタイル統一（pressed状態でのopacity/scale変更）
 - [ ] Hapticsの追加（重要なボタンにハプティクスフィードバック）
 - [ ] 新UIのButtonコンポーネント活用（統一Buttonコンポーネントへの置き換え）
+
+
+## v6.22 コンポーネントファクタリング・エラー耐性強化
+
+### ダークモード専用化
+- [x] テーマ設定をダークモードのみに固定（theme.config.cjs更新）
+- [x] ライトモード関連コードの削除・簡素化（lib/theme-provider.tsx既に対応済み）
+- [x] カラートークンの整理（ダークモード専用）
+
+### コンポーネント分割・整理
+- [x] 共通UIコンポーネントの抽出（components/ui/に統一）
+- [x] コンポーネントのindex.tsによるエクスポート整理
+- [x] components/index.ts作成（統一エクスポート）
+- [ ] 大きなコンポーネントの分割（単一責任原則）
+
+### 型安全性の強化
+- [x] Props型の明示的定義（components/ui/に実装済み）
+- [x] 共通型定義ファイルの整理（types/index.ts作成）
+- [x] TypeScriptエラー0件確認
+
+### エラー発見しやすい構造
+- [x] 明確なファイル命名規則（docs/component-guidelines.md作成）
+- [x] インポートパスの整理（index.ts経由のエクスポート）
+- [ ] コンポーネント単位でのエラーバウンダリ
