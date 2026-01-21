@@ -1,7 +1,7 @@
 import { View, Text, Pressable, StyleSheet, Platform } from "react-native";
 import { color, palette } from "@/theme/tokens";
 import { Image } from "expo-image";
-import { useRouter } from "expo-router";
+import { navigate } from "@/lib/navigation";
 import { useColors } from "@/hooks/use-colors";
 import * as Haptics from "expo-haptics";
 import Animated, { 
@@ -28,7 +28,7 @@ const characterImage = require("@/assets/images/characters/konta/kitsune-yukkuri
  */
 export function HostEmptyState() {
   const colors = useColors();
-  const router = useRouter();
+  
   
   // キャラクターのワクワクアニメーション
   const bounce = useSharedValue(0);
@@ -52,7 +52,7 @@ export function HostEmptyState() {
       Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
     }
     // 作成タブへ遷移
-    router.push("/(tabs)/create");
+    navigate.toCreateTab();
   };
   
   return (

@@ -6,7 +6,7 @@
 
 import { useState, useMemo, useRef, useEffect, useCallback } from "react";
 import { ScrollView, View } from "react-native";
-import { useRouter } from "expo-router";
+import { navigate } from "@/lib/navigation";
 import { trpc } from "@/lib/trpc";
 import { useAuth } from "@/hooks/use-auth";
 import { showAlert } from "@/lib/web-alert";
@@ -17,7 +17,7 @@ import type { ValidationError } from "../types";
  * チャレンジ作成フォームのフック
  */
 export function useCreateChallengeForm() {
-  const router = useRouter();
+  
   const { user, login, isAuthenticated } = useAuth();
 
   // フォーム状態
@@ -105,10 +105,7 @@ export function useCreateChallengeForm() {
         {
           text: "OK",
           onPress: () => {
-            router.push({
-              pathname: "/event/[id]",
-              params: { id: newChallenge.id.toString() },
-            });
+            navigate.toEventDetail(newChallenge.id);
           },
         },
       ]);

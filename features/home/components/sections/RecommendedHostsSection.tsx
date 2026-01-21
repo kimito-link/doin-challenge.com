@@ -5,7 +5,7 @@
 
 import { View, Text, ScrollView } from "react-native";
 import { useState, useEffect } from "react";
-import { useRouter } from "expo-router";
+import { navigate } from "@/lib/navigation";
 import { useColors } from "@/hooks/use-colors";
 import { homeUI, homeText } from "@/features/home/ui/theme/tokens";
 import { trpc } from "@/lib/trpc";
@@ -14,7 +14,7 @@ import { Button } from "@/components/ui/button";
 
 export function RecommendedHostsSection() {
   const colors = useColors();
-  const router = useRouter();
+  
   const [shouldLoad, setShouldLoad] = useState(false);
   
   // 500ms後に読み込み開始（初期表示を優先）
@@ -48,7 +48,7 @@ export function RecommendedHostsSection() {
               <Button
                 key={host.userId}
                 variant="ghost"
-                onPress={() => router.push({ pathname: "/profile/[userId]", params: { userId: host.userId.toString() } })}
+                onPress={() => navigate.toProfile(host.userId)}
                 style={{ alignItems: "center", width: 80, flexDirection: "column", height: "auto", padding: 4 }}
               >
                 <OptimizedAvatar

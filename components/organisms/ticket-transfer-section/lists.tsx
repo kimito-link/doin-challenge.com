@@ -1,6 +1,7 @@
 // components/organisms/ticket-transfer-section/lists.tsx
 // v6.18: チケット譲渡のリスト表示コンポーネント
-import { View, Text, Pressable, Alert, Linking , Platform} from "react-native";
+import { View, Text, Pressable, Alert, Platform } from "react-native";
+import { openTwitterDM } from "@/lib/navigation";
 import * as Haptics from "expo-haptics";
 import { Image } from "expo-image";
 import MaterialIcons from "@expo/vector-icons/MaterialIcons";
@@ -12,7 +13,7 @@ const handleOpenDM = (username: string | null) => {
     Alert.alert("エラー", "このユーザーにはDMを送れません");
     return;
   }
-  Linking.openURL(`https://twitter.com/messages/compose?recipient_id=${username}`);
+  openTwitterDM(username);
 };
 
 // 譲渡一覧

@@ -1,7 +1,7 @@
 import { Text, View, Pressable, ScrollView, Switch, ActivityIndicator } from "react-native";
 import * as Haptics from "expo-haptics";
 import { color, palette } from "@/theme/tokens";
-import { useRouter } from "expo-router";
+import { navigate, navigateBack } from "@/lib/navigation";
 import { useState, useEffect } from "react";
 import { ScreenContainer } from "@/components/organisms/screen-container";
 import { trpc } from "@/lib/trpc";
@@ -15,7 +15,7 @@ import { AppHeader } from "@/components/organisms/app-header";
 
 export default function NotificationsScreen() {
   const colors = useColors();
-  const router = useRouter();
+  
   const { user, isAuthenticated } = useAuth();
   
   const [expoPushToken, setExpoPushToken] = useState<string | null>(null);
@@ -121,7 +121,7 @@ export default function NotificationsScreen() {
           showCharacters={false}
           rightElement={
             <Pressable
-              onPress={() => router.back()}
+              onPress={() => navigateBack()}
               style={{ flexDirection: "row", alignItems: "center" }}
             >
               <MaterialIcons name="arrow-back" size={24} color={colors.foreground} />
@@ -207,7 +207,7 @@ export default function NotificationsScreen() {
                   if (!notification.isRead) {
                     markAsReadMutation.mutate({ id: notification.id });
                   }
-                  router.push(`/event/${notification.challengeId}`);
+                  navigate.toEventDetail(notification.challengeId);
                 }}
                 style={{
                   backgroundColor: notification.isRead ? color.surface : "#1E2530",

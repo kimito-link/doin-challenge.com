@@ -3,7 +3,7 @@
  * 一緒に参加している人を横スクロールで表示
  */
 import { View, Text, ScrollView } from "react-native";
-import { useRouter } from "expo-router";
+import { navigate } from "@/lib/navigation";
 import MaterialIcons from "@expo/vector-icons/MaterialIcons";
 import { useColors } from "@/hooks/use-colors";
 import { Button } from "@/components/ui/button";
@@ -26,7 +26,7 @@ export function ParticipantsList({
   maxDisplay = 10,
 }: ParticipantsListProps) {
   const colors = useColors();
-  const router = useRouter();
+  
 
   // 匿名でない参加者のみ表示
   const visibleParticipants = participations
@@ -57,7 +57,7 @@ export function ParticipantsList({
                     profileImage: p.profileImage || undefined,
                   });
                 } else if (p.userId) {
-                  router.push({ pathname: "/profile/[userId]", params: { userId: p.userId.toString() } });
+                  navigate.toProfile(p.userId);
                 }
               }}
               style={{ alignItems: "center", width: 70, paddingHorizontal: 0, paddingVertical: 4 }}

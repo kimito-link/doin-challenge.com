@@ -40,7 +40,6 @@ interface AuthenticatedContentProps {
   onChallengePress: (id: number) => void;
   onNavigateToAchievements: () => void;
   onNavigateToNotificationSettings: () => void;
-  onNavigateToThemeSettings: () => void;
   onNavigateToApiUsage: () => void;
 }
 
@@ -63,7 +62,6 @@ export function AuthenticatedContent({
   onChallengePress,
   onNavigateToAchievements,
   onNavigateToNotificationSettings,
-  onNavigateToThemeSettings,
   onNavigateToApiUsage,
 }: AuthenticatedContentProps) {
   const colors = useColors();
@@ -108,14 +106,6 @@ export function AuthenticatedContent({
         description="目標達成やマイルストーンの通知を管理"
         onPress={onNavigateToNotificationSettings}
       />
-      <SettingsLinkItem
-        icon="palette"
-        iconColor={color.accentAlt}
-        title="テーマ設定"
-        description="ライト/ダークモードを切り替え"
-        onPress={onNavigateToThemeSettings}
-      />
-
       {/* チュートリアル再表示 */}
       <View style={{ paddingHorizontal: 16, marginBottom: 8 }}>
         <TutorialResetButton />

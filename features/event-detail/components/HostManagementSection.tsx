@@ -1,10 +1,11 @@
 /**
  * HostManagementSection Component
  * ホスト（主催者）用の管理ボタン群
+ * v6.38: navigateに移行
  */
 
 import { View, Text, Pressable, Alert } from "react-native";
-import { useRouter } from "expo-router";
+import { navigate } from "@/lib/navigation";
 import MaterialIcons from "@expo/vector-icons/MaterialIcons";
 import { color } from "@/theme/tokens";
 import { useColors } from "@/hooks/use-colors";
@@ -17,7 +18,6 @@ interface HostManagementSectionProps {
 
 export function HostManagementSection({ challengeId, isHost, progress }: HostManagementSectionProps) {
   const colors = useColors();
-  const router = useRouter();
   
   if (!isHost) {
     return null;
@@ -32,7 +32,7 @@ export function HostManagementSection({ challengeId, isHost, progress }: HostMan
         {
           text: "作成する",
           onPress: () => {
-            router.push(`/achievement/${challengeId}`);
+            navigate.toAchievement(challengeId);
           },
         },
       ]
@@ -43,7 +43,7 @@ export function HostManagementSection({ challengeId, isHost, progress }: HostMan
     <View style={{ gap: 12, marginTop: 16 }}>
       {/* 統計ダッシュボード */}
       <Pressable
-        onPress={() => router.push(`/dashboard/${challengeId}`)}
+        onPress={() => navigate.toDashboard(challengeId)}
         style={{
           backgroundColor: color.successDark,
           borderRadius: 12,
@@ -61,7 +61,7 @@ export function HostManagementSection({ challengeId, isHost, progress }: HostMan
       
       {/* コメント管理 */}
       <Pressable
-        onPress={() => router.push(`/manage-comments/${challengeId}`)}
+        onPress={() => navigate.toManageComments(challengeId)}
         style={{
           backgroundColor: color.accentAlt,
           borderRadius: 12,
@@ -99,7 +99,7 @@ export function HostManagementSection({ challengeId, isHost, progress }: HostMan
       
       {/* 共同主催者管理 */}
       <Pressable
-        onPress={() => router.push(`/collaborators/${challengeId}`)}
+        onPress={() => navigate.toCollaborators(challengeId)}
         style={{
           backgroundColor: color.info,
           borderRadius: 12,

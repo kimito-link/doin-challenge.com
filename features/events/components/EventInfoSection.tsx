@@ -1,4 +1,5 @@
-import { View, Text, Linking, StyleSheet } from "react-native";
+import { View, Text, StyleSheet } from "react-native";
+import { openTicketSite } from "@/lib/navigation";
 import MaterialIcons from "@expo/vector-icons/MaterialIcons";
 import { color } from "@/theme/tokens";
 import { useColors } from "@/hooks/use-colors";
@@ -94,7 +95,7 @@ export function EventInfoSection({
           {ticketUrl && (
             <Button
               variant="primary"
-              onPress={() => Linking.openURL(ticketUrl)}
+              onPress={() => { openTicketSite(ticketUrl); }}
               style={styles.ticketButton}
             >
               <MaterialIcons name="open-in-new" size={18} color={colors.foreground} />

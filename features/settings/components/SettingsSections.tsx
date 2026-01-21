@@ -1,12 +1,12 @@
 /**
  * features/settings/components/SettingsSections.tsx
- * v6.23: 新UIコンポーネント（Button）を使用
+ * v6.36: テーマ切り替え機能を削除（ダークモードのみに固定）
  */
 import { View, Text } from "react-native";
 import { Image } from "expo-image";
 import MaterialIcons from "@expo/vector-icons/MaterialIcons";
 import { color } from "@/theme/tokens";
-import { settingsStyles as styles } from "../styles";
+import { settingsStyles as styles } from "./SettingsSections.styles";
 import { Button } from "@/components/ui/button";
 import type { SessionExpiryInfo } from "@/lib/token-manager";
 
@@ -180,28 +180,6 @@ export function AccountSection({
           danger
         />
       )}
-    </View>
-  );
-}
-
-// 表示設定セクション
-export function DisplaySection({
-  themeIcon,
-  onThemeSettings,
-}: {
-  themeIcon: string;
-  onThemeSettings: () => void;
-}) {
-  return (
-    <View style={styles.section}>
-      <Text style={styles.sectionTitle}>表示</Text>
-
-      <MenuItem
-        icon={themeIcon as keyof typeof MaterialIcons.glyphMap}
-        title="テーマ設定"
-        description="ダークモード"
-        onPress={onThemeSettings}
-      />
     </View>
   );
 }

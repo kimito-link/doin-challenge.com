@@ -4,7 +4,7 @@
  */
 
 import { View, Text, Pressable } from "react-native";
-import { useRouter } from "expo-router";
+import { navigate } from "@/lib/navigation";
 import { LinearGradient } from "expo-linear-gradient";
 import { color } from "@/theme/tokens";
 import { useColors } from "@/hooks/use-colors";
@@ -43,7 +43,7 @@ export function ProgressSection({
   onRegionPress,
 }: ProgressSectionProps) {
   const colors = useColors();
-  const router = useRouter();
+  
   
   // 成長軌跡データの生成
   const trajectoryData = (() => {
@@ -125,7 +125,7 @@ export function ProgressSection({
               bubblePosition="top"
             />
             <Pressable
-              onPress={() => router.push(`/achievement/${challengeId}`)}
+              onPress={() => navigate.toAchievement(challengeId)}
               style={{
                 backgroundColor: color.accentPrimary,
                 paddingVertical: 12,

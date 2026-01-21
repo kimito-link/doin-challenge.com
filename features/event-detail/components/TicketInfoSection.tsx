@@ -3,7 +3,8 @@
  * チケット情報（前売り、当日、購入リンク）
  */
 
-import { View, Text, Pressable, Linking } from "react-native";
+import { View, Text, Pressable } from "react-native";
+import { openTicketSite } from "@/lib/navigation";
 import MaterialIcons from "@expo/vector-icons/MaterialIcons";
 import { color } from "@/theme/tokens";
 import { useColors } from "@/hooks/use-colors";
@@ -60,7 +61,7 @@ export function TicketInfoSection({ ticketPresale, ticketDoor, ticketUrl }: Tick
 
       {ticketUrl && (
         <Pressable
-          onPress={() => Linking.openURL(ticketUrl)}
+          onPress={() => openTicketSite(ticketUrl)}
           style={{
             backgroundColor: color.accentPrimary,
             borderRadius: 12,

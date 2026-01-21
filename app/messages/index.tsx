@@ -1,13 +1,13 @@
 import { View, Text, FlatList, Pressable, Image, Platform } from "react-native";
 import * as Haptics from "expo-haptics";
-import { useRouter } from "expo-router";
+import { navigate, navigateBack } from "@/lib/navigation";
 import { ScreenContainer } from "@/components/organisms/screen-container";
 import { trpc } from "@/lib/trpc";
 import { useAuth } from "@/hooks/use-auth";
 import { AppHeader } from "@/components/organisms/app-header";
 
 export default function MessagesScreen() {
-  const router = useRouter();
+  
   const { user } = useAuth();
 
   const { data: conversations, isLoading } = trpc.dm.conversations.useQuery(undefined, {
@@ -26,7 +26,7 @@ export default function MessagesScreen() {
             メッセージを見るにはログインが必要です
           </Text>
           <Pressable
-            onPress={() => router.push("/oauth" as never)}
+            onPress={() => navigate.toOAuth()}
             className="mt-4 bg-primary px-6 py-3 rounded-full"
           >
             <Text className="text-background font-bold">ログイン</Text>
@@ -43,7 +43,7 @@ export default function MessagesScreen() {
 
     return (
       <Pressable
-        onPress={() => router.push(`/messages/${partnerId}?challengeId=${item.challengeId}` as never)}
+        onPress={() => navigate.toMessages(partnerId, item.challengeId)}
         className={`flex-row items-center p-4 border-b border-border ${isUnread ? "bg-primary/10" : ""}`}
         
       >
@@ -103,7 +103,7 @@ export default function MessagesScreen() {
                 </Text>
               </View>
             )}
-            <Pressable onPress={() => router.back()} className="flex-row items-center">
+            <Pressable onPress={() => navigateBack()} className="flex-row items-center">
               <Text className="text-foreground">← 戻る</Text>
             </Pressable>
           </View>

@@ -13,9 +13,9 @@ import {
   Pressable,
   StyleSheet,
   ActivityIndicator,
-  Linking,
   Platform,
 } from "react-native";
+import { openTwitterProfile } from "@/lib/navigation";
 import { Image } from "expo-image";
 import MaterialIcons from "@expo/vector-icons/MaterialIcons";
 import * as Haptics from "expo-haptics";
@@ -67,7 +67,7 @@ export function HostProfileModal({
     if (Platform.OS !== "web") {
       Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
     }
-    Linking.openURL(`https://twitter.com/${username}`);
+    openTwitterProfile(username);
   };
 
   const handleClose = () => {

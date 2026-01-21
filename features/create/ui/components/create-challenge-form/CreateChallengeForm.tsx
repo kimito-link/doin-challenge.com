@@ -3,7 +3,7 @@
 
 import { View } from "react-native";
 import { LinearGradient } from "expo-linear-gradient";
-import { useRouter } from "expo-router";
+import { navigate } from "@/lib/navigation";
 import { color } from "@/theme/tokens";
 import { useAuth } from "@/hooks/use-auth";
 import { NumberStepper } from "@/components/molecules/number-stepper";
@@ -43,7 +43,7 @@ export function CreateChallengeForm({
   titleInputRef,
   dateInputRef,
 }: CreateChallengeFormProps) {
-  const router = useRouter();
+  
   const { user, login } = useAuth();
 
   return (
@@ -191,7 +191,7 @@ export function CreateChallengeForm({
         <CreateButtonSection onPress={handleCreate} isPending={isPending} />
 
         {/* テンプレート一覧へのリンク */}
-        <TemplateLinkSection onPress={() => router.push("/templates" as never)} />
+        <TemplateLinkSection onPress={() => navigate.toTemplates()} />
       </View>
     </View>
   );

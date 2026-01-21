@@ -4,7 +4,7 @@
  */
 
 import { View, Text, Pressable } from "react-native";
-import { useRouter } from "expo-router";
+import { navigate } from "@/lib/navigation";
 import MaterialIcons from "@expo/vector-icons/MaterialIcons";
 import { LinearGradient } from "expo-linear-gradient";
 import { color } from "@/theme/tokens";
@@ -38,7 +38,7 @@ export function EventHeaderSection({
   onShowHostProfile,
 }: EventHeaderSectionProps) {
   const colors = useColors();
-  const router = useRouter();
+  
   
   return (
     <LinearGradient
@@ -50,7 +50,7 @@ export function EventHeaderSection({
       {/* 主催者用の編集アイコン */}
       {isOwner && (
         <Pressable
-          onPress={() => router.push({ pathname: "/edit-challenge/[id]", params: { id: challengeId.toString() } })}
+          onPress={() => navigate.toEditChallenge(challengeId)}
           style={{
             position: "absolute",
             top: 12,

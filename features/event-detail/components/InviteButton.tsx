@@ -1,10 +1,11 @@
 /**
  * InviteButton Component
  * 友達を招待するボタン
+ * v6.38: navigateに移行
  */
 
 import { Text, Pressable } from "react-native";
-import { useRouter } from "expo-router";
+import { navigate } from "@/lib/navigation";
 import MaterialIcons from "@expo/vector-icons/MaterialIcons";
 import { color } from "@/theme/tokens";
 import { useColors } from "@/hooks/use-colors";
@@ -15,11 +16,10 @@ interface InviteButtonProps {
 
 export function InviteButton({ challengeId }: InviteButtonProps) {
   const colors = useColors();
-  const router = useRouter();
   
   return (
     <Pressable
-      onPress={() => router.push(`/invite/${challengeId}`)}
+      onPress={() => navigate.toInvite(challengeId)}
       style={{
         backgroundColor: color.hostAccentLegacy,
         borderRadius: 12,

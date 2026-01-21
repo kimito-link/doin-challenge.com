@@ -1,7 +1,8 @@
 import { useState, useEffect } from "react";
 import { color, palette } from "@/theme/tokens";
 import { View, Text, ScrollView, Pressable, Switch, Alert } from "react-native";
-import { useLocalSearchParams, useRouter } from "expo-router";
+import { useLocalSearchParams } from "expo-router";
+import { navigate, navigateBack } from "@/lib/navigation";
 import { ScreenContainer } from "@/components/organisms/screen-container";
 import { trpc } from "@/lib/trpc";
 import { useAuth } from "@/hooks/use-auth";
@@ -13,7 +14,7 @@ type ReminderType = "day_before" | "day_of" | "hour_before" | "custom";
 
 export default function ReminderSettingsScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
-  const router = useRouter();
+  
   const { user } = useAuth();
   const challengeId = parseInt(id || "0", 10);
 
@@ -83,7 +84,7 @@ export default function ReminderSettingsScreen() {
             リマインダーを設定するにはログインが必要です
           </Text>
           <Pressable
-            onPress={() => router.push("/oauth" as never)}
+            onPress={() => navigate.toOAuth()}
             className="mt-4 bg-primary px-6 py-3 rounded-full"
           >
             <Text className="text-background font-bold">ログイン</Text>
@@ -102,7 +103,7 @@ export default function ReminderSettingsScreen() {
           showCharacters={false}
           rightElement={
             <Pressable
-              onPress={() => router.back()}
+              onPress={() => navigateBack()}
               className="flex-row items-center"
             >
               <Text className="text-foreground">← 戻る</Text>

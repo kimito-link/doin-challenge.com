@@ -17,7 +17,7 @@ import Animated, {
 } from "react-native-reanimated";
 import { useEffect } from "react";
 import { LinearGradient } from "expo-linear-gradient";
-import { useRouter } from "expo-router";
+import { navigate } from "@/lib/navigation";
 
 // キャラクター画像
 const characterImage = require("@/assets/images/characters/link/link-yukkuri-smile-mouth-open.png");
@@ -41,7 +41,7 @@ export function LoginPromptModal({ visible, onLogin, onSkip }: LoginPromptModalP
   const colors = useColors();
   const { login } = useAuth();
   const { userType } = useTutorial();
-  const router = useRouter();
+  
   
   // キャラクターのワクワクアニメーション
   const bounce = useSharedValue(0);
@@ -91,10 +91,10 @@ export function LoginPromptModal({ visible, onLogin, onSkip }: LoginPromptModalP
     
     if (userType === "host") {
       // 主催者向け：チャレンジ作成画面へ
-      router.push("/create");
+      navigate.toCreate();
     } else {
       // ファン向け：ホーム画面（チャレンジ一覧）へ
-      router.push("/");
+      navigate.toHome();
     }
   };
   

@@ -92,7 +92,6 @@ export default function MyPageScreen() {
           onChallengePress={mypageActions.handleChallengePress}
           onNavigateToAchievements={mypageActions.navigateToAchievements}
           onNavigateToNotificationSettings={mypageActions.navigateToNotificationSettings}
-          onNavigateToThemeSettings={mypageActions.navigateToThemeSettings}
           onNavigateToApiUsage={mypageActions.navigateToApiUsage}
         />
       )}

@@ -99,8 +99,9 @@ export function ColorfulChallengeCard({
   const cardWidth = width ?? fallbackCardWidth;
   
   // カードの色を決定（IDベースで一貫性を保つ）
-  const cardColorIdx = colorIndex !== undefined ? colorIndex : challenge.id % CARD_COLORS.length;
-  const cardColor = CARD_COLORS[cardColorIdx];
+  const safeId = challenge?.id ?? 0;
+  const cardColorIdx = colorIndex !== undefined ? colorIndex : safeId % CARD_COLORS.length;
+  const cardColor = CARD_COLORS[cardColorIdx] ?? CARD_COLORS[0];
 
   // 運営者（作成者）かどうかを判定
   const isOwner = currentUserTwitterId && challenge.hostTwitterId === currentUserTwitterId;

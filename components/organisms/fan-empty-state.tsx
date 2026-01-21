@@ -1,7 +1,7 @@
 import { View, Text, Pressable, StyleSheet, Platform } from "react-native";
 import { color, palette } from "@/theme/tokens";
 import { Image } from "expo-image";
-import { useRouter } from "expo-router";
+import { navigate } from "@/lib/navigation";
 import { useColors } from "@/hooks/use-colors";
 import * as Haptics from "expo-haptics";
 import Animated, { 
@@ -28,7 +28,7 @@ const characterImage = require("@/assets/images/characters/link/link-yukkuri-smi
  */
 export function FanEmptyState() {
   const colors = useColors();
-  const router = useRouter();
+  
   
   // キャラクターの手招きアニメーション
   const rotation = useSharedValue(0);
@@ -52,7 +52,7 @@ export function FanEmptyState() {
       Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
     }
     // ホーム画面（チャレンジ一覧）へ遷移
-    router.push("/(tabs)");
+    navigate.toHome();
   };
   
   return (

@@ -1,9 +1,10 @@
 /**
  * useHomeActions Hook
  * ホーム画面のアクション（ナビゲーション、削除等）
+ * v6.38: navigateに移行
  */
 
-import { useRouter } from "expo-router";
+import { navigate } from "@/lib/navigation";
 import { trpc } from "@/lib/trpc";
 import { showAlert } from "@/lib/web-alert";
 
@@ -20,8 +21,6 @@ interface UseHomeActionsReturn {
 }
 
 export function useHomeActions({ refetch }: UseHomeActionsOptions): UseHomeActionsReturn {
-  const router = useRouter();
-  
   // チャレンジ削除ミューテーション
   const deleteChallengeMutation = trpc.events.delete.useMutation({
     onSuccess: () => {
@@ -34,17 +33,11 @@ export function useHomeActions({ refetch }: UseHomeActionsOptions): UseHomeActio
   });
 
   const handleChallengePress = (challengeId: number) => {
-    router.push({
-      pathname: "/event/[id]",
-      params: { id: challengeId.toString() },
-    });
+    navigate.toEventDetail(challengeId);
   };
 
   const handleChallengeEdit = (challengeId: number) => {
-    router.push({
-      pathname: "/event/edit/[id]" as any,
-      params: { id: challengeId.toString() },
-    });
+    navigate.toEditChallenge(challengeId);
   };
 
   const handleChallengeDelete = (challengeId: number) => {
@@ -63,7 +56,7 @@ export function useHomeActions({ refetch }: UseHomeActionsOptions): UseHomeActio
   };
 
   const handleCreateChallenge = () => {
-    router.push("/(tabs)/create");
+    navigate.toCreateTab();
   };
 
   return {

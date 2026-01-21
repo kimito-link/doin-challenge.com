@@ -75,7 +75,6 @@ export { FollowGate } from "./follow-gate";
 export { LoadingScreen } from "./loading-screen";
 export { MemoizedChallengeCard } from "./memoized-challenge-card";
 export { ResponsiveContainer } from "./responsive-container";
-export { ThemeSettingsPanel } from "./theme-settings";
 export { TutorialResetButton } from "./tutorial-reset-button";
 export { ColorfulChallengeCard } from "./colorful-challenge-card";
 export { TwitterUserCard } from "./twitter-user-card";

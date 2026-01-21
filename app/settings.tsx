@@ -1,8 +1,8 @@
 // app/settings.tsx
-// v6.18: リファクタリング済み設定画面
+// v6.36: テーマ切り替え機能を削除（ダークモードのみに固定）
 import { useState, useCallback, useEffect } from "react";
-import { ScrollView, Platform, Linking } from "react-native";
-import { useRouter } from "expo-router";
+import { ScrollView, Platform } from "react-native";
+import { openTwitterProfile, navigate } from "@/lib/navigation";
 import * as Haptics from "expo-haptics";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 
@@ -11,7 +11,6 @@ import { AppHeader } from "@/components/organisms/app-header";
 import { AccountSwitcher } from "@/components/organisms/account-switcher";
 import { useAuth } from "@/hooks/use-auth";
 import { useAccounts } from "@/hooks/use-accounts";
-import { useThemeContext, getThemeModeIcon } from "@/lib/theme-provider";
 import { getSessionExpiryInfo, SessionExpiryInfo } from "@/lib/token-manager";
 import { useTutorial } from "@/lib/tutorial-context";
 import { useResponsive } from "@/hooks/use-responsive";
@@ -19,7 +18,6 @@ import { showAlert } from "@/lib/web-alert";
 
 import {
   AccountSection,
-  DisplaySection,
   NotificationSection,
   HelpSection,
   SettingsFooter,
@@ -28,13 +26,11 @@ import {
 
 /**
  * 総合設定画面
- * テーマ設定、アカウント管理、その他の設定を統合
+ * アカウント管理、通知設定、その他の設定を統合
  */
 export default function SettingsScreen() {
-  const router = useRouter();
   const { user, isAuthenticated } = useAuth();
   const { accounts, currentAccountId } = useAccounts();
-  const { themeMode } = useThemeContext();
   const [showAccountSwitcher, setShowAccountSwitcher] = useState(false);
   const [sessionExpiry, setSessionExpiry] = useState<SessionExpiryInfo | null>(null);
   const { resetTutorial } = useTutorial();
@@ -62,15 +58,10 @@ export default function SettingsScreen() {
     }
   }, []);
 
-  const handleThemeSettings = useCallback(() => {
-    handleHaptic();
-    router.push("/theme-settings");
-  }, [router, handleHaptic]);
-
   const handleNotificationSettings = useCallback(() => {
     handleHaptic();
-    router.push("/notification-settings");
-  }, [router, handleHaptic]);
+    navigate.toNotificationSettings();
+  }, [handleHaptic]);
 
   const handleAccountSwitch = useCallback(() => {
     handleHaptic();
@@ -79,13 +70,13 @@ export default function SettingsScreen() {
 
   const handleLogout = useCallback(() => {
     handleHaptic();
-    router.push("/logout");
-  }, [router, handleHaptic]);
+    navigate.toLogout();
+  }, [handleHaptic]);
 
   const handleHelp = useCallback(() => {
     handleHaptic();
-    router.push("/help");
-  }, [router, handleHaptic]);
+    navigate.toHelp();
+  }, [handleHaptic]);
 
   const handleReplayTutorial = useCallback(async () => {
     handleHaptic();
@@ -116,7 +107,7 @@ export default function SettingsScreen() {
 
   const handleTwitter = useCallback(() => {
     handleHaptic();
-    Linking.openURL("https://twitter.com/doin_challenge");
+    openTwitterProfile("doin_challenge");
   }, [handleHaptic]);
 
   // 他のアカウント（現在のアカウント以外）
@@ -141,11 +132,6 @@ export default function SettingsScreen() {
           otherAccounts={otherAccounts}
           onAccountSwitch={handleAccountSwitch}
           onLogout={handleLogout}
-        />
-
-        <DisplaySection
-          themeIcon={getThemeModeIcon(themeMode)}
-          onThemeSettings={handleThemeSettings}
         />
 
         <NotificationSection

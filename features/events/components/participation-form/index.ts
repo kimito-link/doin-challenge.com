@@ -5,4 +5,3 @@
  */
 export { ParticipationForm } from "./ParticipationForm";
 export type { ParticipationFormProps, Companion, LookedUpProfile } from "./types";
-export { styles } from "./styles";

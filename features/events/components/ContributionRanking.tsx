@@ -3,7 +3,7 @@
  * 参加者の貢献度をランキング形式で表示
  */
 import { View, Text } from "react-native";
-import { useRouter } from "expo-router";
+import { navigate } from "@/lib/navigation";
 import { useColors } from "@/hooks/use-colors";
 import { eventText, eventFont, eventUI } from "@/features/events/ui/theme/tokens";
 import { OptimizedAvatar } from "@/components/molecules/optimized-image";
@@ -36,7 +36,7 @@ export function ContributionRanking({
   maxDisplay = 5,
 }: ContributionRankingProps) {
   const colors = useColors();
-  const router = useRouter();
+  
   const followerSet = new Set(followerIds);
 
   // フォロワーを優先表示（同じ貢献度の場合フォロワーが上）
@@ -140,11 +140,7 @@ export function ContributionRanking({
                 <Button
                   variant="ghost"
                   size="sm"
-                  onPress={() => {
-                    if (p.userId) {
-                      router.push({ pathname: "/profile/[userId]", params: { userId: p.userId.toString() } });
-                    }
-                  }}
+                  onPress={() => { if (p.userId) navigate.toProfile(p.userId); }}
                   style={{ flexDirection: "row", alignItems: "center", padding: 0 }}
                 >
                   <Text style={{ color: eventText.username, fontSize: eventFont.username }}>@{p.username}</Text>

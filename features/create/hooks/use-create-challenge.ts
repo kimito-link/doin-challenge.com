@@ -2,7 +2,7 @@
 // v6.18: チャレンジ作成の状態管理・バリデーション・ミューテーションを集約
 import { useState, useMemo, useRef, useEffect, useCallback } from "react";
 import { ScrollView, View } from "react-native";
-import { useRouter } from "expo-router";
+import { navigate } from "@/lib/navigation";
 import { trpc } from "@/lib/trpc";
 import { useAuth } from "@/hooks/use-auth";
 import { showAlert } from "@/lib/web-alert";
@@ -77,7 +77,6 @@ const initialState: CreateChallengeState = {
 };
 
 export function useCreateChallenge() {
-  const router = useRouter();
   const { user } = useAuth();
   
   // 状態
@@ -141,10 +140,7 @@ export function useCreateChallenge() {
         {
           text: "OK",
           onPress: () => {
-            router.push({
-              pathname: "/event/[id]",
-              params: { id: newChallenge.id.toString() },
-            });
+            navigate.toEventDetail(newChallenge.id);
           },
         },
       ]);

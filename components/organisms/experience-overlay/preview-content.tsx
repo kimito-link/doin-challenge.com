@@ -9,7 +9,7 @@ import * as Haptics from "expo-haptics";
 import Animated, { FadeIn } from "react-native-reanimated";
 import { color } from "@/theme/tokens";
 import { ExperienceSlide } from "@/lib/experience-context";
-import { styles } from "./styles";
+import { styles } from "./preview-content.styles";
 
 interface PreviewContentProps {
   type: ExperienceSlide["previewType"];

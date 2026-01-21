@@ -9,8 +9,8 @@ import {
   Platform,
 } from "react-native";
 import { Image } from "expo-image";
-import { useRouter } from "expo-router";
 import { Link } from "expo-router";
+import { navigate } from "@/lib/navigation";
 import MaterialIcons from "@expo/vector-icons/MaterialIcons";
 import { useAuth } from "@/hooks/use-auth";
 import { LogoutConfirmModal } from "@/components/molecules/logout-confirm-modal";
@@ -27,7 +27,7 @@ interface GlobalMenuProps {
 }
 
 export function GlobalMenu({ isVisible, onClose }: GlobalMenuProps) {
-  const router = useRouter();
+  
   const { user, login, isAuthenticated } = useAuth();
   const [showLogoutModal, setShowLogoutModal] = useState(false);
   const [isLoggingIn, setIsLoggingIn] = useState(false);
@@ -57,7 +57,7 @@ export function GlobalMenu({ isVisible, onClose }: GlobalMenuProps) {
   const confirmLogout = () => {
     setShowLogoutModal(false);
     onClose();
-    router.push("/logout");
+    navigate.toLogout();
   };
 
   const handleLinkPress = () => {

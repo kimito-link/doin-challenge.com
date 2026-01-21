@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import { color, palette } from "@/theme/tokens";
 import { View, Text, Pressable, Platform } from "react-native";
 import { Image } from "expo-image";
-import { useRouter } from "expo-router";
+import { navigate } from "@/lib/navigation";
 import MaterialIcons from "@expo/vector-icons/MaterialIcons";
 import { useAuth } from "@/hooks/use-auth";
 import { GlobalMenu } from "@/components/organisms/global-menu";
@@ -47,13 +47,13 @@ export function AppHeader({
   showLoginStatus = true,
   showMenu = true,
 }: AppHeaderProps) {
-  const router = useRouter();
+  
   const { user } = useAuth();
   const [menuVisible, setMenuVisible] = useState(false);
   
   const handleTitlePress = () => {
     triggerHaptic();
-    router.push("/(tabs)");
+    navigate.toHome();
   };
 
   const handleMenuPress = () => {

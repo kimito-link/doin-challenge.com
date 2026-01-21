@@ -5,7 +5,8 @@
  * 管理者のみアクセス可能
  */
 
-import { Stack, useRouter, usePathname } from "expo-router";
+import { Stack, usePathname } from "expo-router";
+import { navigate, navigateReplace } from "@/lib/navigation";
 import { useColors } from "@/hooks/use-colors";
 import { useAuth } from "@/hooks/use-auth";
 import { View, Text, Pressable, ScrollView, ActivityIndicator, Platform } from "react-native";
@@ -34,7 +35,7 @@ const menuItems: MenuItem[] = [
 
 export default function AdminLayout() {
   const colors = useColors();
-  const router = useRouter();
+  
   const pathname = usePathname();
   const insets = useSafeAreaInsets();
   const { user, loading } = useAuth();
@@ -60,7 +61,7 @@ export default function AdminLayout() {
           この画面は管理者のみアクセスできます
         </Text>
         <Pressable
-          onPress={() => router.replace("/")}
+          onPress={() => navigateReplace.toHomeRoot()}
           style={({ pressed }) => ({
             backgroundColor: colors.primary,
             paddingHorizontal: 24,
@@ -107,7 +108,7 @@ export default function AdminLayout() {
               {menuItems.map((item) => (
                 <Pressable
                   key={item.id}
-                  onPress={() => router.push(item.path as any)}
+                  onPress={() => navigate.toAdminPath(item.path)}
                   style={({ pressed }) => ({
                     flexDirection: "row",
                     alignItems: "center",
@@ -143,7 +144,7 @@ export default function AdminLayout() {
           {/* フッター */}
           <View className="p-4 border-t border-border">
             <Pressable
-              onPress={() => router.replace("/")}
+              onPress={() => navigateReplace.toHomeRoot()}
               style={({ pressed }) => ({
                 flexDirection: "row",
                 alignItems: "center",
@@ -178,7 +179,7 @@ export default function AdminLayout() {
             </Pressable>
             <Text className="text-lg font-bold text-foreground">管理画面</Text>
             <Pressable
-              onPress={() => router.replace("/")}
+              onPress={() => navigateReplace.toHomeRoot()}
               style={({ pressed }) => ({
                 padding: 8,
                 opacity: pressed ? 0.6 : 1,

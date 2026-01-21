@@ -1,7 +1,7 @@
 import { View, Text, StyleSheet, Modal, Pressable, FlatList, Platform } from "react-native";
 import { color, palette } from "@/theme/tokens";
 import { useState } from "react";
-import { useRouter } from "expo-router";
+import { navigate } from "@/lib/navigation";
 import MaterialIcons from "@expo/vector-icons/MaterialIcons";
 import { OptimizedAvatar } from "./optimized-image";
 import * as Haptics from "expo-haptics";
@@ -41,7 +41,7 @@ export function RegionParticipantsModal({
   prefectures,
   participants,
 }: RegionParticipantsModalProps) {
-  const router = useRouter();
+  
   const [selectedPrefecture, setSelectedPrefecture] = useState<string | null>(null);
 
   // 都道府県名の正規化（「県」「府」「都」「道」の有無を吸収）
@@ -67,7 +67,7 @@ export function RegionParticipantsModal({
     if (participant.userId && !participant.isAnonymous) {
       triggerHaptic();
       onClose();
-      router.push({ pathname: "/profile/[userId]", params: { userId: participant.userId.toString() } });
+      navigate.toProfile(participant.userId);
     }
   };
 

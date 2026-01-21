@@ -1,4 +1,5 @@
-import { View, Text, Pressable, Linking, Modal, Platform } from "react-native";
+import { View, Text, Pressable, Modal, Platform } from "react-native";
+import { openExternalUrl } from "@/lib/navigation";
 import { color, palette } from "@/theme/tokens";
 import { useState } from "react";
 import { Image } from "expo-image";
@@ -53,7 +54,7 @@ export function FollowGate({
   const handleFollowPress = async () => {
     triggerHaptic();
     const twitterUrl = `https://twitter.com/intent/follow?screen_name=${targetUsername}`;
-    await Linking.openURL(twitterUrl);
+    await openExternalUrl(twitterUrl);
   };
 
   const handleRefresh = () => {
@@ -258,7 +259,7 @@ export function FollowPromptBanner({
       onFollowPress();
     } else {
       const twitterUrl = `https://twitter.com/intent/follow?screen_name=${targetUsername}`;
-      await Linking.openURL(twitterUrl);
+      await openExternalUrl(twitterUrl);
     }
   };
 

@@ -2,7 +2,8 @@ import { Text, View, ScrollView, Pressable, FlatList, RefreshControl, Alert , Pl
 import * as Haptics from "expo-haptics";
 import { color, palette } from "@/theme/tokens";
 import { Image } from "expo-image";
-import { useLocalSearchParams, useRouter } from "expo-router";
+import { useLocalSearchParams } from "expo-router";
+import { navigate, navigateBack } from "@/lib/navigation";
 import { useState } from "react";
 import { ScreenContainer } from "@/components/organisms/screen-container";
 import { trpc } from "@/lib/trpc";
@@ -28,7 +29,7 @@ const badgeIcons: Record<string, string> = {
 export default function ProfileScreen() {
   const colors = useColors();
   const { userId } = useLocalSearchParams<{ userId: string }>();
-  const router = useRouter();
+  
   const { user } = useAuth();
   const [refreshing, setRefreshing] = useState(false);
   const [activeTab, setActiveTab] = useState<"challenges" | "badges">("challenges");
@@ -123,7 +124,7 @@ export default function ProfileScreen() {
         <View style={{ flex: 1, alignItems: "center", justifyContent: "center" }}>
           <Text style={{ color: color.textMuted }}>プロフィールが見つかりません</Text>
           <Pressable
-            onPress={() => router.back()}
+            onPress={() => navigateBack()}
             style={{ marginTop: 16, padding: 12 }}
           >
             <Text style={{ color: color.hostAccentLegacy }}>戻る</Text>
@@ -146,7 +147,7 @@ export default function ProfileScreen() {
           showCharacters={false}
           rightElement={
             <Pressable
-              onPress={() => router.back()}
+              onPress={() => navigateBack()}
               style={{ flexDirection: "row", alignItems: "center" }}
             >
               <MaterialIcons name="arrow-back" size={24} color={colors.foreground} />
@@ -248,7 +249,7 @@ export default function ProfileScreen() {
           gap: 12,
         }}>
           <Pressable 
-            onPress={() => router.push({ pathname: "/following", params: { userId: userId } })}
+            onPress={() => navigate.toFollowing(userId)}
             style={{ 
               flexDirection: "row", 
               alignItems: "center", 
@@ -266,7 +267,7 @@ export default function ProfileScreen() {
             </Text>
           </Pressable>
           <Pressable 
-            onPress={() => router.push({ pathname: "/followers", params: { userId: userId } })}
+            onPress={() => navigate.toFollowers(userId)}
             style={{ 
               flexDirection: "row", 
               alignItems: "center",
@@ -348,10 +349,7 @@ export default function ProfileScreen() {
               profile.recentParticipations.map((participation: any, index: number) => (
                 <Pressable
                   key={index}
-                  onPress={() => router.push({
-                    pathname: "/event/[id]",
-                    params: { id: participation.challengeId?.toString() || "0" },
-                  })}
+                  onPress={() => navigate.toEventDetail(participation.challengeId || 0)}
                   style={{
                     backgroundColor: color.surfaceDark,
                     borderRadius: 12,
@@ -433,7 +431,7 @@ export default function ProfileScreen() {
         {isOwnProfile && (
           <View style={{ padding: 16 }}>
             <Pressable
-              onPress={() => router.back()}
+              onPress={() => navigateBack()}
               style={{
                 backgroundColor: color.border,
                 borderRadius: 8,

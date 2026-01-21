@@ -1,10 +1,11 @@
 /**
  * useMypageActions Hook
  * マイページのアクション（ナビゲーション、ログイン/ログアウト等）
+ * v6.38: navigateに移行
  */
 
 import { useState, useEffect, useRef } from "react";
-import { useRouter } from "expo-router";
+import { navigate } from "@/lib/navigation";
 import { useFollowStatus } from "@/hooks/use-follow-status";
 import { getRandomPattern } from "../components/LoginScreen";
 
@@ -41,7 +42,6 @@ interface UseMypageActionsReturn {
   handleChallengePress: (challengeId: number) => void;
   navigateToAchievements: () => void;
   navigateToNotificationSettings: () => void;
-  navigateToThemeSettings: () => void;
   navigateToApiUsage: () => void;
 }
 
@@ -50,7 +50,6 @@ export function useMypageActions({
   isAuthenticated,
   login,
 }: UseMypageActionsOptions): UseMypageActionsReturn {
-  const router = useRouter();
   const { 
     isFollowing, 
     targetUsername, 
@@ -102,20 +101,16 @@ export function useMypageActions({
 
   const confirmLogout = () => {
     setShowLogoutModal(false);
-    router.push("/logout");
+    navigate.toLogout();
   };
 
   const handleChallengePress = (challengeId: number) => {
-    router.push({
-      pathname: "/event/[id]",
-      params: { id: challengeId.toString() },
-    });
+    navigate.toEventDetail(challengeId);
   };
 
-  const navigateToAchievements = () => router.push("/achievements");
-  const navigateToNotificationSettings = () => router.push("/notification-settings");
-  const navigateToThemeSettings = () => router.push("/theme-settings");
-  const navigateToApiUsage = () => router.push("/admin/api-usage");
+  const navigateToAchievements = () => navigate.toAchievements();
+  const navigateToNotificationSettings = () => navigate.toNotificationSettings();
+  const navigateToApiUsage = () => navigate.toApiUsage();
 
   return {
     // Login
@@ -144,7 +139,6 @@ export function useMypageActions({
     handleChallengePress,
     navigateToAchievements,
     navigateToNotificationSettings,
-    navigateToThemeSettings,
     navigateToApiUsage,
   };
 }

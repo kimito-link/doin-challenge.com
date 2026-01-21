@@ -1,7 +1,7 @@
 import { Text, View, Pressable, ScrollView, Dimensions, Platform } from "react-native";
 import * as Haptics from "expo-haptics";
 import { color, palette } from "@/theme/tokens";
-import { useRouter } from "expo-router";
+import { navigate } from "@/lib/navigation";
 import { ScreenContainer } from "@/components/organisms/screen-container";
 import { trpc } from "@/lib/trpc";
 import { useAuth } from "@/hooks/use-auth";
@@ -167,7 +167,6 @@ function AchievementCard({
 }
 
 export default function AchievementsScreen() {
-  const router = useRouter();
   const { user } = useAuth();
 
   // ユーザーの統計情報を取得
@@ -330,7 +329,7 @@ export default function AchievementsScreen() {
         <View style={{ flex: 1, alignItems: "center", justifyContent: "center" }}>
           <Text style={{ color: color.textMuted, fontSize: 16 }}>ログインしてください</Text>
           <Pressable
-            onPress={() => { if (Platform.OS !== "web") Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light); router.push("/mypage"); }}
+            onPress={() => { if (Platform.OS !== "web") Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light); navigate.toMypageTab(); }}
             style={({ pressed }) => [{ marginTop: 16, padding: 12 }, pressed && { opacity: 0.7, transform: [{ scale: 0.97 }] }]}
           >
             <Text style={{ color: color.accentPrimary }}>ログイン画面へ</Text>
@@ -349,7 +348,7 @@ export default function AchievementsScreen() {
           showCharacters={false}
           rightElement={
             <Pressable
-              onPress={() => { if (Platform.OS !== "web") Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light); router.back(); }}
+              onPress={() => { if (Platform.OS !== "web") Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light); navigate.back(); }}
               style={({ pressed }) => [{ flexDirection: "row", alignItems: "center" }, pressed && { opacity: 0.7, transform: [{ scale: 0.97 }] }]}
             >
               <MaterialIcons name="arrow-back" size={24} color={color.textWhite} />

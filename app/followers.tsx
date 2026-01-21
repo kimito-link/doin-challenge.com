@@ -2,7 +2,8 @@ import { FlatList, Text, View, Pressable, RefreshControl, Platform } from "react
 import * as Haptics from "expo-haptics";
 import { color, palette } from "@/theme/tokens";
 import { Image } from "expo-image";
-import { useRouter, useLocalSearchParams } from "expo-router";
+import { useLocalSearchParams } from "expo-router";
+import { navigate } from "@/lib/navigation";
 import { useState } from "react";
 import { ScreenContainer } from "@/components/organisms/screen-container";
 import { trpc } from "@/lib/trpc";
@@ -11,7 +12,7 @@ import { AppHeader } from "@/components/organisms/app-header";
 import { useAuth } from "@/hooks/use-auth";
 
 export default function FollowersScreen() {
-  const router = useRouter();
+  
   const { userId } = useLocalSearchParams<{ userId?: string }>();
   const { user } = useAuth();
   const [refreshing, setRefreshing] = useState(false);
@@ -38,7 +39,7 @@ export default function FollowersScreen() {
         showCharacters={false}
         rightElement={
           <Pressable
-            onPress={() => router.back()}
+            onPress={() => navigate.back()}
             style={{ flexDirection: "row", alignItems: "center" }}
           >
             <MaterialIcons name="arrow-back" size={24} color={color.textWhite} />
@@ -69,7 +70,7 @@ export default function FollowersScreen() {
             <Pressable 
               onPress={() => {
                 if (item.followerId) {
-                  router.push({ pathname: "/profile/[userId]", params: { userId: item.followerId.toString() } });
+                  navigate.toProfile(item.followerId);
                 }
               }}
               style={{

@@ -8,7 +8,8 @@
  */
 
 import { View, Text, ScrollView, KeyboardAvoidingView, Platform, RefreshControl } from "react-native";
-import { useLocalSearchParams, useRouter } from "expo-router";
+import { useLocalSearchParams } from "expo-router";
+import { navigate } from "@/lib/navigation";
 import { ScreenContainer } from "@/components/organisms/screen-container";
 import { useColors } from "@/hooks/use-colors";
 import { AppHeader } from "@/components/organisms/app-header";
@@ -46,7 +47,7 @@ import {
 
 export default function ChallengeDetailScreen() {
   const colors = useColors();
-  const router = useRouter();
+  
   const { id } = useLocalSearchParams<{ id: string }>();
   const challengeId = parseInt(id || "0", 10);
 
@@ -219,8 +220,8 @@ export default function ChallengeDetailScreen() {
                 currentUserTwitterId={eventDetail.currentUserTwitterId}
                 challengeId={challengeId}
                 onCheer={eventActions.handleSendCheer}
-                onDM={(userId) => router.push(`/messages/${userId}?challengeId=${challengeId}` as never)}
-                onEdit={(participationId) => router.push({ pathname: "/edit-participation/[id]", params: { id: participationId.toString(), challengeId: challengeId.toString() } })}
+                onDM={(userId) => navigate.toMessages(userId, challengeId)}
+                onEdit={(participationId) => navigate.toEditParticipation(participationId, challengeId)}
                 onDelete={(participation) => {
                   eventActions.setDeleteTargetParticipation(participation);
                   eventActions.setShowDeleteParticipationModal(true);

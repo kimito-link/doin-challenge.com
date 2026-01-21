@@ -1,9 +1,9 @@
 /**
  * OnboardingScreen Component
- * v6.31: 宇宙テーマ対応
+ * v6.33: 画面タップで次へ進む機能を追加（チュートリアルと同じUX）
  */
 
-import { View, StyleSheet, StatusBar, Platform } from "react-native";
+import { View, StyleSheet, StatusBar, Platform, Pressable } from "react-native";
 import { GestureDetector, Gesture } from "react-native-gesture-handler";
 import Animated, { 
   useSharedValue, 
@@ -11,6 +11,7 @@ import Animated, {
   withTiming,
   runOnJS,
 } from "react-native-reanimated";
+import * as Haptics from "expo-haptics";
 import { useOnboarding } from "../hooks/useOnboarding";
 import { ONBOARDING_SLIDES } from "../constants";
 import { OnboardingSlide } from "./OnboardingSlide";
@@ -44,6 +45,20 @@ export function OnboardingScreen({ onComplete }: OnboardingScreenProps) {
     onComplete();
   };
   
+  // 画面タップで次へ進む（チュートリアルと同じUX）
+  const handleScreenTap = () => {
+    // ハプティックフィードバック
+    if (Platform.OS !== "web") {
+      Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+    }
+    
+    if (isLastSlide) {
+      handleComplete();
+    } else {
+      goToNextSlide();
+    }
+  };
+  
   // スワイプジェスチャー
   const panGesture = Gesture.Pan()
     .onUpdate((event) => {
@@ -61,6 +76,15 @@ export function OnboardingScreen({ onComplete }: OnboardingScreenProps) {
       translateX.value = withTiming(0, { duration: 200 });
     });
   
+  // タップジェスチャー
+  const tapGesture = Gesture.Tap()
+    .onEnd(() => {
+      runOnJS(handleScreenTap)();
+    });
+  
+  // スワイプとタップを組み合わせ
+  const composedGesture = Gesture.Race(panGesture, tapGesture);
+  
   const animatedStyle = useAnimatedStyle(() => ({
     transform: [{ translateX: translateX.value * 0.3 }],
   }));
@@ -71,7 +95,7 @@ export function OnboardingScreen({ onComplete }: OnboardingScreenProps) {
     <View style={[styles.container, { backgroundColor: "#0a1628" }]}>
       <StatusBar barStyle="light-content" />
       
-      <GestureDetector gesture={panGesture}>
+      <GestureDetector gesture={composedGesture}>
         <Animated.View style={[styles.slideContainer, animatedStyle]}>
           {ONBOARDING_SLIDES.map((slide, index) => (
             <OnboardingSlide

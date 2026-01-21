@@ -1,6 +1,6 @@
 import { View, Text, StyleSheet, Modal, Pressable, FlatList, Platform } from "react-native";
 import { color, palette } from "@/theme/tokens";
-import { useRouter } from "expo-router";
+import { navigate } from "@/lib/navigation";
 import MaterialIcons from "@expo/vector-icons/MaterialIcons";
 import { OptimizedAvatar } from "./optimized-image";
 import * as Haptics from "expo-haptics";
@@ -38,13 +38,13 @@ export function PrefectureParticipantsModal({
   prefectureName,
   participants,
 }: PrefectureParticipantsModalProps) {
-  const router = useRouter();
+  
 
   const handleParticipantPress = (participant: Participant) => {
     if (participant.userId && !participant.isAnonymous) {
       triggerHaptic();
       onClose();
-      router.push({ pathname: "/profile/[userId]", params: { userId: participant.userId.toString() } });
+      navigate.toProfile(participant.userId);
     }
   };
 

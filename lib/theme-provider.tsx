@@ -4,7 +4,10 @@ import { colorScheme as nativewindColorScheme, vars } from "nativewind";
 
 import { SchemeColors, type ColorScheme } from "@/constants/theme";
 
-// v5.80: ダークモード専用化（ライトモードは削除）
+/**
+ * Theme Provider
+ * v6.36: ダークモード専用化（テーマ切り替え機能を削除）
+ */
 const FIXED_SCHEME: ColorScheme = "dark";
 
 type ThemeContextValue = {
@@ -93,18 +96,4 @@ export function useThemeContext(): ThemeContextValue {
     throw new Error("useThemeContext must be used within ThemeProvider");
   }
   return ctx;
-}
-
-/**
- * テーマモードのラベルを取得（後方互換性のため残す）
- */
-export function getThemeModeLabel(mode: string): string {
-  return "ダークモード";
-}
-
-/**
- * テーマモードのアイコン名を取得（後方互換性のため残す）
- */
-export function getThemeModeIcon(mode: string): string {
-  return "dark-mode";
 }

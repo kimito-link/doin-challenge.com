@@ -1,6 +1,6 @@
 import { View, Text, FlatList, Pressable, Alert } from "react-native";
 import { color, palette } from "@/theme/tokens";
-import { useRouter } from "expo-router";
+import { navigate, navigateBack } from "@/lib/navigation";
 import { ScreenContainer } from "@/components/organisms/screen-container";
 import { trpc } from "@/lib/trpc";
 import { useAuth } from "@/hooks/use-auth";
@@ -18,7 +18,7 @@ const goalTypeLabels: Record<string, string> = {
 };
 
 export default function TemplatesScreen() {
-  const router = useRouter();
+  
   const { user } = useAuth();
 
   const { data: myTemplates, refetch: refetchMy } = trpc.templates.list.useQuery(undefined, {
@@ -55,18 +55,15 @@ export default function TemplatesScreen() {
       Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
     }
     // テンプレートの設定を使ってチャレンジ作成画面に遷移
-    router.push({
-      pathname: "/(tabs)/create",
-      params: {
-        templateId: template.id,
-        goalType: template.goalType,
-        goalValue: template.goalValue,
-        goalUnit: template.goalUnit,
-        eventType: template.eventType,
-        ticketPresale: template.ticketPresale || "",
-        ticketDoor: template.ticketDoor || "",
-      },
-    } as never);
+    navigate.toCreateWithTemplate({
+      id: template.id,
+      goalType: template.goalType,
+      goalValue: template.goalValue,
+      goalUnit: template.goalUnit,
+      eventType: template.eventType,
+      ticketPresale: template.ticketPresale?.toString() ?? null,
+      ticketDoor: template.ticketDoor?.toString() ?? null,
+    });
   };
 
   const renderTemplate = ({ item }: { item: NonNullable<typeof myTemplates>[0] }) => (
@@ -208,7 +205,7 @@ export default function TemplatesScreen() {
         title="君斗りんくの動員ちゃれんじ" 
         showCharacters={false}
         rightElement={
-          <Pressable onPress={() => router.back()} style={{ flexDirection: "row", alignItems: "center" }}>
+          <Pressable onPress={() => navigateBack()} style={{ flexDirection: "row", alignItems: "center" }}>
             <Text style={{ color: color.textWhite }}>← 戻る</Text>
           </Pressable>
         }

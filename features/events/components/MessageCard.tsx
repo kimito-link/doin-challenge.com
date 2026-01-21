@@ -3,7 +3,7 @@
  * 参加者の応援メッセージを表示
  */
 import { View, Text } from "react-native";
-import { useRouter } from "expo-router";
+import { navigate } from "@/lib/navigation";
 import MaterialIcons from "@expo/vector-icons/MaterialIcons";
 import { useColors } from "@/hooks/use-colors";
 import { eventText, eventFont, eventUI } from "@/features/events/ui/theme/tokens";
@@ -65,7 +65,7 @@ export function MessageCard({
   onDelete,
 }: MessageCardProps) {
   const colors = useColors();
-  const router = useRouter();
+  
 
   // 性別による背景色
   const getGenderStyle = () => {
@@ -121,14 +121,7 @@ export function MessageCard({
               <Button
                 variant="ghost"
                 size="sm"
-                onPress={() => {
-                  if (participation.userId) {
-                    router.push({
-                      pathname: "/profile/[userId]",
-                      params: { userId: participation.userId.toString() },
-                    });
-                  }
-                }}
+                onPress={() => { if (participation.userId) navigate.toProfile(participation.userId); }}
                 style={{ flexDirection: "row", alignItems: "center", marginRight: 8, padding: 0 }}
               >
                 <MaterialIcons name="person" size={12} color={eventText.username} style={{ marginRight: 2 }} />
