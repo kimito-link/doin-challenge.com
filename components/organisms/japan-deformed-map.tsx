@@ -1,6 +1,7 @@
 import { View, Text, StyleSheet, Pressable, Dimensions, useWindowDimensions, Platform } from "react-native";
 import * as Haptics from "expo-haptics";
 import { color, palette } from "@/theme/tokens";
+import { MapErrorBoundary } from "@/components/ui/map-error-boundary";
 import { useMemo } from "react";
 
 interface JapanDeformedMapProps {
@@ -160,7 +161,7 @@ function getResponsiveConfig(width: number) {
   }
 }
 
-export function JapanDeformedMap({ prefectureCounts, onPrefecturePress, onRegionPress }: JapanDeformedMapProps) {
+function JapanDeformedMapInner({ prefectureCounts, onPrefecturePress, onRegionPress }: JapanDeformedMapProps) {
   const { width: screenWidth } = useWindowDimensions();
   const config = getResponsiveConfig(screenWidth);
   
@@ -350,6 +351,17 @@ export function JapanDeformedMap({ prefectureCounts, onPrefecturePress, onRegion
         </View>
       </View>
     </View>
+  );
+}
+
+/**
+ * JapanDeformedMap - エラーバウンダリでラップされたメインコンポーネント
+ */
+export function JapanDeformedMap(props: JapanDeformedMapProps) {
+  return (
+    <MapErrorBoundary mapType="deformed" height={500}>
+      <JapanDeformedMapInner {...props} />
+    </MapErrorBoundary>
   );
 }
 

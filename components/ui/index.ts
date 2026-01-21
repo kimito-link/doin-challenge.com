@@ -67,3 +67,20 @@ export {
   type BadgeProps,
 } from "./list";
 
+// ErrorBoundary系
+export {
+  ErrorBoundary,
+  type ErrorBoundaryProps,
+  type FallbackProps,
+} from "./error-boundary";
+
+export {
+  MapErrorBoundary,
+  type MapErrorBoundaryProps,
+} from "./map-error-boundary";
+
+export {
+  MapErrorFallback,
+  type MapErrorFallbackProps,
+} from "./map-error-fallback";
+

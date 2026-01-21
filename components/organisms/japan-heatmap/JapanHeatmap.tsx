@@ -10,10 +10,13 @@
  * - HotPrefectureCard: 最も参加者が多い都道府県
  * - RegionCardList: 地域カードの一覧
  * - HeatmapEmptyState: 参加者がいない場合の空状態
+ * 
+ * v6.25: エラーバウンダリを追加してSVG描画エラーをキャッチ
  */
 
 import { View, Text, StyleSheet } from "react-native";
 import { color } from "@/theme/tokens";
+import { MapErrorBoundary } from "@/components/ui/map-error-boundary";
 import { JapanMapSvg } from "./JapanMapSvg";
 import { HeatmapLegend } from "./HeatmapLegend";
 import { StatsSummary } from "./StatsSummary";
@@ -23,7 +26,10 @@ import { HeatmapEmptyState } from "./HeatmapEmptyState";
 import { useHeatmapData } from "./useHeatmapData";
 import type { JapanHeatmapProps } from "./types";
 
-export function JapanHeatmap({ 
+/**
+ * JapanHeatmapInner - 内部コンポーネント（エラーバウンダリでラップされる）
+ */
+function JapanHeatmapInner({ 
   prefectureCounts, 
   onPrefecturePress, 
   onRegionPress 
@@ -79,6 +85,17 @@ export function JapanHeatmap({
         onRegionPress={onRegionPress}
       />
     </View>
+  );
+}
+
+/**
+ * JapanHeatmap - エラーバウンダリでラップされたメインコンポーネント
+ */
+export function JapanHeatmap(props: JapanHeatmapProps) {
+  return (
+    <MapErrorBoundary mapType="heatmap" height={400}>
+      <JapanHeatmapInner {...props} />
+    </MapErrorBoundary>
   );
 }
 

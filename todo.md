@@ -3561,3 +3561,15 @@ features/create/
   - TopThreeRanking.tsx: トップ3表示（44行）
 - [x] メインコンポーネントのリファクタリング（ParticipantRanking.tsx: 78行）
 - [x] TypeScriptエラー0件確認
+
+
+## v6.25 エラーバウンダリの追加
+
+- [x] 汎用エラーバウンダリコンポーネントの作成（components/ui/error-boundary.tsx）
+- [x] 地図専用フォールバックUIの作成（components/ui/map-error-fallback.tsx）
+- [x] 地図用エラーバウンダリラッパーの作成（components/ui/map-error-boundary.tsx）
+- [x] JapanHeatmapへのエラーバウンダリ適用
+- [x] JapanMapへのエラーバウンダリ適用
+- [x] JapanBlockMapへのエラーバウンダリ適用
+- [x] JapanDeformedMapへのエラーバウンダリ適用
+- [x] TypeScriptエラー0件確認

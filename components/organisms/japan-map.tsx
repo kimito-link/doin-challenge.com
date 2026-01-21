@@ -1,6 +1,7 @@
 import { View, Text, Pressable, Dimensions, Platform } from "react-native";
 import * as Haptics from "expo-haptics";
 import { color, palette } from "@/theme/tokens";
+import { MapErrorBoundary } from "@/components/ui/map-error-boundary";
 import Svg, { Path, G, Text as SvgText } from "react-native-svg";
 import { useMemo } from "react";
 
@@ -78,7 +79,7 @@ interface JapanMapProps {
   selectedPrefecture?: string | null;
 }
 
-export function JapanMap({ prefectureCounts, onPrefecturePress, selectedPrefecture }: JapanMapProps) {
+function JapanMapInner({ prefectureCounts, onPrefecturePress, selectedPrefecture }: JapanMapProps) {
   const mapWidth = Math.min(screenWidth - 32, 400);
   const mapHeight = mapWidth * 1.2;
   const scale = mapWidth / 400;
@@ -212,6 +213,17 @@ export function JapanMap({ prefectureCounts, onPrefecturePress, selectedPrefectu
         </View>
       )}
     </View>
+  );
+}
+
+/**
+ * JapanMap - エラーバウンダリでラップされたメインコンポーネント
+ */
+export function JapanMap(props: JapanMapProps) {
+  return (
+    <MapErrorBoundary mapType="standard" height={350}>
+      <JapanMapInner {...props} />
+    </MapErrorBoundary>
   );
 }
 

@@ -1,6 +1,7 @@
 import { View, Text, StyleSheet, Pressable, Dimensions, Platform } from "react-native";
 import * as Haptics from "expo-haptics";
 import { color, palette } from "@/theme/tokens";
+import { MapErrorBoundary } from "@/components/ui/map-error-boundary";
 import { useMemo } from "react";
 
 const screenWidth = Dimensions.get("window").width;
@@ -106,7 +107,7 @@ const regions = [
   },
 ];
 
-export function JapanBlockMap({ prefectureCounts, onPrefecturePress, onRegionPress }: JapanBlockMapProps) {
+function JapanBlockMapInner({ prefectureCounts, onPrefecturePress, onRegionPress }: JapanBlockMapProps) {
   // 統計情報を計算
   const stats = useMemo(() => {
     const totalPrefectures = Object.keys(prefectureCounts).filter(k => prefectureCounts[k] > 0).length;
@@ -218,6 +219,17 @@ export function JapanBlockMap({ prefectureCounts, onPrefecturePress, onRegionPre
         </View>
       </View>
     </View>
+  );
+}
+
+/**
+ * JapanBlockMap - エラーバウンダリでラップされたメインコンポーネント
+ */
+export function JapanBlockMap(props: JapanBlockMapProps) {
+  return (
+    <MapErrorBoundary mapType="block" height={400}>
+      <JapanBlockMapInner {...props} />
+    </MapErrorBoundary>
   );
 }
 
