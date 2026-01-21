@@ -10,7 +10,7 @@
  * 3. git push後、本番で/api/healthを確認
  */
 
-export const APP_VERSION = "6.50";
+export const APP_VERSION = "6.52";
 
 // ビルド時に設定される環境変数（Railway/Vercelで設定）
 export const GIT_SHA = process.env.EXPO_PUBLIC_GIT_SHA || "unknown";
