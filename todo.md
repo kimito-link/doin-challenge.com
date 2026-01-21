@@ -3735,3 +3735,7 @@ features/create/
 - [x] PatternSelector.tsx - パターン切り替えボタン・インジケーター（56行）
 - [x] constants.ts - 定数・パターンデータ（94行）
 - [x] LoginScreen.tsx - リファクタリング後のメインコンポーネント（358行→82行）
+
+### CharacterIconRow分割
+- [x] CharacterIconRow.tsx - 3キャラクターアイコン表示（87行、汎用コンポーネント）
+- [x] LoginHeader.tsx - リファクタリング後のコンポーネント（110行→51行）

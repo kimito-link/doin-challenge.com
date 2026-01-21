@@ -1,4 +1,5 @@
 export { LoginHeader } from "./LoginHeader";
+export { CharacterIconRow } from "./CharacterIconRow";
 export { LoginMessageCard } from "./LoginMessageCard";
 export { LoginButton } from "./LoginButton";
 export { CharacterBubble } from "./CharacterBubble";
