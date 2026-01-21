@@ -4063,10 +4063,22 @@ var eventsRouter = router({
   }),
   // イベント詳細取得
   getById: publicProcedure.input(z.object({ id: z.number() })).query(async ({ input }) => {
-    const event = await getEventById(input.id);
-    if (!event) return null;
-    const participantCount = await getTotalCompanionCountByEventId(input.id);
-    return { ...event, participantCount };
+    const requestId = generateRequestId();
+    const startTime = Date.now();
+    console.log(`[events.getById] requestId=${requestId} input.id=${input.id} START`);
+    try {
+      const event = await getEventById(input.id);
+      if (!event) {
+        console.log(`[events.getById] requestId=${requestId} id=${input.id} NOT_FOUND elapsed=${Date.now() - startTime}ms`);
+        return null;
+      }
+      const participantCount = await getTotalCompanionCountByEventId(input.id);
+      console.log(`[events.getById] requestId=${requestId} id=${input.id} FOUND title="${event.title}" participantCount=${participantCount} elapsed=${Date.now() - startTime}ms`);
+      return { ...event, participantCount };
+    } catch (error) {
+      console.error(`[events.getById] requestId=${requestId} id=${input.id} ERROR:`, error);
+      throw error;
+    }
   }),
   // 自分が作成したイベント一覧
   myEvents: protectedProcedure.query(async ({ ctx }) => {
@@ -6546,7 +6558,14 @@ async function startServer() {
   registerOAuthRoutes(app);
   registerTwitterRoutes(app);
   app.get("/api/health", (_req, res) => {
-    res.json({ ok: true, timestamp: Date.now() });
+    res.json({
+      ok: true,
+      timestamp: Date.now(),
+      version: process.env.APP_VERSION || "unknown",
+      gitSha: process.env.GIT_SHA || "unknown",
+      builtAt: process.env.BUILT_AT || "unknown",
+      nodeEnv: process.env.NODE_ENV || "development"
+    });
   });
   app.get("/api/openapi.json", (_req, res) => {
     res.json(getOpenApiSpec());

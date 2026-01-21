@@ -6,6 +6,7 @@
 import { z } from "zod";
 import { publicProcedure, protectedProcedure, router } from "../_core/trpc";
 import * as db from "../db";
+import { generateRequestId } from "../_core/request-id";
 
 export const eventsRouter = router({
   // 公開イベント一覧取得
@@ -43,10 +44,28 @@ export const eventsRouter = router({
   getById: publicProcedure
     .input(z.object({ id: z.number() }))
     .query(async ({ input }) => {
-      const event = await db.getEventById(input.id);
-      if (!event) return null;
-      const participantCount = await db.getTotalCompanionCountByEventId(input.id);
-      return { ...event, participantCount };
+      const requestId = generateRequestId();
+      const startTime = Date.now();
+      
+      console.log(`[events.getById] requestId=${requestId} input.id=${input.id} START`);
+      
+      try {
+        const event = await db.getEventById(input.id);
+        
+        if (!event) {
+          console.log(`[events.getById] requestId=${requestId} id=${input.id} NOT_FOUND elapsed=${Date.now() - startTime}ms`);
+          return null;
+        }
+        
+        const participantCount = await db.getTotalCompanionCountByEventId(input.id);
+        
+        console.log(`[events.getById] requestId=${requestId} id=${input.id} FOUND title="${event.title}" participantCount=${participantCount} elapsed=${Date.now() - startTime}ms`);
+        
+        return { ...event, participantCount };
+      } catch (error) {
+        console.error(`[events.getById] requestId=${requestId} id=${input.id} ERROR:`, error);
+        throw error;
+      }
     }),
 
   // 自分が作成したイベント一覧

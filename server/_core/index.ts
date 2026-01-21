@@ -63,7 +63,14 @@ async function startServer() {
   registerTwitterRoutes(app);
 
   app.get("/api/health", (_req, res) => {
-    res.json({ ok: true, timestamp: Date.now() });
+    res.json({
+      ok: true,
+      timestamp: Date.now(),
+      version: process.env.APP_VERSION || "unknown",
+      gitSha: process.env.GIT_SHA || "unknown",
+      builtAt: process.env.BUILT_AT || "unknown",
+      nodeEnv: process.env.NODE_ENV || "development",
+    });
   });
 
   // API使用量ダッシュボード用エンドポイント

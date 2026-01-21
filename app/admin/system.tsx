@@ -18,6 +18,16 @@ import {
   RefreshControl,
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
+import { APP_VERSION, getVersionInfo } from "@/constants/version";
+
+interface HealthResponse {
+  ok: boolean;
+  timestamp: number;
+  version: string;
+  gitSha: string;
+  builtAt: string;
+  nodeEnv: string;
+}
 
 interface SystemStatus {
   database: {
@@ -48,12 +58,22 @@ interface SystemStatus {
 export default function SystemStatusScreen() {
   const colors = useColors();
   const [status, setStatus] = useState<SystemStatus | null>(null);
+  const [health, setHealth] = useState<HealthResponse | null>(null);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  
+  // フロントエンドバージョン
+  const frontendVersion = getVersionInfo();
 
   const fetchStatus = useCallback(async () => {
     try {
+      // /api/healthを取得（バージョン確認用）
+      const healthResult = await apiGet<HealthResponse>("/api/health");
+      if (healthResult.ok) {
+        setHealth(healthResult.data);
+      }
+      
       const result = await apiGet<SystemStatus>("/api/admin/system-status");
       
       if (!result.ok) {
@@ -138,6 +158,60 @@ export default function SystemStatusScreen() {
           <Text className="text-sm text-muted mt-1">
             データベース、API、サーバーの状態を確認
           </Text>
+        </View>
+
+        {/* バージョン情報（デプロイ確認用） */}
+        <View className="bg-surface rounded-xl p-4 border border-border mb-4">
+          <View className="flex-row items-center mb-3">
+            <Ionicons name="git-branch-outline" size={24} color={colors.primary} />
+            <Text className="text-lg font-semibold text-foreground ml-2">
+              バージョン情報
+            </Text>
+          </View>
+          
+          <View className="flex-row items-center justify-between py-2 border-b border-border">
+            <Text className="text-muted">フロントエンド</Text>
+            <Text className="text-foreground font-mono">v{frontendVersion.version}</Text>
+          </View>
+          
+          <View className="flex-row items-center justify-between py-2 border-b border-border">
+            <Text className="text-muted">バックエンド</Text>
+            <Text className="text-foreground font-mono">v{health?.version ?? "loading..."}</Text>
+          </View>
+          
+          <View className="flex-row items-center justify-between py-2 border-b border-border">
+            <Text className="text-muted">Git SHA</Text>
+            <Text className="text-foreground font-mono text-xs">
+              {health?.gitSha?.substring(0, 7) ?? "loading..."}
+            </Text>
+          </View>
+          
+          <View className="flex-row items-center justify-between py-2 border-b border-border">
+            <Text className="text-muted">ビルド日時</Text>
+            <Text className="text-foreground text-sm">
+              {health?.builtAt ?? "loading..."}
+            </Text>
+          </View>
+          
+          <View className="flex-row items-center justify-between py-2">
+            <Text className="text-muted">環境</Text>
+            <Text className="text-foreground">{health?.nodeEnv ?? "loading..."}</Text>
+          </View>
+          
+          {/* バージョン不一致警告 */}
+          {health && health.version !== "unknown" && health.version !== frontendVersion.version && (
+            <View
+              className="mt-3 p-3 rounded-lg"
+              style={{ backgroundColor: colors.warning + "20" }}
+            >
+              <Text style={{ color: colors.warning }} className="font-semibold">
+                ⚠️ バージョン不一致
+              </Text>
+              <Text style={{ color: colors.warning }} className="text-sm mt-1">
+                フロント: v{frontendVersion.version} / バックエンド: v{health.version}
+              </Text>
+            </View>
+          )}
         </View>
 
         {error && (

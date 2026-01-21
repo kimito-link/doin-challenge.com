@@ -3984,3 +3984,22 @@ features/create/
 ## Dependabot設定追加（v6.49）
 
 - [x] Dependabot設定ファイルの作成（.github/dependabot.yml）
+
+
+## HTML lang属性修正（v6.50）
+
+- [x] HTMLのlang属性を"ja"に設定（app/+html.tsxを作成）
+
+
+## プロフィール文章表示問題（v6.50）
+
+- [ ] チャレンジ作成画面でプロフィール文章が表示されない問題を修正
+- [ ] マイページでプロフィール文章が表示されない問題を修正
+
+
+## 本番問題の原因切り分け（v6.50）
+
+- [x] /health APIエンドポイント追加（version, gitSha, builtAt, nodeEnv）
+- [x] フロントにversion表示追加（管理画面のシステム状態ページ）
+- [x] /event/{id}のログ強化（requestId付き、タイトル、参加者数、所要時間）
+- [ ] 本番デプロイして確認
