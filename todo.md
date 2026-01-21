@@ -3744,3 +3744,9 @@ features/create/
 - [x] components/ui/character-icon-row.tsx - 汎用UIコンポーネントとして作成（85行）
 - [x] login-screen/CharacterIconRow.tsx - ラッパーコンポーネントに更新（50行）
 - [x] components/ui/index.ts - エクスポート追加
+
+### CharacterIconRowタップ機能追加
+- [x] CharacterIconRowにonPressプロップを追加（pressable、onIconPress）
+- [x] CharacterDetailModal.tsx - キャラクター詳細モーダル（185行）
+- [x] constants.ts - キャラクター詳細情報追加
+- [x] ログイン画面での統合（CharacterIconRowラッパー更新）

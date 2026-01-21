@@ -9,5 +9,6 @@ export {
   getRandomPattern, 
   characterImages, 
   logoImage,
+  characterDetails,
   type LoginPattern,
 } from "./constants";

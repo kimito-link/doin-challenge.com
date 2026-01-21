@@ -108,3 +108,9 @@ export {
   type CharacterIconConfig,
 } from "./character-icon-row";
 
+export {
+  CharacterDetailModal,
+  type CharacterDetailModalProps,
+  type CharacterInfo,
+} from "./character-detail-modal";
+

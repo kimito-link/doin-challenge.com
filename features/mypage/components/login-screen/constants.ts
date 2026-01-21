@@ -3,6 +3,7 @@
  */
 
 import { mypageGradient, mypageAccent } from "../../ui/theme/tokens";
+import type { CharacterInfo } from "@/components/ui/character-detail-modal";
 
 // キャラクター画像
 export const characterImages = {
@@ -18,6 +19,40 @@ export const characterImages = {
 
 // ロゴ画像
 export const logoImage = require("@/assets/images/logo/logo-maru-orange.jpg");
+
+// キャラクター詳細情報
+export const characterDetails: Record<string, CharacterInfo> = {
+  link: {
+    id: "link",
+    name: "君斗りんく",
+    image: characterImages.linkYukkuri,
+    description: "動員ちゃれんじのメインキャラクター。みんなの応援を集めて、推しの夢を叶えるお手伝いをしています。",
+    personality: "明るく元気で、いつもポジティブ。みんなを笑顔にするのが大好き。困っている人を見ると放っておけない性格。",
+    likes: ["応援すること", "みんなの笑顔", "ライブ", "お祭り"],
+    themeColor: mypageAccent.linkPink,
+    catchphrase: "みんなの想いを、一つに！",
+  },
+  konta: {
+    id: "konta",
+    name: "コンタ",
+    image: characterImages.kontaYukkuri,
+    description: "りんくの相棒のキツネ。友達を誘って盛り上げるのが得意。一人の参加が大きな波になることを知っている。",
+    personality: "ちょっとイタズラ好きだけど、根は優しい。仲間思いで、みんなを繋げる架け橋になりたいと思っている。",
+    likes: ["友達と遊ぶこと", "油揚げ", "お祭りの屋台", "みんなで歌うこと"],
+    themeColor: mypageAccent.kontaOrange,
+    catchphrase: "一緒に盛り上げよう！",
+  },
+  tanune: {
+    id: "tanune",
+    name: "たぬね",
+    image: characterImages.tanuneYukkuri,
+    description: "りんくの仲間のタヌキ。チャレンジを作って目標達成を目指すのが好き。計画を立てるのが得意。",
+    personality: "のんびり屋さんに見えて、実は計画的。目標を立てて達成するのが大好き。みんなの頑張りを応援している。",
+    likes: ["計画を立てること", "お団子", "みんなの成功", "お昼寝"],
+    themeColor: mypageAccent.tanuneGreen,
+    catchphrase: "目標達成でお祝いしよう！",
+  },
+};
 
 // ログインパターン型
 export interface LoginPattern {
