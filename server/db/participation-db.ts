@@ -269,3 +269,201 @@ export async function getPrefectureRanking(challengeId: number) {
     }))
     .sort((a, b) => b.contribution - a.contribution);
 }
+
+
+// =============================================================================
+// 管理者用機能（v6.44）
+// =============================================================================
+
+/**
+ * 削除済み参加一覧を取得（管理者用）
+ */
+export async function getDeletedParticipations(filters?: {
+  challengeId?: number;
+  userId?: number;
+  limit?: number;
+}) {
+  const db = await getDb();
+  if (!db) return [];
+  
+  let query = db.select().from(participations)
+    .where(sql`${participations.deletedAt} IS NOT NULL`);
+  
+  // フィルタ適用
+  const conditions: string[] = [`${participations.deletedAt} IS NOT NULL`];
+  if (filters?.challengeId) {
+    conditions.push(`${participations.challengeId} = ${filters.challengeId}`);
+  }
+  if (filters?.userId) {
+    conditions.push(`${participations.userId} = ${filters.userId}`);
+  }
+  
+  const result = await db.select().from(participations)
+    .where(sql.raw(conditions.join(' AND ')))
+    .orderBy(desc(participations.deletedAt))
+    .limit(filters?.limit || 100);
+  
+  return result;
+}
+
+/**
+ * 参加を復元（ソフトデリートを取り消し）
+ */
+export async function restoreParticipation(id: number) {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+  
+  // 復元前に参加情報を取得
+  const participation = await db.select().from(participations).where(eq(participations.id, id));
+  const p = participation[0];
+  
+  if (!p) {
+    throw new Error("Participation not found");
+  }
+  
+  if (!p.deletedAt) {
+    throw new Error("Participation is not deleted");
+  }
+  
+  // 復元実行
+  await db.update(participations)
+    .set({
+      deletedAt: null,
+      deletedBy: null,
+    })
+    .where(eq(participations.id, id));
+  
+  // challengesのcurrentValueを増加
+  if (p.challengeId) {
+    const contribution = (p.contribution || 1) + (p.companionCount || 0);
+    await db.update(challenges)
+      .set({ currentValue: sql`${challenges.currentValue} + ${contribution}` })
+      .where(eq(challenges.id, p.challengeId));
+    invalidateEventsCache();
+  }
+  
+  return { success: true, challengeId: p.challengeId };
+}
+
+/**
+ * 一括ソフトデリート（challengeId または userId 単位）
+ */
+export async function bulkSoftDeleteParticipations(
+  filter: { challengeId?: number; userId?: number },
+  deletedByUserId: number
+): Promise<{ deletedCount: number; affectedChallengeIds: number[] }> {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+  
+  if (!filter.challengeId && !filter.userId) {
+    throw new Error("Either challengeId or userId must be specified");
+  }
+  
+  // 削除対象を取得
+  const conditions: string[] = [`${participations.deletedAt} IS NULL`];
+  if (filter.challengeId) {
+    conditions.push(`${participations.challengeId} = ${filter.challengeId}`);
+  }
+  if (filter.userId) {
+    conditions.push(`${participations.userId} = ${filter.userId}`);
+  }
+  
+  const targets = await db.select().from(participations)
+    .where(sql.raw(conditions.join(' AND ')));
+  
+  if (targets.length === 0) {
+    return { deletedCount: 0, affectedChallengeIds: [] };
+  }
+  
+  // 一括ソフトデリート
+  const targetIds = targets.map(t => t.id);
+  await db.update(participations)
+    .set({
+      deletedAt: new Date(),
+      deletedBy: deletedByUserId,
+    })
+    .where(sql`${participations.id} IN (${sql.raw(targetIds.join(','))})`);
+  
+  // challengesのcurrentValueを更新
+  const challengeContributions: Record<number, number> = {};
+  targets.forEach(p => {
+    if (p.challengeId) {
+      const contribution = (p.contribution || 1) + (p.companionCount || 0);
+      challengeContributions[p.challengeId] = (challengeContributions[p.challengeId] || 0) + contribution;
+    }
+  });
+  
+  for (const [challengeId, contribution] of Object.entries(challengeContributions)) {
+    await db.update(challenges)
+      .set({ currentValue: sql`GREATEST(${challenges.currentValue} - ${contribution}, 0)` })
+      .where(eq(challenges.id, Number(challengeId)));
+  }
+  
+  invalidateEventsCache();
+  
+  return {
+    deletedCount: targets.length,
+    affectedChallengeIds: Object.keys(challengeContributions).map(Number),
+  };
+}
+
+/**
+ * 一括復元（challengeId または userId 単位）
+ */
+export async function bulkRestoreParticipations(
+  filter: { challengeId?: number; userId?: number }
+): Promise<{ restoredCount: number; affectedChallengeIds: number[] }> {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+  
+  if (!filter.challengeId && !filter.userId) {
+    throw new Error("Either challengeId or userId must be specified");
+  }
+  
+  // 復元対象を取得
+  const conditions: string[] = [`${participations.deletedAt} IS NOT NULL`];
+  if (filter.challengeId) {
+    conditions.push(`${participations.challengeId} = ${filter.challengeId}`);
+  }
+  if (filter.userId) {
+    conditions.push(`${participations.userId} = ${filter.userId}`);
+  }
+  
+  const targets = await db.select().from(participations)
+    .where(sql.raw(conditions.join(' AND ')));
+  
+  if (targets.length === 0) {
+    return { restoredCount: 0, affectedChallengeIds: [] };
+  }
+  
+  // 一括復元
+  const targetIds = targets.map(t => t.id);
+  await db.update(participations)
+    .set({
+      deletedAt: null,
+      deletedBy: null,
+    })
+    .where(sql`${participations.id} IN (${sql.raw(targetIds.join(','))})`);
+  
+  // challengesのcurrentValueを更新
+  const challengeContributions: Record<number, number> = {};
+  targets.forEach(p => {
+    if (p.challengeId) {
+      const contribution = (p.contribution || 1) + (p.companionCount || 0);
+      challengeContributions[p.challengeId] = (challengeContributions[p.challengeId] || 0) + contribution;
+    }
+  });
+  
+  for (const [challengeId, contribution] of Object.entries(challengeContributions)) {
+    await db.update(challenges)
+      .set({ currentValue: sql`${challenges.currentValue} + ${contribution}` })
+      .where(eq(challenges.id, Number(challengeId)));
+  }
+  
+  invalidateEventsCache();
+  
+  return {
+    restoredCount: targets.length,
+    affectedChallengeIds: Object.keys(challengeContributions).map(Number),
+  };
+}

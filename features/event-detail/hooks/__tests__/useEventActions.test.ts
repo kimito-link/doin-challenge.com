@@ -30,6 +30,18 @@ vi.mock("@/lib/share", () => ({
 // tRPCのモック
 vi.mock("@/lib/trpc", () => ({
   trpc: {
+    useUtils: () => ({
+      participations: {
+        byChallenge: {
+          invalidate: vi.fn(),
+        },
+      },
+      events: {
+        detail: {
+          invalidate: vi.fn(),
+        },
+      },
+    }),
     ogp: {
       generateChallengeOgp: {
         useMutation: () => ({

@@ -6,6 +6,7 @@
 import { z } from "zod";
 import { protectedProcedure, router } from "../_core/trpc";
 import * as db from "../db";
+import { adminParticipationsRouter } from "./admin-participations";
 
 export const adminRouter = router({
   // ユーザー一覧取得
@@ -77,4 +78,7 @@ export const adminRouter = router({
       }
       return db.compareSchemas();
     }),
+
+  // 参加管理（削除済み投稿の管理）
+  participations: adminParticipationsRouter,
 });

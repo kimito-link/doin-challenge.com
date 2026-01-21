@@ -31,6 +31,7 @@ const menuItems: MenuItem[] = [
   { id: "users", label: "ユーザー管理", icon: "people-outline", path: "/admin/users" },
   { id: "api-usage", label: "API使用量", icon: "analytics-outline", path: "/admin/api-usage" },
   { id: "components", label: "コンポーネント", icon: "cube-outline", path: "/admin/components" },
+  { id: "participations", label: "参加管理", icon: "chatbubbles-outline", path: "/admin/participations" },
 ];
 
 export default function AdminLayout() {

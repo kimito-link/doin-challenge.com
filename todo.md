@@ -3909,3 +3909,35 @@ features/create/
 - [x] .github/workflows/ci.yml作成
 - [x] lint/check/test自動実行
 - [x] PR時とpush時に実行
+
+
+## 管理画面（v6.44）
+
+- [ ] API: 削除済み投稿一覧取得（listDeleted）
+- [ ] API: 投稿復元（restore）
+- [ ] API: 一括削除（bulkDelete by challengeId/userId）
+- [ ] API: 一括復元（bulkRestore by challengeId/userId）
+- [ ] 全API: audit_logs + requestId連動
+- [ ] UI: 管理画面（削除済み投稿一覧）
+- [ ] UI: 復元ボタン + 確認ダイアログ
+- [ ] UI: 一括操作UI（フィルタ + 実行）
+
+
+## 管理パネル実装（v6.44）
+
+### 削除済み参加管理
+- [x] 管理者用参加管理API（admin.participations）
+  - [x] listDeleted: 削除済み参加一覧取得
+  - [x] restore: 個別復元
+  - [x] bulkDelete: 一括ソフトデリート
+  - [x] bulkRestore: 一括復元
+  - [x] getAuditLogs: 監査ログ取得
+- [x] 管理画面UI（app/admin/participations.tsx）
+  - [x] 削除済み参加一覧表示
+  - [x] チャレンジID/ユーザーIDでフィルター
+  - [x] 個別復元ボタン
+  - [x] 一括復元/削除ボタン
+  - [x] 監査ログタブ（requestId追跡）
+- [x] サーバーサイド認可チェック（管理者のみ）
+- [x] 全操作でaudit_logs + requestId記録
+- [x] ユニットテスト追加（17テスト）

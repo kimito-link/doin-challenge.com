@@ -1032,6 +1032,118 @@ async function getPrefectureRanking(challengeId) {
     contribution: data.contribution
   })).sort((a, b) => b.contribution - a.contribution);
 }
+async function getDeletedParticipations(filters) {
+  const db = await getDb();
+  if (!db) return [];
+  let query = db.select().from(participations).where(sql`${participations.deletedAt} IS NOT NULL`);
+  const conditions = [`${participations.deletedAt} IS NOT NULL`];
+  if (filters?.challengeId) {
+    conditions.push(`${participations.challengeId} = ${filters.challengeId}`);
+  }
+  if (filters?.userId) {
+    conditions.push(`${participations.userId} = ${filters.userId}`);
+  }
+  const result = await db.select().from(participations).where(sql.raw(conditions.join(" AND "))).orderBy(desc(participations.deletedAt)).limit(filters?.limit || 100);
+  return result;
+}
+async function restoreParticipation(id) {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+  const participation = await db.select().from(participations).where(eq(participations.id, id));
+  const p = participation[0];
+  if (!p) {
+    throw new Error("Participation not found");
+  }
+  if (!p.deletedAt) {
+    throw new Error("Participation is not deleted");
+  }
+  await db.update(participations).set({
+    deletedAt: null,
+    deletedBy: null
+  }).where(eq(participations.id, id));
+  if (p.challengeId) {
+    const contribution = (p.contribution || 1) + (p.companionCount || 0);
+    await db.update(challenges).set({ currentValue: sql`${challenges.currentValue} + ${contribution}` }).where(eq(challenges.id, p.challengeId));
+    invalidateEventsCache();
+  }
+  return { success: true, challengeId: p.challengeId };
+}
+async function bulkSoftDeleteParticipations(filter, deletedByUserId) {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+  if (!filter.challengeId && !filter.userId) {
+    throw new Error("Either challengeId or userId must be specified");
+  }
+  const conditions = [`${participations.deletedAt} IS NULL`];
+  if (filter.challengeId) {
+    conditions.push(`${participations.challengeId} = ${filter.challengeId}`);
+  }
+  if (filter.userId) {
+    conditions.push(`${participations.userId} = ${filter.userId}`);
+  }
+  const targets = await db.select().from(participations).where(sql.raw(conditions.join(" AND ")));
+  if (targets.length === 0) {
+    return { deletedCount: 0, affectedChallengeIds: [] };
+  }
+  const targetIds = targets.map((t2) => t2.id);
+  await db.update(participations).set({
+    deletedAt: /* @__PURE__ */ new Date(),
+    deletedBy: deletedByUserId
+  }).where(sql`${participations.id} IN (${sql.raw(targetIds.join(","))})`);
+  const challengeContributions = {};
+  targets.forEach((p) => {
+    if (p.challengeId) {
+      const contribution = (p.contribution || 1) + (p.companionCount || 0);
+      challengeContributions[p.challengeId] = (challengeContributions[p.challengeId] || 0) + contribution;
+    }
+  });
+  for (const [challengeId, contribution] of Object.entries(challengeContributions)) {
+    await db.update(challenges).set({ currentValue: sql`GREATEST(${challenges.currentValue} - ${contribution}, 0)` }).where(eq(challenges.id, Number(challengeId)));
+  }
+  invalidateEventsCache();
+  return {
+    deletedCount: targets.length,
+    affectedChallengeIds: Object.keys(challengeContributions).map(Number)
+  };
+}
+async function bulkRestoreParticipations(filter) {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+  if (!filter.challengeId && !filter.userId) {
+    throw new Error("Either challengeId or userId must be specified");
+  }
+  const conditions = [`${participations.deletedAt} IS NOT NULL`];
+  if (filter.challengeId) {
+    conditions.push(`${participations.challengeId} = ${filter.challengeId}`);
+  }
+  if (filter.userId) {
+    conditions.push(`${participations.userId} = ${filter.userId}`);
+  }
+  const targets = await db.select().from(participations).where(sql.raw(conditions.join(" AND ")));
+  if (targets.length === 0) {
+    return { restoredCount: 0, affectedChallengeIds: [] };
+  }
+  const targetIds = targets.map((t2) => t2.id);
+  await db.update(participations).set({
+    deletedAt: null,
+    deletedBy: null
+  }).where(sql`${participations.id} IN (${sql.raw(targetIds.join(","))})`);
+  const challengeContributions = {};
+  targets.forEach((p) => {
+    if (p.challengeId) {
+      const contribution = (p.contribution || 1) + (p.companionCount || 0);
+      challengeContributions[p.challengeId] = (challengeContributions[p.challengeId] || 0) + contribution;
+    }
+  });
+  for (const [challengeId, contribution] of Object.entries(challengeContributions)) {
+    await db.update(challenges).set({ currentValue: sql`${challenges.currentValue} + ${contribution}` }).where(eq(challenges.id, Number(challengeId)));
+  }
+  invalidateEventsCache();
+  return {
+    restoredCount: targets.length,
+    affectedChallengeIds: Object.keys(challengeContributions).map(Number)
+  };
+}
 var init_participation_db = __esm({
   "server/db/participation-db.ts"() {
     "use strict";
@@ -2554,6 +2666,8 @@ __export(db_exports, {
   asc: () => asc,
   awardBadge: () => awardBadge,
   awardFollowerBadge: () => awardFollowerBadge,
+  bulkRestoreParticipations: () => bulkRestoreParticipations,
+  bulkSoftDeleteParticipations: () => bulkSoftDeleteParticipations,
   cancelParticipation: () => cancelParticipation,
   cancelTicketTransfer: () => cancelTicketTransfer,
   checkAndAwardBadges: () => checkAndAwardBadges,
@@ -2616,6 +2730,7 @@ __export(db_exports, {
   getDataIntegrityReport: () => getDataIntegrityReport,
   getDb: () => getDb,
   getDbSchema: () => getDbSchema,
+  getDeletedParticipations: () => getDeletedParticipations,
   getDirectMessagesForUser: () => getDirectMessagesForUser,
   getEntityAuditHistory: () => getEntityAuditHistory,
   getEventById: () => getEventById,
@@ -2696,6 +2811,7 @@ __export(db_exports, {
   refreshAllChallengeSummaries: () => refreshAllChallengeSummaries,
   refreshChallengeSummary: () => refreshChallengeSummary,
   removeFromTicketWaitlist: () => removeFromTicketWaitlist,
+  restoreParticipation: () => restoreParticipation,
   saveSearchHistory: () => saveSearchHistory,
   searchChallenges: () => searchChallenges,
   searchChallengesForAI: () => searchChallengesForAI,
@@ -5485,8 +5601,139 @@ var ticketWaitlistRouter = router({
 });
 
 // server/routers/admin.ts
+import { z as z25 } from "zod";
+init_db2();
+
+// server/routers/admin-participations.ts
 import { z as z24 } from "zod";
 init_db2();
+var adminParticipationsRouter = router({
+  // 削除済み参加一覧取得
+  listDeleted: protectedProcedure.input(z24.object({
+    challengeId: z24.number().optional(),
+    userId: z24.number().optional(),
+    limit: z24.number().optional().default(100)
+  })).query(async ({ ctx, input }) => {
+    if (ctx.user.role !== "admin") {
+      throw new Error("\u7BA1\u7406\u8005\u6A29\u9650\u304C\u5FC5\u8981\u3067\u3059");
+    }
+    return getDeletedParticipations({
+      challengeId: input.challengeId,
+      userId: input.userId,
+      limit: input.limit
+    });
+  }),
+  // 参加を復元
+  restore: protectedProcedure.input(z24.object({ id: z24.number() })).mutation(async ({ ctx, input }) => {
+    if (ctx.user.role !== "admin") {
+      throw new Error("\u7BA1\u7406\u8005\u6A29\u9650\u304C\u5FC5\u8981\u3067\u3059");
+    }
+    const before = await getParticipationById(input.id);
+    if (!before) {
+      throw new Error("\u53C2\u52A0\u304C\u898B\u3064\u304B\u308A\u307E\u305B\u3093");
+    }
+    const result = await restoreParticipation(input.id);
+    const requestId = ctx.requestId || "unknown";
+    await logAction({
+      action: "RESTORE",
+      entityType: "participation",
+      targetId: input.id,
+      actorId: ctx.user.id,
+      actorName: ctx.user.name || "Unknown",
+      beforeData: {
+        deletedAt: before.deletedAt?.toISOString() || null,
+        deletedBy: before.deletedBy
+      },
+      afterData: {
+        deletedAt: null,
+        deletedBy: null
+      },
+      requestId
+    });
+    return { ...result, requestId };
+  }),
+  // 一括ソフトデリート
+  bulkDelete: protectedProcedure.input(z24.object({
+    challengeId: z24.number().optional(),
+    userId: z24.number().optional()
+  })).mutation(async ({ ctx, input }) => {
+    if (ctx.user.role !== "admin") {
+      throw new Error("\u7BA1\u7406\u8005\u6A29\u9650\u304C\u5FC5\u8981\u3067\u3059");
+    }
+    if (!input.challengeId && !input.userId) {
+      throw new Error("challengeId \u307E\u305F\u306F userId \u3092\u6307\u5B9A\u3057\u3066\u304F\u3060\u3055\u3044");
+    }
+    const result = await bulkSoftDeleteParticipations(
+      { challengeId: input.challengeId, userId: input.userId },
+      ctx.user.id
+    );
+    const requestId = ctx.requestId || "unknown";
+    await logAction({
+      action: "BULK_DELETE",
+      entityType: "participation",
+      targetId: input.challengeId || input.userId || 0,
+      actorId: ctx.user.id,
+      actorName: ctx.user.name || "Unknown",
+      beforeData: null,
+      afterData: {
+        filter: input,
+        deletedCount: result.deletedCount,
+        affectedChallengeIds: result.affectedChallengeIds
+      },
+      requestId
+    });
+    return { success: true, ...result, requestId };
+  }),
+  // 一括復元
+  bulkRestore: protectedProcedure.input(z24.object({
+    challengeId: z24.number().optional(),
+    userId: z24.number().optional()
+  })).mutation(async ({ ctx, input }) => {
+    if (ctx.user.role !== "admin") {
+      throw new Error("\u7BA1\u7406\u8005\u6A29\u9650\u304C\u5FC5\u8981\u3067\u3059");
+    }
+    if (!input.challengeId && !input.userId) {
+      throw new Error("challengeId \u307E\u305F\u306F userId \u3092\u6307\u5B9A\u3057\u3066\u304F\u3060\u3055\u3044");
+    }
+    const result = await bulkRestoreParticipations({
+      challengeId: input.challengeId,
+      userId: input.userId
+    });
+    const requestId = ctx.requestId || "unknown";
+    await logAction({
+      action: "BULK_RESTORE",
+      entityType: "participation",
+      targetId: input.challengeId || input.userId || 0,
+      actorId: ctx.user.id,
+      actorName: ctx.user.name || "Unknown",
+      beforeData: null,
+      afterData: {
+        filter: input,
+        restoredCount: result.restoredCount,
+        affectedChallengeIds: result.affectedChallengeIds
+      },
+      requestId
+    });
+    return { success: true, ...result, requestId };
+  }),
+  // 監査ログ取得（参加関連のみ）
+  getAuditLogs: protectedProcedure.input(z24.object({
+    entityType: z24.string().optional(),
+    targetId: z24.number().optional(),
+    limit: z24.number().optional().default(50)
+  })).query(async ({ ctx, input }) => {
+    if (ctx.user.role !== "admin") {
+      throw new Error("\u7BA1\u7406\u8005\u6A29\u9650\u304C\u5FC5\u8981\u3067\u3059");
+    }
+    return getAuditLogs({
+      entityType: input.entityType || "participation",
+      targetId: input.targetId,
+      limit: input.limit
+    });
+  })
+});
+
+// server/routers/admin.ts
 var adminRouter = router({
   // ユーザー一覧取得
   users: protectedProcedure.query(async ({ ctx }) => {
@@ -5496,9 +5743,9 @@ var adminRouter = router({
     return getAllUsers();
   }),
   // ユーザー権限変更
-  updateUserRole: protectedProcedure.input(z24.object({
-    userId: z24.number(),
-    role: z24.enum(["user", "admin"])
+  updateUserRole: protectedProcedure.input(z25.object({
+    userId: z25.number(),
+    role: z25.enum(["user", "admin"])
   })).mutation(async ({ ctx, input }) => {
     if (ctx.user.role !== "admin") {
       throw new Error("\u7BA1\u7406\u8005\u6A29\u9650\u304C\u5FC5\u8981\u3067\u3059");
@@ -5507,7 +5754,7 @@ var adminRouter = router({
     return { success: true };
   }),
   // ユーザー詳細取得
-  getUser: protectedProcedure.input(z24.object({ userId: z24.number() })).query(async ({ ctx, input }) => {
+  getUser: protectedProcedure.input(z25.object({ userId: z25.number() })).query(async ({ ctx, input }) => {
     if (ctx.user.role !== "admin") {
       throw new Error("\u7BA1\u7406\u8005\u6A29\u9650\u304C\u5FC5\u8981\u3067\u3059");
     }
@@ -5541,7 +5788,9 @@ var adminRouter = router({
       throw new Error("\u7BA1\u7406\u8005\u6A29\u9650\u304C\u5FC5\u8981\u3067\u3059");
     }
     return compareSchemas();
-  })
+  }),
+  // 参加管理（削除済み投稿の管理）
+  participations: adminParticipationsRouter
 });
 
 // server/routers/index.ts
