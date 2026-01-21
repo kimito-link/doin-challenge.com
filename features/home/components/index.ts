@@ -32,3 +32,6 @@ export { SimpleRegionMap } from "./SimpleRegionMap";
 // リストコンポーネント
 export { HomeListHeader } from "./HomeListHeader";
 export { HomeListFooter } from "./HomeListFooter";
+
+// タブナビゲーション
+export { HomeTabNavigation, type HomeTabType } from "./HomeTabNavigation";

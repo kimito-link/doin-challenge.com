@@ -32,6 +32,14 @@ interface UseHomeDataReturn {
   rest: Challenge[];
   categoriesData: any;
   
+  // Tab counts
+  tabCounts: {
+    all: number;
+    solo: number;
+    group: number;
+    favorite: number;
+  };
+  
   // Loading states
   isLoading: boolean;
   isDataLoading: boolean;
@@ -218,6 +226,15 @@ export function useHomeData({
   const top3 = rankedChallenges.slice(0, 3);
   const rest = rankedChallenges.slice(3);
 
+  // タブごとのカウント
+  const tabCounts = useMemo(() => {
+    const all = effectiveChallenges?.length || 0;
+    const solo = effectiveChallenges?.filter(c => c.eventType === "solo").length || 0;
+    const group = effectiveChallenges?.filter(c => c.eventType === "group").length || 0;
+    const favorite = effectiveChallenges?.filter(c => isFavorite(c.id)).length || 0;
+    return { all, solo, group, favorite };
+  }, [effectiveChallenges, isFavorite]);
+
   const onRefresh = async () => {
     setRefreshing(true);
     await refetch();
@@ -235,6 +252,7 @@ export function useHomeData({
     top3,
     rest,
     categoriesData,
+    tabCounts,
     
     // Loading states
     isLoading,

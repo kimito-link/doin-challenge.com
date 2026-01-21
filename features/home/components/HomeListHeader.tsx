@@ -1,20 +1,22 @@
 /**
  * HomeListHeader Component
  * ホーム画面のFlatListヘッダー部分
+ * v6.27: タブナビゲーション追加、UI改善
  */
 
 import { View, Text } from "react-native";
 import { color } from "@/theme/tokens";
 import { OnboardingSteps } from "@/components/organisms/onboarding-steps";
+import { ChallengeCardSkeleton } from "@/components/atoms/skeleton-loader";
 import { 
   SectionHeader,
   SearchBar,
   CategoryFilter,
-  FilterButton,
-  ResponsiveFilterRow,
   RankingTop3,
   SimpleRegionMap,
   ExperienceBanner,
+  HomeTabNavigation,
+  type HomeTabType,
 } from "./index";
 import type { Challenge, FilterType } from "@/types/challenge";
 
@@ -31,6 +33,16 @@ interface HomeListHeaderProps {
   categoryFilter: number | null;
   onCategoryFilterChange: (categoryId: number | null) => void;
   categoriesData: any;
+  
+  // Tab
+  activeTab?: HomeTabType;
+  onTabChange?: (tab: HomeTabType) => void;
+  tabCounts?: {
+    all: number;
+    solo: number;
+    group: number;
+    favorite: number;
+  };
   
   // Data
   top3: Challenge[];
@@ -52,17 +64,32 @@ export function HomeListHeader({
   categoryFilter,
   onCategoryFilterChange,
   categoriesData,
+  activeTab = "all",
+  onTabChange,
+  tabCounts,
   top3,
   featuredChallenge,
   displayChallengesCount,
   isDataLoading,
   onChallengePress,
 }: HomeListHeaderProps) {
+  // タブ変更時にフィルターも連動
+  const handleTabChange = (tab: HomeTabType) => {
+    onTabChange?.(tab);
+    // タブに応じてフィルターを変更
+    if (tab === "solo") {
+      onFilterChange("solo");
+    } else if (tab === "group") {
+      onFilterChange("group");
+    } else if (tab === "favorite") {
+      onFilterChange("favorites");
+    } else {
+      onFilterChange("all");
+    }
+  };
+
   return (
     <>
-      {/* チャレンジ一覧ヘッダー */}
-      <SectionHeader title="📋 チャレンジ一覧" />
-
       {/* 検索バー */}
       <SearchBar
         value={searchQuery}
@@ -71,16 +98,15 @@ export function HomeListHeader({
         }}
         onClear={onSearchClear}
       />
-      
-      {/* タイプフィルター */}
-      <View style={{ marginTop: 16, marginHorizontal: 16 }}>
-        <ResponsiveFilterRow itemCount={4}>
-          <FilterButton label="すべて" active={filter === "all"} onPress={() => onFilterChange("all")} />
-          <FilterButton label="⭐ お気に入り" active={filter === "favorites"} onPress={() => onFilterChange("favorites")} />
-          <FilterButton label="グループ" active={filter === "group"} onPress={() => onFilterChange("group")} />
-          <FilterButton label="ソロ" active={filter === "solo"} onPress={() => onFilterChange("solo")} />
-        </ResponsiveFilterRow>
-      </View>
+
+      {/* タブナビゲーション */}
+      {onTabChange && (
+        <HomeTabNavigation
+          activeTab={activeTab}
+          onTabChange={handleTabChange}
+          counts={tabCounts}
+        />
+      )}
 
       {/* カテゴリフィルター */}
       <CategoryFilter
@@ -96,6 +122,11 @@ export function HomeListHeader({
           onPress={(id) => onChallengePress(id)}
           onQuickJoin={(id) => onChallengePress(id)}
         />
+      )}
+
+      {/* 4位以降のヘッダー */}
+      {!isSearching && top3.length > 0 && (
+        <SectionHeader title="📋 4位以降のチャレンジ" />
       )}
 
       {/* 簡易地域マップ */}
@@ -115,10 +146,12 @@ export function HomeListHeader({
       {/* デモ体験ボタン */}
       <ExperienceBanner />
       
-      {/* データ読み込み中のインジケーター */}
+      {/* データ読み込み中のスケルトン表示 */}
       {isDataLoading && (
-        <View style={{ padding: 20, alignItems: "center" }}>
-          <Text style={{ color: color.textMuted }}>読み込み中...</Text>
+        <View style={{ paddingHorizontal: 16, paddingTop: 16 }}>
+          <ChallengeCardSkeleton />
+          <ChallengeCardSkeleton />
+          <ChallengeCardSkeleton />
         </View>
       )}
     </>

@@ -1,6 +1,7 @@
 /**
  * ホーム画面
  * チャレンジ一覧とランキングを表示
+ * v6.27: タブナビゲーション追加、UI改善
  */
 
 import { View, Text, FlatList, Platform } from "react-native";
@@ -23,6 +24,7 @@ import {
   HomeEmptyState,
   useHomeData,
   useHomeActions,
+  type HomeTabType,
 } from "@/features/home";
 import type { Challenge, FilterType } from "@/types/challenge";
 
@@ -39,6 +41,9 @@ export default function HomeScreen() {
   const [isSearching, setIsSearching] = useState(false);
   const [categoryFilter, setCategoryFilter] = useState<number | null>(null);
   const [useColorfulCards, setUseColorfulCards] = useState(true);
+  
+  // タブ状態
+  const [activeTab, setActiveTab] = useState<HomeTabType>("all");
   
   // 励ましメッセージモーダル
   const encouragementModal = useEncouragementModal();
@@ -129,6 +134,9 @@ export default function HomeScreen() {
               categoryFilter={categoryFilter}
               onCategoryFilterChange={setCategoryFilter}
               categoriesData={homeData.categoriesData}
+              activeTab={activeTab}
+              onTabChange={setActiveTab}
+              tabCounts={homeData.tabCounts}
               top3={homeData.top3}
               featuredChallenge={homeData.featuredChallenge}
               displayChallengesCount={homeData.displayChallenges.length}

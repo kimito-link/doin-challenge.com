@@ -114,3 +114,10 @@ export {
   type CharacterInfo,
 } from "./character-detail-modal";
 
+// Image系
+export {
+  LazyImage,
+  LazyAvatar,
+  LazyThumbnail,
+} from "./lazy-image";
+
