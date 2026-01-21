@@ -1,15 +1,22 @@
 // https://docs.expo.dev/guides/using-eslint/
-import { defineConfig } from "eslint/config";
-import expoConfig from "eslint-config-expo/flat.js";
+const { defineConfig } = require("eslint/config");
+const expoConfig = require("eslint-config-expo/flat.js");
+const localRules = require("./eslint-local-rules/index.cjs");
 
-export default defineConfig([
+module.exports = defineConfig([
   expoConfig,
   {
     ignores: ["dist/*", "scripts/*"],
   },
   {
-    // 直書き色禁止ルール（theme/tokens を使用してください）
+    // ローカルルールをプラグインとして登録
+    plugins: {
+      "local-rules": {
+        rules: localRules,
+      },
+    },
     rules: {
+      // 直書き色禁止ルール（theme/tokens を使用してください）
       "no-restricted-syntax": [
         "warn",
         {
@@ -25,6 +32,8 @@ export default defineConfig([
           message: "直書きのrgba()カラーは禁止です。theme/tokens を使用してください。",
         },
       ],
+      // router.push/replace/back の直接使用を禁止
+      "local-rules/no-direct-router-push": "error",
     },
   },
 ]);

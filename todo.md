@@ -3837,3 +3837,27 @@ features/create/
 - [x] チャレンジ更新通知設定（challengeUpdates）
 - [x] 通知設定の保存・読み込み（AsyncStorage）
 - [x] Web版の制限表示対応
+
+
+## ESLintカスタムルール（v6.39）
+
+- [x] no-direct-router-push ルールの作成（eslint-local-rules/no-direct-router-push.cjs）
+- [x] eslint-local-rules/index.cjs の作成
+- [x] eslint.config.cjs への統合
+- [ ] CI（GitHub Actions）でのlint実行確認
+
+## ソフトデリート機能（v6.40予定）
+
+- [ ] participations テーブルに deletedAt カラム追加
+- [ ] 削除API（PATCH /participations/:id/delete）
+- [ ] 編集API（PATCH /participations/:id）
+- [ ] マイページに編集・削除ボタン追加
+- [ ] 削除確認モーダル
+- [ ] 編集フォームUI
+
+## 監査ログ機能（v6.41予定）
+
+- [ ] audit_logs テーブル作成
+- [ ] 操作ログ記録ミドルウェア
+- [ ] 管理者用監査ログ一覧画面
+- [ ] フィルター・検索機能
