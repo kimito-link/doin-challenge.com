@@ -3952,3 +3952,13 @@ features/create/
 ### 次回対応
 - [ ] ピックアップ解除確認の補足文追加
 - [ ] 管理画面ヘッダーのガイド文追加
+
+
+## 最終防御チェック - Playwright E2E（v6.46）
+
+### Playwright導入
+- [x] Playwright導入と基本設定
+- [x] E2E共通フック（console.error/4xx-5xx/pageerror検出）
+- [x] 管理画面E2Eテスト（一覧表示・スモーク）
+- [x] CIにE2Eジョブ追加
+- [x] 失敗時のrequestId + trace + screenshot保存
