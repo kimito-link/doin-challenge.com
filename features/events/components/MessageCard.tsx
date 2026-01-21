@@ -2,12 +2,13 @@
  * 応援メッセージカードコンポーネント
  * 参加者の応援メッセージを表示
  */
-import { View, Text, TouchableOpacity } from "react-native";
+import { View, Text } from "react-native";
 import { useRouter } from "expo-router";
 import MaterialIcons from "@expo/vector-icons/MaterialIcons";
 import { useColors } from "@/hooks/use-colors";
 import { eventText, eventFont, eventUI } from "@/features/events/ui/theme/tokens";
 import { OptimizedAvatar } from "@/components/molecules/optimized-image";
+import { Button } from "@/components/ui/button";
 import type { Participation, Companion } from "@/types/participation";
 
 /** 同伴者の表示用型 */
@@ -117,7 +118,9 @@ export function MessageCard({
           </View>
           <View style={{ flexDirection: "row", alignItems: "center", flexWrap: "wrap" }}>
             {participation.username && !participation.isAnonymous && (
-              <TouchableOpacity
+              <Button
+                variant="ghost"
+                size="sm"
                 onPress={() => {
                   if (participation.userId) {
                     router.push({
@@ -126,11 +129,11 @@ export function MessageCard({
                     });
                   }
                 }}
-                style={{ flexDirection: "row", alignItems: "center", marginRight: 8 }}
+                style={{ flexDirection: "row", alignItems: "center", marginRight: 8, padding: 0 }}
               >
                 <MaterialIcons name="person" size={12} color={eventText.username} style={{ marginRight: 2 }} />
                 <Text style={{ color: eventText.username, fontSize: eventFont.body }}>@{participation.username}</Text>
-              </TouchableOpacity>
+              </Button>
             )}
             {participation.prefecture && (
               <Text style={{ color: eventText.hint, fontSize: eventFont.meta, marginRight: 8 }}>
@@ -214,7 +217,9 @@ export function MessageCard({
       <View style={{ flexDirection: "row", alignItems: "center", justifyContent: "flex-end", marginTop: 8, gap: 8 }}>
         {/* DMボタン */}
         {onDM && participation.userId && !participation.isAnonymous && (
-          <TouchableOpacity
+          <Button
+            variant="secondary"
+            size="sm"
             onPress={() => onDM(participation.userId!)}
             style={{
               flexDirection: "row",
@@ -227,12 +232,14 @@ export function MessageCard({
           >
             <MaterialIcons name="mail" size={14} color={eventUI.iconMuted} />
             <Text style={{ color: eventText.secondary, fontSize: eventFont.meta, marginLeft: 4 }}>DM</Text>
-          </TouchableOpacity>
+          </Button>
         )}
 
         {/* エールボタン */}
         {onCheer && (
-          <TouchableOpacity
+          <Button
+            variant="secondary"
+            size="sm"
             onPress={onCheer}
             style={{
               flexDirection: "row",
@@ -247,14 +254,16 @@ export function MessageCard({
             {cheerCount !== undefined && cheerCount > 0 && (
               <Text style={{ color: eventText.secondary, fontSize: eventFont.meta, marginLeft: 4 }}>{cheerCount}</Text>
             )}
-          </TouchableOpacity>
+          </Button>
         )}
 
         {/* 編集・削除ボタン（自分の投稿のみ） */}
         {isOwnPost && (
           <>
             {onEdit && (
-              <TouchableOpacity
+              <Button
+                variant="secondary"
+                size="sm"
                 onPress={onEdit}
                 style={{
                   flexDirection: "row",
@@ -267,10 +276,12 @@ export function MessageCard({
               >
                 <MaterialIcons name="edit" size={14} color={eventUI.iconMuted} />
                 <Text style={{ color: eventText.secondary, fontSize: eventFont.meta, marginLeft: 4 }}>編集</Text>
-              </TouchableOpacity>
+              </Button>
             )}
             {onDelete && (
-              <TouchableOpacity
+              <Button
+                variant="secondary"
+                size="sm"
                 onPress={onDelete}
                 style={{
                   flexDirection: "row",
@@ -283,7 +294,7 @@ export function MessageCard({
               >
                 <MaterialIcons name="delete" size={14} color={eventUI.iconDanger} />
                 <Text style={{ color: eventText.danger, fontSize: eventFont.meta, marginLeft: 4 }}>取消</Text>
-              </TouchableOpacity>
+              </Button>
             )}
           </>
         )}

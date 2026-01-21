@@ -1,7 +1,8 @@
-import { View, Text, TouchableOpacity, Linking, StyleSheet } from "react-native";
+import { View, Text, Linking, StyleSheet } from "react-native";
 import MaterialIcons from "@expo/vector-icons/MaterialIcons";
 import { color } from "@/theme/tokens";
 import { useColors } from "@/hooks/use-colors";
+import { Button } from "@/components/ui/button";
 
 export type EventInfoSectionProps = {
   eventDate?: string | null;
@@ -91,7 +92,8 @@ export function EventInfoSection({
           </View>
 
           {ticketUrl && (
-            <TouchableOpacity
+            <Button
+              variant="primary"
               onPress={() => Linking.openURL(ticketUrl)}
               style={styles.ticketButton}
             >
@@ -99,7 +101,7 @@ export function EventInfoSection({
               <Text style={[styles.ticketButtonText, { color: colors.foreground }]}>
                 チケットを購入する
               </Text>
-            </TouchableOpacity>
+            </Button>
           )}
         </View>
       )}

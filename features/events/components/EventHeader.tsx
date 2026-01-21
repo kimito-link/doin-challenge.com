@@ -1,11 +1,11 @@
-import { View, TouchableOpacity, Text, StyleSheet } from "react-native";
+import { View, Text, StyleSheet } from "react-native";
 import { Image } from "expo-image";
 import { LinearGradient } from "expo-linear-gradient";
 import MaterialIcons from "@expo/vector-icons/MaterialIcons";
 import { color } from "@/theme/tokens";
 import { useColors } from "@/hooks/use-colors";
 import { OptimizedAvatar } from "@/components/molecules/optimized-image";
-import { Image as ExpoImage } from "expo-image";
+import { Button } from "@/components/ui/button";
 import { getChallengeColor } from "@/lib/challenge-colors";
 
 export type EventHeaderProps = {
@@ -60,17 +60,21 @@ export function EventHeader({
 
         {/* 主催者用の編集アイコン */}
         {isHost && onEditPress && (
-          <TouchableOpacity
+          <Button
+            variant="ghost"
+            size="sm"
             onPress={onEditPress}
             style={styles.editButton}
           >
             <MaterialIcons name="edit" size={20} color={colors.foreground} />
-          </TouchableOpacity>
+          </Button>
         )}
 
         {/* お気に入りボタン */}
         {onFavoritePress && (
-          <TouchableOpacity
+          <Button
+            variant="ghost"
+            size="sm"
             onPress={onFavoritePress}
             style={styles.favoriteButton}
           >
@@ -79,14 +83,14 @@ export function EventHeader({
               size={24}
               color={isFavorite ? color.danger : colors.foreground}
             />
-          </TouchableOpacity>
+          </Button>
         )}
 
         {/* ホスト情報 */}
-        <TouchableOpacity
-          onPress={onHostPress}
+        <Button
+          variant="ghost"
+          onPress={onHostPress || (() => {})}
           style={styles.hostContainer}
-          activeOpacity={0.7}
         >
           <OptimizedAvatar
             source={{ uri: challenge.hostProfileImage || undefined }}
@@ -103,12 +107,14 @@ export function EventHeader({
               </Text>
             )}
           </View>
-        </TouchableOpacity>
+        </Button>
 
         {/* フォローボタン */}
         {!isHost && onFollowPress && (
           <View style={styles.followButtonContainer}>
-            <TouchableOpacity
+            <Button
+              variant={isFollowing ? "outline" : "primary"}
+              size="sm"
               onPress={onFollowPress}
               style={[
                 styles.followButton,
@@ -123,7 +129,7 @@ export function EventHeader({
               <Text style={[styles.followButtonText, { color: colors.foreground }]}>
                 {isFollowing ? "フォロー中" : "フォロー"}
               </Text>
-            </TouchableOpacity>
+            </Button>
           </View>
         )}
       </View>

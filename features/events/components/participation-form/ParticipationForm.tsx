@@ -3,7 +3,8 @@
  * 
  * 参加表明フォームコンポーネント（リファクタリング版）
  */
-import { View, Text, TouchableOpacity, TextInput, ScrollView } from "react-native";
+import { View, Text, TextInput, ScrollView } from "react-native";
+import { Button } from "@/components/ui/button";
 import { Image } from "expo-image";
 import MaterialIcons from "@expo/vector-icons/MaterialIcons";
 import { LinearGradient } from "expo-linear-gradient";
@@ -56,7 +57,7 @@ export function ParticipationForm({
         <Text style={[styles.loginPromptTitle, { color: colors.foreground }]}>
           参加表明するにはログインが必要です
         </Text>
-        <TouchableOpacity onPress={onLogin} style={styles.loginButton}>
+        <Button variant="primary" onPress={onLogin} style={styles.loginButton}>
           <LinearGradient
             colors={[color.accentPrimary, color.accentAlt]}
             start={{ x: 0, y: 0 }}
@@ -68,7 +69,7 @@ export function ParticipationForm({
               Xでログイン
             </Text>
           </LinearGradient>
-        </TouchableOpacity>
+        </Button>
       </View>
     );
   }
@@ -148,7 +149,8 @@ export function ParticipationForm({
         <Text style={[styles.inputLabel, { color: colors.foreground }]}>
           都道府県
         </Text>
-        <TouchableOpacity
+        <Button
+          variant="secondary"
           onPress={onTogglePrefectureList}
           style={styles.selectButton}
         >
@@ -160,15 +162,17 @@ export function ParticipationForm({
             size={24}
             color={color.textSecondary}
           />
-        </TouchableOpacity>
+        </Button>
         
         {showPrefectureList && (
           <View style={styles.prefectureList}>
             <ScrollView style={styles.prefectureScroll} nestedScrollEnabled>
               <View style={styles.prefectureGrid}>
                 {prefectures.map((pref) => (
-                  <TouchableOpacity
+                  <Button
                     key={pref}
+                    variant={prefecture === pref ? "primary" : "secondary"}
+                    size="sm"
                     onPress={() => {
                       onPrefectureChange(pref);
                       onTogglePrefectureList();
@@ -184,7 +188,7 @@ export function ParticipationForm({
                     ]}>
                       {pref}
                     </Text>
-                  </TouchableOpacity>
+                  </Button>
                 ))}
               </View>
             </ScrollView>
@@ -198,7 +202,9 @@ export function ParticipationForm({
           性別（任意）
         </Text>
         <View style={styles.genderButtons}>
-          <TouchableOpacity
+          <Button
+            variant={gender === "male" ? "primary" : "secondary"}
+            size="sm"
             onPress={() => onGenderChange("male")}
             style={[
               styles.genderButton,
@@ -211,8 +217,10 @@ export function ParticipationForm({
             ]}>
               男性
             </Text>
-          </TouchableOpacity>
-          <TouchableOpacity
+          </Button>
+          <Button
+            variant={gender === "female" ? "primary" : "secondary"}
+            size="sm"
             onPress={() => onGenderChange("female")}
             style={[
               styles.genderButton,
@@ -225,8 +233,10 @@ export function ParticipationForm({
             ]}>
               女性
             </Text>
-          </TouchableOpacity>
-          <TouchableOpacity
+          </Button>
+          <Button
+            variant={gender === "" ? "primary" : "secondary"}
+            size="sm"
             onPress={() => onGenderChange("")}
             style={[
               styles.genderButton,
@@ -239,7 +249,7 @@ export function ParticipationForm({
             ]}>
               未設定
             </Text>
-          </TouchableOpacity>
+          </Button>
         </View>
       </View>
 
@@ -249,13 +259,15 @@ export function ParticipationForm({
           <Text style={[styles.inputLabel, { color: colors.foreground }]}>
             一緒に参加する友人（{companions.length}人）
           </Text>
-          <TouchableOpacity
+          <Button
+            variant="ghost"
+            size="sm"
             onPress={onToggleAddCompanionForm}
             style={styles.addCompanionButton}
           >
             <MaterialIcons name="person-add" size={20} color={color.accentPrimary} />
             <Text style={styles.addCompanionButtonText}>追加</Text>
-          </TouchableOpacity>
+          </Button>
         </View>
 
         {/* 友人追加フォーム */}
@@ -276,9 +288,12 @@ export function ParticipationForm({
                   lookedUpProfile && styles.twitterSearchInputSuccess,
                 ]}
               />
-              <TouchableOpacity
+              <Button
+                variant="primary"
+                size="sm"
                 onPress={() => onLookupTwitterProfile(newCompanionTwitter)}
                 disabled={isLookingUpTwitter || !newCompanionTwitter.trim()}
+                loading={isLookingUpTwitter}
                 style={[
                   styles.twitterSearchButton,
                   { backgroundColor: isLookingUpTwitter ? color.border : color.twitter },
@@ -288,7 +303,7 @@ export function ParticipationForm({
                 <Text style={[styles.twitterSearchButtonText, { color: colors.foreground }]}>
                   {isLookingUpTwitter ? "検索中..." : "検索"}
                 </Text>
-              </TouchableOpacity>
+              </Button>
             </View>
 
             {/* エラー表示 */}
@@ -340,13 +355,17 @@ export function ParticipationForm({
             )}
 
             <View style={styles.addCompanionActions}>
-              <TouchableOpacity
+              <Button
+                variant="secondary"
+                size="sm"
                 onPress={onCancelAddCompanion}
                 style={styles.cancelButton}
               >
                 <Text style={styles.cancelButtonText}>キャンセル</Text>
-              </TouchableOpacity>
-              <TouchableOpacity
+              </Button>
+              <Button
+                variant="primary"
+                size="sm"
                 onPress={onAddCompanion}
                 disabled={!lookedUpProfile && !newCompanionName.trim()}
                 style={[
@@ -355,7 +374,7 @@ export function ParticipationForm({
                 ]}
               >
                 <Text style={[styles.confirmAddButtonText, { color: colors.foreground }]}>追加</Text>
-              </TouchableOpacity>
+              </Button>
             </View>
           </View>
         )}
@@ -389,12 +408,14 @@ export function ParticipationForm({
                     <Text style={styles.companionHandle}>@{companion.twitterUsername}</Text>
                   )}
                 </View>
-                <TouchableOpacity
+                <Button
+                  variant="ghost"
+                  size="sm"
                   onPress={() => onRemoveCompanion(companion.id)}
                   style={styles.removeCompanionButton}
                 >
                   <MaterialIcons name="close" size={20} color={color.textHint} />
-                </TouchableOpacity>
+                </Button>
               </View>
             ))}
           </View>
@@ -411,7 +432,8 @@ export function ParticipationForm({
       </View>
 
       {/* 動画使用許可 */}
-      <TouchableOpacity
+      <Button
+        variant="ghost"
         onPress={() => onAllowVideoUseChange(!allowVideoUse)}
         style={styles.videoPermission}
       >
@@ -423,12 +445,14 @@ export function ParticipationForm({
         <Text style={[styles.videoPermissionText, { color: colors.foreground }]}>
           応援動画への使用を許可する
         </Text>
-      </TouchableOpacity>
+      </Button>
 
       {/* 送信ボタン */}
-      <TouchableOpacity
+      <Button
+        variant="primary"
         onPress={onSubmit}
         disabled={isSubmitting}
+        loading={isSubmitting}
         style={styles.submitButton}
       >
         <LinearGradient
@@ -442,7 +466,7 @@ export function ParticipationForm({
             {isSubmitting ? "送信中..." : isEditMode ? "更新する" : "参加表明する"}
           </Text>
         </LinearGradient>
-      </TouchableOpacity>
+      </Button>
     </View>
   );
 }

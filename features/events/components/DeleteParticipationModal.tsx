@@ -1,7 +1,8 @@
-import { View, Text, TouchableOpacity, Modal, StyleSheet } from "react-native";
+import { View, Text, Modal, StyleSheet } from "react-native";
 import MaterialIcons from "@expo/vector-icons/MaterialIcons";
 import { color } from "@/theme/tokens";
 import { useColors } from "@/hooks/use-colors";
+import { Button } from "@/components/ui/button";
 import type { Participation } from "@/types/participation";
 
 export type DeleteParticipationModalProps = {
@@ -54,21 +55,24 @@ export function DeleteParticipationModal({
           )}
 
           <View style={styles.actions}>
-            <TouchableOpacity
+            <Button
+              variant="secondary"
               onPress={onClose}
               style={styles.cancelButton}
             >
               <Text style={[styles.cancelButtonText, { color: colors.foreground }]}>キャンセル</Text>
-            </TouchableOpacity>
-            <TouchableOpacity
+            </Button>
+            <Button
+              variant="destructive"
               onPress={onConfirm}
               disabled={isDeleting}
-              style={[styles.deleteButton, isDeleting && styles.deleteButtonDisabled]}
+              loading={isDeleting}
+              style={styles.deleteButton}
             >
               <Text style={[styles.deleteButtonText, { color: colors.foreground }]}>
                 {isDeleting ? "削除中..." : "取り消す"}
               </Text>
-            </TouchableOpacity>
+            </Button>
           </View>
         </View>
       </View>
@@ -139,13 +143,9 @@ const styles = StyleSheet.create({
   },
   deleteButton: {
     flex: 1,
-    backgroundColor: color.danger,
     borderRadius: 12,
     padding: 16,
     alignItems: "center",
-  },
-  deleteButtonDisabled: {
-    opacity: 0.5,
   },
   deleteButtonText: {
     fontSize: 16,

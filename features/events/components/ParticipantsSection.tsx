@@ -1,7 +1,8 @@
-import { View, Text, TouchableOpacity, StyleSheet, FlatList } from "react-native";
+import { View, Text, StyleSheet, FlatList } from "react-native";
 import MaterialIcons from "@expo/vector-icons/MaterialIcons";
 import { color } from "@/theme/tokens";
 import { useColors } from "@/hooks/use-colors";
+import { Button } from "@/components/ui/button";
 import { OptimizedAvatar } from "@/components/molecules/optimized-image";
 
 export type ParticipantVM = {
@@ -30,10 +31,10 @@ export function ParticipantsSection({
   const colors = useColors();
 
   const renderParticipant = ({ item }: { item: ParticipantVM }) => (
-    <TouchableOpacity
-      style={styles.participantCard}
+    <Button
+      variant="ghost"
       onPress={() => onParticipantPress?.(item)}
-      activeOpacity={0.7}
+      style={styles.participantCard}
     >
       <OptimizedAvatar
         source={{ uri: item.profileImage || undefined }}
@@ -55,7 +56,7 @@ export function ParticipantsSection({
           </View>
         )}
       </View>
-    </TouchableOpacity>
+    </Button>
   );
 
   return (
@@ -67,10 +68,10 @@ export function ParticipantsSection({
             参加者 ({totalCount}人)
           </Text>
         </View>
-        {totalCount > 10 && (
-          <TouchableOpacity onPress={onViewAllPress}>
+        {totalCount > 10 && onViewAllPress && (
+          <Button variant="ghost" size="sm" onPress={onViewAllPress}>
             <Text style={styles.viewAllText}>すべて見る</Text>
-          </TouchableOpacity>
+          </Button>
         )}
       </View>
 

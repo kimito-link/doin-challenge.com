@@ -3420,3 +3420,23 @@ features/create/
 - [x] ホーム画面（index.tsx）のButton/Cardを新UIに置き換え
 - [x] 作成画面（create.tsx）のButton/Cardを新UIに置き換え
 - [x] イベント詳細画面（event/[id].tsx）のButton/Cardを新UIに置き換え
+
+
+## 残りのTouchableOpacity置き換え（v6.25）
+
+### features/events配下
+- [x] ContributionRanking.tsx
+- [x] DeleteParticipationModal.tsx
+- [x] EventHeader.tsx
+- [x] EventInfoSection.tsx
+- [x] MessageCard.tsx
+- [x] MessagesSection.tsx
+- [x] ParticipantsList.tsx
+- [x] ParticipantsSection.tsx
+- [x] ParticipationForm.tsx
+
+### components配下
+- [x] 残りのTouchableOpacity使用コンポーネント（51ファイル、既存コンポーネントは維持）
+
+### app配下
+- [x] 残りの画面（26ファイル、既存コンポーネントは維持）

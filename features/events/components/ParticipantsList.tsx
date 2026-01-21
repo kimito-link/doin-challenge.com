@@ -2,10 +2,11 @@
  * 参加者リストコンポーネント
  * 一緒に参加している人を横スクロールで表示
  */
-import { View, Text, ScrollView, TouchableOpacity } from "react-native";
+import { View, Text, ScrollView } from "react-native";
 import { useRouter } from "expo-router";
 import MaterialIcons from "@expo/vector-icons/MaterialIcons";
 import { useColors } from "@/hooks/use-colors";
+import { Button } from "@/components/ui/button";
 import { eventText, eventFont, eventUI } from "@/features/events/ui/theme/tokens";
 import { OptimizedAvatar } from "@/components/molecules/optimized-image";
 import type { Participation, FanProfile } from "@/types/participation";
@@ -44,8 +45,9 @@ export function ParticipantsList({
       <ScrollView horizontal showsHorizontalScrollIndicator={false}>
         <View style={{ flexDirection: "row", gap: 12 }}>
           {visibleParticipants.map((p) => (
-            <TouchableOpacity
+            <Button
               key={p.id}
+              variant="ghost"
               onPress={() => {
                 if (onFanPress && p.twitterId && p.username) {
                   onFanPress({
@@ -58,8 +60,7 @@ export function ParticipantsList({
                   router.push({ pathname: "/profile/[userId]", params: { userId: p.userId.toString() } });
                 }
               }}
-              style={{ alignItems: "center", width: 70 }}
-              activeOpacity={0.7}
+              style={{ alignItems: "center", width: 70, paddingHorizontal: 0, paddingVertical: 4 }}
             >
               <View>
                 <OptimizedAvatar
@@ -100,7 +101,7 @@ export function ParticipantsList({
                   @{p.username}
                 </Text>
               )}
-            </TouchableOpacity>
+            </Button>
           ))}
           {totalNonAnonymous > maxDisplay && (
             <View style={{ alignItems: "center", justifyContent: "center", width: 50 }}>

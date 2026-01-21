@@ -2,11 +2,12 @@
  * 貢献度ランキングコンポーネント
  * 参加者の貢献度をランキング形式で表示
  */
-import { View, Text, TouchableOpacity } from "react-native";
+import { View, Text } from "react-native";
 import { useRouter } from "expo-router";
 import { useColors } from "@/hooks/use-colors";
 import { eventText, eventFont, eventUI } from "@/features/events/ui/theme/tokens";
 import { OptimizedAvatar } from "@/components/molecules/optimized-image";
+import { Button } from "@/components/ui/button";
 import type { Participation } from "@/types/participation";
 
 export interface ContributionRankingProps {
@@ -136,16 +137,18 @@ export function ContributionRanking({
                 <Text style={{ color: eventText.hint, fontSize: eventFont.small }}>📍{p.prefecture}</Text>
               )}
               {p.username && !p.isAnonymous && (
-                <TouchableOpacity
+                <Button
+                  variant="ghost"
+                  size="sm"
                   onPress={() => {
                     if (p.userId) {
                       router.push({ pathname: "/profile/[userId]", params: { userId: p.userId.toString() } });
                     }
                   }}
-                  style={{ flexDirection: "row", alignItems: "center" }}
+                  style={{ flexDirection: "row", alignItems: "center", padding: 0 }}
                 >
                   <Text style={{ color: eventText.username, fontSize: eventFont.username }}>@{p.username}</Text>
-                </TouchableOpacity>
+                </Button>
               )}
             </View>
           </View>

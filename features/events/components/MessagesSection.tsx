@@ -1,4 +1,5 @@
-import { View, Text, TouchableOpacity, ScrollView, StyleSheet } from "react-native";
+import { View, Text, ScrollView, StyleSheet } from "react-native";
+import { Button } from "@/components/ui/button";
 import MaterialIcons from "@expo/vector-icons/MaterialIcons";
 import { color } from "@/theme/tokens";
 import { useColors } from "@/hooks/use-colors";
@@ -181,7 +182,9 @@ export function MessagesSection({
         <View style={styles.filters}>
           {/* 性別フィルター */}
           <View style={styles.genderFilterContainer}>
-            <TouchableOpacity
+            <Button
+              variant={selectedGenderFilter === "all" ? "primary" : "secondary"}
+              size="sm"
               onPress={() => onGenderFilterChange("all")}
               style={[
                 styles.genderFilterButton,
@@ -192,8 +195,10 @@ export function MessagesSection({
                 styles.genderFilterText,
                 { color: selectedGenderFilter === "all" ? color.textWhite : color.textSecondary }
               ]}>全て</Text>
-            </TouchableOpacity>
-            <TouchableOpacity
+            </Button>
+            <Button
+              variant={selectedGenderFilter === "male" ? "primary" : "secondary"}
+              size="sm"
               onPress={() => onGenderFilterChange("male")}
               style={[
                 styles.genderFilterButton,
@@ -204,8 +209,10 @@ export function MessagesSection({
                 styles.genderFilterText,
                 { color: selectedGenderFilter === "male" ? color.textWhite : color.textSecondary }
               ]}>男性</Text>
-            </TouchableOpacity>
-            <TouchableOpacity
+            </Button>
+            <Button
+              variant={selectedGenderFilter === "female" ? "primary" : "secondary"}
+              size="sm"
               onPress={() => onGenderFilterChange("female")}
               style={[
                 styles.genderFilterButton,
@@ -216,11 +223,13 @@ export function MessagesSection({
                 styles.genderFilterText,
                 { color: selectedGenderFilter === "female" ? color.textWhite : color.textSecondary }
               ]}>女性</Text>
-            </TouchableOpacity>
+            </Button>
           </View>
 
           {/* 地域フィルター */}
-          <TouchableOpacity
+          <Button
+            variant="secondary"
+            size="sm"
             onPress={onTogglePrefectureFilterList}
             style={[
               styles.prefectureFilterButton,
@@ -238,7 +247,7 @@ export function MessagesSection({
             ]}>
               {selectedPrefectureFilter === "all" ? "地域" : selectedPrefectureFilter}
             </Text>
-          </TouchableOpacity>
+          </Button>
         </View>
       </View>
 
@@ -246,7 +255,9 @@ export function MessagesSection({
       {showPrefectureFilterList && (
         <View style={styles.prefectureFilterList}>
           <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.regionScroll}>
-            <TouchableOpacity
+            <Button
+              variant={selectedPrefectureFilter === "all" ? "primary" : "secondary"}
+              size="sm"
               onPress={() => { onPrefectureFilterChange("all"); onTogglePrefectureFilterList(); }}
               style={[
                 styles.regionChip,
@@ -254,10 +265,12 @@ export function MessagesSection({
               ]}
             >
               <Text style={[styles.regionChipText, { color: colors.foreground }]}>すべて</Text>
-            </TouchableOpacity>
+            </Button>
             {regionGroups.map((region) => (
-              <TouchableOpacity
+              <Button
                 key={region.name}
+                variant={selectedPrefectureFilter === region.name ? "primary" : "secondary"}
+                size="sm"
                 onPress={() => { onPrefectureFilterChange(region.name); onTogglePrefectureFilterList(); }}
                 style={[
                   styles.regionChip,
@@ -265,13 +278,15 @@ export function MessagesSection({
                 ]}
               >
                 <Text style={[styles.regionChipText, { color: colors.foreground }]}>{region.name}</Text>
-              </TouchableOpacity>
+              </Button>
             ))}
           </ScrollView>
           <View style={styles.prefectureGrid}>
             {prefectures.map((pref) => (
-              <TouchableOpacity
+              <Button
                 key={pref}
+                variant={selectedPrefectureFilter === pref ? "primary" : "secondary"}
+                size="sm"
                 onPress={() => { onPrefectureFilterChange(pref); onTogglePrefectureFilterList(); }}
                 style={[
                   styles.prefectureChip,
@@ -282,7 +297,7 @@ export function MessagesSection({
                   styles.prefectureChipText,
                   { color: selectedPrefectureFilter === pref ? color.textWhite : color.textSecondary }
                 ]}>{pref}</Text>
-              </TouchableOpacity>
+              </Button>
             ))}
           </View>
         </View>
