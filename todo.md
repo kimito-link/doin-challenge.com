@@ -3962,3 +3962,9 @@ features/create/
 - [x] 管理画面E2Eテスト（一覧表示・スモーク）
 - [x] CIにE2Eジョブ追加
 - [x] 失敗時のrequestId + trace + screenshot保存
+
+
+### スモークテスト強化（v6.47）
+- [x] app/admin配下の実パス一覧を抽出（10ページ）
+- [x] 強いスモークテスト（mustSee付き）を実装
+- [x] 全ページ一括巡回テストを追加

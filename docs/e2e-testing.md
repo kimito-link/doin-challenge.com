@@ -49,12 +49,17 @@ CIでは `lint-check-test` ジョブの後に `e2e` ジョブが実行されま�
 
 | テスト | 内容 |
 |--------|------|
-| 参加管理画面の一覧表示 | `/admin/participations` が表示される |
-| ダッシュボード表示 | `/admin` が表示される |
-| カテゴリ管理画面表示 | `/admin/categories` が表示される |
-| チャレンジ管理画面表示 | `/admin/challenges` が表示される |
-| システム状態画面表示 | `/admin/system` が表示される |
-| 主要ページスモーク | 全管理ページが404なしで開ける |
+| ダッシュボード | `/admin` + 「ダッシュボード」表示 |
+| カテゴリ管理 | `/admin/categories` + 「カテゴリ」表示 |
+| チャレンジ管理 | `/admin/challenges` + 「チャレンジ」表示 |
+| 参加管理 | `/admin/participations` + 「参加」表示 |
+| ユーザー管理 | `/admin/users` + 「ユーザー」表示 |
+| システム状態 | `/admin/system` + 「システム」表示 |
+| API使用量 | `/admin/api-usage` + 「API」表示 |
+| エラーログ | `/admin/errors` + 「エラー」表示 |
+| データ整合性 | `/admin/data-integrity` + 「整合性」表示 |
+| コンポーネントギャラリー | `/admin/components` + 「コンポーネント」表示 |
+| 全ページ一括巡回 | 全10ページが404なしで連続アクセス可能 |
 
 ## 許可リスト
 
