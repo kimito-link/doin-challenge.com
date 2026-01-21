@@ -3861,3 +3861,22 @@ features/create/
 - [ ] 操作ログ記録ミドルウェア
 - [ ] 管理者用監査ログ一覧画面
 - [ ] フィルター・検索機能
+
+
+## Typed Routes有効化（v6.40）
+
+- [ ] app.config.tsでtypedRoutes: trueを確認/有効化
+- [ ] expo-routerの型定義ファイル生成（npx expo customize）
+- [ ] 型エラーの修正（pnpm check）
+- [ ] navigate.*関数の型安全化
+
+
+## ソフトデリート機能（v6.40）
+
+- [x] DBスキーマ: participationsテーブルにdeletedAt/deletedByカラム追加
+- [x] tRPC API: メッセージ編集エンドポイント更新（認証チェック追加）
+- [x] tRPC API: メッセージ削除エンドポイント更新（ソフトデリート）
+- [ ] UI: 自分の投稿に編集・削除ボタン追加
+- [ ] UI: 編集モーダル/画面の実装
+- [ ] UI: 削除確認ダイアログの実装
+- [x] 既存クエリ: deletedAtがnullのメッセージのみ取得するよう修正

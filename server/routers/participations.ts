@@ -2,6 +2,11 @@
  * server/routers/participations.ts
  * 
  * 参加登録関連のルーター
+ * 
+ * v6.40: ソフトデリート対応
+ * - update: 認証チェック追加（自分の投稿のみ編集可能）
+ * - delete: 物理削除→ソフトデリートに変更
+ * - softDelete: 新規追加（ソフトデリート専用）
  */
 import { z } from "zod";
 import { publicProcedure, protectedProcedure, router } from "../_core/trpc";
@@ -139,11 +144,10 @@ export const participationsRouter = router({
       return { id: participationId };
     }),
 
-  // 参加表明の更新
-  update: publicProcedure
+  // 参加表明の更新（認証必須 - 自分の投稿のみ編集可能）
+  update: protectedProcedure
     .input(z.object({
       id: z.number(),
-      twitterId: z.string().optional(),
       message: z.string().optional(),
       prefecture: z.string().optional(),
       gender: z.enum(["male", "female", "unspecified"]).optional(),
@@ -155,10 +159,16 @@ export const participationsRouter = router({
         profileImage: z.string().optional(),
       })).optional(),
     }))
-    .mutation(async ({ input }) => {
-      const participation = await db.getParticipationById(input.id);
+    .mutation(async ({ ctx, input }) => {
+      // 参加情報を取得（削除済みを除く）
+      const participation = await db.getActiveParticipationById(input.id);
       if (!participation) {
         throw new Error("参加表明が見つかりません。");
+      }
+      
+      // 自分の投稿かチェック
+      if (participation.userId !== ctx.user.id) {
+        throw new Error("自分の参加表明のみ編集できます。");
       }
       
       await db.updateParticipation(input.id, {
@@ -184,17 +194,44 @@ export const participationsRouter = router({
       return { success: true };
     }),
 
-  // 参加取消
+  // 参加取消（ソフトデリート）
   delete: protectedProcedure
     .input(z.object({ id: z.number() }))
     .mutation(async ({ ctx, input }) => {
-      const participations = await db.getParticipationsByUserId(ctx.user.id);
-      const participation = participations.find(p => p.id === input.id);
+      // 参加情報を取得（削除済みを除く）
+      const participation = await db.getActiveParticipationById(input.id);
       if (!participation) {
-        throw new Error("Unauthorized");
+        throw new Error("参加表明が見つかりません。");
       }
-      await db.deleteParticipation(input.id);
+      
+      // 自分の投稿かチェック
+      if (participation.userId !== ctx.user.id) {
+        throw new Error("自分の参加表明のみ削除できます。");
+      }
+      
+      // ソフトデリート実行
+      await db.softDeleteParticipation(input.id, ctx.user.id);
       return { success: true };
+    }),
+
+  // ソフトデリート（明示的なAPI）
+  softDelete: protectedProcedure
+    .input(z.object({ id: z.number() }))
+    .mutation(async ({ ctx, input }) => {
+      // 参加情報を取得（削除済みを除く）
+      const participation = await db.getActiveParticipationById(input.id);
+      if (!participation) {
+        throw new Error("参加表明が見つかりません。");
+      }
+      
+      // 自分の投稿かチェック
+      if (participation.userId !== ctx.user.id) {
+        throw new Error("自分の参加表明のみ削除できます。");
+      }
+      
+      // ソフトデリート実行
+      const result = await db.softDeleteParticipation(input.id, ctx.user.id);
+      return { success: true, challengeId: result.challengeId };
     }),
 
   // 参加をキャンセル（チケット譲渡オプション付き）

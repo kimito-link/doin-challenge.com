@@ -250,7 +250,10 @@ var init_participations = __esm({
       contribution: int3("contribution").default(1).notNull(),
       isAnonymous: boolean3("isAnonymous").default(false).notNull(),
       createdAt: timestamp3("createdAt").defaultNow().notNull(),
-      updatedAt: timestamp3("updatedAt").defaultNow().onUpdateNow().notNull()
+      updatedAt: timestamp3("updatedAt").defaultNow().onUpdateNow().notNull(),
+      // ソフトデリート用カラム
+      deletedAt: timestamp3("deletedAt"),
+      deletedBy: int3("deletedBy")
     });
     participationCompanions = mysqlTable3("participation_companions", {
       id: int3("id").autoincrement().primaryKey(),
@@ -809,17 +812,32 @@ var init_challenge_db = __esm({
 async function getParticipationsByEventId(eventId) {
   const db = await getDb();
   if (!db) return [];
-  return db.select().from(participations).where(eq(participations.challengeId, eventId)).orderBy(desc(participations.createdAt));
+  return db.select().from(participations).where(and(
+    eq(participations.challengeId, eventId),
+    isNull(participations.deletedAt)
+  )).orderBy(desc(participations.createdAt));
 }
 async function getParticipationsByUserId(userId) {
   const db = await getDb();
   if (!db) return [];
-  return db.select().from(participations).where(eq(participations.userId, userId)).orderBy(desc(participations.createdAt));
+  return db.select().from(participations).where(and(
+    eq(participations.userId, userId),
+    isNull(participations.deletedAt)
+  )).orderBy(desc(participations.createdAt));
 }
 async function getParticipationById(id) {
   const db = await getDb();
   if (!db) return null;
   const result = await db.select().from(participations).where(eq(participations.id, id));
+  return result[0] || null;
+}
+async function getActiveParticipationById(id) {
+  const db = await getDb();
+  if (!db) return null;
+  const result = await db.select().from(participations).where(and(
+    eq(participations.id, id),
+    isNull(participations.deletedAt)
+  ));
   return result[0] || null;
 }
 async function createParticipation(data) {
@@ -839,13 +857,32 @@ async function updateParticipation(id, data) {
   if (!db) throw new Error("Database not available");
   await db.update(participations).set(data).where(eq(participations.id, id));
 }
+async function softDeleteParticipation(id, deletedByUserId) {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+  const participation = await db.select().from(participations).where(eq(participations.id, id));
+  const p = participation[0];
+  if (!p) {
+    throw new Error("Participation not found");
+  }
+  await db.update(participations).set({
+    deletedAt: /* @__PURE__ */ new Date(),
+    deletedBy: deletedByUserId
+  }).where(eq(participations.id, id));
+  if (p.challengeId) {
+    const contribution = (p.contribution || 1) + (p.companionCount || 0);
+    await db.update(challenges).set({ currentValue: sql`GREATEST(${challenges.currentValue} - ${contribution}, 0)` }).where(eq(challenges.id, p.challengeId));
+    invalidateEventsCache();
+  }
+  return { success: true, challengeId: p.challengeId };
+}
 async function deleteParticipation(id) {
   const db = await getDb();
   if (!db) throw new Error("Database not available");
   const participation = await db.select().from(participations).where(eq(participations.id, id));
   const p = participation[0];
   await db.delete(participations).where(eq(participations.id, id));
-  if (p && p.challengeId) {
+  if (p && p.challengeId && !p.deletedAt) {
     const contribution = (p.contribution || 1) + (p.companionCount || 0);
     await db.update(challenges).set({ currentValue: sql`GREATEST(${challenges.currentValue} - ${contribution}, 0)` }).where(eq(challenges.id, p.challengeId));
     invalidateEventsCache();
@@ -854,19 +891,28 @@ async function deleteParticipation(id) {
 async function getParticipationCountByEventId(eventId) {
   const db = await getDb();
   if (!db) return 0;
-  const result = await db.select().from(participations).where(eq(participations.challengeId, eventId));
+  const result = await db.select().from(participations).where(and(
+    eq(participations.challengeId, eventId),
+    isNull(participations.deletedAt)
+  ));
   return result.length;
 }
 async function getTotalCompanionCountByEventId(eventId) {
   const db = await getDb();
   if (!db) return 0;
-  const result = await db.select().from(participations).where(eq(participations.challengeId, eventId));
+  const result = await db.select().from(participations).where(and(
+    eq(participations.challengeId, eventId),
+    isNull(participations.deletedAt)
+  ));
   return result.reduce((sum, p) => sum + (p.contribution || 1), 0);
 }
 async function getParticipationsByPrefecture(challengeId) {
   const db = await getDb();
   if (!db) return {};
-  const result = await db.select().from(participations).where(eq(participations.challengeId, challengeId));
+  const result = await db.select().from(participations).where(and(
+    eq(participations.challengeId, challengeId),
+    isNull(participations.deletedAt)
+  ));
   const prefectureMap = {};
   result.forEach((p) => {
     const pref = p.prefecture || "\u672A\u8A2D\u5B9A";
@@ -877,7 +923,10 @@ async function getParticipationsByPrefecture(challengeId) {
 async function getContributionRanking(challengeId, limit = 10) {
   const db = await getDb();
   if (!db) return [];
-  const result = await db.select().from(participations).where(eq(participations.challengeId, challengeId)).orderBy(desc(participations.contribution));
+  const result = await db.select().from(participations).where(and(
+    eq(participations.challengeId, challengeId),
+    isNull(participations.deletedAt)
+  )).orderBy(desc(participations.contribution));
   return result.slice(0, limit).map((p, index) => ({
     rank: index + 1,
     userId: p.userId,
@@ -892,12 +941,15 @@ async function getContributionRanking(challengeId, limit = 10) {
 async function getParticipationsByPrefectureFilter(challengeId, prefecture) {
   const db = await getDb();
   if (!db) return [];
-  return db.select().from(participations).where(sql`${participations.challengeId} = ${challengeId} AND ${participations.prefecture} = ${prefecture}`).orderBy(desc(participations.createdAt));
+  return db.select().from(participations).where(sql`${participations.challengeId} = ${challengeId} AND ${participations.prefecture} = ${prefecture} AND ${participations.deletedAt} IS NULL`).orderBy(desc(participations.createdAt));
 }
 async function getPrefectureRanking(challengeId) {
   const db = await getDb();
   if (!db) return [];
-  const result = await db.select().from(participations).where(eq(participations.challengeId, challengeId));
+  const result = await db.select().from(participations).where(and(
+    eq(participations.challengeId, challengeId),
+    isNull(participations.deletedAt)
+  ));
   const prefectureMap = {};
   result.forEach((p) => {
     const pref = p.prefecture || "\u672A\u8A2D\u5B9A";
@@ -2381,6 +2433,7 @@ __export(db_exports, {
   followUser: () => followUser,
   generateSlug: () => generateSlug,
   getAchievementPage: () => getAchievementPage,
+  getActiveParticipationById: () => getActiveParticipationById,
   getAllBadges: () => getAllBadges,
   getAllCategories: () => getAllCategories,
   getAllEvents: () => getAllEvents,
@@ -2489,6 +2542,7 @@ __export(db_exports, {
   searchChallengesForAI: () => searchChallengesForAI,
   sendCheer: () => sendCheer,
   sendDirectMessage: () => sendDirectMessage,
+  softDeleteParticipation: () => softDeleteParticipation,
   sql: () => sql,
   ticketTransfers: () => ticketTransfers,
   ticketWaitlist: () => ticketWaitlist,
@@ -3885,10 +3939,9 @@ var participationsRouter = router({
     }
     return { id: participationId };
   }),
-  // 参加表明の更新
-  update: publicProcedure.input(z2.object({
+  // 参加表明の更新（認証必須 - 自分の投稿のみ編集可能）
+  update: protectedProcedure.input(z2.object({
     id: z2.number(),
-    twitterId: z2.string().optional(),
     message: z2.string().optional(),
     prefecture: z2.string().optional(),
     gender: z2.enum(["male", "female", "unspecified"]).optional(),
@@ -3899,10 +3952,13 @@ var participationsRouter = router({
       twitterId: z2.string().optional(),
       profileImage: z2.string().optional()
     })).optional()
-  })).mutation(async ({ input }) => {
-    const participation = await getParticipationById(input.id);
+  })).mutation(async ({ ctx, input }) => {
+    const participation = await getActiveParticipationById(input.id);
     if (!participation) {
       throw new Error("\u53C2\u52A0\u8868\u660E\u304C\u898B\u3064\u304B\u308A\u307E\u305B\u3093\u3002");
+    }
+    if (participation.userId !== ctx.user.id) {
+      throw new Error("\u81EA\u5206\u306E\u53C2\u52A0\u8868\u660E\u306E\u307F\u7DE8\u96C6\u3067\u304D\u307E\u3059\u3002");
     }
     await updateParticipation(input.id, {
       message: input.message,
@@ -3924,15 +3980,29 @@ var participationsRouter = router({
     }
     return { success: true };
   }),
-  // 参加取消
+  // 参加取消（ソフトデリート）
   delete: protectedProcedure.input(z2.object({ id: z2.number() })).mutation(async ({ ctx, input }) => {
-    const participations2 = await getParticipationsByUserId(ctx.user.id);
-    const participation = participations2.find((p) => p.id === input.id);
+    const participation = await getActiveParticipationById(input.id);
     if (!participation) {
-      throw new Error("Unauthorized");
+      throw new Error("\u53C2\u52A0\u8868\u660E\u304C\u898B\u3064\u304B\u308A\u307E\u305B\u3093\u3002");
     }
-    await deleteParticipation(input.id);
+    if (participation.userId !== ctx.user.id) {
+      throw new Error("\u81EA\u5206\u306E\u53C2\u52A0\u8868\u660E\u306E\u307F\u524A\u9664\u3067\u304D\u307E\u3059\u3002");
+    }
+    await softDeleteParticipation(input.id, ctx.user.id);
     return { success: true };
+  }),
+  // ソフトデリート（明示的なAPI）
+  softDelete: protectedProcedure.input(z2.object({ id: z2.number() })).mutation(async ({ ctx, input }) => {
+    const participation = await getActiveParticipationById(input.id);
+    if (!participation) {
+      throw new Error("\u53C2\u52A0\u8868\u660E\u304C\u898B\u3064\u304B\u308A\u307E\u305B\u3093\u3002");
+    }
+    if (participation.userId !== ctx.user.id) {
+      throw new Error("\u81EA\u5206\u306E\u53C2\u52A0\u8868\u660E\u306E\u307F\u524A\u9664\u3067\u304D\u307E\u3059\u3002");
+    }
+    const result = await softDeleteParticipation(input.id, ctx.user.id);
+    return { success: true, challengeId: result.challengeId };
   }),
   // 参加をキャンセル（チケット譲渡オプション付き）
   cancel: protectedProcedure.input(z2.object({

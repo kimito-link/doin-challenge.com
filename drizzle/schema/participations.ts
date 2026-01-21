@@ -12,6 +12,10 @@ import { mysqlTable, int, varchar, text, timestamp, mysqlEnum, boolean } from "d
 
 /**
  * 参加登録テーブル
+ * 
+ * v6.40: ソフトデリート対応
+ * - deletedAt: 削除日時（nullなら有効、値があれば削除済み）
+ * - deletedBy: 削除したユーザーID（本人 or 管理者）
  */
 export const participations = mysqlTable("participations", {
   id: int("id").autoincrement().primaryKey(),
@@ -30,6 +34,9 @@ export const participations = mysqlTable("participations", {
   isAnonymous: boolean("isAnonymous").default(false).notNull(),
   createdAt: timestamp("createdAt").defaultNow().notNull(),
   updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
+  // ソフトデリート用カラム
+  deletedAt: timestamp("deletedAt"),
+  deletedBy: int("deletedBy"),
 });
 
 export type Participation = typeof participations.$inferSelect;
