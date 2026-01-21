@@ -3631,3 +3631,22 @@ features/create/
   - コールバック関数のテスト
   - 返り値の構造テスト
 - [x] テスト実行と確認（25テスト全てパス）
+
+
+## v6.28 CreateChallengeForm.tsx分割（単一責任原則）
+
+- [x] CreateChallengeForm.tsxの構造分析（428行）
+- [x] 分割計画の策定（12ファイルに分割）
+- [x] サブコンポーネントの作成
+  - types.ts: 型定義（96行）
+  - TwitterLoginSection.tsx: ログインボタン（36行）
+  - UserInfoSection.tsx: ユーザー情報表示（43行）
+  - TitleInputSection.tsx: タイトル入力（47行）
+  - DateInputSection.tsx: 日付入力（80行）
+  - VenueInputSection.tsx: 会場入力（78行）
+  - ExternalUrlSection.tsx: 外部URL入力（36行）
+  - DescriptionSection.tsx: 説明入力（39行）
+  - CreateButtonSection.tsx: 作成ボタン（45行）
+  - TemplateLinkSection.tsx: テンプレートリンク（27行）
+- [x] メインコンポーネントのリファクタリング（CreateChallengeForm.tsx: 188行）
+- [x] TypeScriptエラー0件確認
