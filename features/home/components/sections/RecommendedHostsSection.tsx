@@ -3,13 +3,14 @@
  * ホーム画面でおすすめの主催者一覧を表示する（遅延読み込み）
  */
 
-import { View, Text, ScrollView, TouchableOpacity } from "react-native";
+import { View, Text, ScrollView } from "react-native";
 import { useState, useEffect } from "react";
 import { useRouter } from "expo-router";
 import { useColors } from "@/hooks/use-colors";
 import { homeUI, homeText } from "@/features/home/ui/theme/tokens";
 import { trpc } from "@/lib/trpc";
 import { OptimizedAvatar } from "@/components/molecules/optimized-image";
+import { Button } from "@/components/ui/button";
 
 export function RecommendedHostsSection() {
   const colors = useColors();
@@ -44,10 +45,11 @@ export function RecommendedHostsSection() {
         <ScrollView horizontal showsHorizontalScrollIndicator={false}>
           <View style={{ flexDirection: "row", gap: 16 }}>
             {hosts.map((host) => (
-              <TouchableOpacity
+              <Button
                 key={host.userId}
+                variant="ghost"
                 onPress={() => router.push({ pathname: "/profile/[userId]", params: { userId: host.userId.toString() } })}
-                style={{ alignItems: "center", width: 80 }}
+                style={{ alignItems: "center", width: 80, flexDirection: "column", height: "auto", padding: 4 }}
               >
                 <OptimizedAvatar
                   source={host.profileImage ? { uri: host.profileImage } : undefined}
@@ -66,7 +68,7 @@ export function RecommendedHostsSection() {
                 <Text style={{ color: homeUI.iconBgPurple, fontSize: 9, marginTop: 2 }}>
                   {host.challengeCount}チャレンジ
                 </Text>
-              </TouchableOpacity>
+              </Button>
             ))}
           </View>
         </ScrollView>

@@ -5,10 +5,11 @@
  * - スマホ/タブレット: 横スクロール
  */
 
-import { View, Text, ScrollView, TouchableOpacity } from "react-native";
+import { View, Text, ScrollView } from "react-native";
 import { useColors } from "@/hooks/use-colors";
 import { useResponsive } from "@/hooks/use-responsive";
-import { homeUI, homeText } from "@/features/home/ui/theme/tokens";
+import { homeUI } from "@/features/home/ui/theme/tokens";
+import { Button } from "@/components/ui/button";
 
 interface Category {
   id: number;
@@ -35,22 +36,20 @@ function CategoryChip({
   const colors = useColors();
   
   return (
-    <TouchableOpacity
+    <Button
+      variant="ghost"
+      size="sm"
       onPress={onPress}
-      activeOpacity={0.7}
       style={{
         paddingHorizontal: 12,
         paddingVertical: 8,
         borderRadius: 16,
         backgroundColor: active ? homeUI.activeFilter : homeUI.inactiveFilter,
         minHeight: 36,
-        flexDirection: "row",
-        alignItems: "center",
-        gap: 6,
       }}
     >
       <Text style={{ color: colors.foreground, fontSize: 12 }}>{children}</Text>
-    </TouchableOpacity>
+    </Button>
   );
 }
 

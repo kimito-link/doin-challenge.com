@@ -5,10 +5,11 @@
  * カード形式で詳細な説明付きで選択できる
  */
 
-import { View, Text, TouchableOpacity } from "react-native";
+import { View, Text } from "react-native";
 import { useColors } from "@/hooks/use-colors";
 import { PURPOSES, type PurposeId } from "@/constants/event-categories";
-import { createUI, createText } from "../theme/tokens";
+import { createUI } from "../theme/tokens";
+import { Button } from "@/components/ui/button";
 
 interface PurposeSelectorProps {
   selectedPurpose: PurposeId | null;
@@ -30,10 +31,10 @@ export function PurposeSelector({ selectedPurpose, onSelect }: PurposeSelectorPr
         {PURPOSES.map((purpose) => {
           const isSelected = selectedPurpose === purpose.id;
           return (
-            <TouchableOpacity
+            <Button
               key={purpose.id}
+              variant={isSelected ? "primary" : "outline"}
               onPress={() => onSelect(purpose.id)}
-              activeOpacity={0.7}
               style={{
                 flexDirection: "row",
                 alignItems: "center",
@@ -43,6 +44,7 @@ export function PurposeSelector({ selectedPurpose, onSelect }: PurposeSelectorPr
                 borderWidth: 1.5,
                 borderColor: isSelected ? colors.primary : createUI.inputBorder,
                 minHeight: 56,
+                justifyContent: "flex-start",
               }}
             >
               <View
@@ -94,7 +96,7 @@ export function PurposeSelector({ selectedPurpose, onSelect }: PurposeSelectorPr
                   <Text style={{ color: "#FFFFFF", fontSize: 14 }}>✓</Text>
                 </View>
               )}
-            </TouchableOpacity>
+            </Button>
           );
         })}
       </View>

@@ -1,7 +1,8 @@
-import { View, Text, TouchableOpacity, StyleSheet, ScrollView } from "react-native";
+import { View, Text, StyleSheet, ScrollView } from "react-native";
 import MaterialIcons from "@expo/vector-icons/MaterialIcons";
 import { color } from "@/theme/tokens";
 import { useColors } from "@/hooks/use-colors";
+import { Button } from "@/components/ui/button";
 
 export type EventTab = "overview" | "messages" | "map" | "ranking";
 
@@ -40,14 +41,14 @@ export function EventTabs({
                             tab.id === "ranking" ? participantCount : 0;
 
           return (
-            <TouchableOpacity
+            <Button
               key={tab.id}
+              variant="ghost"
               onPress={() => onTabChange(tab.id)}
               style={[
                 styles.tab,
                 isActive && styles.activeTab,
               ]}
-              activeOpacity={0.7}
             >
               <MaterialIcons
                 name={tab.icon}
@@ -69,7 +70,7 @@ export function EventTabs({
                   </Text>
                 </View>
               )}
-            </TouchableOpacity>
+            </Button>
           );
         })}
       </ScrollView>
@@ -93,6 +94,7 @@ const styles = StyleSheet.create({
     gap: 6,
     borderBottomWidth: 2,
     borderBottomColor: "transparent",
+    borderRadius: 0,
   },
   activeTab: {
     borderBottomColor: color.accentPrimary,

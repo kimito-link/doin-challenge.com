@@ -3401,9 +3401,9 @@ features/create/
 ## 保守性向上（v6.23）
 
 ### 新UIコンポーネントへの置き換え
-- [ ] ホーム画面（index.tsx）のButton/Cardを新UIに置き換え
-- [ ] 作成画面（create.tsx）のButton/Cardを新UIに置き換え
-- [ ] イベント詳細画面（event/[id].tsx）のButton/Cardを新UIに置き換え
+- [x] ホーム画面（index.tsx）のButton/Cardを新UIに置き換え
+- [x] 作成画面（create.tsx）のButton/Cardを新UIに置き換え
+- [x] イベント詳細画面（event/[id].tsx）のButton/Cardを新UIに置き換え
 - [x] 設定画面（settings.tsx）のButton/Cardを新UIに置き換え
 - [x] マイページ（mypage.tsx）のButton/Cardを新UIに置き換え
 
@@ -3412,3 +3412,11 @@ features/create/
 
 ### ログの整理
 - [x] console.logをlogger関数に置き換え（lib/logger.ts作成、OAuthデバッグログは維持）
+
+
+## 残りの画面の新UI置き換え（v6.24）
+
+### 画面ごとの置き換え
+- [x] ホーム画面（index.tsx）のButton/Cardを新UIに置き換え
+- [x] 作成画面（create.tsx）のButton/Cardを新UIに置き換え
+- [x] イベント詳細画面（event/[id].tsx）のButton/Cardを新UIに置き換え

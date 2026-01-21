@@ -4,10 +4,11 @@
  * チャレンジをテンプレートとして保存するオプションUI
  */
 
-import { View, Text, TextInput, TouchableOpacity } from "react-native";
+import { View, Text, TextInput } from "react-native";
 import MaterialIcons from "@expo/vector-icons/MaterialIcons";
 import { useColors } from "@/hooks/use-colors";
 import { createUI, createText } from "../theme/tokens";
+import { Button } from "@/components/ui/button";
 
 interface TemplateSaveSectionProps {
   saveAsTemplate: boolean;
@@ -30,9 +31,10 @@ export function TemplateSaveSection({
 
   return (
     <View style={{ marginBottom: 16, backgroundColor: createUI.inputBg, borderRadius: 12, padding: 16, borderWidth: 1, borderColor: createUI.inputBorder }}>
-      <TouchableOpacity
+      <Button
+        variant="ghost"
         onPress={() => onSaveAsTemplateChange(!saveAsTemplate)}
-        style={{ flexDirection: "row", alignItems: "center", justifyContent: "space-between" }}
+        style={{ flexDirection: "row", alignItems: "center", justifyContent: "space-between", padding: 0 }}
       >
         <View style={{ flexDirection: "row", alignItems: "center" }}>
           <MaterialIcons name="bookmark" size={20} color={createText.purple} />
@@ -52,7 +54,7 @@ export function TemplateSaveSection({
         }}>
           {saveAsTemplate && <MaterialIcons name="check" size={16} color="#fff" />}
         </View>
-      </TouchableOpacity>
+      </Button>
       
       {saveAsTemplate && (
         <View style={{ marginTop: 12 }}>
@@ -71,9 +73,10 @@ export function TemplateSaveSection({
               marginBottom: 8,
             }}
           />
-          <TouchableOpacity
+          <Button
+            variant="ghost"
             onPress={() => onTemplateIsPublicChange(!templateIsPublic)}
-            style={{ flexDirection: "row", alignItems: "center" }}
+            style={{ flexDirection: "row", alignItems: "center", padding: 0, justifyContent: "flex-start" }}
           >
             <View style={{
               width: 20,
@@ -91,7 +94,7 @@ export function TemplateSaveSection({
             <Text style={{ color: colors.muted, fontSize: 13 }}>
               他のユーザーにも公開する
             </Text>
-          </TouchableOpacity>
+          </Button>
         </View>
       )}
     </View>

@@ -2,12 +2,13 @@
  * 追体験バナーコンポーネント
  * 主催者・ファンの体験を開始するためのバナー
  */
-import { View, Text, TouchableOpacity } from "react-native";
+import { View, Text } from "react-native";
 import { Image } from "expo-image";
 import { useColors } from "@/hooks/use-colors";
 import { homeUI, homeText } from "@/features/home/ui/theme/tokens";
 import { useResponsive } from "@/hooks/use-responsive";
 import { useExperience } from "@/lib/experience-context";
+import { Button } from "@/components/ui/button";
 
 export function ExperienceBanner() {
   const colors = useColors();
@@ -45,9 +46,9 @@ export function ExperienceBanner() {
         
         <View style={{ flexDirection: "row", gap: 12 }}>
           {/* 主催者視点 - りんくちゃん */}
-          <TouchableOpacity
+          <Button
+            variant="ghost"
             onPress={() => startExperience("organizer")}
-            activeOpacity={0.8}
             style={{
               flex: 1,
               backgroundColor: homeText.brand,
@@ -55,6 +56,8 @@ export function ExperienceBanner() {
               padding: 16,
               alignItems: "center",
               overflow: "hidden",
+              flexDirection: "column",
+              height: "auto",
             }}
           >
             <Image
@@ -77,12 +80,12 @@ export function ExperienceBanner() {
             }}>
               チャレンジを{"\n"}作る側の体験
             </Text>
-          </TouchableOpacity>
+          </Button>
           
           {/* ファン視点 - こん太 */}
-          <TouchableOpacity
+          <Button
+            variant="ghost"
             onPress={() => startExperience("fan")}
-            activeOpacity={0.8}
             style={{
               flex: 1,
               backgroundColor: homeUI.iconBgPurple,
@@ -90,6 +93,8 @@ export function ExperienceBanner() {
               padding: 16,
               alignItems: "center",
               overflow: "hidden",
+              flexDirection: "column",
+              height: "auto",
             }}
           >
             <Image
@@ -112,7 +117,7 @@ export function ExperienceBanner() {
             }}>
               参加表明する{"\n"}側の体験
             </Text>
-          </TouchableOpacity>
+          </Button>
         </View>
       </View>
     </View>

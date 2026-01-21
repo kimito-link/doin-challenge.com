@@ -4,10 +4,11 @@
  * ソロ/グループの選択UI
  */
 
-import { View, Text, TouchableOpacity } from "react-native";
+import { View, Text } from "react-native";
 import { useColors } from "@/hooks/use-colors";
 import { createUI } from "../theme/tokens";
 import { eventTypeOptions } from "@/constants/goal-types";
+import { Button } from "@/components/ui/button";
 
 interface EventTypeSelectorProps {
   value: string;
@@ -24,8 +25,9 @@ export function EventTypeSelector({ value, onChange }: EventTypeSelectorProps) {
       </Text>
       <View style={{ flexDirection: "row", gap: 12 }}>
         {eventTypeOptions.map((type) => (
-          <TouchableOpacity
+          <Button
             key={type.id}
+            variant={value === type.id ? "primary" : "outline"}
             onPress={() => onChange(type.id)}
             style={{
               flex: 1,
@@ -46,7 +48,7 @@ export function EventTypeSelector({ value, onChange }: EventTypeSelectorProps) {
             >
               {type.label}
             </Text>
-          </TouchableOpacity>
+          </Button>
         ))}
       </View>
     </View>

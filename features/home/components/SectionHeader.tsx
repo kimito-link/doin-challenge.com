@@ -3,10 +3,11 @@
  * ホーム画面の各セクションのタイトル表示に使用
  */
 
-import { View, Text, TouchableOpacity } from "react-native";
+import { View, Text } from "react-native";
 import MaterialIcons from "@expo/vector-icons/MaterialIcons";
 import { useColors } from "@/hooks/use-colors";
 import { homeText } from "@/features/home/ui/theme/tokens";
+import { Button } from "@/components/ui/button";
 
 interface SectionHeaderProps {
   title: string;
@@ -26,10 +27,15 @@ export function SectionHeader({ title, onSeeAll }: SectionHeaderProps) {
     }}>
       <Text style={{ color: colors.foreground, fontSize: 18, fontWeight: "bold" }}>{title}</Text>
       {onSeeAll && (
-        <TouchableOpacity onPress={onSeeAll} style={{ flexDirection: "row", alignItems: "center" }}>
+        <Button 
+          variant="ghost" 
+          size="sm" 
+          onPress={onSeeAll}
+          style={{ flexDirection: "row", alignItems: "center", paddingHorizontal: 4 }}
+        >
           <Text style={{ color: homeText.accent, fontSize: 14 }}>すべて見る</Text>
           <MaterialIcons name="chevron-right" size={20} color={homeText.accent} />
-        </TouchableOpacity>
+        </Button>
       )}
     </View>
   );

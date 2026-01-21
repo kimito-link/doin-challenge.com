@@ -4,10 +4,11 @@
  * チャレンジのカテゴリを選択するドロップダウンUI
  */
 
-import { View, Text, TouchableOpacity, ScrollView } from "react-native";
+import { View, Text, ScrollView } from "react-native";
 import MaterialIcons from "@expo/vector-icons/MaterialIcons";
 import { useColors } from "@/hooks/use-colors";
 import { createUI, createText } from "../theme/tokens";
+import { Button } from "@/components/ui/button";
 
 interface Category {
   id: number;
@@ -38,7 +39,8 @@ export function CategorySelector({
       <Text style={{ color: colors.muted, fontSize: 14, marginBottom: 8 }}>
         カテゴリ
       </Text>
-      <TouchableOpacity
+      <Button
+        variant="outline"
         onPress={onToggleList}
         style={{
           backgroundColor: colors.background,
@@ -59,7 +61,7 @@ export function CategorySelector({
           size={24}
           color={colors.muted}
         />
-      </TouchableOpacity>
+      </Button>
       {showList && categories && (
         <View
           style={{
@@ -73,16 +75,18 @@ export function CategorySelector({
         >
           <ScrollView nestedScrollEnabled={true}>
             {categories.map((category) => (
-              <TouchableOpacity
+              <Button
                 key={category.id}
+                variant="ghost"
                 onPress={() => onSelect(category.id)}
-                activeOpacity={0.7}
                 style={{
                   padding: 12,
                   borderBottomWidth: 1,
                   borderBottomColor: createUI.inputBorder,
                   minHeight: 44,
                   justifyContent: "center",
+                  alignItems: "flex-start",
+                  borderRadius: 0,
                 }}
               >
                 <Text
@@ -93,7 +97,7 @@ export function CategorySelector({
                 >
                   {category.name}
                 </Text>
-              </TouchableOpacity>
+              </Button>
             ))}
           </ScrollView>
         </View>

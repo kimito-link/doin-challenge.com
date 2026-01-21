@@ -3,9 +3,10 @@
  * ホーム画面でチャレンジのフィルタリングに使用
  */
 
-import { TouchableOpacity, Text } from "react-native";
+import { Text } from "react-native";
 import { useColors } from "@/hooks/use-colors";
 import { homeUI, homeText } from "@/features/home/ui/theme/tokens";
+import { Button } from "@/components/ui/button";
 
 interface FilterButtonProps {
   label: string;
@@ -16,7 +17,9 @@ interface FilterButtonProps {
 export function FilterButton({ label, active, onPress }: FilterButtonProps) {
   const colors = useColors();
   return (
-    <TouchableOpacity
+    <Button
+      variant="ghost"
+      size="md"
       onPress={onPress}
       style={{
         // UXガイドライン: 最小44pxのタップエリア
@@ -25,13 +28,11 @@ export function FilterButton({ label, active, onPress }: FilterButtonProps) {
         paddingVertical: 12,
         borderRadius: 22,
         backgroundColor: active ? homeText.accent : homeUI.border,
-        justifyContent: "center",
-        alignItems: "center",
       }}
     >
       <Text style={{ color: colors.foreground, fontSize: 14, fontWeight: active ? "bold" : "normal" }}>
         {label}
       </Text>
-    </TouchableOpacity>
+    </Button>
   );
 }

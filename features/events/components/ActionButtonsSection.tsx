@@ -1,9 +1,10 @@
-import { View, Text, TouchableOpacity, StyleSheet, Share, Platform } from "react-native";
+import { View, Text, StyleSheet, Share, Platform } from "react-native";
 import MaterialIcons from "@expo/vector-icons/MaterialIcons";
 import { LinearGradient } from "expo-linear-gradient";
 import * as Haptics from "expo-haptics";
 import { color } from "@/theme/tokens";
 import { useColors } from "@/hooks/use-colors";
+import { Button } from "@/components/ui/button";
 
 export type ActionButtonsSectionProps = {
   isParticipating: boolean;
@@ -63,9 +64,9 @@ export function ActionButtonsSection({
     <View style={styles.container}>
       {/* メインアクションボタン */}
       {!isParticipating ? (
-        <TouchableOpacity
+        <Button
+          variant="ghost"
           onPress={handleParticipate}
-          activeOpacity={0.8}
           style={styles.mainButtonWrapper}
         >
           <LinearGradient
@@ -77,7 +78,7 @@ export function ActionButtonsSection({
             <MaterialIcons name="how-to-reg" size={24} color={color.textWhite} />
             <Text style={styles.mainButtonText}>参加表明する</Text>
           </LinearGradient>
-        </TouchableOpacity>
+        </Button>
       ) : (
         <View style={styles.participatingBadge}>
           <MaterialIcons name="check-circle" size={20} color={color.success} />
@@ -89,49 +90,49 @@ export function ActionButtonsSection({
 
       {/* サブアクションボタン */}
       <View style={styles.subButtons}>
-        <TouchableOpacity
+        <Button
+          variant="outline"
           onPress={handleInvite}
           style={[styles.subButton, { backgroundColor: color.surface }]}
-          activeOpacity={0.7}
         >
           <MaterialIcons name="person-add" size={20} color={color.accentPrimary} />
           <Text style={[styles.subButtonText, { color: colors.foreground }]}>
             友達を招待
           </Text>
-        </TouchableOpacity>
+        </Button>
 
-        <TouchableOpacity
+        <Button
+          variant="outline"
           onPress={handleShare}
           style={[styles.subButton, { backgroundColor: color.surface }]}
-          activeOpacity={0.7}
         >
           <MaterialIcons name="share" size={20} color={color.accentPrimary} />
           <Text style={[styles.subButtonText, { color: colors.foreground }]}>
             シェア
           </Text>
-        </TouchableOpacity>
+        </Button>
       </View>
 
       {/* 主催者用ボタン */}
       {isHost && (
         <View style={styles.hostButtons}>
-          <TouchableOpacity
-            onPress={onEdit}
+          <Button
+            variant="outline"
+            onPress={onEdit ?? (() => {})}
             style={[styles.hostButton, { backgroundColor: color.surface }]}
-            activeOpacity={0.7}
           >
             <MaterialIcons name="edit" size={18} color={color.textSecondary} />
             <Text style={styles.hostButtonText}>編集</Text>
-          </TouchableOpacity>
+          </Button>
 
-          <TouchableOpacity
-            onPress={onDelete}
+          <Button
+            variant="destructive"
+            onPress={onDelete ?? (() => {})}
             style={[styles.hostButton, { backgroundColor: color.surface }]}
-            activeOpacity={0.7}
           >
             <MaterialIcons name="delete" size={18} color={color.danger} />
             <Text style={[styles.hostButtonText, { color: color.danger }]}>削除</Text>
-          </TouchableOpacity>
+          </Button>
         </View>
       )}
     </View>
@@ -146,6 +147,7 @@ const styles = StyleSheet.create({
   mainButtonWrapper: {
     borderRadius: 16,
     overflow: "hidden",
+    padding: 0,
   },
   mainButton: {
     flexDirection: "row",
@@ -153,6 +155,7 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     paddingVertical: 16,
     gap: 8,
+    width: "100%",
   },
   mainButtonText: {
     color: color.textWhite,

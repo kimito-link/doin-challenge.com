@@ -4,11 +4,12 @@
  * 動員/フォロワー/同時視聴/ポイント/カスタムの選択UI
  */
 
-import { View, Text, TouchableOpacity, ScrollView, TextInput } from "react-native";
+import { View, Text, ScrollView, TextInput } from "react-native";
 import MaterialIcons from "@expo/vector-icons/MaterialIcons";
 import { useColors } from "@/hooks/use-colors";
 import { createUI, createText } from "../theme/tokens";
 import { goalTypeOptions } from "@/constants/goal-types";
+import { Button } from "@/components/ui/button";
 
 interface GoalTypeSelectorProps {
   goalType: string;
@@ -39,8 +40,9 @@ export function GoalTypeSelector({
           style={{ marginHorizontal: -4 }}
         >
           {goalTypeOptions.map((type) => (
-            <TouchableOpacity
+            <Button
               key={type.id}
+              variant={goalType === type.id ? "primary" : "outline"}
               onPress={() => onGoalTypeChange(type.id, type.unit)}
               style={{
                 backgroundColor: goalType === type.id ? createUI.activeAccent : colors.background,
@@ -68,7 +70,7 @@ export function GoalTypeSelector({
               >
                 {type.label}
               </Text>
-            </TouchableOpacity>
+            </Button>
           ))}
         </ScrollView>
         {selectedGoalType && (

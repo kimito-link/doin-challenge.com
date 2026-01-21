@@ -1,9 +1,10 @@
-import { View, Text, TouchableOpacity, Modal, StyleSheet } from "react-native";
+import { View, Text, Modal, StyleSheet } from "react-native";
 import { Image } from "expo-image";
 import { LinearGradient } from "expo-linear-gradient";
 import { color } from "@/theme/tokens";
 import { useColors } from "@/hooks/use-colors";
 import type { Companion } from "./ParticipationForm";
+import { Button } from "@/components/ui/button";
 
 export type ConfirmationModalProps = {
   visible: boolean;
@@ -139,15 +140,18 @@ export function ConfirmationModal({
 
           {/* ボタン */}
           <View style={styles.actions}>
-            <TouchableOpacity
+            <Button
+              variant="secondary"
               onPress={onClose}
               style={styles.cancelButton}
             >
               <Text style={[styles.cancelButtonText, { color: colors.foreground }]}>戻る</Text>
-            </TouchableOpacity>
-            <TouchableOpacity
+            </Button>
+            <Button
+              variant="ghost"
               onPress={onConfirm}
               disabled={isSubmitting}
+              loading={isSubmitting}
               style={styles.confirmButton}
             >
               <LinearGradient
@@ -160,7 +164,7 @@ export function ConfirmationModal({
                   {isSubmitting ? "送信中..." : "参加表明する"}
                 </Text>
               </LinearGradient>
-            </TouchableOpacity>
+            </Button>
           </View>
         </View>
       </View>
@@ -337,10 +341,12 @@ const styles = StyleSheet.create({
     flex: 1,
     borderRadius: 12,
     overflow: "hidden",
+    padding: 0,
   },
   confirmButtonGradient: {
     padding: 16,
     alignItems: "center",
+    width: "100%",
   },
   confirmButtonDisabled: {
     opacity: 0.5,

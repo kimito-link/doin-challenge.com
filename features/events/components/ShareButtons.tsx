@@ -1,7 +1,8 @@
-import { View, Text, TouchableOpacity, StyleSheet } from "react-native";
+import { View, Text, StyleSheet } from "react-native";
 import MaterialIcons from "@expo/vector-icons/MaterialIcons";
 import { color } from "@/theme/tokens";
 import { useColors } from "@/hooks/use-colors";
+import { Button } from "@/components/ui/button";
 
 export type ShareButtonsProps = {
   onShare: () => void;
@@ -24,32 +25,36 @@ export function ShareButtons({
         このチャレンジをシェア
       </Text>
       <View style={styles.buttons}>
-        <TouchableOpacity
+        <Button
+          variant="primary"
           onPress={onShare}
           style={styles.shareButton}
         >
           <MaterialIcons name="share" size={20} color={colors.foreground} />
           <Text style={[styles.shareButtonText, { color: colors.foreground }]}>シェア</Text>
-        </TouchableOpacity>
+        </Button>
         
-        <TouchableOpacity
+        <Button
+          variant="primary"
           onPress={onTwitterShare}
           style={[styles.shareButton, styles.twitterButton]}
         >
           <MaterialIcons name="tag" size={20} color={colors.foreground} />
           <Text style={[styles.shareButtonText, { color: colors.foreground }]}>X投稿</Text>
-        </TouchableOpacity>
+        </Button>
         
-        <TouchableOpacity
+        <Button
+          variant="primary"
           onPress={onShareWithOgp}
           disabled={isGeneratingOgp}
-          style={[styles.shareButton, styles.ogpButton, isGeneratingOgp && styles.shareButtonDisabled]}
+          loading={isGeneratingOgp}
+          style={[styles.shareButton, styles.ogpButton]}
         >
           <MaterialIcons name="image" size={20} color={colors.foreground} />
           <Text style={[styles.shareButtonText, { color: colors.foreground }]}>
             {isGeneratingOgp ? "生成中..." : "OGP付き"}
           </Text>
-        </TouchableOpacity>
+        </Button>
       </View>
     </View>
   );
@@ -88,9 +93,6 @@ const styles = StyleSheet.create({
   },
   ogpButton: {
     backgroundColor: color.accentAlt,
-  },
-  shareButtonDisabled: {
-    opacity: 0.5,
   },
   shareButtonText: {
     fontSize: 13,

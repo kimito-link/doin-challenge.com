@@ -5,10 +5,11 @@
  * チップ形式で視覚的に選択できる
  */
 
-import { View, Text, TouchableOpacity, ScrollView } from "react-native";
+import { View, Text, ScrollView } from "react-native";
 import { useColors } from "@/hooks/use-colors";
 import { GENRES, type GenreId } from "@/constants/event-categories";
-import { createUI, createText } from "../theme/tokens";
+import { createUI } from "../theme/tokens";
+import { Button } from "@/components/ui/button";
 
 interface GenreSelectorProps {
   selectedGenre: GenreId | null;
@@ -35,10 +36,10 @@ export function GenreSelector({ selectedGenre, onSelect }: GenreSelectorProps) {
           {GENRES.map((genre) => {
             const isSelected = selectedGenre === genre.id;
             return (
-              <TouchableOpacity
+              <Button
                 key={genre.id}
+                variant={isSelected ? "primary" : "outline"}
                 onPress={() => onSelect(genre.id)}
-                activeOpacity={0.7}
                 style={{
                   flexDirection: "row",
                   alignItems: "center",
@@ -61,7 +62,7 @@ export function GenreSelector({ selectedGenre, onSelect }: GenreSelectorProps) {
                 >
                   {genre.label}
                 </Text>
-              </TouchableOpacity>
+              </Button>
             );
           })}
         </View>
