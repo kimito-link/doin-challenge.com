@@ -1,10 +1,9 @@
-import { Text, View, Pressable, Platform } from "react-native";
-import * as Haptics from "expo-haptics";
+import { Text, View, Platform } from "react-native";
 import { color, palette } from "@/theme/tokens";
 import { Image } from "expo-image";
 import { useRouter } from "expo-router";
 import { ScreenContainer } from "@/components/organisms/screen-container";
-import MaterialIcons from "@expo/vector-icons/MaterialIcons";
+import { Button } from "@/components/ui/button";
 
 // 画像アセット
 const APP_LOGO = require("@/assets/images/logos/kimitolink-logo.jpg");
@@ -71,33 +70,23 @@ export default function NotFoundScreen() {
 
         {/* ボタン */}
         <View className="w-full max-w-sm gap-3">
-          <Pressable
-            onPress={() => {
-              if (Platform.OS !== "web") Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-              router.replace("/");
-            }}
-            style={({ pressed }) => [{ opacity: pressed ? 0.8 : 1 }]}
-            className="bg-primary rounded-xl py-4 px-6 flex-row items-center justify-center"
+          <Button
+            onPress={() => router.replace("/")}
+            variant="primary"
+            icon="home"
+            fullWidth
           >
-            <MaterialIcons name="home" size={20} color={color.textWhite} />
-            <Text className="text-white text-base font-bold ml-2">
-              ホームに戻る
-            </Text>
-          </Pressable>
+            ホームに戻る
+          </Button>
 
-          <Pressable
-            onPress={() => {
-              if (Platform.OS !== "web") Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-              handleGoBack();
-            }}
-            style={({ pressed }) => [{ opacity: pressed ? 0.8 : 1 }]}
-            className="bg-surface rounded-xl py-4 px-6 flex-row items-center justify-center border border-border"
+          <Button
+            onPress={handleGoBack}
+            variant="secondary"
+            icon="arrow-back"
+            fullWidth
           >
-            <MaterialIcons name="arrow-back" size={20} color={color.textSubtle} />
-            <Text className="text-muted text-base font-bold ml-2">
-              前のページに戻る
-            </Text>
-          </Pressable>
+            前のページに戻る
+          </Button>
         </View>
       </View>
     </ScreenContainer>

@@ -1,6 +1,7 @@
 // components/organisms/ticket-transfer-section/lists.tsx
 // v6.18: チケット譲渡のリスト表示コンポーネント
-import { View, Text, Pressable, Alert, Linking } from "react-native";
+import { View, Text, Pressable, Alert, Linking , Platform} from "react-native";
+import * as Haptics from "expo-haptics";
 import { Image } from "expo-image";
 import MaterialIcons from "@expo/vector-icons/MaterialIcons";
 import { color } from "@/theme/tokens";

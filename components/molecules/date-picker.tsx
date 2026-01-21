@@ -148,7 +148,7 @@ export function DatePicker({ value, onChange, placeholder = "日付を選択", m
           onPress={handlePrevMonth} 
           style={({ pressed }) => [
             styles.navButton,
-            pressed && { opacity: 0.7 },
+            pressed && { opacity: 0.7, transform: [{ scale: 0.97 }] },
           ]}
           accessibilityLabel="前の月"
         >
@@ -161,7 +161,7 @@ export function DatePicker({ value, onChange, placeholder = "日付を選択", m
           onPress={handleNextMonth} 
           style={({ pressed }) => [
             styles.navButton,
-            pressed && { opacity: 0.7 },
+            pressed && { opacity: 0.7, transform: [{ scale: 0.97 }] },
           ]}
           accessibilityLabel="次の月"
         >
@@ -223,7 +223,7 @@ export function DatePicker({ value, onChange, placeholder = "日付を選択", m
         }}
         style={({ pressed }) => [
           styles.todayButton,
-          pressed && { opacity: 0.7 },
+          pressed && { opacity: 0.7, transform: [{ scale: 0.97 }] },
         ]}
         accessibilityLabel="今日の日付に移動"
       >
@@ -235,7 +235,7 @@ export function DatePicker({ value, onChange, placeholder = "日付を選択", m
         onPress={() => setShowCalendar(false)}
         style={({ pressed }) => [
           styles.closeButton,
-          pressed && { opacity: 0.7 },
+          pressed && { opacity: 0.7, transform: [{ scale: 0.97 }] },
         ]}
         accessibilityLabel="カレンダーを閉じる"
       >
@@ -256,7 +256,7 @@ export function DatePicker({ value, onChange, placeholder = "日付を選択", m
         }}
         style={({ pressed }) => [
           styles.inputContainer,
-          pressed && { opacity: 0.7 },
+          pressed && { opacity: 0.7, transform: [{ scale: 0.97 }] },
         ]}
         accessibilityLabel={value ? `開催日: ${formatDisplayDate(value)}` : "開催日を選択"}
         accessibilityHint="タップしてカレンダーを開く"

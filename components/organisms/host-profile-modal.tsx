@@ -103,7 +103,7 @@ export function HostProfileModal({
           <Pressable
             style={({ pressed }) => [
               styles.closeButton,
-              pressed && { opacity: 0.7 },
+              pressed && { opacity: 0.7, transform: [{ scale: 0.97 }] },
             ]}
             onPress={handleClose}
           >
@@ -125,7 +125,7 @@ export function HostProfileModal({
                 style={({ pressed }) => [
                   styles.retryButton,
                   { backgroundColor: colors.primary },
-                  pressed && { opacity: 0.8 },
+                  pressed && { opacity: 0.8, transform: [{ scale: 0.97 }] },
                 ]}
                 onPress={loadProfile}
               >
@@ -198,7 +198,7 @@ export function HostProfileModal({
                 style={({ pressed }) => [
                   styles.twitterButton,
                   { backgroundColor: color.twitter },
-                  pressed && { opacity: 0.8 },
+                  pressed && { opacity: 0.8, transform: [{ scale: 0.97 }] },
                 ]}
                 onPress={handleOpenTwitter}
               >

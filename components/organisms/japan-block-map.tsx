@@ -155,7 +155,7 @@ export function JapanBlockMap({ prefectureCounts, onPrefecturePress, onRegionPre
                   borderColor: total > 0 ? color.mapHighlight : "transparent",
                   borderWidth: total > 0 ? 3 : 0,
                 },
-                pressed && { opacity: 0.7 },
+                pressed && { opacity: 0.7, transform: [{ scale: 0.97 }] },
               ]}
               onPress={() => {
                 if (Platform.OS !== "web") Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);

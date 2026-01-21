@@ -241,7 +241,7 @@ export function JapanDeformedMap({ prefectureCounts, onPrefecturePress, onRegion
                   shadowRadius: 4,
                   elevation: color.hasParticipants ? 5 : 0,
                 },
-                pressed && { opacity: 0.7 },
+                pressed && { opacity: 0.7, transform: [{ scale: 0.97 }] },
               ]}
               onPress={() => {
                 if (Platform.OS !== "web") Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);

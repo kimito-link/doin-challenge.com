@@ -69,7 +69,7 @@ export const MemoizedChallengeCard = memo<MemoizedChallengeCardProps>(
         style={({ pressed }) => [
           styles.card,
           { width: cardWidth as any },
-          pressed && { opacity: 0.8 },
+          pressed && { opacity: 0.8, transform: [{ scale: 0.97 }] },
         ]}
       >
         {/* グラデーション背景 */}

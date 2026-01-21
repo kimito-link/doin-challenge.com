@@ -158,7 +158,7 @@ export function LoginPromptModal({ visible, onLogin, onSkip }: LoginPromptModalP
             onPress={handleMainAction}
             style={({ pressed }) => [
               styles.mainButton,
-              pressed && { opacity: 0.8 },
+              pressed && { opacity: 0.8, transform: [{ scale: 0.97 }] },
             ]}
           >
             <LinearGradient
@@ -176,7 +176,7 @@ export function LoginPromptModal({ visible, onLogin, onSkip }: LoginPromptModalP
             onPress={handleLogin}
             style={({ pressed }) => [
               styles.loginButton,
-              pressed && { opacity: 0.8 },
+              pressed && { opacity: 0.8, transform: [{ scale: 0.97 }] },
             ]}
           >
             <Text style={[styles.loginButtonText, { color: colors.foreground }]}>
@@ -194,7 +194,7 @@ export function LoginPromptModal({ visible, onLogin, onSkip }: LoginPromptModalP
             onPress={handleSkip}
             style={({ pressed }) => [
               styles.skipButton,
-              pressed && { opacity: 0.7 },
+              pressed && { opacity: 0.7, transform: [{ scale: 0.97 }] },
             ]}
           >
             <Text style={[styles.skipButtonText, { color: colors.muted }]}>

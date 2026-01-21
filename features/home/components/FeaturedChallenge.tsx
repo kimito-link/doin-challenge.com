@@ -2,7 +2,8 @@
  * 注目のチャレンジコンポーネント
  * ホーム画面のトップに表示される注目チャレンジカード
  */
-import { View, Text } from "react-native";
+import { View, Text , Platform} from "react-native";
+import * as Haptics from "expo-haptics";
 import { Image } from "expo-image";
 import { LinearGradient } from "expo-linear-gradient";
 import { useColors } from "@/hooks/use-colors";

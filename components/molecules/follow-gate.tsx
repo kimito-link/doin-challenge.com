@@ -5,6 +5,7 @@ import { Image } from "expo-image";
 import MaterialIcons from "@expo/vector-icons/MaterialIcons";
 import { LinearGradient } from "expo-linear-gradient";
 import * as Haptics from "expo-haptics";
+import { Button, IconButton } from "@/components/ui/button";
 
 // キャラクター画像
 const characterImages = {
@@ -70,7 +71,7 @@ export function FollowGate({
         }}
         style={({ pressed }) => [
           { flex: 1 },
-          pressed && { opacity: 0.9 },
+          pressed && { opacity: 0.9, transform: [{ scale: 0.97 }] },
         ]}
       >
         <View style={{ flex: 1, opacity: 0.5 }}>
@@ -109,7 +110,7 @@ export function FollowGate({
               textAlign: "center",
             }}
           >
-            @{targetUsername}をフォローすると{"\n"}この機能が使えるようになります
+            タップして詳細を確認
           </Text>
         </View>
       </Pressable>
@@ -135,49 +136,38 @@ export function FollowGate({
               borderRadius: 24,
               padding: 24,
               width: "100%",
-              maxWidth: 340,
+              maxWidth: 400,
               alignItems: "center",
             }}
           >
-            <LinearGradient
-              colors={[color.accentPrimary, color.accentAlt]}
-              start={{ x: 0, y: 0 }}
-              end={{ x: 1, y: 0 }}
-              style={{
-                position: "absolute",
-                top: 0,
-                left: 0,
-                right: 0,
-                height: 4,
-                borderTopLeftRadius: 24,
-                borderTopRightRadius: 24,
-              }}
-            />
-
+            {/* キャラクター */}
             <Image
               source={characterImages.linkYukkuri}
               style={{ width: 80, height: 80, marginBottom: 16 }}
               contentFit="contain"
             />
 
-            <Text
+            {/* タイトル */}
+            <View
               style={{
-                color: color.textWhite,
-                fontSize: 20,
-                fontWeight: "bold",
-                textAlign: "center",
+                backgroundColor: color.accentPrimary,
+                borderRadius: 20,
+                paddingHorizontal: 16,
+                paddingVertical: 6,
+                marginBottom: 16,
               }}
             >
-              フォローをお願いします！
-            </Text>
+              <Text style={{ color: color.textWhite, fontSize: 14, fontWeight: "bold" }}>
+                プレミアム機能
+              </Text>
+            </View>
 
             <Text
               style={{
-                color: color.textMuted,
-                fontSize: 14,
+                color: color.textWhite,
+                fontSize: 16,
                 textAlign: "center",
-                marginTop: 12,
-                lineHeight: 22,
+                lineHeight: 24,
               }}
             >
               この機能を使うには{"\n"}
@@ -187,99 +177,51 @@ export function FollowGate({
               {"\n"}をフォローしてください
             </Text>
 
-            <Pressable
-              onPress={handleFollowPress}
-              style={({ pressed }) => [
-                {
-                  backgroundColor: color.twitter,
-                  borderRadius: 12,
-                  paddingVertical: 14,
-                  paddingHorizontal: 32,
-                  marginTop: 24,
-                  flexDirection: "row",
-                  alignItems: "center",
-                },
-                pressed && { opacity: 0.7 },
-              ]}
-            >
-              <MaterialIcons name="person-add" size={20} color={color.textWhite} />
-              <Text
-                style={{
-                  color: color.textWhite,
-                  fontSize: 16,
-                  fontWeight: "bold",
-                  marginLeft: 8,
-                }}
+            <View style={{ width: "100%", marginTop: 24, gap: 12 }}>
+              <Button
+                onPress={handleFollowPress}
+                variant="primary"
+                icon="person-add"
+                fullWidth
+                style={{ backgroundColor: color.twitter }}
               >
                 {targetDisplayName}をフォロー
-              </Text>
-            </Pressable>
+              </Button>
 
-            {/* 再ログインボタン */}
-            {onRelogin && (
-              <Pressable
-                onPress={() => {
-                  triggerHaptic();
-                  onRelogin();
-                }}
-                disabled={refreshing}
-                style={({ pressed }) => [
-                  {
-                    backgroundColor: color.borderAlt,
-                    borderRadius: 12,
-                    paddingVertical: 12,
-                    paddingHorizontal: 24,
-                    marginTop: 12,
-                    flexDirection: "row",
-                    alignItems: "center",
-                    opacity: refreshing ? 0.6 : 1,
-                  },
-                  pressed && !refreshing && { opacity: 0.7 },
-                ]}
-              >
-                <MaterialIcons name="refresh" size={18} color={color.textWhite} />
-                <Text
-                  style={{
-                    color: color.textWhite,
-                    fontSize: 14,
-                    marginLeft: 8,
+              {/* 再ログインボタン */}
+              {onRelogin && (
+                <Button
+                  onPress={() => {
+                    triggerHaptic();
+                    onRelogin();
                   }}
+                  disabled={refreshing}
+                  loading={refreshing}
+                  variant="secondary"
+                  icon="refresh"
+                  fullWidth
                 >
-                  {refreshing ? "確認中..." : "フォロー状態を再確認"}
-                </Text>
-              </Pressable>
-            )}
+                  フォロー状態を再確認
+                </Button>
+              )}
 
-            <Pressable
-              onPress={handleRefresh}
-              style={({ pressed }) => [
-                {
-                  marginTop: 16,
-                  paddingVertical: 12,
-                  paddingHorizontal: 24,
-                },
-                pressed && { opacity: 0.7 },
-              ]}
-            >
-              <Text style={{ color: color.textMuted, fontSize: 14 }}>
+              <Button
+                onPress={handleRefresh}
+                variant="ghost"
+                fullWidth
+              >
                 フォロー済みの方はタップして更新
-              </Text>
-            </Pressable>
+              </Button>
+            </View>
 
-            <Pressable
-              onPress={() => setShowModal(false)}
-              style={({ pressed }) => [
-                {
-                  position: "absolute",
-                  top: 16,
-                  right: 16,
-                  padding: 8,
-                },
-                pressed && { opacity: 0.7 },
-              ]}
-            >
-              <MaterialIcons name="close" size={24} color={color.textSubtle} />
-            </Pressable>
+            <View style={{ position: "absolute", top: 16, right: 16 }}>
+              <IconButton
+                onPress={() => setShowModal(false)}
+                icon="close"
+                variant="ghost"
+                accessibilityLabel="閉じる"
+              />
+            </View>
           </View>
         </View>
       </Modal>
@@ -335,7 +277,7 @@ export function FollowPromptBanner({
       <Pressable
         onPress={handlePress}
         style={({ pressed }) => [
-          pressed && { opacity: 0.7 },
+          pressed && { opacity: 0.7, transform: [{ scale: 0.97 }] },
         ]}
       >
         <View style={{ flexDirection: "row", alignItems: "center" }}>
@@ -365,32 +307,22 @@ export function FollowPromptBanner({
       
       {/* フォロー済みの場合の再確認ボタン */}
       {onRelogin && (
-        <Pressable
-          onPress={() => {
-            triggerHaptic();
-            onRelogin();
-          }}
-          disabled={refreshing}
-          style={({ pressed }) => [
-            {
-              marginTop: 12,
-              paddingVertical: 10,
-              paddingHorizontal: 16,
-              backgroundColor: color.borderAlt,
-              borderRadius: 8,
-              flexDirection: "row",
-              alignItems: "center",
-              justifyContent: "center",
-              opacity: refreshing ? 0.6 : 1,
-            },
-            pressed && !refreshing && { opacity: 0.7 },
-          ]}
-        >
-          <MaterialIcons name="refresh" size={16} color={color.textWhite} />
-          <Text style={{ color: color.textPrimary, fontSize: 13, marginLeft: 6 }}>
-            {refreshing ? "確認中..." : "フォロー済みの方はタップして再確認"}
-          </Text>
-        </Pressable>
+        <View style={{ marginTop: 12 }}>
+          <Button
+            onPress={() => {
+              triggerHaptic();
+              onRelogin();
+            }}
+            disabled={refreshing}
+            loading={refreshing}
+            variant="secondary"
+            icon="refresh"
+            size="sm"
+            fullWidth
+          >
+            フォロー済みの方はタップして再確認
+          </Button>
+        </View>
       )}
     </View>
   );
@@ -399,54 +331,36 @@ export function FollowPromptBanner({
 /**
  * フォロー状態バッジコンポーネント
  */
-export function FollowStatusBadge({ isFollowing }: { isFollowing: boolean }) {
-  if (isFollowing) {
-    return (
-      <View
-        style={{
-          flexDirection: "row",
-          alignItems: "center",
-          backgroundColor: `${color.success}20`,
-          paddingHorizontal: 8,
-          paddingVertical: 4,
-          borderRadius: 8,
-        }}
-      >
-        <MaterialIcons name="verified" size={14} color={color.success} />
-        <Text
-          style={{
-            color: color.success,
-            fontSize: 12,
-            fontWeight: "bold",
-            marginLeft: 4,
-          }}
-        >
-          プレミアム
-        </Text>
-      </View>
-    );
-  }
-
+export function FollowStatusBadge({
+  isFollowing,
+}: {
+  isFollowing: boolean;
+}) {
   return (
     <View
       style={{
         flexDirection: "row",
         alignItems: "center",
-        backgroundColor: `${color.accentPrimary}20`,
+        backgroundColor: isFollowing ? color.success + "20" : color.warning + "20",
+        borderRadius: 12,
         paddingHorizontal: 8,
         paddingVertical: 4,
-        borderRadius: 8,
       }}
     >
-      <MaterialIcons name="star-outline" size={14} color={color.accentPrimary} />
+      <MaterialIcons
+        name={isFollowing ? "check-circle" : "warning"}
+        size={14}
+        color={isFollowing ? color.success : color.warning}
+      />
       <Text
         style={{
-          color: color.accentPrimary,
+          color: isFollowing ? color.success : color.warning,
           fontSize: 12,
+          fontWeight: "bold",
           marginLeft: 4,
         }}
       >
-        フォローで特典
+        {isFollowing ? "フォロー中" : "未フォロー"}
       </Text>
     </View>
   );

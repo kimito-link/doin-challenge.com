@@ -1,4 +1,5 @@
-import { Text, View, Pressable, ScrollView, Dimensions } from "react-native";
+import { Text, View, Pressable, ScrollView, Dimensions , Platform} from "react-native";
+import * as Haptics from "expo-haptics";
 import { color, palette } from "@/theme/tokens";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import { ScreenContainer } from "@/components/organisms/screen-container";

@@ -204,7 +204,7 @@ export function UserTypeSelector({ visible, onSelect, onSkip }: UserTypeSelector
             onPress={onSkip}
             style={({ pressed }) => [
               styles.skipButton,
-              pressed && { opacity: 0.7 },
+              pressed && { opacity: 0.7, transform: [{ scale: 0.97 }] },
             ]}
           >
             <Text style={styles.skipText}>あとで見る</Text>

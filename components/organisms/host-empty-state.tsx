@@ -79,7 +79,7 @@ export function HostEmptyState() {
         onPress={handlePress}
         style={({ pressed }) => [
           styles.button,
-          pressed && { opacity: 0.8 },
+          pressed && { opacity: 0.8, transform: [{ scale: 0.97 }] },
         ]}
       >
         <Text style={styles.buttonText}>最初のチャレンジを作る</Text>

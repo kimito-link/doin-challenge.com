@@ -143,7 +143,7 @@ export function JapanMap({ prefectureCounts, onPrefecturePress, selectedPrefectu
                 marginBottom: 8,
                 borderWidth: isHot ? 2 : 1,
                 borderColor: isHot ? color.accentPrimary : count > 0 ? `rgba(236, 72, 153, ${0.3 + intensity * 0.5})` : color.border,
-              }, pressed && { opacity: 0.7 }]}
+              }, pressed && { opacity: 0.7, transform: [{ scale: 0.97 }] }]}
             >
               <View style={{ flexDirection: "row", alignItems: "center", justifyContent: "space-between" }}>
                 <View style={{ flexDirection: "row", alignItems: "center" }}>

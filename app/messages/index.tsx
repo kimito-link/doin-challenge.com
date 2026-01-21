@@ -1,4 +1,5 @@
 import { View, Text, FlatList, Pressable, Image, Platform } from "react-native";
+import * as Haptics from "expo-haptics";
 import { useRouter } from "expo-router";
 import { ScreenContainer } from "@/components/organisms/screen-container";
 import { trpc } from "@/lib/trpc";

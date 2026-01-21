@@ -4,6 +4,13 @@
 
 - [x] TouchableOpacityをPressableに置き換え（全ファイル完了）
 
+## v6.21 UI統一化（続き）
+
+- [x] Pressableのスタイル統一（pressed状態でのopacity/scale変更）
+- [x] Hapticsの追加（27ファイルにexpo-hapticsインポート追加）
+- [x] 新UIのButtonコンポーネント活用（+not-found, logout, follow-gate等に適用）
+- [x] PressableFeedbackラッパーコンポーネント作成（components/ui/pressable-feedback.tsx）
+
 ## 完了済み（v1.0 生誕祭アプリ）
 - [x] テーマカラーの設定（KimitoLinkブランドカラー）
 - [x] 基本的なデータベーススキーマ
@@ -3484,3 +3491,9 @@ features/create/
 - [ ] SearchBar.tsx
 - [ ] HostedChallengeSection.tsx
 - [ ] ParticipationSection.tsx
+
+## v6.21 UI統一化（続き）
+
+- [ ] Pressableのスタイル統一（pressed状態でのopacity/scale変更）
+- [ ] Hapticsの追加（重要なボタンにハプティクスフィードバック）
+- [ ] 新UIのButtonコンポーネント活用（統一Buttonコンポーネントへの置き換え）

@@ -79,7 +79,7 @@ export function FanEmptyState() {
         onPress={handlePress}
         style={({ pressed }) => [
           styles.button,
-          pressed && { opacity: 0.8 },
+          pressed && { opacity: 0.8, transform: [{ scale: 0.97 }] },
         ]}
       >
         <Text style={styles.buttonText}>推しを探しに行く</Text>

@@ -1,4 +1,5 @@
-import { View, Text, Pressable, Modal, ScrollView, useWindowDimensions } from "react-native";
+import { View, Text, Pressable, Modal, ScrollView, useWindowDimensions , Platform} from "react-native";
+import * as Haptics from "expo-haptics";
 import { color } from "@/theme/tokens";
 import { useMemo, useState, useEffect } from "react";
 import Animated, { 

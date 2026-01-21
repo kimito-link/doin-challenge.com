@@ -73,7 +73,7 @@ export function FilterTabs({
                   paddingHorizontal: sizeStyles.paddingHorizontal,
                   paddingVertical: sizeStyles.paddingVertical,
                 },
-                pressed && { opacity: 0.7 },
+                pressed && { opacity: 0.7, transform: [{ scale: 0.97 }] },
               ]}
             >
               <Text
@@ -117,7 +117,7 @@ export function FilterTabs({
                   paddingHorizontal: sizeStyles.paddingHorizontal,
                   paddingVertical: sizeStyles.paddingVertical,
                 },
-                pressed && { opacity: 0.7 },
+                pressed && { opacity: 0.7, transform: [{ scale: 0.97 }] },
               ]}
             >
               <Text
@@ -155,7 +155,7 @@ export function FilterTabs({
                 paddingHorizontal: sizeStyles.paddingHorizontal,
                 paddingVertical: sizeStyles.paddingVertical,
               },
-              pressed && { opacity: 0.7 },
+              pressed && { opacity: 0.7, transform: [{ scale: 0.97 }] },
             ]}
           >
             <Text

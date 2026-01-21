@@ -80,7 +80,7 @@ export default function AchievementPage() {
               if (Platform.OS !== "web") Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
               router.back();
             }}
-            style={({ pressed }) => [{ marginTop: 16, paddingHorizontal: 24, paddingVertical: 12, backgroundColor: color.accentPrimary, borderRadius: 24 }, pressed && { opacity: 0.8 }]}
+            style={({ pressed }) => [{ marginTop: 16, paddingHorizontal: 24, paddingVertical: 12, backgroundColor: color.accentPrimary, borderRadius: 24 }, pressed && { opacity: 0.8, transform: [{ scale: 0.97 }] }]}
           >
             <Text style={{ color: colors.foreground, fontWeight: "bold" }}>戻る</Text>
           </Pressable>
@@ -102,12 +102,12 @@ export default function AchievementPage() {
           showCharacters={false}
           rightElement={
             <View style={{ flexDirection: "row", alignItems: "center", gap: 16 }}>
-              <Pressable onPress={() => { if (Platform.OS !== "web") Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light); handleShare(); }} style={({ pressed }) => [pressed && { opacity: 0.7 }]}>
+              <Pressable onPress={() => { if (Platform.OS !== "web") Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light); handleShare(); }} style={({ pressed }) => [pressed && { opacity: 0.7, transform: [{ scale: 0.97 }] }]}>
                 <MaterialIcons name="share" size={24} color={colors.foreground} />
               </Pressable>
               <Pressable
                 onPress={() => { if (Platform.OS !== "web") Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light); router.back(); }}
-                style={({ pressed }) => [{ flexDirection: "row", alignItems: "center" }, pressed && { opacity: 0.7 }]}
+                style={({ pressed }) => [{ flexDirection: "row", alignItems: "center" }, pressed && { opacity: 0.7, transform: [{ scale: 0.97 }] }]}
               >
                 <MaterialIcons name="arrow-back" size={24} color={colors.foreground} />
                 <Text style={{ color: colors.foreground, marginLeft: 8 }}>戻る</Text>
@@ -295,7 +295,7 @@ export default function AchievementPage() {
                   backgroundColor: color.border,
                   borderRadius: 12,
                   alignItems: "center",
-                }, pressed && { opacity: 0.7 }]}
+                }, pressed && { opacity: 0.7, transform: [{ scale: 0.97 }] }]}
               >
                 <Text style={{ color: color.accentPrimary, fontWeight: "bold" }}>
                   すべての参加者を見る ({participations.length - 20}人)
@@ -335,7 +335,7 @@ export default function AchievementPage() {
               backgroundColor: color.twitter,
               paddingVertical: 16,
               borderRadius: 24,
-            }, pressed && { opacity: 0.8 }]}
+            }, pressed && { opacity: 0.8, transform: [{ scale: 0.97 }] }]}
           >
             <MaterialIcons name="share" size={20} color={colors.foreground} />
             <Text style={{ color: colors.foreground, fontSize: 16, fontWeight: "bold", marginLeft: 8 }}>

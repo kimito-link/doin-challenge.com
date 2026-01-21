@@ -328,7 +328,7 @@ export function LoginSuccessModal({
                     borderRadius: 24,
                     backgroundColor: color.border,
                   },
-                  pressed && { opacity: 0.7 },
+                  pressed && { opacity: 0.7, transform: [{ scale: 0.97 }] },
                 ]}
               >
                 <Text style={{ color: color.textMuted, fontSize: 14 }}>

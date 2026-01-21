@@ -116,7 +116,7 @@ export function ExportButton({ data, disabled = false }: ExportButtonProps) {
                 onPress={closeModal} 
                 style={({ pressed }) => [
                   styles.closeButton,
-                  pressed && { opacity: 0.7 },
+                  pressed && { opacity: 0.7, transform: [{ scale: 0.97 }] },
                 ]}
               >
                 <MaterialIcons name="close" size={24} color={color.textMuted} />
@@ -130,7 +130,7 @@ export function ExportButton({ data, disabled = false }: ExportButtonProps) {
                 disabled={exporting}
                 style={({ pressed }) => [
                   styles.optionItem,
-                  pressed && { opacity: 0.7 },
+                  pressed && { opacity: 0.7, transform: [{ scale: 0.97 }] },
                 ]}
               >
                 <View style={[styles.optionIcon, { backgroundColor: color.successDark }]}>
@@ -151,7 +151,7 @@ export function ExportButton({ data, disabled = false }: ExportButtonProps) {
                 disabled={exporting}
                 style={({ pressed }) => [
                   styles.optionItem,
-                  pressed && { opacity: 0.7 },
+                  pressed && { opacity: 0.7, transform: [{ scale: 0.97 }] },
                 ]}
               >
                 <View style={[styles.optionIcon, { backgroundColor: color.accentPrimary }]}>
@@ -173,7 +173,7 @@ export function ExportButton({ data, disabled = false }: ExportButtonProps) {
                   disabled={exporting}
                   style={({ pressed }) => [
                     styles.optionItem,
-                    pressed && { opacity: 0.7 },
+                    pressed && { opacity: 0.7, transform: [{ scale: 0.97 }] },
                   ]}
                 >
                   <View style={[styles.optionIcon, { backgroundColor: color.accentAlt }]}>

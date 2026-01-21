@@ -91,7 +91,7 @@ export function EncouragementModal({
           <Pressable 
             style={({ pressed }) => [
               styles.closeButton,
-              pressed && { opacity: 0.7 },
+              pressed && { opacity: 0.7, transform: [{ scale: 0.97 }] },
             ]}
             onPress={handleClose}
           >
@@ -114,7 +114,7 @@ export function EncouragementModal({
           <Pressable
             style={({ pressed }) => [
               styles.actionButton,
-              pressed && { opacity: 0.7 },
+              pressed && { opacity: 0.7, transform: [{ scale: 0.97 }] },
             ]}
             onPress={handleClose}
           >

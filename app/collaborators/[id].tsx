@@ -1,4 +1,5 @@
-import { Text, View, Pressable, ScrollView, TextInput, Alert } from "react-native";
+import { Text, View, Pressable, ScrollView, TextInput, Alert , Platform} from "react-native";
+import * as Haptics from "expo-haptics";
 import { color, palette } from "@/theme/tokens";
 import { Image } from "expo-image";
 import { useLocalSearchParams, useRouter } from "expo-router";

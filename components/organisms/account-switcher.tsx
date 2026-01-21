@@ -214,7 +214,7 @@ export function AccountSwitcher({ visible, onClose }: AccountSwitcherProps) {
                 if (Platform.OS !== "web") Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
                 onClose();
               }}
-              style={({ pressed }) => pressed && { opacity: 0.7 }}
+              style={({ pressed }) => pressed && { opacity: 0.7, transform: [{ scale: 0.97 }] }}
             >
               <Text style={[styles.closeButton, { color: colors.muted }]}>✕</Text>
             </Pressable>
@@ -316,7 +316,7 @@ export function AccountSwitcher({ visible, onClose }: AccountSwitcherProps) {
                       }}
                       style={({ pressed }) => [
                         styles.removeButton,
-                        pressed && { opacity: 0.7 },
+                        pressed && { opacity: 0.7, transform: [{ scale: 0.97 }] },
                       ]}
                     >
                       <MaterialIcons name="close" size={18} color={colors.error} />

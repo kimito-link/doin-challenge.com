@@ -292,7 +292,7 @@ export function ColorfulChallengeCard({
             <Pressable 
               style={({ pressed }) => [
                 styles.menuItem,
-                pressed && { opacity: 0.7 },
+                pressed && { opacity: 0.7, transform: [{ scale: 0.97 }] },
               ]}
               onPress={handleEdit}
             >
@@ -303,7 +303,7 @@ export function ColorfulChallengeCard({
             <Pressable 
               style={({ pressed }) => [
                 styles.menuItem,
-                pressed && { opacity: 0.7 },
+                pressed && { opacity: 0.7, transform: [{ scale: 0.97 }] },
               ]}
               onPress={handleDelete}
             >
@@ -315,7 +315,7 @@ export function ColorfulChallengeCard({
               style={({ pressed }) => [
                 styles.menuItem,
                 styles.menuItemCancel,
-                pressed && { opacity: 0.7 },
+                pressed && { opacity: 0.7, transform: [{ scale: 0.97 }] },
               ]}
               onPress={() => setShowMenu(false)}
             >

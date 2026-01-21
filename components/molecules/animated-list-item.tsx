@@ -80,7 +80,7 @@ export function AnimatedListItem({
         onPressOut={onPressOut}
         disabled={disabled}
         style={({ pressed }) => [
-          pressed && { opacity: 0.7 },
+          pressed && { opacity: 0.7, transform: [{ scale: 0.97 }] },
         ]}
       >
         {content}

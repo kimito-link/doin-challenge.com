@@ -93,7 +93,7 @@ export function RegionParticipantsModal({
           styles.prefectureItem,
           isSelected && styles.prefectureItemSelected,
           count === 0 && styles.prefectureItemEmpty,
-          pressed && { opacity: 0.7 },
+          pressed && { opacity: 0.7, transform: [{ scale: 0.97 }] },
         ]}
       >
         <Text style={[
@@ -180,7 +180,7 @@ export function RegionParticipantsModal({
               onPress={handleClose} 
               style={({ pressed }) => [
                 styles.closeButton,
-                pressed && { opacity: 0.7 },
+                pressed && { opacity: 0.7, transform: [{ scale: 0.97 }] },
               ]}
             >
               <MaterialIcons name="close" size={24} color={color.textMuted} />

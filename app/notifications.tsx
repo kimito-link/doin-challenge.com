@@ -1,4 +1,5 @@
 import { Text, View, Pressable, ScrollView, Switch, ActivityIndicator } from "react-native";
+import * as Haptics from "expo-haptics";
 import { color, palette } from "@/theme/tokens";
 import { useRouter } from "expo-router";
 import { useState, useEffect } from "react";

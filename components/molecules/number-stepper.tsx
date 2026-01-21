@@ -87,7 +87,7 @@ export function NumberStepper({
             styles.stepButton,
             styles.largeStepButton,
             { borderRightColor: color.border },
-            pressed && { opacity: 0.7 },
+            pressed && { opacity: 0.7, transform: [{ scale: 0.97 }] },
           ]}
           disabled={value <= min}
         >
@@ -104,7 +104,7 @@ export function NumberStepper({
           style={({ pressed }) => [
             styles.stepButton,
             { borderRightColor: color.border },
-            pressed && { opacity: 0.7 },
+            pressed && { opacity: 0.7, transform: [{ scale: 0.97 }] },
           ]}
           disabled={value <= min}
         >
@@ -129,7 +129,7 @@ export function NumberStepper({
           style={({ pressed }) => [
             styles.stepButton,
             { borderLeftColor: color.border },
-            pressed && { opacity: 0.7 },
+            pressed && { opacity: 0.7, transform: [{ scale: 0.97 }] },
           ]}
           disabled={value >= max}
         >
@@ -147,7 +147,7 @@ export function NumberStepper({
             styles.stepButton,
             styles.largeStepButton,
             { borderLeftColor: color.border },
-            pressed && { opacity: 0.7 },
+            pressed && { opacity: 0.7, transform: [{ scale: 0.97 }] },
           ]}
           disabled={value >= max}
         >
@@ -174,7 +174,7 @@ export function NumberStepper({
                     backgroundColor: value === preset ? color.accentPrimary : colors.background,
                     borderColor: value === preset ? color.accentPrimary : color.border,
                   },
-                  pressed && { opacity: 0.7 },
+                  pressed && { opacity: 0.7, transform: [{ scale: 0.97 }] },
                 ]}
               >
                 <Text style={[

@@ -1,4 +1,5 @@
 import { FlatList, Text, View, Pressable, RefreshControl, Platform } from "react-native";
+import * as Haptics from "expo-haptics";
 import { color, palette } from "@/theme/tokens";
 import { Image } from "expo-image";
 import { useRouter } from "expo-router";

@@ -22,7 +22,7 @@ export function Collapsible({ children, title }: PropsWithChildren & { title: st
         onPress={handlePress}
         style={({ pressed }) => [
           { flexDirection: "row", alignItems: "center", gap: 6 },
-          pressed && { opacity: 0.7 },
+          pressed && { opacity: 0.7, transform: [{ scale: 0.97 }] },
         ]}
       >
         <IconSymbol

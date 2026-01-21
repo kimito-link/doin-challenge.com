@@ -278,7 +278,7 @@ export function ReminderButton({
                 onPress={() => setShowModal(false)}
                 style={({ pressed }) => [
                   styles.closeButton,
-                  pressed && { opacity: 0.7 },
+                  pressed && { opacity: 0.7, transform: [{ scale: 0.97 }] },
                 ]}
               >
                 <Text style={styles.closeButtonText}>閉じる</Text>

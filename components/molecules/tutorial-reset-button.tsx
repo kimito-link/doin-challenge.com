@@ -49,7 +49,7 @@ export function TutorialResetButton() {
       style={({ pressed }) => [
         styles.container,
         { backgroundColor: colors.surface, borderColor: colors.border },
-        pressed && { opacity: 0.7 },
+        pressed && { opacity: 0.7, transform: [{ scale: 0.97 }] },
       ]}
     >
       <View style={styles.iconContainer}>

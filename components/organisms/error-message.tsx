@@ -75,7 +75,7 @@ export function ErrorMessage({ message, onRetry, type = "error" }: ErrorMessageP
               justifyContent: "center",
               marginLeft: 12,
             },
-            pressed && { opacity: 0.7 },
+            pressed && { opacity: 0.7, transform: [{ scale: 0.97 }] },
           ]}
         >
           <Text style={{ color: color.textWhite, fontSize: 14, fontWeight: "600" }}>再試行</Text>
@@ -113,7 +113,7 @@ export function NetworkError({ onRetry }: { onRetry?: () => void }) {
               alignItems: "center",
               justifyContent: "center",
             },
-            pressed && { opacity: 0.7 },
+            pressed && { opacity: 0.7, transform: [{ scale: 0.97 }] },
           ]}
         >
           <MaterialIcons name="refresh" size={20} color={color.textWhite} />
@@ -165,7 +165,7 @@ export function EmptyState({
               backgroundColor: color.hostAccentLegacy,
               borderRadius: 24,
             },
-            pressed && { opacity: 0.7 },
+            pressed && { opacity: 0.7, transform: [{ scale: 0.97 }] },
           ]}
         >
           <Text style={{ color: color.textWhite, fontSize: 16, fontWeight: "bold" }}>

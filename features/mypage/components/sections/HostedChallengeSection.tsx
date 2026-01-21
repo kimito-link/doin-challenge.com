@@ -3,7 +3,8 @@
  * マイページで主催しているチャレンジ一覧を表示する
  */
 
-import { View, Text, Pressable } from "react-native";
+import { View, Text, Pressable , Platform} from "react-native";
+import * as Haptics from "expo-haptics";
 import { useColors } from "@/hooks/use-colors";
 import { mypageUI, mypageText } from "../../ui/theme/tokens";
 import MaterialIcons from "@expo/vector-icons/MaterialIcons";

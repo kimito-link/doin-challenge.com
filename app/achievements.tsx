@@ -331,7 +331,7 @@ export default function AchievementsScreen() {
           <Text style={{ color: color.textMuted, fontSize: 16 }}>ログインしてください</Text>
           <Pressable
             onPress={() => { if (Platform.OS !== "web") Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light); router.push("/mypage"); }}
-            style={({ pressed }) => [{ marginTop: 16, padding: 12 }, pressed && { opacity: 0.7 }]}
+            style={({ pressed }) => [{ marginTop: 16, padding: 12 }, pressed && { opacity: 0.7, transform: [{ scale: 0.97 }] }]}
           >
             <Text style={{ color: color.accentPrimary }}>ログイン画面へ</Text>
           </Pressable>
@@ -350,7 +350,7 @@ export default function AchievementsScreen() {
           rightElement={
             <Pressable
               onPress={() => { if (Platform.OS !== "web") Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light); router.back(); }}
-              style={({ pressed }) => [{ flexDirection: "row", alignItems: "center" }, pressed && { opacity: 0.7 }]}
+              style={({ pressed }) => [{ flexDirection: "row", alignItems: "center" }, pressed && { opacity: 0.7, transform: [{ scale: 0.97 }] }]}
             >
               <MaterialIcons name="arrow-back" size={24} color={color.textWhite} />
               <Text style={{ color: color.textWhite, marginLeft: 8 }}>戻る</Text>

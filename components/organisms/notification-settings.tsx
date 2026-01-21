@@ -148,7 +148,7 @@ export function NotificationSettingsPanel({ onClose }: NotificationSettingsProps
             onPress={onClose}
             style={({ pressed }) => [
               styles.closeButton,
-              pressed && { opacity: 0.7 },
+              pressed && { opacity: 0.7, transform: [{ scale: 0.97 }] },
             ]}
           >
             <MaterialIcons name="close" size={24} color={color.textMuted} />

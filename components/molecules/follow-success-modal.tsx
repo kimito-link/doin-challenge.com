@@ -170,7 +170,7 @@ export function FollowSuccessModal({
           <Pressable
             style={({ pressed }) => [
               styles.closeButton,
-              pressed && { opacity: 0.7 },
+              pressed && { opacity: 0.7, transform: [{ scale: 0.97 }] },
             ]}
             onPress={handleClose}
           >

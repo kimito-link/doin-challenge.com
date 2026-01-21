@@ -127,7 +127,7 @@ export function GlobalMenu({ isVisible, onClose }: GlobalMenuProps) {
                       backgroundColor: color.borderAlt,
                       alignItems: "center",
                       justifyContent: "center",
-                    }, pressed && { opacity: 0.7 }]}
+                    }, pressed && { opacity: 0.7, transform: [{ scale: 0.97 }] }]}
                   >
                     <MaterialIcons name="close" size={20} color={color.textMuted} />
                   </Pressable>
@@ -318,7 +318,7 @@ export function GlobalMenu({ isVisible, onClose }: GlobalMenuProps) {
                       paddingHorizontal: 12,
                       borderRadius: 12,
                       backgroundColor: "rgba(239, 68, 68, 0.1)",
-                    }, pressed && { opacity: 0.7 }]}
+                    }, pressed && { opacity: 0.7, transform: [{ scale: 0.97 }] }]}
                   >
                     <MaterialIcons
                       name="logout"
@@ -381,7 +381,7 @@ export function HamburgerButton({
         alignItems: "center",
         justifyContent: "center",
         borderRadius: 22,
-      }, pressed && { opacity: 0.7 }]}
+      }, pressed && { opacity: 0.7, transform: [{ scale: 0.97 }] }]}
     >
       <MaterialIcons name="menu" size={size} color={buttonColor} />
     </Pressable>

@@ -159,7 +159,7 @@ export function TwitterUserCard({
       <Pressable
         onPress={onPress}
         style={({ pressed }) => [
-          pressed && { opacity: 0.7 },
+          pressed && { opacity: 0.7, transform: [{ scale: 0.97 }] },
         ]}
       >
         {content}
@@ -211,7 +211,7 @@ export function TwitterUserCompact({
     return (
       <Pressable
         onPress={onPress}
-        style={({ pressed }) => [pressed && { opacity: 0.7 }]}
+        style={({ pressed }) => [pressed && { opacity: 0.7, transform: [{ scale: 0.97 }] }]}
       >
         {content}
       </Pressable>
@@ -250,7 +250,7 @@ export function TwitterAvatar({
     return (
       <Pressable
         onPress={onPress}
-        style={({ pressed }) => [pressed && { opacity: 0.7 }]}
+        style={({ pressed }) => [pressed && { opacity: 0.7, transform: [{ scale: 0.97 }] }]}
       >
         {image}
       </Pressable>

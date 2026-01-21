@@ -1,7 +1,8 @@
 // components/organisms/ticket-transfer-section/TicketTransferSection.tsx
 // v6.18: リファクタリング済みチケット譲渡セクション
 import { useState } from "react";
-import { View, Text, Pressable, Alert } from "react-native";
+import { View, Text, Pressable, Alert , Platform} from "react-native";
+import * as Haptics from "expo-haptics";
 import MaterialIcons from "@expo/vector-icons/MaterialIcons";
 import { color } from "@/theme/tokens";
 import { trpc } from "@/lib/trpc";

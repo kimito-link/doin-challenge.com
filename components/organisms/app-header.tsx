@@ -69,7 +69,7 @@ export function AppHeader({
             onPress={handleTitlePress}
             style={({ pressed }) => [
               { flexDirection: "row", alignItems: "center", flex: 1 },
-              pressed && { opacity: 0.7 },
+              pressed && { opacity: 0.7, transform: [{ scale: 0.97 }] },
             ]}
           >
             {showLogo && (
@@ -131,7 +131,7 @@ export function AppHeader({
                     borderRadius: 22,
                     backgroundColor: "rgba(255, 255, 255, 0.1)",
                   },
-                  pressed && { opacity: 0.7 },
+                  pressed && { opacity: 0.7, transform: [{ scale: 0.97 }] },
                 ]}
               >
                 <MaterialIcons name="menu" size={24} color={color.textWhite} />
@@ -155,7 +155,7 @@ export function AppHeader({
                 borderRadius: 20,
                 alignSelf: "flex-start",
               },
-              pressed && { opacity: 0.7 },
+              pressed && { opacity: 0.7, transform: [{ scale: 0.97 }] },
             ]}
           >
             {user.profileImage && (

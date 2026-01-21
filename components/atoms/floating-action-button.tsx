@@ -83,7 +83,7 @@ export function ExpandableFAB({
               style={({ pressed }) => [
                 styles.actionButton,
                 { backgroundColor: action.color || color.textSubtle },
-                pressed && { opacity: 0.8 },
+                pressed && { opacity: 0.8, transform: [{ scale: 0.97 }] },
               ]}
             >
               <MaterialIcons name={action.icon as any} size={20} color={color.textWhite} />
@@ -98,7 +98,7 @@ export function ExpandableFAB({
           style={({ pressed }) => [
             styles.mainButton,
             { backgroundColor: mainColor },
-            pressed && { opacity: 0.8 },
+            pressed && { opacity: 0.8, transform: [{ scale: 0.97 }] },
           ]}
         >
           <MaterialIcons name={mainIcon as any} size={28} color={color.textWhite} />

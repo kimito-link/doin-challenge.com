@@ -392,7 +392,7 @@ export function JapanHeatmap({ prefectureCounts, onPrefecturePress, onRegionPres
                 styles.regionCard,
                 isHot && styles.regionCardHot,
                 { borderColor: count > 0 ? regionHeatColor : color.heatmapNone },
-                pressed && { opacity: 0.7 },
+                pressed && { opacity: 0.7, transform: [{ scale: 0.97 }] },
               ]}
             >
               <View style={styles.regionCardHeader}>

@@ -139,7 +139,7 @@ export function LogoutConfirmModal({
                 style={({ pressed }) => [
                   styles.button,
                   styles.cancelButton,
-                  pressed && { opacity: 0.7 },
+                  pressed && { opacity: 0.7, transform: [{ scale: 0.97 }] },
                 ]}
               >
                 <MaterialIcons name="favorite" size={18} color={color.accentPrimary} style={{ marginRight: 6 }} />
@@ -151,7 +151,7 @@ export function LogoutConfirmModal({
                 style={({ pressed }) => [
                   styles.button,
                   styles.confirmButton,
-                  pressed && { opacity: 0.7 },
+                  pressed && { opacity: 0.7, transform: [{ scale: 0.97 }] },
                 ]}
               >
                 <MaterialIcons name="logout" size={18} color={color.textWhite} style={{ marginRight: 6 }} />

@@ -4,7 +4,8 @@
  * 経験値オーバーレイのプレビューコンテンツコンポーネント
  * 26種類のプレビュータイプを描画
  */
-import { View, Text, Pressable } from "react-native";
+import { View, Text, Pressable , Platform} from "react-native";
+import * as Haptics from "expo-haptics";
 import Animated, { FadeIn } from "react-native-reanimated";
 import { color } from "@/theme/tokens";
 import { ExperienceSlide } from "@/lib/experience-context";

@@ -1,4 +1,4 @@
-import { Text, View, Pressable } from "react-native";
+import { Text, View, Platform } from "react-native";
 import { color, palette } from "@/theme/tokens";
 import { useState, useEffect } from "react";
 import { Image } from "expo-image";
@@ -7,6 +7,7 @@ import { ScreenContainer } from "@/components/organisms/screen-container";
 import { useAuth } from "@/hooks/use-auth";
 import MaterialIcons from "@expo/vector-icons/MaterialIcons";
 import { LinearGradient } from "expo-linear-gradient";
+import { Button } from "@/components/ui/button";
 import { redirectToTwitterAuth, redirectToTwitterSwitchAccount } from "@/lib/api";
 
 // キャラクター画像
@@ -97,96 +98,91 @@ export default function LogoutScreen() {
           contentFit="contain" 
         />
 
-        {/* キャラクターとチェックマーク */}
-        <View style={{ 
-          alignItems: "center", 
-          marginBottom: 24,
-        }}>
+        {/* キャラクター */}
+        <View style={{ position: "relative", marginBottom: 16 }}>
           <Image 
             source={characterImages[messagePattern.character as keyof typeof characterImages]} 
             style={{ 
-              width: 80, 
-              height: 80,
-              marginBottom: 8,
+              width: 100, 
+              height: 100,
             }} 
             contentFit="contain" 
           />
-          
-          {/* 吹き出し */}
-          <View style={{
-            backgroundColor: "rgba(236, 72, 153, 0.2)",
-            borderRadius: 16,
-            paddingHorizontal: 16,
-            paddingVertical: 8,
-            borderWidth: 1,
-            borderColor: "rgba(236, 72, 153, 0.4)",
-            marginBottom: 16,
-          }}>
-            <Text style={{ 
-              color: color.accentPrimary, 
-              fontSize: 18, 
-              fontWeight: "bold",
-              textAlign: "center",
-            }}>
-              {messagePattern.message}
-            </Text>
-          </View>
-
           {/* チェックマーク */}
           {logoutComplete && (
             <View style={{
-              width: 64,
-              height: 64,
-              borderRadius: 32,
-              backgroundColor: color.successDark,
+              position: "absolute",
+              bottom: -4,
+              right: -4,
+              backgroundColor: color.success,
+              borderRadius: 12,
+              width: 24,
+              height: 24,
               alignItems: "center",
               justifyContent: "center",
-              marginBottom: 16,
-              borderWidth: 3,
-              borderColor: color.emerald400,
             }}>
-              <MaterialIcons name="check" size={40} color={color.textWhite} />
+              <MaterialIcons name="check" size={16} color={color.textWhite} />
             </View>
           )}
         </View>
 
-        {/* メインメッセージ */}
-        <Text style={{ 
-          color: color.textWhite, 
-          fontSize: 24, 
-          fontWeight: "bold",
-          marginBottom: 8,
-          textAlign: "center",
-        }}>
-          {isLoggingOut ? "ログアウト中..." : "ログアウトしました"}
-        </Text>
-
-        <Text style={{ 
-          color: color.textMuted, 
-          fontSize: 14,
+        {/* 吹き出し */}
+        <View style={{
+          backgroundColor: color.surface,
+          borderRadius: 16,
+          paddingHorizontal: 16,
+          paddingVertical: 8,
           marginBottom: 24,
-          textAlign: "center",
+          borderWidth: 1,
+          borderColor: color.border,
         }}>
-          {isLoggingOut 
-            ? "少々お待ちください..." 
-            : `動員ちゃれんじからログアウトしました`
-          }
-        </Text>
+          <Text style={{ color: color.accentPrimary, fontSize: 18, fontWeight: "bold", textAlign: "center" }}>
+            {messagePattern.message}
+          </Text>
+        </View>
 
-        {/* ログアウトについての説明 */}
+        {/* ステータスメッセージ */}
+        {isLoggingOut ? (
+          <View style={{ alignItems: "center", gap: 8 }}>
+            <Text style={{ color: color.textPrimary, fontSize: 20, fontWeight: "bold" }}>
+              ログアウト中...
+            </Text>
+            <Text style={{ color: color.textSubtle, fontSize: 14 }}>
+              しばらくお待ちください
+            </Text>
+          </View>
+        ) : logoutComplete ? (
+          <View style={{ alignItems: "center", gap: 8 }}>
+            <Text style={{ color: color.textPrimary, fontSize: 20, fontWeight: "bold" }}>
+              ログアウトしました
+            </Text>
+            <Text style={{ color: color.textSubtle, fontSize: 14 }}>
+              またのご利用をお待ちしております
+            </Text>
+          </View>
+        ) : (
+          <View style={{ alignItems: "center", gap: 8 }}>
+            <Text style={{ color: color.textPrimary, fontSize: 20, fontWeight: "bold" }}>
+              ログアウト
+            </Text>
+            <Text style={{ color: color.textSubtle, fontSize: 14 }}>
+              ログアウトを開始します
+            </Text>
+          </View>
+        )}
+
+        {/* 説明文 */}
         {logoutComplete && (
           <View style={{
-            backgroundColor: "#1E3A5F",
+            backgroundColor: color.blue400 + "15",
             borderRadius: 12,
             padding: 16,
-            marginBottom: 24,
-            maxWidth: 400,
+            marginTop: 24,
             width: "100%",
-            borderWidth: 1,
-            borderColor: "#2563EB",
+            maxWidth: 400,
           }}>
             <View style={{ flexDirection: "row", alignItems: "center", marginBottom: 8 }}>
-              <MaterialIcons name="info" size={18} color={color.blue400} />
+              <MaterialIcons name="info-outline" size={18} color={color.blue400} />
               <Text style={{ color: color.blue400, fontSize: 14, fontWeight: "bold", marginLeft: 8 }}>
                 ログアウトについて
               </Text>
@@ -201,65 +197,38 @@ export default function LogoutScreen() {
 
         {/* ボタン */}
         {logoutComplete && (
-          <View style={{ width: "100%", maxWidth: 400, gap: 12 }}>
+          <View style={{ width: "100%", maxWidth: 400, gap: 12, marginTop: 24 }}>
             {/* ホームページに戻る */}
-            <Pressable
+            <Button
               onPress={() => router.replace("/")}
-              style={{
-                backgroundColor: color.info,
-                borderRadius: 12,
-                paddingVertical: 14,
-                paddingHorizontal: 24,
-                flexDirection: "row",
-                alignItems: "center",
-                justifyContent: "center",
-              }}
+              variant="primary"
+              icon="home"
+              fullWidth
+              style={{ backgroundColor: color.info }}
             >
-              <MaterialIcons name="home" size={20} color={color.textWhite} />
-              <Text style={{ color: color.textWhite, fontSize: 16, fontWeight: "bold", marginLeft: 8 }}>
-                ホームページに戻る
-              </Text>
-            </Pressable>
+              ホームページに戻る
+            </Button>
 
             {/* 同じアカウントで再ログイン */}
-            <Pressable
+            <Button
               onPress={handleSameAccountLogin}
-              style={{
-                backgroundColor: color.successDark,
-                borderRadius: 12,
-                paddingVertical: 14,
-                paddingHorizontal: 24,
-                flexDirection: "row",
-                alignItems: "center",
-                justifyContent: "center",
-              }}
+              variant="primary"
+              icon="refresh"
+              fullWidth
+              style={{ backgroundColor: color.successDark }}
             >
-              <MaterialIcons name="refresh" size={20} color={color.textWhite} />
-              <Text style={{ color: color.textWhite, fontSize: 16, fontWeight: "bold", marginLeft: 8 }}>
-                同じアカウントで再ログイン
-              </Text>
-            </Pressable>
+              同じアカウントで再ログイン
+            </Button>
 
             {/* 別のアカウントでログイン */}
-            <Pressable
+            <Button
               onPress={handleDifferentAccountLogin}
-              style={{
-                backgroundColor: "transparent",
-                borderRadius: 12,
-                paddingVertical: 14,
-                paddingHorizontal: 24,
-                flexDirection: "row",
-                alignItems: "center",
-                justifyContent: "center",
-                borderWidth: 1,
-                borderColor: color.info,
-              }}
+              variant="outline"
+              icon="swap-horiz"
+              fullWidth
             >
-              <MaterialIcons name="swap-horiz" size={20} color={color.info} />
-              <Text style={{ color: color.info, fontSize: 16, fontWeight: "bold", marginLeft: 8 }}>
-                別のアカウントでログイン
-              </Text>
-            </Pressable>
+              別のアカウントでログイン
+            </Button>
           </View>
         )}
 

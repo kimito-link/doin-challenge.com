@@ -47,7 +47,7 @@ export function Touchable({
       style={({ pressed }) => [
         styles.touchable,
         style,
-        pressed && { opacity: 0.7 },
+        pressed && { opacity: 0.7, transform: [{ scale: 0.97 }] },
       ]}
       hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
       {...props}

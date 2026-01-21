@@ -50,7 +50,7 @@ export function ShareButton({
     variant === "secondary" ? styles.buttonSecondary : variant === "icon" ? styles.buttonIcon : styles.buttonPrimary,
     disabled ? styles.buttonDisabled : {},
     success ? styles.buttonSuccess : {},
-    pressed && !disabled && !loading ? { opacity: 0.7 } : {},
+    pressed && !disabled && !loading ? { opacity: 0.7, transform: [{ scale: 0.97 }] } : {},
   ];
 
   const textStyle: TextStyle[] = [
@@ -134,7 +134,7 @@ export function TwitterShareButton({
     styles.twitterButton,
     size === "small" ? styles.buttonSmall : size === "large" ? styles.buttonLarge : styles.buttonMedium,
     disabled ? styles.buttonDisabled : {},
-    pressed && !disabled && !loading ? { opacity: 0.7 } : {},
+    pressed && !disabled && !loading ? { opacity: 0.7, transform: [{ scale: 0.97 }] } : {},
   ];
 
   const textStyle: TextStyle[] = [

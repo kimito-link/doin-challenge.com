@@ -1,6 +1,7 @@
 // features/create/ui/components/CreateChallengeForm.tsx
 // v6.18: チャレンジ作成フォームコンポーネント
-import { View, Text, TextInput, Pressable } from "react-native";
+import { View, Text, TextInput, Pressable , Platform} from "react-native";
+import * as Haptics from "expo-haptics";
 import { LinearGradient } from "expo-linear-gradient";
 import MaterialIcons from "@expo/vector-icons/MaterialIcons";
 import { useRouter } from "expo-router";

@@ -193,7 +193,7 @@ export function SharePromptModal({
               onPress={handleSkip}
               style={({ pressed }) => [
                 styles.skipButton,
-                pressed && { opacity: 0.7 },
+                pressed && { opacity: 0.7, transform: [{ scale: 0.97 }] },
               ]}
             >
               <Text style={styles.skipButtonText}>今回はスキップ</Text>

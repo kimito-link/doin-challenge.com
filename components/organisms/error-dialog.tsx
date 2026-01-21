@@ -135,7 +135,7 @@ export function ErrorDialog({
               <Pressable
                 style={({ pressed }) => [
                   styles.retryButton,
-                  pressed && { opacity: 0.8 },
+                  pressed && { opacity: 0.8, transform: [{ scale: 0.97 }] },
                 ]}
                 onPress={handleRetry}
               >
@@ -147,7 +147,7 @@ export function ErrorDialog({
               style={({ pressed }) => [
                 styles.closeButton,
                 !canRetry && styles.closeButtonFull,
-                pressed && { opacity: 0.8 },
+                pressed && { opacity: 0.8, transform: [{ scale: 0.97 }] },
               ]}
               onPress={handleClose}
             >
