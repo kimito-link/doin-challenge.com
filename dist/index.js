@@ -6018,6 +6018,187 @@ function getErrorStats() {
   };
 }
 
+// server/schema-check.ts
+init_db2();
+var EXPECTED_SCHEMA = {
+  version: "0023",
+  // 最新のマイグレーション番号
+  tables: {
+    participations: {
+      requiredColumns: [
+        "id",
+        "challengeId",
+        "userId",
+        "twitterId",
+        "displayName",
+        "username",
+        "profileImage",
+        "followersCount",
+        "message",
+        "companionCount",
+        "prefecture",
+        "gender",
+        "contribution",
+        "isAnonymous",
+        "createdAt",
+        "updatedAt",
+        // v6.40で追加されたソフトデリート用カラム
+        "deletedAt",
+        "deletedBy"
+      ]
+    },
+    challenges: {
+      requiredColumns: [
+        "id",
+        "title",
+        "slug",
+        "description",
+        "targetCount",
+        "currentCount",
+        "eventDate",
+        "venue",
+        "prefecture",
+        "organizerId",
+        "status",
+        "createdAt",
+        "updatedAt"
+      ]
+    },
+    users: {
+      requiredColumns: [
+        "id",
+        "twitterId",
+        "username",
+        "displayName",
+        "profileImage",
+        "createdAt",
+        "updatedAt"
+      ]
+    }
+  }
+};
+async function checkSchemaIntegrity() {
+  const result = {
+    status: "ok",
+    expectedVersion: EXPECTED_SCHEMA.version,
+    missingColumns: [],
+    errors: [],
+    checkedAt: (/* @__PURE__ */ new Date()).toISOString()
+  };
+  try {
+    const db = await getDb();
+    if (!db) {
+      result.status = "error";
+      result.errors.push("Database connection not available");
+      return result;
+    }
+    for (const [tableName, tableSpec] of Object.entries(EXPECTED_SCHEMA.tables)) {
+      try {
+        const columnsResult = await db.execute(
+          sql`SELECT COLUMN_NAME FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = ${tableName}`
+        );
+        const rows = Array.isArray(columnsResult) ? columnsResult[0] : columnsResult;
+        const existingColumns = new Set(
+          rows.map((c) => c.COLUMN_NAME)
+        );
+        for (const requiredColumn of tableSpec.requiredColumns) {
+          if (!existingColumns.has(requiredColumn)) {
+            result.missingColumns.push({
+              table: tableName,
+              column: requiredColumn
+            });
+          }
+        }
+      } catch (tableError) {
+        result.errors.push(
+          `Failed to check table ${tableName}: ${tableError instanceof Error ? tableError.message : String(tableError)}`
+        );
+      }
+    }
+    try {
+      const [migrations] = await db.execute(
+        `SELECT hash FROM __drizzle_migrations ORDER BY created_at DESC LIMIT 1`
+      );
+      if (Array.isArray(migrations) && migrations.length > 0) {
+        result.actualVersion = migrations[0].hash?.slice(0, 8) || "unknown";
+      }
+    } catch {
+      result.actualVersion = "unknown";
+    }
+    if (result.missingColumns.length > 0) {
+      result.status = "mismatch";
+    } else if (result.errors.length > 0) {
+      result.status = "error";
+    }
+    return result;
+  } catch (error) {
+    result.status = "error";
+    result.errors.push(
+      `Schema check failed: ${error instanceof Error ? error.message : String(error)}`
+    );
+    return result;
+  }
+}
+async function notifySchemaIssue(result) {
+  const webhookUrl = process.env.DEPLOY_WEBHOOK_URL;
+  if (!webhookUrl) {
+    console.log("[schema-check] Webhook URL not configured, skipping notification");
+    return;
+  }
+  const isDiscord = webhookUrl.includes("discord.com");
+  const appName = process.env.APP_NAME || "Birthday Celebration";
+  const environment = process.env.RAILWAY_ENVIRONMENT || process.env.NODE_ENV || "unknown";
+  const missingColumnsText = result.missingColumns.map((mc) => `${mc.table}.${mc.column}`).join(", ");
+  const payload = isDiscord ? {
+    embeds: [
+      {
+        title: "\u26A0\uFE0F Schema Mismatch Detected",
+        description: `Database schema does not match expected schema.`,
+        color: 16096779,
+        // warning yellow
+        timestamp: (/* @__PURE__ */ new Date()).toISOString(),
+        fields: [
+          { name: "App", value: appName, inline: true },
+          { name: "Environment", value: environment, inline: true },
+          { name: "Expected Version", value: result.expectedVersion, inline: true },
+          { name: "Missing Columns", value: missingColumnsText || "None" },
+          ...result.errors.length > 0 ? [{ name: "Errors", value: result.errors.join("\n") }] : []
+        ]
+      }
+    ]
+  } : {
+    attachments: [
+      {
+        color: "warning",
+        title: "\u26A0\uFE0F Schema Mismatch Detected",
+        text: `Database schema does not match expected schema.`,
+        ts: Math.floor(Date.now() / 1e3),
+        fields: [
+          { title: "App", value: appName, short: true },
+          { title: "Environment", value: environment, short: true },
+          { title: "Expected Version", value: result.expectedVersion, short: true },
+          { title: "Missing Columns", value: missingColumnsText || "None" },
+          ...result.errors.length > 0 ? [{ title: "Errors", value: result.errors.join("\n") }] : []
+        ]
+      }
+    ]
+  };
+  try {
+    const response = await fetch(webhookUrl, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(payload)
+    });
+    if (!response.ok) {
+      console.error(`[schema-check] Failed to send notification: ${response.status}`);
+    } else {
+      console.log("[schema-check] Schema issue notification sent");
+    }
+  } catch (error) {
+    console.error("[schema-check] Failed to send notification:", error);
+  }
+}
+
 // server/openapi.ts
 var openApiDocument = {
   openapi: "3.0.3",
@@ -6557,14 +6738,37 @@ async function startServer() {
   app.use(express.urlencoded({ limit: "50mb", extended: true }));
   registerOAuthRoutes(app);
   registerTwitterRoutes(app);
-  app.get("/api/health", (_req, res) => {
-    res.json({
+  app.get("/api/health", async (_req, res) => {
+    const baseInfo = {
       ok: true,
       timestamp: Date.now(),
       version: process.env.APP_VERSION || "unknown",
       gitSha: process.env.GIT_SHA || "unknown",
       builtAt: process.env.BUILT_AT || "unknown",
       nodeEnv: process.env.NODE_ENV || "development"
+    };
+    const checkSchema = _req.query.schema === "true";
+    let schemaCheck;
+    if (checkSchema) {
+      try {
+        schemaCheck = await checkSchemaIntegrity();
+        if (schemaCheck.status === "mismatch") {
+          await notifySchemaIssue(schemaCheck);
+        }
+      } catch (error) {
+        console.error("[health] Schema check failed:", error);
+        schemaCheck = {
+          status: "error",
+          expectedVersion: "unknown",
+          missingColumns: [],
+          errors: [error instanceof Error ? error.message : String(error)],
+          checkedAt: (/* @__PURE__ */ new Date()).toISOString()
+        };
+      }
+    }
+    res.json({
+      ...baseInfo,
+      ...schemaCheck && { schema: schemaCheck }
     });
   });
   app.get("/api/openapi.json", (_req, res) => {

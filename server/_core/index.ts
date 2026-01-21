@@ -9,6 +9,7 @@ import { appRouter } from "../routers";
 import { createContext } from "./context";
 import { getDashboardSummary, getApiUsageStats } from "../api-usage-tracker";
 import { getErrorLogs, getErrorStats, resolveError, resolveAllErrors, clearErrorLogs, errorTrackingMiddleware } from "../error-tracker";
+import { checkSchemaIntegrity, notifySchemaIssue, type SchemaCheckResult } from "../schema-check";
 import { getOpenApiSpec } from "../openapi";
 import swaggerUi from "swagger-ui-express";
 
@@ -62,14 +63,44 @@ async function startServer() {
   registerOAuthRoutes(app);
   registerTwitterRoutes(app);
 
-  app.get("/api/health", (_req, res) => {
-    res.json({
+  app.get("/api/health", async (_req, res) => {
+    // 基本情報
+    const baseInfo = {
       ok: true,
       timestamp: Date.now(),
       version: process.env.APP_VERSION || "unknown",
       gitSha: process.env.GIT_SHA || "unknown",
       builtAt: process.env.BUILT_AT || "unknown",
       nodeEnv: process.env.NODE_ENV || "development",
+    };
+
+    // スキーマチェックはオプション（?schema=true で有効化）
+    const checkSchema = _req.query.schema === "true";
+    let schemaCheck: SchemaCheckResult | undefined;
+
+    if (checkSchema) {
+      try {
+        schemaCheck = await checkSchemaIntegrity();
+        
+        // スキーマ不整合時は通知
+        if (schemaCheck.status === "mismatch") {
+          await notifySchemaIssue(schemaCheck);
+        }
+      } catch (error) {
+        console.error("[health] Schema check failed:", error);
+        schemaCheck = {
+          status: "error",
+          expectedVersion: "unknown",
+          missingColumns: [],
+          errors: [error instanceof Error ? error.message : String(error)],
+          checkedAt: new Date().toISOString(),
+        };
+      }
+    }
+
+    res.json({
+      ...baseInfo,
+      ...(schemaCheck && { schema: schemaCheck }),
     });
   });
 

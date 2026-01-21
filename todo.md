@@ -4003,3 +4003,29 @@ features/create/
 - [x] フロントにversion表示追加（管理画面のシステム状態ページ）
 - [x] /event/{id}のログ強化（requestId付き、タイトル、参加者数、所要時間）
 - [ ] 本番デプロイして確認
+
+
+## デプロイ時自動マイグレーション・スキーマ整合性チェック（v6.51）
+
+### 1. デプロイ時自動マイグレーション
+- [x] マイグレーション実行スクリプト作成（scripts/migrate.ts）
+- [x] マイグレーション失敗時にプロセス終了（exit 1）
+- [x] package.jsonにmigrateコマンド追加
+- [ ] Railwayビルドコマンドでマイグレーション実行
+
+### 2. /api/healthスキーマ整合性チェック
+- [x] DBスキーマバージョン取得機能追加
+- [x] 期待するスキーマバージョンとの比較
+- [x] 不一致時にschemaStatus: "mismatch"を返す
+
+### 3. 失敗時通知（Slack/Discord）
+- [x] Webhook URL環境変数設定（DEPLOY_WEBHOOK_URL）
+- [x] マイグレーション失敗時の通知送信（scripts/migrate.ts）
+- [x] /api/healthでスキーマ不一致時の通知送信（server/schema-check.ts）
+
+### 4. Railway設定ガイド
+- [x] ビルドコマンド設定手順
+- [x] 環境変数設定手順
+- [x] Webhook URL取得・設定手順
+- [x] ドキュメント作成（docs/RAILWAY_DEPLOY_SETUP.md）
+
