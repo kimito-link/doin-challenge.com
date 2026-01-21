@@ -1,4 +1,4 @@
-import { View, Text, TouchableOpacity, StyleSheet, Platform } from "react-native";
+import { View, Text, Pressable, StyleSheet, Platform } from "react-native";
 import { color, palette } from "@/theme/tokens";
 import { useCallback } from "react";
 import MaterialIcons from "@expo/vector-icons/MaterialIcons";
@@ -81,10 +81,14 @@ export function NumberStepper({
       {/* メインのステッパー部分 */}
       <View style={[styles.stepperContainer, { backgroundColor: colors.background, borderColor: color.border }]}>
         {/* 大きく減らすボタン */}
-        <TouchableOpacity
+        <Pressable
           onPress={handleLargeDecrement}
-          style={[styles.stepButton, styles.largeStepButton, { borderRightColor: color.border }]}
-          activeOpacity={0.7}
+          style={({ pressed }) => [
+            styles.stepButton,
+            styles.largeStepButton,
+            { borderRightColor: color.border },
+            pressed && { opacity: 0.7 },
+          ]}
           disabled={value <= min}
         >
           <MaterialIcons 
@@ -92,13 +96,16 @@ export function NumberStepper({
             size={24} 
             color={value <= min ? color.textSubtle : color.accentPrimary} 
           />
-        </TouchableOpacity>
+        </Pressable>
 
         {/* 減らすボタン */}
-        <TouchableOpacity
+        <Pressable
           onPress={handleDecrement}
-          style={[styles.stepButton, { borderRightColor: color.border }]}
-          activeOpacity={0.7}
+          style={({ pressed }) => [
+            styles.stepButton,
+            { borderRightColor: color.border },
+            pressed && { opacity: 0.7 },
+          ]}
           disabled={value <= min}
         >
           <MaterialIcons 
@@ -106,7 +113,7 @@ export function NumberStepper({
             size={28} 
             color={value <= min ? color.textSubtle : colors.foreground} 
           />
-        </TouchableOpacity>
+        </Pressable>
 
         {/* 数値表示 */}
         <View style={styles.valueContainer}>
@@ -117,10 +124,13 @@ export function NumberStepper({
         </View>
 
         {/* 増やすボタン */}
-        <TouchableOpacity
+        <Pressable
           onPress={handleIncrement}
-          style={[styles.stepButton, { borderLeftColor: color.border }]}
-          activeOpacity={0.7}
+          style={({ pressed }) => [
+            styles.stepButton,
+            { borderLeftColor: color.border },
+            pressed && { opacity: 0.7 },
+          ]}
           disabled={value >= max}
         >
           <MaterialIcons 
@@ -128,13 +138,17 @@ export function NumberStepper({
             size={28} 
             color={value >= max ? color.textSubtle : colors.foreground} 
           />
-        </TouchableOpacity>
+        </Pressable>
 
         {/* 大きく増やすボタン */}
-        <TouchableOpacity
+        <Pressable
           onPress={handleLargeIncrement}
-          style={[styles.stepButton, styles.largeStepButton, { borderLeftColor: color.border }]}
-          activeOpacity={0.7}
+          style={({ pressed }) => [
+            styles.stepButton,
+            styles.largeStepButton,
+            { borderLeftColor: color.border },
+            pressed && { opacity: 0.7 },
+          ]}
           disabled={value >= max}
         >
           <MaterialIcons 
@@ -142,7 +156,7 @@ export function NumberStepper({
             size={24} 
             color={value >= max ? color.textSubtle : color.accentPrimary} 
           />
-        </TouchableOpacity>
+        </Pressable>
       </View>
 
       {/* プリセットボタン */}
@@ -151,17 +165,17 @@ export function NumberStepper({
           <Text style={[styles.presetsLabel, { color: colors.muted }]}>よく使う目標:</Text>
           <View style={styles.presetButtons}>
             {presets.map((preset) => (
-              <TouchableOpacity
+              <Pressable
                 key={preset}
                 onPress={() => handlePresetSelect(preset)}
-                style={[
+                style={({ pressed }) => [
                   styles.presetButton,
                   { 
                     backgroundColor: value === preset ? color.accentPrimary : colors.background,
                     borderColor: value === preset ? color.accentPrimary : color.border,
-                  }
+                  },
+                  pressed && { opacity: 0.7 },
                 ]}
-                activeOpacity={0.7}
               >
                 <Text style={[
                   styles.presetButtonText,
@@ -169,7 +183,7 @@ export function NumberStepper({
                 ]}>
                   {preset.toLocaleString()}
                 </Text>
-              </TouchableOpacity>
+              </Pressable>
             ))}
           </View>
         </View>

@@ -1,4 +1,4 @@
-import { View, Text, TouchableOpacity, Modal, StyleSheet, Animated, Platform } from "react-native";
+import { View, Text, Pressable, Modal, StyleSheet, Animated, Platform } from "react-native";
 import { color, palette } from "@/theme/tokens";
 import { useRef, useEffect } from "react";
 import { Image } from "expo-image";
@@ -87,9 +87,8 @@ export function LogoutConfirmModal({
       animationType="none"
       onRequestClose={onCancel}
     >
-      <TouchableOpacity
+      <Pressable
         style={styles.overlay}
-        activeOpacity={1}
         onPress={handleCancel}
       >
         <Animated.View
@@ -101,7 +100,7 @@ export function LogoutConfirmModal({
             },
           ]}
         >
-          <TouchableOpacity activeOpacity={1}>
+          <Pressable>
             {/* キャラクターと吹き出し */}
             <View style={styles.characterSection}>
               <Animated.View
@@ -135,27 +134,33 @@ export function LogoutConfirmModal({
 
             {/* ボタン */}
             <View style={styles.buttonContainer}>
-              <TouchableOpacity
+              <Pressable
                 onPress={handleCancel}
-                style={[styles.button, styles.cancelButton]}
-                activeOpacity={0.7}
+                style={({ pressed }) => [
+                  styles.button,
+                  styles.cancelButton,
+                  pressed && { opacity: 0.7 },
+                ]}
               >
                 <MaterialIcons name="favorite" size={18} color={color.accentPrimary} style={{ marginRight: 6 }} />
                 <Text style={styles.cancelButtonText}>まだいる！</Text>
-              </TouchableOpacity>
+              </Pressable>
 
-              <TouchableOpacity
+              <Pressable
                 onPress={handleConfirm}
-                style={[styles.button, styles.confirmButton]}
-                activeOpacity={0.7}
+                style={({ pressed }) => [
+                  styles.button,
+                  styles.confirmButton,
+                  pressed && { opacity: 0.7 },
+                ]}
               >
                 <MaterialIcons name="logout" size={18} color={color.textWhite} style={{ marginRight: 6 }} />
                 <Text style={styles.confirmButtonText}>またね！</Text>
-              </TouchableOpacity>
+              </Pressable>
             </View>
-          </TouchableOpacity>
+          </Pressable>
         </Animated.View>
-      </TouchableOpacity>
+      </Pressable>
     </Modal>
   );
 }

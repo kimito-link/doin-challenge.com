@@ -1,4 +1,5 @@
-import { View, Text, StyleSheet, TouchableOpacity, Dimensions, useWindowDimensions } from "react-native";
+import { View, Text, StyleSheet, Pressable, Dimensions, useWindowDimensions, Platform } from "react-native";
+import * as Haptics from "expo-haptics";
 import { color, palette } from "@/theme/tokens";
 import { useMemo } from "react";
 
@@ -219,15 +220,15 @@ export function JapanDeformedMap({ prefectureCounts, onPrefecturePress, onRegion
           if (displayName === "鹿児島") displayName = "鹿児";
           
           return (
-            <TouchableOpacity
+            <Pressable
               key={pref.name}
-              style={[
+              style={({ pressed }) => [
                 styles.prefectureCell,
                 {
                   width: cellSize,
                   height: cellSize,
-                  minWidth: 44, // 最小タップエリア保証
-                  minHeight: 44, // 最小タップエリア保証
+                  minWidth: 44,
+                  minHeight: 44,
                   backgroundColor: color.bg,
                   borderColor: color.hasParticipants ? "#FFFFFF" : color.border,
                   borderWidth: color.hasParticipants ? 2 : 1,
@@ -239,10 +240,13 @@ export function JapanDeformedMap({ prefectureCounts, onPrefecturePress, onRegion
                   shadowOpacity: color.hasParticipants ? 0.8 : 0,
                   shadowRadius: 4,
                   elevation: color.hasParticipants ? 5 : 0,
-                }
+                },
+                pressed && { opacity: 0.7 },
               ]}
-              onPress={() => onPrefecturePress?.(pref.name)}
-              activeOpacity={0.7}
+              onPress={() => {
+                if (Platform.OS !== "web") Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+                onPrefecturePress?.(pref.name);
+              }}
               accessibilityLabel={`${pref.name}: ${count}人参加`}
               accessibilityRole="button"
               accessibilityHint="タップすると参加者一覧を表示します"
@@ -276,7 +280,7 @@ export function JapanDeformedMap({ prefectureCounts, onPrefecturePress, onRegion
                   {count}人
                 </Text>
               )}
-            </TouchableOpacity>
+            </Pressable>
           );
         })}
       </View>

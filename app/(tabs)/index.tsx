@@ -1,4 +1,4 @@
-import { FlatList, Text, View, TouchableOpacity, RefreshControl, ScrollView, TextInput, Platform } from "react-native";
+import { FlatList, Text, View, Pressable, RefreshControl, ScrollView, TextInput, Platform } from "react-native";
 import { color, palette } from "@/theme/tokens";
 import { useRouter } from "expo-router";
 import { useState, useMemo, useEffect } from "react";
@@ -514,7 +514,6 @@ export default function HomeScreen() {
       <FloatingActionButton
         onPress={() => router.push("/(tabs)/create")}
         icon="add"
-        gradientColors={[color.accentPrimary, color.accentAlt]}
         size="large"
       />
 

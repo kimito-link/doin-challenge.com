@@ -1,4 +1,5 @@
-import { Text, View, TouchableOpacity, Platform } from "react-native";
+import { Text, View, Pressable, Platform } from "react-native";
+import * as Haptics from "expo-haptics";
 import { color, palette } from "@/theme/tokens";
 import { Image } from "expo-image";
 import { useRouter } from "expo-router";
@@ -70,27 +71,33 @@ export default function NotFoundScreen() {
 
         {/* ボタン */}
         <View className="w-full max-w-sm gap-3">
-          <TouchableOpacity
-            onPress={() => router.replace("/")}
+          <Pressable
+            onPress={() => {
+              if (Platform.OS !== "web") Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+              router.replace("/");
+            }}
+            style={({ pressed }) => [{ opacity: pressed ? 0.8 : 1 }]}
             className="bg-primary rounded-xl py-4 px-6 flex-row items-center justify-center"
-            activeOpacity={0.8}
           >
             <MaterialIcons name="home" size={20} color={color.textWhite} />
             <Text className="text-white text-base font-bold ml-2">
               ホームに戻る
             </Text>
-          </TouchableOpacity>
+          </Pressable>
 
-          <TouchableOpacity
-            onPress={handleGoBack}
+          <Pressable
+            onPress={() => {
+              if (Platform.OS !== "web") Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+              handleGoBack();
+            }}
+            style={({ pressed }) => [{ opacity: pressed ? 0.8 : 1 }]}
             className="bg-surface rounded-xl py-4 px-6 flex-row items-center justify-center border border-border"
-            activeOpacity={0.8}
           >
             <MaterialIcons name="arrow-back" size={20} color={color.textSubtle} />
             <Text className="text-muted text-base font-bold ml-2">
               前のページに戻る
             </Text>
-          </TouchableOpacity>
+          </Pressable>
         </View>
       </View>
     </ScreenContainer>

@@ -1,4 +1,4 @@
-import { FlatList, Text, View, TouchableOpacity, RefreshControl, Platform } from "react-native";
+import { FlatList, Text, View, Pressable, RefreshControl, Platform } from "react-native";
 import { color, palette } from "@/theme/tokens";
 import { Image } from "expo-image";
 import { useRouter } from "expo-router";
@@ -34,13 +34,13 @@ export default function FollowingScreen() {
         title="君斗りんくの動員ちゃれんじ" 
         showCharacters={false}
         rightElement={
-          <TouchableOpacity
+          <Pressable
             onPress={() => router.back()}
             style={{ flexDirection: "row", alignItems: "center" }}
           >
             <MaterialIcons name="arrow-back" size={24} color={color.textWhite} />
             <Text style={{ color: color.textWhite, marginLeft: 8 }}>戻る</Text>
-          </TouchableOpacity>
+          </Pressable>
         }
       />
       <View style={{ 
@@ -99,7 +99,7 @@ export default function FollowingScreen() {
                 </Text>
               </View>
               
-              <TouchableOpacity
+              <Pressable
                 onPress={() => handleUnfollow(item.followeeId)}
                 style={{
                   minHeight: 44,
@@ -113,7 +113,7 @@ export default function FollowingScreen() {
                 }}
               >
                 <Text style={{ color: color.textWhite, fontSize: 14, fontWeight: "500" }}>フォロー解除</Text>
-              </TouchableOpacity>
+              </Pressable>
             </View>
           )}
           refreshControl={

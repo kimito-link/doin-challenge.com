@@ -1,9 +1,10 @@
-import { View, Text, StyleSheet, Modal, TouchableOpacity, FlatList, Pressable } from "react-native";
+import { View, Text, StyleSheet, Modal, Pressable, FlatList, Platform } from "react-native";
 import { color, palette } from "@/theme/tokens";
 import { useState } from "react";
 import { useRouter } from "expo-router";
 import MaterialIcons from "@expo/vector-icons/MaterialIcons";
 import { OptimizedAvatar } from "./optimized-image";
+import * as Haptics from "expo-haptics";
 
 interface Participant {
   id: number;
@@ -26,6 +27,12 @@ interface RegionParticipantsModalProps {
   prefectures: string[];
   participants: Participant[];
 }
+
+const triggerHaptic = () => {
+  if (Platform.OS !== "web") {
+    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+  }
+};
 
 export function RegionParticipantsModal({
   visible,
@@ -58,14 +65,21 @@ export function RegionParticipantsModal({
 
   const handleParticipantPress = (participant: Participant) => {
     if (participant.userId && !participant.isAnonymous) {
+      triggerHaptic();
       onClose();
       router.push({ pathname: "/profile/[userId]", params: { userId: participant.userId.toString() } });
     }
   };
 
   const handleClose = () => {
+    triggerHaptic();
     setSelectedPrefecture(null);
     onClose();
+  };
+
+  const handlePrefectureSelect = (item: string, isSelected: boolean) => {
+    triggerHaptic();
+    setSelectedPrefecture(isSelected ? null : item);
   };
 
   const renderPrefectureItem = ({ item }: { item: string }) => {
@@ -73,12 +87,13 @@ export function RegionParticipantsModal({
     const isSelected = selectedPrefecture === item;
     
     return (
-      <TouchableOpacity
-        onPress={() => setSelectedPrefecture(isSelected ? null : item)}
-        style={[
+      <Pressable
+        onPress={() => handlePrefectureSelect(item, isSelected)}
+        style={({ pressed }) => [
           styles.prefectureItem,
           isSelected && styles.prefectureItemSelected,
           count === 0 && styles.prefectureItemEmpty,
+          pressed && { opacity: 0.7 },
         ]}
       >
         <Text style={[
@@ -95,7 +110,7 @@ export function RegionParticipantsModal({
         ]}>
           {count}人
         </Text>
-      </TouchableOpacity>
+      </Pressable>
     );
   };
 
@@ -161,9 +176,15 @@ export function RegionParticipantsModal({
                 }
               </Text>
             </View>
-            <TouchableOpacity onPress={handleClose} style={styles.closeButton}>
+            <Pressable 
+              onPress={handleClose} 
+              style={({ pressed }) => [
+                styles.closeButton,
+                pressed && { opacity: 0.7 },
+              ]}
+            >
               <MaterialIcons name="close" size={24} color={color.textMuted} />
-            </TouchableOpacity>
+            </Pressable>
           </View>
 
           {/* 都道府県フィルター */}

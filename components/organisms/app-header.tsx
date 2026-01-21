@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { color, palette } from "@/theme/tokens";
-import { View, Text, TouchableOpacity, Platform } from "react-native";
+import { View, Text, Pressable, Platform } from "react-native";
 import { Image } from "expo-image";
 import { useRouter } from "expo-router";
 import MaterialIcons from "@expo/vector-icons/MaterialIcons";
@@ -31,6 +31,12 @@ interface AppHeaderProps {
   showMenu?: boolean;
 }
 
+const triggerHaptic = () => {
+  if (Platform.OS !== "web") {
+    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+  }
+};
+
 export function AppHeader({
   title,
   subtitle,
@@ -46,13 +52,12 @@ export function AppHeader({
   const [menuVisible, setMenuVisible] = useState(false);
   
   const handleTitlePress = () => {
+    triggerHaptic();
     router.push("/(tabs)");
   };
 
   const handleMenuPress = () => {
-    if (Platform.OS !== "web") {
-      Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-    }
+    triggerHaptic();
     setMenuVisible(true);
   };
   
@@ -60,10 +65,12 @@ export function AppHeader({
     <>
       <View style={{ paddingHorizontal: 16, paddingTop: 16, paddingBottom: 8, backgroundColor: color.bg }}>
         <View style={{ flexDirection: "row", alignItems: "center", justifyContent: "space-between" }}>
-          <TouchableOpacity 
+          <Pressable 
             onPress={handleTitlePress}
-            style={{ flexDirection: "row", alignItems: "center", flex: 1 }}
-            activeOpacity={0.7}
+            style={({ pressed }) => [
+              { flexDirection: "row", alignItems: "center", flex: 1 },
+              pressed && { opacity: 0.7 },
+            ]}
           >
             {showLogo && (
               <Image
@@ -81,7 +88,7 @@ export function AppHeader({
                 {`${title || "君斗りんくの動員ちゃれんじ"}-${APP_VERSION}`}
               </Text>
             </View>
-          </TouchableOpacity>
+          </Pressable>
           
           <View style={{ flexDirection: "row", alignItems: "center" }}>
             {rightElement ? (
@@ -113,39 +120,43 @@ export function AppHeader({
             
             {/* ハンバーガーメニューボタン */}
             {showMenu && (
-              <TouchableOpacity
+              <Pressable
                 onPress={handleMenuPress}
-                style={{
-                  width: 44,
-                  height: 44,
-                  alignItems: "center",
-                  justifyContent: "center",
-                  borderRadius: 22,
-                  backgroundColor: "rgba(255, 255, 255, 0.1)",
-                }}
-                activeOpacity={0.7}
+                style={({ pressed }) => [
+                  {
+                    width: 44,
+                    height: 44,
+                    alignItems: "center",
+                    justifyContent: "center",
+                    borderRadius: 22,
+                    backgroundColor: "rgba(255, 255, 255, 0.1)",
+                  },
+                  pressed && { opacity: 0.7 },
+                ]}
               >
                 <MaterialIcons name="menu" size={24} color={color.textWhite} />
-              </TouchableOpacity>
+              </Pressable>
             )}
           </View>
         </View>
         
         {/* ログイン状態表示 */}
         {showLoginStatus && user && (
-          <TouchableOpacity 
+          <Pressable 
             onPress={handleMenuPress}
-            style={{ 
-              flexDirection: "row", 
-              alignItems: "center", 
-              marginTop: 8,
-              backgroundColor: "rgba(16, 185, 129, 0.15)",
-              paddingHorizontal: 12,
-              paddingVertical: 6,
-              borderRadius: 20,
-              alignSelf: "flex-start",
-            }}
-            activeOpacity={0.7}
+            style={({ pressed }) => [
+              { 
+                flexDirection: "row", 
+                alignItems: "center", 
+                marginTop: 8,
+                backgroundColor: "rgba(16, 185, 129, 0.15)",
+                paddingHorizontal: 12,
+                paddingVertical: 6,
+                borderRadius: 20,
+                alignSelf: "flex-start",
+              },
+              pressed && { opacity: 0.7 },
+            ]}
           >
             {user.profileImage && (
               <Image
@@ -158,7 +169,7 @@ export function AppHeader({
               {user.name || user.username || "ゲスト"}でログイン中
             </Text>
             <MaterialIcons name="expand-more" size={16} color={color.successDark} style={{ marginLeft: 4 }} />
-          </TouchableOpacity>
+          </Pressable>
         )}
         
         {subtitle && (

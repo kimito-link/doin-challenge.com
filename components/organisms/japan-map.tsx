@@ -1,4 +1,5 @@
-import { View, Text, TouchableOpacity, Dimensions } from "react-native";
+import { View, Text, Pressable, Dimensions, Platform } from "react-native";
+import * as Haptics from "expo-haptics";
 import { color, palette } from "@/theme/tokens";
 import Svg, { Path, G, Text as SvgText } from "react-native-svg";
 import { useMemo } from "react";
@@ -126,14 +127,15 @@ export function JapanMap({ prefectureCounts, onPrefecturePress, selectedPrefectu
           const isHot = region.name === hotRegion.name && count > 0;
           
           return (
-            <TouchableOpacity
+            <Pressable
               key={region.name}
               onPress={() => {
+                if (Platform.OS !== "web") Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
                 if (onPrefecturePress) {
                   onPrefecturePress(region.name);
                 }
               }}
-              style={{
+              style={({ pressed }) => [{
                 width: "48%",
                 backgroundColor: isHot ? "rgba(236, 72, 153, 0.2)" : color.surface,
                 borderRadius: 12,
@@ -141,7 +143,7 @@ export function JapanMap({ prefectureCounts, onPrefecturePress, selectedPrefectu
                 marginBottom: 8,
                 borderWidth: isHot ? 2 : 1,
                 borderColor: isHot ? color.accentPrimary : count > 0 ? `rgba(236, 72, 153, ${0.3 + intensity * 0.5})` : color.border,
-              }}
+              }, pressed && { opacity: 0.7 }]}
             >
               <View style={{ flexDirection: "row", alignItems: "center", justifyContent: "space-between" }}>
                 <View style={{ flexDirection: "row", alignItems: "center" }}>
@@ -182,7 +184,7 @@ export function JapanMap({ prefectureCounts, onPrefecturePress, selectedPrefectu
                   borderRadius: 2,
                 }} />
               </View>
-            </TouchableOpacity>
+            </Pressable>
           );
         })}
       </View>

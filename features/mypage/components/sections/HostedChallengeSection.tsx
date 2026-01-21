@@ -3,7 +3,7 @@
  * マイページで主催しているチャレンジ一覧を表示する
  */
 
-import { View, Text, TouchableOpacity } from "react-native";
+import { View, Text, Pressable } from "react-native";
 import { useColors } from "@/hooks/use-colors";
 import { mypageUI, mypageText } from "../../ui/theme/tokens";
 import MaterialIcons from "@expo/vector-icons/MaterialIcons";
@@ -32,7 +32,7 @@ export function HostedChallengeSection({ challenges, onChallengePress }: HostedC
       {challenges && challenges.length > 0 ? (
         <View style={{ gap: 12 }}>
           {challenges.map((challenge) => (
-            <TouchableOpacity
+            <Pressable
               key={challenge.id}
               onPress={() => onChallengePress(challenge.id)}
               style={{
@@ -59,7 +59,7 @@ export function HostedChallengeSection({ challenges, onChallengePress }: HostedC
                 </View>
                 <MaterialIcons name="chevron-right" size={24} color={mypageText.muted} />
               </View>
-            </TouchableOpacity>
+            </Pressable>
           ))}
         </View>
       ) : (

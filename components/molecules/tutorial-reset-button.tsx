@@ -1,4 +1,4 @@
-import { View, Text, TouchableOpacity, StyleSheet, Alert, Platform } from "react-native";
+import { View, Text, Pressable, StyleSheet, Alert, Platform } from "react-native";
 import { color, palette } from "@/theme/tokens";
 import MaterialIcons from "@expo/vector-icons/MaterialIcons";
 import { useTutorial } from "@/lib/tutorial-context";
@@ -44,10 +44,13 @@ export function TutorialResetButton() {
   };
 
   return (
-    <TouchableOpacity
+    <Pressable
       onPress={handlePress}
-      style={[styles.container, { backgroundColor: colors.surface, borderColor: colors.border }]}
-      activeOpacity={0.7}
+      style={({ pressed }) => [
+        styles.container,
+        { backgroundColor: colors.surface, borderColor: colors.border },
+        pressed && { opacity: 0.7 },
+      ]}
     >
       <View style={styles.iconContainer}>
         <MaterialIcons name="school" size={24} color={color.hostAccentLegacy} />
@@ -61,7 +64,7 @@ export function TutorialResetButton() {
         </Text>
       </View>
       <MaterialIcons name="chevron-right" size={24} color={colors.muted} />
-    </TouchableOpacity>
+    </Pressable>
   );
 }
 

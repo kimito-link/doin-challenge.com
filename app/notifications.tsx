@@ -1,4 +1,4 @@
-import { Text, View, TouchableOpacity, ScrollView, Switch, ActivityIndicator } from "react-native";
+import { Text, View, Pressable, ScrollView, Switch, ActivityIndicator } from "react-native";
 import { color, palette } from "@/theme/tokens";
 import { useRouter } from "expo-router";
 import { useState, useEffect } from "react";
@@ -119,13 +119,13 @@ export default function NotificationsScreen() {
           title="君斗りんくの動員ちゃれんじ" 
           showCharacters={false}
           rightElement={
-            <TouchableOpacity
+            <Pressable
               onPress={() => router.back()}
               style={{ flexDirection: "row", alignItems: "center" }}
             >
               <MaterialIcons name="arrow-back" size={24} color={colors.foreground} />
               <Text style={{ color: colors.foreground, marginLeft: 8 }}>戻る</Text>
-            </TouchableOpacity>
+            </Pressable>
           }
         />
         <View style={{ paddingHorizontal: 16, paddingBottom: 8 }}>
@@ -150,7 +150,7 @@ export default function NotificationsScreen() {
             )}
             <View style={{ flex: 1 }} />
             {unreadCount > 0 && (
-              <TouchableOpacity
+              <Pressable
                 onPress={() => markAllAsReadMutation.mutate()}
                 style={{
                   backgroundColor: color.surface,
@@ -160,7 +160,7 @@ export default function NotificationsScreen() {
                 }}
               >
                 <Text style={{ color: color.accentPrimary, fontSize: 12 }}>すべて既読</Text>
-              </TouchableOpacity>
+              </Pressable>
             )}
           </View>
         </View>
@@ -200,7 +200,7 @@ export default function NotificationsScreen() {
             </View>
           ) : notificationList && notificationList.length > 0 ? (
             notificationList.map((notification) => (
-              <TouchableOpacity
+              <Pressable
                 key={notification.id}
                 onPress={() => {
                   if (!notification.isRead) {
@@ -256,7 +256,7 @@ export default function NotificationsScreen() {
                     />
                   )}
                 </View>
-              </TouchableOpacity>
+              </Pressable>
             ))
           ) : (
             <View style={{ alignItems: "center", paddingVertical: 40 }}>

@@ -1,4 +1,4 @@
-import { View, Text, TouchableOpacity, StyleSheet, Modal, Platform } from "react-native";
+import { View, Text, Pressable, StyleSheet, Modal, Platform } from "react-native";
 import { color, palette } from "@/theme/tokens";
 import { useEffect, useState, useCallback } from "react";
 import MaterialIcons from "@expo/vector-icons/MaterialIcons";
@@ -88,13 +88,15 @@ export function EncouragementModal({
       <View style={styles.overlay}>
         <View style={styles.modalContainer}>
           {/* 閉じるボタン */}
-          <TouchableOpacity 
-            style={styles.closeButton} 
+          <Pressable 
+            style={({ pressed }) => [
+              styles.closeButton,
+              pressed && { opacity: 0.7 },
+            ]}
             onPress={handleClose}
-            activeOpacity={0.7}
           >
             <MaterialIcons name="close" size={24} color={color.textSubtle} />
-          </TouchableOpacity>
+          </Pressable>
 
           {/* メインコンテンツ */}
           <View style={styles.content}>
@@ -109,13 +111,15 @@ export function EncouragementModal({
           </View>
 
           {/* 閉じるボタン */}
-          <TouchableOpacity
-            style={styles.actionButton}
+          <Pressable
+            style={({ pressed }) => [
+              styles.actionButton,
+              pressed && { opacity: 0.7 },
+            ]}
             onPress={handleClose}
-            activeOpacity={0.8}
           >
             <Text style={styles.actionButtonText}>閉じる</Text>
-          </TouchableOpacity>
+          </Pressable>
         </View>
       </View>
     </Modal>

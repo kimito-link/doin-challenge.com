@@ -1,10 +1,9 @@
-import { View, Text, TouchableOpacity, StyleSheet, Modal, Animated } from "react-native";
+import { View, Text, Pressable, StyleSheet, Modal, Animated, Platform } from "react-native";
 import { color, palette } from "@/theme/tokens";
 import MaterialIcons from "@expo/vector-icons/MaterialIcons";
 import { useState, useRef, useEffect } from "react";
 import { LinearGradient } from "expo-linear-gradient";
 import * as Haptics from "expo-haptics";
-import { Platform } from "react-native";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { scheduleEventReminder, cancelNotification } from "@/lib/push-notifications";
 
@@ -34,6 +33,12 @@ interface StoredReminder {
   option: string;
   scheduledFor: string;
 }
+
+const triggerHaptic = () => {
+  if (Platform.OS !== "web") {
+    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+  }
+};
 
 /**
  * リマインダー設定ボタン
@@ -144,9 +149,7 @@ export function ReminderButton({
       await AsyncStorage.removeItem(`${REMINDER_STORAGE_KEY}_${challengeId}`);
       setActiveReminder(null);
 
-      if (Platform.OS !== "web") {
-        await Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-      }
+      triggerHaptic();
     } catch (error) {
       console.error("[Reminder] Failed to cancel:", error);
     } finally {
@@ -165,16 +168,17 @@ export function ReminderButton({
 
   return (
     <>
-      <TouchableOpacity
+      <Pressable
         onPress={() => {
-          if (Platform.OS !== "web") {
-            Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-          }
+          triggerHaptic();
           setShowModal(true);
         }}
         disabled={isEventPast}
-        style={[styles.button, isEventPast && styles.buttonDisabled]}
-        activeOpacity={0.7}
+        style={({ pressed }) => [
+          styles.button,
+          isEventPast && styles.buttonDisabled,
+          pressed && !isEventPast && { opacity: 0.7 },
+        ]}
       >
         <MaterialIcons
           name={activeReminder ? "notifications-active" : "notifications-none"}
@@ -184,7 +188,7 @@ export function ReminderButton({
         <Text style={[styles.buttonText, activeReminder && styles.buttonTextActive]}>
           {activeReminder ? getActiveOptionLabel() : "リマインド"}
         </Text>
-      </TouchableOpacity>
+      </Pressable>
 
       <Modal
         visible={showModal}
@@ -192,9 +196,8 @@ export function ReminderButton({
         animationType="none"
         onRequestClose={() => setShowModal(false)}
       >
-        <TouchableOpacity
+        <Pressable
           style={styles.overlay}
-          activeOpacity={1}
           onPress={() => setShowModal(false)}
         >
           <Animated.View
@@ -206,7 +209,7 @@ export function ReminderButton({
               },
             ]}
           >
-            <TouchableOpacity activeOpacity={1}>
+            <Pressable>
               <View style={styles.modalHeader}>
                 <MaterialIcons name="notifications" size={24} color={color.accentPrimary} />
                 <Text style={styles.modalTitle}>リマインダー設定</Text>
@@ -223,16 +226,16 @@ export function ReminderButton({
                   const isPast = reminderTime < new Date();
 
                   return (
-                    <TouchableOpacity
+                    <Pressable
                       key={option.id}
                       onPress={() => !isPast && handleSetReminder(option)}
                       disabled={isPast || isLoading}
-                      style={[
+                      style={({ pressed }) => [
                         styles.optionButton,
                         isActive && styles.optionButtonActive,
                         isPast && styles.optionButtonDisabled,
+                        pressed && !isPast && !isLoading && { opacity: 0.7 },
                       ]}
-                      activeOpacity={0.7}
                     >
                       <View style={styles.optionContent}>
                         <MaterialIcons
@@ -253,32 +256,36 @@ export function ReminderButton({
                       {isPast && (
                         <Text style={styles.optionSubtext}>過去の時間</Text>
                       )}
-                    </TouchableOpacity>
+                    </Pressable>
                   );
                 })}
               </View>
 
               {activeReminder && (
-                <TouchableOpacity
+                <Pressable
                   onPress={handleCancelReminder}
                   disabled={isLoading}
-                  style={styles.cancelButton}
-                  activeOpacity={0.7}
+                  style={({ pressed }) => [
+                    styles.cancelButton,
+                    pressed && !isLoading && { opacity: 0.7 },
+                  ]}
                 >
                   <Text style={styles.cancelButtonText}>リマインダーを解除</Text>
-                </TouchableOpacity>
+                </Pressable>
               )}
 
-              <TouchableOpacity
+              <Pressable
                 onPress={() => setShowModal(false)}
-                style={styles.closeButton}
-                activeOpacity={0.7}
+                style={({ pressed }) => [
+                  styles.closeButton,
+                  pressed && { opacity: 0.7 },
+                ]}
               >
                 <Text style={styles.closeButtonText}>閉じる</Text>
-              </TouchableOpacity>
-            </TouchableOpacity>
+              </Pressable>
+            </Pressable>
           </Animated.View>
-        </TouchableOpacity>
+        </Pressable>
       </Modal>
     </>
   );

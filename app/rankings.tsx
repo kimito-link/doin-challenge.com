@@ -1,4 +1,4 @@
-import { FlatList, Text, View, TouchableOpacity, RefreshControl, Platform } from "react-native";
+import { FlatList, Text, View, Pressable, RefreshControl, Platform } from "react-native";
 import { color, palette } from "@/theme/tokens";
 import { Image } from "expo-image";
 import { useRouter } from "expo-router";
@@ -76,13 +76,13 @@ export default function RankingsScreen() {
         title="君斗りんくの動員ちゃれんじ" 
         showCharacters={false}
         rightElement={
-          <TouchableOpacity
+          <Pressable
             onPress={() => router.back()}
             style={{ flexDirection: "row", alignItems: "center" }}
           >
             <MaterialIcons name="arrow-back" size={24} color={color.textWhite} />
             <Text style={{ color: color.textWhite, marginLeft: 8 }}>戻る</Text>
-          </TouchableOpacity>
+          </Pressable>
         }
       />
       <View style={{ 
@@ -106,7 +106,7 @@ export default function RankingsScreen() {
         paddingVertical: 12,
         gap: 8,
       }}>
-        <TouchableOpacity
+        <Pressable
           onPress={() => setTab("contribution")}
           style={{
             flex: 1,
@@ -119,8 +119,8 @@ export default function RankingsScreen() {
           <Text style={{ color: color.textWhite, fontWeight: tab === "contribution" ? "bold" : "normal" }}>
             貢献度
           </Text>
-        </TouchableOpacity>
-        <TouchableOpacity
+        </Pressable>
+        <Pressable
           onPress={() => setTab("hosts")}
           style={{
             flex: 1,
@@ -133,7 +133,7 @@ export default function RankingsScreen() {
           <Text style={{ color: color.textWhite, fontWeight: tab === "hosts" ? "bold" : "normal" }}>
             主催者
           </Text>
-        </TouchableOpacity>
+        </Pressable>
       </View>
 
       {/* タブ説明 */}
@@ -154,7 +154,7 @@ export default function RankingsScreen() {
           gap: 8,
         }}>
           {(["weekly", "monthly", "all"] as PeriodType[]).map((p) => (
-            <TouchableOpacity
+            <Pressable
               key={p}
               onPress={() => setPeriod(p)}
               style={{
@@ -167,7 +167,7 @@ export default function RankingsScreen() {
               <Text style={{ color: color.textWhite, fontSize: 13 }}>
                 {periodLabels[p]}
               </Text>
-            </TouchableOpacity>
+            </Pressable>
           ))}
         </View>
       )}

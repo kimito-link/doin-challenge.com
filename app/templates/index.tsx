@@ -1,4 +1,4 @@
-import { View, Text, FlatList, TouchableOpacity, Alert } from "react-native";
+import { View, Text, FlatList, Pressable, Alert } from "react-native";
 import { color, palette } from "@/theme/tokens";
 import { useRouter } from "expo-router";
 import { ScreenContainer } from "@/components/organisms/screen-container";
@@ -118,7 +118,7 @@ export default function TemplatesScreen() {
       </View>
 
       <View style={{ flexDirection: "row", gap: 8 }}>
-        <TouchableOpacity
+        <Pressable
           onPress={() => handleUseTemplate(item)}
           style={{
             flex: 1,
@@ -134,8 +134,8 @@ export default function TemplatesScreen() {
           <Text style={{ color: color.textWhite, fontSize: 13, fontWeight: "bold", marginLeft: 4 }}>
             使用する
           </Text>
-        </TouchableOpacity>
-        <TouchableOpacity
+        </Pressable>
+        <Pressable
           onPress={() => handleDelete(item.id, item.name)}
           style={{
             backgroundColor: color.border,
@@ -146,7 +146,7 @@ export default function TemplatesScreen() {
           }}
         >
           <MaterialIcons name="delete" size={18} color={color.danger} />
-        </TouchableOpacity>
+        </Pressable>
       </View>
     </View>
   );
@@ -182,7 +182,7 @@ export default function TemplatesScreen() {
           </Text>
         </View>
       </View>
-      <TouchableOpacity
+      <Pressable
         onPress={() => handleUseTemplate(item as NonNullable<typeof myTemplates>[0])}
         style={{
           backgroundColor: color.accentAlt,
@@ -197,7 +197,7 @@ export default function TemplatesScreen() {
         <Text style={{ color: color.textWhite, fontSize: 13, fontWeight: "bold", marginLeft: 4 }}>
           このテンプレートを使う
         </Text>
-      </TouchableOpacity>
+      </Pressable>
     </View>
   );
 
@@ -208,9 +208,9 @@ export default function TemplatesScreen() {
         title="君斗りんくの動員ちゃれんじ" 
         showCharacters={false}
         rightElement={
-          <TouchableOpacity onPress={() => router.back()} style={{ flexDirection: "row", alignItems: "center" }}>
+          <Pressable onPress={() => router.back()} style={{ flexDirection: "row", alignItems: "center" }}>
             <Text style={{ color: color.textWhite }}>← 戻る</Text>
-          </TouchableOpacity>
+          </Pressable>
         }
       />
       <View style={{ padding: 16, borderBottomWidth: 1, borderBottomColor: color.border }}>

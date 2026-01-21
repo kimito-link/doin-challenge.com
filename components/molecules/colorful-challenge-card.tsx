@@ -1,5 +1,6 @@
-import { View, Text, StyleSheet, TouchableOpacity, Modal, Pressable } from "react-native";
+import { View, Text, StyleSheet, Pressable, Modal, Platform } from "react-native";
 import { useState } from "react";
+import * as Haptics from "expo-haptics";
 import { color, palette } from "@/theme/tokens";
 import { LinearGradient } from "expo-linear-gradient";
 import MaterialIcons from "@expo/vector-icons/MaterialIcons";
@@ -121,6 +122,12 @@ export function ColorfulChallengeCard({
     onDelete?.(challenge.id);
   };
 
+  const triggerHaptic = () => {
+    if (Platform.OS !== "web") {
+      Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+    }
+  };
+
   return (
     <>
       <AnimatedCard
@@ -147,44 +154,54 @@ export function ColorfulChallengeCard({
           style={styles.cardGradient}
         >
           {/* お気に入りアイコン（左上） */}
-          <TouchableOpacity 
+          <Pressable 
             style={styles.favoriteIcon}
             onPress={(e) => {
               e.stopPropagation?.();
+              triggerHaptic();
               onToggleFavorite?.(challenge.id);
             }}
             hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
           >
-            <MaterialIcons 
-              name={isFavorite ? "star" : "star-outline"} 
-              size={20} 
-              color={isFavorite ? color.rankGold : "rgba(255,255,255,0.6)"} 
-            />
-          </TouchableOpacity>
+            {({ pressed }) => (
+              <MaterialIcons 
+                name={isFavorite ? "star" : "star-outline"} 
+                size={20} 
+                color={isFavorite ? color.rankGold : "rgba(255,255,255,0.6)"} 
+                style={pressed ? { opacity: 0.6 } : undefined}
+              />
+            )}
+          </Pressable>
 
           {/* メニューアイコン（右上）- 運営者の場合は編集・削除メニューを表示 */}
-          <TouchableOpacity 
+          <Pressable 
             style={styles.menuIcon}
             onPress={(e) => {
               e.stopPropagation?.();
               if (isOwner) {
+                triggerHaptic();
                 handleMenuPress();
               }
             }}
             hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
           >
-            <MaterialIcons 
-              name="more-horiz" 
-              size={20} 
-              color={isOwner ? "rgba(255,255,255,0.9)" : "rgba(255,255,255,0.6)"} 
-            />
-            {/* 運営者バッジ */}
-            {isOwner && (
-              <View style={styles.ownerBadge}>
-                <Text style={styles.ownerBadgeText}>主催</Text>
-              </View>
+            {({ pressed }) => (
+              <>
+                <MaterialIcons 
+                  name="more-horiz" 
+                  size={20} 
+                  color={isOwner ? "rgba(255,255,255,0.9)" : "rgba(255,255,255,0.6)"} 
+                  style={pressed ? { opacity: 0.6 } : undefined}
+                />
+                {/* 運営者バッジ */}
+                {isOwner && (
+                  <View style={styles.ownerBadge}>
+                    <Text style={styles.ownerBadgeText}>主催</Text>
+                  </View>
+                )}
+              </>
             )}
-          </TouchableOpacity>
+          </Pressable>
 
           {/* メインコンテンツ */}
           <View style={styles.content}>
@@ -272,28 +289,38 @@ export function ColorfulChallengeCard({
             <Text style={styles.menuTitle}>{challenge.title}</Text>
             <Text style={styles.menuSubtitle}>チャレンジを管理</Text>
             
-            <TouchableOpacity 
-              style={styles.menuItem}
+            <Pressable 
+              style={({ pressed }) => [
+                styles.menuItem,
+                pressed && { opacity: 0.7 },
+              ]}
               onPress={handleEdit}
             >
               <MaterialIcons name="edit" size={24} color={colors.foreground} />
               <Text style={[styles.menuItemText, { color: colors.foreground }]}>編集する</Text>
-            </TouchableOpacity>
+            </Pressable>
             
-            <TouchableOpacity 
-              style={styles.menuItem}
+            <Pressable 
+              style={({ pressed }) => [
+                styles.menuItem,
+                pressed && { opacity: 0.7 },
+              ]}
               onPress={handleDelete}
             >
               <MaterialIcons name="delete" size={24} color={color.danger} />
               <Text style={[styles.menuItemText, { color: color.danger }]}>削除する</Text>
-            </TouchableOpacity>
+            </Pressable>
             
-            <TouchableOpacity 
-              style={[styles.menuItem, styles.menuItemCancel]}
+            <Pressable 
+              style={({ pressed }) => [
+                styles.menuItem,
+                styles.menuItemCancel,
+                pressed && { opacity: 0.7 },
+              ]}
               onPress={() => setShowMenu(false)}
             >
               <Text style={[styles.menuItemText, { color: colors.muted }]}>キャンセル</Text>
-            </TouchableOpacity>
+            </Pressable>
           </View>
         </Pressable>
       </Modal>

@@ -1,10 +1,11 @@
 import { memo, useCallback } from "react";
 import { color, palette } from "@/theme/tokens";
-import { View, Text, TouchableOpacity, StyleSheet } from "react-native";
+import { View, Text, Pressable, StyleSheet, Platform } from "react-native";
 import { Image } from "expo-image";
 import { LinearGradient } from "expo-linear-gradient";
 import MaterialIcons from "@expo/vector-icons/MaterialIcons";
 import { goalTypeConfig } from "@/constants/goal-types";
+import * as Haptics from "expo-haptics";
 
 interface Challenge {
   id: number;
@@ -55,13 +56,20 @@ export const MemoizedChallengeCard = memo<MemoizedChallengeCardProps>(
     // カードの幅を計算
     const cardWidth = numColumns > 1 ? `${100 / numColumns - 2}%` : "100%";
 
+    const handlePress = useCallback(() => {
+      if (Platform.OS !== "web") {
+        Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+      }
+      onPress();
+    }, [onPress]);
+
     return (
-      <TouchableOpacity
-        onPress={onPress}
-        activeOpacity={0.8}
-        style={[
+      <Pressable
+        onPress={handlePress}
+        style={({ pressed }) => [
           styles.card,
-          { width: cardWidth as any }
+          { width: cardWidth as any },
+          pressed && { opacity: 0.8 },
         ]}
       >
         {/* グラデーション背景 */}
@@ -152,7 +160,7 @@ export const MemoizedChallengeCard = memo<MemoizedChallengeCardProps>(
             )}
           </View>
         </LinearGradient>
-      </TouchableOpacity>
+      </Pressable>
     );
   },
   // カスタム比較関数

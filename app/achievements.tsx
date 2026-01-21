@@ -1,4 +1,5 @@
-import { Text, View, TouchableOpacity, ScrollView, Dimensions } from "react-native";
+import { Text, View, Pressable, ScrollView, Dimensions, Platform } from "react-native";
+import * as Haptics from "expo-haptics";
 import { color, palette } from "@/theme/tokens";
 import { useRouter } from "expo-router";
 import { ScreenContainer } from "@/components/organisms/screen-container";
@@ -328,12 +329,12 @@ export default function AchievementsScreen() {
       <ScreenContainer className="p-4">
         <View style={{ flex: 1, alignItems: "center", justifyContent: "center" }}>
           <Text style={{ color: color.textMuted, fontSize: 16 }}>ログインしてください</Text>
-          <TouchableOpacity
-            onPress={() => router.push("/mypage")}
-            style={{ marginTop: 16, padding: 12 }}
+          <Pressable
+            onPress={() => { if (Platform.OS !== "web") Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light); router.push("/mypage"); }}
+            style={({ pressed }) => [{ marginTop: 16, padding: 12 }, pressed && { opacity: 0.7 }]}
           >
             <Text style={{ color: color.accentPrimary }}>ログイン画面へ</Text>
-          </TouchableOpacity>
+          </Pressable>
         </View>
       </ScreenContainer>
     );
@@ -347,13 +348,13 @@ export default function AchievementsScreen() {
           title="君斗りんくの動員ちゃれんじ" 
           showCharacters={false}
           rightElement={
-            <TouchableOpacity
-              onPress={() => router.back()}
-              style={{ flexDirection: "row", alignItems: "center" }}
+            <Pressable
+              onPress={() => { if (Platform.OS !== "web") Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light); router.back(); }}
+              style={({ pressed }) => [{ flexDirection: "row", alignItems: "center" }, pressed && { opacity: 0.7 }]}
             >
               <MaterialIcons name="arrow-back" size={24} color={color.textWhite} />
               <Text style={{ color: color.textWhite, marginLeft: 8 }}>戻る</Text>
-            </TouchableOpacity>
+            </Pressable>
           }
         />
         <Text style={{ color: color.textWhite, fontSize: 20, fontWeight: "bold", marginBottom: 16 }}>

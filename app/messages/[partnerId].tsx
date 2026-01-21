@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from "react";
 import { color, palette } from "@/theme/tokens";
-import { View, Text, FlatList, TextInput, TouchableOpacity, KeyboardAvoidingView, Platform } from "react-native";
+import { View, Text, FlatList, TextInput, Pressable, KeyboardAvoidingView, Platform } from "react-native";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import { ScreenContainer } from "@/components/organisms/screen-container";
 import { trpc } from "@/lib/trpc";
@@ -117,9 +117,9 @@ export default function ConversationScreen() {
           title="君斗りんくの動員ちゃれんじ" 
           showCharacters={false}
           rightElement={
-            <TouchableOpacity onPress={() => router.back()} className="flex-row items-center">
+            <Pressable onPress={() => router.back()} className="flex-row items-center">
               <Text className="text-foreground">← 戻る</Text>
-            </TouchableOpacity>
+            </Pressable>
           }
         />
         <View className="p-4 border-b border-border">
@@ -163,7 +163,7 @@ export default function ConversationScreen() {
             returnKeyType="send"
             onSubmitEditing={handleSend}
           />
-          <TouchableOpacity
+          <Pressable
             onPress={handleSend}
             disabled={!message.trim() || sendMessage.isPending}
             className={`w-12 h-12 rounded-full items-center justify-center ${
@@ -173,7 +173,7 @@ export default function ConversationScreen() {
             <Text className={`text-xl ${message.trim() ? "text-background" : "text-muted"}`}>
               ↑
             </Text>
-          </TouchableOpacity>
+          </Pressable>
         </View>
       </KeyboardAvoidingView>
     </ScreenContainer>

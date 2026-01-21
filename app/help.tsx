@@ -3,7 +3,7 @@ import { color, palette } from "@/theme/tokens";
 import {
   View,
   Text,
-  TouchableOpacity,
+  Pressable,
   ScrollView,
   StyleSheet,
   Platform,
@@ -88,9 +88,9 @@ export default function HelpScreen() {
     <ScreenContainer containerClassName="bg-background">
       {/* ヘッダー */}
       <View style={styles.header}>
-        <TouchableOpacity onPress={handleBack} style={styles.backButton}>
+        <Pressable onPress={handleBack} style={styles.backButton}>
           <MaterialIcons name="arrow-back" size={24} color={color.textWhite} />
-        </TouchableOpacity>
+        </Pressable>
         <Text style={styles.headerTitle}>ヘルプ</Text>
         <View style={styles.headerSpacer} />
       </View>
@@ -113,10 +113,10 @@ export default function HelpScreen() {
 
         {/* チュートリアルを見返すボタン */}
         <Animated.View entering={FadeInDown.delay(100).duration(400)}>
-          <TouchableOpacity
+          <Pressable
             onPress={handleReplayTutorial}
             style={styles.tutorialButton}
-            activeOpacity={0.8}
+            
           >
             <View style={styles.tutorialButtonIcon}>
               <MaterialIcons name="replay" size={28} color={color.accentPrimary} />
@@ -128,7 +128,7 @@ export default function HelpScreen() {
               </Text>
             </View>
             <MaterialIcons name="chevron-right" size={24} color={color.textSubtle} />
-          </TouchableOpacity>
+          </Pressable>
         </Animated.View>
 
         {/* よくある質問 */}
@@ -136,11 +136,11 @@ export default function HelpScreen() {
           <Text style={styles.sectionTitle}>よくある質問</Text>
           
           {FAQ_ITEMS.map((item, index) => (
-            <TouchableOpacity
+            <Pressable
               key={index}
               onPress={() => toggleFAQ(index)}
               style={styles.faqItem}
-              activeOpacity={0.7}
+              
             >
               <View style={styles.faqHeader}>
                 <View style={styles.faqQuestionIcon}>
@@ -161,7 +161,7 @@ export default function HelpScreen() {
                   <Text style={styles.faqAnswerText}>{item.answer}</Text>
                 </View>
               )}
-            </TouchableOpacity>
+            </Pressable>
           ))}
         </Animated.View>
 

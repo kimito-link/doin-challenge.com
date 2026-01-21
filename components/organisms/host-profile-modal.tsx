@@ -10,7 +10,7 @@ import {
   Modal,
   View,
   Text,
-  TouchableOpacity,
+  Pressable,
   StyleSheet,
   ActivityIndicator,
   Linking,
@@ -91,24 +91,24 @@ export function HostProfileModal({
       animationType="fade"
       onRequestClose={handleClose}
     >
-      <TouchableOpacity
+      <Pressable
         style={styles.overlay}
-        activeOpacity={1}
         onPress={handleClose}
       >
-        <TouchableOpacity
-          activeOpacity={1}
+        <Pressable
           onPress={(e) => e.stopPropagation()}
           style={[styles.container, { backgroundColor: colors.surface }]}
         >
           {/* 閉じるボタン */}
-          <TouchableOpacity
-            style={styles.closeButton}
+          <Pressable
+            style={({ pressed }) => [
+              styles.closeButton,
+              pressed && { opacity: 0.7 },
+            ]}
             onPress={handleClose}
-            activeOpacity={0.7}
           >
             <MaterialIcons name="close" size={24} color={colors.muted} />
-          </TouchableOpacity>
+          </Pressable>
 
           {loading ? (
             <View style={styles.loadingContainer}>
@@ -121,13 +121,16 @@ export function HostProfileModal({
             <View style={styles.errorContainer}>
               <MaterialIcons name="error-outline" size={48} color={colors.error} />
               <Text style={[styles.errorText, { color: colors.error }]}>{error}</Text>
-              <TouchableOpacity
-                style={[styles.retryButton, { backgroundColor: colors.primary }]}
+              <Pressable
+                style={({ pressed }) => [
+                  styles.retryButton,
+                  { backgroundColor: colors.primary },
+                  pressed && { opacity: 0.8 },
+                ]}
                 onPress={loadProfile}
-                activeOpacity={0.8}
               >
                 <Text style={styles.retryButtonText}>再試行</Text>
-              </TouchableOpacity>
+              </Pressable>
             </View>
           ) : (
             <>
@@ -191,18 +194,21 @@ export function HostProfileModal({
               </View>
 
               {/* Twitterで見るボタン */}
-              <TouchableOpacity
-                style={[styles.twitterButton, { backgroundColor: color.twitter }]}
+              <Pressable
+                style={({ pressed }) => [
+                  styles.twitterButton,
+                  { backgroundColor: color.twitter },
+                  pressed && { opacity: 0.8 },
+                ]}
                 onPress={handleOpenTwitter}
-                activeOpacity={0.8}
               >
                 <MaterialIcons name="open-in-new" size={18} color={color.textWhite} />
                 <Text style={styles.twitterButtonText}>Xで見る</Text>
-              </TouchableOpacity>
+              </Pressable>
             </>
           )}
-        </TouchableOpacity>
-      </TouchableOpacity>
+        </Pressable>
+      </Pressable>
     </Modal>
   );
 }

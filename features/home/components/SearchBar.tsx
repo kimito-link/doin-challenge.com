@@ -6,7 +6,7 @@
  */
 
 import { useState, useEffect, useCallback, useRef } from "react";
-import { View, TextInput, TouchableOpacity, Text, ScrollView, Keyboard, Platform } from "react-native";
+import { View, TextInput, Pressable, Text, ScrollView, Keyboard, Platform } from "react-native";
 import MaterialIcons from "@expo/vector-icons/MaterialIcons";
 import { useColors } from "@/hooks/use-colors";
 import { homeUI, homeText } from "@/features/home/ui/theme/tokens";
@@ -171,9 +171,9 @@ export function SearchBar({
           }}
         />
         {localValue.length > 0 && (
-          <TouchableOpacity onPress={handleClear} style={{ padding: 4 }}>
+          <Pressable onPress={handleClear} style={{ padding: 4 }}>
             <MaterialIcons name="close" size={20} color={homeText.muted} />
-          </TouchableOpacity>
+          </Pressable>
         )}
       </View>
       
@@ -210,7 +210,7 @@ export function SearchBar({
             nestedScrollEnabled
           >
             {filteredSuggestions.map((suggestion, index) => (
-              <TouchableOpacity
+              <Pressable
                 key={suggestion}
                 onPress={() => handleSuggestionPress(suggestion)}
                 style={{
@@ -226,7 +226,7 @@ export function SearchBar({
                 <Text style={{ color: colors.foreground, fontSize: 14 }}>
                   {suggestion}
                 </Text>
-              </TouchableOpacity>
+              </Pressable>
             ))}
           </ScrollView>
         </View>

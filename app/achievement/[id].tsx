@@ -1,4 +1,5 @@
-import { ScrollView, Text, View, TouchableOpacity, Share, Alert } from "react-native";
+import { ScrollView, Text, View, Pressable, Share, Alert, Platform } from "react-native";
+import * as Haptics from "expo-haptics";
 import { color, palette } from "@/theme/tokens";
 import { Image } from "expo-image";
 import { useLocalSearchParams, useRouter } from "expo-router";
@@ -74,12 +75,15 @@ export default function AchievementPage() {
       <ScreenContainer containerClassName="bg-background">
         <View style={{ flex: 1, alignItems: "center", justifyContent: "center", backgroundColor: colors.background }}>
           <Text style={{ color: color.textMuted }}>達成記念ページはまだ作成されていません</Text>
-          <TouchableOpacity
-            onPress={() => router.back()}
-            style={{ marginTop: 16, paddingHorizontal: 24, paddingVertical: 12, backgroundColor: color.accentPrimary, borderRadius: 24 }}
+          <Pressable
+            onPress={() => {
+              if (Platform.OS !== "web") Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+              router.back();
+            }}
+            style={({ pressed }) => [{ marginTop: 16, paddingHorizontal: 24, paddingVertical: 12, backgroundColor: color.accentPrimary, borderRadius: 24 }, pressed && { opacity: 0.8 }]}
           >
             <Text style={{ color: colors.foreground, fontWeight: "bold" }}>戻る</Text>
-          </TouchableOpacity>
+          </Pressable>
         </View>
       </ScreenContainer>
     );
@@ -98,16 +102,16 @@ export default function AchievementPage() {
           showCharacters={false}
           rightElement={
             <View style={{ flexDirection: "row", alignItems: "center", gap: 16 }}>
-              <TouchableOpacity onPress={handleShare}>
+              <Pressable onPress={() => { if (Platform.OS !== "web") Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light); handleShare(); }} style={({ pressed }) => [pressed && { opacity: 0.7 }]}>
                 <MaterialIcons name="share" size={24} color={colors.foreground} />
-              </TouchableOpacity>
-              <TouchableOpacity
-                onPress={() => router.back()}
-                style={{ flexDirection: "row", alignItems: "center" }}
+              </Pressable>
+              <Pressable
+                onPress={() => { if (Platform.OS !== "web") Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light); router.back(); }}
+                style={({ pressed }) => [{ flexDirection: "row", alignItems: "center" }, pressed && { opacity: 0.7 }]}
               >
                 <MaterialIcons name="arrow-back" size={24} color={colors.foreground} />
                 <Text style={{ color: colors.foreground, marginLeft: 8 }}>戻る</Text>
-              </TouchableOpacity>
+              </Pressable>
             </View>
           }
         />
@@ -283,20 +287,20 @@ export default function AchievementPage() {
 
             {/* もっと見るボタン */}
             {participations && participations.length > 20 && !showAllParticipants && (
-              <TouchableOpacity
-                onPress={() => setShowAllParticipants(true)}
-                style={{
+              <Pressable
+                onPress={() => { if (Platform.OS !== "web") Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light); setShowAllParticipants(true); }}
+                style={({ pressed }) => [{
                   marginTop: 16,
                   paddingVertical: 12,
                   backgroundColor: color.border,
                   borderRadius: 12,
                   alignItems: "center",
-                }}
+                }, pressed && { opacity: 0.7 }]}
               >
                 <Text style={{ color: color.accentPrimary, fontWeight: "bold" }}>
                   すべての参加者を見る ({participations.length - 20}人)
                 </Text>
-              </TouchableOpacity>
+              </Pressable>
             )}
           </View>
         </View>
@@ -322,22 +326,22 @@ export default function AchievementPage() {
 
         {/* シェアボタン */}
         <View style={{ padding: 16, paddingBottom: 48 }}>
-          <TouchableOpacity
-            onPress={handleShare}
-            style={{
+          <Pressable
+            onPress={() => { if (Platform.OS !== "web") Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light); handleShare(); }}
+            style={({ pressed }) => [{
               flexDirection: "row",
               alignItems: "center",
               justifyContent: "center",
               backgroundColor: color.twitter,
               paddingVertical: 16,
               borderRadius: 24,
-            }}
+            }, pressed && { opacity: 0.8 }]}
           >
             <MaterialIcons name="share" size={20} color={colors.foreground} />
             <Text style={{ color: colors.foreground, fontSize: 16, fontWeight: "bold", marginLeft: 8 }}>
               達成をシェアする
             </Text>
-          </TouchableOpacity>
+          </Pressable>
         </View>
       </ScrollView>
     </ScreenContainer>

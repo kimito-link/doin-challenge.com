@@ -1,4 +1,4 @@
-import { View, Text, TouchableOpacity, StyleSheet, Dimensions } from "react-native";
+import { View, Text, Pressable, StyleSheet, Dimensions } from "react-native";
 import { color, palette } from "@/theme/tokens";
 import { useEffect } from "react";
 import Animated, {
@@ -149,12 +149,11 @@ export function UserTypeSelector({ visible, onSelect, onSkip }: UserTypeSelector
           <View style={styles.optionsContainer}>
             {/* ファン */}
             <Animated.View style={fanStyle}>
-              <TouchableOpacity
+              <Pressable
                 onPressIn={() => handlePressIn("fan")}
                 onPressOut={() => handlePressOut("fan")}
                 onPress={() => handleSelect("fan")}
                 style={[styles.optionCard, { backgroundColor: color.accentPrimary }]}
-                activeOpacity={1}
               >
                 <View style={styles.optionImageContainer}>
                   <Image
@@ -168,17 +167,16 @@ export function UserTypeSelector({ visible, onSelect, onSkip }: UserTypeSelector
                 <View style={styles.optionBadge}>
                   <Text style={styles.optionBadgeText}>参加する側</Text>
                 </View>
-              </TouchableOpacity>
+              </Pressable>
             </Animated.View>
 
             {/* 主催者 */}
             <Animated.View style={hostStyle}>
-              <TouchableOpacity
+              <Pressable
                 onPressIn={() => handlePressIn("host")}
                 onPressOut={() => handlePressOut("host")}
                 onPress={() => handleSelect("host")}
                 style={[styles.optionCard, { backgroundColor: color.hostAccentLegacy }]}
-                activeOpacity={1}
               >
                 <View style={styles.optionImageContainer}>
                   <Image
@@ -192,7 +190,7 @@ export function UserTypeSelector({ visible, onSelect, onSkip }: UserTypeSelector
                 <View style={styles.optionBadge}>
                   <Text style={styles.optionBadgeText}>企画する側</Text>
                 </View>
-              </TouchableOpacity>
+              </Pressable>
             </Animated.View>
           </View>
 
@@ -202,9 +200,15 @@ export function UserTypeSelector({ visible, onSelect, onSkip }: UserTypeSelector
           </Text>
 
           {/* スキップ */}
-          <TouchableOpacity onPress={onSkip} style={styles.skipButton}>
+          <Pressable
+            onPress={onSkip}
+            style={({ pressed }) => [
+              styles.skipButton,
+              pressed && { opacity: 0.7 },
+            ]}
+          >
             <Text style={styles.skipText}>あとで見る</Text>
-          </TouchableOpacity>
+          </Pressable>
         </Animated.View>
       </View>
     </Animated.View>

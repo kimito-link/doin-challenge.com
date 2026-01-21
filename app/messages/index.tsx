@@ -1,4 +1,4 @@
-import { View, Text, FlatList, TouchableOpacity, Image, Platform } from "react-native";
+import { View, Text, FlatList, Pressable, Image, Platform } from "react-native";
 import { useRouter } from "expo-router";
 import { ScreenContainer } from "@/components/organisms/screen-container";
 import { trpc } from "@/lib/trpc";
@@ -24,12 +24,12 @@ export default function MessagesScreen() {
           <Text className="text-lg text-muted text-center">
             メッセージを見るにはログインが必要です
           </Text>
-          <TouchableOpacity
+          <Pressable
             onPress={() => router.push("/oauth" as never)}
             className="mt-4 bg-primary px-6 py-3 rounded-full"
           >
             <Text className="text-background font-bold">ログイン</Text>
-          </TouchableOpacity>
+          </Pressable>
         </View>
       </ScreenContainer>
     );
@@ -41,10 +41,10 @@ export default function MessagesScreen() {
     const isUnread = item.toUserId === user.id && !item.isRead;
 
     return (
-      <TouchableOpacity
+      <Pressable
         onPress={() => router.push(`/messages/${partnerId}?challengeId=${item.challengeId}` as never)}
         className={`flex-row items-center p-4 border-b border-border ${isUnread ? "bg-primary/10" : ""}`}
-        activeOpacity={0.7}
+        
       >
         {/* アバター */}
         <View className="w-12 h-12 rounded-full bg-surface items-center justify-center mr-3">
@@ -83,7 +83,7 @@ export default function MessagesScreen() {
         {isUnread && (
           <View className="w-3 h-3 rounded-full bg-primary ml-2" />
         )}
-      </TouchableOpacity>
+      </Pressable>
     );
   };
 
@@ -102,9 +102,9 @@ export default function MessagesScreen() {
                 </Text>
               </View>
             )}
-            <TouchableOpacity onPress={() => router.back()} className="flex-row items-center">
+            <Pressable onPress={() => router.back()} className="flex-row items-center">
               <Text className="text-foreground">← 戻る</Text>
-            </TouchableOpacity>
+            </Pressable>
           </View>
         }
       />

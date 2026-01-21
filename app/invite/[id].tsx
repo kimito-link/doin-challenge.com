@@ -1,4 +1,4 @@
-import { Text, View, ScrollView, TouchableOpacity, Share, Platform, TextInput } from "react-native";
+import { Text, View, ScrollView, Pressable, Share, Platform, TextInput } from "react-native";
 import { color, palette } from "@/theme/tokens";
 import { Image } from "expo-image";
 import { useLocalSearchParams, useRouter } from "expo-router";
@@ -167,12 +167,12 @@ export default function InviteScreen() {
       <ScreenContainer containerClassName="bg-background">
         <View style={{ flex: 1, alignItems: "center", justifyContent: "center" }}>
           <Text style={{ color: color.textMuted }}>チャレンジが見つかりません</Text>
-          <TouchableOpacity
+          <Pressable
             onPress={() => router.back()}
             style={{ marginTop: 16, padding: 12 }}
           >
             <Text style={{ color: color.hostAccentLegacy }}>戻る</Text>
-          </TouchableOpacity>
+          </Pressable>
         </View>
       </ScreenContainer>
     );
@@ -186,13 +186,13 @@ export default function InviteScreen() {
           title="君斗りんくの動員ちゃれんじ" 
           showCharacters={false}
           rightElement={
-            <TouchableOpacity
+            <Pressable
               onPress={() => router.back()}
               style={{ flexDirection: "row", alignItems: "center" }}
             >
               <MaterialIcons name="arrow-back" size={24} color={color.textWhite} />
               <Text style={{ color: color.textWhite, marginLeft: 8 }}>戻る</Text>
-            </TouchableOpacity>
+            </Pressable>
           }
         />
         <LinearGradient
@@ -245,7 +245,7 @@ export default function InviteScreen() {
 
         {/* v6.09: カスタムメッセージ設定 */}
         <View style={{ padding: 16 }}>
-          <TouchableOpacity
+          <Pressable
             onPress={() => setShowCustomForm(!showCustomForm)}
             style={{
               backgroundColor: color.surfaceDark,
@@ -269,7 +269,7 @@ export default function InviteScreen() {
               size={24} 
               color={color.textMuted} 
             />
-          </TouchableOpacity>
+          </Pressable>
 
           {showCustomForm && (
             <View
@@ -365,7 +365,7 @@ export default function InviteScreen() {
               )}
 
               {/* 新しい招待リンクを作成 */}
-              <TouchableOpacity
+              <Pressable
                 onPress={handleCreateCustomInvite}
                 disabled={isCreatingInvite}
                 style={{
@@ -385,7 +385,7 @@ export default function InviteScreen() {
                 <Text style={{ color: color.textWhite, fontWeight: "600", marginLeft: 8 }}>
                   {isCreatingInvite ? "作成中..." : "この設定で招待リンクを作成"}
                 </Text>
-              </TouchableOpacity>
+              </Pressable>
             </View>
           )}
         </View>
@@ -413,7 +413,7 @@ export default function InviteScreen() {
                 </Text>
               </View>
 
-              <TouchableOpacity
+              <Pressable
                 onPress={handleCopyLink}
                 style={{
                   backgroundColor: copied ? color.success : color.hostAccentLegacy,
@@ -433,9 +433,9 @@ export default function InviteScreen() {
                 <Text style={{ color: color.textWhite, fontWeight: "600", marginLeft: 8 }}>
                   {copied ? "コピーしました！" : "リンクをコピー"}
                 </Text>
-              </TouchableOpacity>
+              </Pressable>
 
-              <TouchableOpacity
+              <Pressable
                 onPress={handleShare}
                 style={{
                   backgroundColor: color.border,
@@ -451,9 +451,9 @@ export default function InviteScreen() {
                 <Text style={{ color: color.textWhite, fontWeight: "600", marginLeft: 8 }}>
                   シェアする
                 </Text>
-              </TouchableOpacity>
+              </Pressable>
 
-              <TouchableOpacity
+              <Pressable
                 onPress={handleShareTwitter}
                 style={{
                   backgroundColor: color.twitter,
@@ -469,10 +469,10 @@ export default function InviteScreen() {
                 <Text style={{ color: color.textWhite, fontWeight: "600", marginLeft: 8 }}>
                   Xでシェア
                 </Text>
-              </TouchableOpacity>
+              </Pressable>
 
               {/* v6.10: OGP画像生成ボタン */}
-              <TouchableOpacity
+              <Pressable
                 onPress={handleGenerateOgp}
                 disabled={isGeneratingOgp}
                 style={{
@@ -492,7 +492,7 @@ export default function InviteScreen() {
                 <Text style={{ color: color.textWhite, fontWeight: "600", marginLeft: 8 }}>
                   {isGeneratingOgp ? "OGP画像を生成中..." : "✨ SNS用OGP画像を生成"}
                 </Text>
-              </TouchableOpacity>
+              </Pressable>
 
               {/* 生成されたOGP画像を表示 */}
               {ogpImageUrl && (

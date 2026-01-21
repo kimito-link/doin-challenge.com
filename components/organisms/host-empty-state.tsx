@@ -1,4 +1,4 @@
-import { View, Text, TouchableOpacity, StyleSheet, Platform } from "react-native";
+import { View, Text, Pressable, StyleSheet, Platform } from "react-native";
 import { color, palette } from "@/theme/tokens";
 import { Image } from "expo-image";
 import { useRouter } from "expo-router";
@@ -75,13 +75,15 @@ export function HostEmptyState() {
       </Text>
       
       {/* アクションボタン */}
-      <TouchableOpacity
+      <Pressable
         onPress={handlePress}
-        style={styles.button}
-        activeOpacity={0.8}
+        style={({ pressed }) => [
+          styles.button,
+          pressed && { opacity: 0.8 },
+        ]}
       >
         <Text style={styles.buttonText}>最初のチャレンジを作る</Text>
-      </TouchableOpacity>
+      </Pressable>
     </View>
   );
 }

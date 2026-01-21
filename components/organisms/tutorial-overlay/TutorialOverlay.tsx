@@ -1,6 +1,6 @@
 // components/organisms/tutorial-overlay/TutorialOverlay.tsx
 // v6.18: リファクタリング済みチュートリアルオーバーレイ
-import { View, Text, TouchableOpacity, StyleSheet, Platform } from "react-native";
+import { View, Text, Pressable, StyleSheet, Platform } from "react-native";
 import { useEffect, useState } from "react";
 import Animated, {
   useSharedValue,
@@ -140,8 +140,8 @@ export function TutorialOverlay({
       exiting={FadeOut.duration(200)}
       style={[styles.container]}
     >
-      <TouchableOpacity
-        activeOpacity={1}
+      <Pressable
+        
         onPress={handleTap}
         style={styles.overlay}
       >
@@ -195,7 +195,7 @@ export function TutorialOverlay({
           </View>
 
           <View style={styles.characterNavigation}>
-            <TouchableOpacity
+            <Pressable
               onPress={(e) => {
                 e.stopPropagation();
               }}
@@ -204,7 +204,7 @@ export function TutorialOverlay({
                 styles.characterNavButton,
                 stepNumber <= 1 && styles.characterNavButtonDisabled
               ]}
-              activeOpacity={0.7}
+              
             >
               <Image
                 source={CHARACTER_IMAGES.konta_normal}
@@ -222,15 +222,15 @@ export function TutorialOverlay({
                   stepNumber <= 1 && styles.navBubbleTextDisabled
                 ]}>← 戻る</Text>
               </View>
-            </TouchableOpacity>
+            </Pressable>
 
-            <TouchableOpacity
+            <Pressable
               onPress={(e) => {
                 e.stopPropagation();
                 handleTap();
               }}
               style={styles.characterNavButton}
-              activeOpacity={0.7}
+              
             >
               <View style={[styles.navBubble, styles.navBubbleRight, styles.navBubblePrimary]}>
                 <Text style={styles.navBubbleTextPrimary}>
@@ -243,10 +243,10 @@ export function TutorialOverlay({
                 style={styles.navCharacterImage}
                 contentFit="contain"
               />
-            </TouchableOpacity>
+            </Pressable>
           </View>
         </Animated.View>
-      </TouchableOpacity>
+      </Pressable>
     </Animated.View>
   );
 }

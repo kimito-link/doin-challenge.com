@@ -1,4 +1,4 @@
-import { View, Text, TouchableOpacity, Modal, Pressable, ScrollView, useWindowDimensions } from "react-native";
+import { View, Text, Pressable, Modal, ScrollView, useWindowDimensions } from "react-native";
 import { color } from "@/theme/tokens";
 import { useMemo, useState, useEffect } from "react";
 import Animated, { 
@@ -176,7 +176,7 @@ export function JapanRegionBlocks({ prefectureCounts, onPrefecturePress, onRegio
           if (isUserRegion) {
             return (
               <Animated.View key={region.id} style={pulseAnimatedStyle}>
-                <TouchableOpacity
+                <Pressable
                   style={[
                     styles.regionBlock,
                     styles.userRegionBlock,
@@ -190,16 +190,16 @@ export function JapanRegionBlocks({ prefectureCounts, onPrefecturePress, onRegio
                     },
                   ]}
                   onPress={() => handleRegionPress(region)}
-                  activeOpacity={0.7}
+                  
                 >
                   {blockContent}
-                </TouchableOpacity>
+                </Pressable>
               </Animated.View>
             );
           }
           
           return (
-            <TouchableOpacity
+            <Pressable
               key={region.id}
               style={[
                 styles.regionBlock,
@@ -213,10 +213,10 @@ export function JapanRegionBlocks({ prefectureCounts, onPrefecturePress, onRegio
                 },
               ]}
               onPress={() => handleRegionPress(region)}
-              activeOpacity={0.7}
+              
             >
               {blockContent}
-            </TouchableOpacity>
+            </Pressable>
           );
         })}
       </View>
@@ -346,9 +346,9 @@ export function JapanRegionBlocks({ prefectureCounts, onPrefecturePress, onRegio
                   <View style={styles.modalHeader}>
                     <Text style={styles.modalEmoji}>{selectedRegion.emoji}</Text>
                     <Text style={styles.modalTitle}>{selectedRegion.name}</Text>
-                    <TouchableOpacity onPress={closeModal} style={styles.closeButton}>
+                    <Pressable onPress={closeModal} style={styles.closeButton}>
                       <Text style={styles.closeButtonText}>✕</Text>
-                    </TouchableOpacity>
+                    </Pressable>
                   </View>
                   
                   <Text style={styles.modalSubtitle}>
@@ -384,7 +384,7 @@ export function JapanRegionBlocks({ prefectureCounts, onPrefecturePress, onRegio
                             entering={FadeIn.delay(index * 30).duration(200)}
                             layout={LinearTransition.springify().damping(15).stiffness(100)}
                           >
-                            <TouchableOpacity
+                            <Pressable
                               style={[
                                 styles.prefectureRankItem,
                                 isUserPref && styles.prefectureRankItemHighlight
@@ -393,7 +393,7 @@ export function JapanRegionBlocks({ prefectureCounts, onPrefecturePress, onRegio
                                 closeModal();
                                 onPrefecturePress?.(pref.name);
                               }}
-                              activeOpacity={0.7}
+                              
                             >
                               <View style={styles.prefectureRankLeft}>
                                 <Text style={[
@@ -434,14 +434,14 @@ export function JapanRegionBlocks({ prefectureCounts, onPrefecturePress, onRegio
                                   {hasParticipants ? `${pref.count}人` : "-"}
                                 </Text>
                               </View>
-                            </TouchableOpacity>
+                            </Pressable>
                           </Animated.View>
                         );
                       });
                     })()}
                   </ScrollView>
 
-                  <TouchableOpacity
+                  <Pressable
                     style={[styles.viewAllButton, { backgroundColor: selectedRegion.color }]}
                     onPress={() => {
                       closeModal();
@@ -451,7 +451,7 @@ export function JapanRegionBlocks({ prefectureCounts, onPrefecturePress, onRegio
                     <Text style={styles.viewAllButtonText}>
                       {selectedRegion.name}の参加者を見る
                     </Text>
-                  </TouchableOpacity>
+                  </Pressable>
                 </>
               )}
             </Pressable>

@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { color, palette } from "@/theme/tokens";
-import { View, Text, ScrollView, TouchableOpacity, Switch, Alert } from "react-native";
+import { View, Text, ScrollView, Pressable, Switch, Alert } from "react-native";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import { ScreenContainer } from "@/components/organisms/screen-container";
 import { trpc } from "@/lib/trpc";
@@ -82,12 +82,12 @@ export default function ReminderSettingsScreen() {
           <Text className="text-lg text-muted text-center">
             リマインダーを設定するにはログインが必要です
           </Text>
-          <TouchableOpacity
+          <Pressable
             onPress={() => router.push("/oauth" as never)}
             className="mt-4 bg-primary px-6 py-3 rounded-full"
           >
             <Text className="text-background font-bold">ログイン</Text>
-          </TouchableOpacity>
+          </Pressable>
         </View>
       </ScreenContainer>
     );
@@ -101,12 +101,12 @@ export default function ReminderSettingsScreen() {
           title="君斗りんくの動員ちゃれんじ" 
           showCharacters={false}
           rightElement={
-            <TouchableOpacity
+            <Pressable
               onPress={() => router.back()}
               className="flex-row items-center"
             >
               <Text className="text-foreground">← 戻る</Text>
-            </TouchableOpacity>
+            </Pressable>
           }
         />
         <View className="mb-6">

@@ -3,7 +3,7 @@
  * v6.09: カスタムメッセージ表示対応
  * v6.10: OGP画像自動生成対応
  */
-import { Text, View, ScrollView, TouchableOpacity, Platform } from "react-native";
+import { Text, View, ScrollView, Pressable, Platform } from "react-native";
 import { color, palette } from "@/theme/tokens";
 import { Image } from "expo-image";
 import { useLocalSearchParams, useRouter, Stack } from "expo-router";
@@ -89,7 +89,7 @@ export default function JoinScreen() {
           <Text style={{ color: color.textMuted, fontSize: 14, marginTop: 8, textAlign: "center" }}>
             このリンクは期限切れか、すでに使用されている可能性があります。
           </Text>
-          <TouchableOpacity
+          <Pressable
             onPress={() => router.push("/(tabs)")}
             style={{
               marginTop: 24,
@@ -100,7 +100,7 @@ export default function JoinScreen() {
             }}
           >
             <Text style={{ color: color.textWhite, fontWeight: "600" }}>ホームに戻る</Text>
-          </TouchableOpacity>
+          </Pressable>
         </View>
       </ScreenContainer>
     );
@@ -117,7 +117,7 @@ export default function JoinScreen() {
           <Text style={{ color: color.textMuted, fontSize: 14, marginTop: 8, textAlign: "center" }}>
             招待者に新しいリンクを発行してもらってください。
           </Text>
-          <TouchableOpacity
+          <Pressable
             onPress={() => router.push("/(tabs)")}
             style={{
               marginTop: 24,
@@ -128,7 +128,7 @@ export default function JoinScreen() {
             }}
           >
             <Text style={{ color: color.textWhite, fontWeight: "600" }}>ホームに戻る</Text>
-          </TouchableOpacity>
+          </Pressable>
         </View>
       </ScreenContainer>
     );
@@ -325,7 +325,7 @@ export default function JoinScreen() {
         {/* 参加ボタン */}
         <View style={{ padding: 16 }}>
           {isAuthenticated ? (
-            <TouchableOpacity
+            <Pressable
               onPress={handleJoin}
               style={{
                 backgroundColor: color.hostAccentLegacy,
@@ -340,10 +340,10 @@ export default function JoinScreen() {
               <Text style={{ color: color.textWhite, fontSize: 18, fontWeight: "bold", marginLeft: 8 }}>
                 チャレンジに参加する
               </Text>
-            </TouchableOpacity>
+            </Pressable>
           ) : (
             <View>
-              <TouchableOpacity
+              <Pressable
                 onPress={handleLogin}
                 style={{
                   backgroundColor: color.twitter,
@@ -358,7 +358,7 @@ export default function JoinScreen() {
                 <Text style={{ color: color.textWhite, fontSize: 18, fontWeight: "bold", marginLeft: 8 }}>
                   Xでログインして参加
                 </Text>
-              </TouchableOpacity>
+              </Pressable>
               <Text style={{ color: color.textMuted, fontSize: 12, textAlign: "center", marginTop: 8 }}>
                 参加するにはXアカウントでのログインが必要です
               </Text>

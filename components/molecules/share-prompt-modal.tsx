@@ -1,11 +1,10 @@
-import { Modal, View, Text, TouchableOpacity, StyleSheet, Animated } from "react-native";
+import { Modal, View, Text, Pressable, StyleSheet, Animated, Platform } from "react-native";
 import { color, palette } from "@/theme/tokens";
 import { Image } from "expo-image";
 import MaterialIcons from "@expo/vector-icons/MaterialIcons";
 import { useEffect, useRef, useState } from "react";
 import { LinearGradient } from "expo-linear-gradient";
 import * as Haptics from "expo-haptics";
-import { Platform } from "react-native";
 import { shareParticipation } from "@/lib/share";
 
 interface SharePromptModalProps {
@@ -171,11 +170,13 @@ export function SharePromptModal({
 
           {/* ボタン */}
           <View style={styles.buttonContainer}>
-            <TouchableOpacity
+            <Pressable
               onPress={handleShare}
               disabled={isSharing}
-              style={styles.shareButton}
-              activeOpacity={0.8}
+              style={({ pressed }) => [
+                styles.shareButton,
+                pressed && !isSharing && { opacity: 0.8 },
+              ]}
             >
               <LinearGradient
                 colors={["#000000", color.surface]}
@@ -186,15 +187,17 @@ export function SharePromptModal({
                   {isSharing ? "シェア中..." : "Xでシェア"}
                 </Text>
               </LinearGradient>
-            </TouchableOpacity>
+            </Pressable>
 
-            <TouchableOpacity
+            <Pressable
               onPress={handleSkip}
-              style={styles.skipButton}
-              activeOpacity={0.7}
+              style={({ pressed }) => [
+                styles.skipButton,
+                pressed && { opacity: 0.7 },
+              ]}
             >
               <Text style={styles.skipButtonText}>今回はスキップ</Text>
-            </TouchableOpacity>
+            </Pressable>
           </View>
         </Animated.View>
       </View>

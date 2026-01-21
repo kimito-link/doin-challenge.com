@@ -1,9 +1,8 @@
-import { View, Text, TouchableOpacity, Modal, StyleSheet, Image, Animated } from "react-native";
+import { View, Text, Pressable, Modal, StyleSheet, Image, Animated, Platform } from "react-native";
 import { color, palette } from "@/theme/tokens";
 import MaterialIcons from "@expo/vector-icons/MaterialIcons";
 import { useEffect, useRef } from "react";
 import * as Haptics from "expo-haptics";
-import { Platform } from "react-native";
 
 // キャラクター画像
 const CHARACTER_IMAGES = {
@@ -133,22 +132,27 @@ export function ErrorDialog({
           {/* ボタン */}
           <View style={styles.buttonContainer}>
             {canRetry && onRetry && (
-              <TouchableOpacity
-                style={styles.retryButton}
+              <Pressable
+                style={({ pressed }) => [
+                  styles.retryButton,
+                  pressed && { opacity: 0.8 },
+                ]}
                 onPress={handleRetry}
-                activeOpacity={0.8}
               >
                 <MaterialIcons name="refresh" size={20} color={color.textWhite} />
                 <Text style={styles.retryButtonText}>もう一度試す</Text>
-              </TouchableOpacity>
+              </Pressable>
             )}
-            <TouchableOpacity
-              style={[styles.closeButton, !canRetry && styles.closeButtonFull]}
+            <Pressable
+              style={({ pressed }) => [
+                styles.closeButton,
+                !canRetry && styles.closeButtonFull,
+                pressed && { opacity: 0.8 },
+              ]}
               onPress={handleClose}
-              activeOpacity={0.8}
             >
               <Text style={styles.closeButtonText}>閉じる</Text>
-            </TouchableOpacity>
+            </Pressable>
           </View>
         </Animated.View>
       </View>

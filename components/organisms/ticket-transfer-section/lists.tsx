@@ -1,6 +1,6 @@
 // components/organisms/ticket-transfer-section/lists.tsx
 // v6.18: チケット譲渡のリスト表示コンポーネント
-import { View, Text, TouchableOpacity, Alert, Linking } from "react-native";
+import { View, Text, Pressable, Alert, Linking } from "react-native";
 import { Image } from "expo-image";
 import MaterialIcons from "@expo/vector-icons/MaterialIcons";
 import { color } from "@/theme/tokens";
@@ -105,7 +105,7 @@ export function TransferList({
           
           <View style={{ flexDirection: "row", gap: 10, marginTop: 4 }}>
             {transfer.userUsername && (
-              <TouchableOpacity
+              <Pressable
                 onPress={() => handleOpenDM(transfer.userUsername)}
                 style={{
                   flex: 1,
@@ -123,10 +123,10 @@ export function TransferList({
               >
                 <Text style={{ color: color.textWhite, fontSize: 16, fontWeight: "bold" }}>𝕏</Text>
                 <Text style={{ color: color.textWhite, fontSize: 14, fontWeight: "600", marginLeft: 8 }}>DMで連絡</Text>
-              </TouchableOpacity>
+              </Pressable>
             )}
             {currentUserId && transfer.userId === currentUserId && (
-              <TouchableOpacity
+              <Pressable
                 onPress={() => {
                   Alert.alert(
                     "投稿をキャンセル",
@@ -148,7 +148,7 @@ export function TransferList({
                 }}
               >
                 <Text style={{ color: color.textWhite, fontSize: 14, fontWeight: "600" }}>取消</Text>
-              </TouchableOpacity>
+              </Pressable>
             )}
           </View>
         </View>
@@ -217,7 +217,7 @@ export function WaitlistList({
             </Text>
           </View>
           {item.userUsername && (
-            <TouchableOpacity
+            <Pressable
               onPress={() => handleOpenDM(item.userUsername)}
               style={{
                 backgroundColor: "#000",
@@ -235,7 +235,7 @@ export function WaitlistList({
             >
               <Text style={{ color: color.textWhite, fontSize: 14, fontWeight: "bold" }}>𝕏</Text>
               <Text style={{ color: color.textWhite, fontSize: 13, fontWeight: "600", marginLeft: 6 }}>DM</Text>
-            </TouchableOpacity>
+            </Pressable>
           )}
         </View>
       ))}

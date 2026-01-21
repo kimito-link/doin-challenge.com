@@ -1,4 +1,4 @@
-import { View, Text, TouchableOpacity, StyleSheet, ScrollView, Platform } from "react-native";
+import { View, Text, Pressable, StyleSheet, ScrollView, Platform } from "react-native";
 import { color, palette } from "@/theme/tokens";
 import { useCallback } from "react";
 import * as Haptics from "expo-haptics";
@@ -18,6 +18,12 @@ interface FilterTabsProps {
   size?: "small" | "medium" | "large";
 }
 
+const triggerHaptic = () => {
+  if (Platform.OS !== "web") {
+    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+  }
+};
+
 /**
  * フィルター切り替えタブコンポーネント
  * 「しゃべった！」アプリを参考にした、わかりやすいフィルターUI
@@ -32,9 +38,7 @@ export function FilterTabs({
   const colors = useColors();
 
   const handleTabPress = useCallback((tabId: string) => {
-    if (Platform.OS !== "web") {
-      Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-    }
+    triggerHaptic();
     onTabChange(tabId);
   }, [onTabChange]);
 
@@ -58,11 +62,10 @@ export function FilterTabs({
         {tabs.map((tab) => {
           const isActive = tab.id === activeTab;
           return (
-            <TouchableOpacity
+            <Pressable
               key={tab.id}
               onPress={() => handleTabPress(tab.id)}
-              activeOpacity={0.7}
-              style={[
+              style={({ pressed }) => [
                 styles.shabettaTab,
                 {
                   backgroundColor: isActive ? color.surfaceAlt : "transparent",
@@ -70,6 +73,7 @@ export function FilterTabs({
                   paddingHorizontal: sizeStyles.paddingHorizontal,
                   paddingVertical: sizeStyles.paddingVertical,
                 },
+                pressed && { opacity: 0.7 },
               ]}
             >
               <Text
@@ -84,7 +88,7 @@ export function FilterTabs({
               >
                 {tab.label}
               </Text>
-            </TouchableOpacity>
+            </Pressable>
           );
         })}
       </View>
@@ -103,17 +107,17 @@ export function FilterTabs({
         {tabs.map((tab) => {
           const isActive = tab.id === activeTab;
           return (
-            <TouchableOpacity
+            <Pressable
               key={tab.id}
               onPress={() => handleTabPress(tab.id)}
-              activeOpacity={0.7}
-              style={[
+              style={({ pressed }) => [
                 styles.pillTab,
                 {
                   backgroundColor: isActive ? color.accentPrimary : color.border,
                   paddingHorizontal: sizeStyles.paddingHorizontal,
                   paddingVertical: sizeStyles.paddingVertical,
                 },
+                pressed && { opacity: 0.7 },
               ]}
             >
               <Text
@@ -128,7 +132,7 @@ export function FilterTabs({
               >
                 {tab.label}
               </Text>
-            </TouchableOpacity>
+            </Pressable>
           );
         })}
       </ScrollView>
@@ -141,17 +145,17 @@ export function FilterTabs({
       {tabs.map((tab) => {
         const isActive = tab.id === activeTab;
         return (
-          <TouchableOpacity
+          <Pressable
             key={tab.id}
             onPress={() => handleTabPress(tab.id)}
-            activeOpacity={0.7}
-            style={[
+            style={({ pressed }) => [
               styles.underlineTab,
               {
                 borderBottomColor: isActive ? color.accentPrimary : "transparent",
                 paddingHorizontal: sizeStyles.paddingHorizontal,
                 paddingVertical: sizeStyles.paddingVertical,
               },
+              pressed && { opacity: 0.7 },
             ]}
           >
             <Text
@@ -166,7 +170,7 @@ export function FilterTabs({
             >
               {tab.label}
             </Text>
-          </TouchableOpacity>
+          </Pressable>
         );
       })}
     </View>

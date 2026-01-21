@@ -1,6 +1,6 @@
 // features/create/ui/components/CreateChallengeForm.tsx
 // v6.18: チャレンジ作成フォームコンポーネント
-import { View, Text, TextInput, TouchableOpacity, Pressable } from "react-native";
+import { View, Text, TextInput, Pressable } from "react-native";
 import { LinearGradient } from "expo-linear-gradient";
 import MaterialIcons from "@expo/vector-icons/MaterialIcons";
 import { useRouter } from "expo-router";
@@ -74,7 +74,7 @@ export function CreateChallengeForm({
       <View style={{ padding: 16 }}>
         {/* Twitterログインボタン */}
         {!user && (
-          <TouchableOpacity
+          <Pressable
             onPress={() => login()}
             style={{
               backgroundColor: color.twitter,
@@ -90,7 +90,7 @@ export function CreateChallengeForm({
             <Text style={{ color: colors.foreground, fontSize: 16, fontWeight: "bold", marginLeft: 8 }}>
               Twitterでログインして作成
             </Text>
-          </TouchableOpacity>
+          </Pressable>
         )}
 
         {user && (
@@ -381,7 +381,7 @@ export function CreateChallengeForm({
         )}
 
         {/* 作成ボタン */}
-        <TouchableOpacity
+        <Pressable
           onPress={handleCreate}
           disabled={isPending}
           style={{
@@ -406,10 +406,10 @@ export function CreateChallengeForm({
           <Text style={{ color: colors.foreground, fontSize: 16, fontWeight: "bold" }}>
             {isPending ? "作成中..." : "チャレンジを作成"}
           </Text>
-        </TouchableOpacity>
+        </Pressable>
 
         {/* テンプレート一覧へのリンク */}
-        <TouchableOpacity
+        <Pressable
           onPress={() => router.push("/templates" as never)}
           style={{
             marginTop: 12,
@@ -420,7 +420,7 @@ export function CreateChallengeForm({
           <Text style={{ color: color.accentAlt, fontSize: 14 }}>
             📁 テンプレートから作成
           </Text>
-        </TouchableOpacity>
+        </Pressable>
       </View>
     </View>
   );

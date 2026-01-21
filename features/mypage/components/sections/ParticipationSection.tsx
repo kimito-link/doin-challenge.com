@@ -3,7 +3,7 @@
  * マイページで参加中のチャレンジ一覧を表示する
  */
 
-import { View, Text, TouchableOpacity } from "react-native";
+import { View, Text, Pressable } from "react-native";
 import { useColors } from "@/hooks/use-colors";
 import { mypageUI, mypageText } from "../../ui/theme/tokens";
 import MaterialIcons from "@expo/vector-icons/MaterialIcons";
@@ -35,7 +35,7 @@ export function ParticipationSection({ participations, onChallengePress }: Parti
       {participations && participations.length > 0 ? (
         <View style={{ gap: 12 }}>
           {participations.map((participation) => (
-            <TouchableOpacity
+            <Pressable
               key={participation.id}
               onPress={() => onChallengePress(participation.challengeId)}
               style={{
@@ -57,7 +57,7 @@ export function ParticipationSection({ participations, onChallengePress }: Parti
                 </View>
                 <MaterialIcons name="chevron-right" size={24} color={mypageText.muted} />
               </View>
-            </TouchableOpacity>
+            </Pressable>
           ))}
         </View>
       ) : (

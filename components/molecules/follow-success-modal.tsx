@@ -1,4 +1,4 @@
-import { View, Text, Modal, TouchableOpacity, StyleSheet, Dimensions } from "react-native";
+import { View, Text, Modal, Pressable, StyleSheet, Dimensions, Platform } from "react-native";
 import { color, palette } from "@/theme/tokens";
 import { Image } from "expo-image";
 import MaterialIcons from "@expo/vector-icons/MaterialIcons";
@@ -12,7 +12,6 @@ import Animated, {
   runOnJS,
 } from "react-native-reanimated";
 import * as Haptics from "expo-haptics";
-import { Platform } from "react-native";
 
 const { width: SCREEN_WIDTH } = Dimensions.get("window");
 
@@ -90,6 +89,13 @@ export function FollowSuccessModal({
     opacity: confettiOpacity.value,
   }));
 
+  const handleClose = () => {
+    if (Platform.OS !== "web") {
+      Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+    }
+    onClose();
+  };
+
   return (
     <Modal
       visible={visible}
@@ -161,13 +167,15 @@ export function FollowSuccessModal({
           </View>
 
           {/* 閉じるボタン */}
-          <TouchableOpacity
-            style={styles.closeButton}
-            onPress={onClose}
-            activeOpacity={0.8}
+          <Pressable
+            style={({ pressed }) => [
+              styles.closeButton,
+              pressed && { opacity: 0.7 },
+            ]}
+            onPress={handleClose}
           >
             <Text style={styles.closeButtonText}>さっそく使ってみる！</Text>
-          </TouchableOpacity>
+          </Pressable>
         </Animated.View>
       </View>
     </Modal>

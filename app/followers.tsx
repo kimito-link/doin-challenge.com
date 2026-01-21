@@ -1,4 +1,4 @@
-import { FlatList, Text, View, TouchableOpacity, RefreshControl, Platform } from "react-native";
+import { FlatList, Text, View, Pressable, RefreshControl, Platform } from "react-native";
 import { color, palette } from "@/theme/tokens";
 import { Image } from "expo-image";
 import { useRouter, useLocalSearchParams } from "expo-router";
@@ -36,13 +36,13 @@ export default function FollowersScreen() {
         title="君斗りんくの動員ちゃれんじ" 
         showCharacters={false}
         rightElement={
-          <TouchableOpacity
+          <Pressable
             onPress={() => router.back()}
             style={{ flexDirection: "row", alignItems: "center" }}
           >
             <MaterialIcons name="arrow-back" size={24} color={color.textWhite} />
             <Text style={{ color: color.textWhite, marginLeft: 8 }}>戻る</Text>
-          </TouchableOpacity>
+          </Pressable>
         }
       />
       <View style={{ 
@@ -65,7 +65,7 @@ export default function FollowersScreen() {
           data={followers}
           keyExtractor={(item) => item.id.toString()}
           renderItem={({ item }) => (
-            <TouchableOpacity 
+            <Pressable 
               onPress={() => {
                 if (item.followerId) {
                   router.push({ pathname: "/profile/[userId]", params: { userId: item.followerId.toString() } });
@@ -111,7 +111,7 @@ export default function FollowersScreen() {
               </View>
               
               <MaterialIcons name="chevron-right" size={24} color={color.textMuted} />
-            </TouchableOpacity>
+            </Pressable>
           )}
           refreshControl={
             <RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={color.hostAccentLegacy} />

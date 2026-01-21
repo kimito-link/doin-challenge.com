@@ -1,6 +1,7 @@
-import { View, Text, TouchableOpacity } from "react-native";
+import { View, Text, Pressable, Platform } from "react-native";
 import { color, palette } from "@/theme/tokens";
 import MaterialIcons from "@expo/vector-icons/MaterialIcons";
+import * as Haptics from "expo-haptics";
 
 interface ErrorMessageProps {
   message: string;
@@ -29,6 +30,12 @@ const typeConfig = {
   },
 };
 
+const triggerHaptic = () => {
+  if (Platform.OS !== "web") {
+    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+  }
+};
+
 export function ErrorMessage({ message, onRetry, type = "error" }: ErrorMessageProps) {
   const config = typeConfig[type];
   
@@ -51,22 +58,28 @@ export function ErrorMessage({ message, onRetry, type = "error" }: ErrorMessageP
         </Text>
       </View>
       {onRetry && (
-        <TouchableOpacity
-          onPress={onRetry}
-          style={{
-            minHeight: 44,
-            minWidth: 44,
-            paddingHorizontal: 16,
-            paddingVertical: 10,
-            backgroundColor: config.borderColor,
-            borderRadius: 8,
-            alignItems: "center",
-            justifyContent: "center",
-            marginLeft: 12,
+        <Pressable
+          onPress={() => {
+            triggerHaptic();
+            onRetry();
           }}
+          style={({ pressed }) => [
+            {
+              minHeight: 44,
+              minWidth: 44,
+              paddingHorizontal: 16,
+              paddingVertical: 10,
+              backgroundColor: config.borderColor,
+              borderRadius: 8,
+              alignItems: "center",
+              justifyContent: "center",
+              marginLeft: 12,
+            },
+            pressed && { opacity: 0.7 },
+          ]}
         >
           <Text style={{ color: color.textWhite, fontSize: 14, fontWeight: "600" }}>再試行</Text>
-        </TouchableOpacity>
+        </Pressable>
       )}
     </View>
   );
@@ -84,24 +97,30 @@ export function NetworkError({ onRetry }: { onRetry?: () => void }) {
         ネットワーク接続を確認してください
       </Text>
       {onRetry && (
-        <TouchableOpacity
-          onPress={onRetry}
-          style={{
-            minHeight: 48,
-            paddingHorizontal: 32,
-            paddingVertical: 14,
-            backgroundColor: color.hostAccentLegacy,
-            borderRadius: 24,
-            flexDirection: "row",
-            alignItems: "center",
-            justifyContent: "center",
+        <Pressable
+          onPress={() => {
+            triggerHaptic();
+            onRetry();
           }}
+          style={({ pressed }) => [
+            {
+              minHeight: 48,
+              paddingHorizontal: 32,
+              paddingVertical: 14,
+              backgroundColor: color.hostAccentLegacy,
+              borderRadius: 24,
+              flexDirection: "row",
+              alignItems: "center",
+              justifyContent: "center",
+            },
+            pressed && { opacity: 0.7 },
+          ]}
         >
           <MaterialIcons name="refresh" size={20} color={color.textWhite} />
           <Text style={{ color: color.textWhite, fontSize: 16, fontWeight: "bold", marginLeft: 8 }}>
             再読み込み
           </Text>
-        </TouchableOpacity>
+        </Pressable>
       )}
     </View>
   );
@@ -132,21 +151,27 @@ export function EmptyState({
         {message}
       </Text>
       {action && (
-        <TouchableOpacity
-          onPress={action.onPress}
-          style={{
-            marginTop: 20,
-            minHeight: 48,
-            paddingHorizontal: 24,
-            paddingVertical: 14,
-            backgroundColor: color.hostAccentLegacy,
-            borderRadius: 24,
+        <Pressable
+          onPress={() => {
+            triggerHaptic();
+            action.onPress();
           }}
+          style={({ pressed }) => [
+            {
+              marginTop: 20,
+              minHeight: 48,
+              paddingHorizontal: 24,
+              paddingVertical: 14,
+              backgroundColor: color.hostAccentLegacy,
+              borderRadius: 24,
+            },
+            pressed && { opacity: 0.7 },
+          ]}
         >
           <Text style={{ color: color.textWhite, fontSize: 16, fontWeight: "bold" }}>
             {action.label}
           </Text>
-        </TouchableOpacity>
+        </Pressable>
       )}
     </View>
   );

@@ -1,25 +1,43 @@
-import { View, Text, TouchableOpacity, StyleSheet } from "react-native";
+import { View, Text, Pressable, StyleSheet, Platform } from "react-native";
 import { color, palette } from "@/theme/tokens";
 import MaterialIcons from "@expo/vector-icons/MaterialIcons";
+import * as Haptics from "expo-haptics";
 
 interface ThemeSettingsProps {
   onClose?: () => void;
 }
+
+const triggerHaptic = () => {
+  if (Platform.OS !== "web") {
+    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+  }
+};
 
 /**
  * テーマ設定コンポーネント
  * v5.80: ダークモード専用化（ライトモードは削除）
  */
 export function ThemeSettingsPanel({ onClose }: ThemeSettingsProps) {
+  const handleClose = () => {
+    triggerHaptic();
+    onClose?.();
+  };
+
   return (
     <View style={styles.container}>
       {/* ヘッダー */}
       <View style={styles.header}>
         <Text style={styles.headerTitle}>テーマ設定</Text>
         {onClose && (
-          <TouchableOpacity onPress={onClose} style={styles.closeButton}>
+          <Pressable 
+            onPress={handleClose} 
+            style={({ pressed }) => [
+              styles.closeButton,
+              pressed && { opacity: 0.7 },
+            ]}
+          >
             <MaterialIcons name="close" size={24} color={color.slate200} />
-          </TouchableOpacity>
+          </Pressable>
         )}
       </View>
 

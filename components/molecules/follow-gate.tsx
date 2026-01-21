@@ -1,13 +1,20 @@
-import { View, Text, TouchableOpacity, Linking, Modal } from "react-native";
+import { View, Text, Pressable, Linking, Modal, Platform } from "react-native";
 import { color, palette } from "@/theme/tokens";
 import { useState } from "react";
 import { Image } from "expo-image";
 import MaterialIcons from "@expo/vector-icons/MaterialIcons";
 import { LinearGradient } from "expo-linear-gradient";
+import * as Haptics from "expo-haptics";
 
 // キャラクター画像
 const characterImages = {
   linkYukkuri: require("@/assets/images/characters/link/link-yukkuri-smile-mouth-open.png"),
+};
+
+const triggerHaptic = () => {
+  if (Platform.OS !== "web") {
+    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+  }
 };
 
 interface FollowGateProps {
@@ -43,21 +50,28 @@ export function FollowGate({
 
   // フォローしていない場合はモーダルを表示
   const handleFollowPress = async () => {
+    triggerHaptic();
     const twitterUrl = `https://twitter.com/intent/follow?screen_name=${targetUsername}`;
     await Linking.openURL(twitterUrl);
   };
 
   const handleRefresh = () => {
+    triggerHaptic();
     onRefreshStatus?.();
     setShowModal(false);
   };
 
   return (
     <>
-      <TouchableOpacity
-        onPress={() => setShowModal(true)}
-        style={{ flex: 1 }}
-        activeOpacity={0.9}
+      <Pressable
+        onPress={() => {
+          triggerHaptic();
+          setShowModal(true);
+        }}
+        style={({ pressed }) => [
+          { flex: 1 },
+          pressed && { opacity: 0.9 },
+        ]}
       >
         <View style={{ flex: 1, opacity: 0.5 }}>
           {children}
@@ -98,7 +112,7 @@ export function FollowGate({
             @{targetUsername}をフォローすると{"\n"}この機能が使えるようになります
           </Text>
         </View>
-      </TouchableOpacity>
+      </Pressable>
 
       <Modal
         visible={showModal}
@@ -173,17 +187,20 @@ export function FollowGate({
               {"\n"}をフォローしてください
             </Text>
 
-            <TouchableOpacity
+            <Pressable
               onPress={handleFollowPress}
-              style={{
-                backgroundColor: color.twitter,
-                borderRadius: 12,
-                paddingVertical: 14,
-                paddingHorizontal: 32,
-                marginTop: 24,
-                flexDirection: "row",
-                alignItems: "center",
-              }}
+              style={({ pressed }) => [
+                {
+                  backgroundColor: color.twitter,
+                  borderRadius: 12,
+                  paddingVertical: 14,
+                  paddingHorizontal: 32,
+                  marginTop: 24,
+                  flexDirection: "row",
+                  alignItems: "center",
+                },
+                pressed && { opacity: 0.7 },
+              ]}
             >
               <MaterialIcons name="person-add" size={20} color={color.textWhite} />
               <Text
@@ -196,23 +213,29 @@ export function FollowGate({
               >
                 {targetDisplayName}をフォロー
               </Text>
-            </TouchableOpacity>
+            </Pressable>
 
             {/* 再ログインボタン */}
             {onRelogin && (
-              <TouchableOpacity
-                onPress={onRelogin}
-                disabled={refreshing}
-                style={{
-                  backgroundColor: color.borderAlt,
-                  borderRadius: 12,
-                  paddingVertical: 12,
-                  paddingHorizontal: 24,
-                  marginTop: 12,
-                  flexDirection: "row",
-                  alignItems: "center",
-                  opacity: refreshing ? 0.6 : 1,
+              <Pressable
+                onPress={() => {
+                  triggerHaptic();
+                  onRelogin();
                 }}
+                disabled={refreshing}
+                style={({ pressed }) => [
+                  {
+                    backgroundColor: color.borderAlt,
+                    borderRadius: 12,
+                    paddingVertical: 12,
+                    paddingHorizontal: 24,
+                    marginTop: 12,
+                    flexDirection: "row",
+                    alignItems: "center",
+                    opacity: refreshing ? 0.6 : 1,
+                  },
+                  pressed && !refreshing && { opacity: 0.7 },
+                ]}
               >
                 <MaterialIcons name="refresh" size={18} color={color.textWhite} />
                 <Text
@@ -224,33 +247,39 @@ export function FollowGate({
                 >
                   {refreshing ? "確認中..." : "フォロー状態を再確認"}
                 </Text>
-              </TouchableOpacity>
+              </Pressable>
             )}
 
-            <TouchableOpacity
+            <Pressable
               onPress={handleRefresh}
-              style={{
-                marginTop: 16,
-                paddingVertical: 12,
-                paddingHorizontal: 24,
-              }}
+              style={({ pressed }) => [
+                {
+                  marginTop: 16,
+                  paddingVertical: 12,
+                  paddingHorizontal: 24,
+                },
+                pressed && { opacity: 0.7 },
+              ]}
             >
               <Text style={{ color: color.textMuted, fontSize: 14 }}>
                 フォロー済みの方はタップして更新
               </Text>
-            </TouchableOpacity>
+            </Pressable>
 
-            <TouchableOpacity
+            <Pressable
               onPress={() => setShowModal(false)}
-              style={{
-                position: "absolute",
-                top: 16,
-                right: 16,
-                padding: 8,
-              }}
+              style={({ pressed }) => [
+                {
+                  position: "absolute",
+                  top: 16,
+                  right: 16,
+                  padding: 8,
+                },
+                pressed && { opacity: 0.7 },
+              ]}
             >
               <MaterialIcons name="close" size={24} color={color.textSubtle} />
-            </TouchableOpacity>
+            </Pressable>
           </View>
         </View>
       </Modal>
@@ -282,6 +311,7 @@ export function FollowPromptBanner({
   }
 
   const handlePress = async () => {
+    triggerHaptic();
     if (onFollowPress) {
       onFollowPress();
     } else {
@@ -302,9 +332,11 @@ export function FollowPromptBanner({
         borderColor: color.accentPrimary,
       }}
     >
-      <TouchableOpacity
+      <Pressable
         onPress={handlePress}
-        activeOpacity={0.8}
+        style={({ pressed }) => [
+          pressed && { opacity: 0.7 },
+        ]}
       >
         <View style={{ flexDirection: "row", alignItems: "center" }}>
           <View
@@ -329,31 +361,36 @@ export function FollowPromptBanner({
           </View>
           <MaterialIcons name="chevron-right" size={24} color={color.accentPrimary} />
         </View>
-      </TouchableOpacity>
+      </Pressable>
       
       {/* フォロー済みの場合の再確認ボタン */}
       {onRelogin && (
-        <TouchableOpacity
-          onPress={onRelogin}
-          disabled={refreshing}
-          activeOpacity={0.7}
-          style={{
-            marginTop: 12,
-            paddingVertical: 10,
-            paddingHorizontal: 16,
-            backgroundColor: color.borderAlt,
-            borderRadius: 8,
-            flexDirection: "row",
-            alignItems: "center",
-            justifyContent: "center",
-            opacity: refreshing ? 0.6 : 1,
+        <Pressable
+          onPress={() => {
+            triggerHaptic();
+            onRelogin();
           }}
+          disabled={refreshing}
+          style={({ pressed }) => [
+            {
+              marginTop: 12,
+              paddingVertical: 10,
+              paddingHorizontal: 16,
+              backgroundColor: color.borderAlt,
+              borderRadius: 8,
+              flexDirection: "row",
+              alignItems: "center",
+              justifyContent: "center",
+              opacity: refreshing ? 0.6 : 1,
+            },
+            pressed && !refreshing && { opacity: 0.7 },
+          ]}
         >
           <MaterialIcons name="refresh" size={16} color={color.textWhite} />
           <Text style={{ color: color.textPrimary, fontSize: 13, marginLeft: 6 }}>
             {refreshing ? "確認中..." : "フォロー済みの方はタップして再確認"}
           </Text>
-        </TouchableOpacity>
+        </Pressable>
       )}
     </View>
   );

@@ -1,7 +1,7 @@
 // components/organisms/ticket-transfer-section/TicketTransferSection.tsx
 // v6.18: リファクタリング済みチケット譲渡セクション
 import { useState } from "react";
-import { View, Text, TouchableOpacity, Alert } from "react-native";
+import { View, Text, Pressable, Alert } from "react-native";
 import MaterialIcons from "@expo/vector-icons/MaterialIcons";
 import { color } from "@/theme/tokens";
 import { trpc } from "@/lib/trpc";
@@ -104,7 +104,7 @@ export function TicketTransferSection({ challengeId, challengeTitle }: TicketTra
       
       {/* タブ */}
       <View style={{ flexDirection: "row", marginBottom: 16, gap: 12 }}>
-        <TouchableOpacity
+        <Pressable
           onPress={() => setActiveTab("transfers")}
           style={{
             flex: 1,
@@ -122,8 +122,8 @@ export function TicketTransferSection({ challengeId, challengeTitle }: TicketTra
           <Text style={{ color: color.textWhite, fontSize: 15, fontWeight: activeTab === "transfers" ? "bold" : "500" }}>
             🎫 譲りたい ({transfers?.length || 0})
           </Text>
-        </TouchableOpacity>
-        <TouchableOpacity
+        </Pressable>
+        <Pressable
           onPress={() => setActiveTab("waitlist")}
           style={{
             flex: 1,
@@ -141,13 +141,13 @@ export function TicketTransferSection({ challengeId, challengeTitle }: TicketTra
           <Text style={{ color: color.textWhite, fontSize: 15, fontWeight: activeTab === "waitlist" ? "bold" : "500" }}>
             🔔 欲しい ({waitlist?.length || 0})
           </Text>
-        </TouchableOpacity>
+        </Pressable>
       </View>
       
       {/* アクションボタン */}
       <View style={{ marginBottom: 20 }}>
         {activeTab === "transfers" ? (
-          <TouchableOpacity
+          <Pressable
             onPress={() => {
               if (!user) {
                 Alert.alert("ログインが必要です", "チケット譲渡の投稿にはログインが必要です");
@@ -175,9 +175,9 @@ export function TicketTransferSection({ challengeId, challengeTitle }: TicketTra
             <Text style={{ color: color.textWhite, fontSize: 16, fontWeight: "bold", marginLeft: 10 }}>
               チケットを譲る
             </Text>
-          </TouchableOpacity>
+          </Pressable>
         ) : (
-          <TouchableOpacity
+          <Pressable
             onPress={() => {
               if (!user) {
                 Alert.alert("ログインが必要です", "待機リスト登録にはログインが必要です");
@@ -216,7 +216,7 @@ export function TicketTransferSection({ challengeId, challengeTitle }: TicketTra
             <Text style={{ color: color.textWhite, fontSize: 16, fontWeight: "bold", marginLeft: 10 }}>
               {isInWaitlist ? "待機リスト解除" : "チケットが欲しい"}
             </Text>
-          </TouchableOpacity>
+          </Pressable>
         )}
       </View>
       

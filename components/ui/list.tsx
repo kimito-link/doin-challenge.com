@@ -5,7 +5,7 @@ import { useCallback } from "react";
 import { 
   View, 
   Text, 
-  TouchableOpacity, 
+  Pressable, 
   StyleSheet, 
   Platform,
   type ViewStyle,
@@ -121,13 +121,13 @@ export function ListItem({
 
   if (onPress) {
     return (
-      <TouchableOpacity
+      <Pressable
         onPress={handlePress}
         disabled={disabled}
-        activeOpacity={0.7}
+        
       >
         {content}
-      </TouchableOpacity>
+      </Pressable>
     );
   }
 

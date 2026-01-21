@@ -1,4 +1,4 @@
-import { Text, View, TouchableOpacity, ScrollView, Dimensions } from "react-native";
+import { Text, View, Pressable, ScrollView, Dimensions } from "react-native";
 import { color, palette } from "@/theme/tokens";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import { ScreenContainer } from "@/components/organisms/screen-container";
@@ -459,12 +459,12 @@ export default function DashboardScreen() {
       <ScreenContainer className="p-4">
         <View style={{ flex: 1, alignItems: "center", justifyContent: "center" }}>
           <Text style={{ color: color.textMuted }}>チャレンジが見つかりません</Text>
-          <TouchableOpacity
+          <Pressable
             onPress={() => router.back()}
             style={{ marginTop: 16, padding: 12 }}
           >
             <Text style={{ color: color.accentPrimary }}>戻る</Text>
-          </TouchableOpacity>
+          </Pressable>
         </View>
       </ScreenContainer>
     );
@@ -478,13 +478,13 @@ export default function DashboardScreen() {
           title="君斗りんくの動員ちゃれんじ" 
           showCharacters={false}
           rightElement={
-            <TouchableOpacity
+            <Pressable
               onPress={() => router.back()}
               style={{ flexDirection: "row", alignItems: "center" }}
             >
               <MaterialIcons name="arrow-back" size={24} color={color.textWhite} />
               <Text style={{ color: color.textWhite, marginLeft: 8 }}>戻る</Text>
-            </TouchableOpacity>
+            </Pressable>
           }
         />
         <View style={{ marginBottom: 16 }}>

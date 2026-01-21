@@ -1,10 +1,14 @@
-import { TouchableOpacity, TouchableOpacityProps, StyleSheet, Platform } from "react-native";
+// components/atoms/touchable.tsx
+// 汎用タッチターゲットラッパー（IconButtonとは別用途で維持）
+
+import { Pressable, PressableProps, StyleSheet, Platform, ViewStyle } from "react-native";
 import * as Haptics from "expo-haptics";
 import { touchTarget } from "@/constants/design-system";
 
-interface TouchableProps extends TouchableOpacityProps {
+interface TouchableProps extends Omit<PressableProps, "style"> {
   haptic?: boolean;
   hapticType?: "light" | "medium" | "heavy";
+  style?: ViewStyle;
 }
 
 /**
@@ -14,6 +18,8 @@ interface TouchableProps extends TouchableOpacityProps {
  * - 最小タッチターゲット: 44x44px (Apple HIG準拠)
  * - 触覚フィードバック: タップ時のハプティクス
  * - アクセシビリティ: 十分なタップ領域
+ * 
+ * @note ボタンとして使用する場合は components/ui/button の Button または IconButton を使用してください
  */
 export function Touchable({
   children,
@@ -36,15 +42,18 @@ export function Touchable({
   };
 
   return (
-    <TouchableOpacity
+    <Pressable
       onPress={handlePress}
-      activeOpacity={0.7}
-      style={[styles.touchable, style]}
+      style={({ pressed }) => [
+        styles.touchable,
+        style,
+        pressed && { opacity: 0.7 },
+      ]}
       hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
       {...props}
     >
       {children}
-    </TouchableOpacity>
+    </Pressable>
   );
 }
 

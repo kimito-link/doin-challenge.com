@@ -1,8 +1,13 @@
-import { TouchableOpacity, StyleSheet, Platform, View, Text } from "react-native";
+// components/atoms/floating-action-button.tsx
+// 後方互換性のため、components/ui/buttonから再エクスポート
+
+export { FAB as FloatingActionButton, type FABProps } from "@/components/ui/button";
+
+// ExpandableFABは独自実装を維持（components/ui/buttonにはない機能）
+import { Pressable, StyleSheet, Platform, View, Text } from "react-native";
 import { useCallback, useState } from "react";
 import MaterialIcons from "@expo/vector-icons/MaterialIcons";
 import * as Haptics from "expo-haptics";
-import { LinearGradient } from "expo-linear-gradient";
 import Animated, { 
   useSharedValue, 
   useAnimatedStyle, 
@@ -12,130 +17,6 @@ import Animated, {
 } from "react-native-reanimated";
 import { color } from "@/theme/tokens";
 
-interface FloatingActionButtonProps {
-  onPress: () => void;
-  icon?: string;
-  label?: string;
-  position?: "bottom-right" | "bottom-center";
-  color?: string;
-  gradientColors?: [string, string];
-  size?: "small" | "medium" | "large";
-  showLabel?: boolean;
-}
-
-const SIZE_CONFIG = {
-  small: { button: 48, icon: 24 },
-  medium: { button: 56, icon: 28 },
-  large: { button: 64, icon: 32 },
-};
-
-/**
- * フローティングアクションボタン（FAB）コンポーネント
- * 「しゃべった！」アプリを参考にした、右下の+ボタン
- */
-export function FloatingActionButton({
-  onPress,
-  icon = "add",
-  label,
-  position = "bottom-right",
-  color: buttonColor = color.accentPrimary,
-  gradientColors,
-  size = "medium",
-  showLabel = false,
-}: FloatingActionButtonProps) {
-  const scale = useSharedValue(1);
-  const sizeConfig = SIZE_CONFIG[size];
-
-  const handlePressIn = useCallback(() => {
-    scale.value = withSpring(0.9, { damping: 15, stiffness: 300 });
-    if (Platform.OS !== "web") {
-      Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
-    }
-  }, [scale]);
-
-  const handlePressOut = useCallback(() => {
-    scale.value = withSpring(1, { damping: 15, stiffness: 300 });
-  }, [scale]);
-
-  const handlePress = useCallback(() => {
-    onPress();
-  }, [onPress]);
-
-  const animatedStyle = useAnimatedStyle(() => ({
-    transform: [{ scale: scale.value }],
-  }));
-
-  const positionStyle = position === "bottom-center" 
-    ? styles.positionCenter 
-    : styles.positionRight;
-
-  const ButtonContent = () => (
-    <View style={[styles.buttonContent, { width: sizeConfig.button, height: sizeConfig.button }]}>
-      <MaterialIcons name={icon as any} size={sizeConfig.icon} color={color.textWhite} />
-    </View>
-  );
-
-  return (
-    <Animated.View style={[styles.container, positionStyle, animatedStyle]}>
-      {showLabel && label && (
-        <View style={styles.labelContainer}>
-          <Text style={styles.labelText}>{label}</Text>
-        </View>
-      )}
-      <TouchableOpacity
-        onPress={handlePress}
-        onPressIn={handlePressIn}
-        onPressOut={handlePressOut}
-        activeOpacity={1}
-        style={[
-          styles.button,
-          { 
-            width: sizeConfig.button, 
-            height: sizeConfig.button,
-            borderRadius: sizeConfig.button / 2,
-          }
-        ]}
-      >
-        {gradientColors ? (
-          <LinearGradient
-            colors={gradientColors}
-            start={{ x: 0, y: 0 }}
-            end={{ x: 1, y: 1 }}
-            style={[
-              styles.gradient,
-              { 
-                width: sizeConfig.button, 
-                height: sizeConfig.button,
-                borderRadius: sizeConfig.button / 2,
-              }
-            ]}
-          >
-            <ButtonContent />
-          </LinearGradient>
-        ) : (
-          <View 
-            style={[
-              styles.solidBackground, 
-              { 
-                backgroundColor: buttonColor,
-                width: sizeConfig.button, 
-                height: sizeConfig.button,
-                borderRadius: sizeConfig.button / 2,
-              }
-            ]}
-          >
-            <ButtonContent />
-          </View>
-        )}
-      </TouchableOpacity>
-    </Animated.View>
-  );
-}
-
-/**
- * 展開可能なFABコンポーネント
- * タップすると複数のアクションが表示される
- */
 interface ExpandableFABAction {
   icon: string;
   label: string;
@@ -183,7 +64,6 @@ export function ExpandableFAB({
 
   return (
     <View style={styles.expandableContainer}>
-      {/* アクションボタン */}
       {actions.map((action, index) => {
         const actionStyle = useAnimatedStyle(() => ({
           opacity: expansion.value,
@@ -198,86 +78,37 @@ export function ExpandableFAB({
             <View style={styles.actionLabelContainer}>
               <Text style={styles.actionLabel}>{action.label}</Text>
             </View>
-            <TouchableOpacity
+            <Pressable
               onPress={() => handleActionPress(action)}
-              style={[styles.actionButton, { backgroundColor: action.color || color.textSubtle }]}
-              activeOpacity={0.8}
+              style={({ pressed }) => [
+                styles.actionButton,
+                { backgroundColor: action.color || color.textSubtle },
+                pressed && { opacity: 0.8 },
+              ]}
             >
               <MaterialIcons name={action.icon as any} size={20} color={color.textWhite} />
-            </TouchableOpacity>
+            </Pressable>
           </Animated.View>
         );
       })}
 
-      {/* メインボタン */}
       <Animated.View style={mainButtonStyle}>
-        <TouchableOpacity
+        <Pressable
           onPress={toggleExpand}
-          style={[styles.mainButton, { backgroundColor: mainColor }]}
-          activeOpacity={0.8}
+          style={({ pressed }) => [
+            styles.mainButton,
+            { backgroundColor: mainColor },
+            pressed && { opacity: 0.8 },
+          ]}
         >
           <MaterialIcons name={mainIcon as any} size={28} color={color.textWhite} />
-        </TouchableOpacity>
+        </Pressable>
       </Animated.View>
     </View>
   );
 }
 
 const styles = StyleSheet.create({
-  container: {
-    position: "absolute",
-    bottom: 100,
-    zIndex: 100,
-    flexDirection: "row",
-    alignItems: "center",
-  },
-  positionRight: {
-    right: 20,
-  },
-  positionCenter: {
-    left: "50%",
-    transform: [{ translateX: -28 }],
-  },
-  button: {
-    overflow: "hidden",
-    // シャドウ
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.3,
-    shadowRadius: 8,
-    elevation: 8,
-  },
-  gradient: {
-    alignItems: "center",
-    justifyContent: "center",
-  },
-  solidBackground: {
-    alignItems: "center",
-    justifyContent: "center",
-  },
-  buttonContent: {
-    alignItems: "center",
-    justifyContent: "center",
-  },
-  labelContainer: {
-    backgroundColor: color.surface,
-    paddingHorizontal: 12,
-    paddingVertical: 6,
-    borderRadius: 8,
-    marginRight: 12,
-    // シャドウ
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.2,
-    shadowRadius: 4,
-    elevation: 4,
-  },
-  labelText: {
-    color: color.textWhite,
-    fontSize: 14,
-    fontWeight: "500",
-  },
-  // 展開可能FAB用スタイル
   expandableContainer: {
     position: "absolute",
     bottom: 100,
@@ -308,7 +139,6 @@ const styles = StyleSheet.create({
     borderRadius: 22,
     alignItems: "center",
     justifyContent: "center",
-    // シャドウ
     shadowColor: "#000",
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.2,
@@ -321,7 +151,6 @@ const styles = StyleSheet.create({
     borderRadius: 28,
     alignItems: "center",
     justifyContent: "center",
-    // シャドウ
     shadowColor: "#000",
     shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.3,
@@ -330,4 +159,4 @@ const styles = StyleSheet.create({
   },
 });
 
-export default FloatingActionButton;
+export default ExpandableFAB;

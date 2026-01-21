@@ -1,4 +1,4 @@
-import { View, Text, ScrollView, TouchableOpacity, Alert, Share, TextInput, KeyboardAvoidingView, Platform, Dimensions, Linking } from "react-native";
+import { View, Text, ScrollView, Pressable, Alert, Share, TextInput, KeyboardAvoidingView, Platform, Dimensions, Linking } from "react-native";
 import { color, palette } from "@/theme/tokens";
 import { Image } from "expo-image";
 import { useLocalSearchParams, useRouter } from "expo-router";
@@ -560,7 +560,7 @@ export default function ChallengeDetailScreen() {
                 : user?.openId;
               const isOwner = userTwitterId && challenge?.hostTwitterId === userTwitterId;
               return isOwner ? (
-                <TouchableOpacity
+                <Pressable
                   onPress={() => router.push({ pathname: "/edit-challenge/[id]", params: { id: challengeId.toString() } })}
                   style={{
                     position: "absolute",
@@ -576,11 +576,11 @@ export default function ChallengeDetailScreen() {
                   }}
                 >
                   <MaterialIcons name="edit" size={20} color={color.textWhite} />
-                </TouchableOpacity>
+                </Pressable>
               ) : null;
             })()}
             {/* お気に入りボタン */}
-            <TouchableOpacity
+            <Pressable
               onPress={() => toggleFavorite(challengeId)}
               style={{
                 position: "absolute",
@@ -600,7 +600,7 @@ export default function ChallengeDetailScreen() {
                 size={24}
                 color={isChallengeFavorite ? color.rankGold : color.textWhite}
               />
-            </TouchableOpacity>
+            </Pressable>
             {/* ホスト情報 */}
             <TwitterUserCard
               user={{
@@ -620,7 +620,7 @@ export default function ChallengeDetailScreen() {
             {/* フォローボタン */}
             <View style={{ flexDirection: "row", justifyContent: "flex-end", marginBottom: 16, marginTop: -8 }}>
               {user && hostUserId && hostUserId !== user.id && (
-                <TouchableOpacity
+                <Pressable
                   onPress={handleFollowToggle}
                   style={{
                     paddingHorizontal: 16,
@@ -636,7 +636,7 @@ export default function ChallengeDetailScreen() {
                   }}>
                     {isFollowing ? "フォロー中" : "フォロー"}
                   </Text>
-                </TouchableOpacity>
+                </Pressable>
               )}
             </View>
 
@@ -725,7 +725,7 @@ export default function ChallengeDetailScreen() {
                     messages={ACHIEVEMENT_MESSAGES}
                     bubblePosition="top"
                   />
-                  <TouchableOpacity
+                  <Pressable
                     onPress={() => router.push(`/achievement/${challengeId}`)}
                     style={{
                       backgroundColor: color.accentPrimary,
@@ -739,7 +739,7 @@ export default function ChallengeDetailScreen() {
                     <Text style={{ color: colors.foreground, fontSize: 16, fontWeight: "bold" }}>
                       🎉 達成記念ページを見る
                     </Text>
-                  </TouchableOpacity>
+                  </Pressable>
                 </View>
               ) : (
                 <Text style={{ color: color.textSecondary, fontSize: 14, textAlign: "center" }}>
@@ -865,7 +865,7 @@ export default function ChallengeDetailScreen() {
                 )}
 
                 {challenge.ticketUrl && (
-                  <TouchableOpacity
+                  <Pressable
                     onPress={() => Linking.openURL(challenge.ticketUrl!)}
                     style={{
                       backgroundColor: color.accentPrimary,
@@ -881,7 +881,7 @@ export default function ChallengeDetailScreen() {
                     <Text style={{ color: colors.foreground, fontSize: 14, fontWeight: "bold", marginLeft: 8 }}>
                       チケットを購入する
                     </Text>
-                  </TouchableOpacity>
+                  </Pressable>
                 )}
               </View>
             )}
@@ -889,7 +889,7 @@ export default function ChallengeDetailScreen() {
             {/* ホスト用管理ボタン */}
             {user && challenge.hostUserId === user.id && (
               <View style={{ gap: 12, marginTop: 16 }}>
-                <TouchableOpacity
+                <Pressable
                   onPress={() => router.push(`/dashboard/${challengeId}`)}
                   style={{
                     backgroundColor: color.successDark,
@@ -904,8 +904,8 @@ export default function ChallengeDetailScreen() {
                   <Text style={{ color: colors.foreground, fontSize: 14, fontWeight: "bold", marginLeft: 8 }}>
                     統計ダッシュボード
                   </Text>
-                </TouchableOpacity>
-                <TouchableOpacity
+                </Pressable>
+                <Pressable
                   onPress={() => router.push(`/manage-comments/${challengeId}`)}
                   style={{
                     backgroundColor: color.accentAlt,
@@ -920,10 +920,10 @@ export default function ChallengeDetailScreen() {
                   <Text style={{ color: colors.foreground, fontSize: 14, fontWeight: "bold", marginLeft: 8 }}>
                     コメント管理（ピックアップ）
                   </Text>
-                </TouchableOpacity>
+                </Pressable>
                 
                 {progress >= 100 && (
-                  <TouchableOpacity
+                  <Pressable
                     onPress={() => {
                       Alert.alert(
                         "達成記念ページを作成",
@@ -952,9 +952,9 @@ export default function ChallengeDetailScreen() {
                     <Text style={{ color: colors.foreground, fontSize: 14, fontWeight: "bold", marginLeft: 8 }}>
                       達成記念ページを作成
                     </Text>
-                  </TouchableOpacity>
+                  </Pressable>
                 )}
-                <TouchableOpacity
+                <Pressable
                   onPress={() => router.push(`/collaborators/${challengeId}`)}
                   style={{
                     backgroundColor: color.info,
@@ -969,12 +969,12 @@ export default function ChallengeDetailScreen() {
                   <Text style={{ color: colors.foreground, fontSize: 14, fontWeight: "bold", marginLeft: 8 }}>
                     共同主催者管理
                   </Text>
-                </TouchableOpacity>
+                </Pressable>
               </View>
             )}
 
             {/* 友達を招待ボタン */}
-            <TouchableOpacity
+            <Pressable
               onPress={() => router.push(`/invite/${challengeId}`)}
               style={{
                 backgroundColor: color.hostAccentLegacy,
@@ -990,7 +990,7 @@ export default function ChallengeDetailScreen() {
               <Text style={{ color: colors.foreground, fontSize: 14, fontWeight: "bold", marginLeft: 8 }}>
                 友達を招待する
               </Text>
-            </TouchableOpacity>
+            </Pressable>
 
             {/* チケット譲渡セクション */}
             <TicketTransferSection
@@ -1120,7 +1120,7 @@ export default function ChallengeDetailScreen() {
                     <Text style={{ color: color.textSecondary, fontSize: 13, marginBottom: 12 }}>
                       参加表明にはTwitterログインが必要です。
                     </Text>
-                    <TouchableOpacity
+                    <Pressable
                       onPress={() => login()}
                       style={{
                         backgroundColor: color.twitter,
@@ -1137,7 +1137,7 @@ export default function ChallengeDetailScreen() {
                       <Text style={{ color: colors.foreground, fontSize: 14, fontWeight: "600" }}>
                         X（Twitter）でログイン
                       </Text>
-                    </TouchableOpacity>
+                    </Pressable>
                   </View>
                 )}
 
@@ -1150,7 +1150,7 @@ export default function ChallengeDetailScreen() {
                       必須
                     </Text>
                   </View>
-                  <TouchableOpacity
+                  <Pressable
                     onPress={() => setShowPrefectureList(!showPrefectureList)}
                     style={{
                       backgroundColor: colors.background,
@@ -1167,7 +1167,7 @@ export default function ChallengeDetailScreen() {
                       {prefecture || "選択してください"}
                     </Text>
                     <MaterialIcons name="arrow-drop-down" size={24} color={color.textHint} />
-                  </TouchableOpacity>
+                  </Pressable>
                   {showPrefectureList && (
                     <View
                       style={{
@@ -1181,7 +1181,7 @@ export default function ChallengeDetailScreen() {
                     >
                       <ScrollView nestedScrollEnabled>
                         {prefectures.map((pref) => (
-                          <TouchableOpacity
+                          <Pressable
                             key={pref}
                             onPress={() => {
                               setPrefecture(pref);
@@ -1194,7 +1194,7 @@ export default function ChallengeDetailScreen() {
                             }}
                           >
                             <Text style={{ color: colors.foreground }}>{pref}</Text>
-                          </TouchableOpacity>
+                          </Pressable>
                         ))}
                       </ScrollView>
                     </View>
@@ -1212,7 +1212,7 @@ export default function ChallengeDetailScreen() {
                     </Text>
                   </View>
                   <View style={{ flexDirection: "row", gap: 12 }}>
-                    <TouchableOpacity
+                    <Pressable
                       onPress={() => setGender("male")}
                       style={{
                         flex: 1,
@@ -1228,8 +1228,8 @@ export default function ChallengeDetailScreen() {
                       <Text style={{ color: gender === "male" ? color.textWhite : color.textSecondary, fontSize: 14, fontWeight: "600" }}>
                         男性
                       </Text>
-                    </TouchableOpacity>
-                    <TouchableOpacity
+                    </Pressable>
+                    <Pressable
                       onPress={() => setGender("female")}
                       style={{
                         flex: 1,
@@ -1245,7 +1245,7 @@ export default function ChallengeDetailScreen() {
                       <Text style={{ color: gender === "female" ? color.textWhite : color.textSecondary, fontSize: 14, fontWeight: "600" }}>
                         女性
                       </Text>
-                    </TouchableOpacity>
+                    </Pressable>
                   </View>
                   {gender === "" && (
                     <Text style={{ color: color.danger, fontSize: 12, marginTop: 8 }}>
@@ -1260,7 +1260,7 @@ export default function ChallengeDetailScreen() {
                     <Text style={{ color: colors.foreground, fontSize: 16, fontWeight: "bold" }}>
                       一緒に参加する友人（任意）
                     </Text>
-                    <TouchableOpacity
+                    <Pressable
                       onPress={() => setShowAddCompanionForm(true)}
                       style={{
                         backgroundColor: color.border,
@@ -1273,7 +1273,7 @@ export default function ChallengeDetailScreen() {
                     >
                       <MaterialIcons name="person-add" size={16} color={color.accentPrimary} />
                       <Text style={{ color: color.accentPrimary, fontSize: 14, marginLeft: 6 }}>友人を追加</Text>
-                    </TouchableOpacity>
+                    </Pressable>
                   </View>
 
                   {/* 友人追加フォーム */}
@@ -1313,7 +1313,7 @@ export default function ChallengeDetailScreen() {
                             borderColor: color.border,
                           }}
                         />
-                        <TouchableOpacity
+                        <Pressable
                           onPress={() => lookupTwitterProfile(newCompanionTwitter)}
                           disabled={isLookingUpTwitter || !newCompanionTwitter.trim()}
                           style={{
@@ -1326,7 +1326,7 @@ export default function ChallengeDetailScreen() {
                           <Text style={{ color: colors.foreground, fontWeight: "bold" }}>
                             {isLookingUpTwitter ? "..." : "検索"}
                           </Text>
-                        </TouchableOpacity>
+                        </Pressable>
                       </View>
 
                       {lookupError && (
@@ -1382,7 +1382,7 @@ export default function ChallengeDetailScreen() {
                       />
 
                       <View style={{ flexDirection: "row", gap: 12 }}>
-                        <TouchableOpacity
+                        <Pressable
                           onPress={() => {
                             setShowAddCompanionForm(false);
                             setNewCompanionName("");
@@ -1399,8 +1399,8 @@ export default function ChallengeDetailScreen() {
                           }}
                         >
                           <Text style={{ color: color.textSecondary }}>キャンセル</Text>
-                        </TouchableOpacity>
-                        <TouchableOpacity
+                        </Pressable>
+                        <Pressable
                           onPress={handleAddCompanion}
                           disabled={!lookedUpProfile && !newCompanionName.trim()}
                           style={{
@@ -1412,7 +1412,7 @@ export default function ChallengeDetailScreen() {
                           }}
                         >
                           <Text style={{ color: colors.foreground, fontWeight: "bold" }}>追加</Text>
-                        </TouchableOpacity>
+                        </Pressable>
                       </View>
                     </View>
                   )}
@@ -1470,12 +1470,12 @@ export default function ChallengeDetailScreen() {
                               </Text>
                             )}
                           </View>
-                          <TouchableOpacity
+                          <Pressable
                             onPress={() => handleRemoveCompanion(companion.id)}
                             style={{ padding: 8 }}
                           >
                             <MaterialIcons name="close" size={20} color={color.textHint} />
-                          </TouchableOpacity>
+                          </Pressable>
                         </View>
                       ))}
                     </View>
@@ -1582,7 +1582,7 @@ export default function ChallengeDetailScreen() {
                 </View>
 
                 {/* 動画利用許可チェックボックス */}
-                <TouchableOpacity
+                <Pressable
                   onPress={() => setAllowVideoUse(!allowVideoUse)}
                   style={{
                     flexDirection: "row",
@@ -1620,11 +1620,11 @@ export default function ChallengeDetailScreen() {
                       あなたのコメントを応援動画に使用させていただく場合があります
                     </Text>
                   </View>
-                </TouchableOpacity>
+                </Pressable>
 
                 {/* ボタン */}
                 <View style={{ flexDirection: "row", gap: 12 }}>
-                  <TouchableOpacity
+                  <Pressable
                     onPress={() => setShowForm(false)}
                     style={{
                       flex: 1,
@@ -1635,8 +1635,8 @@ export default function ChallengeDetailScreen() {
                     }}
                   >
                     <Text style={{ color: colors.foreground, fontSize: 16 }}>キャンセル</Text>
-                  </TouchableOpacity>
-                  <TouchableOpacity
+                  </Pressable>
+                  <Pressable
                     onPress={handleSubmit}
                     disabled={createParticipationMutation.isPending || createAnonymousMutation.isPending || !prefecture || !gender}
                     style={{
@@ -1663,14 +1663,14 @@ export default function ChallengeDetailScreen() {
                     <Text style={{ color: colors.foreground, fontSize: 16, fontWeight: "bold" }}>
                       {!prefecture ? "都道府県を選択してください" : "参加表明する"}
                     </Text>
-                  </TouchableOpacity>
+                  </Pressable>
                 </View>
               </View>
             ) : (
               <View style={{ gap: 12, marginTop: 16 }}>
                 {/* シェア・リマインダーボタン */}
                 <View style={{ flexDirection: "row", gap: 12, alignItems: "center" }}>
-                  <TouchableOpacity
+                  <Pressable
                     onPress={handleShare}
                     style={{
                       flex: 1,
@@ -1686,8 +1686,8 @@ export default function ChallengeDetailScreen() {
                   >
                     <MaterialIcons name="share" size={18} color={colors.foreground} />
                     <Text style={{ color: colors.foreground, fontSize: 14, marginLeft: 6 }}>シェア</Text>
-                  </TouchableOpacity>
-                  <TouchableOpacity
+                  </Pressable>
+                  <Pressable
                     onPress={handleTwitterShare}
                     style={{
                       flex: 1,
@@ -1701,7 +1701,7 @@ export default function ChallengeDetailScreen() {
                   >
                     <Text style={{ color: colors.foreground, fontSize: 16, fontWeight: "bold" }}>𝕏</Text>
                     <Text style={{ color: colors.foreground, fontSize: 14, marginLeft: 6 }}>Xでシェア</Text>
-                  </TouchableOpacity>
+                  </Pressable>
                 </View>
                 {/* リマインダーボタン */}
                 {challenge.eventDate && (
@@ -1713,7 +1713,7 @@ export default function ChallengeDetailScreen() {
                     />
                   </View>
                 )}
-                <TouchableOpacity
+                <Pressable
                   onPress={() => setShowForm(true)}
                   style={{
                     flex: 2,
@@ -1738,7 +1738,7 @@ export default function ChallengeDetailScreen() {
                   <Text style={{ color: colors.foreground, fontSize: 16, fontWeight: "bold" }}>
                     参加表明する
                   </Text>
-                </TouchableOpacity>
+                </Pressable>
               </View>
             )}
 

@@ -4,13 +4,12 @@
 
 import { useState, useCallback } from "react";
 import { 
-  TouchableOpacity, 
+  Pressable, 
   Text, 
   ActivityIndicator, 
   View, 
   Platform, 
   StyleSheet,
-  Pressable,
   type ViewStyle,
   type TextStyle,
 } from "react-native";
@@ -326,10 +325,10 @@ export function IconButton({
   }, [disabled, haptic, onPress]);
 
   return (
-    <TouchableOpacity
+    <Pressable
       onPress={handlePress}
       disabled={disabled}
-      activeOpacity={0.7}
+      
       accessibilityRole="button"
       accessibilityLabel={accessibilityLabel}
       style={[
@@ -348,7 +347,7 @@ export function IconButton({
         size={sizeStyle.iconSize}
         color={variantStyle.text}
       />
-    </TouchableOpacity>
+    </Pressable>
   );
 }
 
@@ -410,11 +409,11 @@ export function FAB({
           <Text style={styles.fabLabelText}>{label}</Text>
         </View>
       )}
-      <TouchableOpacity
+      <Pressable
         onPress={onPress}
         onPressIn={handlePressIn}
         onPressOut={handlePressOut}
-        activeOpacity={1}
+        
         style={[
           styles.fabButton,
           { 
@@ -425,7 +424,7 @@ export function FAB({
         ]}
       >
         <MaterialIcons name={icon} size={sizeConfig.icon} color={color.textWhite} />
-      </TouchableOpacity>
+      </Pressable>
     </Animated.View>
   );
 }

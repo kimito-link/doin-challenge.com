@@ -1,4 +1,4 @@
-import { View, Text, TouchableOpacity, StyleSheet, Modal, Platform } from "react-native";
+import { View, Text, Pressable, StyleSheet, Modal, Platform } from "react-native";
 import { color, palette } from "@/theme/tokens";
 import { Image } from "expo-image";
 import { useColors } from "@/hooks/use-colors";
@@ -154,10 +154,12 @@ export function LoginPromptModal({ visible, onLogin, onSkip }: LoginPromptModalP
           </Text>
           
           {/* メインアクションボタン（チャレンジを探す/作成する） */}
-          <TouchableOpacity
+          <Pressable
             onPress={handleMainAction}
-            style={styles.mainButton}
-            activeOpacity={0.8}
+            style={({ pressed }) => [
+              styles.mainButton,
+              pressed && { opacity: 0.8 },
+            ]}
           >
             <LinearGradient
               colors={isHost ? [color.hostAccentLegacy, color.warning] : [color.accentPrimary, color.pink400]}
@@ -167,18 +169,20 @@ export function LoginPromptModal({ visible, onLogin, onSkip }: LoginPromptModalP
             >
               <Text style={styles.mainButtonText}>{mainButtonText}</Text>
             </LinearGradient>
-          </TouchableOpacity>
+          </Pressable>
           
           {/* ログインボタン（サブ） */}
-          <TouchableOpacity
+          <Pressable
             onPress={handleLogin}
-            style={styles.loginButton}
-            activeOpacity={0.8}
+            style={({ pressed }) => [
+              styles.loginButton,
+              pressed && { opacity: 0.8 },
+            ]}
           >
             <Text style={[styles.loginButtonText, { color: colors.foreground }]}>
               ログインして記録を残す
             </Text>
-          </TouchableOpacity>
+          </Pressable>
           
           {/* 説明テキスト */}
           <Text style={[styles.helperText, { color: colors.muted }]}>
@@ -186,15 +190,17 @@ export function LoginPromptModal({ visible, onLogin, onSkip }: LoginPromptModalP
           </Text>
           
           {/* スキップボタン */}
-          <TouchableOpacity
+          <Pressable
             onPress={handleSkip}
-            style={styles.skipButton}
-            activeOpacity={0.7}
+            style={({ pressed }) => [
+              styles.skipButton,
+              pressed && { opacity: 0.7 },
+            ]}
           >
             <Text style={[styles.skipButtonText, { color: colors.muted }]}>
               あとで
             </Text>
-          </TouchableOpacity>
+          </Pressable>
         </Animated.View>
       </View>
     </Modal>

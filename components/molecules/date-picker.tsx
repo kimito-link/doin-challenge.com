@@ -3,7 +3,8 @@
  * Web/ネイティブ共通でカスタムカレンダーモーダルを使用
  */
 
-import { Platform, View, Text, TouchableOpacity, Modal, Pressable, StyleSheet } from "react-native";
+import { Platform, View, Text, Pressable, Modal, StyleSheet } from "react-native";
+import * as Haptics from "expo-haptics";
 import { color, palette } from "@/theme/tokens";
 import { useState, useEffect, useId } from "react";
 import MaterialIcons from "@expo/vector-icons/MaterialIcons";
@@ -55,6 +56,12 @@ function formatDisplayDate(dateStr: string): string {
 const MONTHS = ["1月", "2月", "3月", "4月", "5月", "6月", "7月", "8月", "9月", "10月", "11月", "12月"];
 const WEEKDAYS = ["日", "月", "火", "水", "木", "金", "土"];
 
+const triggerHaptic = () => {
+  if (Platform.OS !== "web") {
+    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+  }
+};
+
 export function DatePicker({ value, onChange, placeholder = "日付を選択", minDate, maxDate }: DatePickerProps) {
   const [showCalendar, setShowCalendar] = useState(false);
   const uniqueId = useId();
@@ -87,6 +94,7 @@ export function DatePicker({ value, onChange, placeholder = "日付を選択", m
   }
 
   const handlePrevMonth = () => {
+    triggerHaptic();
     if (viewMonth === 0) {
       setViewYear(viewYear - 1);
       setViewMonth(11);
@@ -96,6 +104,7 @@ export function DatePicker({ value, onChange, placeholder = "日付を選択", m
   };
 
   const handleNextMonth = () => {
+    triggerHaptic();
     if (viewMonth === 11) {
       setViewYear(viewYear + 1);
       setViewMonth(0);
@@ -105,6 +114,7 @@ export function DatePicker({ value, onChange, placeholder = "日付を選択", m
   };
 
   const handleSelectDate = (day: number) => {
+    triggerHaptic();
     const dateStr = formatDate(viewYear, viewMonth, day);
     onChange(dateStr);
     setShowCalendar(false);
@@ -134,23 +144,29 @@ export function DatePicker({ value, onChange, placeholder = "日付を選択", m
     <View style={styles.calendarContainer}>
       {/* ヘッダー */}
       <View style={styles.calendarHeader}>
-        <TouchableOpacity 
+        <Pressable 
           onPress={handlePrevMonth} 
-          style={styles.navButton}
+          style={({ pressed }) => [
+            styles.navButton,
+            pressed && { opacity: 0.7 },
+          ]}
           accessibilityLabel="前の月"
         >
           <MaterialIcons name="chevron-left" size={24} color={color.textWhite} />
-        </TouchableOpacity>
+        </Pressable>
         <Text style={styles.monthYearText}>
           {viewYear}年 {MONTHS[viewMonth]}
         </Text>
-        <TouchableOpacity 
+        <Pressable 
           onPress={handleNextMonth} 
-          style={styles.navButton}
+          style={({ pressed }) => [
+            styles.navButton,
+            pressed && { opacity: 0.7 },
+          ]}
           accessibilityLabel="次の月"
         >
           <MaterialIcons name="chevron-right" size={24} color={color.textWhite} />
-        </TouchableOpacity>
+        </Pressable>
       </View>
 
       {/* 曜日ヘッダー */}
@@ -173,14 +189,15 @@ export function DatePicker({ value, onChange, placeholder = "日付を選択", m
         {calendarDays.map((day, index) => (
           <View key={index} style={styles.dayCell}>
             {day !== null && (
-              <TouchableOpacity
+              <Pressable
                 onPress={() => !isDateDisabled(day) && handleSelectDate(day)}
                 disabled={isDateDisabled(day)}
-                style={[
+                style={({ pressed }) => [
                   styles.dayButton,
                   isSelected(day) && styles.selectedDay,
                   isToday(day) && !isSelected(day) && styles.todayDay,
                   isDateDisabled(day) && styles.disabledDay,
+                  pressed && !isDateDisabled(day) && { opacity: 0.7 },
                 ]}
                 accessibilityLabel={`${viewYear}年${viewMonth + 1}月${day}日`}
               >
@@ -191,32 +208,39 @@ export function DatePicker({ value, onChange, placeholder = "日付を選択", m
                 ]}>
                   {day}
                 </Text>
-              </TouchableOpacity>
+              </Pressable>
             )}
           </View>
         ))}
       </View>
 
       {/* 今日ボタン */}
-      <TouchableOpacity
+      <Pressable
         onPress={() => {
+          triggerHaptic();
           setViewYear(today.getFullYear());
           setViewMonth(today.getMonth());
         }}
-        style={styles.todayButton}
+        style={({ pressed }) => [
+          styles.todayButton,
+          pressed && { opacity: 0.7 },
+        ]}
         accessibilityLabel="今日の日付に移動"
       >
         <Text style={styles.todayButtonText}>今日</Text>
-      </TouchableOpacity>
+      </Pressable>
 
       {/* 閉じるボタン */}
-      <TouchableOpacity
+      <Pressable
         onPress={() => setShowCalendar(false)}
-        style={styles.closeButton}
+        style={({ pressed }) => [
+          styles.closeButton,
+          pressed && { opacity: 0.7 },
+        ]}
         accessibilityLabel="カレンダーを閉じる"
       >
         <Text style={styles.closeButtonText}>閉じる</Text>
-      </TouchableOpacity>
+      </Pressable>
     </View>
   );
 
@@ -225,9 +249,15 @@ export function DatePicker({ value, onChange, placeholder = "日付を選択", m
 
   return (
     <>
-      <TouchableOpacity
-        onPress={() => setShowCalendar(true)}
-        style={styles.inputContainer}
+      <Pressable
+        onPress={() => {
+          triggerHaptic();
+          setShowCalendar(true);
+        }}
+        style={({ pressed }) => [
+          styles.inputContainer,
+          pressed && { opacity: 0.7 },
+        ]}
         accessibilityLabel={value ? `開催日: ${formatDisplayDate(value)}` : "開催日を選択"}
         accessibilityHint="タップしてカレンダーを開く"
       >
@@ -235,7 +265,7 @@ export function DatePicker({ value, onChange, placeholder = "日付を選択", m
           {displayText}
         </Text>
         <MaterialIcons name="calendar-today" size={20} color={color.textMuted} />
-      </TouchableOpacity>
+      </Pressable>
 
       {/* カレンダーモーダル */}
       <Modal

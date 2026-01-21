@@ -1,4 +1,4 @@
-import { View, Text, ScrollView, TextInput, TouchableOpacity, KeyboardAvoidingView, Platform, ActivityIndicator } from "react-native";
+import { View, Text, ScrollView, TextInput, Pressable, KeyboardAvoidingView, Platform, ActivityIndicator } from "react-native";
 import { color, palette } from "@/theme/tokens";
 import { useRouter, useLocalSearchParams } from "expo-router";
 import { useState, useEffect } from "react";
@@ -180,7 +180,7 @@ export default function EditParticipationScreen() {
                 <Text style={{ color: colors.foreground, fontSize: 16, fontWeight: "600" }}>
                   参加する都道府県 <Text style={{ color: colors.error }}>*</Text>
                 </Text>
-                <TouchableOpacity
+                <Pressable
                   onPress={() => setShowPrefectureList(!showPrefectureList)}
                   style={{
                     backgroundColor: colors.surface,
@@ -201,7 +201,7 @@ export default function EditParticipationScreen() {
                     size={24}
                     color={colors.muted}
                   />
-                </TouchableOpacity>
+                </Pressable>
                 
                 {showPrefectureList && (
                   <View style={{
@@ -213,7 +213,7 @@ export default function EditParticipationScreen() {
                   }}>
                     <ScrollView nestedScrollEnabled>
                       {prefectures.map((pref) => (
-                        <TouchableOpacity
+                        <Pressable
                           key={pref}
                           onPress={() => {
                             setPrefecture(pref);
@@ -232,7 +232,7 @@ export default function EditParticipationScreen() {
                           }}>
                             {pref}
                           </Text>
-                        </TouchableOpacity>
+                        </Pressable>
                       ))}
                     </ScrollView>
                   </View>
@@ -245,7 +245,7 @@ export default function EditParticipationScreen() {
                   性別 <Text style={{ color: colors.error }}>*</Text>
                 </Text>
                 <View style={{ flexDirection: "row", gap: 12 }}>
-                  <TouchableOpacity
+                  <Pressable
                     onPress={() => setGender("male")}
                     style={{
                       flex: 1,
@@ -268,9 +268,9 @@ export default function EditParticipationScreen() {
                     }}>
                       男性
                     </Text>
-                  </TouchableOpacity>
+                  </Pressable>
                   
-                  <TouchableOpacity
+                  <Pressable
                     onPress={() => setGender("female")}
                     style={{
                       flex: 1,
@@ -293,12 +293,12 @@ export default function EditParticipationScreen() {
                     }}>
                       女性
                     </Text>
-                  </TouchableOpacity>
+                  </Pressable>
                 </View>
               </View>
 
               {/* 更新ボタン */}
-              <TouchableOpacity
+              <Pressable
                 onPress={handleUpdate}
                 disabled={updateParticipationMutation.isPending}
                 style={{
@@ -325,7 +325,7 @@ export default function EditParticipationScreen() {
                     </Text>
                   )}
                 </LinearGradient>
-              </TouchableOpacity>
+              </Pressable>
             </View>
           </ResponsiveContainer>
         </ScrollView>

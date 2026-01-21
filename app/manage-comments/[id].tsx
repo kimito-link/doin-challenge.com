@@ -1,4 +1,4 @@
-import { Text, View, TouchableOpacity, ScrollView, ActivityIndicator, Alert, TextInput } from "react-native";
+import { Text, View, Pressable, ScrollView, ActivityIndicator, Alert, TextInput } from "react-native";
 import { color, palette } from "@/theme/tokens";
 import { useRouter, useLocalSearchParams } from "expo-router";
 import { useState } from "react";
@@ -126,13 +126,13 @@ export default function ManageCommentsScreen() {
           title="君斗りんくの動員ちゃれんじ" 
           showCharacters={false}
           rightElement={
-            <TouchableOpacity
+            <Pressable
               onPress={() => router.back()}
               style={{ flexDirection: "row", alignItems: "center" }}
             >
               <MaterialIcons name="arrow-back" size={24} color={colors.foreground} />
               <Text style={{ color: colors.foreground, marginLeft: 8 }}>戻る</Text>
-            </TouchableOpacity>
+            </Pressable>
           }
         />
         <View style={{ paddingHorizontal: 16, paddingTop: 8 }}>
@@ -147,7 +147,7 @@ export default function ManageCommentsScreen() {
 
           {/* タブ */}
           <View style={{ flexDirection: "row", marginBottom: 16, gap: 8 }}>
-            <TouchableOpacity
+            <Pressable
               onPress={() => setSelectedTab("all")}
               style={{
                 flex: 1,
@@ -160,8 +160,8 @@ export default function ManageCommentsScreen() {
               <Text style={{ color: colors.foreground, fontWeight: "bold" }}>
                 すべて ({commentsWithMessage.length})
               </Text>
-            </TouchableOpacity>
-            <TouchableOpacity
+            </Pressable>
+            <Pressable
               onPress={() => setSelectedTab("picked")}
               style={{
                 flex: 1,
@@ -174,7 +174,7 @@ export default function ManageCommentsScreen() {
               <Text style={{ color: colors.foreground, fontWeight: "bold" }}>
                 ピックアップ ({pickedComments?.length || 0})
               </Text>
-            </TouchableOpacity>
+            </Pressable>
           </View>
         </View>
 
@@ -276,7 +276,7 @@ export default function ManageCommentsScreen() {
                     {/* アクションボタン */}
                     <View style={{ flexDirection: "row", gap: 8 }}>
                       {isPicked ? (
-                        <TouchableOpacity
+                        <Pressable
                           onPress={() => handleUnpick(participation.id)}
                           style={{
                             flex: 1,
@@ -289,11 +289,11 @@ export default function ManageCommentsScreen() {
                           <Text style={{ color: colors.foreground, fontWeight: "bold" }}>
                             ピックアップ解除
                           </Text>
-                        </TouchableOpacity>
+                        </Pressable>
                       ) : (
                         <>
                           {isPickingThis && (
-                            <TouchableOpacity
+                            <Pressable
                               onPress={() => setPickingId(null)}
                               style={{
                                 flex: 1,
@@ -304,9 +304,9 @@ export default function ManageCommentsScreen() {
                               }}
                             >
                               <Text style={{ color: colors.foreground }}>キャンセル</Text>
-                            </TouchableOpacity>
+                            </Pressable>
                           )}
-                          <TouchableOpacity
+                          <Pressable
                             onPress={() => handlePick(participation.id)}
                             disabled={pickMutation.isPending}
                             style={{
@@ -320,7 +320,7 @@ export default function ManageCommentsScreen() {
                             <Text style={{ color: colors.foreground, fontWeight: "bold" }}>
                               {isPickingThis ? "確定" : "ピックアップ"}
                             </Text>
-                          </TouchableOpacity>
+                          </Pressable>
                         </>
                       )}
                     </View>
@@ -406,7 +406,7 @@ export default function ManageCommentsScreen() {
 
                   {/* アクションボタン */}
                   <View style={{ flexDirection: "row", gap: 8 }}>
-                    <TouchableOpacity
+                    <Pressable
                       onPress={() => handleUnpick(picked.participationId)}
                       style={{
                         flex: 1,
@@ -417,9 +417,9 @@ export default function ManageCommentsScreen() {
                       }}
                     >
                       <Text style={{ color: colors.foreground }}>解除</Text>
-                    </TouchableOpacity>
+                    </Pressable>
                     {!picked.isUsedInVideo && (
-                      <TouchableOpacity
+                      <Pressable
                         onPress={() => handleMarkAsUsed(picked.id)}
                         style={{
                           flex: 1,
@@ -432,7 +432,7 @@ export default function ManageCommentsScreen() {
                         <Text style={{ color: "#000", fontWeight: "bold" }}>
                           動画使用済みにする
                         </Text>
-                      </TouchableOpacity>
+                      </Pressable>
                     )}
                   </View>
                 </View>

@@ -1,5 +1,9 @@
 # Project TODO - 君斗りんくの動員ちゃれんじ
 
+## v6.20 UI統一化
+
+- [x] TouchableOpacityをPressableに置き換え（全ファイル完了）
+
 ## 完了済み（v1.0 生誕祭アプリ）
 - [x] テーマカラーの設定（KimitoLinkブランドカラー）
 - [x] 基本的なデータベーススキーマ
@@ -3440,3 +3444,43 @@ features/create/
 
 ### app配下
 - [x] 残りの画面（26ファイル、既存コンポーネントは維持）
+
+
+## 残り77ファイルのTouchableOpacity置き換え（v6.26）
+
+### components/atoms配下
+- [x] button.tsx
+- [x] floating-action-button.tsx
+- [x] input.tsx
+- [x] loading-button.tsx
+- [x] touchable.tsx
+
+### components/molecules配下
+- [ ] animated-list-item.tsx
+- [ ] card.tsx
+- [ ] collapsible.tsx
+- [ ] colorful-challenge-card.tsx
+- [ ] confirm-modal.tsx
+- [ ] date-picker.tsx
+- [ ] encouragement-modal.tsx
+- [ ] export-button.tsx
+- [ ] filter-tabs.tsx
+- [ ] follow-gate.tsx
+- [ ] follow-success-modal.tsx
+- [ ] login-success-modal.tsx
+- [ ] logout-confirm-modal.tsx
+- [ ] memoized-challenge-card.tsx
+- [ ] number-stepper.tsx
+- [ ] その他のmoleculesファイル
+
+### components/organisms配下
+- [ ] 全organismsファイル
+
+### app配下
+- [ ] 全26ファイル
+
+### features配下
+- [ ] CreateChallengeForm.tsx
+- [ ] SearchBar.tsx
+- [ ] HostedChallengeSection.tsx
+- [ ] ParticipationSection.tsx

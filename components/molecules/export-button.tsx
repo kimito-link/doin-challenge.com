@@ -1,4 +1,4 @@
-import { View, Text, TouchableOpacity, Modal, StyleSheet, Platform, Alert } from "react-native";
+import { View, Text, Pressable, Modal, StyleSheet, Platform, Alert } from "react-native";
 import { color, palette } from "@/theme/tokens";
 import { useState, useCallback } from "react";
 import MaterialIcons from "@expo/vector-icons/MaterialIcons";
@@ -19,6 +19,12 @@ interface ExportButtonProps {
 
 type ExportFormat = "csv" | "text" | "clipboard";
 
+const triggerHaptic = () => {
+  if (Platform.OS !== "web") {
+    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+  }
+};
+
 /**
  * 統計データエクスポートボタンコンポーネント
  * CSV、テキストレポート、クリップボードコピーに対応
@@ -30,9 +36,7 @@ export function ExportButton({ data, disabled = false }: ExportButtonProps) {
   const handlePress = useCallback(() => {
     if (disabled) return;
     
-    if (Platform.OS !== "web") {
-      Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-    }
+    triggerHaptic();
     setModalVisible(true);
   }, [disabled]);
 
@@ -78,10 +82,14 @@ export function ExportButton({ data, disabled = false }: ExportButtonProps) {
 
   return (
     <>
-      <TouchableOpacity
+      <Pressable
         onPress={handlePress}
         disabled={disabled}
-        style={[styles.button, disabled && styles.buttonDisabled]}
+        style={({ pressed }) => [
+          styles.button,
+          disabled && styles.buttonDisabled,
+          pressed && !disabled && { opacity: 0.7 },
+        ]}
         accessibilityRole="button"
         accessibilityLabel="統計データをエクスポート"
       >
@@ -89,7 +97,7 @@ export function ExportButton({ data, disabled = false }: ExportButtonProps) {
         <Text style={[styles.buttonText, disabled && styles.buttonTextDisabled]}>
           エクスポート
         </Text>
-      </TouchableOpacity>
+      </Pressable>
 
       <Modal
         visible={modalVisible}
@@ -97,25 +105,33 @@ export function ExportButton({ data, disabled = false }: ExportButtonProps) {
         animationType="fade"
         onRequestClose={closeModal}
       >
-        <TouchableOpacity
+        <Pressable
           style={styles.modalOverlay}
-          activeOpacity={1}
           onPress={closeModal}
         >
           <View style={styles.modalContent}>
             <View style={styles.modalHeader}>
               <Text style={styles.modalTitle}>エクスポート形式を選択</Text>
-              <TouchableOpacity onPress={closeModal} style={styles.closeButton}>
+              <Pressable 
+                onPress={closeModal} 
+                style={({ pressed }) => [
+                  styles.closeButton,
+                  pressed && { opacity: 0.7 },
+                ]}
+              >
                 <MaterialIcons name="close" size={24} color={color.textMuted} />
-              </TouchableOpacity>
+              </Pressable>
             </View>
 
             <View style={styles.optionList}>
               {/* CSVエクスポート */}
-              <TouchableOpacity
+              <Pressable
                 onPress={() => handleExport("csv")}
                 disabled={exporting}
-                style={styles.optionItem}
+                style={({ pressed }) => [
+                  styles.optionItem,
+                  pressed && { opacity: 0.7 },
+                ]}
               >
                 <View style={[styles.optionIcon, { backgroundColor: color.successDark }]}>
                   <MaterialIcons name="table-chart" size={24} color={color.textWhite} />
@@ -127,13 +143,16 @@ export function ExportButton({ data, disabled = false }: ExportButtonProps) {
                   </Text>
                 </View>
                 <MaterialIcons name="chevron-right" size={24} color={color.textSubtle} />
-              </TouchableOpacity>
+              </Pressable>
 
               {/* テキストレポート */}
-              <TouchableOpacity
+              <Pressable
                 onPress={() => handleExport("text")}
                 disabled={exporting}
-                style={styles.optionItem}
+                style={({ pressed }) => [
+                  styles.optionItem,
+                  pressed && { opacity: 0.7 },
+                ]}
               >
                 <View style={[styles.optionIcon, { backgroundColor: color.accentPrimary }]}>
                   <MaterialIcons name="description" size={24} color={color.textWhite} />
@@ -145,14 +164,17 @@ export function ExportButton({ data, disabled = false }: ExportButtonProps) {
                   </Text>
                 </View>
                 <MaterialIcons name="chevron-right" size={24} color={color.textSubtle} />
-              </TouchableOpacity>
+              </Pressable>
 
               {/* クリップボードコピー（Web専用） */}
               {Platform.OS === "web" && (
-                <TouchableOpacity
+                <Pressable
                   onPress={() => handleExport("clipboard")}
                   disabled={exporting}
-                  style={styles.optionItem}
+                  style={({ pressed }) => [
+                    styles.optionItem,
+                    pressed && { opacity: 0.7 },
+                  ]}
                 >
                   <View style={[styles.optionIcon, { backgroundColor: color.accentAlt }]}>
                     <MaterialIcons name="content-copy" size={24} color={color.textWhite} />
@@ -164,7 +186,7 @@ export function ExportButton({ data, disabled = false }: ExportButtonProps) {
                     </Text>
                   </View>
                   <MaterialIcons name="chevron-right" size={24} color={color.textSubtle} />
-                </TouchableOpacity>
+                </Pressable>
               )}
             </View>
 
@@ -174,7 +196,7 @@ export function ExportButton({ data, disabled = false }: ExportButtonProps) {
               </View>
             )}
           </View>
-        </TouchableOpacity>
+        </Pressable>
       </Modal>
     </>
   );

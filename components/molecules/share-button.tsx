@@ -1,9 +1,8 @@
-import { TouchableOpacity, Text, View, StyleSheet, ActivityIndicator, ViewStyle, TextStyle } from "react-native";
+import { Pressable, Text, View, StyleSheet, ActivityIndicator, ViewStyle, TextStyle, Platform } from "react-native";
 import { color, palette } from "@/theme/tokens";
 import MaterialIcons from "@expo/vector-icons/MaterialIcons";
 import { useState } from "react";
 import * as Haptics from "expo-haptics";
-import { Platform } from "react-native";
 
 interface ShareButtonProps {
   onPress: () => Promise<boolean>;
@@ -45,12 +44,13 @@ export function ShareButton({
     }
   };
 
-  const buttonStyle: ViewStyle[] = [
+  const getButtonStyle = (pressed: boolean): ViewStyle[] => [
     styles.button,
     size === "small" ? styles.buttonSmall : size === "large" ? styles.buttonLarge : styles.buttonMedium,
     variant === "secondary" ? styles.buttonSecondary : variant === "icon" ? styles.buttonIcon : styles.buttonPrimary,
     disabled ? styles.buttonDisabled : {},
     success ? styles.buttonSuccess : {},
+    pressed && !disabled && !loading ? { opacity: 0.7 } : {},
   ];
 
   const textStyle: TextStyle[] = [
@@ -63,11 +63,10 @@ export function ShareButton({
 
   if (variant === "icon") {
     return (
-      <TouchableOpacity
+      <Pressable
         onPress={handlePress}
         disabled={loading || disabled}
-        style={buttonStyle}
-        activeOpacity={0.7}
+        style={({ pressed }) => getButtonStyle(pressed)}
       >
         {loading ? (
           <ActivityIndicator size="small" color={color.textWhite} />
@@ -76,16 +75,15 @@ export function ShareButton({
         ) : (
           <MaterialIcons name="share" size={iconSize} color={color.textWhite} />
         )}
-      </TouchableOpacity>
+      </Pressable>
     );
   }
 
   return (
-    <TouchableOpacity
+    <Pressable
       onPress={handlePress}
       disabled={loading || disabled}
-      style={buttonStyle}
-      activeOpacity={0.7}
+      style={({ pressed }) => getButtonStyle(pressed)}
     >
       {loading ? (
         <ActivityIndicator size="small" color={variant === "secondary" ? color.accentPrimary : color.textWhite} />
@@ -101,7 +99,7 @@ export function ShareButton({
           </Text>
         </View>
       )}
-    </TouchableOpacity>
+    </Pressable>
   );
 }
 
@@ -132,10 +130,11 @@ export function TwitterShareButton({
 
   const iconSize = size === "small" ? 16 : size === "large" ? 24 : 20;
 
-  const buttonStyle: ViewStyle[] = [
+  const getButtonStyle = (pressed: boolean): ViewStyle[] => [
     styles.twitterButton,
     size === "small" ? styles.buttonSmall : size === "large" ? styles.buttonLarge : styles.buttonMedium,
     disabled ? styles.buttonDisabled : {},
+    pressed && !disabled && !loading ? { opacity: 0.7 } : {},
   ];
 
   const textStyle: TextStyle[] = [
@@ -145,11 +144,10 @@ export function TwitterShareButton({
   ];
 
   return (
-    <TouchableOpacity
+    <Pressable
       onPress={handlePress}
       disabled={loading || disabled}
-      style={buttonStyle}
-      activeOpacity={0.7}
+      style={({ pressed }) => getButtonStyle(pressed)}
     >
       {loading ? (
         <ActivityIndicator size="small" color={color.textWhite} />
@@ -159,7 +157,7 @@ export function TwitterShareButton({
           <Text style={textStyle}>{label}</Text>
         </View>
       )}
-    </TouchableOpacity>
+    </Pressable>
   );
 }
 

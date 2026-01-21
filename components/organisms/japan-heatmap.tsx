@@ -1,4 +1,4 @@
-import { View, Text, StyleSheet, Dimensions, Platform, TouchableOpacity } from "react-native";
+import { View, Text, StyleSheet, Dimensions, Platform, Pressable } from "react-native";
 import { color, palette } from "@/theme/tokens";
 import Svg, { Path, G, Text as SvgText } from "react-native-svg";
 import { useMemo } from "react";
@@ -385,14 +385,14 @@ export function JapanHeatmap({ prefectureCounts, onPrefecturePress, onRegionPres
           };
           
           return (
-            <TouchableOpacity
+            <Pressable
               key={region.name}
               onPress={handleRegionCardPress}
-              activeOpacity={0.7}
-              style={[
+              style={({ pressed }) => [
                 styles.regionCard,
                 isHot && styles.regionCardHot,
-                { borderColor: count > 0 ? regionHeatColor : color.heatmapNone }
+                { borderColor: count > 0 ? regionHeatColor : color.heatmapNone },
+                pressed && { opacity: 0.7 },
               ]}
             >
               <View style={styles.regionCardHeader}>
@@ -406,7 +406,7 @@ export function JapanHeatmap({ prefectureCounts, onPrefecturePress, onRegionPres
               <View style={styles.progressBar}>
                 <View style={[styles.progressFill, { width: `${intensity * 100}%`, backgroundColor: regionHeatColor }]} />
               </View>
-            </TouchableOpacity>
+            </Pressable>
           );
         })}
       </View>

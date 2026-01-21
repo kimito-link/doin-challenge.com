@@ -1,4 +1,4 @@
-import { View, Text, TextInput, ScrollView, TouchableOpacity, KeyboardAvoidingView, Platform, ActivityIndicator } from "react-native";
+import { View, Text, TextInput, ScrollView, Pressable, KeyboardAvoidingView, Platform, ActivityIndicator } from "react-native";
 import { color, palette } from "@/theme/tokens";
 import { Image } from "expo-image";
 import { useLocalSearchParams, useRouter } from "expo-router";
@@ -145,7 +145,7 @@ export default function EditChallengeScreen() {
           <Text style={{ color: colors.foreground, fontSize: 18, marginTop: 16 }}>
             チャレンジが見つかりません
           </Text>
-          <TouchableOpacity
+          <Pressable
             style={{
               marginTop: 20,
               backgroundColor: colors.primary,
@@ -156,7 +156,7 @@ export default function EditChallengeScreen() {
             onPress={() => router.back()}
           >
             <Text style={{ color: "#fff", fontWeight: "600" }}>戻る</Text>
-          </TouchableOpacity>
+          </Pressable>
         </View>
       </ScreenContainer>
     );
@@ -173,7 +173,7 @@ export default function EditChallengeScreen() {
           <Text style={{ color: colors.muted, fontSize: 14, marginTop: 8, textAlign: "center" }}>
             このチャレンジを編集できるのは作成者のみです
           </Text>
-          <TouchableOpacity
+          <Pressable
             style={{
               marginTop: 20,
               backgroundColor: colors.primary,
@@ -184,7 +184,7 @@ export default function EditChallengeScreen() {
             onPress={() => router.back()}
           >
             <Text style={{ color: "#fff", fontWeight: "600" }}>戻る</Text>
-          </TouchableOpacity>
+          </Pressable>
         </View>
       </ScreenContainer>
     );
@@ -306,7 +306,7 @@ export default function EditChallengeScreen() {
               <Text style={{ color: colors.foreground, fontSize: 14, fontWeight: "600", marginBottom: 8 }}>
                 都道府県
               </Text>
-              <TouchableOpacity
+              <Pressable
                 style={{
                   backgroundColor: color.surface,
                   borderRadius: 12,
@@ -327,7 +327,7 @@ export default function EditChallengeScreen() {
                   size={24}
                   color={colors.muted}
                 />
-              </TouchableOpacity>
+              </Pressable>
               {showPrefectureList && (
                 <View
                   style={{
@@ -341,7 +341,7 @@ export default function EditChallengeScreen() {
                 >
                   <ScrollView nestedScrollEnabled>
                     {prefectures.map((pref) => (
-                      <TouchableOpacity
+                      <Pressable
                         key={pref}
                         style={{
                           padding: 12,
@@ -361,7 +361,7 @@ export default function EditChallengeScreen() {
                         >
                           {pref}
                         </Text>
-                      </TouchableOpacity>
+                      </Pressable>
                     ))}
                   </ScrollView>
                 </View>
@@ -514,7 +514,7 @@ export default function EditChallengeScreen() {
             </View>
 
             {/* 更新ボタン */}
-            <TouchableOpacity
+            <Pressable
               style={{
                 backgroundColor: colors.primary,
                 borderRadius: 12,
@@ -533,10 +533,10 @@ export default function EditChallengeScreen() {
                   更新する
                 </Text>
               )}
-            </TouchableOpacity>
+            </Pressable>
 
             {/* キャンセルボタン */}
-            <TouchableOpacity
+            <Pressable
               style={{
                 backgroundColor: "transparent",
                 borderRadius: 12,
@@ -550,7 +550,7 @@ export default function EditChallengeScreen() {
               <Text style={{ color: colors.muted, fontSize: 16, fontWeight: "600" }}>
                 キャンセル
               </Text>
-            </TouchableOpacity>
+            </Pressable>
           </View>
         </ScrollView>
       </KeyboardAvoidingView>

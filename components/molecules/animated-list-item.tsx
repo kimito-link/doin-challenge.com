@@ -1,5 +1,6 @@
 import { useRef, useEffect } from "react";
-import { Animated, TouchableOpacity, StyleSheet, ViewStyle } from "react-native";
+import { Animated, Pressable, StyleSheet, ViewStyle, Platform } from "react-native";
+import * as Haptics from "expo-haptics";
 import { usePressAnimation } from "@/lib/animations";
 import { touchTarget } from "@/constants/design-system";
 
@@ -65,16 +66,25 @@ export function AnimatedListItem({
   );
 
   if (onPress && !disabled) {
+    const handlePressIn = () => {
+      if (Platform.OS !== "web") {
+        Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+      }
+      onPressIn();
+    };
+
     return (
-      <TouchableOpacity
+      <Pressable
         onPress={onPress}
-        onPressIn={onPressIn}
+        onPressIn={handlePressIn}
         onPressOut={onPressOut}
-        activeOpacity={1}
         disabled={disabled}
+        style={({ pressed }) => [
+          pressed && { opacity: 0.7 },
+        ]}
       >
         {content}
-      </TouchableOpacity>
+      </Pressable>
     );
   }
 

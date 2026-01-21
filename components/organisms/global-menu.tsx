@@ -3,7 +3,6 @@ import { color, palette } from "@/theme/tokens";
 import {
   View,
   Text,
-  TouchableOpacity,
   Modal,
   Pressable,
   ScrollView,
@@ -119,19 +118,19 @@ export function GlobalMenu({ isVisible, onClose }: GlobalMenuProps) {
                   <Text style={{ color: color.textWhite, fontSize: 18, fontWeight: "bold" }}>
                     メニュー
                   </Text>
-                  <TouchableOpacity
+                  <Pressable
                     onPress={onClose}
-                    style={{
+                    style={({ pressed }) => [{
                       width: 32,
                       height: 32,
                       borderRadius: 16,
                       backgroundColor: color.borderAlt,
                       alignItems: "center",
                       justifyContent: "center",
-                    }}
+                    }, pressed && { opacity: 0.7 }]}
                   >
                     <MaterialIcons name="close" size={20} color={color.textMuted} />
-                  </TouchableOpacity>
+                  </Pressable>
                 </View>
               </View>
 
@@ -232,10 +231,10 @@ export function GlobalMenu({ isVisible, onClose }: GlobalMenuProps) {
                     >
                       ログインして参加しよう！
                     </Text>
-                    <TouchableOpacity
+                    <Pressable
                       onPress={handleLogin}
                       disabled={isLoggingIn}
-                      style={{
+                      style={({ pressed }) => [{
                         flexDirection: "row",
                         alignItems: "center",
                         justifyContent: "center",
@@ -245,7 +244,7 @@ export function GlobalMenu({ isVisible, onClose }: GlobalMenuProps) {
                         borderRadius: 24,
                         opacity: isLoggingIn ? 0.7 : 1,
                         width: "100%",
-                      }}
+                      }, pressed && !isLoggingIn && { opacity: 0.7 }]}
                     >
                       <MaterialIcons
                         name="login"
@@ -262,7 +261,7 @@ export function GlobalMenu({ isVisible, onClose }: GlobalMenuProps) {
                       >
                         {isLoggingIn ? "ログイン中..." : "Xでログイン"}
                       </Text>
-                    </TouchableOpacity>
+                    </Pressable>
                   </View>
                 )}
               </View>
@@ -309,9 +308,9 @@ export function GlobalMenu({ isVisible, onClose }: GlobalMenuProps) {
                     marginTop: 12,
                   }}
                 >
-                  <TouchableOpacity
+                  <Pressable
                     onPress={handleLogout}
-                    style={{
+                    style={({ pressed }) => [{
                       flexDirection: "row",
                       alignItems: "center",
                       justifyContent: "center",
@@ -319,8 +318,7 @@ export function GlobalMenu({ isVisible, onClose }: GlobalMenuProps) {
                       paddingHorizontal: 12,
                       borderRadius: 12,
                       backgroundColor: "rgba(239, 68, 68, 0.1)",
-                    }}
-                    activeOpacity={0.7}
+                    }, pressed && { opacity: 0.7 }]}
                   >
                     <MaterialIcons
                       name="logout"
@@ -337,7 +335,7 @@ export function GlobalMenu({ isVisible, onClose }: GlobalMenuProps) {
                     >
                       ログアウト
                     </Text>
-                  </TouchableOpacity>
+                  </Pressable>
                 </View>
               )}
             </ScrollView>
@@ -375,18 +373,17 @@ export function HamburgerButton({
   };
 
   return (
-    <TouchableOpacity
+    <Pressable
       onPress={handlePress}
-      style={{
+      style={({ pressed }) => [{
         width: 44,
         height: 44,
         alignItems: "center",
         justifyContent: "center",
         borderRadius: 22,
-      }}
-      activeOpacity={0.7}
+      }, pressed && { opacity: 0.7 }]}
     >
       <MaterialIcons name="menu" size={size} color={buttonColor} />
-    </TouchableOpacity>
+    </Pressable>
   );
 }

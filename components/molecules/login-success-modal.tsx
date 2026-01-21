@@ -3,7 +3,8 @@ import { color, palette } from "@/theme/tokens";
 import { LinearGradient } from "expo-linear-gradient";
 import { Image } from "expo-image";
 import { useEffect, useState } from "react";
-import { Animated, Modal, Text, TouchableOpacity, View, Easing } from "react-native";
+import { Animated, Modal, Text, Pressable, View, Easing, Platform } from "react-native";
+import * as Haptics from "expo-haptics";
 
 // キャラクター画像のURL
 const CHARACTER_IMAGES = {
@@ -108,6 +109,9 @@ export function LoginSuccessModal({
   }, [visible]);
 
   const handleClose = () => {
+    if (Platform.OS !== "web") {
+      Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+    }
     Animated.parallel([
       Animated.timing(scaleAnim, {
         toValue: 0,
@@ -142,10 +146,9 @@ export function LoginSuccessModal({
           opacity: fadeAnim,
         }}
       >
-        <TouchableOpacity
+        <Pressable
           style={{ position: "absolute", top: 0, left: 0, right: 0, bottom: 0 }}
           onPress={handleClose}
-          activeOpacity={1}
         />
 
         <Animated.View
@@ -314,22 +317,25 @@ export function LoginSuccessModal({
               </Text>
 
               {/* 閉じるボタン */}
-              <TouchableOpacity
+              <Pressable
                 onPress={handleClose}
-                style={{
-                  flexDirection: "row",
-                  alignItems: "center",
-                  paddingVertical: 12,
-                  paddingHorizontal: 24,
-                  borderRadius: 24,
-                  backgroundColor: color.border,
-                }}
+                style={({ pressed }) => [
+                  {
+                    flexDirection: "row",
+                    alignItems: "center",
+                    paddingVertical: 12,
+                    paddingHorizontal: 24,
+                    borderRadius: 24,
+                    backgroundColor: color.border,
+                  },
+                  pressed && { opacity: 0.7 },
+                ]}
               >
                 <Text style={{ color: color.textMuted, fontSize: 14 }}>
                   タップして始める
                 </Text>
                 <MaterialIcons name="arrow-forward" size={18} color={color.textMuted} style={{ marginLeft: 8 }} />
-              </TouchableOpacity>
+              </Pressable>
             </View>
           </View>
         </Animated.View>

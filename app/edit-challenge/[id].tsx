@@ -1,4 +1,4 @@
-import { View, Text, ScrollView, TextInput, TouchableOpacity, KeyboardAvoidingView, Platform, ActivityIndicator } from "react-native";
+import { View, Text, ScrollView, TextInput, Pressable, KeyboardAvoidingView, Platform, ActivityIndicator } from "react-native";
 import { color, palette } from "@/theme/tokens";
 import { Image } from "expo-image";
 import { useRouter, useLocalSearchParams } from "expo-router";
@@ -274,7 +274,7 @@ export default function EditChallengeScreen() {
                 </Text>
                 <View style={{ flexDirection: "row", flexWrap: "wrap", gap: 8 }}>
                   {goalTypes.map((type) => (
-                    <TouchableOpacity
+                    <Pressable
                       key={type.id}
                       onPress={() => {
                         setGoalType(type.id);
@@ -306,7 +306,7 @@ export default function EditChallengeScreen() {
                       >
                         {type.label}
                       </Text>
-                    </TouchableOpacity>
+                    </Pressable>
                   ))}
                 </View>
               </View>
@@ -397,7 +397,7 @@ export default function EditChallengeScreen() {
               </View>
 
               {/* 更新ボタン */}
-              <TouchableOpacity
+              <Pressable
                 onPress={handleUpdate}
                 disabled={updateChallengeMutation.isPending}
                 style={{
@@ -424,7 +424,7 @@ export default function EditChallengeScreen() {
                     </Text>
                   )}
                 </LinearGradient>
-              </TouchableOpacity>
+              </Pressable>
             </View>
           </ResponsiveContainer>
         </ScrollView>

@@ -1,4 +1,5 @@
-import { View, Text, StyleSheet, TouchableOpacity, Dimensions } from "react-native";
+import { View, Text, StyleSheet, Pressable, Dimensions, Platform } from "react-native";
+import * as Haptics from "expo-haptics";
 import { color, palette } from "@/theme/tokens";
 import { useMemo } from "react";
 
@@ -145,18 +146,21 @@ export function JapanBlockMap({ prefectureCounts, onPrefecturePress, onRegionPre
           const prefectureNames = region.prefectures.map(p => p.name);
           
           return (
-            <TouchableOpacity
+            <Pressable
               key={region.name}
-              style={[
+              style={({ pressed }) => [
                 styles.regionBlock,
                 { 
                   backgroundColor: regionColor.bg,
                   borderColor: total > 0 ? color.mapHighlight : "transparent",
                   borderWidth: total > 0 ? 3 : 0,
-                }
+                },
+                pressed && { opacity: 0.7 },
               ]}
-              onPress={() => onRegionPress?.(region.name, prefectureNames)}
-              activeOpacity={0.7}
+              onPress={() => {
+                if (Platform.OS !== "web") Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+                onRegionPress?.(region.name, prefectureNames);
+              }}
             >
               <Text style={[styles.regionName, { color: regionColor.text }]}>{region.name}</Text>
               <Text style={[styles.regionCount, { color: regionColor.text }]}>
@@ -167,7 +171,7 @@ export function JapanBlockMap({ prefectureCounts, onPrefecturePress, onRegionPre
                   <Text style={{ fontSize: 16 }}>🔥</Text>
                 </View>
               )}
-            </TouchableOpacity>
+            </Pressable>
           );
         })}
       </View>

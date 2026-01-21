@@ -1,4 +1,4 @@
-import { ScrollView, Text, View, TouchableOpacity, StyleSheet } from "react-native";
+import { ScrollView, Text, View, Pressable, StyleSheet } from "react-native";
 import { color, palette } from "@/theme/tokens";
 import { useRouter } from "expo-router";
 import { ScreenContainer } from "@/components/organisms/screen-container";
@@ -103,13 +103,13 @@ export default function ReleaseNotesScreen() {
         title="君斗りんくの動員ちゃれんじ"
         showCharacters={false}
         rightElement={
-          <TouchableOpacity
+          <Pressable
             onPress={() => router.back()}
             style={{ flexDirection: "row", alignItems: "center" }}
           >
             <MaterialIcons name="arrow-back" size={24} color={color.textWhite} />
             <Text style={{ color: color.textWhite, marginLeft: 8 }}>戻る</Text>
-          </TouchableOpacity>
+          </Pressable>
         }
       />
 

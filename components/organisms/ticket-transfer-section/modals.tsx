@@ -1,7 +1,7 @@
 // components/organisms/ticket-transfer-section/modals.tsx
 // v6.18: チケット譲渡のモーダルコンポーネント
 import { useState } from "react";
-import { View, Text, TouchableOpacity, TextInput, Modal } from "react-native";
+import { View, Text, Pressable, TextInput, Modal } from "react-native";
 import { color } from "@/theme/tokens";
 import { PriceType, priceTypeLabels, priceTypeColors } from "./types";
 
@@ -58,7 +58,7 @@ export function CreateTransferModal({
           <Text style={{ color: color.textMuted, fontSize: 14, marginBottom: 8 }}>枚数</Text>
           <View style={{ flexDirection: "row", gap: 8, marginBottom: 16 }}>
             {[1, 2, 3, 4, 5].map((n) => (
-              <TouchableOpacity
+              <Pressable
                 key={n}
                 onPress={() => setTicketCount(n)}
                 style={{
@@ -74,7 +74,7 @@ export function CreateTransferModal({
                 <Text style={{ color: color.textWhite, fontWeight: ticketCount === n ? "bold" : "normal" }}>
                   {n}枚
                 </Text>
-              </TouchableOpacity>
+              </Pressable>
             ))}
           </View>
           
@@ -82,7 +82,7 @@ export function CreateTransferModal({
           <Text style={{ color: color.textMuted, fontSize: 14, marginBottom: 8 }}>価格</Text>
           <View style={{ flexDirection: "row", gap: 8, marginBottom: 16 }}>
             {(["face_value", "negotiable", "free"] as PriceType[]).map((type) => (
-              <TouchableOpacity
+              <Pressable
                 key={type}
                 onPress={() => setPriceType(type)}
                 style={{
@@ -98,7 +98,7 @@ export function CreateTransferModal({
                 <Text style={{ color: color.textWhite, fontWeight: priceType === type ? "bold" : "normal" }}>
                   {priceTypeLabels[type]}
                 </Text>
-              </TouchableOpacity>
+              </Pressable>
             ))}
           </View>
           
@@ -139,7 +139,7 @@ export function CreateTransferModal({
           
           {/* ボタン */}
           <View style={{ flexDirection: "row", gap: 12 }}>
-            <TouchableOpacity
+            <Pressable
               onPress={onClose}
               style={{
                 flex: 1,
@@ -150,8 +150,8 @@ export function CreateTransferModal({
               }}
             >
               <Text style={{ color: color.textWhite, fontSize: 16 }}>キャンセル</Text>
-            </TouchableOpacity>
-            <TouchableOpacity
+            </Pressable>
+            <Pressable
               onPress={handleSubmit}
               disabled={isLoading}
               style={{
@@ -166,7 +166,7 @@ export function CreateTransferModal({
               <Text style={{ color: color.textWhite, fontSize: 16, fontWeight: "bold" }}>
                 {isLoading ? "投稿中..." : "投稿する"}
               </Text>
-            </TouchableOpacity>
+            </Pressable>
           </View>
         </View>
       </View>
@@ -227,7 +227,7 @@ export function WaitlistModal({
           <Text style={{ color: color.textMuted, fontSize: 14, marginBottom: 8 }}>希望枚数</Text>
           <View style={{ flexDirection: "row", gap: 8, marginBottom: 20 }}>
             {[1, 2, 3, 4, 5].map((n) => (
-              <TouchableOpacity
+              <Pressable
                 key={n}
                 onPress={() => setDesiredCount(n)}
                 style={{
@@ -243,13 +243,13 @@ export function WaitlistModal({
                 <Text style={{ color: color.textWhite, fontWeight: desiredCount === n ? "bold" : "normal" }}>
                   {n}枚
                 </Text>
-              </TouchableOpacity>
+              </Pressable>
             ))}
           </View>
           
           {/* ボタン */}
           <View style={{ flexDirection: "row", gap: 12 }}>
-            <TouchableOpacity
+            <Pressable
               onPress={onClose}
               style={{
                 flex: 1,
@@ -260,8 +260,8 @@ export function WaitlistModal({
               }}
             >
               <Text style={{ color: color.textWhite, fontSize: 16 }}>キャンセル</Text>
-            </TouchableOpacity>
-            <TouchableOpacity
+            </Pressable>
+            <Pressable
               onPress={handleSubmit}
               disabled={isLoading}
               style={{
@@ -276,7 +276,7 @@ export function WaitlistModal({
               <Text style={{ color: color.textWhite, fontSize: 16, fontWeight: "bold" }}>
                 {isLoading ? "登録中..." : "登録する"}
               </Text>
-            </TouchableOpacity>
+            </Pressable>
           </View>
         </View>
       </View>

@@ -9,15 +9,15 @@ import { color, palette } from "@/theme/tokens";
 import {
   View,
   Text,
-  TouchableOpacity,
+  Pressable,
   Modal,
   StyleSheet,
-  Pressable,
   ScrollView,
   ActivityIndicator,
   Platform,
   Alert,
 } from "react-native";
+import * as Haptics from "expo-haptics";
 import { Image } from "expo-image";
 import { useAccounts } from "@/hooks/use-accounts";
 import { useAuth } from "@/hooks/use-auth";
@@ -209,9 +209,15 @@ export function AccountSwitcher({ visible, onClose }: AccountSwitcherProps) {
             <Text style={[styles.title, { color: colors.foreground }]}>
               アカウント切り替え
             </Text>
-            <TouchableOpacity onPress={onClose}>
+            <Pressable 
+              onPress={() => {
+                if (Platform.OS !== "web") Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+                onClose();
+              }}
+              style={({ pressed }) => pressed && { opacity: 0.7 }}
+            >
               <Text style={[styles.closeButton, { color: colors.muted }]}>✕</Text>
-            </TouchableOpacity>
+            </Pressable>
           </View>
 
           <ScrollView style={styles.accountList} showsVerticalScrollIndicator={false}>
@@ -261,10 +267,17 @@ export function AccountSwitcher({ visible, onClose }: AccountSwitcherProps) {
             )}
             
             {otherAccounts.map((account) => (
-              <TouchableOpacity
+              <Pressable
                 key={account.id}
-                style={[styles.accountItem, { borderColor: colors.border }]}
-                onPress={() => handleSwitchToAccount(account)}
+                style={({ pressed }) => [
+                  styles.accountItem,
+                  { borderColor: colors.border },
+                  pressed && switchingAccountId !== account.id && { opacity: 0.7 },
+                ]}
+                onPress={() => {
+                  if (Platform.OS !== "web") Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+                  handleSwitchToAccount(account);
+                }}
                 disabled={switchingAccountId === account.id}
               >
                 {account.profileImageUrl ? (
@@ -295,19 +308,23 @@ export function AccountSwitcher({ visible, onClose }: AccountSwitcherProps) {
                   <ActivityIndicator size="small" color={colors.primary} />
                 ) : (
                   <View style={styles.accountActions}>
-                    <TouchableOpacity
+                    <Pressable
                       onPress={(e) => {
                         e.stopPropagation();
+                        if (Platform.OS !== "web") Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
                         handleRemoveAccount(account.id, account.username);
                       }}
-                      style={styles.removeButton}
+                      style={({ pressed }) => [
+                        styles.removeButton,
+                        pressed && { opacity: 0.7 },
+                      ]}
                     >
                       <MaterialIcons name="close" size={18} color={colors.error} />
-                    </TouchableOpacity>
+                    </Pressable>
                     <MaterialIcons name="chevron-right" size={24} color={colors.muted} />
                   </View>
                 )}
-              </TouchableOpacity>
+              </Pressable>
             ))}
           </ScrollView>
 
@@ -322,9 +339,16 @@ export function AccountSwitcher({ visible, onClose }: AccountSwitcherProps) {
           </View>
 
           {/* 別のアカウントでログインボタン */}
-          <TouchableOpacity
-            style={[styles.switchButton, { backgroundColor: "#1D9BF0" }]}
-            onPress={handleAddNewAccount}
+          <Pressable
+            style={({ pressed }) => [
+              styles.switchButton,
+              { backgroundColor: "#1D9BF0" },
+              pressed && !isLoading && { opacity: 0.7 },
+            ]}
+            onPress={() => {
+              if (Platform.OS !== "web") Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+              handleAddNewAccount();
+            }}
             disabled={isLoading}
           >
             {isLoading ? (
@@ -337,7 +361,7 @@ export function AccountSwitcher({ visible, onClose }: AccountSwitcherProps) {
                 </Text>
               </>
             )}
-          </TouchableOpacity>
+          </Pressable>
         </Pressable>
       </Pressable>
     </Modal>

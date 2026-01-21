@@ -1,4 +1,4 @@
-import { Text, View, ScrollView, TouchableOpacity, FlatList, RefreshControl, Alert } from "react-native";
+import { Text, View, ScrollView, Pressable, FlatList, RefreshControl, Alert } from "react-native";
 import { color, palette } from "@/theme/tokens";
 import { Image } from "expo-image";
 import { useLocalSearchParams, useRouter } from "expo-router";
@@ -121,12 +121,12 @@ export default function ProfileScreen() {
       <ScreenContainer containerClassName="bg-background">
         <View style={{ flex: 1, alignItems: "center", justifyContent: "center" }}>
           <Text style={{ color: color.textMuted }}>プロフィールが見つかりません</Text>
-          <TouchableOpacity
+          <Pressable
             onPress={() => router.back()}
             style={{ marginTop: 16, padding: 12 }}
           >
             <Text style={{ color: color.hostAccentLegacy }}>戻る</Text>
-          </TouchableOpacity>
+          </Pressable>
         </View>
       </ScreenContainer>
     );
@@ -144,13 +144,13 @@ export default function ProfileScreen() {
           title="君斗りんくの動員ちゃれんじ" 
           showCharacters={false}
           rightElement={
-            <TouchableOpacity
+            <Pressable
               onPress={() => router.back()}
               style={{ flexDirection: "row", alignItems: "center" }}
             >
               <MaterialIcons name="arrow-back" size={24} color={colors.foreground} />
               <Text style={{ color: colors.foreground, marginLeft: 8 }}>戻る</Text>
-            </TouchableOpacity>
+            </Pressable>
           }
         />
         <LinearGradient
@@ -196,7 +196,7 @@ export default function ProfileScreen() {
 
             {/* フォローボタン（自分以外のプロフィールの場合） */}
             {!isOwnProfile && user && (
-              <TouchableOpacity
+              <Pressable
                 onPress={handleFollowToggle}
                 disabled={followMutation.isPending || unfollowMutation.isPending}
                 style={{
@@ -231,7 +231,7 @@ export default function ProfileScreen() {
                 }}>
                   {isFollowing ? "フォロー中" : "フォローする"}
                 </Text>
-              </TouchableOpacity>
+              </Pressable>
             )}
           </View>
         </LinearGradient>
@@ -246,7 +246,7 @@ export default function ProfileScreen() {
           borderBottomColor: color.border,
           gap: 12,
         }}>
-          <TouchableOpacity 
+          <Pressable 
             onPress={() => router.push({ pathname: "/following", params: { userId: userId } })}
             style={{ 
               flexDirection: "row", 
@@ -263,8 +263,8 @@ export default function ProfileScreen() {
             <Text style={{ color: color.textMuted, fontSize: 14, marginLeft: 6 }}>
               フォロー中
             </Text>
-          </TouchableOpacity>
-          <TouchableOpacity 
+          </Pressable>
+          <Pressable 
             onPress={() => router.push({ pathname: "/followers", params: { userId: userId } })}
             style={{ 
               flexDirection: "row", 
@@ -281,7 +281,7 @@ export default function ProfileScreen() {
             <Text style={{ color: color.textMuted, fontSize: 14, marginLeft: 6 }}>
               フォロワー
             </Text>
-          </TouchableOpacity>
+          </Pressable>
         </View>
 
         {/* 統計 */}
@@ -310,7 +310,7 @@ export default function ProfileScreen() {
 
         {/* タブ */}
         <View style={{ flexDirection: "row", backgroundColor: colors.background, borderBottomWidth: 1, borderBottomColor: color.border }}>
-          <TouchableOpacity
+          <Pressable
             onPress={() => setActiveTab("challenges")}
             style={{
               flex: 1,
@@ -323,8 +323,8 @@ export default function ProfileScreen() {
             <Text style={{ color: activeTab === "challenges" ? color.hostAccentLegacy : color.textMuted, fontWeight: "600" }}>
               参加履歴
             </Text>
-          </TouchableOpacity>
-          <TouchableOpacity
+          </Pressable>
+          <Pressable
             onPress={() => setActiveTab("badges")}
             style={{
               flex: 1,
@@ -337,7 +337,7 @@ export default function ProfileScreen() {
             <Text style={{ color: activeTab === "badges" ? color.hostAccentLegacy : color.textMuted, fontWeight: "600" }}>
               バッジ
             </Text>
-          </TouchableOpacity>
+          </Pressable>
         </View>
 
         {/* コンテンツ */}
@@ -345,7 +345,7 @@ export default function ProfileScreen() {
           {activeTab === "challenges" ? (
             profile.recentParticipations && profile.recentParticipations.length > 0 ? (
               profile.recentParticipations.map((participation: any, index: number) => (
-                <TouchableOpacity
+                <Pressable
                   key={index}
                   onPress={() => router.push({
                     pathname: "/event/[id]",
@@ -377,7 +377,7 @@ export default function ProfileScreen() {
                       </>
                     )}
                   </View>
-                </TouchableOpacity>
+                </Pressable>
               ))
             ) : (
               <View style={{ alignItems: "center", padding: 32 }}>
@@ -431,7 +431,7 @@ export default function ProfileScreen() {
         {/* 編集ボタン（自分のプロフィールの場合） */}
         {isOwnProfile && (
           <View style={{ padding: 16 }}>
-            <TouchableOpacity
+            <Pressable
               onPress={() => router.back()}
               style={{
                 backgroundColor: color.border,
@@ -441,7 +441,7 @@ export default function ProfileScreen() {
               }}
             >
               <Text style={{ color: colors.foreground, fontWeight: "600" }}>プロフィールを編集</Text>
-            </TouchableOpacity>
+            </Pressable>
           </View>
         )}
 

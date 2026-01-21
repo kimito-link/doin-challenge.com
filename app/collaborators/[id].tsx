@@ -1,4 +1,4 @@
-import { Text, View, TouchableOpacity, ScrollView, TextInput, Alert } from "react-native";
+import { Text, View, Pressable, ScrollView, TextInput, Alert } from "react-native";
 import { color, palette } from "@/theme/tokens";
 import { Image } from "expo-image";
 import { useLocalSearchParams, useRouter } from "expo-router";
@@ -127,7 +127,7 @@ function CollaboratorCard({
       {/* オーナー以外は削除可能 */}
       {isOwner && collaborator.role !== "owner" && (
         <View style={{ flexDirection: "row", marginTop: 12, gap: 8 }}>
-          <TouchableOpacity
+          <Pressable
             onPress={() => onChangeRole?.(collaborator.role === "co-host" ? "moderator" : "co-host")}
             style={{
               flex: 1,
@@ -140,8 +140,8 @@ function CollaboratorCard({
             <Text style={{ color: colors.foreground, fontSize: 12 }}>
               {collaborator.role === "co-host" ? "モデレーターに変更" : "共同主催者に変更"}
             </Text>
-          </TouchableOpacity>
-          <TouchableOpacity
+          </Pressable>
+          <Pressable
             onPress={onRemove}
             style={{
               backgroundColor: color.danger,
@@ -151,7 +151,7 @@ function CollaboratorCard({
             }}
           >
             <MaterialIcons name="close" size={16} color={colors.foreground} />
-          </TouchableOpacity>
+          </Pressable>
         </View>
       )}
     </View>
@@ -222,7 +222,7 @@ function InviteForm({
           権限
         </Text>
         <View style={{ flexDirection: "row", gap: 8 }}>
-          <TouchableOpacity
+          <Pressable
             onPress={() => setRole("co-host")}
             style={{
               flex: 1,
@@ -238,8 +238,8 @@ function InviteForm({
             <Text style={{ color: role === "co-host" ? "rgba(255,255,255,0.8)" : color.textSubtle, fontSize: 10, marginTop: 2 }}>
               編集・参加者管理・招待
             </Text>
-          </TouchableOpacity>
-          <TouchableOpacity
+          </Pressable>
+          <Pressable
             onPress={() => setRole("moderator")}
             style={{
               flex: 1,
@@ -255,11 +255,11 @@ function InviteForm({
             <Text style={{ color: role === "moderator" ? "rgba(255,255,255,0.8)" : color.textSubtle, fontSize: 10, marginTop: 2 }}>
               参加者管理のみ
             </Text>
-          </TouchableOpacity>
+          </Pressable>
         </View>
       </View>
 
-      <TouchableOpacity
+      <Pressable
         onPress={handleSubmit}
         disabled={isLoading || !twitterId.trim()}
         style={{
@@ -275,7 +275,7 @@ function InviteForm({
         <Text style={{ color: colors.foreground, fontSize: 16, fontWeight: "bold", marginLeft: 8 }}>
           {isLoading ? "招待中..." : "招待を送信"}
         </Text>
-      </TouchableOpacity>
+      </Pressable>
     </View>
   );
 }
@@ -386,12 +386,12 @@ export default function CollaboratorsScreen() {
       <ScreenContainer className="p-4">
         <View style={{ flex: 1, alignItems: "center", justifyContent: "center" }}>
           <Text style={{ color: color.textMuted }}>チャレンジが見つかりません</Text>
-          <TouchableOpacity
+          <Pressable
             onPress={() => router.back()}
             style={{ marginTop: 16, padding: 12 }}
           >
             <Text style={{ color: color.accentPrimary }}>戻る</Text>
-          </TouchableOpacity>
+          </Pressable>
         </View>
       </ScreenContainer>
     );
@@ -405,12 +405,12 @@ export default function CollaboratorsScreen() {
           <Text style={{ color: color.textMuted, fontSize: 16, marginTop: 12 }}>
             この機能は主催者のみ利用できます
           </Text>
-          <TouchableOpacity
+          <Pressable
             onPress={() => router.back()}
             style={{ marginTop: 16, padding: 12 }}
           >
             <Text style={{ color: color.accentPrimary }}>戻る</Text>
-          </TouchableOpacity>
+          </Pressable>
         </View>
       </ScreenContainer>
     );
@@ -424,13 +424,13 @@ export default function CollaboratorsScreen() {
           title="君斗りんくの動員ちゃれんじ" 
           showCharacters={false}
           rightElement={
-            <TouchableOpacity
+            <Pressable
               onPress={() => router.back()}
               style={{ flexDirection: "row", alignItems: "center" }}
             >
               <MaterialIcons name="arrow-back" size={24} color={colors.foreground} />
               <Text style={{ color: colors.foreground, marginLeft: 8 }}>戻る</Text>
-            </TouchableOpacity>
+            </Pressable>
           }
         />
         <View style={{ marginBottom: 16 }}>

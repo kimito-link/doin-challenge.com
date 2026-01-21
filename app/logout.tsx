@@ -1,4 +1,4 @@
-import { Text, View, TouchableOpacity } from "react-native";
+import { Text, View, Pressable } from "react-native";
 import { color, palette } from "@/theme/tokens";
 import { useState, useEffect } from "react";
 import { Image } from "expo-image";
@@ -203,7 +203,7 @@ export default function LogoutScreen() {
         {logoutComplete && (
           <View style={{ width: "100%", maxWidth: 400, gap: 12 }}>
             {/* ホームページに戻る */}
-            <TouchableOpacity
+            <Pressable
               onPress={() => router.replace("/")}
               style={{
                 backgroundColor: color.info,
@@ -219,10 +219,10 @@ export default function LogoutScreen() {
               <Text style={{ color: color.textWhite, fontSize: 16, fontWeight: "bold", marginLeft: 8 }}>
                 ホームページに戻る
               </Text>
-            </TouchableOpacity>
+            </Pressable>
 
             {/* 同じアカウントで再ログイン */}
-            <TouchableOpacity
+            <Pressable
               onPress={handleSameAccountLogin}
               style={{
                 backgroundColor: color.successDark,
@@ -238,10 +238,10 @@ export default function LogoutScreen() {
               <Text style={{ color: color.textWhite, fontSize: 16, fontWeight: "bold", marginLeft: 8 }}>
                 同じアカウントで再ログイン
               </Text>
-            </TouchableOpacity>
+            </Pressable>
 
             {/* 別のアカウントでログイン */}
-            <TouchableOpacity
+            <Pressable
               onPress={handleDifferentAccountLogin}
               style={{
                 backgroundColor: "transparent",
@@ -259,7 +259,7 @@ export default function LogoutScreen() {
               <Text style={{ color: color.info, fontSize: 16, fontWeight: "bold", marginLeft: 8 }}>
                 別のアカウントでログイン
               </Text>
-            </TouchableOpacity>
+            </Pressable>
           </View>
         )}
 

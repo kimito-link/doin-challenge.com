@@ -1,4 +1,4 @@
-import { View, Text, Switch, StyleSheet, Platform, TouchableOpacity, Alert } from "react-native";
+import { View, Text, Switch, StyleSheet, Platform, Pressable, Alert } from "react-native";
 import { color, palette } from "@/theme/tokens";
 import { useState, useEffect, useCallback } from "react";
 import MaterialIcons from "@expo/vector-icons/MaterialIcons";
@@ -144,9 +144,15 @@ export function NotificationSettingsPanel({ onClose }: NotificationSettingsProps
       <View style={styles.header}>
         <Text style={styles.headerTitle}>通知設定</Text>
         {onClose && (
-          <TouchableOpacity onPress={onClose} style={styles.closeButton}>
+          <Pressable
+            onPress={onClose}
+            style={({ pressed }) => [
+              styles.closeButton,
+              pressed && { opacity: 0.7 },
+            ]}
+          >
             <MaterialIcons name="close" size={24} color={color.textMuted} />
-          </TouchableOpacity>
+          </Pressable>
         )}
       </View>
 

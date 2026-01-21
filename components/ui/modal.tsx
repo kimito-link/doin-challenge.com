@@ -6,7 +6,7 @@ import { useRef, useEffect, useCallback } from "react";
 import { 
   View, 
   Text, 
-  TouchableOpacity, 
+  Pressable, 
   Modal as RNModal, 
   StyleSheet, 
   Animated, 
@@ -181,16 +181,16 @@ export function Modal({
         behavior={Platform.OS === "ios" ? "padding" : "height"}
         style={styles.keyboardView}
       >
-        <TouchableOpacity
+        <Pressable
           style={[
             styles.overlay,
             type === "bottom" && styles.overlayBottom,
           ]}
-          activeOpacity={1}
+          
           onPress={handleBackdropPress}
         >
           <Animated.View style={containerStyle}>
-            <TouchableOpacity activeOpacity={1} style={styles.contentWrapper}>
+            <Pressable  style={styles.contentWrapper}>
               {/* ヘッダー */}
               {(title || showCloseButton) && (
                 <View style={styles.header}>
@@ -199,13 +199,13 @@ export function Modal({
                     {subtitle && <Text style={styles.subtitle}>{subtitle}</Text>}
                   </View>
                   {showCloseButton && (
-                    <TouchableOpacity
+                    <Pressable
                       onPress={handleClosePress}
                       style={styles.closeButton}
                       hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
                     >
                       <MaterialIcons name="close" size={24} color={color.textMuted} />
-                    </TouchableOpacity>
+                    </Pressable>
                   )}
                 </View>
               )}
@@ -225,9 +225,9 @@ export function Modal({
               >
                 {children}
               </ScrollView>
-            </TouchableOpacity>
+            </Pressable>
           </Animated.View>
-        </TouchableOpacity>
+        </Pressable>
       </KeyboardAvoidingView>
     </RNModal>
   );
@@ -306,9 +306,9 @@ export function ConfirmModal({
       animationType="none"
       onRequestClose={onCancel}
     >
-      <TouchableOpacity
+      <Pressable
         style={styles.overlay}
-        activeOpacity={1}
+        
         onPress={onCancel}
       >
         <Animated.View
@@ -320,7 +320,7 @@ export function ConfirmModal({
             },
           ]}
         >
-          <TouchableOpacity activeOpacity={1}>
+          <Pressable >
             {/* アイコン */}
             {icon && (
               <View style={styles.iconContainer}>
@@ -336,22 +336,22 @@ export function ConfirmModal({
 
             {/* ボタン */}
             <View style={styles.buttonContainer}>
-              <TouchableOpacity
+              <Pressable
                 onPress={handleCancel}
                 style={[styles.button, styles.cancelButton]}
-                activeOpacity={0.7}
+                
               >
                 <Text style={styles.cancelButtonText}>{cancelText}</Text>
-              </TouchableOpacity>
+              </Pressable>
 
-              <TouchableOpacity
+              <Pressable
                 onPress={handleConfirm}
                 style={[
                   styles.button,
                   styles.confirmButton,
                   confirmStyle === "destructive" && styles.destructiveButton,
                 ]}
-                activeOpacity={0.7}
+                
               >
                 <Text
                   style={[
@@ -361,11 +361,11 @@ export function ConfirmModal({
                 >
                   {confirmText}
                 </Text>
-              </TouchableOpacity>
+              </Pressable>
             </View>
-          </TouchableOpacity>
+          </Pressable>
         </Animated.View>
-      </TouchableOpacity>
+      </Pressable>
     </RNModal>
   );
 }

@@ -1,8 +1,9 @@
-import { View, Text, StyleSheet, Modal, TouchableOpacity, FlatList, Pressable } from "react-native";
+import { View, Text, StyleSheet, Modal, Pressable, FlatList, Platform } from "react-native";
 import { color, palette } from "@/theme/tokens";
 import { useRouter } from "expo-router";
 import MaterialIcons from "@expo/vector-icons/MaterialIcons";
 import { OptimizedAvatar } from "./optimized-image";
+import * as Haptics from "expo-haptics";
 
 interface Participant {
   id: number;
@@ -25,6 +26,12 @@ interface PrefectureParticipantsModalProps {
   participants: Participant[];
 }
 
+const triggerHaptic = () => {
+  if (Platform.OS !== "web") {
+    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+  }
+};
+
 export function PrefectureParticipantsModal({
   visible,
   onClose,
@@ -35,9 +42,15 @@ export function PrefectureParticipantsModal({
 
   const handleParticipantPress = (participant: Participant) => {
     if (participant.userId && !participant.isAnonymous) {
+      triggerHaptic();
       onClose();
       router.push({ pathname: "/profile/[userId]", params: { userId: participant.userId.toString() } });
     }
+  };
+
+  const handleClose = () => {
+    triggerHaptic();
+    onClose();
   };
 
   const renderParticipant = ({ item }: { item: Participant }) => (
@@ -103,9 +116,15 @@ export function PrefectureParticipantsModal({
                 {participants.length}人が参加（計{totalContribution}人）
               </Text>
             </View>
-            <TouchableOpacity onPress={onClose} style={styles.closeButton}>
+            <Pressable 
+              onPress={handleClose} 
+              style={({ pressed }) => [
+                styles.closeButton,
+                pressed && { opacity: 0.7 },
+              ]}
+            >
               <MaterialIcons name="close" size={24} color={color.textMuted} />
-            </TouchableOpacity>
+            </Pressable>
           </View>
 
           {/* 参加者リスト */}
