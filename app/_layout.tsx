@@ -36,6 +36,7 @@ import { NetworkToast } from "@/components/organisms/network-toast";
 import { ExperienceProvider } from "@/lib/experience-context";
 import { ExperienceOverlay } from "@/components/organisms/experience-overlay";
 import { OnboardingScreen, useOnboarding } from "@/features/onboarding";
+import { useRouter } from "expo-router";
 
 const DEFAULT_WEB_INSETS: EdgeInsets = { top: 0, right: 0, bottom: 0, left: 0 };
 const DEFAULT_WEB_FRAME: Rect = { x: 0, y: 0, width: 0, height: 0 };
@@ -87,6 +88,14 @@ function TutorialUI() {
  */
 function OnboardingWrapper({ children }: { children: React.ReactNode }) {
   const { hasCompletedOnboarding, completeOnboarding } = useOnboarding();
+  const router = useRouter();
+  
+  // オンボーディング完了時の処理
+  const handleOnboardingComplete = async () => {
+    await completeOnboarding();
+    // ホーム画面に明示的に遷移
+    router.replace("/(tabs)");
+  };
   
   // オンボーディング状態が確認中の場合は何も表示しない
   if (hasCompletedOnboarding === null) {
@@ -95,7 +104,7 @@ function OnboardingWrapper({ children }: { children: React.ReactNode }) {
   
   // オンボーディング未完了の場合はオンボーディング画面を表示
   if (!hasCompletedOnboarding) {
-    return <OnboardingScreen onComplete={completeOnboarding} />;
+    return <OnboardingScreen onComplete={handleOnboardingComplete} />;
   }
   
   // オンボーディング完了済みの場合はアプリを表示
