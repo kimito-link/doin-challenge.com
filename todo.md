@@ -3541,3 +3541,23 @@ features/create/
   - JapanMapSvg.tsx: SVG地図（136行）
 - [x] メインコンポーネントのリファクタリング（JapanHeatmap.tsx: 104行）
 - [x] TypeScriptエラー0件確認
+
+
+## v6.24 participant-ranking.tsx分割（単一責任原則）
+
+- [x] participant-ranking.tsxの構造分析（576行）
+- [x] 分割計画の策定（13ファイルに分割）
+- [x] サブコンポーネントの作成
+  - types.ts: 型定義（73行）
+  - constants.ts: 定数（34行）
+  - useRankingData.ts: データ処理フック（60行）
+  - RankBadge.tsx: 順位バッジ（61行）
+  - ParticipantAvatar.tsx: アバター（95行）
+  - RankItem.tsx: ランキング行（115行）
+  - RankingHeader.tsx: ヘッダー（53行）
+  - RankingEmptyState.tsx: 空状態（45行）
+  - MoreIndicator.tsx: もっと見る（35行）
+  - TopThreeItem.tsx: トップ3アイテム（136行）
+  - TopThreeRanking.tsx: トップ3表示（44行）
+- [x] メインコンポーネントのリファクタリング（ParticipantRanking.tsx: 78行）
+- [x] TypeScriptエラー0件確認

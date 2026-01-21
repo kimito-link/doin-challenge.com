@@ -12,7 +12,7 @@ export { GlobalMenu } from "./global-menu";
 // ===== Section系 =====
 export { TicketTransferSection } from "./ticket-transfer-section";
 export { GrowthTrajectoryChart } from "./growth-trajectory-chart";
-export { ParticipantRanking } from "./participant-ranking";
+export { ParticipantRanking, TopThreeRanking } from "./participant-ranking";
 
 // ===== Error/Status系 =====
 export { NetworkError, EmptyState, ErrorMessage } from "./error-message";
