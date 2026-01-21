@@ -3521,3 +3521,23 @@ features/create/
 - [x] 明確なファイル命名規則（docs/component-guidelines.md作成）
 - [x] インポートパスの整理（index.ts経由のエクスポート）
 - [ ] コンポーネント単位でのエラーバウンダリ
+
+
+## v6.23 japan-heatmap.tsx分割（単一責任原則）
+
+- [x] japan-heatmap.tsxの構造分析（592行）
+- [x] 分割計画の策定（13ファイルに分割）
+- [x] サブコンポーネントの作成
+  - types.ts: 型定義（66行）
+  - constants.ts: 定数・データ（78行）
+  - utils.ts: ユーティリティ関数（63行）
+  - useHeatmapData.ts: データ処理フック（82行）
+  - HeatmapLegend.tsx: 凡例（59行）
+  - StatsSummary.tsx: 統計サマリー（65行）
+  - HotPrefectureCard.tsx: ホット都道府県（57行）
+  - RegionCard.tsx: 地域カード（114行）
+  - RegionCardList.tsx: 地域カードリスト（57行）
+  - HeatmapEmptyState.tsx: 空状態（59行）
+  - JapanMapSvg.tsx: SVG地図（136行）
+- [x] メインコンポーネントのリファクタリング（JapanHeatmap.tsx: 104行）
+- [x] TypeScriptエラー0件確認

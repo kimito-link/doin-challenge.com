@@ -27,7 +27,8 @@ export { MypageSkeleton } from "./mypage-skeleton";
 // ===== Map系 =====
 export { JapanBlockMap } from "./japan-block-map";
 export { JapanDeformedMap } from "./japan-deformed-map";
-export { JapanHeatmap } from "./japan-heatmap";
+export { JapanHeatmap } from "./japan-heatmap/JapanHeatmap";
+export type { JapanHeatmapProps, PrefectureCount } from "./japan-heatmap/types";
 export { JapanMap } from "./japan-map";
 export { JapanRegionBlocks } from "./japan-region-blocks";
 
