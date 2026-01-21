@@ -162,6 +162,13 @@
       "when": 1768994176825,
       "tag": "0022_wakeful_ironclad",
       "breakpoints": true
+    },
+    {
+      "idx": 23,
+      "version": "5",
+      "when": 1768994726252,
+      "tag": "0023_burly_tenebrous",
+      "breakpoints": true
     }
   ]
 }

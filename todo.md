@@ -3880,3 +3880,18 @@ features/create/
 - [ ] UI: 編集モーダル/画面の実装
 - [ ] UI: 削除確認ダイアログの実装
 - [x] 既存クエリ: deletedAtがnullのメッセージのみ取得するよう修正
+
+
+## 監査ログ + requestId（v6.41）
+
+- [x] DBスキーマ: audit_logsテーブル作成（action, actorId, targetId, before, after, requestId, createdAt）
+- [x] tRPC middleware: requestId生成・注入
+- [x] サーバログ: requestIdをログに含める
+- [x] 監査ログ記録: CREATE/EDIT/DELETE操作時に記録
+- [x] クライアント: requestIdをレスポンスで受け取れるようにする
+
+## 安全柵（v6.41）
+
+- [ ] サーバーガードテスト: 他人のparticipationをupdate/deleteできないこと
+- [ ] サーバーガードテスト: deletedAt済みparticipationをupdateできないこと
+- [ ] UIエラー表示: mutation失敗時にrequestIdをtoastに表示

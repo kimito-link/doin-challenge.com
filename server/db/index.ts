@@ -55,3 +55,6 @@ export * from "./ticket-db";
 
 // Stats functions
 export * from "./stats-db";
+
+// Audit functions
+export * from "./audit-db";

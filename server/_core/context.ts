@@ -6,6 +6,7 @@ export type TrpcContext = {
   req: CreateExpressContextOptions["req"];
   res: CreateExpressContextOptions["res"];
   user: User | null;
+  requestId?: string; // v6.41: requestIdミドルウェアで追加
 };
 
 export async function createContext(opts: CreateExpressContextOptions): Promise<TrpcContext> {

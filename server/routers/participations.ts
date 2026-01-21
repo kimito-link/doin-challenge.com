@@ -4,13 +4,14 @@
  * 参加登録関連のルーター
  * 
  * v6.40: ソフトデリート対応
- * - update: 認証チェック追加（自分の投稿のみ編集可能）
- * - delete: 物理削除→ソフトデリートに変更
- * - softDelete: 新規追加（ソフトデリート専用）
+ * v6.41: 監査ログ対応
+ * - update/delete/softDelete操作時に監査ログを記録
+ * - requestIdを監査ログに含める
  */
 import { z } from "zod";
 import { publicProcedure, protectedProcedure, router } from "../_core/trpc";
 import * as db from "../db";
+import { AUDIT_ACTIONS, ENTITY_TYPES } from "../../drizzle/schema";
 
 export const participationsRouter = router({
   // イベントの参加者一覧
@@ -67,6 +68,27 @@ export const participationsRouter = router({
           isAnonymous: false,
         });
         
+        // 監査ログ: CREATE
+        if (participationId && ctx.requestId) {
+          await db.logAction({
+            requestId: ctx.requestId,
+            action: AUDIT_ACTIONS.CREATE,
+            entityType: ENTITY_TYPES.PARTICIPATION,
+            targetId: participationId,
+            actorId: ctx.user?.id,
+            actorName: ctx.user?.name || input.displayName,
+            afterData: {
+              id: participationId,
+              challengeId: input.challengeId,
+              message: input.message,
+              companionCount: input.companionCount,
+              prefecture: input.prefecture,
+            },
+            ipAddress: ctx.req.ip,
+            userAgent: ctx.req.headers["user-agent"],
+          });
+        }
+        
         if (input.companions && input.companions.length > 0 && participationId) {
           const companionRecords = input.companions.map(c => ({
             participationId,
@@ -87,7 +109,7 @@ export const participationsRouter = router({
           }
         }
         
-        return { id: participationId };
+        return { id: participationId, requestId: ctx.requestId };
       } catch (error) {
         console.error("[Participation Create] Error:", error);
         const errorMessage = error instanceof Error ? error.message : String(error);
@@ -119,7 +141,7 @@ export const participationsRouter = router({
         profileImage: z.string().optional(),
       })).optional(),
     }))
-    .mutation(async ({ input }) => {
+    .mutation(async ({ ctx, input }) => {
       const participationId = await db.createParticipation({
         challengeId: input.challengeId,
         displayName: input.displayName,
@@ -128,6 +150,27 @@ export const participationsRouter = router({
         prefecture: input.prefecture,
         isAnonymous: true,
       });
+      
+      // 監査ログ: CREATE (匿名)
+      if (participationId && ctx.requestId) {
+        await db.logAction({
+          requestId: ctx.requestId,
+          action: AUDIT_ACTIONS.CREATE,
+          entityType: ENTITY_TYPES.PARTICIPATION,
+          targetId: participationId,
+          actorName: input.displayName + " (匿名)",
+          afterData: {
+            id: participationId,
+            challengeId: input.challengeId,
+            message: input.message,
+            companionCount: input.companionCount,
+            prefecture: input.prefecture,
+            isAnonymous: true,
+          },
+          ipAddress: ctx.req.ip,
+          userAgent: ctx.req.headers["user-agent"],
+        });
+      }
       
       if (input.companions && input.companions.length > 0 && participationId) {
         const companionRecords = input.companions.map(c => ({
@@ -141,7 +184,7 @@ export const participationsRouter = router({
         await db.createCompanions(companionRecords);
       }
       
-      return { id: participationId };
+      return { id: participationId, requestId: ctx.requestId };
     }),
 
   // 参加表明の更新（認証必須 - 自分の投稿のみ編集可能）
@@ -171,12 +214,43 @@ export const participationsRouter = router({
         throw new Error("自分の参加表明のみ編集できます。");
       }
       
+      // 変更前のデータを保存
+      const beforeData = {
+        id: participation.id,
+        message: participation.message,
+        prefecture: participation.prefecture,
+        companionCount: participation.companionCount,
+        gender: participation.gender,
+      };
+      
       await db.updateParticipation(input.id, {
         message: input.message,
         prefecture: input.prefecture,
         companionCount: input.companionCount,
         gender: input.gender,
       });
+      
+      // 監査ログ: EDIT
+      if (ctx.requestId) {
+        await db.logAction({
+          requestId: ctx.requestId,
+          action: AUDIT_ACTIONS.EDIT,
+          entityType: ENTITY_TYPES.PARTICIPATION,
+          targetId: input.id,
+          actorId: ctx.user.id,
+          actorName: ctx.user.name || undefined,
+          beforeData,
+          afterData: {
+            id: input.id,
+            message: input.message,
+            prefecture: input.prefecture,
+            companionCount: input.companionCount,
+            gender: input.gender,
+          },
+          ipAddress: ctx.req.ip,
+          userAgent: ctx.req.headers["user-agent"],
+        });
+      }
       
       await db.deleteCompanionsForParticipation(input.id);
       if (input.companions && input.companions.length > 0) {
@@ -191,7 +265,7 @@ export const participationsRouter = router({
         await db.createCompanions(companionRecords);
       }
       
-      return { success: true };
+      return { success: true, requestId: ctx.requestId };
     }),
 
   // 参加取消（ソフトデリート）
@@ -209,9 +283,39 @@ export const participationsRouter = router({
         throw new Error("自分の参加表明のみ削除できます。");
       }
       
+      // 変更前のデータを保存
+      const beforeData = {
+        id: participation.id,
+        challengeId: participation.challengeId,
+        message: participation.message,
+        displayName: participation.displayName,
+        deletedAt: null,
+      };
+      
       // ソフトデリート実行
       await db.softDeleteParticipation(input.id, ctx.user.id);
-      return { success: true };
+      
+      // 監査ログ: DELETE
+      if (ctx.requestId) {
+        await db.logAction({
+          requestId: ctx.requestId,
+          action: AUDIT_ACTIONS.DELETE,
+          entityType: ENTITY_TYPES.PARTICIPATION,
+          targetId: input.id,
+          actorId: ctx.user.id,
+          actorName: ctx.user.name || undefined,
+          beforeData,
+          afterData: {
+            id: input.id,
+            deletedAt: new Date().toISOString(),
+            deletedBy: ctx.user.id,
+          },
+          ipAddress: ctx.req.ip,
+          userAgent: ctx.req.headers["user-agent"],
+        });
+      }
+      
+      return { success: true, requestId: ctx.requestId };
     }),
 
   // ソフトデリート（明示的なAPI）
@@ -229,9 +333,39 @@ export const participationsRouter = router({
         throw new Error("自分の参加表明のみ削除できます。");
       }
       
+      // 変更前のデータを保存
+      const beforeData = {
+        id: participation.id,
+        challengeId: participation.challengeId,
+        message: participation.message,
+        displayName: participation.displayName,
+        deletedAt: null,
+      };
+      
       // ソフトデリート実行
       const result = await db.softDeleteParticipation(input.id, ctx.user.id);
-      return { success: true, challengeId: result.challengeId };
+      
+      // 監査ログ: DELETE
+      if (ctx.requestId) {
+        await db.logAction({
+          requestId: ctx.requestId,
+          action: AUDIT_ACTIONS.DELETE,
+          entityType: ENTITY_TYPES.PARTICIPATION,
+          targetId: input.id,
+          actorId: ctx.user.id,
+          actorName: ctx.user.name || undefined,
+          beforeData,
+          afterData: {
+            id: input.id,
+            deletedAt: new Date().toISOString(),
+            deletedBy: ctx.user.id,
+          },
+          ipAddress: ctx.req.ip,
+          userAgent: ctx.req.headers["user-agent"],
+        });
+      }
+      
+      return { success: true, challengeId: result.challengeId, requestId: ctx.requestId };
     }),
 
   // 参加をキャンセル（チケット譲渡オプション付き）
@@ -249,6 +383,21 @@ export const participationsRouter = router({
         return result;
       }
       
+      // 監査ログ: DELETE (cancel)
+      if (ctx.requestId) {
+        await db.logAction({
+          requestId: ctx.requestId,
+          action: AUDIT_ACTIONS.DELETE,
+          entityType: ENTITY_TYPES.PARTICIPATION,
+          targetId: input.participationId,
+          actorId: ctx.user.id,
+          actorName: ctx.user.name || undefined,
+          reason: "参加キャンセル" + (input.createTransfer ? " (チケット譲渡あり)" : ""),
+          ipAddress: ctx.req.ip,
+          userAgent: ctx.req.headers["user-agent"],
+        });
+      }
+      
       if (input.createTransfer && result.challengeId) {
         await db.createTicketTransfer({
           challengeId: result.challengeId,
@@ -264,6 +413,6 @@ export const participationsRouter = router({
         const waitlistUsers = await db.getWaitlistUsersForNotification(result.challengeId);
       }
       
-      return { success: true, challengeId: result.challengeId };
+      return { success: true, challengeId: result.challengeId, requestId: ctx.requestId };
     }),
 });

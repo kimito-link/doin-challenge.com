@@ -567,6 +567,72 @@ var init_tickets = __esm({
   }
 });
 
+// drizzle/schema/audit.ts
+import { mysqlTable as mysqlTable9, int as int9, varchar as varchar9, text as text9, timestamp as timestamp9, mysqlEnum as mysqlEnum8, json as json3 } from "drizzle-orm/mysql-core";
+var auditLogs, AUDIT_ACTIONS, ENTITY_TYPES;
+var init_audit = __esm({
+  "drizzle/schema/audit.ts"() {
+    "use strict";
+    auditLogs = mysqlTable9("audit_logs", {
+      id: int9("id").autoincrement().primaryKey(),
+      // リクエスト追跡用ID（tRPC middlewareで生成）
+      requestId: varchar9("requestId", { length: 36 }).notNull(),
+      // 操作種別
+      action: mysqlEnum8("action", [
+        "CREATE",
+        "EDIT",
+        "DELETE",
+        "RESTORE",
+        "BULK_DELETE",
+        "BULK_RESTORE",
+        "LOGIN",
+        "LOGOUT",
+        "ADMIN_ACTION"
+      ]).notNull(),
+      // 操作対象のエンティティ種別
+      entityType: varchar9("entityType", { length: 64 }).notNull(),
+      // 操作対象のID
+      targetId: int9("targetId"),
+      // 操作を実行したユーザーID
+      actorId: int9("actorId"),
+      // 操作を実行したユーザー名（ログイン名のスナップショット）
+      actorName: varchar9("actorName", { length: 255 }),
+      // 操作を実行したユーザーのロール
+      actorRole: varchar9("actorRole", { length: 32 }),
+      // 変更前のデータ（JSON）
+      beforeData: json3("beforeData").$type(),
+      // 変更後のデータ（JSON）
+      afterData: json3("afterData").$type(),
+      // 操作の詳細・理由（任意）
+      reason: text9("reason"),
+      // クライアント情報
+      ipAddress: varchar9("ipAddress", { length: 45 }),
+      userAgent: text9("userAgent"),
+      // タイムスタンプ
+      createdAt: timestamp9("createdAt").defaultNow().notNull()
+    });
+    AUDIT_ACTIONS = {
+      CREATE: "CREATE",
+      EDIT: "EDIT",
+      DELETE: "DELETE",
+      RESTORE: "RESTORE",
+      BULK_DELETE: "BULK_DELETE",
+      BULK_RESTORE: "BULK_RESTORE",
+      LOGIN: "LOGIN",
+      LOGOUT: "LOGOUT",
+      ADMIN_ACTION: "ADMIN_ACTION"
+    };
+    ENTITY_TYPES = {
+      PARTICIPATION: "participation",
+      CHALLENGE: "challenge",
+      USER: "user",
+      CHEER: "cheer",
+      COMMENT: "comment",
+      INVITATION: "invitation"
+    };
+  }
+});
+
 // drizzle/schema/index.ts
 var init_schema = __esm({
   "drizzle/schema/index.ts"() {
@@ -579,6 +645,7 @@ var init_schema = __esm({
     init_gamification();
     init_invitations();
     init_tickets();
+    init_audit();
   }
 });
 
@@ -2369,6 +2436,91 @@ var init_stats_db = __esm({
   }
 });
 
+// server/db/audit-db.ts
+async function createAuditLog(data) {
+  const db = await getDb();
+  if (!db) {
+    console.warn("[AuditLog] Database not available, skipping audit log");
+    return null;
+  }
+  try {
+    const result = await db.insert(auditLogs).values(data);
+    return result[0].insertId;
+  } catch (error) {
+    console.error("[AuditLog] Failed to create audit log:", error);
+    return null;
+  }
+}
+async function logAction(params) {
+  return createAuditLog({
+    requestId: params.requestId,
+    action: params.action,
+    entityType: params.entityType,
+    targetId: params.targetId,
+    actorId: params.actorId,
+    actorName: params.actorName,
+    actorRole: params.actorRole,
+    beforeData: params.beforeData,
+    afterData: params.afterData,
+    reason: params.reason,
+    ipAddress: params.ipAddress,
+    userAgent: params.userAgent
+  });
+}
+async function getAuditLogs(options) {
+  const db = await getDb();
+  if (!db) return [];
+  const limit = options?.limit || 100;
+  const offset = options?.offset || 0;
+  let query = db.select().from(auditLogs);
+  const conditions = [];
+  if (options?.entityType) {
+    conditions.push(eq(auditLogs.entityType, options.entityType));
+  }
+  if (options?.targetId) {
+    conditions.push(eq(auditLogs.targetId, options.targetId));
+  }
+  if (options?.actorId) {
+    conditions.push(eq(auditLogs.actorId, options.actorId));
+  }
+  if (options?.startDate) {
+    conditions.push(gte(auditLogs.createdAt, options.startDate));
+  }
+  if (options?.endDate) {
+    conditions.push(lte(auditLogs.createdAt, options.endDate));
+  }
+  if (conditions.length > 0) {
+    query = query.where(and(...conditions));
+  }
+  const result = await query.orderBy(desc(auditLogs.createdAt)).limit(limit).offset(offset);
+  return result;
+}
+async function getAuditLogsByRequestId(requestId) {
+  const db = await getDb();
+  if (!db) return [];
+  return db.select().from(auditLogs).where(eq(auditLogs.requestId, requestId)).orderBy(desc(auditLogs.createdAt));
+}
+async function getEntityAuditHistory(entityType, targetId) {
+  const db = await getDb();
+  if (!db) return [];
+  return db.select().from(auditLogs).where(and(
+    eq(auditLogs.entityType, entityType),
+    eq(auditLogs.targetId, targetId)
+  )).orderBy(desc(auditLogs.createdAt));
+}
+async function getUserAuditHistory(actorId, limit = 100) {
+  const db = await getDb();
+  if (!db) return [];
+  return db.select().from(auditLogs).where(eq(auditLogs.actorId, actorId)).orderBy(desc(auditLogs.createdAt)).limit(limit);
+}
+var init_audit_db = __esm({
+  "server/db/audit-db.ts"() {
+    "use strict";
+    init_connection();
+    init_schema2();
+  }
+});
+
 // server/db/index.ts
 var init_db = __esm({
   "server/db/index.ts"() {
@@ -2390,6 +2542,7 @@ var init_db = __esm({
     init_ai_db();
     init_ticket_db();
     init_stats_db();
+    init_audit_db();
   }
 });
 
@@ -2409,6 +2562,7 @@ __export(db_exports, {
   confirmInvitationUse: () => confirmInvitationUse,
   count: () => count,
   createAchievementPage: () => createAchievementPage,
+  createAuditLog: () => createAuditLog,
   createBadge: () => createBadge,
   createCategory: () => createCategory,
   createChallengeTemplate: () => createChallengeTemplate,
@@ -2438,6 +2592,8 @@ __export(db_exports, {
   getAllCategories: () => getAllCategories,
   getAllEvents: () => getAllEvents,
   getAllUsers: () => getAllUsers,
+  getAuditLogs: () => getAuditLogs,
+  getAuditLogsByRequestId: () => getAuditLogsByRequestId,
   getBadgeById: () => getBadgeById,
   getCategoryById: () => getCategoryById,
   getCategoryBySlug: () => getCategoryBySlug,
@@ -2461,6 +2617,7 @@ __export(db_exports, {
   getDb: () => getDb,
   getDbSchema: () => getDbSchema,
   getDirectMessagesForUser: () => getDirectMessagesForUser,
+  getEntityAuditHistory: () => getEntityAuditHistory,
   getEventById: () => getEventById,
   getEventsByHostTwitterId: () => getEventsByHostTwitterId,
   getEventsByHostUserId: () => getEventsByHostUserId,
@@ -2502,6 +2659,7 @@ __export(db_exports, {
   getTicketWaitlistForUser: () => getTicketWaitlistForUser,
   getTotalCompanionCountByEventId: () => getTotalCompanionCountByEventId,
   getUnreadMessageCount: () => getUnreadMessageCount,
+  getUserAuditHistory: () => getUserAuditHistory,
   getUserBadges: () => getUserBadges,
   getUserBadgesWithDetails: () => getUserBadgesWithDetails,
   getUserById: () => getUserById,
@@ -2522,6 +2680,7 @@ __export(db_exports, {
   isNull: () => isNull,
   isUserInWaitlist: () => isUserInWaitlist,
   like: () => like,
+  logAction: () => logAction,
   lte: () => lte,
   markAllMessagesAsRead: () => markAllMessagesAsRead,
   markAllNotificationsAsRead: () => markAllNotificationsAsRead,
@@ -3123,9 +3282,9 @@ async function exchangeCodeForTokens(code, callbackUrl, codeVerifier) {
     body: params.toString()
   });
   if (!response.ok) {
-    const text9 = await response.text();
-    console.error("Token exchange error:", text9);
-    throw new Error(`Failed to exchange code for tokens: ${text9}`);
+    const text10 = await response.text();
+    console.error("Token exchange error:", text10);
+    throw new Error(`Failed to exchange code for tokens: ${text10}`);
   }
   return response.json();
 }
@@ -3140,12 +3299,12 @@ async function getUserProfile(accessToken) {
     }
   });
   if (!response.ok) {
-    const text9 = await response.text();
-    console.error("User profile error:", text9);
-    throw new Error(`Failed to get user profile: ${text9}`);
+    const text10 = await response.text();
+    console.error("User profile error:", text10);
+    throw new Error(`Failed to get user profile: ${text10}`);
   }
-  const json3 = await response.json();
-  return json3.data;
+  const json4 = await response.json();
+  return json4.data;
 }
 async function refreshAccessToken(refreshToken) {
   const url = "https://api.twitter.com/2/oauth2/token";
@@ -3164,8 +3323,8 @@ async function refreshAccessToken(refreshToken) {
     body: params.toString()
   });
   if (!response.ok) {
-    const text9 = await response.text();
-    throw new Error(`Failed to refresh token: ${text9}`);
+    const text10 = await response.text();
+    throw new Error(`Failed to refresh token: ${text10}`);
   }
   return response.json();
 }
@@ -3341,8 +3500,8 @@ async function getUserProfileByUsername(username) {
       }
     });
     if (!response.ok) {
-      const text9 = await response.text();
-      console.error("Twitter user lookup error:", response.status, text9);
+      const text10 = await response.text();
+      console.error("Twitter user lookup error:", response.status, text10);
       return null;
     }
     const data = await response.json();
@@ -3636,11 +3795,34 @@ function registerTwitterRoutes(app) {
 // server/_core/trpc.ts
 import { initTRPC, TRPCError } from "@trpc/server";
 import superjson from "superjson";
+
+// server/_core/request-id.ts
+import { randomUUID } from "crypto";
+function generateRequestId() {
+  return randomUUID();
+}
+var RESPONSE_REQUEST_ID_HEADER = "x-request-id";
+
+// server/_core/trpc.ts
 var t = initTRPC.context().create({
   transformer: superjson
 });
 var router = t.router;
-var publicProcedure = t.procedure;
+var requestIdMiddleware = t.middleware(async (opts) => {
+  const { ctx, next } = opts;
+  const requestId = ctx.req.headers["x-request-id"] || generateRequestId();
+  ctx.res.setHeader(RESPONSE_REQUEST_ID_HEADER, requestId);
+  if (process.env.NODE_ENV === "development") {
+    console.log(`[tRPC] requestId=${requestId} path=${opts.path}`);
+  }
+  return next({
+    ctx: {
+      ...ctx,
+      requestId
+    }
+  });
+});
+var publicProcedure = t.procedure.use(requestIdMiddleware);
 var requireUser = t.middleware(async (opts) => {
   const { ctx, next } = opts;
   if (!ctx.user) {
@@ -3653,8 +3835,8 @@ var requireUser = t.middleware(async (opts) => {
     }
   });
 });
-var protectedProcedure = t.procedure.use(requireUser);
-var adminProcedure = t.procedure.use(
+var protectedProcedure = t.procedure.use(requestIdMiddleware).use(requireUser);
+var adminProcedure = t.procedure.use(requestIdMiddleware).use(
   t.middleware(async (opts) => {
     const { ctx, next } = opts;
     if (!ctx.user || ctx.user.role !== "admin") {
@@ -3826,6 +4008,7 @@ var eventsRouter = router({
 // server/routers/participations.ts
 import { z as z2 } from "zod";
 init_db2();
+init_schema2();
 var participationsRouter = router({
   // イベントの参加者一覧
   listByEvent: publicProcedure.input(z2.object({ eventId: z2.number() })).query(async ({ input }) => {
@@ -3873,6 +4056,25 @@ var participationsRouter = router({
         gender: input.gender || "unspecified",
         isAnonymous: false
       });
+      if (participationId && ctx.requestId) {
+        await logAction({
+          requestId: ctx.requestId,
+          action: AUDIT_ACTIONS.CREATE,
+          entityType: ENTITY_TYPES.PARTICIPATION,
+          targetId: participationId,
+          actorId: ctx.user?.id,
+          actorName: ctx.user?.name || input.displayName,
+          afterData: {
+            id: participationId,
+            challengeId: input.challengeId,
+            message: input.message,
+            companionCount: input.companionCount,
+            prefecture: input.prefecture
+          },
+          ipAddress: ctx.req.ip,
+          userAgent: ctx.req.headers["user-agent"]
+        });
+      }
       if (input.companions && input.companions.length > 0 && participationId) {
         const companionRecords = input.companions.map((c) => ({
           participationId,
@@ -3891,7 +4093,7 @@ var participationsRouter = router({
           await confirmInvitationUse(invitation.id, ctx.user.id, participationId);
         }
       }
-      return { id: participationId };
+      return { id: participationId, requestId: ctx.requestId };
     } catch (error) {
       console.error("[Participation Create] Error:", error);
       const errorMessage = error instanceof Error ? error.message : String(error);
@@ -3917,7 +4119,7 @@ var participationsRouter = router({
       twitterId: z2.string().optional(),
       profileImage: z2.string().optional()
     })).optional()
-  })).mutation(async ({ input }) => {
+  })).mutation(async ({ ctx, input }) => {
     const participationId = await createParticipation({
       challengeId: input.challengeId,
       displayName: input.displayName,
@@ -3926,6 +4128,25 @@ var participationsRouter = router({
       prefecture: input.prefecture,
       isAnonymous: true
     });
+    if (participationId && ctx.requestId) {
+      await logAction({
+        requestId: ctx.requestId,
+        action: AUDIT_ACTIONS.CREATE,
+        entityType: ENTITY_TYPES.PARTICIPATION,
+        targetId: participationId,
+        actorName: input.displayName + " (\u533F\u540D)",
+        afterData: {
+          id: participationId,
+          challengeId: input.challengeId,
+          message: input.message,
+          companionCount: input.companionCount,
+          prefecture: input.prefecture,
+          isAnonymous: true
+        },
+        ipAddress: ctx.req.ip,
+        userAgent: ctx.req.headers["user-agent"]
+      });
+    }
     if (input.companions && input.companions.length > 0 && participationId) {
       const companionRecords = input.companions.map((c) => ({
         participationId,
@@ -3937,7 +4158,7 @@ var participationsRouter = router({
       }));
       await createCompanions(companionRecords);
     }
-    return { id: participationId };
+    return { id: participationId, requestId: ctx.requestId };
   }),
   // 参加表明の更新（認証必須 - 自分の投稿のみ編集可能）
   update: protectedProcedure.input(z2.object({
@@ -3960,12 +4181,39 @@ var participationsRouter = router({
     if (participation.userId !== ctx.user.id) {
       throw new Error("\u81EA\u5206\u306E\u53C2\u52A0\u8868\u660E\u306E\u307F\u7DE8\u96C6\u3067\u304D\u307E\u3059\u3002");
     }
+    const beforeData = {
+      id: participation.id,
+      message: participation.message,
+      prefecture: participation.prefecture,
+      companionCount: participation.companionCount,
+      gender: participation.gender
+    };
     await updateParticipation(input.id, {
       message: input.message,
       prefecture: input.prefecture,
       companionCount: input.companionCount,
       gender: input.gender
     });
+    if (ctx.requestId) {
+      await logAction({
+        requestId: ctx.requestId,
+        action: AUDIT_ACTIONS.EDIT,
+        entityType: ENTITY_TYPES.PARTICIPATION,
+        targetId: input.id,
+        actorId: ctx.user.id,
+        actorName: ctx.user.name || void 0,
+        beforeData,
+        afterData: {
+          id: input.id,
+          message: input.message,
+          prefecture: input.prefecture,
+          companionCount: input.companionCount,
+          gender: input.gender
+        },
+        ipAddress: ctx.req.ip,
+        userAgent: ctx.req.headers["user-agent"]
+      });
+    }
     await deleteCompanionsForParticipation(input.id);
     if (input.companions && input.companions.length > 0) {
       const companionRecords = input.companions.map((c) => ({
@@ -3978,7 +4226,7 @@ var participationsRouter = router({
       }));
       await createCompanions(companionRecords);
     }
-    return { success: true };
+    return { success: true, requestId: ctx.requestId };
   }),
   // 参加取消（ソフトデリート）
   delete: protectedProcedure.input(z2.object({ id: z2.number() })).mutation(async ({ ctx, input }) => {
@@ -3989,8 +4237,33 @@ var participationsRouter = router({
     if (participation.userId !== ctx.user.id) {
       throw new Error("\u81EA\u5206\u306E\u53C2\u52A0\u8868\u660E\u306E\u307F\u524A\u9664\u3067\u304D\u307E\u3059\u3002");
     }
+    const beforeData = {
+      id: participation.id,
+      challengeId: participation.challengeId,
+      message: participation.message,
+      displayName: participation.displayName,
+      deletedAt: null
+    };
     await softDeleteParticipation(input.id, ctx.user.id);
-    return { success: true };
+    if (ctx.requestId) {
+      await logAction({
+        requestId: ctx.requestId,
+        action: AUDIT_ACTIONS.DELETE,
+        entityType: ENTITY_TYPES.PARTICIPATION,
+        targetId: input.id,
+        actorId: ctx.user.id,
+        actorName: ctx.user.name || void 0,
+        beforeData,
+        afterData: {
+          id: input.id,
+          deletedAt: (/* @__PURE__ */ new Date()).toISOString(),
+          deletedBy: ctx.user.id
+        },
+        ipAddress: ctx.req.ip,
+        userAgent: ctx.req.headers["user-agent"]
+      });
+    }
+    return { success: true, requestId: ctx.requestId };
   }),
   // ソフトデリート（明示的なAPI）
   softDelete: protectedProcedure.input(z2.object({ id: z2.number() })).mutation(async ({ ctx, input }) => {
@@ -4001,8 +4274,33 @@ var participationsRouter = router({
     if (participation.userId !== ctx.user.id) {
       throw new Error("\u81EA\u5206\u306E\u53C2\u52A0\u8868\u660E\u306E\u307F\u524A\u9664\u3067\u304D\u307E\u3059\u3002");
     }
+    const beforeData = {
+      id: participation.id,
+      challengeId: participation.challengeId,
+      message: participation.message,
+      displayName: participation.displayName,
+      deletedAt: null
+    };
     const result = await softDeleteParticipation(input.id, ctx.user.id);
-    return { success: true, challengeId: result.challengeId };
+    if (ctx.requestId) {
+      await logAction({
+        requestId: ctx.requestId,
+        action: AUDIT_ACTIONS.DELETE,
+        entityType: ENTITY_TYPES.PARTICIPATION,
+        targetId: input.id,
+        actorId: ctx.user.id,
+        actorName: ctx.user.name || void 0,
+        beforeData,
+        afterData: {
+          id: input.id,
+          deletedAt: (/* @__PURE__ */ new Date()).toISOString(),
+          deletedBy: ctx.user.id
+        },
+        ipAddress: ctx.req.ip,
+        userAgent: ctx.req.headers["user-agent"]
+      });
+    }
+    return { success: true, challengeId: result.challengeId, requestId: ctx.requestId };
   }),
   // 参加をキャンセル（チケット譲渡オプション付き）
   cancel: protectedProcedure.input(z2.object({
@@ -4014,6 +4312,19 @@ var participationsRouter = router({
     const result = await cancelParticipation(input.participationId, ctx.user.id);
     if (!result.success) {
       return result;
+    }
+    if (ctx.requestId) {
+      await logAction({
+        requestId: ctx.requestId,
+        action: AUDIT_ACTIONS.DELETE,
+        entityType: ENTITY_TYPES.PARTICIPATION,
+        targetId: input.participationId,
+        actorId: ctx.user.id,
+        actorName: ctx.user.name || void 0,
+        reason: "\u53C2\u52A0\u30AD\u30E3\u30F3\u30BB\u30EB" + (input.createTransfer ? " (\u30C1\u30B1\u30C3\u30C8\u8B72\u6E21\u3042\u308A)" : ""),
+        ipAddress: ctx.req.ip,
+        userAgent: ctx.req.headers["user-agent"]
+      });
     }
     if (input.createTransfer && result.challengeId) {
       await createTicketTransfer({
@@ -4028,7 +4339,7 @@ var participationsRouter = router({
       });
       const waitlistUsers = await getWaitlistUsersForNotification(result.challengeId);
     }
-    return { success: true, challengeId: result.challengeId };
+    return { success: true, challengeId: result.challengeId, requestId: ctx.requestId };
   })
 });
 

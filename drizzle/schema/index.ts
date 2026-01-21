@@ -27,3 +27,6 @@ export * from "./invitations";
 
 // Tickets
 export * from "./tickets";
+
+// Audit Logs
+export * from "./audit";
