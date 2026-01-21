@@ -3602,3 +3602,32 @@ features/create/
   - データの再計算
   - useTopThreeDataフックのテスト
 - [x] テスト実行と確認（29テスト全てパス）
+
+
+## v6.27 useAuth/useChallengeフックのユニットテスト追加
+
+- [ ] useAuthフックの実装確認
+- [ ] useAuthフックのテスト作成
+- [ ] useChallengeフックの実装確認
+- [ ] useChallengeフックのテスト作成
+- [ ] テスト実行と確認
+
+
+## v6.27 useAuth/useChallengeフックのユニットテスト追加
+
+- [x] useAuthフックの実装確認
+- [x] useAuthフックのテスト作成（11テストケース）
+  - 初期状態のテスト
+  - isAuthenticatedのテスト
+  - logoutのテスト
+  - refreshのテスト
+  - loginのテスト
+  - 返り値の構造テスト
+- [x] useOfflineChallengeフックの実装確認
+- [x] useOfflineChallengeフックのテスト作成（14テストケース）
+  - 初期状態のテスト
+  - オンライン時の送信テスト
+  - オフライン時のキュー追加テスト
+  - コールバック関数のテスト
+  - 返り値の構造テスト
+- [x] テスト実行と確認（25テスト全てパス）
