@@ -13,9 +13,11 @@ import { getDb, sql } from "./db";
 
 // 期待するスキーマ定義（重要なテーブルとカラムのみ）
 // 新しいマイグレーションを追加したら、ここも更新する
+// カラム名はdrizzleスキーマの定義と一致させること
 const EXPECTED_SCHEMA = {
   version: "0023", // 最新のマイグレーション番号
   tables: {
+    // participationsテーブル: 参加登録
     participations: {
       requiredColumns: [
         "id",
@@ -39,30 +41,34 @@ const EXPECTED_SCHEMA = {
         "deletedBy",
       ],
     },
+    // challengesテーブル: チャレンジ（イベント）
+    // 実際のスキーマはgoalValue/currentValue/hostUserIdを使用
     challenges: {
       requiredColumns: [
         "id",
         "title",
         "slug",
         "description",
-        "targetCount",
-        "currentCount",
+        "goalValue",      // targetCountではなくgoalValue
+        "currentValue",   // currentCountではなくcurrentValue
         "eventDate",
         "venue",
         "prefecture",
-        "organizerId",
+        "hostUserId",     // organizerIdではなくhostUserId
         "status",
         "createdAt",
         "updatedAt",
       ],
     },
+    // usersテーブル: ユーザー
+    // 実際のスキーマはopenId/nameを使用（twitterId/username/displayName/profileImageはない）
     users: {
       requiredColumns: [
         "id",
-        "twitterId",
-        "username",
-        "displayName",
-        "profileImage",
+        "openId",         // 認証用ID
+        "name",           // 表示名
+        "email",
+        "role",
         "createdAt",
         "updatedAt",
       ],

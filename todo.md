@@ -4029,3 +4029,11 @@ features/create/
 - [x] Webhook URL取得・設定手順
 - [x] ドキュメント作成（docs/RAILWAY_DEPLOY_SETUP.md）
 
+
+## 本番デプロイ作業（v6.51）
+
+- [x] 本番DBにマイグレーションSQL適用（deletedAt, deletedByカラム追加）→ 既に適用済み
+- [x] GitHubにv6.51をプッシュ完了
+- [ ] Railway自動デプロイ完了待ち
+- [ ] /api/health?schema=trueで整合性確認
+- [ ] /event/90001の正常表示確認
