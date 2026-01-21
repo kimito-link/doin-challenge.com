@@ -3682,3 +3682,9 @@ features/create/
 - [x] features/event-detail/components/ParticipantsOverview.tsx - 参加者概要
 - [x] features/event-detail/components/ParticipationFormSection.tsx - 参加フォーム
 - [x] app/event/[id].tsx - リファクタリング後のメインコンポーネント（1856行→約400行）
+
+### ParticipationFormSection.tsx分割
+- [x] FormInputSection.tsx - フォーム入力部分（都道府県、性別、メッセージ、動画許可、お約束）
+- [x] CompanionAddSection.tsx - 友人追加部分（友人リスト、追加フォーム、Twitter検索、貢献人数表示）
+- [x] FormButtonsSection.tsx - ボタン部分（キャンセル、送信）
+- [x] ParticipationFormSection.tsx - リファクタリング後のメインコンポーネント（919行→161行）

@@ -14,3 +14,6 @@ export { ShareSection } from "./ShareSection";
 export { InviteButton } from "./InviteButton";
 export { ParticipantsOverview } from "./ParticipantsOverview";
 export { ParticipationFormSection } from "./ParticipationFormSection";
+export { FormInputSection } from "./FormInputSection";
+export { CompanionAddSection } from "./CompanionAddSection";
+export { FormButtonsSection } from "./FormButtonsSection";
