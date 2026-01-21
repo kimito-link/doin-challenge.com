@@ -2,97 +2,29 @@
  * ログイン画面コンポーネント
  * 未ログイン状態のマイページUI
  */
-import { View, Text, ScrollView } from "react-native";
-import { Button } from "@/components/ui/button";
-import { Image } from "expo-image";
-import MaterialIcons from "@expo/vector-icons/MaterialIcons";
+import { View, ScrollView } from "react-native";
 import { LinearGradient } from "expo-linear-gradient";
 import { useColors } from "@/hooks/use-colors";
-import { mypageUI, mypageText, mypageGradient, mypageAccent } from "../ui/theme/tokens";
+import { mypageGradient } from "../ui/theme/tokens";
+import {
+  LoginHeader,
+  LoginMessageCard,
+  LoginButton,
+  CharacterBubble,
+  PatternSelector,
+  loginPatterns,
+  getRandomPattern,
+  type LoginPattern,
+} from "./login-screen";
 
-// キャラクター画像
-const characterImages = {
-  rinku: require("@/assets/images/characters/rinku.png"),
-  konta: require("@/assets/images/characters/konta.png"),
-  tanune: require("@/assets/images/characters/tanune.png"),
-  linkFull: require("@/assets/images/characters/KimitoLink.png"),
-  linkIdol: require("@/assets/images/characters/idolKimitoLink.png"),
-  linkYukkuri: require("@/assets/images/characters/link/link-yukkuri-smile-mouth-open.png"),
-  kontaYukkuri: require("@/assets/images/characters/konta/kitsune-yukkuri-smile-mouth-open.png"),
-  tanuneYukkuri: require("@/assets/images/characters/tanunee/tanuki-yukkuri-smile-mouth-open.png"),
-};
-
-// ロゴ画像
-const logoImage = require("@/assets/images/logo/logo-maru-orange.jpg");
-
-// ログイン画面のパターンデータ
-export const loginPatterns = [
-  {
-    id: 1,
-    character: "linkIdol",
-    title: "みんな、ちょっと聞いて！😊✨",
-    message: "あなたの「推し」が、大きなステージに立つ瞬間を\n一緒に作りたいんだ。",
-    highlight: "その景色を、一緒に作ろう！",
-    gradientColors: mypageGradient.linkPink,
-    accentColor: mypageAccent.linkPink,
-  },
-  {
-    id: 2,
-    character: "linkFull",
-    title: "声を届けよう！🎙️✨",
-    message: "あなたの応援の声が、\n誰かの心を動かす。",
-    highlight: "一緒に推しの夢を叶えよう！",
-    gradientColors: mypageGradient.linkPurple,
-    accentColor: mypageAccent.linkPurple,
-  },
-  {
-    id: 3,
-    character: "linkYukkuri",
-    title: "ようこそ！🎉",
-    message: "動員ちゃれんじへようこそ！\nみんなの想いを集めて、推しの夢を叶えよう。",
-    highlight: "さあ、始めよう！",
-    gradientColors: mypageGradient.kontaOrange,
-    accentColor: mypageAccent.kontaOrange,
-  },
-  {
-    id: 4,
-    character: "kontaYukkuri",
-    title: "コンタだよ！🦊",
-    message: "友達を誘って、みんなで盛り上げよう！\n一人の参加が、大きな波になるんだ。",
-    highlight: "一緒に盛り上げよう！",
-    gradientColors: mypageGradient.kontaGold,
-    accentColor: mypageAccent.kontaGold,
-  },
-  {
-    id: 5,
-    character: "tanuneYukkuri",
-    title: "たぬねだよ！🦝",
-    message: "チャレンジを作って、\nみんなで目標達成を目指そう！",
-    highlight: "目標達成でお祝い！🎉",
-    gradientColors: mypageGradient.tanuneGreen,
-    accentColor: mypageAccent.tanuneGreen,
-  },
-  {
-    id: 6,
-    character: "linkIdol",
-    title: "ステージへの道！🎭✨",
-    message: "客席を埋め尽くすファンの声援、\nリアルタイムで流れる応援コメント…",
-    highlight: "その感動を、一緒に！",
-    gradientColors: mypageGradient.tanunePink,
-    accentColor: mypageAccent.tanunePink,
-  },
-];
-
-// ランダムにパターンを選択する関数
-export const getRandomPattern = () => {
-  return loginPatterns[Math.floor(Math.random() * loginPatterns.length)];
-};
+// 後方互換性のためにエクスポート
+export { loginPatterns, getRandomPattern };
 
 interface LoginScreenProps {
   isLoggingIn: boolean;
-  loginPattern: typeof loginPatterns[0];
+  loginPattern: LoginPattern;
   onLogin: () => void;
-  onPatternChange: (pattern: typeof loginPatterns[0]) => void;
+  onPatternChange: (pattern: LoginPattern) => void;
 }
 
 export function LoginScreen({
@@ -127,231 +59,23 @@ export function LoginScreen({
           paddingBottom: 48,
         }}
       >
-        {/* ロゴとキャッチコピー */}
-        <Image 
-          source={logoImage} 
-          style={{ 
-            width: 80, 
-            height: 80,
-            borderRadius: 40,
-            marginBottom: 16,
-          }} 
-          contentFit="contain" 
-        />
-        <Text style={{ 
-          color: colors.foreground, 
-          fontSize: 20, 
-          fontWeight: "bold",
-          marginBottom: 8,
-          textAlign: "center",
-        }}>
-          動員ちゃれんじ
-        </Text>
-        <Text style={{ 
-          color: mypageText.muted, 
-          fontSize: 14,
-          marginBottom: 24,
-          textAlign: "center",
-        }}>
-          推しと繋がる、みんなで応援する
-        </Text>
+        {/* ロゴとキャラクターアイコン */}
+        <LoginHeader />
 
-        {/* 3つのキャラクターアイコン */}
-        <View style={{ 
-          flexDirection: "row", 
-          justifyContent: "center", 
-          gap: 12,
-          marginBottom: 32,
-        }}>
-          <View style={{ alignItems: "center" }}>
-            <View style={{ 
-              width: 56, 
-              height: 56, 
-              borderRadius: 28, 
-              borderWidth: 2, 
-              borderColor: mypageAccent.linkPink,
-              overflow: "hidden",
-            }}>
-              <Image 
-                source={characterImages.linkYukkuri} 
-                style={{ width: 52, height: 52 }} 
-                contentFit="cover"
-                priority="high"
-                cachePolicy="memory-disk"
-              />
-            </View>
-          </View>
-          <View style={{ alignItems: "center" }}>
-            <View style={{ 
-              width: 64, 
-              height: 64, 
-              borderRadius: 32, 
-              borderWidth: 3, 
-              borderColor: mypageAccent.kontaOrange,
-              overflow: "hidden",
-            }}>
-              <Image 
-                source={characterImages.kontaYukkuri} 
-                style={{ width: 58, height: 58 }} 
-                contentFit="cover"
-                priority="high"
-                cachePolicy="memory-disk"
-              />
-            </View>
-          </View>
-          <View style={{ alignItems: "center" }}>
-            <View style={{ 
-              width: 56, 
-              height: 56, 
-              borderRadius: 28, 
-              borderWidth: 2, 
-              borderColor: mypageAccent.tanuneGreen,
-              overflow: "hidden",
-            }}>
-              <Image 
-                source={characterImages.tanuneYukkuri} 
-                style={{ width: 52, height: 52 }} 
-                contentFit="cover"
-                priority="high"
-                cachePolicy="memory-disk"
-              />
-            </View>
-          </View>
-        </View>
-
-        {/* メインメッセージ */}
-        <LinearGradient
-          colors={[...loginPattern.gradientColors]}
-          start={{ x: 0, y: 0 }}
-          end={{ x: 1, y: 1 }}
-          style={{
-            borderRadius: 16,
-            padding: 24,
-            marginBottom: 24,
-            maxWidth: 400,
-            width: "100%",
-          }}
-        >
-          <Text style={{ 
-            color: "#fff", 
-            fontSize: 20, 
-            fontWeight: "bold",
-            marginBottom: 12,
-            textAlign: "center",
-          }}>
-            {loginPattern.title}
-          </Text>
-          <Text style={{ 
-            color: "rgba(255,255,255,0.9)", 
-            fontSize: 14,
-            lineHeight: 22,
-            textAlign: "center",
-            marginBottom: 16,
-          }}>
-            {loginPattern.message}
-          </Text>
-          <View style={{ 
-            backgroundColor: "rgba(255,255,255,0.2)", 
-            borderRadius: 8, 
-            padding: 12,
-          }}>
-            <Text style={{ 
-              color: "#fff", 
-              fontSize: 16, 
-              fontWeight: "bold",
-              textAlign: "center",
-            }}>
-              {loginPattern.highlight}
-            </Text>
-          </View>
-        </LinearGradient>
+        {/* メインメッセージカード */}
+        <LoginMessageCard pattern={loginPattern} />
 
         {/* ログインボタン */}
-        <Button
-          onPress={onLogin}
-          disabled={isLoggingIn}
-          loading={isLoggingIn}
-          icon="login"
-          style={{
-            backgroundColor: mypageUI.twitterBg,
-            maxWidth: 400,
-            width: "100%",
-          }}
-        >
-          {isLoggingIn ? "認証中..." : "Xアカウントで認証しています"}
-        </Button>
+        <LoginButton isLoggingIn={isLoggingIn} onLogin={onLogin} />
 
         {/* キャラクターの吹き出しメッセージ */}
-        <View style={{ 
-          flexDirection: "row", 
-          alignItems: "flex-start", 
-          marginTop: 24,
-          maxWidth: 400,
-          width: "100%",
-        }}>
-          <Image 
-            source={characterImages[loginPattern.character as keyof typeof characterImages]} 
-            style={{ 
-              width: 60, 
-              height: 60,
-              marginRight: 12,
-            }} 
-            contentFit="contain" 
-          />
-          <View style={{ 
-            flex: 1, 
-            backgroundColor: "rgba(236, 72, 153, 0.1)",
-            borderRadius: 12,
-            borderTopLeftRadius: 4,
-            padding: 12,
-            borderWidth: 1,
-            borderColor: "rgba(236, 72, 153, 0.3)",
-          }}>
-            <Text style={{ 
-              color: mypageText.mutedLight, 
-              fontSize: 13, 
-              lineHeight: 20,
-            }}>
-              {loginPattern.message}
-            </Text>
-          </View>
-        </View>
+        <CharacterBubble pattern={loginPattern} />
 
-        {/* パターン切り替えボタン */}
-        <Button
-          variant="ghost"
-          onPress={() => onPatternChange(getRandomPattern())}
-          icon="refresh"
-          style={{
-            backgroundColor: "rgba(255,255,255,0.05)",
-            marginTop: 16,
-          }}
-        >
-          <Text style={{ color: mypageText.muted, fontSize: 13, marginLeft: 6 }}>
-            他のキャラクターのメッセージを見る
-          </Text>
-        </Button>
-
-        {/* パターンインジケーター */}
-        <View style={{ flexDirection: "row", marginTop: 12, gap: 8 }}>
-          {loginPatterns.map((p) => (
-            <Button
-              key={p.id}
-              variant="ghost"
-              onPress={() => onPatternChange(p)}
-              style={{
-                width: 8,
-                height: 8,
-                borderRadius: 4,
-                backgroundColor: p.id === loginPattern.id ? mypageUI.patternActiveBg : mypageUI.patternInactiveBg,
-                padding: 0,
-                minHeight: 8,
-              }}
-            >
-              {null}
-            </Button>
-          ))}
-        </View>
+        {/* パターン切り替え */}
+        <PatternSelector 
+          currentPattern={loginPattern} 
+          onPatternChange={onPatternChange} 
+        />
       </ScrollView>
     </View>
   );

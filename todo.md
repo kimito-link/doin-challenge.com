@@ -3726,3 +3726,12 @@ features/create/
   - useMypageData.ts（65行）: データ取得
   - useMypageActions.ts（150行）: アクション・ナビゲーション
   - AuthenticatedContent.tsx（148行）: ログイン済みコンテンツ
+
+### LoginScreen.tsx分割
+- [x] LoginHeader.tsx - ロゴ・キャッチコピー・キャラクターアイコン（110行）
+- [x] LoginMessageCard.tsx - メインメッセージカード（62行）
+- [x] LoginButton.tsx - Xアカウント認証ボタン（30行）
+- [x] CharacterBubble.tsx - キャラクター吹き出しメッセージ（52行）
+- [x] PatternSelector.tsx - パターン切り替えボタン・インジケーター（56行）
+- [x] constants.ts - 定数・パターンデータ（94行）
+- [x] LoginScreen.tsx - リファクタリング後のメインコンポーネント（358行→82行）
