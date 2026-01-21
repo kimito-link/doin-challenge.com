@@ -64,7 +64,7 @@ export function Toast({
 }: ToastProps) {
   const translateY = useRef(new Animated.Value(-100)).current;
   const opacity = useRef(new Animated.Value(0)).current;
-  const config = toastConfig[type];
+  const config = toastConfig[type] ?? toastConfig.info;
 
   useEffect(() => {
     if (visible) {
