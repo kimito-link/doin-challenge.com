@@ -3902,3 +3902,10 @@ features/create/
 - [x] 編集/削除失敗時にrequestIdを表示
 - [x] 編集/削除成功後にinvalidateで即反映（refetch → invalidate統一）
 - [x] smoke test（表示→編集→削除→再表示）
+
+
+## GitHub Actions CI（v6.43）
+
+- [x] .github/workflows/ci.yml作成
+- [x] lint/check/test自動実行
+- [x] PR時とpush時に実行
