@@ -102,3 +102,9 @@ export {
   type ContributionDisplayProps,
 } from "./contribution-display";
 
+export {
+  CharacterIconRow,
+  type CharacterIconRowProps,
+  type CharacterIconConfig,
+} from "./character-icon-row";
+

@@ -3739,3 +3739,8 @@ features/create/
 ### CharacterIconRow分割
 - [x] CharacterIconRow.tsx - 3キャラクターアイコン表示（87行、汎用コンポーネント）
 - [x] LoginHeader.tsx - リファクタリング後のコンポーネント（110行→51行）
+
+### CharacterIconRowをcomponents/ui/に移動
+- [x] components/ui/character-icon-row.tsx - 汎用UIコンポーネントとして作成（85行）
+- [x] login-screen/CharacterIconRow.tsx - ラッパーコンポーネントに更新（50行）
+- [x] components/ui/index.ts - エクスポート追加

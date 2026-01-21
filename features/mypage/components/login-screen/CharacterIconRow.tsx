@@ -1,87 +1,53 @@
 /**
- * CharacterIconRow Component
- * 3キャラクターアイコンの横並び表示
- * 他の画面でも再利用可能な汎用コンポーネント
+ * CharacterIconRow Component (Login Screen Wrapper)
+ * ログイン画面用のデフォルト3キャラクター設定を提供
+ * 汎用コンポーネントのラッパー
  */
 
-import { View } from "react-native";
-import { Image } from "expo-image";
+import { 
+  CharacterIconRow as BaseCharacterIconRow,
+  type CharacterIconConfig,
+} from "@/components/ui/character-icon-row";
 import { mypageAccent } from "../../ui/theme/tokens";
 import { characterImages } from "./constants";
 
-interface CharacterIconConfig {
-  image: keyof typeof characterImages;
-  size: number;
-  borderWidth: number;
-  borderColor: string;
-}
-
-interface CharacterIconRowProps {
-  /** カスタムアイコン設定（省略時はデフォルト3キャラクター） */
-  icons?: CharacterIconConfig[];
-  /** アイコン間のギャップ */
-  gap?: number;
-  /** 下部マージン */
-  marginBottom?: number;
-}
-
 // デフォルトの3キャラクター設定
-const defaultIcons: CharacterIconConfig[] = [
+const defaultLoginIcons: CharacterIconConfig[] = [
   {
-    image: "linkYukkuri",
+    image: characterImages.linkYukkuri,
     size: 56,
     borderWidth: 2,
     borderColor: mypageAccent.linkPink,
   },
   {
-    image: "kontaYukkuri",
+    image: characterImages.kontaYukkuri,
     size: 64,
     borderWidth: 3,
     borderColor: mypageAccent.kontaOrange,
   },
   {
-    image: "tanuneYukkuri",
+    image: characterImages.tanuneYukkuri,
     size: 56,
     borderWidth: 2,
     borderColor: mypageAccent.tanuneGreen,
   },
 ];
 
-export function CharacterIconRow({ 
-  icons = defaultIcons, 
-  gap = 12, 
-  marginBottom = 32 
-}: CharacterIconRowProps) {
+interface LoginCharacterIconRowProps {
+  /** 下部マージン */
+  marginBottom?: number;
+}
+
+/**
+ * ログイン画面用のキャラクターアイコン行
+ * デフォルトで3キャラクター（りんく、コンタ、たぬね）を表示
+ */
+export function CharacterIconRow({ marginBottom = 32 }: LoginCharacterIconRowProps = {}) {
   return (
-    <View style={{ 
-      flexDirection: "row", 
-      justifyContent: "center", 
-      gap,
-      marginBottom,
-    }}>
-      {icons.map((icon, index) => {
-        const innerSize = icon.size - (icon.borderWidth * 2);
-        return (
-          <View key={index} style={{ alignItems: "center" }}>
-            <View style={{ 
-              width: icon.size, 
-              height: icon.size, 
-              borderRadius: icon.size / 2, 
-              borderWidth: icon.borderWidth, 
-              borderColor: icon.borderColor,
-              overflow: "hidden",
-            }}>
-              <Image 
-                source={characterImages[icon.image]} 
-                style={{ width: innerSize, height: innerSize }} 
-                contentFit="cover"
-                priority="high"
-                cachePolicy="memory-disk"
-              />
-            </View>
-          </View>
-        );
-      })}
-    </View>
+    <BaseCharacterIconRow
+      icons={defaultLoginIcons}
+      gap={12}
+      marginBottom={marginBottom}
+    />
   );
 }
