@@ -10,6 +10,7 @@ import { useMemo } from "react";
 import { AppHeader } from "@/components/organisms/app-header";
 import { ExportButton } from "@/components/molecules/export-button";
 import type { ExportData } from "@/lib/export-stats";
+import type { Challenge } from "@/drizzle/schema";
 import { ParticipantRanking } from "@/components/organisms/participant-ranking";
 
 const { width: screenWidth } = Dimensions.get("window");
@@ -352,7 +353,7 @@ function PrefectureRanking({ participations }: { participations: Participation[]
 }
 
 // 統計サマリーカード
-function StatsSummary({ challenge, participations }: { challenge: any; participations: Participation[] }) {
+function StatsSummary({ challenge, participations }: { challenge: Challenge | null | undefined; participations: Participation[] }) {
   const stats = useMemo(() => {
     const total = participations.reduce((sum, p) => sum + (p.contribution || 1), 0);
     const uniqueParticipants = participations.length;

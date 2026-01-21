@@ -42,6 +42,8 @@ export interface ButtonProps {
   haptic?: boolean;
   /** 非同期処理を自動でローディング状態にするか */
   autoLoading?: boolean;
+  /** カスタムスタイル */
+  style?: ViewStyle | (ViewStyle | false | undefined)[];
 }
 
 // ==================== スタイル定義 ====================
@@ -148,6 +150,7 @@ export function Button({
   fullWidth = false,
   haptic = true,
   autoLoading = false,
+  style,
 }: ButtonProps) {
   const [isLoading, setIsLoading] = useState(false);
   const [isHovered, setIsHovered] = useState(false);
@@ -241,6 +244,7 @@ export function Button({
         },
         webHoverStyle,
         fullWidth && styles.fullWidth,
+        ...(Array.isArray(style) ? style.filter(Boolean) : style ? [style] : []),
       ]}
     >
       {actualLoading ? (

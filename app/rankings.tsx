@@ -12,6 +12,26 @@ import { AppHeader } from "@/components/organisms/app-header";
 
 type PeriodType = "weekly" | "monthly" | "all";
 
+// ランキングアイテムの型（実際のAPIレスポンスに合わせる）
+type ContributionRankingItem = {
+  userId: number | null;
+  userName: string | null;
+  userImage: string | null;
+  totalContribution: number;
+  participationCount: number;
+};
+
+type HostRankingItem = {
+  hostUserId: number | null;
+  hostName: string;
+  hostProfileImage: string | null;
+  totalParticipants: number;
+  challengeCount: number;
+  avgAchievementRate: number;
+};
+
+type RankingItem = ContributionRankingItem | HostRankingItem;
+
 const periodLabels: Record<PeriodType, string> = {
   weekly: "週間",
   monthly: "月間",
@@ -189,9 +209,9 @@ export default function RankingsScreen() {
         </View>
       ) : data && data.length > 0 ? (
         <FlatList
-          data={data as any[]}
-          keyExtractor={(item: any, index) => `${item.userId || item.hostUserId}-${index}`}
-          renderItem={({ item, index }: { item: any; index: number }) => (
+          data={data as RankingItem[]}
+          keyExtractor={(item, index) => `${(item as ContributionRankingItem).userId || (item as HostRankingItem).hostUserId || index}-${index}`}
+          renderItem={({ item, index }: { item: RankingItem; index: number }) => (
             <View style={{
               flexDirection: "row",
               alignItems: "center",
@@ -224,9 +244,9 @@ export default function RankingsScreen() {
               </View>
               
               {/* プロフィール */}
-              {item.userImage ? (
+              {((item as ContributionRankingItem).userImage || (item as HostRankingItem).hostProfileImage) ? (
                 <Image
-                  source={{ uri: item.userImage || undefined }}
+                  source={{ uri: (item as ContributionRankingItem).userImage || (item as HostRankingItem).hostProfileImage || undefined }}
                   style={{ width: 48, height: 48, borderRadius: 24, marginLeft: 8 }}
                 />
               ) : (
@@ -240,25 +260,25 @@ export default function RankingsScreen() {
                   justifyContent: "center",
                 }}>
                   <Text style={{ color: color.textWhite, fontSize: 20, fontWeight: "bold" }}>
-                    {(item.userName || "?")[0]}
+                    {((item as ContributionRankingItem).userName || (item as HostRankingItem).hostName || "?")[0]}
                   </Text>
                 </View>
               )}
               
               <View style={{ flex: 1, marginLeft: 12 }}>
                 <Text style={{ color: color.textWhite, fontSize: 16, fontWeight: "600" }}>
-                  {item.userName || "匿名"}
+                  {(item as ContributionRankingItem).userName || (item as HostRankingItem).hostName || "匿名"}
                 </Text>
                 {tab === "hosts" && (
                   <Text style={{ color: color.textMuted, fontSize: 12, marginTop: 2 }}>
-                    {item.participationCount || 0} 回参加
+                    {(item as ContributionRankingItem).participationCount || 0} 回参加
                   </Text>
                 )}
               </View>
               
               <View style={{ alignItems: "flex-end" }}>
                 <Text style={{ color: color.accentPrimary, fontSize: 18, fontWeight: "bold" }}>
-                  {(item.totalContribution || 0).toLocaleString()}
+                  {((item as ContributionRankingItem).totalContribution || (item as HostRankingItem).totalParticipants || 0).toLocaleString()}
                 </Text>
                 <Text style={{ color: color.textMuted, fontSize: 10 }}>
                   {tab === "contribution" ? "貢献度" : "総動員数"}

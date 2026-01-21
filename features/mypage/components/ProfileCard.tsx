@@ -1,15 +1,16 @@
 /**
  * プロフィールカードコンポーネント
- * ログイン済みユーザーのプロフィール情報を表示
+ * v6.23: 新UIコンポーネント（Button）を使用
  */
-import { View, Text, TouchableOpacity } from "react-native";
+import { View, Text } from "react-native";
 import MaterialIcons from "@expo/vector-icons/MaterialIcons";
 import { LinearGradient } from "expo-linear-gradient";
 import { useColors } from "@/hooks/use-colors";
 import { useResponsive } from "@/hooks/use-responsive";
 import { FollowStatusBadge } from "@/components/molecules/follow-gate";
 import { TwitterUserCard } from "@/components/molecules/twitter-user-card";
-import { mypageUI, mypageText, mypageGradient } from "../ui/theme/tokens";
+import { mypageUI, mypageText, mypageGradient, mypageAccent } from "../ui/theme/tokens";
+import { Button } from "@/components/ui/button";
 
 interface ProfileCardProps {
   user: {
@@ -80,93 +81,66 @@ export function ProfileCard({
                 description: user?.description ?? undefined,
               }}
               size="large"
-              showFollowers
-              showDescription
             />
           </View>
           <FollowStatusBadge isFollowing={isFollowing} />
         </View>
 
-        {/* 統計 */}
-        <View style={{ flexDirection: "row", marginTop: 16, gap: 12 }}>
-          <View
-            style={{
-              flex: 1,
-              backgroundColor: colors.background,
-              borderRadius: 12,
-              padding: 12,
-              alignItems: "center",
-            }}
-          >
-            <Text style={{ color: mypageText.statPink, fontSize: 24, fontWeight: "bold" }}>
+        {/* 統計情報 */}
+        <View
+          style={{
+            flexDirection: "row",
+            marginTop: 16,
+            paddingTop: 16,
+            borderTopWidth: 1,
+            borderTopColor: mypageUI.cardBorder,
+          }}
+        >
+          <View style={{ flex: 1, alignItems: "center" }}>
+            <Text style={{ color: colors.foreground, fontSize: 24, fontWeight: "bold" }}>
               {totalContribution}
             </Text>
-            <Text style={{ color: mypageText.muted, fontSize: 12 }}>総貢献度</Text>
+            <Text style={{ color: mypageText.muted, fontSize: 12 }}>総貢献数</Text>
           </View>
-          <View
-            style={{
-              flex: 1,
-              backgroundColor: colors.background,
-              borderRadius: 12,
-              padding: 12,
-              alignItems: "center",
-            }}
-          >
-            <Text style={{ color: mypageText.statPurple, fontSize: 24, fontWeight: "bold" }}>
+          <View style={{ flex: 1, alignItems: "center" }}>
+            <Text style={{ color: colors.foreground, fontSize: 24, fontWeight: "bold" }}>
               {participationsCount}
             </Text>
-            <Text style={{ color: mypageText.muted, fontSize: 12 }}>参加チャレンジ</Text>
+            <Text style={{ color: mypageText.muted, fontSize: 12 }}>参加中</Text>
           </View>
-          <View
-            style={{
-              flex: 1,
-              backgroundColor: colors.background,
-              borderRadius: 12,
-              padding: 12,
-              alignItems: "center",
-            }}
-          >
-            <Text style={{ color: mypageText.statOrange, fontSize: 24, fontWeight: "bold" }}>
+          <View style={{ flex: 1, alignItems: "center" }}>
+            <Text style={{ color: colors.foreground, fontSize: 24, fontWeight: "bold" }}>
               {challengesCount}
             </Text>
             <Text style={{ color: mypageText.muted, fontSize: 12 }}>主催</Text>
           </View>
         </View>
 
-        {/* v6.08: 招待実績 */}
-        {invitationStats && (invitationStats.totalInvited > 0 || invitationStats.confirmedCount > 0) && (
-          <View style={{ marginTop: 16 }}>
+        {/* 招待実績 */}
+        {invitationStats && invitationStats.totalInvited > 0 && (
+          <View
+            style={{
+              marginTop: 16,
+              paddingTop: 16,
+              borderTopWidth: 1,
+              borderTopColor: mypageUI.cardBorder,
+            }}
+          >
             <View style={{ flexDirection: "row", alignItems: "center", marginBottom: 8 }}>
-              <MaterialIcons name="people" size={18} color={mypageText.muted} />
-              <Text style={{ color: mypageText.muted, fontSize: 14, marginLeft: 4, fontWeight: "600" }}>
-                友達招待実績
+              <MaterialIcons name="people" size={16} color={mypageAccent.linkPink} />
+              <Text style={{ color: mypageAccent.linkPink, fontSize: 14, fontWeight: "bold", marginLeft: 4 }}>
+                招待実績
               </Text>
             </View>
-            <View style={{ flexDirection: "row", gap: 12 }}>
-              <View
-                style={{
-                  flex: 1,
-                  backgroundColor: colors.background,
-                  borderRadius: 12,
-                  padding: 12,
-                  alignItems: "center",
-                }}
-              >
-                <Text style={{ color: "#10B981", fontSize: 24, fontWeight: "bold" }}>
+            <View style={{ flexDirection: "row" }}>
+              <View style={{ flex: 1, alignItems: "center" }}>
+                <Text style={{ color: colors.foreground, fontSize: 20, fontWeight: "bold" }}>
                   {invitationStats.totalInvited}
                 </Text>
-                <Text style={{ color: mypageText.muted, fontSize: 12 }}>招待した人数</Text>
+                <Text style={{ color: mypageText.muted, fontSize: 12 }}>招待送信</Text>
               </View>
-              <View
-                style={{
-                  flex: 1,
-                  backgroundColor: colors.background,
-                  borderRadius: 12,
-                  padding: 12,
-                  alignItems: "center",
-                }}
-              >
-                <Text style={{ color: "#3B82F6", fontSize: 24, fontWeight: "bold" }}>
+              <View style={{ flex: 1, alignItems: "center" }}>
+                <Text style={{ color: colors.foreground, fontSize: 20, fontWeight: "bold" }}>
                   {invitationStats.confirmedCount}
                 </Text>
                 <Text style={{ color: mypageText.muted, fontSize: 12 }}>参加表明済み</Text>
@@ -176,41 +150,35 @@ export function ProfileCard({
         )}
 
         {/* アカウント切り替えボタン */}
-        <TouchableOpacity
+        <Button
+          variant="secondary"
           onPress={onAccountSwitch}
+          fullWidth
+          icon="swap-horiz"
           style={{
             backgroundColor: mypageUI.switchAccountBg,
-            borderRadius: 8,
-            padding: 12,
             marginTop: 16,
-            flexDirection: "row",
-            alignItems: "center",
-            justifyContent: "center",
           }}
         >
-          <MaterialIcons name="swap-horiz" size={20} color={mypageText.switchAccount} />
           <Text style={{ color: mypageText.switchAccount, fontSize: 14, marginLeft: 8 }}>
             別のアカウントでログイン
           </Text>
-        </TouchableOpacity>
+        </Button>
 
-        <TouchableOpacity
+        <Button
+          variant="ghost"
           onPress={onLogout}
+          fullWidth
+          icon="logout"
           style={{
             backgroundColor: colors.background,
-            borderRadius: 8,
-            padding: 12,
             marginTop: 8,
-            flexDirection: "row",
-            alignItems: "center",
-            justifyContent: "center",
           }}
         >
-          <MaterialIcons name="logout" size={20} color={mypageText.logout} />
           <Text style={{ color: mypageText.logout, fontSize: 14, marginLeft: 8 }}>
             ログアウト
           </Text>
-        </TouchableOpacity>
+        </Button>
       </View>
     </View>
   );

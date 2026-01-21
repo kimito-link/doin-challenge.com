@@ -3396,3 +3396,19 @@ features/create/
 #### 重大なバグ: なし
 リリースブロッカーは見つからず。
 - [ ] 発見した問題の修正
+
+
+## 保守性向上（v6.23）
+
+### 新UIコンポーネントへの置き換え
+- [ ] ホーム画面（index.tsx）のButton/Cardを新UIに置き換え
+- [ ] 作成画面（create.tsx）のButton/Cardを新UIに置き換え
+- [ ] イベント詳細画面（event/[id].tsx）のButton/Cardを新UIに置き換え
+- [x] 設定画面（settings.tsx）のButton/Cardを新UIに置き換え
+- [x] マイページ（mypage.tsx）のButton/Cardを新UIに置き換え
+
+### 型定義の強化
+- [x] any型を適切な型に修正（主要画面の型定義追加）
+
+### ログの整理
+- [x] console.logをlogger関数に置き換え（lib/logger.ts作成、OAuthデバッグログは維持）

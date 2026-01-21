@@ -1,10 +1,13 @@
-// features/settings/components/SettingsSections.tsx
-// v6.18: 設定画面のセクションコンポーネント
-import { View, Text, TouchableOpacity, Linking } from "react-native";
+/**
+ * features/settings/components/SettingsSections.tsx
+ * v6.23: 新UIコンポーネント（Button）を使用
+ */
+import { View, Text } from "react-native";
 import { Image } from "expo-image";
 import MaterialIcons from "@expo/vector-icons/MaterialIcons";
 import { color } from "@/theme/tokens";
 import { settingsStyles as styles } from "../styles";
+import { Button } from "@/components/ui/button";
 import type { SessionExpiryInfo } from "@/lib/token-manager";
 
 type User = {
@@ -18,6 +21,43 @@ type Account = {
   id: string;
   profileImageUrl?: string | null;
 };
+
+// メニューアイテムコンポーネント（共通化）
+function MenuItem({
+  icon,
+  iconColor = color.hostAccentLegacy,
+  iconBgColor,
+  title,
+  description,
+  onPress,
+  danger = false,
+}: {
+  icon: keyof typeof MaterialIcons.glyphMap;
+  iconColor?: string;
+  iconBgColor?: string;
+  title: string;
+  description?: string;
+  onPress: () => void;
+  danger?: boolean;
+}) {
+  return (
+    <Button
+      variant="ghost"
+      onPress={onPress}
+      fullWidth
+      style={[styles.menuItem, danger && styles.logoutItem]}
+    >
+      <View style={[styles.menuItemIcon, iconBgColor && { backgroundColor: iconBgColor }, danger && styles.logoutIcon]}>
+        <MaterialIcons name={icon} size={24} color={danger ? color.danger : iconColor} />
+      </View>
+      <View style={styles.menuItemContent}>
+        <Text style={[styles.menuItemTitle, danger && styles.logoutText]}>{title}</Text>
+        {description && <Text style={styles.menuItemDescription}>{description}</Text>}
+      </View>
+      <MaterialIcons name="chevron-right" size={24} color={color.textSubtle} />
+    </Button>
+  );
+}
 
 // アカウントセクション
 export function AccountSection({
@@ -93,24 +133,14 @@ export function AccountSection({
       )}
 
       {/* アカウント切り替えボタン */}
-      <TouchableOpacity
+      <MenuItem
+        icon="swap-horiz"
+        title="アカウントを切り替え"
+        description={otherAccounts.length > 0
+          ? `${otherAccounts.length}件の保存済みアカウント`
+          : "別のアカウントでログイン"}
         onPress={onAccountSwitch}
-        style={styles.menuItem}
-        activeOpacity={0.7}
-      >
-        <View style={styles.menuItemIcon}>
-          <MaterialIcons name="swap-horiz" size={24} color={color.hostAccentLegacy} />
-        </View>
-        <View style={styles.menuItemContent}>
-          <Text style={styles.menuItemTitle}>アカウントを切り替え</Text>
-          <Text style={styles.menuItemDescription}>
-            {otherAccounts.length > 0
-              ? `${otherAccounts.length}件の保存済みアカウント`
-              : "別のアカウントでログイン"}
-          </Text>
-        </View>
-        <MaterialIcons name="chevron-right" size={24} color={color.textSubtle} />
-      </TouchableOpacity>
+      />
 
       {/* 保存済みアカウント一覧 */}
       {otherAccounts.length > 0 && (
@@ -143,19 +173,12 @@ export function AccountSection({
 
       {/* ログアウトボタン */}
       {isAuthenticated && (
-        <TouchableOpacity
+        <MenuItem
+          icon="logout"
+          title="ログアウト"
           onPress={onLogout}
-          style={[styles.menuItem, styles.logoutItem]}
-          activeOpacity={0.7}
-        >
-          <View style={[styles.menuItemIcon, styles.logoutIcon]}>
-            <MaterialIcons name="logout" size={24} color={color.danger} />
-          </View>
-          <View style={styles.menuItemContent}>
-            <Text style={[styles.menuItemTitle, styles.logoutText]}>ログアウト</Text>
-          </View>
-          <MaterialIcons name="chevron-right" size={24} color={color.textSubtle} />
-        </TouchableOpacity>
+          danger
+        />
       )}
     </View>
   );
@@ -173,20 +196,12 @@ export function DisplaySection({
     <View style={styles.section}>
       <Text style={styles.sectionTitle}>表示</Text>
 
-      <TouchableOpacity
+      <MenuItem
+        icon={themeIcon as keyof typeof MaterialIcons.glyphMap}
+        title="テーマ設定"
+        description="ダークモード"
         onPress={onThemeSettings}
-        style={styles.menuItem}
-        activeOpacity={0.7}
-      >
-        <View style={styles.menuItemIcon}>
-          <MaterialIcons name={themeIcon as any} size={24} color={color.hostAccentLegacy} />
-        </View>
-        <View style={styles.menuItemContent}>
-          <Text style={styles.menuItemTitle}>テーマ設定</Text>
-          <Text style={styles.menuItemDescription}>ダークモード</Text>
-        </View>
-        <MaterialIcons name="chevron-right" size={24} color={color.textSubtle} />
-      </TouchableOpacity>
+      />
     </View>
   );
 }
@@ -201,22 +216,12 @@ export function NotificationSection({
     <View style={styles.section}>
       <Text style={styles.sectionTitle}>通知</Text>
 
-      <TouchableOpacity
+      <MenuItem
+        icon="notifications"
+        title="通知設定"
+        description="プッシュ通知やリマインダーの設定"
         onPress={onNotificationSettings}
-        style={styles.menuItem}
-        activeOpacity={0.7}
-      >
-        <View style={styles.menuItemIcon}>
-          <MaterialIcons name="notifications" size={24} color={color.hostAccentLegacy} />
-        </View>
-        <View style={styles.menuItemContent}>
-          <Text style={styles.menuItemTitle}>通知設定</Text>
-          <Text style={styles.menuItemDescription}>
-            プッシュ通知やリマインダーの設定
-          </Text>
-        </View>
-        <MaterialIcons name="chevron-right" size={24} color={color.textSubtle} />
-      </TouchableOpacity>
+      />
     </View>
   );
 }
@@ -235,56 +240,30 @@ export function HelpSection({
     <View style={styles.section}>
       <Text style={styles.sectionTitle}>ヘルプ</Text>
 
-      <TouchableOpacity
+      <MenuItem
+        icon="help-outline"
+        title="使い方ガイド"
+        description="アプリの使い方とよくある質問"
         onPress={onHelp}
-        style={styles.menuItem}
-        activeOpacity={0.7}
-      >
-        <View style={styles.menuItemIcon}>
-          <MaterialIcons name="help-outline" size={24} color={color.hostAccentLegacy} />
-        </View>
-        <View style={styles.menuItemContent}>
-          <Text style={styles.menuItemTitle}>使い方ガイド</Text>
-          <Text style={styles.menuItemDescription}>
-            アプリの使い方とよくある質問
-          </Text>
-        </View>
-        <MaterialIcons name="chevron-right" size={24} color={color.textSubtle} />
-      </TouchableOpacity>
+      />
 
-      <TouchableOpacity
+      <MenuItem
+        icon="replay"
+        iconColor={color.accentPrimary}
+        iconBgColor="rgba(236, 72, 153, 0.1)"
+        title="チュートリアルを見返す"
+        description="はじめの説明をもう一度見る"
         onPress={onReplayTutorial}
-        style={styles.menuItem}
-        activeOpacity={0.7}
-      >
-        <View style={[styles.menuItemIcon, { backgroundColor: "rgba(236, 72, 153, 0.1)" }]}>
-          <MaterialIcons name="replay" size={24} color={color.accentPrimary} />
-        </View>
-        <View style={styles.menuItemContent}>
-          <Text style={styles.menuItemTitle}>チュートリアルを見返す</Text>
-          <Text style={styles.menuItemDescription}>
-            はじめの説明をもう一度見る
-          </Text>
-        </View>
-        <MaterialIcons name="chevron-right" size={24} color={color.textSubtle} />
-      </TouchableOpacity>
+      />
 
-      <TouchableOpacity
+      <MenuItem
+        icon="cached"
+        iconColor={color.info}
+        iconBgColor="rgba(59, 130, 246, 0.1)"
+        title="キャッシュをクリア"
+        description="古いデータを削除して最新の情報を取得"
         onPress={onClearCache}
-        style={styles.menuItem}
-        activeOpacity={0.7}
-      >
-        <View style={[styles.menuItemIcon, { backgroundColor: "rgba(59, 130, 246, 0.1)" }]}>
-          <MaterialIcons name="cached" size={24} color={color.info} />
-        </View>
-        <View style={styles.menuItemContent}>
-          <Text style={styles.menuItemTitle}>キャッシュをクリア</Text>
-          <Text style={styles.menuItemDescription}>
-            古いデータを削除して最新の情報を取得
-          </Text>
-        </View>
-        <MaterialIcons name="chevron-right" size={24} color={color.textSubtle} />
-      </TouchableOpacity>
+      />
     </View>
   );
 }
@@ -309,10 +288,10 @@ export function SettingsFooter({
       <Text style={styles.footerSubtext}>設定はこのデバイスに保存されます</Text>
       
       <View style={styles.footerLinks}>
-        <TouchableOpacity onPress={onTwitter} style={styles.footerLink}>
+        <Button variant="ghost" onPress={onTwitter} style={styles.footerLink}>
           <MaterialIcons name="alternate-email" size={16} color={color.twitter} />
           <Text style={styles.footerLinkText}>@doin_challenge</Text>
-        </TouchableOpacity>
+        </Button>
       </View>
       
       <Text style={styles.footerCopyright}>

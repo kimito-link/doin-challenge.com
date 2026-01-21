@@ -1,11 +1,12 @@
 /**
  * 設定リンクアイテムコンポーネント
- * マイページの設定リンク（アチーブメント、通知、テーマなど）の共通コンポーネント
+ * v6.23: 新UIコンポーネント（Button）を使用
  */
-import { View, Text, TouchableOpacity } from "react-native";
+import { View, Text } from "react-native";
 import MaterialIcons from "@expo/vector-icons/MaterialIcons";
 import { useColors } from "@/hooks/use-colors";
 import { mypageUI, mypageText } from "../ui/theme/tokens";
+import { Button } from "@/components/ui/button";
 
 interface SettingsLinkItemProps {
   icon: keyof typeof MaterialIcons.glyphMap;
@@ -25,8 +26,10 @@ export function SettingsLinkItem({
   const colors = useColors();
   
   return (
-    <TouchableOpacity
+    <Button
+      variant="ghost"
       onPress={onPress}
+      fullWidth
       style={{
         backgroundColor: mypageUI.cardBg,
         marginHorizontal: 16,
@@ -37,6 +40,7 @@ export function SettingsLinkItem({
         alignItems: "center",
         borderWidth: 1,
         borderColor: mypageUI.cardBorder,
+        justifyContent: "flex-start",
       }}
     >
       <View
@@ -61,6 +65,6 @@ export function SettingsLinkItem({
         </Text>
       </View>
       <MaterialIcons name="chevron-right" size={24} color={mypageText.muted} />
-    </TouchableOpacity>
+    </Button>
   );
 }

@@ -2,7 +2,8 @@
  * ログイン画面コンポーネント
  * 未ログイン状態のマイページUI
  */
-import { View, Text, ScrollView, TouchableOpacity } from "react-native";
+import { View, Text, ScrollView } from "react-native";
+import { Button } from "@/components/ui/button";
 import { Image } from "expo-image";
 import MaterialIcons from "@expo/vector-icons/MaterialIcons";
 import { LinearGradient } from "expo-linear-gradient";
@@ -266,27 +267,19 @@ export function LoginScreen({
         </LinearGradient>
 
         {/* ログインボタン */}
-        <TouchableOpacity
+        <Button
           onPress={onLogin}
           disabled={isLoggingIn}
+          loading={isLoggingIn}
+          icon="login"
           style={{
             backgroundColor: mypageUI.twitterBg,
-            borderRadius: 12,
-            paddingVertical: 14,
-            paddingHorizontal: 24,
-            flexDirection: "row",
-            alignItems: "center",
-            justifyContent: "center",
-            opacity: isLoggingIn ? 0.7 : 1,
             maxWidth: 400,
             width: "100%",
           }}
         >
-          <MaterialIcons name="login" size={22} color={colors.foreground} />
-          <Text style={{ color: colors.foreground, fontSize: 16, fontWeight: "bold", marginLeft: 10 }}>
-            {isLoggingIn ? "認証中..." : "Xアカウントで認証しています"}
-          </Text>
-        </TouchableOpacity>
+          {isLoggingIn ? "認証中..." : "Xアカウントで認証しています"}
+        </Button>
 
         {/* キャラクターの吹き出しメッセージ */}
         <View style={{ 
@@ -325,36 +318,38 @@ export function LoginScreen({
         </View>
 
         {/* パターン切り替えボタン */}
-        <TouchableOpacity
+        <Button
+          variant="ghost"
           onPress={() => onPatternChange(getRandomPattern())}
+          icon="refresh"
           style={{
-            flexDirection: "row",
-            alignItems: "center",
-            padding: 12,
-            borderRadius: 8,
             backgroundColor: "rgba(255,255,255,0.05)",
             marginTop: 16,
           }}
         >
-          <MaterialIcons name="refresh" size={18} color={mypageText.muted} />
           <Text style={{ color: mypageText.muted, fontSize: 13, marginLeft: 6 }}>
             他のキャラクターのメッセージを見る
           </Text>
-        </TouchableOpacity>
+        </Button>
 
         {/* パターンインジケーター */}
         <View style={{ flexDirection: "row", marginTop: 12, gap: 8 }}>
           {loginPatterns.map((p) => (
-            <TouchableOpacity
+            <Button
               key={p.id}
+              variant="ghost"
               onPress={() => onPatternChange(p)}
               style={{
                 width: 8,
                 height: 8,
                 borderRadius: 4,
                 backgroundColor: p.id === loginPattern.id ? mypageUI.patternActiveBg : mypageUI.patternInactiveBg,
+                padding: 0,
+                minHeight: 8,
               }}
-            />
+            >
+              {null}
+            </Button>
           ))}
         </View>
       </ScrollView>
