@@ -3793,3 +3793,47 @@ features/create/
 - [x] 地域ごとの色分け - 8地域にカラーコード設定
 - [x] 都道府県タップ機能 - onPrefecturePressコールバック
 - [x] ヒートマップオーバーレイ - 参加者数に応じた赤のグラデーション
+
+## 追加機能実装（v6.28）
+
+### 1. プルトゥリフレッシュ機能
+- [x] ホーム画面にRefreshControl追加（既に実装済み）
+- [x] リフレッシュ時のハプティクスフィードバック（SimpleRefreshControl）
+- [x] イベント詳細画面にRefreshControl追加
+
+### 2. オンボーディングチュートリアル
+- [ ] チュートリアルスライドコンポーネント作成
+- [ ] 初回起動判定ロジック（AsyncStorage）
+- [ ] スキップ・完了機能
+- [ ] アプリ使い方説明（3-5スライド）
+
+### 3. プッシュ通知設定画面
+- [ ] 通知設定画面の作成
+- [ ] お気に入りチャレンジ更新通知設定
+- [ ] 参加者数節目通知設定
+- [ ] 通知許可リクエスト機能
+
+
+## 追加機能実装（v6.28）
+
+### 1. プルトゥリフレッシュ機能
+- [x] ホーム画面にRefreshControl追加（既に実装済み）
+- [x] リフレッシュ時のハプティクスフィードバック（SimpleRefreshControl）
+- [x] イベント詳細画面にRefreshControl追加
+
+### 2. オンボーディングチュートリアル
+- [x] オンボーディングスライドデータ作成（5スライド）
+- [x] スライドコンポーネント作成（OnboardingSlide）
+- [x] ナビゲーション（ドット、ボタン）作成（OnboardingNavigation）
+- [x] 初回起動判定ロジック（useOnboardingフック）
+- [x] スワイプジェスチャー対応（PanGesture）
+- [x] ルートレイアウトに統合（OnboardingWrapper）
+
+### 3. プッシュ通知設定画面
+- [x] 通知設定画面の作成（既に実装済み: app/notification-settings.tsx）
+- [x] 目標達成通知設定（goalReached）
+- [x] マイルストーン通知設定（milestones: 25%, 50%, 75%）
+- [x] 新規参加者通知設定（newParticipants）
+- [x] チャレンジ更新通知設定（challengeUpdates）
+- [x] 通知設定の保存・読み込み（AsyncStorage）
+- [x] Web版の制限表示対応

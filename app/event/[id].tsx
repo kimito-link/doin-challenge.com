@@ -7,7 +7,7 @@
  * - features/event-detail/components/ - UIコンポーネント
  */
 
-import { View, Text, ScrollView, KeyboardAvoidingView, Platform } from "react-native";
+import { View, Text, ScrollView, KeyboardAvoidingView, Platform, RefreshControl } from "react-native";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import { ScreenContainer } from "@/components/organisms/screen-container";
 import { useColors } from "@/hooks/use-colors";
@@ -116,6 +116,14 @@ export default function ChallengeDetailScreen() {
         <ScrollView 
           ref={participationForm.scrollViewRef} 
           style={{ flex: 1, backgroundColor: colors.background }}
+          refreshControl={
+            <RefreshControl
+              refreshing={eventDetail.isRefreshing}
+              onRefresh={eventDetail.onRefresh}
+              tintColor={colors.primary}
+              colors={[colors.primary]}
+            />
+          }
         >
           {/* ヘッダー */}
           <AppHeader 

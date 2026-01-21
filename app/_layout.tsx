@@ -35,6 +35,7 @@ import { LoginPromptModal } from "@/components/organisms/login-prompt-modal";
 import { NetworkToast } from "@/components/organisms/network-toast";
 import { ExperienceProvider } from "@/lib/experience-context";
 import { ExperienceOverlay } from "@/components/organisms/experience-overlay";
+import { OnboardingScreen, useOnboarding } from "@/features/onboarding";
 
 const DEFAULT_WEB_INSETS: EdgeInsets = { top: 0, right: 0, bottom: 0, left: 0 };
 const DEFAULT_WEB_FRAME: Rect = { x: 0, y: 0, width: 0, height: 0 };
@@ -78,6 +79,27 @@ function TutorialUI() {
       />
     </>
   );
+}
+
+/**
+ * オンボーディングラッパー
+ * 初回起動時にオンボーディングを表示
+ */
+function OnboardingWrapper({ children }: { children: React.ReactNode }) {
+  const { hasCompletedOnboarding, completeOnboarding } = useOnboarding();
+  
+  // オンボーディング状態が確認中の場合は何も表示しない
+  if (hasCompletedOnboarding === null) {
+    return null;
+  }
+  
+  // オンボーディング未完了の場合はオンボーディング画面を表示
+  if (!hasCompletedOnboarding) {
+    return <OnboardingScreen onComplete={completeOnboarding} />;
+  }
+  
+  // オンボーディング完了済みの場合はアプリを表示
+  return <>{children}</>;
 }
 
 export default function RootLayout() {
@@ -160,18 +182,20 @@ export default function RootLayout() {
               <TutorialProvider>
                 <ExperienceProvider>
                   <ToastProvider>
-                  {/* Default to hiding native headers so raw route segments don't appear (e.g. "(tabs)", "products/[id]"). */}
-                  {/* If a screen needs the native header, explicitly enable it and set a human title via Stack.Screen options. */}
-                  <Stack screenOptions={{ headerShown: false }}>
-                    <Stack.Screen name="(tabs)" />
-                    <Stack.Screen name="oauth/callback" />
-                  </Stack>
-                  <StatusBar style="auto" />
-                  <LoginSuccessModalWrapper />
-                  <OfflineBanner />
-                  <NetworkToast />
-                    <TutorialUI />
-                    <ExperienceOverlay />
+                    <OnboardingWrapper>
+                      {/* Default to hiding native headers so raw route segments don't appear (e.g. "(tabs)", "products/[id]"). */}
+                      {/* If a screen needs the native header, explicitly enable it and set a human title via Stack.Screen options. */}
+                      <Stack screenOptions={{ headerShown: false }}>
+                        <Stack.Screen name="(tabs)" />
+                        <Stack.Screen name="oauth/callback" />
+                      </Stack>
+                      <StatusBar style="auto" />
+                      <LoginSuccessModalWrapper />
+                      <OfflineBanner />
+                      <NetworkToast />
+                      <TutorialUI />
+                      <ExperienceOverlay />
+                    </OnboardingWrapper>
                   </ToastProvider>
                 </ExperienceProvider>
               </TutorialProvider>

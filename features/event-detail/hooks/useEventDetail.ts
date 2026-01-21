@@ -3,7 +3,7 @@
  * イベント詳細画面のデータ取得・状態管理
  */
 
-import { useMemo } from "react";
+import { useMemo, useState, useCallback } from "react";
 import { Alert } from "react-native";
 import { trpc } from "@/lib/trpc";
 import { useAuth } from "@/hooks/use-auth";
@@ -48,6 +48,7 @@ interface UseEventDetailReturn {
   isLoading: boolean;
   challengeLoading: boolean;
   participationsLoading: boolean;
+  isRefreshing: boolean;
   
   // User & Auth
   user: ReturnType<typeof useAuth>["user"];
@@ -64,11 +65,13 @@ interface UseEventDetailReturn {
   
   // Actions
   refetch: () => Promise<void>;
+  onRefresh: () => Promise<void>;
 }
 
 export function useEventDetail({ challengeId }: UseEventDetailOptions): UseEventDetailReturn {
   const { user, login } = useAuth();
   const { isFavorite, toggleFavorite } = useFavorites();
+  const [isRefreshing, setIsRefreshing] = useState(false);
   
   // Data queries
   const { 
@@ -195,6 +198,16 @@ export function useEventDetail({ challengeId }: UseEventDetailOptions): UseEvent
     await refetchParticipations();
   };
   
+  // Pull-to-refresh handler
+  const onRefresh = useCallback(async () => {
+    setIsRefreshing(true);
+    try {
+      await refetchParticipations();
+    } finally {
+      setIsRefreshing(false);
+    }
+  }, [refetchParticipations]);
+  
   return {
     // Data
     challenge: challenge as EventDetailData | undefined,
@@ -220,6 +233,7 @@ export function useEventDetail({ challengeId }: UseEventDetailOptions): UseEvent
     isLoading: challengeLoading || participationsLoading,
     challengeLoading,
     participationsLoading,
+    isRefreshing,
     
     // User & Auth
     user,
@@ -236,5 +250,6 @@ export function useEventDetail({ challengeId }: UseEventDetailOptions): UseEvent
     
     // Actions
     refetch,
+    onRefresh,
   };
 }
