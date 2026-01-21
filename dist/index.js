@@ -123,7 +123,7 @@ var init_users = __esm({
 
 // drizzle/schema/challenges.ts
 import { mysqlTable as mysqlTable2, int as int2, varchar as varchar2, text as text2, timestamp as timestamp2, mysqlEnum as mysqlEnum2, boolean as boolean2, json as json2 } from "drizzle-orm/mysql-core";
-var challenges, categories, challengeTemplates, challengeStats, challengeMembers;
+var challenges, events, categories, challengeTemplates, challengeStats, challengeMembers;
 var init_challenges = __esm({
   "drizzle/schema/challenges.ts"() {
     "use strict";
@@ -174,6 +174,7 @@ var init_challenges = __esm({
       participantSummary: json2("participantSummary").$type(),
       aiSummaryUpdatedAt: timestamp2("aiSummaryUpdatedAt")
     });
+    events = challenges;
     categories = mysqlTable2("categories", {
       id: int2("id").autoincrement().primaryKey(),
       name: varchar2("name", { length: 64 }).notNull(),
@@ -650,6 +651,44 @@ var init_schema = __esm({
 });
 
 // drizzle/schema.ts
+var schema_exports = {};
+__export(schema_exports, {
+  AUDIT_ACTIONS: () => AUDIT_ACTIONS,
+  ENTITY_TYPES: () => ENTITY_TYPES,
+  achievementPages: () => achievementPages,
+  achievements: () => achievements,
+  auditLogs: () => auditLogs,
+  badges: () => badges,
+  categories: () => categories,
+  challengeMembers: () => challengeMembers,
+  challengeStats: () => challengeStats,
+  challengeTemplates: () => challengeTemplates,
+  challenges: () => challenges,
+  cheers: () => cheers,
+  collaboratorInvitations: () => collaboratorInvitations,
+  collaborators: () => collaborators,
+  directMessages: () => directMessages,
+  events: () => events,
+  favoriteArtists: () => favoriteArtists,
+  follows: () => follows,
+  invitationUses: () => invitationUses,
+  invitations: () => invitations,
+  notificationSettings: () => notificationSettings,
+  notifications: () => notifications,
+  oauthPkceData: () => oauthPkceData,
+  participationCompanions: () => participationCompanions,
+  participations: () => participations,
+  pickedComments: () => pickedComments,
+  reminders: () => reminders,
+  searchHistory: () => searchHistory,
+  ticketTransfers: () => ticketTransfers,
+  ticketWaitlist: () => ticketWaitlist,
+  twitterFollowStatus: () => twitterFollowStatus,
+  twitterUserCache: () => twitterUserCache,
+  userAchievements: () => userAchievements,
+  userBadges: () => userBadges,
+  users: () => users
+});
 var init_schema2 = __esm({
   "drizzle/schema.ts"() {
     "use strict";
@@ -750,6 +789,22 @@ async function updateUserRole(userId, role) {
   await db.update(users).set({ role }).where(eq(users.id, userId));
   return true;
 }
+async function getUserByTwitterId(twitterId) {
+  const db = await getDb();
+  if (!db) return null;
+  const openId = `twitter:${twitterId}`;
+  const result = await db.select().from(users).where(eq(users.openId, openId)).limit(1);
+  if (result.length === 0) return null;
+  const user = result[0];
+  const { twitterFollowStatus: twitterFollowStatus2 } = await Promise.resolve().then(() => (init_schema2(), schema_exports));
+  const followStatus = await db.select({ twitterUsername: twitterFollowStatus2.twitterUsername }).from(twitterFollowStatus2).where(eq(twitterFollowStatus2.userId, user.id)).limit(1);
+  return {
+    id: user.id,
+    name: user.name,
+    twitterId,
+    twitterUsername: followStatus.length > 0 ? followStatus[0].twitterUsername : null
+  };
+}
 var init_user_db = __esm({
   "server/db/user-db.ts"() {
     "use strict";
@@ -767,7 +822,7 @@ async function getAllEvents() {
   }
   const db = await getDb();
   if (!db) return eventsCache.data ?? [];
-  const result = await db.select().from(events).where(eq(events.isPublic, true)).orderBy(desc(events.eventDate));
+  const result = await db.select().from(events2).where(eq(events2.isPublic, true)).orderBy(desc(events2.eventDate));
   eventsCache = { data: result, timestamp: now };
   return result;
 }
@@ -777,18 +832,18 @@ function invalidateEventsCache() {
 async function getEventById(id) {
   const db = await getDb();
   if (!db) return null;
-  const result = await db.select().from(events).where(eq(events.id, id));
+  const result = await db.select().from(events2).where(eq(events2.id, id));
   return result[0] || null;
 }
 async function getEventsByHostUserId(hostUserId) {
   const db = await getDb();
   if (!db) return [];
-  return db.select().from(events).where(eq(events.hostUserId, hostUserId)).orderBy(desc(events.eventDate));
+  return db.select().from(events2).where(eq(events2.hostUserId, hostUserId)).orderBy(desc(events2.eventDate));
 }
 async function getEventsByHostTwitterId(hostTwitterId) {
   const db = await getDb();
   if (!db) return [];
-  return db.select().from(events).where(eq(events.hostTwitterId, hostTwitterId)).orderBy(desc(events.eventDate));
+  return db.select().from(events2).where(eq(events2.hostTwitterId, hostTwitterId)).orderBy(desc(events2.eventDate));
 }
 async function createEvent(data) {
   const db = await getDb();
@@ -840,13 +895,13 @@ async function createEvent(data) {
 async function updateEvent(id, data) {
   const db = await getDb();
   if (!db) throw new Error("Database not available");
-  await db.update(events).set(data).where(eq(events.id, id));
+  await db.update(events2).set(data).where(eq(events2.id, id));
   invalidateEventsCache();
 }
 async function deleteEvent(id) {
   const db = await getDb();
   if (!db) throw new Error("Database not available");
-  await db.delete(events).where(eq(events.id, id));
+  await db.delete(events2).where(eq(events2.id, id));
   invalidateEventsCache();
 }
 async function searchChallenges(query) {
@@ -862,14 +917,14 @@ async function searchChallenges(query) {
     return title.includes(normalizedQuery) || hostName.includes(normalizedQuery) || description.includes(normalizedQuery) || venue.includes(normalizedQuery);
   });
 }
-var events, eventsCache, EVENTS_CACHE_TTL;
+var events2, eventsCache, EVENTS_CACHE_TTL;
 var init_challenge_db = __esm({
   "server/db/challenge-db.ts"() {
     "use strict";
     init_connection();
     init_connection();
     init_schema2();
-    events = challenges;
+    events2 = challenges;
     eventsCache = { data: null, timestamp: 0 };
     EVENTS_CACHE_TTL = 30 * 1e3;
   }
@@ -2779,6 +2834,7 @@ __export(db_exports, {
   getUserBadgesWithDetails: () => getUserBadgesWithDetails,
   getUserById: () => getUserById,
   getUserByOpenId: () => getUserByOpenId,
+  getUserByTwitterId: () => getUserByTwitterId,
   getUserInvitationStats: () => getUserInvitationStats,
   getUserPublicProfile: () => getUserPublicProfile,
   getUserRankingPosition: () => getUserRankingPosition,
@@ -5309,6 +5365,10 @@ var profilesRouter = router({
   // ユーザーの公開プロフィールを取得
   get: publicProcedure.input(z18.object({ userId: z18.number() })).query(async ({ input }) => {
     return getUserPublicProfile(input.userId);
+  }),
+  // twitterIdでユーザーを取得（外部共有URL用）
+  getByTwitterId: publicProcedure.input(z18.object({ twitterId: z18.string() })).query(async ({ input }) => {
+    return getUserByTwitterId(input.twitterId);
   }),
   // 推し活状況を取得
   getOshikatsuStats: publicProcedure.input(z18.object({

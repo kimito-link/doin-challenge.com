@@ -4,6 +4,7 @@
  */
 import { Platform, Share, Linking } from "react-native";
 import * as Haptics from "expo-haptics";
+import { createEventSlug, createProfileSlug } from "@/lib/slug";
 
 const APP_HASHTAG = "#動員ちゃれんじ";
 
@@ -126,7 +127,9 @@ export async function shareParticipation(
   
   // 短く、明確なCTAを含むテキスト
   const text = `🎉 ${hostName}の「${challengeTitle}」に参加！${socialProof}\n\n一緒に応援しよう👇`;
-  const url = `${getAppUrl()}/event/${challengeId}`;
+  // 新しい共有URL形式を使用
+  const slug = createEventSlug(challengeId, challengeTitle);
+  const url = `${getAppUrl()}/e/${slug}`;
 
   // ハッシュタグは2-3個が最適
   const hashtags = ["動員ちゃれんじ"];
@@ -151,7 +154,9 @@ export async function shareChallengeGoalReached(
   challengeId: number
 ): Promise<boolean> {
   const text = `🎊 目標${goalValue}${unit}達成！\n\n「${challengeTitle}」\nみんなの応援で達成できました！\n\n次の目標も一緒に👇`;
-  const url = `${getAppUrl()}/event/${challengeId}`;
+  // 新しい共有URL形式を使用
+  const slug = createEventSlug(challengeId, challengeTitle);
+  const url = `${getAppUrl()}/e/${slug}`;
 
   return shareToTwitter(text, url, ["動員ちゃれんじ", "目標達成"]);
 }
@@ -174,7 +179,9 @@ export async function shareMilestoneReached(
     : "";
   
   const text = `🏆 ${milestone}%達成！\n\n「${challengeTitle}」が${currentValue}${unit}に到達${urgency}\n\n一緒に達成しよう👇`;
-  const url = `${getAppUrl()}/event/${challengeId}`;
+  // 新しい共有URL形式を使用
+  const slug = createEventSlug(challengeId, challengeTitle);
+  const url = `${getAppUrl()}/e/${slug}`;
 
   return shareToTwitter(text, url, ["動員ちゃれんじ"]);
 }
@@ -190,7 +197,9 @@ export async function shareChallengeCreated(
   challengeId: number
 ): Promise<boolean> {
   const text = `📢 チャレンジ開始！\n\n「${challengeTitle}」\n目標: ${goalValue}${unit}\n\n参加は1タップ👇`;
-  const url = `${getAppUrl()}/event/${challengeId}`;
+  // 新しい共有URL形式を使用
+  const slug = createEventSlug(challengeId, challengeTitle);
+  const url = `${getAppUrl()}/e/${slug}`;
 
   return shareToTwitter(text, url, ["動員ちゃれんじ"]);
 }
@@ -209,9 +218,13 @@ export async function shareApp(): Promise<boolean> {
  */
 export async function shareCustomMessage(
   message: string,
-  challengeId?: number
+  challengeId?: number,
+  challengeTitle?: string
 ): Promise<boolean> {
-  const url = challengeId ? `${getAppUrl()}/event/${challengeId}` : getAppUrl();
+  // 新しい共有URL形式を使用
+  const url = challengeId 
+    ? `${getAppUrl()}/e/${createEventSlug(challengeId, challengeTitle)}` 
+    : getAppUrl();
 
   return shareToTwitter(message, url, ["動員ちゃれんじ"]);
 }

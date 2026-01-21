@@ -92,3 +92,35 @@ export async function updateUserRole(userId: number, role: "user" | "admin") {
   await db.update(users).set({ role }).where(eq(users.id, userId));
   return true;
 }
+
+
+/**
+ * twitterIdでユーザーを取得（外部共有URL用）
+ * openIdは "twitter:{twitterId}" の形式
+ */
+export async function getUserByTwitterId(twitterId: string) {
+  const db = await getDb();
+  if (!db) return null;
+  
+  const openId = `twitter:${twitterId}`;
+  const result = await db.select().from(users).where(eq(users.openId, openId)).limit(1);
+  
+  if (result.length === 0) return null;
+  
+  const user = result[0];
+  
+  // twitterUsernameを取得するためにtwitterFollowStatusを確認
+  const { twitterFollowStatus } = await import("../../drizzle/schema");
+  const followStatus = await db
+    .select({ twitterUsername: twitterFollowStatus.twitterUsername })
+    .from(twitterFollowStatus)
+    .where(eq(twitterFollowStatus.userId, user.id))
+    .limit(1);
+  
+  return {
+    id: user.id,
+    name: user.name,
+    twitterId: twitterId,
+    twitterUsername: followStatus.length > 0 ? followStatus[0].twitterUsername : null,
+  };
+}

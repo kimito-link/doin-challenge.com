@@ -15,6 +15,13 @@ export const profilesRouter = router({
       return db.getUserPublicProfile(input.userId);
     }),
   
+  // twitterIdでユーザーを取得（外部共有URL用）
+  getByTwitterId: publicProcedure
+    .input(z.object({ twitterId: z.string() }))
+    .query(async ({ input }) => {
+      return db.getUserByTwitterId(input.twitterId);
+    }),
+  
   // 推し活状況を取得
   getOshikatsuStats: publicProcedure
     .input(z.object({
