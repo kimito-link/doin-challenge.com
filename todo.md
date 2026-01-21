@@ -3650,3 +3650,35 @@ features/create/
   - TemplateLinkSection.tsx: テンプレートリンク（27行）
 - [x] メインコンポーネントのリファクタリング（CreateChallengeForm.tsx: 188行）
 - [x] TypeScriptエラー0件確認
+
+
+## v6.29 app/event/[id].tsx分割（単一責任原則）
+
+- [ ] app/event/[id].tsxの構造分析（1856行）
+- [ ] 分割計画の策定
+- [ ] サブコンポーネントの作成
+- [ ] メインコンポーネントのリファクタリング
+- [ ] TypeScriptエラー確認
+
+
+## コードリファクタリング（v6.22）
+
+### app/event/[id].tsx分割
+- [x] features/event-detail/types.ts - 型定義
+- [x] features/event-detail/constants.ts - 定数定義
+- [x] features/event-detail/hooks/useEventDetail.ts - データ取得フック
+- [x] features/event-detail/hooks/useParticipationForm.ts - 参加フォーム状態管理
+- [x] features/event-detail/hooks/useEventActions.ts - イベントアクション
+- [x] features/event-detail/hooks/useModalState.ts - モーダル状態管理
+- [x] features/event-detail/components/ProgressGrid.tsx - 進捗グリッド
+- [x] features/event-detail/components/EventHeaderSection.tsx - ヘッダーセクション
+- [x] features/event-detail/components/CountdownSection.tsx - カウントダウン
+- [x] features/event-detail/components/ProgressSection.tsx - 進捗セクション
+- [x] features/event-detail/components/EventInfoSection.tsx - イベント情報
+- [x] features/event-detail/components/TicketInfoSection.tsx - チケット情報
+- [x] features/event-detail/components/HostManagementSection.tsx - ホスト管理
+- [x] features/event-detail/components/ShareSection.tsx - シェアボタン
+- [x] features/event-detail/components/InviteButton.tsx - 招待ボタン
+- [x] features/event-detail/components/ParticipantsOverview.tsx - 参加者概要
+- [x] features/event-detail/components/ParticipationFormSection.tsx - 参加フォーム
+- [x] app/event/[id].tsx - リファクタリング後のメインコンポーネント（1856行→約400行）
