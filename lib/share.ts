@@ -1,3 +1,7 @@
+/**
+ * シェア機能
+ * v6.31: バイラル効果向上版
+ */
 import { Platform, Share, Linking } from "react-native";
 import * as Haptics from "expo-haptics";
 
@@ -107,20 +111,37 @@ export async function shareToTwitter(
 
 /**
  * チャレンジ参加表明をシェア
+ * v6.31: バイラル効果向上 - 短く、明確なCTA、社会的証明
  */
 export async function shareParticipation(
   challengeTitle: string,
   hostName: string,
-  challengeId: number
+  challengeId: number,
+  currentParticipants?: number
 ): Promise<boolean> {
-  const text = `🎉 「${challengeTitle}」に参加表明しました！\n\n主催: ${hostName}\n\nみんなも一緒に応援しよう！\n${APP_HASHTAG}`;
+  // 参加者数があれば社会的証明を追加
+  const socialProof = currentParticipants && currentParticipants > 10
+    ? `\n\n${currentParticipants}人が参加中！`
+    : "";
+  
+  // 短く、明確なCTAを含むテキスト
+  const text = `🎉 ${hostName}の「${challengeTitle}」に参加！${socialProof}\n\n一緒に応援しよう👇`;
   const url = `${getAppUrl()}/event/${challengeId}`;
 
-  return shareToTwitter(text, url, ["動員ちゃれんじ", hostName.replace(/\s/g, "")]);
+  // ハッシュタグは2-3個が最適
+  const hashtags = ["動員ちゃれんじ"];
+  // ホスト名をハッシュタグ化（スペースを除去）
+  const hostTag = hostName.replace(/[\s　]/g, "");
+  if (hostTag && hostTag.length <= 20) {
+    hashtags.push(hostTag);
+  }
+
+  return shareToTwitter(text, url, hashtags);
 }
 
 /**
  * チャレンジ達成をシェア
+ * v6.31: 達成感と緊急性を強調
  */
 export async function shareChallengeGoalReached(
   challengeTitle: string,
@@ -129,7 +150,7 @@ export async function shareChallengeGoalReached(
   unit: string,
   challengeId: number
 ): Promise<boolean> {
-  const text = `🎊 目標達成！\n\n「${challengeTitle}」が目標の${goalValue}${unit}を達成しました！\n\n主催: ${hostName}\nみんなの応援のおかげです！\n${APP_HASHTAG}`;
+  const text = `🎊 目標${goalValue}${unit}達成！\n\n「${challengeTitle}」\nみんなの応援で達成できました！\n\n次の目標も一緒に👇`;
   const url = `${getAppUrl()}/event/${challengeId}`;
 
   return shareToTwitter(text, url, ["動員ちゃれんじ", "目標達成"]);
@@ -137,15 +158,22 @@ export async function shareChallengeGoalReached(
 
 /**
  * マイルストーン達成をシェア
+ * v6.31: 緊急性と進捗を強調
  */
 export async function shareMilestoneReached(
   challengeTitle: string,
   milestone: number,
   currentValue: number,
   unit: string,
-  challengeId: number
+  challengeId: number,
+  goalValue?: number
 ): Promise<boolean> {
-  const text = `🏆 ${milestone}%達成！\n\n「${challengeTitle}」が${currentValue}${unit}に到達しました！\n\n目標達成まであと少し！\n${APP_HASHTAG}`;
+  const remaining = goalValue ? goalValue - currentValue : null;
+  const urgency = remaining && remaining > 0
+    ? `\nあと${remaining}${unit}で目標達成！`
+    : "";
+  
+  const text = `🏆 ${milestone}%達成！\n\n「${challengeTitle}」が${currentValue}${unit}に到達${urgency}\n\n一緒に達成しよう👇`;
   const url = `${getAppUrl()}/event/${challengeId}`;
 
   return shareToTwitter(text, url, ["動員ちゃれんじ"]);
@@ -153,6 +181,7 @@ export async function shareMilestoneReached(
 
 /**
  * チャレンジ作成をシェア
+ * v6.31: 明確なCTAと参加しやすさを強調
  */
 export async function shareChallengeCreated(
   challengeTitle: string,
@@ -160,17 +189,17 @@ export async function shareChallengeCreated(
   unit: string,
   challengeId: number
 ): Promise<boolean> {
-  const text = `📢 新しいチャレンジを作成しました！\n\n「${challengeTitle}」\n目標: ${goalValue}${unit}\n\nみんなで一緒に目標達成を目指そう！\n${APP_HASHTAG}`;
+  const text = `📢 チャレンジ開始！\n\n「${challengeTitle}」\n目標: ${goalValue}${unit}\n\n参加は1タップ👇`;
   const url = `${getAppUrl()}/event/${challengeId}`;
 
-  return shareToTwitter(text, url, ["動員ちゃれんじ", "新規チャレンジ"]);
+  return shareToTwitter(text, url, ["動員ちゃれんじ"]);
 }
 
 /**
  * アプリをシェア
  */
 export async function shareApp(): Promise<boolean> {
-  const text = `🎵 推しの応援をもっと楽しく！\n\n「動員ちゃれんじ」でライブやイベントの動員目標をみんなで達成しよう！\n\n${APP_HASHTAG}`;
+  const text = `🎵 推しの応援をもっと楽しく！\n\n「動員ちゃれんじ」でライブやイベントの動員目標をみんなで達成しよう！`;
 
   return shareToTwitter(text, getAppUrl(), ["動員ちゃれんじ"]);
 }
@@ -183,7 +212,6 @@ export async function shareCustomMessage(
   challengeId?: number
 ): Promise<boolean> {
   const url = challengeId ? `${getAppUrl()}/event/${challengeId}` : getAppUrl();
-  const text = `${message}\n\n${APP_HASHTAG}`;
 
-  return shareToTwitter(text, url, ["動員ちゃれんじ"]);
+  return shareToTwitter(message, url, ["動員ちゃれんじ"]);
 }

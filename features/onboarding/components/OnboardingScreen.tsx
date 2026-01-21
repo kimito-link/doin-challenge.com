@@ -1,6 +1,6 @@
 /**
  * OnboardingScreen Component
- * オンボーディングチュートリアル画面
+ * v6.31: 宇宙テーマ対応
  */
 
 import { View, StyleSheet, StatusBar, Platform } from "react-native";
@@ -68,7 +68,7 @@ export function OnboardingScreen({ onComplete }: OnboardingScreenProps) {
   const currentSlide = ONBOARDING_SLIDES[currentSlideIndex];
   
   return (
-    <View style={[styles.container, { backgroundColor: currentSlide.backgroundColor }]}>
+    <View style={[styles.container, { backgroundColor: "#0a1628" }]}>
       <StatusBar barStyle="light-content" />
       
       <GestureDetector gesture={panGesture}>
