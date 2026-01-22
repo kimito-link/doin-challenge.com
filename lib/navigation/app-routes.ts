@@ -31,6 +31,7 @@ export const STATIC_ROUTES = {
   HELP: "/help",
   ACHIEVEMENTS: "/achievements",
   API_USAGE: "/admin/api-usage",
+  ADMIN: "/admin",
   
   // その他
   TEMPLATES: "/templates",
@@ -173,6 +174,11 @@ export const navigate = {
 toApiUsage: () => {
     console.log("[Navigation] Navigating to api-usage");
     router.push(STATIC_ROUTES.API_USAGE as never);
+  },
+  
+  toAdmin: () => {
+    console.log("[Navigation] Navigating to admin dashboard");
+    router.push(STATIC_ROUTES.ADMIN as never);
   },
   
   // 管理画面（動的パス）

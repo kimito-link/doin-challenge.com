@@ -72,6 +72,7 @@ export interface LastParticipation {
   image?: string;
   message?: string;
   contribution: number;
+  prefecture?: string;
 }
 
 /**

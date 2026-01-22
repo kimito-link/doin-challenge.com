@@ -13,6 +13,7 @@ import { SettingsLinkItem } from "./SettingsLinkItem";
 import { BadgeSection } from "./sections/BadgeSection";
 import { ParticipationSection } from "./sections/ParticipationSection";
 import { HostedChallengeSection } from "./sections/HostedChallengeSection";
+import { RoleSection } from "./sections/RoleSection";
 
 interface AuthenticatedContentProps {
   // User data
@@ -80,6 +81,14 @@ export function AuthenticatedContent({
         invitationStats={invitationStats}
         onAccountSwitch={onAccountSwitch}
         onLogout={onLogout}
+      />
+
+      {/* 役割セクション（ファン/主催者） */}
+      <RoleSection
+        participationsCount={participationsCount}
+        totalContribution={totalContribution}
+        challengesCount={challengesCount}
+        isAdmin={user?.isAdmin ?? false}
       />
 
       {/* フォロー促進バナー（未フォロー時のみ表示） */}

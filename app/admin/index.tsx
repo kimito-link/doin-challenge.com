@@ -1,16 +1,26 @@
 /**
- * 管理画面ダッシュボード
+ * 運営管理者ダッシュボード
  * 
- * システム全体の概要を表示
+ * サイト全体を管理するための管理画面
+ * アクセス制限: 特定のTwitterアカウント（管理者）のみ
  */
 
 import { ScreenContainer } from "@/components/organisms/screen-container";
+import { AppHeader } from "@/components/organisms/app-header";
 import { color, palette } from "@/theme/tokens";
 import { useColors } from "@/hooks/use-colors";
+import { useAuth } from "@/hooks/use-auth";
 import { trpc } from "@/lib/trpc";
-import { View, Text, ScrollView, Pressable, ActivityIndicator } from "react-native";
+import { View, Text, ScrollView, Pressable, ActivityIndicator, Platform } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
+import MaterialIcons from "@expo/vector-icons/MaterialIcons";
+import * as Haptics from "expo-haptics";
 import { navigate } from "@/lib/navigation/app-routes";
+
+// 管理者のTwitter ID
+const ADMIN_TWITTER_IDS = [
+  "kimito_link", // 君斗りんく
+];
 
 interface StatCard {
   title: string;
@@ -22,7 +32,16 @@ interface StatCard {
 
 export default function AdminDashboard() {
   const colors = useColors();
+  const { user, loading: authLoading } = useAuth();
 
+  const handleHaptic = () => {
+    if (Platform.OS !== "web") {
+      Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+    }
+  };
+
+  // 管理者チェック
+  const isAdmin = user?.username && ADMIN_TWITTER_IDS.includes(user.username);
 
   // 統計データを取得
   const { data: challenges, isLoading: loadingChallenges } = trpc.events.list.useQuery();
@@ -59,9 +78,87 @@ export default function AdminDashboard() {
 
   const isLoading = loadingChallenges || loadingCategories;
 
+  // ローディング中
+  if (authLoading) {
+    return (
+      <ScreenContainer containerClassName="bg-background">
+        <AppHeader title="管理ダッシュボード" />
+        <View className="flex-1 items-center justify-center">
+          <ActivityIndicator size="large" color={color.hostAccentLegacy} />
+        </View>
+      </ScreenContainer>
+    );
+  }
+
+  // 未ログイン
+  if (!user) {
+    return (
+      <ScreenContainer containerClassName="bg-background">
+        <AppHeader title="管理ダッシュボード" />
+        <View className="flex-1 items-center justify-center p-8">
+          <MaterialIcons name="lock" size={64} color={colors.muted} />
+          <Text className="text-xl font-bold text-foreground mt-4 mb-2">
+            ログインが必要です
+          </Text>
+          <Text className="text-sm text-muted text-center mb-6">
+            管理画面にアクセスするにはログインしてください
+          </Text>
+          <Pressable
+            onPress={() => {
+              handleHaptic();
+              navigate.toMypageTab();
+            }}
+            className="bg-primary px-6 py-3 rounded-xl"
+          >
+            <Text className="text-white font-semibold">ログインする</Text>
+          </Pressable>
+        </View>
+      </ScreenContainer>
+    );
+  }
+
+  // 管理者でない
+  if (!isAdmin) {
+    return (
+      <ScreenContainer containerClassName="bg-background">
+        <AppHeader title="管理ダッシュボード" />
+        <View className="flex-1 items-center justify-center p-8">
+          <MaterialIcons name="block" size={64} color={colors.error} />
+          <Text className="text-xl font-bold text-foreground mt-4 mb-2">
+            アクセス権限がありません
+          </Text>
+          <Text className="text-sm text-muted text-center mb-6">
+            この画面は運営管理者のみアクセスできます
+          </Text>
+          <Pressable
+            onPress={() => {
+              handleHaptic();
+              navigate.toHome();
+            }}
+            className="bg-primary px-6 py-3 rounded-xl"
+          >
+            <Text className="text-white font-semibold">ホームに戻る</Text>
+          </Pressable>
+        </View>
+      </ScreenContainer>
+    );
+  }
+
   return (
-    <ScreenContainer>
+    <ScreenContainer containerClassName="bg-background">
+      <AppHeader title="管理ダッシュボード" />
       <ScrollView className="flex-1" contentContainerStyle={{ padding: 16 }}>
+        {/* 管理者バッジ */}
+        <View 
+          className="flex-row items-center self-start px-3 py-2 rounded-lg mb-6 gap-2"
+          style={{ backgroundColor: `${color.rankGold}20`, borderWidth: 1, borderColor: color.rankGold }}
+        >
+          <MaterialIcons name="admin-panel-settings" size={20} color={color.rankGold} />
+          <Text style={{ color: color.rankGold, fontWeight: "600" }}>
+            管理者: @{user.username}
+          </Text>
+        </View>
+
         {/* ヘッダー */}
         <View className="mb-6">
           <Text className="text-2xl font-bold text-foreground">ダッシュボード</Text>

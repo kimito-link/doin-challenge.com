@@ -1,11 +1,11 @@
 import { useLoginSuccess } from "@/lib/login-success-context";
-import { LoginSuccessModal } from "./login-success-modal";
+import { WelcomeModal } from "./welcome-modal";
 
 export function LoginSuccessModalWrapper() {
   const { showLoginSuccess, userName, userProfileImage, dismissLoginSuccess } = useLoginSuccess();
 
   return (
-    <LoginSuccessModal
+    <WelcomeModal
       visible={showLoginSuccess}
       onClose={dismissLoginSuccess}
       userName={userName || undefined}

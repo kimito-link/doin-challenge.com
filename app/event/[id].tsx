@@ -312,6 +312,10 @@ export default function ChallengeDetailScreen() {
         participantImage={participationForm.lastParticipation?.image}
         message={participationForm.lastParticipation?.message}
         contribution={participationForm.lastParticipation?.contribution}
+        currentParticipants={eventDetail.currentValue}
+        goalParticipants={eventDetail.goalValue}
+        participantNumber={eventDetail.currentValue}
+        prefecture={participationForm.lastParticipation?.prefecture}
       />
 
       {/* 都道府県別参加者モーダル */}

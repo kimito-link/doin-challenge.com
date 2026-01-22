@@ -131,6 +131,7 @@ export function useParticipationForm({
         image: user?.profileImage || undefined,
         message: message || undefined,
         contribution: 1 + companions.length,
+        prefecture: prefecture || undefined,
       });
       
       // Reset form

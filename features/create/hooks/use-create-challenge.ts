@@ -13,6 +13,17 @@ export type ValidationError = {
   message?: string;
 };
 
+// 作成完了後のチャレンジ情報（モーダル表示用）
+export type CreatedChallengeInfo = {
+  id: number;
+  title: string;
+  eventDate: string;
+  venue?: string;
+  goalValue?: number;
+  goalUnit?: string;
+  hostName: string;
+};
+
 export type CreateChallengeState = {
   // 基本情報
   title: string;
@@ -48,6 +59,10 @@ export type CreateChallengeState = {
   showCategoryList: boolean;
   showPrefectureList: boolean;
   showValidationError: boolean;
+  
+  // 作成完了モーダル
+  showCreatedModal: boolean;
+  createdChallenge: CreatedChallengeInfo | null;
 };
 
 const initialState: CreateChallengeState = {
@@ -74,6 +89,8 @@ const initialState: CreateChallengeState = {
   showCategoryList: false,
   showPrefectureList: false,
   showValidationError: false,
+  showCreatedModal: false,
+  createdChallenge: null,
 };
 
 export function useCreateChallenge() {
@@ -135,15 +152,21 @@ export function useCreateChallenge() {
   // チャレンジ作成ミューテーション
   const createChallengeMutation = trpc.events.create.useMutation({
     onSuccess: (newChallenge) => {
-      setState(prev => ({ ...prev, showValidationError: false }));
-      showAlert("成功", "チャレンジを作成しました！", [
-        {
-          text: "OK",
-          onPress: () => {
-            navigate.toEventDetail(newChallenge.id);
-          },
+      // 作成完了モーダルを表示
+      setState(prev => ({
+        ...prev,
+        showValidationError: false,
+        showCreatedModal: true,
+        createdChallenge: {
+          id: newChallenge.id,
+          title: prev.title,
+          eventDate: prev.eventDateStr,
+          venue: prev.venue || undefined,
+          goalValue: prev.goalValue,
+          goalUnit: prev.goalUnit,
+          hostName: user?.name || prev.hostName,
         },
-      ]);
+      }));
     },
     onError: (error) => {
       const errorMessage = error.message || "チャレンジの作成に失敗しました";
@@ -235,6 +258,19 @@ export function useCreateChallenge() {
     });
   }, [state, validationErrors, user, createTemplateMutation, createChallengeMutation]);
   
+  // 作成完了モーダルを閉じる
+  const closeCreatedModal = useCallback(() => {
+    setState(prev => ({
+      ...prev,
+      showCreatedModal: false,
+    }));
+  }, []);
+  
+  // フォームをリセット
+  const resetForm = useCallback(() => {
+    setState(initialState);
+  }, []);
+  
   return {
     state,
     updateField,
@@ -242,6 +278,8 @@ export function useCreateChallenge() {
     handleCreate,
     validationErrors,
     isPending: createChallengeMutation.isPending,
+    closeCreatedModal,
+    resetForm,
     refs: {
       scrollViewRef,
       titleInputRef,

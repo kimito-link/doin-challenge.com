@@ -1,5 +1,5 @@
 // app/(tabs)/create.tsx
-// v6.18: リファクタリング済み - フックとコンポーネントに分割
+// v6.60: 作成完了モーダル（チェックリスト＋告知文コピー）追加
 import { View, Text, ScrollView, KeyboardAvoidingView, Platform } from "react-native";
 import { Image } from "expo-image";
 import { ScreenContainer } from "@/components/organisms/screen-container";
@@ -11,6 +11,7 @@ import { useColors } from "@/hooks/use-colors";
 import { FollowPromptBanner } from "@/components/molecules/follow-gate";
 import { AppHeader } from "@/components/organisms/app-header";
 import { useCreateChallenge, CreateChallengeForm } from "@/features/create";
+import { ChallengeCreatedModal } from "@/components/molecules/challenge-created-modal";
 
 // キャラクター画像
 const characterImages = {
@@ -36,8 +37,16 @@ export default function CreateChallengeScreen() {
     handleCreate,
     validationErrors,
     isPending,
+    closeCreatedModal,
+    resetForm,
     refs,
   } = useCreateChallenge();
+  
+  // モーダルを閉じてフォームをリセット
+  const handleCloseModal = () => {
+    closeCreatedModal();
+    resetForm();
+  };
 
   return (
     <ScreenContainer containerClassName="bg-background">
@@ -106,6 +115,21 @@ export default function CreateChallengeScreen() {
           <View style={{ height: 100 }} />
         </ScrollView>
       </KeyboardAvoidingView>
+      
+      {/* 作成完了モーダル */}
+      {state.createdChallenge && (
+        <ChallengeCreatedModal
+          visible={state.showCreatedModal}
+          onClose={handleCloseModal}
+          challengeId={state.createdChallenge.id}
+          challengeTitle={state.createdChallenge.title}
+          eventDate={state.createdChallenge.eventDate}
+          venue={state.createdChallenge.venue}
+          goalValue={state.createdChallenge.goalValue}
+          goalUnit={state.createdChallenge.goalUnit}
+          hostName={state.createdChallenge.hostName}
+        />
+      )}
     </ScreenContainer>
   );
 }
