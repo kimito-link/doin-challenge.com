@@ -1,4 +1,4 @@
-# Project TODO - 君斗りんくの動員ちゃれんじ
+# Project TODO - クリエイター動員支援アプリ（doin-challenge）
 
 ## v6.20 UI統一化
 
@@ -11,7 +11,7 @@
 - [x] 新UIのButtonコンポーネント活用（+not-found, logout, follow-gate等に適用）
 - [x] PressableFeedbackラッパーコンポーネント作成（components/ui/pressable-feedback.tsx）
 
-## 完了済み（v1.0 生誕祭アプリ）
+## 完了済み（v1.0 初期版）
 - [x] テーマカラーの設定（KimitoLinkブランドカラー）
 - [x] 基本的なデータベーススキーマ
 - [x] Twitter OAuth認証の実装
