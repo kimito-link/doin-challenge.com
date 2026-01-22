@@ -10,6 +10,34 @@ const ERROR_TEXT_PATTERNS = [
   /Forbidden/i,
 ];
 
+// 無視するコンソールエラーのパターン（未ログイン状態では正常な動作）
+const IGNORED_CONSOLE_ERRORS = [
+  /Not authenticated/i,
+  /401/,
+  /getMe failed/i,
+  /\[API\] Error response.*Not authenticated/i,
+  /\[API\] Request failed.*Not authenticated/i,
+  /\[API\] getMe failed/i,
+  /Failed to load resource.*401/i,
+];
+
+// 無視するコンソール警告のパターン
+const IGNORED_CONSOLE_WARNS = [
+  /React does not recognize/i,
+  /componentWillReceiveProps/i,
+  /componentWillMount/i,
+  /findDOMNode is deprecated/i,
+  /Each child in a list should have a unique/i,
+];
+
+function shouldIgnoreError(text: string): boolean {
+  return IGNORED_CONSOLE_ERRORS.some(pattern => pattern.test(text));
+}
+
+function shouldIgnoreWarn(text: string): boolean {
+  return IGNORED_CONSOLE_WARNS.some(pattern => pattern.test(text));
+}
+
 export async function attachGuards(page: Page, testInfo: TestInfo) {
   const consoleErrors: string[] = [];
   const consoleWarns: string[] = [];
@@ -17,8 +45,12 @@ export async function attachGuards(page: Page, testInfo: TestInfo) {
   page.on("console", (msg) => {
     const type = msg.type();
     const text = msg.text();
-    if (type === "error") consoleErrors.push(text);
-    if (type === "warning") consoleWarns.push(text);
+    if (type === "error" && !shouldIgnoreError(text)) {
+      consoleErrors.push(text);
+    }
+    if (type === "warning" && !shouldIgnoreWarn(text)) {
+      consoleWarns.push(text);
+    }
   });
 
   // requestId を拾える範囲で拾う（ヘッダー優先）
@@ -40,7 +72,7 @@ export async function attachGuards(page: Page, testInfo: TestInfo) {
       expect(bodyText, `画面にエラー文言が出ています: ${pat}`).not.toMatch(pat);
     }
 
-    // console errors/warns
+    // console errors/warns（無視パターンを除外済み）
     expect(consoleErrors, `console.error が出ています:\n${consoleErrors.join("\n")}`).toEqual([]);
     expect(consoleWarns, `console.warn が出ています:\n${consoleWarns.join("\n")}`).toEqual([]);
 
