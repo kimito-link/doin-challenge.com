@@ -1,5 +1,5 @@
 // features/create/ui/components/create-challenge-form/CreateChallengeForm.tsx
-// v6.28: リファクタリング後のメインコンポーネント
+// v6.61: プリセット選択機能追加
 
 import { View } from "react-native";
 import { LinearGradient } from "expo-linear-gradient";
@@ -7,6 +7,7 @@ import { navigate } from "@/lib/navigation";
 import { color } from "@/theme/tokens";
 import { useAuth } from "@/hooks/use-auth";
 import { NumberStepper } from "@/components/molecules/number-stepper";
+import { PresetSelector } from "@/components/molecules/preset-selector";
 import {
   EventTypeSelector,
   GoalTypeSelector,
@@ -35,6 +36,7 @@ export function CreateChallengeForm({
   state,
   updateField,
   handleGoalTypeChange,
+  applyPreset,
   handleCreate,
   validationErrors,
   isPending,
@@ -72,6 +74,14 @@ export function CreateChallengeForm({
         {/* ログインセクション */}
         {!user && <TwitterLoginSection onLogin={login} />}
         {user && <UserInfoSection user={user} />}
+
+        {/* プリセット選択（かんたん設定） */}
+        {applyPreset && (
+          <PresetSelector
+            selectedPresetId={state.selectedPresetId}
+            onSelectPreset={applyPreset}
+          />
+        )}
 
         {/* イベントタイプ選択 */}
         <EventTypeSelector

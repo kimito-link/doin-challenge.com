@@ -1,5 +1,5 @@
 // features/create/hooks/use-create-challenge.ts
-// v6.18: チャレンジ作成の状態管理・バリデーション・ミューテーションを集約
+// v6.61: プリセット選択機能追加
 import { useState, useMemo, useRef, useEffect, useCallback } from "react";
 import { ScrollView, View } from "react-native";
 import { navigate } from "@/lib/navigation";
@@ -7,6 +7,7 @@ import { trpc } from "@/lib/trpc";
 import { useAuth } from "@/hooks/use-auth";
 import { showAlert } from "@/lib/web-alert";
 import type { GenreId, PurposeId } from "@/constants/event-categories";
+import type { ChallengePreset } from "@/constants/challenge-presets";
 
 export type ValidationError = {
   field: "title" | "date" | "host" | "general";
@@ -55,6 +56,9 @@ export type CreateChallengeState = {
   templateName: string;
   templateIsPublic: boolean;
   
+  // プリセット
+  selectedPresetId: string | null;
+  
   // UI状態
   showCategoryList: boolean;
   showPrefectureList: boolean;
@@ -86,6 +90,7 @@ const initialState: CreateChallengeState = {
   saveAsTemplate: false,
   templateName: "",
   templateIsPublic: false,
+  selectedPresetId: null,
   showCategoryList: false,
   showPrefectureList: false,
   showValidationError: false,
@@ -205,6 +210,20 @@ export function useCreateChallenge() {
     }));
   }, []);
   
+  // プリセット適用
+  const applyPreset = useCallback((preset: ChallengePreset) => {
+    setState(prev => ({
+      ...prev,
+      selectedPresetId: preset.id,
+      goalType: preset.goalType,
+      goalValue: preset.goalValue,
+      goalUnit: preset.goalUnit,
+      eventType: preset.eventType,
+      ticketPresale: preset.suggestedTicketPresale?.toString() || "",
+      ticketDoor: preset.suggestedTicketDoor?.toString() || "",
+    }));
+  }, []);
+  
   // チャレンジ作成
   const handleCreate = useCallback(() => {
     if (validationErrors.length > 0) {
@@ -275,6 +294,7 @@ export function useCreateChallenge() {
     state,
     updateField,
     handleGoalTypeChange,
+    applyPreset,
     handleCreate,
     validationErrors,
     isPending: createChallengeMutation.isPending,

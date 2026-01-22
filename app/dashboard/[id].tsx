@@ -493,7 +493,7 @@ export default function DashboardScreen() {
           <View style={{ flexDirection: "row", justifyContent: "space-between", alignItems: "center" }}>
             <View style={{ flex: 1 }}>
               <Text style={{ color: color.textWhite, fontSize: 18, fontWeight: "bold" }}>
-                統計ダッシュボード
+                参加状況
               </Text>
               <Text style={{ color: color.textMuted, fontSize: 14 }} numberOfLines={1}>
                 {challenge.title}

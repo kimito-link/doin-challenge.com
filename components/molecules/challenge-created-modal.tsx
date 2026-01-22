@@ -154,8 +154,8 @@ ${url}`;
     },
     {
       id: "check_dashboard",
-      label: "ダッシュボードを確認",
-      description: "参加状況をリアルタイムでチェック",
+      label: "参加状況を確認",
+      description: "参加者数をリアルタイムでチェック",
       icon: "chart-simple",
       action: () => {
         onClose();

@@ -13,11 +13,11 @@ import MaterialIcons from "@expo/vector-icons/MaterialIcons";
 import { LinearGradient } from "expo-linear-gradient";
 import { AppHeader } from "@/components/organisms/app-header";
 
-// 権限の日本語名
+// 権限の日本語名（初心者向けに簡素化）
 const ROLE_NAMES: Record<string, string> = {
-  owner: "オーナー",
+  owner: "主催者",
   "co-host": "共同主催者",
-  moderator: "モデレーター",
+  moderator: "スタッフ",
 };
 
 // 権限の色
@@ -458,13 +458,13 @@ export default function CollaboratorsScreen() {
           <View style={{ flexDirection: "row", alignItems: "center", marginBottom: 8 }}>
             <MaterialIcons name="info" size={20} color={color.info} />
             <Text style={{ color: colors.foreground, fontSize: 14, fontWeight: "bold", marginLeft: 8 }}>
-              コラボ機能について
+              一緒に運営するメンバー
             </Text>
           </View>
           <Text style={{ color: color.textMuted, fontSize: 13, lineHeight: 20 }}>
-            共同主催者を招待して、チャレンジを一緒に管理できます。{"\n"}
-            • 共同主催者：編集・参加者管理・招待が可能{"\n"}
-            • モデレーター：参加者管理のみ可能
+            信頼できる人を招待して、チャレンジを一緒に管理できます。{"\n"}
+            • 共同主催者：全ての操作が可能{"\n"}
+            • スタッフ：参加者の管理のみ
           </Text>
         </View>
 

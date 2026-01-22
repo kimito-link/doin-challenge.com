@@ -37,7 +37,7 @@ export default function TemplatesScreen() {
 
   const handleDelete = (id: number, name: string) => {
     Alert.alert(
-      "テンプレートを削除",
+      "保存した設定を削除",
       `「${name}」を削除しますか？`,
       [
         { text: "キャンセル", style: "cancel" },
@@ -54,7 +54,7 @@ export default function TemplatesScreen() {
     if (Platform.OS !== "web") {
       Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
     }
-    // テンプレートの設定を使ってチャレンジ作成画面に遷移
+    // 保存した設定を使ってチャレンジ作成画面に遷移
     navigate.toCreateWithTemplate({
       id: template.id,
       goalType: template.goalType,
@@ -192,7 +192,7 @@ export default function TemplatesScreen() {
       >
         <MaterialIcons name="content-copy" size={18} color={color.textWhite} />
         <Text style={{ color: color.textWhite, fontSize: 13, fontWeight: "bold", marginLeft: 4 }}>
-          このテンプレートを使う
+            この設定を使う
         </Text>
       </Pressable>
     </View>
@@ -212,7 +212,7 @@ export default function TemplatesScreen() {
       />
       <View style={{ padding: 16, borderBottomWidth: 1, borderBottomColor: color.border }}>
         <Text style={{ fontSize: 20, fontWeight: "bold", color: color.textWhite }}>
-          テンプレート
+          保存した設定
         </Text>
       </View>
 
@@ -225,7 +225,7 @@ export default function TemplatesScreen() {
             {user && (
               <View style={{ marginBottom: 24 }}>
                 <Text style={{ color: color.textWhite, fontSize: 18, fontWeight: "bold", marginBottom: 12 }}>
-                  マイテンプレート
+                  自分の設定
                 </Text>
                 {myTemplates && myTemplates.length > 0 ? (
                   myTemplates.map((template) => (
@@ -237,7 +237,7 @@ export default function TemplatesScreen() {
                   <View style={{ backgroundColor: color.surface, borderRadius: 12, padding: 24, alignItems: "center" }}>
                     <MaterialIcons name="folder-open" size={48} color={color.textSubtle} />
                     <Text style={{ color: color.textMuted, fontSize: 14, marginTop: 8, textAlign: "center" }}>
-                      まだテンプレートがありません{"\n"}
+                      保存した設定はまだありません{"\n"}
                       チャレンジ作成時に保存できます
                     </Text>
                   </View>
@@ -248,7 +248,7 @@ export default function TemplatesScreen() {
             {/* 公開テンプレート */}
             <View>
               <Text style={{ color: color.textWhite, fontSize: 18, fontWeight: "bold", marginBottom: 12 }}>
-                公開テンプレート
+                みんなの設定
               </Text>
               {publicTemplates && publicTemplates.length > 0 ? (
                 publicTemplates.map((template) => (
@@ -260,7 +260,7 @@ export default function TemplatesScreen() {
                 <View style={{ backgroundColor: color.surface, borderRadius: 12, padding: 24, alignItems: "center" }}>
                   <MaterialIcons name="public" size={48} color={color.textSubtle} />
                   <Text style={{ color: color.textMuted, fontSize: 14, marginTop: 8, textAlign: "center" }}>
-                    公開テンプレートはまだありません
+                    公開された設定はまだありません
                   </Text>
                 </View>
               )}

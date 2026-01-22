@@ -4,6 +4,7 @@
 import type { CreateChallengeState, ValidationError } from "../../../hooks/use-create-challenge";
 import type { RefObject } from "react";
 import type { View } from "react-native";
+import type { ChallengePreset } from "@/constants/challenge-presets";
 
 /**
  * カテゴリデータの型
@@ -21,6 +22,7 @@ export type CreateChallengeFormProps = {
   state: CreateChallengeState;
   updateField: <K extends keyof CreateChallengeState>(field: K, value: CreateChallengeState[K]) => void;
   handleGoalTypeChange: (id: string, unit: string) => void;
+  applyPreset?: (preset: ChallengePreset) => void;
   handleCreate: () => void;
   validationErrors: ValidationError[];
   isPending: boolean;

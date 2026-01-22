@@ -34,6 +34,7 @@ export default function CreateChallengeScreen() {
     state,
     updateField,
     handleGoalTypeChange,
+    applyPreset,
     handleCreate,
     validationErrors,
     isPending,
@@ -103,6 +104,7 @@ export default function CreateChallengeScreen() {
             state={state}
             updateField={updateField}
             handleGoalTypeChange={handleGoalTypeChange}
+            applyPreset={applyPreset}
             handleCreate={handleCreate}
             validationErrors={validationErrors}
             isPending={isPending}
