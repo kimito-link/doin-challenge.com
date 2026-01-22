@@ -60,35 +60,40 @@ export async function gotoAndWait(page: Page, path: string) {
   // 画面が落ち着くまで待つ（Expo Webの初期レンダ対策）
   await page.waitForTimeout(2000);
   
-  // 初回訪問時のモーダル（「はじめまして！」）を自動的に閉じる
-  await dismissWelcomeModal(page);
+  // 初回訪問時のオンボーディング画面をスキップ
+  await dismissOnboarding(page);
 }
 
-async function dismissWelcomeModal(page: Page) {
+/**
+ * 初回訪問時のオンボーディング画面をスキップ
+ * 「スキップ」ボタンがあればクリック
+ */
+async function dismissOnboarding(page: Page) {
   try {
-    // 「あとで見る」ボタンを探す
+    // 「スキップ」ボタンを探す
+    const skipButton = page.getByText(/スキップ/i);
+    if (await skipButton.isVisible({ timeout: 2000 }).catch(() => false)) {
+      await skipButton.click();
+      await page.waitForTimeout(1000);
+      return;
+    }
+    
+    // 「あとで見る」ボタンを探す（別のモーダル用）
     const laterButton = page.getByText(/あとで見る/i);
-    if (await laterButton.isVisible({ timeout: 1000 }).catch(() => false)) {
+    if (await laterButton.isVisible({ timeout: 500 }).catch(() => false)) {
       await laterButton.click();
       await page.waitForTimeout(500);
       return;
     }
-    
-    // モーダルの外側をクリックして閉じる
-    const modal = page.locator('[role="dialog"]');
-    if (await modal.isVisible({ timeout: 500 }).catch(() => false)) {
-      await page.mouse.click(10, 10);
-      await page.waitForTimeout(500);
-    }
   } catch {
-    // モーダルがない場合は何もしない
+    // オンボーディングがない場合は何もしない
   }
 }
 
 // "開けた"の判定を安定させるため、見出し候補を待つヘルパ
 export async function expectAnyHeading(page: Page, candidates: RegExp[]) {
-  // 再度モーダルを閉じる試行
-  await dismissWelcomeModal(page);
+  // 再度オンボーディングをスキップする試行
+  await dismissOnboarding(page);
   
   // どれか1つが見つかればOK
   for (const re of candidates) {
