@@ -2,8 +2,20 @@
 
 **プロジェクト**: 君斗りんくの動員ちゃれんじ  
 **ドメイン**: doin-challenge.com  
-**最終更新**: 2026年1月19日  
+**最終更新**: 2026年1月22日  
 **作成者**: Manus AI
+
+---
+
+## ⚠️ 重要：デプロイ方式が変わりました
+
+| 項目 | 以前（〜v5.88） | 現在（v6.0〜） |
+|------|----------------|----------------|
+| フロントエンド | Vercel自動デプロイ | **GitHub Actions経由** |
+| バックエンド | Manus Publish → Railway | **GitHub Actions経由** |
+| トリガー | 手動コピー＆push | **`git push production main`** |
+
+**現在の手順は [DEPLOY_WORKFLOW.md](./DEPLOY_WORKFLOW.md) を参照してください。**
 
 ---
 
@@ -14,7 +26,7 @@
 | 役割 | サービス | ドメイン | リポジトリ |
 |------|----------|----------|------------|
 | フロントエンド | Vercel | doin-challenge.com | kimito-link/doin-challenge.com |
-| バックエンド（API） | Railway | api.doin-challenge.com | Manus内部（S3） |
+| バックエンド（API） | Railway | api.doin-challenge.com | kimito-link/doin-challenge.com |
 
 ---
 
@@ -24,20 +36,25 @@
 
 | 項目 | 値 |
 |------|-----|
-| プロジェクト名 | doin-challenge-c |
+| プロジェクト名 | doin-challenge-com |
 | ホスティング | Vercel |
 | ドメイン | doin-challenge.com |
 | GitHubリポジトリ | kimito-link/doin-challenge.com |
 | ブランチ | main |
-| 自動デプロイ | 有効（mainブランチへのプッシュで自動実行） |
+| 自動デプロイ | **無効**（GitHub Actions経由でデプロイ） |
 
-### デプロイトリガー
+### デプロイトリガー（現在）
 
-Vercelは`kimito-link/doin-challenge.com`リポジトリの`main`ブランチを監視しています。このリポジトリにコードがプッシュされると、自動的にビルドとデプロイが開始されます。
+GitHub Actionsのパイプラインがデプロイを制御します。`production/main`ブランチへのpushでパイプラインが起動し、CIが成功した後にVercelへデプロイされます。
 
-### 手動デプロイ方法
+---
 
-ManusのPublishボタンはRailway（バックエンド）のみを更新するため、フロントエンドを更新するには以下の手順でGitHubにプッシュする必要があります。
+### 📜 以前の方法（参考・使用しない）
+
+<details>
+<summary>v5.88以前の手動デプロイ方法（クリックで展開）</summary>
+
+以前はManusのPublishボタンはRailway（バックエンド）のみを更新していたため、フロントエンドを更新するには以下の手順でGitHubにプッシュする必要がありました。
 
 ```bash
 # 1. GitHubリポジトリをクローン
@@ -60,7 +77,9 @@ git commit -m "v5.xx: 変更内容の説明"
 git push origin main
 ```
 
-プッシュ後、Vercelが自動的にデプロイを開始します（通常2-3分で完了）。
+**この方法は現在使用しません。** GitHub Actionsパイプラインを使用してください。
+
+</details>
 
 ---
 
@@ -73,12 +92,25 @@ git push origin main
 | プロジェクト名 | reasonable-abundance |
 | ホスティング | Railway |
 | ドメイン | api.doin-challenge.com |
-| ソース | Manus内部S3ストレージ |
-| 自動デプロイ | 有効（ManusのPublishで自動実行） |
+| ソース | kimito-link/doin-challenge.com |
+| 自動デプロイ | **無効**（GitHub Actions経由でデプロイ） |
 
-### デプロイトリガー
+### デプロイトリガー（現在）
 
-ManusのUIで「Publish」ボタンをクリックすると、Railwayへのデプロイが自動的に実行されます。
+GitHub Actionsのパイプラインがデプロイを制御します。`production/main`ブランチへのpushでパイプラインが起動し、CIが成功した後にRailwayへデプロイされます。
+
+---
+
+### 📜 以前の方法（参考・使用しない）
+
+<details>
+<summary>v5.88以前のデプロイ方法（クリックで展開）</summary>
+
+以前はManusのUIで「Publish」ボタンをクリックすると、Railwayへのデプロイが自動的に実行されていました。
+
+**この方法は現在使用しません。** GitHub Actionsパイプラインを使用してください。
+
+</details>
 
 ### 環境変数
 
@@ -93,23 +125,30 @@ Railwayの環境変数は、Railway管理画面の「Variables」タブで設定
 
 ---
 
-## デプロイフロー
+## デプロイフロー（現在）
 
 ### 通常のデプロイ手順
 
 1. **Manusでコード変更を完了**
 2. **Manusで「チェックポイント保存」を実行**（webdev_save_checkpoint）
-3. **ManusのUIで「Publish」ボタンをクリック**
-   - これによりRailway（バックエンド）が更新される
-4. **GitHubにプッシュしてVercel（フロントエンド）を更新**
-   - 上記「手動デプロイ方法」の手順を実行
+3. **GitHubにpush**
+   ```bash
+   git push origin main
+   git push production main:main  # ← これがデプロイトリガー
+   ```
+4. **GitHub Actionsが自動実行**
+   - CI → Backend(Railway) → Migrate → Health Check → Frontend(Vercel) → E2E
+5. **本番サイトで動作確認**
+
+詳細は **[DEPLOY_WORKFLOW.md](./DEPLOY_WORKFLOW.md)** を参照。
 
 ### 重要な注意事項
 
 | 注意点 | 説明 |
 |--------|------|
-| Publishボタンの範囲 | ManusのPublishはRailwayのみを更新。Vercelは別途GitHubプッシュが必要 |
-| バージョン管理 | `shared/version.ts`でバージョンを一元管理。フロントエンド・バックエンド両方で参照 |
+| Vercel自動デプロイ | **無効**。GitHub Actions経由でのみデプロイ |
+| Manus Publishボタン | **使用しない**。GitHub pushを使用 |
+| バージョン管理 | `shared/version.ts`でバージョンを一元管理 |
 | キャッシュ | ブラウザキャッシュにより古いバージョンが表示される場合あり。Ctrl+Shift+Rで強制リロード |
 
 ---
@@ -140,8 +179,10 @@ Railwayの環境変数は、Railway管理画面の「Variables」タブで設定
 
 | ドキュメント | パス | 説明 |
 |--------------|------|------|
+| **デプロイ手順** | docs/DEPLOY_WORKFLOW.md | **現在のデプロイ手順** |
+| **開発ガイド** | docs/DEVELOPMENT_GUIDE.md | 開発環境・フロー |
 | サーバーREADME | server/README.md | バックエンドAPIの仕様 |
-| デザインガイド | docs/design.md | UIデザインの仕様 |
+| Railway設定 | docs/RAILWAY_DEPLOY_SETUP.md | Railway詳細設定 |
 | TODO | todo.md | 機能実装状況 |
 | バージョン | shared/version.ts | アプリバージョン管理 |
 
@@ -151,4 +192,5 @@ Railwayの環境変数は、Railway管理画面の「Variables」タブで設定
 
 | 日付 | バージョン | 変更内容 |
 |------|-----------|----------|
+| 2026-01-22 | v6.53 | GitHub Actionsパイプラインに移行。以前の方法を「参考」として折りたたみ |
 | 2026-01-19 | v5.88 | 初版作成。デプロイ構成を文書化 |
