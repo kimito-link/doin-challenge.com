@@ -49,6 +49,7 @@ interface HomeListHeaderProps {
   featuredChallenge: Challenge | null;
   displayChallengesCount: number;
   isDataLoading: boolean;
+  totalChallengesCount?: number;
   
   // Handlers
   onChallengePress: (id: number) => void;
@@ -71,8 +72,13 @@ export function HomeListHeader({
   featuredChallenge,
   displayChallengesCount,
   isDataLoading,
+  totalChallengesCount = 0,
   onChallengePress,
 }: HomeListHeaderProps) {
+  // フィルターが適用されているかどうか
+  const isFilterApplied = filter !== "all" || categoryFilter !== null;
+  // フィルター適用後に該当なしの場合
+  const noResultsAfterFilter = isFilterApplied && displayChallengesCount === 0 && totalChallengesCount > 0 && !isDataLoading;
   // タブ変更時にフィルターも連動
   const handleTabChange = (tab: HomeTabType) => {
     onTabChange?.(tab);
@@ -115,8 +121,33 @@ export function HomeListHeader({
         onSelectCategory={onCategoryFilterChange}
       />
 
-      {/* ランキングTop3 */}
-      {!isSearching && top3.length > 0 && (
+      {/* フィルター適用後に該当なしの場合のメッセージ */}
+      {noResultsAfterFilter && (
+        <View style={{ padding: 32, alignItems: "center" }}>
+          <Text style={{ fontSize: 48, marginBottom: 16 }}>
+            {filter === "favorites" ? "⭐" : filter === "solo" ? "👤" : filter === "group" ? "👥" : "🔍"}
+          </Text>
+          <Text style={{ color: "#9CA3AF", fontSize: 16, textAlign: "center", marginBottom: 8 }}>
+            {filter === "favorites" 
+              ? "お気に入りのチャレンジはまだありません"
+              : filter === "solo"
+              ? "ソロチャレンジはまだありません"
+              : filter === "group"
+              ? "グループチャレンジはまだありません"
+              : categoryFilter
+              ? "このカテゴリのチャレンジはまだありません"
+              : "該当するチャレンジがありません"}
+          </Text>
+          <Text style={{ color: "#6B7280", fontSize: 14, textAlign: "center" }}>
+            {filter === "favorites" 
+              ? "チャレンジの☆ボタンを押してお気に入りに追加しよう"
+              : "「総合」タブで全てのチャレンジを見る"}
+          </Text>
+        </View>
+      )}
+
+      {/* ランキングTop3（フィルター適用後に該当なしでない場合のみ表示） */}
+      {!isSearching && !noResultsAfterFilter && top3.length > 0 && (
         <RankingTop3
           top3={top3}
           onPress={(id) => onChallengePress(id)}
@@ -125,12 +156,12 @@ export function HomeListHeader({
       )}
 
       {/* 4位以降のヘッダー */}
-      {!isSearching && top3.length > 0 && (
+      {!isSearching && !noResultsAfterFilter && top3.length > 0 && (
         <SectionHeader title="📋 4位以降のチャレンジ" />
       )}
 
       {/* 簡易地域マップ */}
-      {!isSearching && featuredChallenge && (
+      {!isSearching && !noResultsAfterFilter && featuredChallenge && (
         <SimpleRegionMap
           totalCount={featuredChallenge.currentValue}
           onPress={() => onChallengePress(featuredChallenge.id)}
@@ -139,12 +170,12 @@ export function HomeListHeader({
       )}
 
       {/* 3ステップ説明（初回訪問時のみ表示） */}
-      {displayChallengesCount === 0 && !isDataLoading && (
+      {displayChallengesCount === 0 && !isDataLoading && !noResultsAfterFilter && (
         <OnboardingSteps />
       )}
 
-      {/* デモ体験ボタン */}
-      <ExperienceBanner />
+      {/* デモ体験ボタン（フィルター適用時は非表示） */}
+      {!isFilterApplied && <ExperienceBanner />}
       
       {/* データ読み込み中のスケルトン表示 */}
       {isDataLoading && (

@@ -37,6 +37,7 @@ interface UseMypageActionsReturn {
   targetUsername: string;
   targetDisplayName: string;
   refreshing: boolean;
+  handleRefreshFollowStatus: () => Promise<void>;
   
   // Navigation
   handleChallengePress: (challengeId: number) => void;
@@ -60,6 +61,12 @@ export function useMypageActions({
     checkFollowStatusFromServer, 
     checkingFollowStatus 
   } = useFollowStatus();
+
+  // フォロー状態を再確認（再認証なし）
+  const handleRefreshFollowStatus = async () => {
+    console.log("[MyPage] Refreshing follow status without re-auth...");
+    await checkFollowStatusFromServer();
+  };
   
   const [isLoggingIn, setIsLoggingIn] = useState(false);
   const [loginPattern, setLoginPattern] = useState(() => getRandomPattern());
@@ -134,6 +141,7 @@ export function useMypageActions({
     targetUsername,
     targetDisplayName,
     refreshing,
+    handleRefreshFollowStatus,
     
     // Navigation
     handleChallengePress,

@@ -50,6 +50,9 @@ export default function CreateChallengeScreen() {
           style={{ flex: 1, backgroundColor: colors.background }}
           showsHorizontalScrollIndicator={false}
           horizontal={false}
+          directionalLockEnabled={true}
+          bounces={true}
+          alwaysBounceHorizontal={false}
           contentContainerStyle={{ flexGrow: 1 }}
         >
           {/* ヘッダー */}

@@ -117,6 +117,10 @@ export default function ChallengeDetailScreen() {
         <ScrollView 
           ref={participationForm.scrollViewRef} 
           style={{ flex: 1, backgroundColor: colors.background }}
+          showsHorizontalScrollIndicator={false}
+          horizontal={false}
+          directionalLockEnabled={true}
+          alwaysBounceHorizontal={false}
           refreshControl={
             <RefreshControl
               refreshing={eventDetail.isRefreshing}

@@ -2,14 +2,6 @@ import { useEffect, useCallback } from "react";
 import { color, palette } from "@/theme/tokens";
 import { View, Text, StyleSheet, Platform } from "react-native";
 import { Image } from "expo-image";
-import Animated, {
-  useSharedValue,
-  useAnimatedStyle,
-  withSequence,
-  withTiming,
-  FadeIn,
-  FadeOut,
-} from "react-native-reanimated";
 import * as Haptics from "expo-haptics";
 
 // キャラクター画像
@@ -30,15 +22,14 @@ interface InlineValidationErrorProps {
 /**
  * 入力フィールドの近くに表示するインラインバリデーションエラー
  * 吹き出し形式でキャラクターがエラーメッセージを伝える
+ * 
+ * v6.53: アニメーションを削除してシンプルに（スマホでの表示問題を修正）
  */
 export function InlineValidationError({ 
   message, 
   visible, 
   character = "rinku" 
 }: InlineValidationErrorProps) {
-  const bounceY = useSharedValue(0);
-  const scale = useSharedValue(0.8);
-
   const triggerHaptic = useCallback(() => {
     if (Platform.OS !== "web") {
       Haptics.notificationAsync(Haptics.NotificationFeedbackType.Warning);
@@ -47,38 +38,16 @@ export function InlineValidationError({
 
   useEffect(() => {
     if (visible) {
-      // 出現アニメーション
-      scale.value = withSequence(
-        withTiming(1.05, { duration: 150 }),
-        withTiming(1, { duration: 100 })
-      );
-      
-      bounceY.value = withSequence(
-        withTiming(-4, { duration: 200 }),
-        withTiming(0, { duration: 200 })
-      );
-      
       triggerHaptic();
     }
-  }, [visible, bounceY, scale, triggerHaptic]);
-
-  const animatedStyle = useAnimatedStyle(() => ({
-    transform: [
-      { translateY: bounceY.value },
-      { scale: scale.value },
-    ],
-  }));
+  }, [visible, triggerHaptic]);
 
   if (!visible) {
     return null;
   }
 
   return (
-    <Animated.View
-      entering={FadeIn.duration(200)}
-      exiting={FadeOut.duration(150)}
-      style={[styles.container, animatedStyle]}
-    >
+    <View style={styles.container}>
       <View style={styles.content}>
         {/* キャラクター */}
         <Image
@@ -93,7 +62,7 @@ export function InlineValidationError({
           <Text style={styles.bubbleText}>{message}</Text>
         </View>
       </View>
-    </Animated.View>
+    </View>
   );
 }
 

@@ -81,6 +81,7 @@ export function ProfileCard({
                 description: user?.description ?? undefined,
               }}
               size="large"
+              showDescription={true}
             />
           </View>
           <FollowStatusBadge isFollowing={isFollowing} />

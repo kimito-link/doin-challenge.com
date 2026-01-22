@@ -28,6 +28,7 @@ interface AuthenticatedContentProps {
   targetDisplayName: string;
   refreshing: boolean;
   onRelogin: () => Promise<void>;
+  onRefreshFollowStatus?: () => Promise<void>;
   
   // Data
   myBadges: any[] | undefined;
@@ -54,6 +55,7 @@ export function AuthenticatedContent({
   targetDisplayName,
   refreshing,
   onRelogin,
+  onRefreshFollowStatus,
   myBadges,
   myParticipations,
   myChallenges,
@@ -87,6 +89,7 @@ export function AuthenticatedContent({
           targetUsername={targetUsername}
           targetDisplayName={targetDisplayName}
           onRelogin={onRelogin}
+          onRefreshFollowStatus={onRefreshFollowStatus}
           refreshing={refreshing}
         />
       )}
@@ -110,14 +113,6 @@ export function AuthenticatedContent({
       <View style={{ paddingHorizontal: 16, marginBottom: 8 }}>
         <TutorialResetButton />
       </View>
-
-      <SettingsLinkItem
-        icon="analytics"
-        iconColor={color.info}
-        title="API使用量"
-        description="Twitter APIのレート制限状況"
-        onPress={onNavigateToApiUsage}
-      />
 
       {/* バッジセクション */}
       <BadgeSection badges={myBadges} />

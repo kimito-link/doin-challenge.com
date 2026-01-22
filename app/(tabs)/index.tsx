@@ -140,6 +140,7 @@ export default function HomeScreen() {
               top3={homeData.top3}
               featuredChallenge={homeData.featuredChallenge}
               displayChallengesCount={homeData.displayChallenges.length}
+              totalChallengesCount={homeData.challenges.length}
               isDataLoading={homeData.isDataLoading}
               onChallengePress={homeActions.handleChallengePress}
             />

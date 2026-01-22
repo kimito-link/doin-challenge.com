@@ -240,6 +240,7 @@ export function FollowPromptBanner({
   targetDisplayName,
   onFollowPress,
   onRelogin,
+  onRefreshFollowStatus,
   refreshing,
 }: {
   isFollowing: boolean;
@@ -247,6 +248,7 @@ export function FollowPromptBanner({
   targetDisplayName: string;
   onFollowPress?: () => void;
   onRelogin?: () => void;
+  onRefreshFollowStatus?: () => Promise<void>;
   refreshing?: boolean;
 }) {
   if (isFollowing) {
@@ -306,13 +308,13 @@ export function FollowPromptBanner({
         </View>
       </Pressable>
       
-      {/* フォロー済みの場合の再確認ボタン */}
-      {onRelogin && (
+      {/* フォロー済みの場合の再確認ボタン（再認証なし） */}
+      {onRefreshFollowStatus && (
         <View style={{ marginTop: 12 }}>
           <Button
             onPress={() => {
               triggerHaptic();
-              onRelogin();
+              onRefreshFollowStatus();
             }}
             disabled={refreshing}
             loading={refreshing}

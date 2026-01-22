@@ -84,6 +84,7 @@ export default function MyPageScreen() {
           targetDisplayName={mypageActions.targetDisplayName}
           refreshing={mypageActions.refreshing}
           onRelogin={mypageData.login}
+          onRefreshFollowStatus={mypageActions.handleRefreshFollowStatus}
           myBadges={mypageData.myBadges}
           myParticipations={mypageData.myParticipations}
           myChallenges={mypageData.myChallenges}

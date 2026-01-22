@@ -2,7 +2,7 @@
  * 応援メッセージカードコンポーネント
  * 参加者の応援メッセージを表示
  */
-import { View, Text } from "react-native";
+import { View, Text, Pressable } from "react-native";
 import { navigate } from "@/lib/navigation";
 import MaterialIcons from "@expo/vector-icons/MaterialIcons";
 import { useColors } from "@/hooks/use-colors";
@@ -94,16 +94,25 @@ export function MessageCard({
     >
       {/* ヘッダー部分 */}
       <View style={{ flexDirection: "row", alignItems: "center", marginBottom: 8 }}>
-        <OptimizedAvatar
-          source={
-            participation.profileImage && !participation.isAnonymous
-              ? { uri: participation.profileImage }
-              : undefined
-          }
-          size={40}
-          fallbackColor={eventUI.fallback}
-          fallbackText={participation.displayName.charAt(0)}
-        />
+        <Pressable
+          onPress={() => {
+            if (participation.userId && !participation.isAnonymous) {
+              navigate.toProfile(participation.userId);
+            }
+          }}
+          style={({ pressed }) => [{ opacity: pressed ? 0.7 : 1 }]}
+        >
+          <OptimizedAvatar
+            source={
+              participation.profileImage && !participation.isAnonymous
+                ? { uri: participation.profileImage }
+                : undefined
+            }
+            size={40}
+            fallbackColor={eventUI.fallback}
+            fallbackText={participation.displayName.charAt(0)}
+          />
+        </Pressable>
         <View style={{ marginLeft: 12, flex: 1 }}>
           <View style={{ flexDirection: "row", alignItems: "center" }}>
             <Text style={{ color: colors.foreground, fontSize: 16, fontWeight: "600" }}>

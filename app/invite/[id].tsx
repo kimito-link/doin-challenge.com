@@ -31,10 +31,16 @@ export default function InviteScreen() {
   const [ogpImageUrl, setOgpImageUrl] = useState<string | null>(null);
   const [isGeneratingOgp, setIsGeneratingOgp] = useState(false);
 
-  const { data: challenge, isLoading } = (trpc as any).challenges.get.useQuery(
-    { id: parseInt(id || "0") },
-    { enabled: !!id }
+  const challengeId = parseInt(id || "0", 10);
+  const isValidId = !isNaN(challengeId) && challengeId > 0;
+
+  const { data: challenge, isLoading, error } = trpc.events.getById.useQuery(
+    { id: challengeId },
+    { enabled: isValidId }
   );
+
+  // デバッグログ
+  console.log("[InviteScreen] id:", id, "challengeId:", challengeId, "isValidId:", isValidId, "challenge:", challenge?.id);
 
   const createInviteMutation = trpc.invitations.create.useMutation({
     onSuccess: (data) => {
@@ -101,7 +107,7 @@ export default function InviteScreen() {
       message += `💬 ${customMessage}\n\n`;
     }
     
-    message += `目標: ${challenge.targetCount}人\n`;
+    message += `目標: ${challenge.goalValue}人\n`;
     message += `招待リンク: ${inviteUrl}\n\n`;
     message += `#動員ちゃれんじ #君斗りんく`;
     
@@ -162,11 +168,27 @@ export default function InviteScreen() {
     );
   }
 
+  if (!isValidId) {
+    return (
+      <ScreenContainer containerClassName="bg-background">
+        <View style={{ flex: 1, alignItems: "center", justifyContent: "center" }}>
+          <Text style={{ color: color.textMuted }}>無効なチャレンジIDです</Text>
+          <Pressable
+            onPress={() => router.back()}
+            style={{ marginTop: 16, padding: 12 }}
+          >
+            <Text style={{ color: color.hostAccentLegacy }}>戻る</Text>
+          </Pressable>
+        </View>
+      </ScreenContainer>
+    );
+  }
+
   if (!challenge) {
     return (
       <ScreenContainer containerClassName="bg-background">
         <View style={{ flex: 1, alignItems: "center", justifyContent: "center" }}>
-          <Text style={{ color: color.textMuted }}>チャレンジが見つかりません</Text>
+          <Text style={{ color: color.textMuted }}>チャレンジが見つかりません (ID: {id})</Text>
           <Pressable
             onPress={() => router.back()}
             style={{ marginTop: 16, padding: 12 }}
@@ -229,7 +251,7 @@ export default function InviteScreen() {
             <View style={{ flexDirection: "row", alignItems: "center" }}>
               <MaterialIcons name="people" size={16} color={color.textMuted} />
               <Text style={{ color: color.textMuted, fontSize: 14, marginLeft: 4 }}>
-                目標: {challenge.targetCount}人
+                目標: {challenge.goalValue}人
               </Text>
             </View>
             {challenge.venue && (
