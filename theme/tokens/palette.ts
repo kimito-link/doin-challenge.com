@@ -44,8 +44,8 @@ export const palette = {
   green500: "#2A9D8F",        // success（ティール系）
   green400: "#3DB8A9",        // success light
   green600: "#1F7A6E",        // success dark
-  red500: "#E76F51",          // error（コーラル）
-  red400: "#EC8B73",          // error light
+  red500: "#EC8B73",          // error（コーラル）- 視認性改善で明るく
+  red400: "#F4A89A",          // error light
   red600: "#D45A3C",          // error dark
   yellow500: "#FFB703",       // warning（イエロー）
   yellow400: "#FFC733",       // warning light

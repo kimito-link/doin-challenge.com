@@ -1,7 +1,7 @@
 import { ScrollView, Text, View, Pressable, StyleSheet , Platform} from "react-native";
 import * as Haptics from "expo-haptics";
 import { color, palette } from "@/theme/tokens";
-import { useRouter } from "expo-router";
+import { navigateBack } from "@/lib/navigation";
 import { ScreenContainer } from "@/components/organisms/screen-container";
 import { AppHeader } from "@/components/organisms/app-header";
 import MaterialIcons from "@expo/vector-icons/MaterialIcons";
@@ -96,7 +96,7 @@ const changeTypeStyles: Record<string, { icon: string; color: string; label: str
 };
 
 export default function ReleaseNotesScreen() {
-  const router = useRouter();
+
 
   return (
     <ScreenContainer containerClassName="bg-background">
@@ -105,7 +105,7 @@ export default function ReleaseNotesScreen() {
         showCharacters={false}
         rightElement={
           <Pressable
-            onPress={() => router.back()}
+            onPress={() => navigateBack()}
             style={{ flexDirection: "row", alignItems: "center" }}
           >
             <MaterialIcons name="arrow-back" size={24} color={color.textWhite} />

@@ -14,6 +14,7 @@ import Animated, {
   withSpring,
   withTiming,
   interpolate,
+  SharedValue,
 } from "react-native-reanimated";
 import { color } from "@/theme/tokens";
 
@@ -28,6 +29,45 @@ interface ExpandableFABProps {
   actions: ExpandableFABAction[];
   mainIcon?: string;
   mainColor?: string;
+}
+
+// アクションアイテムコンポーネント（Hooksをトップレベルで呼び出す）
+function ActionItem({
+  action,
+  index,
+  expansion,
+  onPress,
+}: {
+  action: ExpandableFABAction;
+  index: number;
+  expansion: SharedValue<number>;
+  onPress: (action: ExpandableFABAction) => void;
+}) {
+  const actionStyle = useAnimatedStyle(() => ({
+    opacity: expansion.value,
+    transform: [
+      { translateY: interpolate(expansion.value, [0, 1], [0, -(60 * (index + 1))]) },
+      { scale: expansion.value },
+    ],
+  }));
+
+  return (
+    <Animated.View style={[styles.actionItem, actionStyle]}>
+      <View style={styles.actionLabelContainer}>
+        <Text style={styles.actionLabel}>{action.label}</Text>
+      </View>
+      <Pressable
+        onPress={() => onPress(action)}
+        style={({ pressed }) => [
+          styles.actionButton,
+          { backgroundColor: action.color || color.textSubtle },
+          pressed && { opacity: 0.8, transform: [{ scale: 0.97 }] },
+        ]}
+      >
+        <MaterialIcons name={action.icon as any} size={20} color={color.textWhite} />
+      </Pressable>
+    </Animated.View>
+  );
 }
 
 export function ExpandableFAB({
@@ -64,33 +104,15 @@ export function ExpandableFAB({
 
   return (
     <View style={styles.expandableContainer}>
-      {actions.map((action, index) => {
-        const actionStyle = useAnimatedStyle(() => ({
-          opacity: expansion.value,
-          transform: [
-            { translateY: interpolate(expansion.value, [0, 1], [0, -(60 * (index + 1))]) },
-            { scale: expansion.value },
-          ],
-        }));
-
-        return (
-          <Animated.View key={index} style={[styles.actionItem, actionStyle]}>
-            <View style={styles.actionLabelContainer}>
-              <Text style={styles.actionLabel}>{action.label}</Text>
-            </View>
-            <Pressable
-              onPress={() => handleActionPress(action)}
-              style={({ pressed }) => [
-                styles.actionButton,
-                { backgroundColor: action.color || color.textSubtle },
-                pressed && { opacity: 0.8, transform: [{ scale: 0.97 }] },
-              ]}
-            >
-              <MaterialIcons name={action.icon as any} size={20} color={color.textWhite} />
-            </Pressable>
-          </Animated.View>
-        );
-      })}
+      {actions.map((action, index) => (
+        <ActionItem
+          key={index}
+          action={action}
+          index={index}
+          expansion={expansion}
+          onPress={handleActionPress}
+        />
+      ))}
 
       <Animated.View style={mainButtonStyle}>
         <Pressable

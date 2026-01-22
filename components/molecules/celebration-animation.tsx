@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useMemo } from "react";
 import { color, palette } from "@/theme/tokens";
 import { View, StyleSheet, Platform } from "react-native";
 import { Image } from "expo-image";
@@ -12,6 +12,7 @@ import Animated, {
   withRepeat,
   Easing,
   runOnJS,
+  SharedValue,
 } from "react-native-reanimated";
 import * as Haptics from "expo-haptics";
 
@@ -23,6 +24,47 @@ interface CelebrationAnimationProps {
   onComplete?: () => void;
   characterSize?: number;
   showConfetti?: boolean;
+}
+
+// 紙吹雪アイテムの型
+interface ConfettiItemValues {
+  x: SharedValue<number>;
+  y: SharedValue<number>;
+  rotation: SharedValue<number>;
+  opacity: SharedValue<number>;
+  scale: SharedValue<number>;
+}
+
+// 紙吹雪アイテムコンポーネント（Hooksをトップレベルで呼び出す）
+function ConfettiItem({
+  index,
+  item,
+}: {
+  index: number;
+  item: ConfettiItemValues;
+}) {
+  const confettiStyle = useAnimatedStyle(() => ({
+    opacity: item.opacity.value,
+    transform: [
+      { translateX: item.x.value },
+      { translateY: item.y.value },
+      { rotate: `${item.rotation.value}deg` },
+      { scale: item.scale.value },
+    ],
+  }));
+
+  const confettiColors = [color.accentPrimary, color.orange500, palette.amber400, color.success, color.info, color.accentAlt];
+  const confettiColor = confettiColors[index % confettiColors.length];
+
+  return (
+    <Animated.View
+      style={[
+        styles.confetti,
+        confettiStyle,
+        { backgroundColor: confettiColor },
+      ]}
+    />
+  );
 }
 
 /**
@@ -43,14 +85,107 @@ export function CelebrationAnimation({
   const rotate = useSharedValue(0);
   const opacity = useSharedValue(0);
 
-  // 紙吹雪のアニメーション値（複数）
-  const confettiItems = Array.from({ length: 12 }, (_, i) => ({
-    x: useSharedValue(0),
-    y: useSharedValue(0),
-    rotation: useSharedValue(0),
-    opacity: useSharedValue(0),
-    scale: useSharedValue(1),
-  }));
+  // 紙吹雪のアニメーション値（固定数でトップレベルで定義）
+  const confetti0x = useSharedValue(0);
+  const confetti0y = useSharedValue(0);
+  const confetti0rotation = useSharedValue(0);
+  const confetti0opacity = useSharedValue(0);
+  const confetti0scale = useSharedValue(1);
+  
+  const confetti1x = useSharedValue(0);
+  const confetti1y = useSharedValue(0);
+  const confetti1rotation = useSharedValue(0);
+  const confetti1opacity = useSharedValue(0);
+  const confetti1scale = useSharedValue(1);
+  
+  const confetti2x = useSharedValue(0);
+  const confetti2y = useSharedValue(0);
+  const confetti2rotation = useSharedValue(0);
+  const confetti2opacity = useSharedValue(0);
+  const confetti2scale = useSharedValue(1);
+  
+  const confetti3x = useSharedValue(0);
+  const confetti3y = useSharedValue(0);
+  const confetti3rotation = useSharedValue(0);
+  const confetti3opacity = useSharedValue(0);
+  const confetti3scale = useSharedValue(1);
+  
+  const confetti4x = useSharedValue(0);
+  const confetti4y = useSharedValue(0);
+  const confetti4rotation = useSharedValue(0);
+  const confetti4opacity = useSharedValue(0);
+  const confetti4scale = useSharedValue(1);
+  
+  const confetti5x = useSharedValue(0);
+  const confetti5y = useSharedValue(0);
+  const confetti5rotation = useSharedValue(0);
+  const confetti5opacity = useSharedValue(0);
+  const confetti5scale = useSharedValue(1);
+  
+  const confetti6x = useSharedValue(0);
+  const confetti6y = useSharedValue(0);
+  const confetti6rotation = useSharedValue(0);
+  const confetti6opacity = useSharedValue(0);
+  const confetti6scale = useSharedValue(1);
+  
+  const confetti7x = useSharedValue(0);
+  const confetti7y = useSharedValue(0);
+  const confetti7rotation = useSharedValue(0);
+  const confetti7opacity = useSharedValue(0);
+  const confetti7scale = useSharedValue(1);
+  
+  const confetti8x = useSharedValue(0);
+  const confetti8y = useSharedValue(0);
+  const confetti8rotation = useSharedValue(0);
+  const confetti8opacity = useSharedValue(0);
+  const confetti8scale = useSharedValue(1);
+  
+  const confetti9x = useSharedValue(0);
+  const confetti9y = useSharedValue(0);
+  const confetti9rotation = useSharedValue(0);
+  const confetti9opacity = useSharedValue(0);
+  const confetti9scale = useSharedValue(1);
+  
+  const confetti10x = useSharedValue(0);
+  const confetti10y = useSharedValue(0);
+  const confetti10rotation = useSharedValue(0);
+  const confetti10opacity = useSharedValue(0);
+  const confetti10scale = useSharedValue(1);
+  
+  const confetti11x = useSharedValue(0);
+  const confetti11y = useSharedValue(0);
+  const confetti11rotation = useSharedValue(0);
+  const confetti11opacity = useSharedValue(0);
+  const confetti11scale = useSharedValue(1);
+
+  // 紙吹雪アイテムの配列をuseMemoで作成
+  const confettiItems: ConfettiItemValues[] = useMemo(() => [
+    { x: confetti0x, y: confetti0y, rotation: confetti0rotation, opacity: confetti0opacity, scale: confetti0scale },
+    { x: confetti1x, y: confetti1y, rotation: confetti1rotation, opacity: confetti1opacity, scale: confetti1scale },
+    { x: confetti2x, y: confetti2y, rotation: confetti2rotation, opacity: confetti2opacity, scale: confetti2scale },
+    { x: confetti3x, y: confetti3y, rotation: confetti3rotation, opacity: confetti3opacity, scale: confetti3scale },
+    { x: confetti4x, y: confetti4y, rotation: confetti4rotation, opacity: confetti4opacity, scale: confetti4scale },
+    { x: confetti5x, y: confetti5y, rotation: confetti5rotation, opacity: confetti5opacity, scale: confetti5scale },
+    { x: confetti6x, y: confetti6y, rotation: confetti6rotation, opacity: confetti6opacity, scale: confetti6scale },
+    { x: confetti7x, y: confetti7y, rotation: confetti7rotation, opacity: confetti7opacity, scale: confetti7scale },
+    { x: confetti8x, y: confetti8y, rotation: confetti8rotation, opacity: confetti8opacity, scale: confetti8scale },
+    { x: confetti9x, y: confetti9y, rotation: confetti9rotation, opacity: confetti9opacity, scale: confetti9scale },
+    { x: confetti10x, y: confetti10y, rotation: confetti10rotation, opacity: confetti10opacity, scale: confetti10scale },
+    { x: confetti11x, y: confetti11y, rotation: confetti11rotation, opacity: confetti11opacity, scale: confetti11scale },
+  ], [
+    confetti0x, confetti0y, confetti0rotation, confetti0opacity, confetti0scale,
+    confetti1x, confetti1y, confetti1rotation, confetti1opacity, confetti1scale,
+    confetti2x, confetti2y, confetti2rotation, confetti2opacity, confetti2scale,
+    confetti3x, confetti3y, confetti3rotation, confetti3opacity, confetti3scale,
+    confetti4x, confetti4y, confetti4rotation, confetti4opacity, confetti4scale,
+    confetti5x, confetti5y, confetti5rotation, confetti5opacity, confetti5scale,
+    confetti6x, confetti6y, confetti6rotation, confetti6opacity, confetti6scale,
+    confetti7x, confetti7y, confetti7rotation, confetti7opacity, confetti7scale,
+    confetti8x, confetti8y, confetti8rotation, confetti8opacity, confetti8scale,
+    confetti9x, confetti9y, confetti9rotation, confetti9opacity, confetti9scale,
+    confetti10x, confetti10y, confetti10rotation, confetti10opacity, confetti10scale,
+    confetti11x, confetti11y, confetti11rotation, confetti11opacity, confetti11scale,
+  ]);
 
   const triggerHaptic = () => {
     if (Platform.OS !== "web") {
@@ -157,31 +292,9 @@ export function CelebrationAnimation({
   return (
     <View style={styles.container} pointerEvents="none">
       {/* 紙吹雪 */}
-      {showConfetti && confettiItems.map((item, index) => {
-        const confettiStyle = useAnimatedStyle(() => ({
-          opacity: item.opacity.value,
-          transform: [
-            { translateX: item.x.value },
-            { translateY: item.y.value },
-            { rotate: `${item.rotation.value}deg` },
-            { scale: item.scale.value },
-          ],
-        }));
-
-        const confettiColors = [color.accentPrimary, color.orange500, palette.amber400, color.success, color.info, color.accentAlt];
-        const confettiColor = confettiColors[index % confettiColors.length];
-
-        return (
-          <Animated.View
-            key={index}
-            style={[
-              styles.confetti,
-              confettiStyle,
-              { backgroundColor: confettiColor },
-            ]}
-          />
-        );
-      })}
+      {showConfetti && confettiItems.map((item, index) => (
+        <ConfettiItem key={index} index={index} item={item} />
+      ))}
 
       {/* キャラクター */}
       <Animated.View style={[styles.characterContainer, characterStyle]}>
@@ -245,7 +358,7 @@ export function ConfettiEffect({
 
 function ConfettiParticle({
   x,
-  color,
+  color: particleColor,
   delay,
 }: {
   x: number;
@@ -255,7 +368,7 @@ function ConfettiParticle({
   const translateY = useSharedValue(-50);
   const translateX = useSharedValue(0);
   const rotation = useSharedValue(0);
-  const opacity = useSharedValue(1);
+  const particleOpacity = useSharedValue(1);
 
   useEffect(() => {
     translateX.value = withDelay(delay, withTiming(x, { duration: 1000 }));
@@ -267,11 +380,11 @@ function ConfettiParticle({
       delay,
       withTiming(360 * (Math.random() > 0.5 ? 1 : -1), { duration: 1000 })
     );
-    opacity.value = withDelay(delay + 700, withTiming(0, { duration: 300 }));
+    particleOpacity.value = withDelay(delay + 700, withTiming(0, { duration: 300 }));
   }, []);
 
   const style = useAnimatedStyle(() => ({
-    opacity: opacity.value,
+    opacity: particleOpacity.value,
     transform: [
       { translateX: translateX.value },
       { translateY: translateY.value },
@@ -284,7 +397,7 @@ function ConfettiParticle({
       style={[
         styles.confetti,
         style,
-        { backgroundColor: color },
+        { backgroundColor: particleColor },
       ]}
     />
   );

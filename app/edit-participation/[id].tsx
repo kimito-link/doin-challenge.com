@@ -1,7 +1,8 @@
 import { View, Text, ScrollView, TextInput, Pressable, KeyboardAvoidingView, Platform, ActivityIndicator } from "react-native";
 import * as Haptics from "expo-haptics";
 import { color, palette } from "@/theme/tokens";
-import { useRouter, useLocalSearchParams } from "expo-router";
+import { useLocalSearchParams } from "expo-router";
+import { navigateBack } from "@/lib/navigation";
 import { useState, useEffect } from "react";
 import { ScreenContainer } from "@/components/organisms/screen-container";
 import { ResponsiveContainer } from "@/components/molecules/responsive-container";
@@ -26,7 +27,7 @@ const prefectures = [
 ];
 
 export default function EditParticipationScreen() {
-  const router = useRouter();
+
   const { id, challengeId } = useLocalSearchParams<{ id: string; challengeId: string }>();
   const { user } = useAuth();
   const colors = useColors();
@@ -73,7 +74,7 @@ export default function EditParticipationScreen() {
         {
           text: "OK",
           onPress: () => {
-            router.back();
+            navigateBack();
           },
         },
       ]);

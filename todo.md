@@ -4139,3 +4139,11 @@ features/create/
 - [x] theme/tokens/palette.ts 更新
 - [x] theme/tokens/semantic.ts 更新
 - [ ] 本番デプロイ後の視認性確認
+
+
+## v6.56: CI/CDパイプライン修正
+
+- [x] AnimatedListItemの重複エクスポートを修正（index.tsから削除）
+- [x] React Hooks rules-of-hooks違反を修正（effects.tsx - Hooksをコールバック外に移動）
+- [x] テストを新しいカラーパレットに合わせて更新
+- [x] エラー色のコントラスト比を改善（#E76F51 → #EC8B73）

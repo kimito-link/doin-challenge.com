@@ -14,7 +14,6 @@ import { AccountSwitcher } from "@/components/organisms/account-switcher";
 import { 
   LoginScreen, 
   AuthenticatedContent,
-  getRandomPattern,
   useMypageData,
   useMypageActions,
 } from "@/features/mypage";

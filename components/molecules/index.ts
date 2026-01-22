@@ -66,7 +66,7 @@ export { TalkingCharacter } from "./talking-character";
 export { CharacterValidationError, CharacterGroupValidationError } from "./character-validation-error";
 
 // Animation系
-export { AnimatedListItem } from "./animated-list-item";
+// AnimatedListItem is exported via "export * from ./animated-pressable" above
 export { Collapsible } from "./collapsible";
 
 // Utility系

@@ -1,6 +1,6 @@
-import { ScrollView, Text, View, Pressable, Share, Alert, Platform } from "react-native";
+import { View, Text, ScrollView, Pressable, StyleSheet, Platform, Share } from "react-native";
 import * as Haptics from "expo-haptics";
-import { color, palette } from "@/theme/tokens";
+import { color } from "@/theme/tokens";
 import { Image } from "expo-image";
 import { useLocalSearchParams } from "expo-router";
 import { navigateBack } from "@/lib/navigation/app-routes";

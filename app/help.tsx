@@ -8,7 +8,7 @@ import {
   StyleSheet,
   Platform,
 } from "react-native";
-import { useRouter } from "expo-router";
+import { navigateBack } from "@/lib/navigation";
 import { Image } from "expo-image";
 import MaterialIcons from "@expo/vector-icons/MaterialIcons";
 import * as Haptics from "expo-haptics";
@@ -57,7 +57,7 @@ const FAQ_ITEMS: FAQItem[] = [
  * 使い方ガイドとよくある質問
  */
 export default function HelpScreen() {
-  const router = useRouter();
+
   const colors = useColors();
   const { resetTutorial } = useTutorial();
   const [expandedIndex, setExpandedIndex] = useState<number | null>(null);
@@ -70,14 +70,14 @@ export default function HelpScreen() {
 
   const handleBack = useCallback(() => {
     handleHaptic();
-    router.back();
-  }, [router, handleHaptic]);
+    navigateBack();
+  }, [handleHaptic]);
 
   const handleReplayTutorial = useCallback(async () => {
     handleHaptic();
     await resetTutorial();
-    router.back();
-  }, [handleHaptic, resetTutorial, router]);
+    navigateBack();
+  }, [handleHaptic, resetTutorial]);
 
   const toggleFAQ = useCallback((index: number) => {
     handleHaptic();

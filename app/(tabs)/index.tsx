@@ -8,7 +8,7 @@ import { View, Text, FlatList, Platform } from "react-native";
 import { color } from "@/theme/tokens";
 import { useState } from "react";
 import { ScreenContainer } from "@/components/organisms/screen-container";
-import { useColors } from "@/hooks/use-colors";
+
 import { useResponsive, useGridLayout } from "@/hooks/use-responsive";
 import { useAuth } from "@/hooks/use-auth";
 import { AppHeader } from "@/components/organisms/app-header";
@@ -29,7 +29,6 @@ import {
 import type { Challenge, FilterType } from "@/types/challenge";
 
 export default function HomeScreen() {
-  const colors = useColors();
   const { isDesktop } = useResponsive();
   const { user } = useAuth();
   const grid = useGridLayout({ minItemWidth: 280, maxColumns: 4, desktopMaxWidth: 1200 });
@@ -40,7 +39,7 @@ export default function HomeScreen() {
   const [searchQuery, setSearchQuery] = useState("");
   const [isSearching, setIsSearching] = useState(false);
   const [categoryFilter, setCategoryFilter] = useState<number | null>(null);
-  const [useColorfulCards, setUseColorfulCards] = useState(true);
+  const [useColorfulCards] = useState(true);
   
   // タブ状態
   const [activeTab, setActiveTab] = useState<HomeTabType>("all");

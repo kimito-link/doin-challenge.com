@@ -1,4 +1,5 @@
 import { ScrollViewStyleReset } from "expo-router/html";
+import { palette } from "@/theme/tokens";
 import type { PropsWithChildren } from "react";
 
 /**
@@ -18,7 +19,7 @@ export default function Root({ children }: PropsWithChildren) {
         {/* PWA manifest */}
         <link rel="manifest" href="/manifest.json" />
         {/* Theme color for browser chrome */}
-        <meta name="theme-color" content="#0f172a" />
+        <meta name="theme-color" content={palette.gray900} />
         {/* Apple touch icon */}
         <link rel="apple-touch-icon" href="/icon-192.png" />
         {/*

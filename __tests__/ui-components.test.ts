@@ -5,20 +5,23 @@ describe("Design System", () => {
   describe("Colors", () => {
     it("should have primary color defined", async () => {
       const { colors } = await import("../constants/design-system");
-      expect(colors.primary.default).toBe("#EC4899");
+      // Updated for Refreshing Summer Fun palette (orange)
+      expect(colors.primary.default).toBe("#FB8500");
     });
 
     it("should have background colors defined", async () => {
       const { colors } = await import("../constants/design-system");
-      expect(colors.background.primary).toBe("#0D1117");
-      expect(colors.background.secondary).toBe("#1A1D21");
+      // Updated for Refreshing Summer Fun palette (dark teal)
+      expect(colors.background.primary).toBe("#023047");
+      expect(colors.background.secondary).toBe("#034063");
     });
 
     it("should have status colors defined", async () => {
       const { colors } = await import("../constants/design-system");
-      expect(colors.status.success).toBe("#22C55E");
-      expect(colors.status.error).toBe("#EF4444");
-      expect(colors.status.warning).toBe("#F59E0B");
+      // Updated for Refreshing Summer Fun palette
+      expect(colors.status.success).toBe("#2A9D8F"); // teal
+      expect(colors.status.error).toBe("#EC8B73");   // coral (lighter for contrast)
+      expect(colors.status.warning).toBe("#FFB703"); // yellow
     });
   });
 
