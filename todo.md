@@ -4147,3 +4147,43 @@ features/create/
 - [x] React Hooks rules-of-hooks違反を修正（effects.tsx - Hooksをコールバック外に移動）
 - [x] テストを新しいカラーパレットに合わせて更新
 - [x] エラー色のコントラスト比を改善（#E76F51 → #EC8B73）
+
+
+## v6.57: 品質ゲート統合（再発防止）
+
+### A. GitHub Actions（必須）
+- [ ] lint, typecheck, test, build, e2e:smoke を workflow に追加
+- [ ] PRで必須チェックに設定（落ちたらマージ不可）
+
+### B. Playwright スモークテスト（必須）
+- [ ] 画面巡回テストの作成（Public + Admin）
+- [ ] console.error / pageerror 検知
+- [ ] 500/404系レスポンス検知
+- [ ] 致命文言検知（「エラー」「見つかりません」等）
+
+### C. /api/health の強化（必須）
+- [ ] /api/health?schema=true でスキーマ検査
+- [ ] 不一致時は明確なエラーJSON + requestId
+
+### D. 通知（推奨）
+- [ ] 失敗通知Webhook（migrate失敗、schema check失敗、e2e:smoke失敗）
+- [ ] 通知にenvironment, commit sha, requestIdを含める
+
+
+## CI/CD品質ゲート改善（v6.57）
+
+### E2Eテスト修正
+- [x] 管理画面スモークテストをadmin-chromiumプロジェクトでのみ実行するように修正
+- [x] public-chromiumプロジェクトでは管理画面テストをスキップ
+
+### GitHub Actions Workflow改善
+- [x] deploy.ymlをci.ymlから分離してSafe Production Deployワークフローを作成
+- [x] Preflight job追加（必須Secrets存在チェック）
+- [x] Vercel Preview URL取得とE2Eテストへの受け渡し
+- [x] Discord/Slack失敗通知Webhook追加
+- [ ] Branch Protection設定（mainブランチ保護）
+
+### 品質ゲート機能
+- [x] /api/health?schema=true でスキーマ整合性チェック
+- [x] requestId追跡機能
+- [x] Playwright E2Eスモークテスト

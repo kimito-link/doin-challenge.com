@@ -1,4 +1,5 @@
 import { test, expect } from "./fixtures";
+import type { TestInfo } from "@playwright/test";
 
 /**
  * 管理画面スモークテスト（強化版）
@@ -7,7 +8,9 @@ import { test, expect } from "./fixtures";
  * - リンク切れ / 404 / 画面クラッシュを最短で検知
  * - 各ページの必須要素（mustSee）で誤検知を防止
  * 
- * 認証：x-e2e-admin: 1 ヘッダーでバイパス（開発環境のみ）
+ * 注意：
+ * - 管理画面は認証が必要なため、admin-chromiumプロジェクトでのみ実行
+ * - CIではstorageStateが設定されていない場合はスキップ
  */
 
 type SmokeCase = {
@@ -60,7 +63,7 @@ const ADMIN_ROUTES: SmokeCase[] = [
   { 
     path: "/admin/errors", 
     name: "エラーログ",
-    mustSee: { by: "text", value: "エラー" }
+    mustSee: { by: "text", value: "エラーログ" }
   },
   { 
     path: "/admin/data-integrity", 
@@ -81,16 +84,25 @@ function locatorFor(page: any, mustSee: SmokeCase["mustSee"]) {
   return page.locator(mustSee.value);
 }
 
-test.describe("管理画面スモーク巡回", () => {
-  test.beforeEach(async ({ monitoredPage }) => {
-    // E2E用の認証バイパスヘッダーを設定
-    await monitoredPage.setExtraHTTPHeaders({
-      "x-e2e-admin": "1",
-    });
-  });
+/**
+ * public-chromiumプロジェクトかどうかを判定
+ * 管理画面テストは認証が必要なため、public-chromiumではスキップ
+ */
+function shouldSkipAdminTest(testInfo: TestInfo): boolean {
+  return testInfo.project.name === "public-chromium";
+}
 
+// 管理画面テストはadmin-chromiumプロジェクトでのみ実行
+// CIでは認証状態が必要なため、public-chromiumではスキップ
+test.describe("管理画面スモーク巡回", () => {
   for (const route of ADMIN_ROUTES) {
-    test(`smoke: ${route.name} (${route.path})`, async ({ monitoredPage }) => {
+    test(`smoke: ${route.name} (${route.path})`, async ({ monitoredPage }, testInfo) => {
+      // public-chromiumプロジェクトの場合はスキップ
+      if (shouldSkipAdminTest(testInfo)) {
+        test.skip();
+        return;
+      }
+
       // ページにアクセス
       const res = await monitoredPage.goto(route.path, { waitUntil: "domcontentloaded" });
 
@@ -126,13 +138,13 @@ test.describe("管理画面スモーク巡回", () => {
 });
 
 test.describe("管理画面一括巡回", () => {
-  test.beforeEach(async ({ monitoredPage }) => {
-    await monitoredPage.setExtraHTTPHeaders({
-      "x-e2e-admin": "1",
-    });
-  });
+  test("全ページが404なしで連続アクセス可能", async ({ monitoredPage }, testInfo) => {
+    // public-chromiumプロジェクトの場合はスキップ
+    if (shouldSkipAdminTest(testInfo)) {
+      test.skip();
+      return;
+    }
 
-  test("全ページが404なしで連続アクセス可能", async ({ monitoredPage }) => {
     const failedPages: string[] = [];
 
     for (const route of ADMIN_ROUTES) {
