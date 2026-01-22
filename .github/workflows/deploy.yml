@@ -159,6 +159,8 @@ jobs:
         env:
           # デプロイされたURLを使用（フォールバックは本番URL）
           PLAYWRIGHT_BASE_URL: ${{ needs.frontend.outputs.deployment_url || env.PROD_URL }}
+          # Vercel Deployment Protection bypass
+          VERCEL_AUTOMATION_BYPASS_SECRET: ${{ secrets.VERCEL_AUTOMATION_BYPASS_SECRET }}
         run: |
           echo "Testing against: $PLAYWRIGHT_BASE_URL"
           pnpm e2e

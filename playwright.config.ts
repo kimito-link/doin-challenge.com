@@ -10,6 +10,13 @@ import { defineConfig, devices } from "@playwright/test";
 
 const baseURL = process.env.PLAYWRIGHT_BASE_URL ?? process.env.E2E_BASE_URL ?? "https://doin-challenge.com";
 
+// Vercel Deployment Protection bypass header
+const vercelBypassSecret = process.env.VERCEL_AUTOMATION_BYPASS_SECRET;
+const extraHTTPHeaders: Record<string, string> = {};
+if (vercelBypassSecret) {
+  extraHTTPHeaders["x-vercel-protection-bypass"] = vercelBypassSecret;
+}
+
 export default defineConfig({
   testDir: "./tests/e2e",
   fullyParallel: true,
@@ -27,6 +34,8 @@ export default defineConfig({
     video: "retain-on-failure",
     actionTimeout: 10000,
     navigationTimeout: 30000,
+    // Vercel Deployment Protection bypass
+    extraHTTPHeaders,
   },
 
   timeout: 60000,
