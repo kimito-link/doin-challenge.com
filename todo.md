@@ -4234,3 +4234,8 @@ features/create/
 - [x] prefecture-participants-modal.tsxのスタイル改善
 - [x] region-participants-modal.tsxのスタイル改善
 - [x] fan-profile-modal.tsxのスタイル改善（アイコン追加）
+
+
+## バグ修正（v6.59）
+
+- [x] マイページの「推しを探しに行く」ボタンの遷移先をホーム画面に修正（navigateReplace.toHomeRoot()使用）

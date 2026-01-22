@@ -1,7 +1,7 @@
 import { View, Text, Pressable, StyleSheet, Platform } from "react-native";
 import { color, palette } from "@/theme/tokens";
 import { Image } from "expo-image";
-import { navigate } from "@/lib/navigation";
+import { navigateReplace } from "@/lib/navigation";
 import { useColors } from "@/hooks/use-colors";
 import * as Haptics from "expo-haptics";
 import Animated, { 
@@ -51,8 +51,8 @@ export function FanEmptyState() {
     if (Platform.OS !== "web") {
       Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
     }
-    // ホーム画面（チャレンジ一覧）へ遷移
-    navigate.toHome();
+    // ホーム画面（チャレンジ一覧）へ遷移（スクロール位置リセットのためreplace使用）
+    navigateReplace.toHomeRoot();
   };
   
   return (
