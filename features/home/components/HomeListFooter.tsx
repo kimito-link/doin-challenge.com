@@ -7,6 +7,7 @@ import { View, Text } from "react-native";
 import { color } from "@/theme/tokens";
 import { CachedDataIndicator } from "@/components/organisms/offline-banner";
 import { SyncStatusIndicator } from "@/components/atoms/sync-status-indicator";
+import { ScrollMoreIndicator } from "@/components/atoms/character-loading-indicator";
 import { 
   FeaturedChallenge, 
   EngagementSection, 
@@ -49,16 +50,11 @@ export function HomeListFooter({
 }: HomeListFooterProps) {
   return (
     <>
-      {/* ページネーションインジケーター */}
-      {(isSearching ? isFetchingNextSearchPage : isFetchingNextPage) ? (
-        <View style={{ padding: 20, alignItems: "center" }}>
-          <Text style={{ color: color.textMuted }}>読み込み中...</Text>
-        </View>
-      ) : (isSearching ? hasNextSearchPage : hasNextPage) ? (
-        <View style={{ padding: 20, alignItems: "center" }}>
-          <Text style={{ color: color.textMuted }}>スクロールしてもっと見る</Text>
-        </View>
-      ) : null}
+      {/* ページネーションインジケーター（キャラクター付き） */}
+      <ScrollMoreIndicator
+        hasNextPage={isSearching ? hasNextSearchPage : hasNextPage}
+        isFetching={isSearching ? isFetchingNextSearchPage : isFetchingNextPage}
+      />
       
       {/* 注目のチャレンジ */}
       {featuredChallenge && !isSearching && (
