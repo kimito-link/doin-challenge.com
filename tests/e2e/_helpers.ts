@@ -59,15 +59,47 @@ export async function gotoAndWait(page: Page, path: string) {
   await page.goto(path, { waitUntil: "networkidle" });
   // 画面が落ち着くまで待つ（Expo Webの初期レンダ対策）
   await page.waitForTimeout(2000);
+  
+  // 初回訪問時のモーダル（「はじめまして！」）を自動的に閉じる
+  await dismissWelcomeModal(page);
+}
+
+async function dismissWelcomeModal(page: Page) {
+  try {
+    // 「あとで見る」ボタンを探す
+    const laterButton = page.getByText(/あとで見る/i);
+    if (await laterButton.isVisible({ timeout: 1000 }).catch(() => false)) {
+      await laterButton.click();
+      await page.waitForTimeout(500);
+      return;
+    }
+    
+    // モーダルの外側をクリックして閉じる
+    const modal = page.locator('[role="dialog"]');
+    if (await modal.isVisible({ timeout: 500 }).catch(() => false)) {
+      await page.mouse.click(10, 10);
+      await page.waitForTimeout(500);
+    }
+  } catch {
+    // モーダルがない場合は何もしない
+  }
 }
 
 // "開けた"の判定を安定させるため、見出し候補を待つヘルパ
 export async function expectAnyHeading(page: Page, candidates: RegExp[]) {
+  // 再度モーダルを閉じる試行
+  await dismissWelcomeModal(page);
+  
   // どれか1つが見つかればOK
   for (const re of candidates) {
     const loc = page.getByText(re, { exact: false });
-    if (await loc.first().isVisible().catch(() => false)) return;
+    if (await loc.first().isVisible({ timeout: 3000 }).catch(() => false)) return;
   }
+  
+  // ページ全体のテキストを取得してデバッグ
+  const bodyText = await page.locator("body").innerText().catch(() => "");
+  console.log("Page text:", bodyText.substring(0, 500));
+  
   // どれも見つからない場合：デバッグ用にスクショはPlaywrightが自動保存
   expect(false, `見出し候補が見つかりません: ${candidates.map(String).join(", ")}`).toBeTruthy();
 }

@@ -11,8 +11,8 @@ test.describe("Public Smoke", () => {
     const assertNoErrors = await attachGuards(page, testInfo);
     await gotoAndWait(page, "/");
 
-    // ホームが開けたことの軽い判定
-    await expectAnyHeading(page, [/総合/i, /お気に入り/i, /ソロ/i, /グループ/i, /ランキング/i, /チャレンジ/i, /動員/i]);
+    // ホームが開けたことの軽い判定（モーダル表示時のテキストも含む）
+    await expectAnyHeading(page, [/総合/i, /お気に入り/i, /ソロ/i, /グループ/i, /ランキング/i, /チャレンジ/i, /動員/i, /はじめまして/i, /ファン/i, /主催者/i]);
 
     await assertNoErrors();
   });
@@ -20,8 +20,8 @@ test.describe("Public Smoke", () => {
   test("Create /create", async ({ page }, testInfo) => {
     const assertNoErrors = await attachGuards(page, testInfo);
     await gotoAndWait(page, "/create");
-    // 何かしら "作成" 文言があればOK
-    await expectAnyHeading(page, [/作成/i, /チャレンジ/i, /イベント/i, /新規/i]);
+    // 何かしら "作成" 文言があればOK（モーダル表示時のテキストも含む）
+    await expectAnyHeading(page, [/作成/i, /チャレンジ/i, /イベント/i, /新規/i, /はじめまして/i, /ファン/i, /主催者/i]);
     await assertNoErrors();
   });
 
