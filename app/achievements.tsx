@@ -6,6 +6,7 @@ import { ScreenContainer } from "@/components/organisms/screen-container";
 import { trpc } from "@/lib/trpc";
 import { useAuth } from "@/hooks/use-auth";
 import MaterialIcons from "@expo/vector-icons/MaterialIcons";
+import { EmojiIcon } from "@/components/ui/emoji-icon";
 import { LinearGradient } from "expo-linear-gradient";
 import { useMemo } from "react";
 import { AppHeader } from "@/components/organisms/app-header";
@@ -112,7 +113,11 @@ function AchievementCard({
             marginRight: 12,
           }}
         >
-          <Text style={{ fontSize: 24 }}>{isUnlocked ? achievement.icon : "🔒"}</Text>
+          {isUnlocked ? (
+            <EmojiIcon emoji={achievement.icon} size={24} />
+          ) : (
+            <MaterialIcons name="lock" size={24} color={color.textSubtle} />
+          )}
         </View>
         <View style={{ flex: 1 }}>
           <View style={{ flexDirection: "row", alignItems: "center", marginBottom: 4 }}>

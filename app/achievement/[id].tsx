@@ -9,6 +9,7 @@ import { trpc } from "@/lib/trpc";
 import { useAuth } from "@/hooks/use-auth";
 import { useColors } from "@/hooks/use-colors";
 import MaterialIcons from "@expo/vector-icons/MaterialIcons";
+import { EmojiIcon } from "@/components/ui/emoji-icon";
 import { LinearGradient } from "expo-linear-gradient";
 import { useState } from "react";
 import { AppHeader } from "@/components/organisms/app-header";
@@ -129,7 +130,9 @@ export default function AchievementPage() {
           end={{ x: 1, y: 1 }}
           style={{ marginHorizontal: 16, borderRadius: 24, padding: 24, alignItems: "center" }}
         >
-          <Text style={{ fontSize: 64, marginBottom: 8 }}>🎉</Text>
+          <View style={{ marginBottom: 8 }}>
+            <EmojiIcon emoji="🎉" size={64} />
+          </View>
           <Text style={{ color: colors.foreground, fontSize: 28, fontWeight: "bold", textAlign: "center", marginBottom: 8 }}>
             目標達成！
           </Text>

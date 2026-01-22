@@ -4204,3 +4204,33 @@ features/create/
 - [ ] フォロワー数にバッジスタイル（背景色+ボーダー）を追加
 - [ ] ハードコードされた色をテーマトークンに統一
 - [ ] Twitterアイコン（Ionicons）を追加して視認性向上
+
+
+## UI/UX視認性改善（v6.58）
+
+### FontAwesomeアイコン導入
+- [ ] FontAwesomeパッケージのインストール
+- [ ] 絵文字（🐦、👥など）をFontAwesomeアイコンに置き換え
+- [ ] アイコンコンポーネントの作成
+
+### Twitter情報カードの視認性改善
+- [ ] 背景色・ボーダーの追加
+- [ ] ユーザー名・フォロワー数の視認性向上
+- [ ] コントラスト比の確認
+
+
+
+## UI/UX視認性改善（v6.58）
+
+### FontAwesomeアイコン導入
+- [x] EmojiIconコンポーネント作成（絵文字→FontAwesomeマッピング）
+- [x] achievements.tsxの絵文字を置き換え
+- [x] encouragement-modal.tsxの絵文字を置き換え
+- [x] achievement/[id].tsxの絵文字を置き換え
+- [x] messages/index.tsxの絵文字を置き換え
+
+### Twitter情報カードの視認性改善
+- [x] フォロワーバッジに背景色・ボーダー追加
+- [x] prefecture-participants-modal.tsxのスタイル改善
+- [x] region-participants-modal.tsxのスタイル改善
+- [x] fan-profile-modal.tsxのスタイル改善（アイコン追加）

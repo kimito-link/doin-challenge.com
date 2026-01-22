@@ -2,6 +2,7 @@ import { View, Text, Pressable, StyleSheet, Modal, Platform } from "react-native
 import { color, palette } from "@/theme/tokens";
 import { useEffect, useState, useCallback } from "react";
 import MaterialIcons from "@expo/vector-icons/MaterialIcons";
+import { EmojiIcon } from "@/components/ui/emoji-icon";
 import * as Haptics from "expo-haptics";
 import { LinearGradient } from "expo-linear-gradient";
 import { useColors } from "@/hooks/use-colors";
@@ -100,8 +101,8 @@ export function EncouragementModal({
 
           {/* メインコンテンツ */}
           <View style={styles.content}>
-            {/* 絵文字 */}
-            <Text style={styles.emoji}>{displayEmoji}</Text>
+            {/* 絵文字 → FontAwesomeアイコン */}
+            <EmojiIcon emoji={displayEmoji} size={48} />
 
             {/* タイトル */}
             <Text style={styles.title}>{messageData.title}</Text>

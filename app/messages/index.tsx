@@ -1,4 +1,5 @@
 import { View, Text, FlatList, Pressable, Image, Platform } from "react-native";
+import { EmojiIcon } from "@/components/ui/emoji-icon";
 import * as Haptics from "expo-haptics";
 import { navigate, navigateBack } from "@/lib/navigation";
 import { ScreenContainer } from "@/components/organisms/screen-container";
@@ -21,7 +22,9 @@ export default function MessagesScreen() {
     return (
       <ScreenContainer className="p-6">
         <View className="flex-1 items-center justify-center">
-          <Text className="text-6xl mb-4">💬</Text>
+          <View className="mb-4">
+            <EmojiIcon emoji="💬" size={48} />
+          </View>
           <Text className="text-lg text-muted text-center">
             メッセージを見るにはログインが必要です
           </Text>
@@ -55,7 +58,7 @@ export default function MessagesScreen() {
               className="w-12 h-12 rounded-full"
             />
           ) : (
-            <Text className="text-xl">👤</Text>
+            <EmojiIcon emoji="👤" size={24} />
           )}
         </View>
 
@@ -133,7 +136,9 @@ export default function MessagesScreen() {
         />
       ) : (
         <View className="flex-1 items-center justify-center p-6">
-          <Text className="text-6xl mb-4">💬</Text>
+          <View className="mb-4">
+            <EmojiIcon emoji="💬" size={48} />
+          </View>
           <Text className="text-lg font-bold text-foreground mb-2">
             まだメッセージがありません
           </Text>

@@ -196,10 +196,11 @@ export function FanProfileModal({
                 {/* フォロワー数 */}
                 {followersCount > 0 && (
                   <View style={styles.followersContainer}>
-                    <Text style={[styles.followersValue, { color: colors.foreground }]}>
+                    <MaterialIcons name="people" size={16} color={color.accentAlt} />
+                    <Text style={styles.followersValue}>
                       {followersCount.toLocaleString()}
                     </Text>
-                    <Text style={[styles.followersLabel, { color: colors.muted }]}>フォロワー</Text>
+                    <Text style={styles.followersLabel}>フォロワー</Text>
                   </View>
                 )}
 
@@ -375,16 +376,25 @@ const styles = StyleSheet.create({
   },
   followersContainer: {
     flexDirection: "row",
-    alignItems: "baseline",
-    marginTop: 8,
-    gap: 4,
+    alignItems: "center",
+    marginTop: 12,
+    gap: 6,
+    backgroundColor: `${color.accentAlt}20`,
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    borderRadius: 16,
+    borderWidth: 1,
+    borderColor: `${color.accentAlt}60`,
+    alignSelf: "center",
   },
   followersValue: {
-    fontSize: 14,
-    fontWeight: "600",
+    fontSize: 16,
+    fontWeight: "700",
+    color: color.accentAlt,
   },
   followersLabel: {
     fontSize: 12,
+    color: color.accentAlt,
   },
   oshikatsuSection: {
     width: "100%",
