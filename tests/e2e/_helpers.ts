@@ -28,6 +28,9 @@ const IGNORED_CONSOLE_WARNS = [
   /componentWillMount/i,
   /findDOMNode is deprecated/i,
   /Each child in a list should have a unique/i,
+  /useNativeDriver/i, // React Native Webでは正常な警告
+  /native animated module is missing/i,
+  /RCTAnimation/i,
 ];
 
 function shouldIgnoreError(text: string): boolean {

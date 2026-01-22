@@ -1,6 +1,6 @@
 import { View, Text, Pressable, StyleSheet } from "react-native";
 import { Image } from "expo-image";
-import { useColors } from "@/hooks/use-colors";
+import { Ionicons } from "@expo/vector-icons";
 import { cn } from "@/lib/utils";
 import { color } from "@/theme/tokens";
 
@@ -37,21 +37,10 @@ export interface TwitterUserCardProps {
 /**
  * Twitterユーザー情報を表示する再利用可能なカードコンポーネント
  * 
- * 使用例:
- * ```tsx
- * <TwitterUserCard
- *   user={{
- *     name: "君斗りんく＠アイドル応援",
- *     username: "idolfunch",
- *     profileImage: "https://...",
- *     followersCount: 170,
- *     description: "アイドル応援アカウント"
- *   }}
- *   size="medium"
- *   showDescription
- *   showFollowers
- * />
- * ```
+ * v6.57: 視認性改善
+ * - @usernameとフォロワー数にバッジスタイル（背景色+ボーダー）を追加
+ * - Twitterアイコンを追加
+ * - テーマトークンから色を取得するように統一
  */
 export function TwitterUserCard({
   user,
@@ -61,33 +50,40 @@ export function TwitterUserCard({
   onPress,
   className,
 }: TwitterUserCardProps) {
-  const colors = useColors();
-
   // サイズに応じた設定
   const sizeConfig = {
     small: {
       avatarSize: 36,
       nameSize: 14,
-      usernameSize: 12,
-      followersSize: 11,
+      usernameSize: 11,
+      followersSize: 10,
       descriptionSize: 12,
       gap: 8,
+      badgePaddingH: 6,
+      badgePaddingV: 2,
+      iconSize: 12,
     },
     medium: {
       avatarSize: 48,
       nameSize: 16,
-      usernameSize: 13,
-      followersSize: 12,
+      usernameSize: 12,
+      followersSize: 11,
       descriptionSize: 13,
       gap: 12,
+      badgePaddingH: 8,
+      badgePaddingV: 3,
+      iconSize: 13,
     },
     large: {
       avatarSize: 64,
       nameSize: 18,
-      usernameSize: 14,
-      followersSize: 13,
+      usernameSize: 13,
+      followersSize: 12,
       descriptionSize: 14,
       gap: 16,
+      badgePaddingH: 10,
+      badgePaddingV: 4,
+      iconSize: 14,
     },
   };
 
@@ -111,31 +107,75 @@ export function TwitterUserCard({
       />
 
       {/* ユーザー情報 */}
-      <View className="flex-1" style={{ gap: 2 }}>
+      <View className="flex-1" style={{ gap: 4 }}>
         {/* 名前 */}
         <Text
-          className="font-bold text-foreground"
-          style={{ fontSize: config.nameSize, lineHeight: config.nameSize * 1.3 }}
+          className="font-bold"
+          style={{ 
+            fontSize: config.nameSize, 
+            lineHeight: config.nameSize * 1.3,
+            color: color.textPrimary,
+          }}
           numberOfLines={1}
         >
           {user.name || "名前未設定"}
         </Text>
 
-        {/* @username + フォロワー数 */}
-        <View className="flex-row items-center" style={{ gap: 8 }}>
+        {/* @username + フォロワー数（バッジスタイル） */}
+        <View className="flex-row items-center flex-wrap" style={{ gap: 6 }}>
           {user.username && (
-            <Text
-              style={{ fontSize: config.usernameSize, color: '#FF69B4', fontWeight: '500' }}
-            >
-              @{user.username}
-            </Text>
+            <View style={[
+              styles.badge,
+              {
+                backgroundColor: `${color.twitter}20`,
+                borderColor: `${color.twitter}60`,
+                paddingHorizontal: config.badgePaddingH,
+                paddingVertical: config.badgePaddingV,
+              }
+            ]}>
+              <Ionicons 
+                name="logo-twitter" 
+                size={config.iconSize} 
+                color={color.twitter} 
+                style={{ marginRight: 4 }}
+              />
+              <Text
+                style={{ 
+                  fontSize: config.usernameSize, 
+                  color: color.twitter, 
+                  fontWeight: '600',
+                }}
+              >
+                @{user.username}
+              </Text>
+            </View>
           )}
           {showFollowers && user.followersCount !== undefined && (
-            <Text
-              style={{ fontSize: config.followersSize, color: '#FFFFFF' }}
-            >
-              {user.followersCount.toLocaleString()} フォロワー
-            </Text>
+            <View style={[
+              styles.badge,
+              {
+                backgroundColor: `${color.accentAlt}20`,
+                borderColor: `${color.accentAlt}60`,
+                paddingHorizontal: config.badgePaddingH,
+                paddingVertical: config.badgePaddingV,
+              }
+            ]}>
+              <Ionicons 
+                name="people" 
+                size={config.iconSize} 
+                color={color.accentAlt} 
+                style={{ marginRight: 4 }}
+              />
+              <Text
+                style={{ 
+                  fontSize: config.followersSize, 
+                  color: color.accentAlt,
+                  fontWeight: '600',
+                }}
+              >
+                {user.followersCount.toLocaleString()} フォロワー
+              </Text>
+            </View>
           )}
         </View>
 
@@ -145,7 +185,7 @@ export function TwitterUserCard({
             style={{ 
               fontSize: config.descriptionSize, 
               lineHeight: config.descriptionSize * 1.5, 
-              color: '#F3F4F6', 
+              color: color.textMuted, 
               marginTop: 4,
               flexWrap: 'wrap',
             }}
@@ -201,8 +241,7 @@ export function TwitterUserCompact({
         transition={200}
       />
       <Text
-        className="text-foreground font-medium"
-        style={{ fontSize }}
+        style={{ fontSize, color: color.textPrimary, fontWeight: '500' }}
         numberOfLines={1}
       >
         {user.name || user.username || "名前未設定"}
@@ -265,6 +304,12 @@ export function TwitterAvatar({
 
 const styles = StyleSheet.create({
   avatar: {
-    backgroundColor: "#333",
+    backgroundColor: color.surfaceDark,
+  },
+  badge: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    borderRadius: 12,
+    borderWidth: 1,
   },
 });

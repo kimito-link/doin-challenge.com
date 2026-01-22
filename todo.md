@@ -4187,3 +4187,20 @@ features/create/
 - [x] /api/health?schema=true でスキーマ整合性チェック
 - [x] requestId追跡機能
 - [x] Playwright E2Eスモークテスト
+
+
+## 視認性改善（v4.4）
+
+### イベント詳細ページのUI改善
+- [ ] 絵文字をFontAwesome/Ioniconsに置き換え、色を統一
+- [ ] Twitter ID、フォロワー数などの重要要素に背景色とボーダーを追加
+- [ ] 全体的な視認性の向上
+
+
+## UI視認性改善（v6.57）
+
+### TwitterUserCardコンポーネントの改善
+- [ ] @usernameにバッジスタイル（背景色+ボーダー）を追加
+- [ ] フォロワー数にバッジスタイル（背景色+ボーダー）を追加
+- [ ] ハードコードされた色をテーマトークンに統一
+- [ ] Twitterアイコン（Ionicons）を追加して視認性向上
