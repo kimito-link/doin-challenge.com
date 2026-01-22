@@ -56,9 +56,9 @@ export async function attachGuards(page: Page, testInfo: TestInfo) {
 }
 
 export async function gotoAndWait(page: Page, path: string) {
-  await page.goto(path, { waitUntil: "domcontentloaded" });
-  // 画面が落ち着くまでほんの少し待つ（Expo Webの初期レンダ対策）
-  await page.waitForTimeout(300);
+  await page.goto(path, { waitUntil: "networkidle" });
+  // 画面が落ち着くまで待つ（Expo Webの初期レンダ対策）
+  await page.waitForTimeout(2000);
 }
 
 // "開けた"の判定を安定させるため、見出し候補を待つヘルパ

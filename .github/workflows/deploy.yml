@@ -158,9 +158,9 @@ jobs:
       - name: Run E2E Smoke Tests
         env:
           # デプロイされたURLを使用（フォールバックは本番URL）
-          BASE_URL: ${{ needs.frontend.outputs.deployment_url || env.PROD_URL }}
+          PLAYWRIGHT_BASE_URL: ${{ needs.frontend.outputs.deployment_url || env.PROD_URL }}
         run: |
-          echo "Testing against: $BASE_URL"
+          echo "Testing against: $PLAYWRIGHT_BASE_URL"
           pnpm e2e
       - name: Upload Test Results
         if: always()
