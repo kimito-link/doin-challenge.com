@@ -184,7 +184,6 @@ jobs:
         run: |
           failed_jobs=""
           if [ "${{ needs.preflight.result }}" == "failure" ]; then
-
             failed_jobs="$failed_jobs Preflight"
           fi
           if [ "${{ needs.ci.result }}" == "failure" ]; then
@@ -202,9 +201,9 @@ jobs:
           echo "jobs=$failed_jobs" >> $GITHUB_OUTPUT
       
       - name: Send Discord Notification
-        if: ${{ secrets.DISCORD_WEBHOOK_URL != '' }}
         env:
           DISCORD_WEBHOOK_URL: ${{ secrets.DISCORD_WEBHOOK_URL }}
+        if: env.DISCORD_WEBHOOK_URL != ''
         run: |
           curl -X POST "$DISCORD_WEBHOOK_URL" \
             -H "Content-Type: application/json" \
@@ -224,9 +223,9 @@ jobs:
             }'
       
       - name: Send Slack Notification
-        if: ${{ secrets.SLACK_WEBHOOK_URL != '' }}
         env:
           SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
+        if: env.SLACK_WEBHOOK_URL != ''
         run: |
           curl -X POST "$SLACK_WEBHOOK_URL" \
             -H "Content-Type: application/json" \
@@ -259,7 +258,10 @@ jobs:
             }'
       
       - name: Log Failure (fallback)
-        if: ${{ secrets.DISCORD_WEBHOOK_URL == '' && secrets.SLACK_WEBHOOK_URL == '' }}
+        env:
+          DISCORD_WEBHOOK_URL: ${{ secrets.DISCORD_WEBHOOK_URL }}
+          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
+        if: env.DISCORD_WEBHOOK_URL == '' && env.SLACK_WEBHOOK_URL == ''
         run: |
           echo "::error::CI/CD Pipeline Failed!"
           echo "Failed jobs: ${{ steps.failed.outputs.jobs }}"
