@@ -2,7 +2,8 @@ import { View, Text, ScrollView, TextInput, Pressable, KeyboardAvoidingView, Pla
 import * as Haptics from "expo-haptics";
 import { color, palette } from "@/theme/tokens";
 import { Image } from "expo-image";
-import { useRouter, useLocalSearchParams } from "expo-router";
+import { useLocalSearchParams } from "expo-router";
+import { navigateBack } from "@/lib/navigation/app-routes";
 import { useState, useEffect } from "react";
 import { ScreenContainer } from "@/components/organisms/screen-container";
 import { ResponsiveContainer } from "@/components/molecules/responsive-container";
@@ -50,7 +51,7 @@ const prefectures = [
 ];
 
 export default function EditChallengeScreen() {
-  const router = useRouter();
+
   const { id } = useLocalSearchParams<{ id: string }>();
   const { user } = useAuth();
   const colors = useColors();
@@ -105,7 +106,7 @@ export default function EditChallengeScreen() {
         {
           text: "OK",
           onPress: () => {
-            router.back();
+            navigateBack();
           },
         },
       ]);

@@ -4080,3 +4080,62 @@ features/create/
 - [x] スクロール時に横揺れする（水平スクロールを無効化）→ horizontal={false}を追加
 - [x] 応援メッセージの性別色分けがない（男性：青、女性：赤）→ 既に実装済み
 - [x] 応援メッセージからプロフィールへのリンクがない → アバタータップでプロフィールに遷移
+
+
+## 仕上げTDD導入・品質改善（v6.55）
+
+### lintエラー修正
+- [ ] router.push() → navigate.toXxx() に修正（10ファイル）
+- [ ] router.back() → navigateBack() に修正
+- [ ] router.replace() → navigateReplace.toXxx() に修正
+- [ ] 未使用変数の警告を修正
+
+### Playwrightスモークテスト追加
+- [ ] tests/e2e/smoke.spec.ts 作成（主要画面巡回）
+- [ ] tests/e2e/admin-smoke.spec.ts 作成（管理画面テスト）
+- [ ] console.error/warn検知の設定
+- [ ] 失敗時のrequestId出力
+
+### 視認性改善（Coolorsパレット適用）
+- [ ] Coolorsでパレット選定
+- [ ] theme.config.js の更新
+- [ ] WCAG AA準拠のコントラスト比確認
+
+
+
+## 仕上げTDD導入・品質改善（v6.55）
+
+### Phase 1: lintエラー修正
+- [x] router.push() → navigate.toXxx() に修正
+- [x] router.back() → navigateBack() に修正
+- [x] router.replace() → navigateReplace.toXxx() に修正
+
+### Phase 2: Playwrightスモークテスト追加
+- [x] Playwright設定ファイル作成
+- [x] 主要画面巡回テスト作成
+- [x] 管理画面テスト作成（既存の強化版を維持）
+
+### Phase 3: 視認性改善（Coolorsパレット適用）
+- [ ] Coolorsでパレット選定
+- [ ] theme.config.js更新
+- [ ] ダークモードコントラスト改善
+
+
+## 仕上げTDD導入・品質改善（v6.55）
+
+### lintエラー修正
+- [x] router.push() → navigate.toXxx() に修正（17ファイル）
+- [x] router.back() → navigateBack() に修正
+- [x] router.replace() → navigateReplace.toXxx() に修正
+
+### Playwrightスモークテスト追加
+- [x] Playwright設定ファイル作成（playwright.config.ts）
+- [x] 共通ヘルパ作成（tests/e2e/_helpers.ts）
+- [x] 公開画面巡回テスト作成（tests/e2e/public.smoke.spec.ts）
+- [x] 管理画面テスト（既存の強化版を維持）
+
+### 視認性改善（Refreshing Summer Funパレット）
+- [x] Coolorsパレット選定（Refreshing Summer Fun）
+- [x] theme/tokens/palette.ts 更新
+- [x] theme/tokens/semantic.ts 更新
+- [ ] 本番デプロイ後の視認性確認

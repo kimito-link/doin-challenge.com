@@ -2,15 +2,14 @@ import { FlatList, Text, View, Pressable, RefreshControl, Platform } from "react
 import * as Haptics from "expo-haptics";
 import { color, palette } from "@/theme/tokens";
 import { Image } from "expo-image";
-import { useRouter } from "expo-router";
 import { useState } from "react";
 import { ScreenContainer } from "@/components/organisms/screen-container";
 import { trpc } from "@/lib/trpc";
 import MaterialIcons from "@expo/vector-icons/MaterialIcons";
 import { AppHeader } from "@/components/organisms/app-header";
+import { navigateBack } from "@/lib/navigation/app-routes";
 
 export default function FollowingScreen() {
-  const router = useRouter();
   const [refreshing, setRefreshing] = useState(false);
   
   const { data: following, isLoading, refetch } = trpc.follows.following.useQuery();
@@ -36,7 +35,7 @@ export default function FollowingScreen() {
         showCharacters={false}
         rightElement={
           <Pressable
-            onPress={() => router.back()}
+            onPress={() => navigateBack()}
             style={{ flexDirection: "row", alignItems: "center" }}
           >
             <MaterialIcons name="arrow-back" size={24} color={color.textWhite} />

@@ -11,7 +11,8 @@
 
 import { useEffect, useState } from "react";
 import { View, Text, ActivityIndicator } from "react-native";
-import { useLocalSearchParams, useRouter, usePathname } from "expo-router";
+import { useLocalSearchParams, usePathname } from "expo-router";
+import { navigateReplace } from "@/lib/navigation/app-routes";
 import { trpc } from "@/lib/trpc";
 import { extractIdFromSlug, getCanonicalProfileUrl, isCanonicalUrl } from "@/lib/slug";
 import { ScreenContainer } from "@/components/organisms/screen-container";
@@ -22,7 +23,7 @@ import ProfileScreen from "@/app/profile/[userId]";
 
 export default function SharedProfileScreen() {
   const colors = useColors();
-  const router = useRouter();
+
   const pathname = usePathname();
   const { id } = useLocalSearchParams<{ id: string }>();
   
@@ -47,10 +48,10 @@ export default function SharedProfileScreen() {
       if (!isCanonicalUrl(pathname, canonicalUrl)) {
         setIsRedirecting(true);
         // 正規URLにリダイレクト（履歴を置換）
-        router.replace(canonicalUrl as any);
+        navigateReplace.withUrl(canonicalUrl);
       }
     }
-  }, [user, twitterId, pathname, router]);
+  }, [user, twitterId, pathname]);
   
   if (isLoading || isRedirecting) {
     return (
@@ -89,12 +90,12 @@ export default function SharedProfileScreen() {
 
 // 既存のプロフィール画面をラップ
 function ProfileScreenWrapper({ userId }: { userId: number }) {
-  const router = useRouter();
+
   
   useEffect(() => {
     // 内部ルートにリダイレクト（ユーザーには見えない）
-    router.replace(`/profile/${userId}` as any);
-  }, [userId, router]);
+    navigateReplace.withUrl(`/profile/${userId}`);
+  }, [userId]);
   
   return (
     <ScreenContainer className="flex-1 items-center justify-center">

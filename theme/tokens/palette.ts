@@ -1,156 +1,169 @@
 // theme/tokens/palette.ts
 // #RRGGBB を置く唯一の場所（原則ここ以外禁止）
+// 
+// v6.55: Refreshing Summer Fun パレット適用
+// - 視認性改善（WCAG AA準拠）
+// - ダークティール背景で目に優しく
+// - オレンジ×イエローで動員・応援のエネルギーを表現
 
 export const palette = {
-  // Brand / Accent
-  pink500: "#EC4899",
-  pink600: "#DB2777",
-  purple500: "#8B5CF6",
-  purple600: "#7C3AED",
-  indigo500: "#6366F1",
-  amber400: "#FBBF24", // 旧 #DD6500 を統一する先（推奨）
-  orange500: "#DD6500", // レガシー（段階的に amber400 へ移行）
+  // Brand / Accent - Refreshing Summer Fun
+  primary500: "#FB8500",      // オレンジ（メインアクション）
+  primary600: "#E07800",      // オレンジ（ホバー）
+  accent500: "#FFB703",       // イエロー（アクセント）
+  accent600: "#E5A503",       // イエロー（ホバー）
+  teal500: "#219EBC",         // ティール（セカンダリ）
+  teal600: "#1A7A94",         // ティール（ホバー）
+  
+  // Legacy Brand Colors (後方互換性)
+  pink500: "#FB8500",         // → primary500 に統一
+  pink600: "#E07800",         // → primary600 に統一
+  purple500: "#FFB703",       // → accent500 に統一
+  purple600: "#E5A503",       // → accent600 に統一
+  indigo500: "#219EBC",       // → teal500 に統一
+  amber400: "#FFB703",        // → accent500 に統一
+  orange500: "#FB8500",       // → primary500 に統一
 
-  // Neutral (dark UI)
-  gray900: "#0D1117", // 背景のさらに奥
-  gray850: "#111317", // 画像プレースホルダ等
-  gray800: "#1A1D21", // surface（カード背景）
-  gray750: "#161B22", // surface alt
-  gray700: "#2D3139", // border
-  gray600: "#374151", // border alt
+  // Neutral (dark UI) - Refreshing Summer Fun
+  gray900: "#023047",         // 背景（ダークティール）
+  gray850: "#02374F",         // 画像プレースホルダ等
+  gray800: "#034063",         // surface（カード背景）
+  gray750: "#034A73",         // surface alt
+  gray700: "#0A5578",         // border
+  gray600: "#0D6A8A",         // border alt
 
-  // Neutral (text)
-  gray500: "#6B7280", // hint text
-  gray400: "#9CA3AF", // secondary text / placeholder
-  gray300: "#D1D5DB", // muted text
-  gray200: "#CBD5E0", // subtle text
-  gray100: "#E5E7EB", // primary text
+  // Neutral (text) - 視認性改善
+  gray500: "#5BA3C4",         // hint text
+  gray400: "#7AB8D4",         // secondary text / placeholder
+  gray300: "#8ECAE6",         // muted text（メインテキスト）
+  gray200: "#A8D8EF",         // subtle text
+  gray100: "#C5E5F5",         // primary text（最も明るい）
   white: "#FFFFFF",
 
   // Semantic statuses
-  green500: "#22C55E",
-  green400: "#4ADE80",
-  green600: "#10B981",
-  red500: "#EF4444",
-  red400: "#F87171",
-  red600: "#DC2626",
-  yellow500: "#F59E0B",
-  yellow400: "#FBBF24",
-  blue500: "#3B82F6",
-  blue400: "#60A5FA",
-  blue600: "#2563EB",
+  green500: "#2A9D8F",        // success（ティール系）
+  green400: "#3DB8A9",        // success light
+  green600: "#1F7A6E",        // success dark
+  red500: "#E76F51",          // error（コーラル）
+  red400: "#EC8B73",          // error light
+  red600: "#D45A3C",          // error dark
+  yellow500: "#FFB703",       // warning（イエロー）
+  yellow400: "#FFC733",       // warning light
+  blue500: "#219EBC",         // info（ティール）
+  blue400: "#48CAE4",         // info light
+  blue600: "#1A7A94",         // info dark
 
   // Rank / Special
-  gold: "#FFD700",
-  silver: "#C0C0C0",
-  bronze: "#CD7F32",
+  gold: "#FFB703",            // ゴールド（アクセントと統一）
+  silver: "#8ECAE6",          // シルバー（ライトブルー）
+  bronze: "#E76F51",          // ブロンズ（コーラル）
 
   // Social
   twitter: "#1DA1F2",
   line: "#06C755",
 
-  // Japan Map - Region Colors
-  regionHokkaido: "#4FC3F7",      // 水色
-  regionTohoku: "#B39DDB",        // 紫
-  regionKanto: "#81C784",         // 緑
-  regionChubu: "#FFF176",         // 黄色
-  regionKansai: "#FFB74D",        // オレンジ
-  regionChugokuShikoku: "#F48FB1", // ピンク
-  regionChugoku: "#F48FB1",       // ピンク（中国）
-  regionShikoku: "#CE93D8",       // 紫（四国）
-  regionKyushuOkinawa: "#EF5350", // 赤
-  regionKyushu: "#EF5350",        // 赤（九州）
-  regionOkinawa: "#FF8A65",       // オレンジ（沖縄）
+  // Japan Map - Region Colors（既存維持）
+  regionHokkaido: "#48CAE4",
+  regionTohoku: "#8ECAE6",
+  regionKanto: "#2A9D8F",
+  regionChubu: "#FFB703",
+  regionKansai: "#FB8500",
+  regionChugokuShikoku: "#E76F51",
+  regionChugoku: "#E76F51",
+  regionShikoku: "#F4A261",
+  regionKyushuOkinawa: "#E76F51",
+  regionKyushu: "#E76F51",
+  regionOkinawa: "#F4A261",
 
   // Japan Map - Region Border Colors
-  borderHokkaido: "#0288D1",
-  borderTohoku: "#7B1FA2",
-  borderKanto: "#388E3C",
-  borderChubu: "#FBC02D",
-  borderKansai: "#F57C00",
-  borderChugoku: "#C2185B",
-  borderShikoku: "#8E24AA",
-  borderKyushu: "#C62828",
-  borderOkinawa: "#E64A19",
+  borderHokkaido: "#0096C7",
+  borderTohoku: "#0077B6",
+  borderKanto: "#1F7A6E",
+  borderChubu: "#E5A503",
+  borderKansai: "#E07800",
+  borderChugoku: "#D45A3C",
+  borderShikoku: "#E08A4D",
+  borderKyushu: "#D45A3C",
+  borderOkinawa: "#E08A4D",
 
   // Heatmap Colors (Yellow → Orange → Red)
-  heatmapNone: "#E8D4D4",         // 参加者なし
-  heatmapLevel1: "#FFF9C4",       // 1-2人
-  heatmapLevel2: "#FFEB3B",       // 3-5人
-  heatmapLevel3: "#FFCC80",       // 6-10人
-  heatmapLevel4: "#FF9800",       // 11-20人
-  heatmapLevel5: "#F57C00",       // 21-50人
-  heatmapLevel6: "#E53935",       // 51-100人
-  heatmapLevel7: "#B71C1C",       // 100人以上
+  heatmapNone: "#034063",
+  heatmapLevel1: "#FFB703",
+  heatmapLevel2: "#FFA500",
+  heatmapLevel3: "#FB8500",
+  heatmapLevel4: "#F4A261",
+  heatmapLevel5: "#E76F51",
+  heatmapLevel6: "#D45A3C",
+  heatmapLevel7: "#C04030",
 
   // Heatmap Intensity Colors (for deformed map)
-  heatIntense1: "#FF7043",
-  heatIntense2: "#FF5722",
-  heatIntense3: "#F44336",
-  heatIntense4: "#D32F2F",
-  heatIntense5: "#B71C1C",
-  heatIntenseBorder1: "#F4511E",
-  heatIntenseBorder2: "#E64A19",
-  heatIntenseBorder3: "#D32F2F",
-  heatIntenseBorder4: "#B71C1C",
-  heatIntenseBorder5: "#7F0000",
+  heatIntense1: "#FB8500",
+  heatIntense2: "#F4A261",
+  heatIntense3: "#E76F51",
+  heatIntense4: "#D45A3C",
+  heatIntense5: "#C04030",
+  heatIntenseBorder1: "#E07800",
+  heatIntenseBorder2: "#E08A4D",
+  heatIntenseBorder3: "#D45A3C",
+  heatIntenseBorder4: "#C04030",
+  heatIntenseBorder5: "#A03020",
 
   // Map UI
-  mapWater: "#A8D5E5",            // 海の色
-  mapStroke: "#666666",           // 境界線
-  mapText: "#333333",             // 地図上のテキスト
-  mapInactive: "#3A3F47",         // 参加者なしの都道府県
-  mapHighlight: "#FF6B6B",        // ハイライト
+  mapWater: "#023047",
+  mapStroke: "#0A5578",
+  mapText: "#8ECAE6",
+  mapInactive: "#034063",
+  mapHighlight: "#FB8500",
 
   // Rarity Colors (Achievements)
-  rarityCommon: "#9CA3AF",        // コモン（灰色）
-  rarityRare: "#3B82F6",          // レア（青）
-  rarityEpic: "#8B5CF6",          // エピック（紫）
-  rarityLegendary: "#F59E0B",     // レジェンダリー（オレンジ）
+  rarityCommon: "#5BA3C4",
+  rarityRare: "#219EBC",
+  rarityEpic: "#FFB703",
+  rarityLegendary: "#FB8500",
 
   // Rarity Card Colors
-  rarityCommonBorder: "#A0AEC0",
-  rarityCommonText: "#E2E8F0",
-  rarityCommonBadgeBg: "#718096",
-  rarityUncommonBg: "#1A4731",
-  rarityUncommonBorder: "#48BB78",
-  rarityUncommonText: "#9AE6B4",
-  rarityUncommonBadgeBg: "#38A169",
-  rarityRareBg: "#1A365D",
-  rarityRareBorder: "#63B3ED",
-  rarityRareText: "#90CDF4",
-  rarityRareBadgeBg: "#4299E1",
-  rarityEpicBg: "#44337A",
-  rarityEpicBorder: "#B794F4",
-  rarityEpicText: "#D6BCFA",
-  rarityEpicBadgeBg: "#9F7AEA",
-  rarityLegendaryBg: "#744210",
-  rarityLegendaryBorder: "#F6E05E",
-  rarityLegendaryText: "#FAF089",
-  rarityLegendaryBadgeBg: "#ECC94B",
-  rarityLegendaryBadgeText: "#1A202C",
+  rarityCommonBorder: "#7AB8D4",
+  rarityCommonText: "#8ECAE6",
+  rarityCommonBadgeBg: "#5BA3C4",
+  rarityUncommonBg: "#034A73",
+  rarityUncommonBorder: "#2A9D8F",
+  rarityUncommonText: "#3DB8A9",
+  rarityUncommonBadgeBg: "#2A9D8F",
+  rarityRareBg: "#034063",
+  rarityRareBorder: "#48CAE4",
+  rarityRareText: "#8ECAE6",
+  rarityRareBadgeBg: "#219EBC",
+  rarityEpicBg: "#0A5578",
+  rarityEpicBorder: "#FFB703",
+  rarityEpicText: "#FFC733",
+  rarityEpicBadgeBg: "#FFB703",
+  rarityLegendaryBg: "#0D6A8A",
+  rarityLegendaryBorder: "#FB8500",
+  rarityLegendaryText: "#FFA500",
+  rarityLegendaryBadgeBg: "#FB8500",
+  rarityLegendaryBadgeText: "#023047",
 
   // Tutorial / Overlay
-  overlayDark: "#1a1a2e",         // オーバーレイ背景
-  overlayText: "#1a1a2e",         // オーバーレイテキスト
+  overlayDark: "#023047",
+  overlayText: "#023047",
 
   // Confetti / Celebration Colors
-  confettiTeal: "#4ECDC4",
-  confettiYellow: "#FFE66D",
-  confettiMint: "#95E1D3",
-  confettiCoral: "#F38181",
+  confettiTeal: "#2A9D8F",
+  confettiYellow: "#FFB703",
+  confettiMint: "#48CAE4",
+  confettiCoral: "#E76F51",
 
   // Tutorial Balloon Colors
-  balloonLight: "#FFB3B3",
-  balloonLighter: "#FFD9D9",
-  balloonRed: "#FF4444",
-  balloonPink: "#FFCCCC",
-  balloonMedium: "#FF8888",
-  balloonPale: "#FFE0E0",
+  balloonLight: "#8ECAE6",
+  balloonLighter: "#C5E5F5",
+  balloonRed: "#E76F51",
+  balloonPink: "#F4A261",
+  balloonMedium: "#FB8500",
+  balloonPale: "#FFB703",
 
   // Tutorial UI
-  tutorialBlue: "#4A90D9",
-  tutorialText: "#333333",
+  tutorialBlue: "#219EBC",
+  tutorialText: "#8ECAE6",
   shadowBlack: "#000",
 } as const;
 

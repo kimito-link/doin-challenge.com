@@ -10,7 +10,7 @@ import { useColors } from "@/hooks/use-colors";
 import { trpc } from "@/lib/trpc";
 import { View, Text, ScrollView, Pressable, ActivityIndicator } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
-import { useRouter } from "expo-router";
+import { navigate } from "@/lib/navigation/app-routes";
 
 interface StatCard {
   title: string;
@@ -22,7 +22,7 @@ interface StatCard {
 
 export default function AdminDashboard() {
   const colors = useColors();
-  const router = useRouter();
+
 
   // 統計データを取得
   const { data: challenges, isLoading: loadingChallenges } = trpc.events.list.useQuery();
@@ -79,7 +79,7 @@ export default function AdminDashboard() {
             {stats.map((stat, index) => (
               <Pressable
                 key={index}
-                onPress={() => stat.path && router.push(stat.path as any)}
+                onPress={() => stat.path && navigate.toAdminPath(stat.path)}
                 style={({ pressed }) => ({
                   flex: 1,
                   minWidth: 150,
@@ -109,7 +109,7 @@ export default function AdminDashboard() {
           <Text className="text-lg font-semibold text-foreground mb-3">クイックアクション</Text>
           <View className="gap-3">
             <Pressable
-              onPress={() => router.push("/admin/system" as any)}
+              onPress={() => navigate.toAdminPath("/admin/system")}
               style={({ pressed }) => ({
                 flexDirection: "row",
                 alignItems: "center",
@@ -135,7 +135,7 @@ export default function AdminDashboard() {
             </Pressable>
 
             <Pressable
-              onPress={() => router.push("/admin/categories" as any)}
+              onPress={() => navigate.toAdminPath("/admin/categories")}
               style={({ pressed }) => ({
                 flexDirection: "row",
                 alignItems: "center",
@@ -161,7 +161,7 @@ export default function AdminDashboard() {
             </Pressable>
 
             <Pressable
-              onPress={() => router.push("/admin/challenges" as any)}
+              onPress={() => navigate.toAdminPath("/admin/challenges")}
               style={({ pressed }) => ({
                 flexDirection: "row",
                 alignItems: "center",
@@ -187,7 +187,7 @@ export default function AdminDashboard() {
             </Pressable>
 
             <Pressable
-              onPress={() => router.push("/admin/api-usage" as any)}
+              onPress={() => navigate.toApiUsage()}
               style={({ pressed }) => ({
                 flexDirection: "row",
                 alignItems: "center",

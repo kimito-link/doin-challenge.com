@@ -11,7 +11,8 @@
 
 import { useEffect, useState } from "react";
 import { View, Text, ActivityIndicator } from "react-native";
-import { useLocalSearchParams, useRouter, usePathname } from "expo-router";
+import { useLocalSearchParams, usePathname } from "expo-router";
+import { navigateReplace } from "@/lib/navigation/app-routes";
 import { trpc } from "@/lib/trpc";
 import { extractIdFromSlug, getCanonicalEventUrl, isCanonicalUrl } from "@/lib/slug";
 import { ScreenContainer } from "@/components/organisms/screen-container";
@@ -19,7 +20,7 @@ import { useColors } from "@/hooks/use-colors";
 
 export default function SharedEventScreen() {
   const colors = useColors();
-  const router = useRouter();
+
   const pathname = usePathname();
   const { id } = useLocalSearchParams<{ id: string }>();
   
@@ -42,15 +43,15 @@ export default function SharedEventScreen() {
       if (!isCanonicalUrl(pathname, canonicalUrl)) {
         setIsRedirecting(true);
         // 正規URLにリダイレクト（履歴を置換）
-        router.replace(canonicalUrl as any);
+        navigateReplace.withUrl(canonicalUrl);
         return;
       }
       
       // 内部ルートにリダイレクト
       setIsRedirecting(true);
-      router.replace(`/event/${parsedChallengeId}` as any);
+      navigateReplace.withUrl(`/event/${parsedChallengeId}`);
     }
-  }, [challenge, parsedChallengeId, pathname, router]);
+  }, [challenge, parsedChallengeId, pathname]);
   
   if (isLoading || isRedirecting) {
     return (

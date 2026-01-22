@@ -3,49 +3,48 @@ import { defineConfig, devices } from "@playwright/test";
 /**
  * Playwright E2E Test Configuration
  * 
- * 管理画面の回帰テスト用設定
+ * スモークテスト + 管理画面の回帰テスト用設定
  * - console.error / 4xx-5xx / pageerror の自動検出
  * - 失敗時のtrace + screenshot + requestId保存
  */
+
+const baseURL = process.env.PLAYWRIGHT_BASE_URL ?? process.env.E2E_BASE_URL ?? "https://doin-challenge.com";
+
 export default defineConfig({
   testDir: "./tests/e2e",
   fullyParallel: true,
   forbidOnly: !!process.env.CI,
   retries: process.env.CI ? 2 : 0,
   workers: process.env.CI ? 1 : undefined,
-  reporter: [
-    ["html", { open: "never" }],
-    ["list"],
-  ],
+  reporter: process.env.CI 
+    ? [["github"], ["html", { open: "never" }]] 
+    : [["list"], ["html", { open: "never" }]],
   
   use: {
-    // ベースURL（開発サーバー）
-    baseURL: process.env.E2E_BASE_URL || "http://localhost:8081",
-    
-    // トレース設定（失敗時のみ保存）
-    trace: "on-first-retry",
-    
-    // スクリーンショット設定（失敗時のみ保存）
+    baseURL,
+    trace: "retain-on-failure",
     screenshot: "only-on-failure",
-    
-    // ビデオ設定（失敗時のみ保存）
-    video: "on-first-retry",
-    
-    // タイムアウト設定
+    video: "retain-on-failure",
     actionTimeout: 10000,
     navigationTimeout: 30000,
   },
 
-  // テスト全体のタイムアウト
   timeout: 60000,
-
-  // 出力ディレクトリ
+  expect: { timeout: 10000 },
   outputDir: "test-results",
 
   projects: [
-    {
-      name: "chromium",
-      use: { ...devices["Desktop Chrome"] },
+    { 
+      name: "public-chromium", 
+      use: { ...devices["Desktop Chrome"] } 
+    },
+    // admin は storageState がある時だけ実運用（テスト側でskip制御）
+    { 
+      name: "admin-chromium", 
+      use: { 
+        ...devices["Desktop Chrome"], 
+        storageState: "tests/.auth/admin.json" 
+      } 
     },
   ],
 

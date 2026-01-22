@@ -8,7 +8,7 @@
 import { ScreenContainer } from "@/components/organisms/screen-container";
 import { useColors } from "@/hooks/use-colors";
 import { apiGet, getErrorMessage } from "@/lib/api";
-import { useRouter } from "expo-router";
+import { navigateBack } from "@/lib/navigation/app-routes";
 import { useEffect, useState, useCallback } from "react";
 import {
   Text,
@@ -56,7 +56,7 @@ interface DashboardData {
 
 export default function ApiUsageDashboard() {
   const colors = useColors();
-  const router = useRouter();
+
   const [data, setData] = useState<DashboardData | null>(null);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
@@ -157,7 +157,7 @@ export default function ApiUsageDashboard() {
             </Text>
           </View>
           <Pressable
-            onPress={() => router.back()}
+            onPress={() => navigateBack()}
             style={({ pressed }) => [
               {
                 padding: 8,

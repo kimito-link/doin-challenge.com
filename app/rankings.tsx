@@ -2,7 +2,7 @@ import { FlatList, Text, View, Pressable, RefreshControl, Platform } from "react
 import * as Haptics from "expo-haptics";
 import { color, palette } from "@/theme/tokens";
 import { Image } from "expo-image";
-import { useRouter } from "expo-router";
+import { navigateBack } from "@/lib/navigation/app-routes";
 import { useState } from "react";
 import { ScreenContainer } from "@/components/organisms/screen-container";
 import { trpc } from "@/lib/trpc";
@@ -42,7 +42,7 @@ const periodLabels: Record<PeriodType, string> = {
 const rankColors = [color.rankGold, color.rankSilver, color.rankBronze];
 
 export default function RankingsScreen() {
-  const router = useRouter();
+
   const { user } = useAuth();
   const [refreshing, setRefreshing] = useState(false);
   const [period, setPeriod] = useState<PeriodType>("monthly");
@@ -78,7 +78,7 @@ export default function RankingsScreen() {
         showCharacters={false}
         rightElement={
           <Pressable
-            onPress={() => router.back()}
+            onPress={() => navigateBack()}
             style={{ flexDirection: "row", alignItems: "center" }}
           >
             <MaterialIcons name="arrow-back" size={24} color={color.textWhite} />

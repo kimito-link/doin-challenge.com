@@ -20,11 +20,11 @@ import {
   Platform,
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
-import { useRouter } from "expo-router";
+import { navigate } from "@/lib/navigation/app-routes";
 
 export default function ChallengesScreen() {
   const colors = useColors();
-  const router = useRouter();
+
   const [refreshing, setRefreshing] = useState(false);
   const [filter, setFilter] = useState<"all" | "public" | "private">("all");
 
@@ -244,7 +244,7 @@ export default function ChallengesScreen() {
                   {/* アクション */}
                   <View className="flex-row gap-2 pt-3 border-t border-border">
                     <Pressable
-                      onPress={() => router.push(`/challenge/${challenge.id}` as any)}
+                      onPress={() => navigate.toAdminChallenge(challenge.id)}
                       style={({ pressed }) => ({
                         flex: 1,
                         flexDirection: "row",

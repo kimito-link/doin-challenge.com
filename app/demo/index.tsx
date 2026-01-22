@@ -14,7 +14,7 @@ import {
   ActivityIndicator,
   Platform,
 } from "react-native";
-import { useRouter } from "expo-router";
+import { navigate } from "@/lib/navigation/app-routes";
 import { ScreenContainer } from "@/components/organisms/screen-container";
 import { useColors } from "@/hooks/use-colors";
 import { Ionicons } from "@expo/vector-icons";
@@ -41,7 +41,7 @@ import {
 
 export default function DemoScreen() {
   const colors = useColors();
-  const router = useRouter();
+
   const [challenge, setChallenge] = useState<(DemoChallenge & { userState: DemoState }) | null>(null);
   const [loading, setLoading] = useState(true);
   const [joining, setJoining] = useState(false);
@@ -157,7 +157,7 @@ export default function DemoScreen() {
   };
 
   const handleLogin = () => {
-    router.push("/");
+    navigate.toHome();
   };
 
   // アニメーションスタイル

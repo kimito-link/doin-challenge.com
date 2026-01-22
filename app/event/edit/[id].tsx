@@ -2,7 +2,8 @@ import { View, Text, TextInput, ScrollView, Pressable, KeyboardAvoidingView, Pla
 import * as Haptics from "expo-haptics";
 import { color, palette } from "@/theme/tokens";
 import { Image } from "expo-image";
-import { useLocalSearchParams, useRouter } from "expo-router";
+import { useLocalSearchParams } from "expo-router";
+import { navigateBack } from "@/lib/navigation/app-routes";
 import { useState, useEffect, useRef } from "react";
 import { ScreenContainer } from "@/components/organisms/screen-container";
 import { trpc } from "@/lib/trpc";
@@ -27,7 +28,7 @@ import {
  */
 export default function EditChallengeScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
-  const router = useRouter();
+
   const { user } = useAuth();
   const colors = useColors();
   const scrollViewRef = useRef<ScrollView>(null);
@@ -66,7 +67,7 @@ export default function EditChallengeScreen() {
       showAlert("更新完了", "チャレンジを更新しました", [
         {
           text: "OK",
-          onPress: () => router.back(),
+          onPress: () => navigateBack(),
         },
       ]);
     },
@@ -154,7 +155,7 @@ export default function EditChallengeScreen() {
               paddingVertical: 12,
               borderRadius: 8,
             }}
-            onPress={() => router.back()}
+            onPress={() => navigateBack()}
           >
             <Text style={{ color: "#fff", fontWeight: "600" }}>戻る</Text>
           </Pressable>
@@ -182,7 +183,7 @@ export default function EditChallengeScreen() {
               paddingVertical: 12,
               borderRadius: 8,
             }}
-            onPress={() => router.back()}
+            onPress={() => navigateBack()}
           >
             <Text style={{ color: "#fff", fontWeight: "600" }}>戻る</Text>
           </Pressable>
@@ -546,7 +547,7 @@ export default function EditChallengeScreen() {
                 borderWidth: 1,
                 borderColor: color.border,
               }}
-              onPress={() => router.back()}
+              onPress={() => navigateBack()}
             >
               <Text style={{ color: colors.muted, fontSize: 16, fontWeight: "600" }}>
                 キャンセル

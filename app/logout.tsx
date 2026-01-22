@@ -2,7 +2,7 @@ import { Text, View, Platform } from "react-native";
 import { color, palette } from "@/theme/tokens";
 import { useState, useEffect } from "react";
 import { Image } from "expo-image";
-import { useRouter } from "expo-router";
+import { navigateReplace } from "@/lib/navigation/app-routes";
 import { ScreenContainer } from "@/components/organisms/screen-container";
 import { useAuth } from "@/hooks/use-auth";
 import MaterialIcons from "@expo/vector-icons/MaterialIcons";
@@ -28,7 +28,7 @@ const logoutMessages = [
 ];
 
 export default function LogoutScreen() {
-  const router = useRouter();
+
   const { logout, isAuthenticated } = useAuth();
   const [isLoggingOut, setIsLoggingOut] = useState(false);
   const [logoutComplete, setLogoutComplete] = useState(false);
@@ -200,7 +200,7 @@ export default function LogoutScreen() {
           <View style={{ width: "100%", maxWidth: 400, gap: 12, marginTop: 24 }}>
             {/* ホームページに戻る */}
             <Button
-              onPress={() => router.replace("/")}
+              onPress={() => navigateReplace.toHomeRoot()}
               variant="primary"
               icon="home"
               fullWidth

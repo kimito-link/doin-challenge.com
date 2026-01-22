@@ -2,7 +2,8 @@ import { ScrollView, Text, View, Pressable, Share, Alert, Platform } from "react
 import * as Haptics from "expo-haptics";
 import { color, palette } from "@/theme/tokens";
 import { Image } from "expo-image";
-import { useLocalSearchParams, useRouter } from "expo-router";
+import { useLocalSearchParams } from "expo-router";
+import { navigateBack } from "@/lib/navigation/app-routes";
 import { ScreenContainer } from "@/components/organisms/screen-container";
 import { trpc } from "@/lib/trpc";
 import { useAuth } from "@/hooks/use-auth";
@@ -27,7 +28,7 @@ type Participation = {
 
 export default function AchievementPage() {
   const colors = useColors();
-  const router = useRouter();
+
   const { id } = useLocalSearchParams<{ id: string }>();
   const { user } = useAuth();
   const challengeId = parseInt(id || "0", 10);
@@ -78,7 +79,7 @@ export default function AchievementPage() {
           <Pressable
             onPress={() => {
               if (Platform.OS !== "web") Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-              router.back();
+              navigateBack();
             }}
             style={({ pressed }) => [{ marginTop: 16, paddingHorizontal: 24, paddingVertical: 12, backgroundColor: color.accentPrimary, borderRadius: 24 }, pressed && { opacity: 0.8, transform: [{ scale: 0.97 }] }]}
           >
@@ -106,7 +107,7 @@ export default function AchievementPage() {
                 <MaterialIcons name="share" size={24} color={colors.foreground} />
               </Pressable>
               <Pressable
-                onPress={() => { if (Platform.OS !== "web") Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light); router.back(); }}
+                onPress={() => { if (Platform.OS !== "web") Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light); navigateBack(); }}
                 style={({ pressed }) => [{ flexDirection: "row", alignItems: "center" }, pressed && { opacity: 0.7, transform: [{ scale: 0.97 }] }]}
               >
                 <MaterialIcons name="arrow-back" size={24} color={colors.foreground} />

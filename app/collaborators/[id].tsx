@@ -2,7 +2,8 @@ import { Text, View, Pressable, ScrollView, TextInput, Alert , Platform} from "r
 import * as Haptics from "expo-haptics";
 import { color, palette } from "@/theme/tokens";
 import { Image } from "expo-image";
-import { useLocalSearchParams, useRouter } from "expo-router";
+import { useLocalSearchParams } from "expo-router";
+import { navigateBack } from "@/lib/navigation/app-routes";
 import { useState } from "react";
 import { ScreenContainer } from "@/components/organisms/screen-container";
 import { trpc } from "@/lib/trpc";
@@ -284,7 +285,7 @@ function InviteForm({
 export default function CollaboratorsScreen() {
   const colors = useColors();
   const { id } = useLocalSearchParams<{ id: string }>();
-  const router = useRouter();
+
   const { user } = useAuth();
   const utils = trpc.useUtils();
 
@@ -388,7 +389,7 @@ export default function CollaboratorsScreen() {
         <View style={{ flex: 1, alignItems: "center", justifyContent: "center" }}>
           <Text style={{ color: color.textMuted }}>チャレンジが見つかりません</Text>
           <Pressable
-            onPress={() => router.back()}
+            onPress={() => navigateBack()}
             style={{ marginTop: 16, padding: 12 }}
           >
             <Text style={{ color: color.accentPrimary }}>戻る</Text>
@@ -407,7 +408,7 @@ export default function CollaboratorsScreen() {
             この機能は主催者のみ利用できます
           </Text>
           <Pressable
-            onPress={() => router.back()}
+            onPress={() => navigateBack()}
             style={{ marginTop: 16, padding: 12 }}
           >
             <Text style={{ color: color.accentPrimary }}>戻る</Text>
@@ -426,7 +427,7 @@ export default function CollaboratorsScreen() {
           showCharacters={false}
           rightElement={
             <Pressable
-              onPress={() => router.back()}
+              onPress={() => navigateBack()}
               style={{ flexDirection: "row", alignItems: "center" }}
             >
               <MaterialIcons name="arrow-back" size={24} color={colors.foreground} />

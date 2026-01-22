@@ -1,7 +1,8 @@
 import { Text, View, Pressable, ScrollView, ActivityIndicator, Alert, TextInput , Platform} from "react-native";
 import * as Haptics from "expo-haptics";
 import { color, palette } from "@/theme/tokens";
-import { useRouter, useLocalSearchParams } from "expo-router";
+import { useLocalSearchParams } from "expo-router";
+import { navigateBack } from "@/lib/navigation/app-routes";
 import { useState } from "react";
 import { ScreenContainer } from "@/components/organisms/screen-container";
 import { trpc } from "@/lib/trpc";
@@ -13,7 +14,7 @@ import { AppHeader } from "@/components/organisms/app-header";
 
 export default function ManageCommentsScreen() {
   const colors = useColors();
-  const router = useRouter();
+
   const { id } = useLocalSearchParams<{ id: string }>();
   const challengeId = parseInt(id || "0", 10);
   const { user, isAuthenticated } = useAuth();
@@ -128,7 +129,7 @@ export default function ManageCommentsScreen() {
           showCharacters={false}
           rightElement={
             <Pressable
-              onPress={() => router.back()}
+              onPress={() => navigateBack()}
               style={{ flexDirection: "row", alignItems: "center" }}
             >
               <MaterialIcons name="arrow-back" size={24} color={colors.foreground} />

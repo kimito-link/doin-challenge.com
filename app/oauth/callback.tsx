@@ -3,7 +3,8 @@ import { LoginLoadingScreen } from "@/components/organisms/login-loading-screen"
 import * as Api from "@/lib/_core/api";
 import * as Auth from "@/lib/_core/auth";
 import * as Linking from "expo-linking";
-import { useLocalSearchParams, useRouter } from "expo-router";
+import { useLocalSearchParams } from "expo-router";
+import { navigateReplace } from "@/lib/navigation/app-routes";
 import { useEffect, useState } from "react";
 import { Text, View, StyleSheet } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
@@ -16,7 +17,7 @@ type AuthStatus = "processing" | "success" | "error";
 type AuthStep = 1 | 2 | 3; // 1: Twitter認証中, 2: ユーザー情報取得中, 3: 完了
 
 export default function OAuthCallback() {
-  const router = useRouter();
+
   const colors = useColors();
   const params = useLocalSearchParams<{
     code?: string;
@@ -82,7 +83,7 @@ export default function OAuthCallback() {
           setStatus("success");
           console.log("[OAuth] Web authentication successful, redirecting to home...");
           setTimeout(() => {
-            router.replace("/(tabs)");
+            navigateReplace.toHome();
           }, 1500);
           return;
         }
@@ -181,7 +182,7 @@ export default function OAuthCallback() {
           setStatus("success");
           console.log("[OAuth] Redirecting to home...");
           setTimeout(() => {
-            router.replace("/(tabs)");
+            navigateReplace.toHome();
           }, 1500);
           return;
         }
@@ -244,7 +245,7 @@ export default function OAuthCallback() {
           // Redirect to home after a short delay
           setTimeout(() => {
             console.log("[OAuth] Executing redirect...");
-            router.replace("/(tabs)");
+            navigateReplace.toHome();
           }, 1500);
         } else {
           console.error("[OAuth] No session token in result:", result);
@@ -261,7 +262,7 @@ export default function OAuthCallback() {
     };
 
     handleCallback();
-  }, [params.code, params.state, params.error, params.sessionToken, params.user, router]);
+  }, [params.code, params.state, params.error, params.sessionToken, params.user]);
 
   // エラー画面
   if (status === "error") {

@@ -1,34 +1,32 @@
 import { Text, View, Platform } from "react-native";
 import { color, palette } from "@/theme/tokens";
 import { Image } from "expo-image";
-import { useRouter } from "expo-router";
 import { ScreenContainer } from "@/components/organisms/screen-container";
 import { Button } from "@/components/ui/button";
+import { navigateBack, navigateReplace } from "@/lib/navigation/app-routes";
 
 // 画像アセット
 const APP_LOGO = require("@/assets/images/logos/kimitolink-logo.jpg");
 const CHARACTER_CONFUSED = require("@/assets/images/characters/link/link-yukkuri-half-eyes-mouth-open.png");
 
 export default function NotFoundScreen() {
-  const router = useRouter();
-
   // 前のページに戻る（履歴がない場合はホームに戻る）
   const handleGoBack = () => {
     if (Platform.OS === "web") {
       // Webの場合、履歴があるかチェック
       if (typeof window !== "undefined" && window.history.length > 1) {
-        router.back();
+        navigateBack();
       } else {
         // 履歴がない場合はホームに戻る
-        router.replace("/");
+        navigateReplace.toHomeRoot();
       }
     } else {
       // ネイティブの場合は直接back()を呼ぶ
       // canGoBack()がないので、try-catchで対応
       try {
-        router.back();
+        navigateBack();
       } catch {
-        router.replace("/");
+        navigateReplace.toHomeRoot();
       }
     }
   };
@@ -71,7 +69,7 @@ export default function NotFoundScreen() {
         {/* ボタン */}
         <View className="w-full max-w-sm gap-3">
           <Button
-            onPress={() => router.replace("/")}
+            onPress={() => navigateReplace.toHomeRoot()}
             variant="primary"
             icon="home"
             fullWidth

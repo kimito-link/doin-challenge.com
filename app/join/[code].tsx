@@ -6,7 +6,8 @@
 import { Text, View, ScrollView, Pressable, Platform } from "react-native";
 import { color, palette } from "@/theme/tokens";
 import { Image } from "expo-image";
-import { useLocalSearchParams, useRouter, Stack } from "expo-router";
+import { useLocalSearchParams, Stack } from "expo-router";
+import { navigate } from "@/lib/navigation/app-routes";
 import { useState, useEffect } from "react";
 import { ScreenContainer } from "@/components/organisms/screen-container";
 import { trpc } from "@/lib/trpc";
@@ -21,7 +22,7 @@ import Head from "expo-router/head";
 
 export default function JoinScreen() {
   const { code } = useLocalSearchParams<{ code: string }>();
-  const router = useRouter();
+
   const { user, isAuthenticated } = useAuth();
   const colors = useColors();
 
@@ -49,23 +50,14 @@ export default function JoinScreen() {
   const handleJoin = () => {
     if (challenge) {
       // チャレンジ詳細画面に遷移（招待コード付き）
-      router.push({
-        pathname: "/event/[id]",
-        params: { 
-          id: challenge.id.toString(),
-          inviteCode: code,
-        },
-      });
+      navigate.toEventDetailWithInvite(challenge.id, code || "");
     }
   };
 
   // ログインが必要な場合
   const handleLogin = () => {
     // ログイン画面に遷移（戻り先を保存）
-    router.push({
-      pathname: "/(tabs)/mypage",
-      params: { returnTo: `/join/${code}` },
-    });
+    navigate.toMypageWithReturn(`/join/${code}`);
   };
 
   if (isLoading) {
@@ -90,7 +82,7 @@ export default function JoinScreen() {
             このリンクは期限切れか、すでに使用されている可能性があります。
           </Text>
           <Pressable
-            onPress={() => router.push("/(tabs)")}
+            onPress={() => navigate.toHome()}
             style={{
               marginTop: 24,
               backgroundColor: color.hostAccentLegacy,
@@ -118,7 +110,7 @@ export default function JoinScreen() {
             招待者に新しいリンクを発行してもらってください。
           </Text>
           <Pressable
-            onPress={() => router.push("/(tabs)")}
+            onPress={() => navigate.toHome()}
             style={{
               marginTop: 24,
               backgroundColor: color.hostAccentLegacy,

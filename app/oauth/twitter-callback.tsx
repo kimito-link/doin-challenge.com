@@ -4,7 +4,8 @@ import { color, palette } from "@/theme/tokens";
 import { FollowSuccessModal } from "@/components/molecules/follow-success-modal";
 import * as Auth from "@/lib/_core/auth";
 import { saveTokenData } from "@/lib/token-manager";
-import { useLocalSearchParams, useRouter } from "expo-router";
+import { useLocalSearchParams } from "expo-router";
+import { navigateReplace } from "@/lib/navigation/app-routes";
 import { useEffect, useState, useRef } from "react";
 import { ActivityIndicator, Text, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
@@ -37,7 +38,7 @@ type ErrorType = "network" | "cancelled" | "expired" | "general";
 const FOLLOW_SUCCESS_SHOWN_KEY = "follow_success_modal_shown";
 
 export default function TwitterOAuthCallback() {
-  const router = useRouter();
+
   const params = useLocalSearchParams<{
     data?: string;
     error?: string;
@@ -196,14 +197,14 @@ export default function TwitterOAuthCallback() {
               // 既に表示済みの場合は直接リダイレクト
               setTimeout(() => {
                 console.log("[Twitter OAuth] Executing redirect to:", returnUrl);
-                router.replace(returnUrl as any);
+                navigateReplace.withUrl(returnUrl);
               }, 1500);
             }
           } else {
             // フォローしていない場合は直接リダイレクト
             setTimeout(() => {
               console.log("[Twitter OAuth] Executing redirect to:", returnUrl);
-              router.replace(returnUrl as any);
+              navigateReplace.withUrl(returnUrl);
             }, 1500);
           }
         } catch (parseError) {
@@ -221,7 +222,7 @@ export default function TwitterOAuthCallback() {
     };
 
     handleCallback();
-  }, [params.data, params.error, router]);
+  }, [params.data, params.error]);
 
   return (
     <SafeAreaView className="flex-1 bg-background" edges={["top", "bottom", "left", "right"]}>
@@ -304,7 +305,7 @@ export default function TwitterOAuthCallback() {
               className="mt-4 text-primary underline"
               onPress={() => {
                 // マイページに戻って再ログインを促す
-                router.replace("/(tabs)/mypage");
+                navigateReplace.toMypageTab();
               }}
             >
               マイページに戻って再ログイン
@@ -319,7 +320,7 @@ export default function TwitterOAuthCallback() {
             setShowFollowSuccessModal(false);
             // モーダルを閉じたら保存したリダイレクト先に移動
             console.log("[Twitter OAuth] Modal closed, redirecting to:", savedReturnUrl);
-            router.replace(savedReturnUrl as any);
+            navigateReplace.withUrl(savedReturnUrl);
           }}
           targetUsername={targetAccountInfo?.username || "idolfunch"}
           targetDisplayName={targetAccountInfo?.name || "君斗りんく"}

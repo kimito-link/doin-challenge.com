@@ -1,7 +1,8 @@
 import { useState, useEffect, useRef } from "react";
 import { color, palette } from "@/theme/tokens";
 import { View, Text, FlatList, TextInput, Pressable, KeyboardAvoidingView, Platform } from "react-native";
-import { useLocalSearchParams, useRouter } from "expo-router";
+import { useLocalSearchParams } from "expo-router";
+import { navigateBack } from "@/lib/navigation/app-routes";
 import { ScreenContainer } from "@/components/organisms/screen-container";
 import { trpc } from "@/lib/trpc";
 import { useAuth } from "@/hooks/use-auth";
@@ -10,7 +11,7 @@ import { AppHeader } from "@/components/organisms/app-header";
 
 export default function ConversationScreen() {
   const { partnerId, challengeId } = useLocalSearchParams<{ partnerId: string; challengeId: string }>();
-  const router = useRouter();
+
   const { user } = useAuth();
   const [message, setMessage] = useState("");
   const flatListRef = useRef<FlatList>(null);
@@ -117,7 +118,7 @@ export default function ConversationScreen() {
           title="君斗りんくの動員ちゃれんじ" 
           showCharacters={false}
           rightElement={
-            <Pressable onPress={() => router.back()} className="flex-row items-center">
+            <Pressable onPress={() => navigateBack()} className="flex-row items-center">
               <Text className="text-foreground">← 戻る</Text>
             </Pressable>
           }

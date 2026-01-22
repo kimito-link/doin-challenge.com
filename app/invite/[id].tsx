@@ -1,7 +1,8 @@
 import { Text, View, ScrollView, Pressable, Share, Platform, TextInput } from "react-native";
 import { color, palette } from "@/theme/tokens";
 import { Image } from "expo-image";
-import { useLocalSearchParams, useRouter } from "expo-router";
+import { useLocalSearchParams } from "expo-router";
+import { navigateBack } from "@/lib/navigation/app-routes";
 import { useState, useEffect } from "react";
 import { ScreenContainer } from "@/components/organisms/screen-container";
 import { trpc } from "@/lib/trpc";
@@ -15,7 +16,7 @@ import { useColors } from "@/hooks/use-colors";
 
 export default function InviteScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
-  const router = useRouter();
+
   const { user } = useAuth();
   const colors = useColors();
   const [copied, setCopied] = useState(false);
@@ -174,7 +175,7 @@ export default function InviteScreen() {
         <View style={{ flex: 1, alignItems: "center", justifyContent: "center" }}>
           <Text style={{ color: color.textMuted }}>無効なチャレンジIDです</Text>
           <Pressable
-            onPress={() => router.back()}
+            onPress={() => navigateBack()}
             style={{ marginTop: 16, padding: 12 }}
           >
             <Text style={{ color: color.hostAccentLegacy }}>戻る</Text>
@@ -190,7 +191,7 @@ export default function InviteScreen() {
         <View style={{ flex: 1, alignItems: "center", justifyContent: "center" }}>
           <Text style={{ color: color.textMuted }}>チャレンジが見つかりません (ID: {id})</Text>
           <Pressable
-            onPress={() => router.back()}
+            onPress={() => navigateBack()}
             style={{ marginTop: 16, padding: 12 }}
           >
             <Text style={{ color: color.hostAccentLegacy }}>戻る</Text>
@@ -209,7 +210,7 @@ export default function InviteScreen() {
           showCharacters={false}
           rightElement={
             <Pressable
-              onPress={() => router.back()}
+              onPress={() => navigateBack()}
               style={{ flexDirection: "row", alignItems: "center" }}
             >
               <MaterialIcons name="arrow-back" size={24} color={color.textWhite} />
