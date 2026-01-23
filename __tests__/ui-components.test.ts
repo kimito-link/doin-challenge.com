@@ -3,25 +3,25 @@ import { describe, it, expect } from "vitest";
 // Design System Tests
 describe("Design System", () => {
   describe("Colors", () => {
-    it("should have primary color defined", async () => {
+    it("should have primary color defined (pink per spec)", async () => {
       const { colors } = await import("../constants/design-system");
-      // Updated for Refreshing Summer Fun palette (orange)
-      expect(colors.primary.default).toBe("#FB8500");
+      // v6.65: 仕様確定メモ準拠 - ピンク#EC4899
+      expect(colors.primary.default).toBe("#EC4899");
     });
 
-    it("should have background colors defined", async () => {
+    it("should have background colors defined (black base per spec)", async () => {
       const { colors } = await import("../constants/design-system");
-      // Updated for Refreshing Summer Fun palette (dark teal)
-      expect(colors.background.primary).toBe("#023047");
-      expect(colors.background.secondary).toBe("#034063");
+      // v6.65: 仕様確定メモ準拠 - 黒ベース#0a0a0a
+      expect(colors.background.primary).toBe("#0a0a0a");
+      expect(colors.background.secondary).toBe("#171717");
     });
 
     it("should have status colors defined", async () => {
       const { colors } = await import("../constants/design-system");
-      // Updated for Refreshing Summer Fun palette
-      expect(colors.status.success).toBe("#2A9D8F"); // teal
-      expect(colors.status.error).toBe("#EC8B73");   // coral (lighter for contrast)
-      expect(colors.status.warning).toBe("#FFB703"); // yellow
+      // v6.65: 仕様確定メモ準拠 - 黄色廃止
+      expect(colors.status.success).toBe("#22C55E"); // green
+      expect(colors.status.error).toBe("#EF4444");   // red (danger only)
+      expect(colors.status.warning).toBe("#EC4899"); // pink (yellow abolished)
     });
   });
 

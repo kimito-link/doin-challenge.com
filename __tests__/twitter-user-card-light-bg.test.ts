@@ -42,14 +42,14 @@ describe("TwitterUserCard lightBackground", () => {
 
   describe("WCAG AA準拠チェック", () => {
     it("黒テキスト #111827 はオレンジ背景上で十分なコントラストを持つ", () => {
-      // オレンジ背景 #FB8500 上の黒テキスト #111827
+      // ピンク背景 #EC4899 上の黒テキスト #111827
       // コントラスト比は約 4.5:1 以上（WCAG AA準拠）
       // 実際の計算は複雑なので、ここでは色が正しく設定されていることを確認
       expect(LIGHT_BG_COLORS.textPrimary).toBe("#111827");
     });
 
     it("白バッジ背景はオレンジ背景上で視認性が高い", () => {
-      // 白半透明バッジは明るい背景上でも視認性を確保
+      // 白半透明バッジはピンク背景上でも視認性を確保
       expect(LIGHT_BG_COLORS.badgeBg).toContain("rgba(255,255,255");
       expect(LIGHT_BG_COLORS.badgeBg).toContain("0.92");
     });

@@ -2,67 +2,68 @@
 // アプリ全体の意味（semantic）
 // ここが "components/ 置換の受け皿" になります
 //
-// v6.55: Refreshing Summer Fun パレット適用
-// - 視認性改善（WCAG AA準拠）
-// - ダークティール背景で目に優しく
+// v6.65: 仕様確定メモ準拠 - 全体カラー方針
+// - ベースカラー: 黒
+// - 黄色: 完全廃止
+// - アクセント色: ピンク#EC4899、紫#8B5CF6、ティール#0F766Eのみ
 
 import { palette } from "./palette";
 
 export const color = {
-  // Surfaces - ダークティール背景
-  bg: palette.gray900,           // #023047
-  surface: palette.gray800,      // #034063
-  surfaceAlt: palette.gray750,   // #034A73
-  surfaceDark: palette.gray850,  // #02374F
+  // Surfaces - 黒ベース
+  bg: palette.gray900,           // #0a0a0a
+  surface: palette.gray800,      // #171717
+  surfaceAlt: palette.gray750,   // #1f1f1f
+  surfaceDark: palette.gray850,  // #111111
 
   // Borders / dividers
-  border: palette.gray700,       // #0A5578
-  borderAlt: palette.gray600,    // #0D6A8A
+  border: palette.gray700,       // #262626
+  borderAlt: palette.gray600,    // #333333
 
-  // Text - 視認性改善（ライトブルー系）
-  textPrimary: palette.gray100,  // #C5E5F5
-  textMuted: palette.gray300,    // #8ECAE6
-  textSubtle: palette.gray200,   // #A8D8EF
-  textSecondary: palette.gray400, // #7AB8D4
-  textHint: palette.gray500,     // #5BA3C4
+  // Text - 視認性確保（グレー系）
+  textPrimary: palette.gray100,  // #e5e5e5
+  textMuted: palette.gray300,    // #a3a3a3
+  textSubtle: palette.gray200,   // #d4d4d4
+  textSecondary: palette.gray400, // #737373
+  textHint: palette.gray500,     // #525252
   textWhite: palette.white,
 
-  // Accents - オレンジ×イエロー
-  accentPrimary: palette.primary500,  // #FB8500（オレンジ）
-  accentAlt: palette.accent500,       // #FFB703（イエロー）
-  accentIndigo: palette.teal500,      // #219EBC（ティール）
-  hostAccent: palette.accent500,      // #FFB703（イエロー）
-  hostAccentLegacy: palette.primary500, // #FB8500（オレンジ）
+  // Accents - ピンク・紫・ティールのみ
+  accentPrimary: palette.primary500,  // #EC4899（ピンク）
+  accentAlt: palette.accent500,       // #8B5CF6（紫）
+  accentIndigo: palette.teal500,      // #0F766E（ティール）
+  hostAccent: palette.primary500,     // #EC4899（ピンク）- 黄色廃止
+  hostAccentLegacy: palette.primary500, // #EC4899（ピンク）
 
-  // Status - 統一感のあるカラー
-  success: palette.green500,     // #2A9D8F（ティール）
+  // Status - 仕様準拠
+  success: palette.green500,     // #22C55E
   successLight: palette.green400,
   successDark: palette.green600,
-  danger: palette.red500,        // #E76F51（コーラル）
+  danger: palette.red500,        // #EF4444（危険/警告のみ赤）
   dangerLight: palette.red400,
   dangerDark: palette.red600,
-  warning: palette.yellow500,    // #FFB703（イエロー）
-  warningLight: palette.yellow400,
-  info: palette.blue500,         // #219EBC（ティール）
+  warning: palette.primary500,   // #EC4899（黄色廃止→ピンク）
+  warningLight: palette.primary600,
+  info: palette.teal500,         // #0F766E（ティール）
   infoLight: palette.blue400,
   infoDark: palette.blue600,
 
-  // Special / Rank
-  rankGold: palette.gold,        // #FFB703
-  rankSilver: palette.silver,    // #8ECAE6
-  rankBronze: palette.bronze,    // #E76F51
+  // Special / Rank - 黄色廃止
+  rankGold: palette.primary500,  // #EC4899（ピンク）
+  rankSilver: palette.silver,    // #a3a3a3
+  rankBronze: palette.accent500, // #8B5CF6（紫）
 
   // Toast backgrounds (dark variants)
-  toastSuccessBg: "#034A73",
-  toastErrorBg: "#5A2020",
-  toastWarningBg: "#5A4010",
-  toastInfoBg: "#023047",
+  toastSuccessBg: "#1a2e1a",
+  toastErrorBg: "#2e1a1a",
+  toastWarningBg: "#2e1a2e",     // ピンク系
+  toastInfoBg: "#1a2e2e",
 
-  // Additional colors for molecules
-  orange500: palette.primary500,
+  // Additional colors for molecules - 黄色廃止
+  orange500: palette.primary500, // ピンクに
   orange400: palette.primary600,
-  yellow500: palette.accent500,
-  yellow400: palette.accent600,
+  yellow500: palette.primary500, // ピンクに（黄色廃止）
+  yellow400: palette.primary600,
   teal500: palette.teal500,
   teal400: palette.teal600,
   green400: palette.green400,
@@ -70,7 +71,7 @@ export const color = {
   blue400: palette.blue400,
   pink400: palette.primary500,
   red400: palette.red400,
-  cyan500: palette.blue400,
+  cyan500: palette.teal500,
   slate300: palette.gray300,
   slate400: palette.gray400,
   slate200: palette.gray200,
@@ -189,6 +190,11 @@ export const color = {
   tutorialBlue: palette.tutorialBlue,
   tutorialText: palette.tutorialText,
   shadowBlack: palette.shadowBlack,
+
+  // 性別表示用（応援コメントカードのみ）
+  genderMale: palette.genderMale,
+  genderFemale: palette.genderFemale,
+  genderNeutral: palette.genderNeutral,
 } as const;
 
 export type SemanticColor = typeof color;
