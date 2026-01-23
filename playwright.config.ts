@@ -44,16 +44,8 @@ export default defineConfig({
 
   projects: [
     { 
-      name: "public-chromium", 
+      name: "chromium", 
       use: { ...devices["Desktop Chrome"] } 
-    },
-    // admin は storageState がある時だけ実運用（テスト側でskip制御）
-    { 
-      name: "admin-chromium", 
-      use: { 
-        ...devices["Desktop Chrome"], 
-        storageState: "tests/.auth/admin.json" 
-      } 
     },
   ],
 
