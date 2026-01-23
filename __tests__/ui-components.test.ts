@@ -5,23 +5,23 @@ describe("Design System", () => {
   describe("Colors", () => {
     it("should have primary color defined", async () => {
       const { colors } = await import("../constants/design-system");
-      // Updated for Refreshing Summer Fun palette (orange)
-      expect(colors.primary.default).toBe("#FB8500");
+      // Updated for Black Base + Pink Accent palette
+      expect(colors.primary.default).toBe("#EC4899");
     });
 
     it("should have background colors defined", async () => {
       const { colors } = await import("../constants/design-system");
-      // Updated for Refreshing Summer Fun palette (dark teal)
-      expect(colors.background.primary).toBe("#023047");
-      expect(colors.background.secondary).toBe("#034063");
+      // Updated for Black Base palette
+      expect(colors.background.primary).toBe("#0a0a0a");
+      expect(colors.background.secondary).toBe("#171717");
     });
 
     it("should have status colors defined", async () => {
       const { colors } = await import("../constants/design-system");
-      // Updated for Refreshing Summer Fun palette
-      expect(colors.status.success).toBe("#2A9D8F"); // teal
-      expect(colors.status.error).toBe("#EC8B73");   // coral (lighter for contrast)
-      expect(colors.status.warning).toBe("#FFB703"); // yellow
+      // Updated for Black Base + Pink Accent palette
+      expect(colors.status.success).toBe("#22C55E"); // green
+      expect(colors.status.error).toBe("#EF4444");   // red
+      expect(colors.status.warning).toBe("#A855F7"); // purple (yellow deprecated)
     });
   });
 
