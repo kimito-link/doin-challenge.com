@@ -7,6 +7,7 @@ import { navigate } from "@/lib/navigation";
 import MaterialIcons from "@expo/vector-icons/MaterialIcons";
 import { useColors } from "@/hooks/use-colors";
 import { eventText, eventFont, eventUI } from "@/features/events/ui/theme/tokens";
+import { palette } from "@/theme/tokens/palette";
 import { OptimizedAvatar } from "@/components/molecules/optimized-image";
 import { Button } from "@/components/ui/button";
 import type { Participation, Companion } from "@/types/participation";
@@ -67,29 +68,30 @@ export function MessageCard({
   const colors = useColors();
   
 
-  // 性別による背景色
-  const getGenderStyle = () => {
+  // 性別による左ボーダー色（背景は統一）
+  const getGenderBorderColor = () => {
     switch (participation.gender) {
       case "male":
-        return { backgroundColor: "rgba(59, 130, 246, 0.12)", borderColor: "#3B82F6" };
+        return palette.genderMale;
       case "female":
-        return { backgroundColor: "rgba(236, 72, 153, 0.12)", borderColor: "#EC4899" };
+        return palette.genderFemale;
       default:
-        return { backgroundColor: "#1A1D21", borderColor: "#2D3139" };
+        return palette.genderNeutral;
     }
   };
-  const genderStyle = getGenderStyle();
+  const borderLeftColor = getGenderBorderColor();
 
   return (
     <View
       style={{
-        backgroundColor: genderStyle.backgroundColor,
+        backgroundColor: palette.gray800, // 黒ベースで統一
         borderRadius: 12,
         padding: 16,
         marginBottom: 12,
         borderWidth: 1,
-        borderColor: genderStyle.borderColor,
-        borderLeftWidth: participation.gender && participation.gender !== "unspecified" ? 3 : 1,
+        borderColor: palette.gray700,
+        borderLeftWidth: 2, // 性別ボーダーは2px
+        borderLeftColor: borderLeftColor,
       }}
     >
       {/* ヘッダー部分 */}
@@ -120,8 +122,8 @@ export function MessageCard({
             </Text>
             {/* 性別アイコン */}
             {participation.gender && participation.gender !== "unspecified" && (
-              <Text style={{ marginLeft: 4, fontSize: 14 }}>
-                {participation.gender === "male" ? "👨" : "👩"}
+              <Text style={{ marginLeft: 4, fontSize: 12, color: borderLeftColor }}>
+                {participation.gender === "male" ? "♂" : "♀"}
               </Text>
             )}
           </View>
