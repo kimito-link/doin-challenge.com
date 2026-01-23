@@ -31,6 +31,8 @@ const IGNORED_CONSOLE_WARNS = [
   /useNativeDriver/i, // React Native Webでは正常な警告
   /native animated module is missing/i,
   /RCTAnimation/i,
+  /expo-notifications.*not yet fully supported on web/i, // Web環境では正常な警告
+  /Listening to push token changes/i, // Web環境では正常な警告
 ];
 
 function shouldIgnoreError(text: string): boolean {
