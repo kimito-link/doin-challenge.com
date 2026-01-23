@@ -4360,3 +4360,18 @@ features/create/
 - [ ] onLightSecondary: rgba(17,24,39,0.78)
 - [ ] onLightMuted: rgba(17,24,39,0.62)
 - [ ] badgeBgLight: rgba(255,255,255,0.92)
+
+
+## v6.64 売れる構造の強化（優先度4・5）
+
+### 4. 主催者「次にやること」チェックリスト【優先度4】
+- [x] 既存のChallengeCreatedModalを確認
+- [x] チェックリストの視認性向上（黒ベースUI、左ボーダー優先度色、番号表示）
+- [x] 「次にやること」が一目で分かるデザイン（進捗インジケーター、重要バッジ）
+- [x] テスト追加（challenge-created-modal.test.ts）
+
+### 5. 参加完了モーダル演出【優先度5】
+- [x] 「あなたの参加で○○県が点灯」演出（isNewPrefecture prop、グローアニメーション）
+- [x] 達成率・残り人数を大きく表示（56pxフォント、「あと○人で目標達成」）
+- [x] ワンタップ共有導線（X）（黒ボタン、「今すぐシェア」）
+- [x] テスト追加（share-prompt-modal.test.ts）
