@@ -8,7 +8,8 @@
  */
 import { test, expect } from "@playwright/test";
 
-const BASE_URL = process.env.E2E_BASE_URL || "http://localhost:8081";
+const BASE_URL = process.env.PLAYWRIGHT_BASE_URL ?? process.env.E2E_BASE_URL ?? "https://doin-challenge.com";
+
 
 test.describe("外部共有URL", () => {
   test.describe("イベント共有URL /e/[id]", () => {
