@@ -1,6 +1,11 @@
 /**
  * 応援メッセージカードコンポーネント
  * 参加者の応援メッセージを表示
+ * 
+ * v6.63: 性別表示の改善
+ * - 背景色は黒で統一（性別で変えない）
+ * - 左ボーダー2pxのみで性別を表現
+ * - 男性：青 #3B82F6、女性：ピンク #F472B6、未設定：ニュートラル
  */
 import { View, Text, Pressable } from "react-native";
 import { navigate } from "@/lib/navigation";
@@ -10,6 +15,13 @@ import { eventText, eventFont, eventUI } from "@/features/events/ui/theme/tokens
 import { OptimizedAvatar } from "@/components/molecules/optimized-image";
 import { Button } from "@/components/ui/button";
 import type { Participation, Companion } from "@/types/participation";
+
+/** 性別ボーダーの色定義 */
+const GENDER_BORDER_COLORS = {
+  male: "#3B82F6",      // 青
+  female: "#F472B6",    // ピンク（ブランド色と少しずらす）
+  neutral: "rgba(255,255,255,0.12)",  // ニュートラル
+} as const;
 
 /** 同伴者の表示用型 */
 interface CompanionDisplay {
@@ -53,6 +65,35 @@ export interface MessageCardProps {
   onDelete?: () => void;
 }
 
+/**
+ * 性別に応じた左ボーダー色を取得
+ * 背景色は変えず、左ボーダーのみで性別を表現
+ */
+function getGenderBorderColor(gender?: string | null): string {
+  switch (gender) {
+    case "male":
+      return GENDER_BORDER_COLORS.male;
+    case "female":
+      return GENDER_BORDER_COLORS.female;
+    default:
+      return GENDER_BORDER_COLORS.neutral;
+  }
+}
+
+/**
+ * 性別アイコンを取得（極小の♂/♀）
+ */
+function getGenderIcon(gender?: string | null): string | null {
+  switch (gender) {
+    case "male":
+      return "♂";
+    case "female":
+      return "♀";
+    default:
+      return null;
+  }
+}
+
 export function MessageCard({
   participation,
   onCheer,
@@ -66,30 +107,23 @@ export function MessageCard({
 }: MessageCardProps) {
   const colors = useColors();
   
-
-  // 性別による背景色
-  const getGenderStyle = () => {
-    switch (participation.gender) {
-      case "male":
-        return { backgroundColor: "rgba(59, 130, 246, 0.12)", borderColor: "#3B82F6" };
-      case "female":
-        return { backgroundColor: "rgba(236, 72, 153, 0.12)", borderColor: "#EC4899" };
-      default:
-        return { backgroundColor: "#1A1D21", borderColor: "#2D3139" };
-    }
-  };
-  const genderStyle = getGenderStyle();
+  const genderBorderColor = getGenderBorderColor(participation.gender);
+  const genderIcon = getGenderIcon(participation.gender);
 
   return (
     <View
       style={{
-        backgroundColor: genderStyle.backgroundColor,
+        // 背景色は黒で統一（性別で変えない）
+        backgroundColor: "#1A1D21",
         borderRadius: 12,
         padding: 16,
         marginBottom: 12,
+        // 通常のボーダー
         borderWidth: 1,
-        borderColor: genderStyle.borderColor,
-        borderLeftWidth: participation.gender && participation.gender !== "unspecified" ? 3 : 1,
+        borderColor: "#2D3139",
+        // 左ボーダー2pxで性別を表現
+        borderLeftWidth: 2,
+        borderLeftColor: genderBorderColor,
       }}
     >
       {/* ヘッダー部分 */}
@@ -118,10 +152,17 @@ export function MessageCard({
             <Text style={{ color: colors.foreground, fontSize: 16, fontWeight: "600" }}>
               {participation.isAnonymous ? "匿名" : participation.displayName}
             </Text>
-            {/* 性別アイコン */}
-            {participation.gender && participation.gender !== "unspecified" && (
-              <Text style={{ marginLeft: 4, fontSize: 14 }}>
-                {participation.gender === "male" ? "👨" : "👩"}
+            {/* 性別アイコン（極小の♂/♀） */}
+            {genderIcon && (
+              <Text 
+                style={{ 
+                  marginLeft: 4, 
+                  fontSize: 12,
+                  color: genderBorderColor,
+                  fontWeight: "500",
+                }}
+              >
+                {genderIcon}
               </Text>
             )}
           </View>
