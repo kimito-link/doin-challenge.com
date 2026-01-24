@@ -70,7 +70,7 @@ export const loginPatterns: LoginPattern[] = [
   {
     id: 1,
     character: "linkIdol",
-    title: "みんな、ちょっと聞いて！",
+    title: "みんな、ちょっと聞いて！😊✨",
     message: "あなたの「推し」が、大きなステージに立つ瞬間を\n一緒に作りたいんだ。",
     highlight: "その景色を、一緒に作ろう！",
     gradientColors: mypageGradient.linkPink,
@@ -79,7 +79,7 @@ export const loginPatterns: LoginPattern[] = [
   {
     id: 2,
     character: "linkFull",
-    title: "声を届けよう！",
+    title: "声を届けよう！🎙️✨",
     message: "あなたの応援の声が、\n誰かの心を動かす。",
     highlight: "一緒に推しの夢を叶えよう！",
     gradientColors: mypageGradient.linkPurple,
@@ -88,7 +88,7 @@ export const loginPatterns: LoginPattern[] = [
   {
     id: 3,
     character: "linkYukkuri",
-    title: "ようこそ！",
+    title: "ようこそ！🎉",
     message: "動員ちゃれんじへようこそ！\nみんなの想いを集めて、推しの夢を叶えよう。",
     highlight: "さあ、始めよう！",
     gradientColors: mypageGradient.kontaOrange,
@@ -97,7 +97,7 @@ export const loginPatterns: LoginPattern[] = [
   {
     id: 4,
     character: "kontaYukkuri",
-    title: "コンタだよ！",
+    title: "コンタだよ！🦊",
     message: "友達を誘って、みんなで盛り上げよう！\n一人の参加が、大きな波になるんだ。",
     highlight: "一緒に盛り上げよう！",
     gradientColors: mypageGradient.kontaGold,
@@ -106,16 +106,16 @@ export const loginPatterns: LoginPattern[] = [
   {
     id: 5,
     character: "tanuneYukkuri",
-    title: "たぬねだよ！",
+    title: "たぬねだよ！🦝",
     message: "チャレンジを作って、\nみんなで目標達成を目指そう！",
-    highlight: "目標達成でお祝い！",
+    highlight: "目標達成でお祝い！🎉",
     gradientColors: mypageGradient.tanuneGreen,
     accentColor: mypageAccent.tanuneGreen,
   },
   {
     id: 6,
     character: "linkIdol",
-    title: "ステージへの道！",
+    title: "ステージへの道！🎭✨",
     message: "客席を埋め尽くすファンの声援、\nリアルタイムで流れる応援コメント…",
     highlight: "その感動を、一緒に！",
     gradientColors: mypageGradient.tanunePink,

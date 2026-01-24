@@ -4,7 +4,6 @@ import { useRef, useEffect } from "react";
 import { Image } from "expo-image";
 import MaterialIcons from "@expo/vector-icons/MaterialIcons";
 import * as Haptics from "expo-haptics";
-import { LinkSpeech } from "@/components/organisms/link-speech";
 
 // キャラクター画像（半目で寂しそうな表情）
 const characterImage = require("@/assets/images/characters/link/link-yukkuri-half-eyes-mouth-closed.png");
@@ -118,19 +117,35 @@ export function LogoutConfirmModal({
               </Animated.View>
               
               {/* 吹き出し */}
-              <View style={{ width: '100%', marginTop: 8 }}>
-                <LinkSpeech 
-                  message="ログアウトすると、参加履歴やお気に入りが見られなくなるよ。\n本当にログアウトする？"
-                  characterImage={characterImage}
-                />
+              <View style={styles.speechBubble}>
+                <Text style={styles.speechText}>えっ、もう帰っちゃうの？😢</Text>
+                <View style={styles.speechTail} />
               </View>
             </View>
 
             {/* タイトル */}
-            <Text style={styles.title}>ログアウトしますか？</Text>
+            <Text style={styles.title}>ログアウト</Text>
+
+            {/* メッセージ */}
+            <Text style={styles.message}>
+              ログアウトしますか？{"\n"}
+              またいつでも遊びに来てね！
+            </Text>
 
             {/* ボタン */}
             <View style={styles.buttonContainer}>
+              <Pressable
+                onPress={handleCancel}
+                style={({ pressed }) => [
+                  styles.button,
+                  styles.cancelButton,
+                  pressed && { opacity: 0.7, transform: [{ scale: 0.97 }] },
+                ]}
+              >
+                <MaterialIcons name="favorite" size={18} color={color.accentPrimary} style={{ marginRight: 6 }} />
+                <Text style={styles.cancelButtonText}>まだいる！</Text>
+              </Pressable>
+
               <Pressable
                 onPress={handleConfirm}
                 style={({ pressed }) => [
@@ -140,18 +155,7 @@ export function LogoutConfirmModal({
                 ]}
               >
                 <MaterialIcons name="logout" size={18} color={color.textWhite} style={{ marginRight: 6 }} />
-                <Text style={styles.confirmButtonText}>ログアウトする</Text>
-              </Pressable>
-
-              <Pressable
-                onPress={handleCancel}
-                style={({ pressed }) => [
-                  styles.button,
-                  styles.cancelButton,
-                  pressed && { opacity: 0.7, transform: [{ scale: 0.97 }] },
-                ]}
-              >
-                <Text style={styles.cancelButtonText}>キャンセル</Text>
+                <Text style={styles.confirmButtonText}>またね！</Text>
               </Pressable>
             </View>
           </Pressable>
@@ -190,13 +194,45 @@ const styles = StyleSheet.create({
     width: 100,
     height: 100,
   },
-
+  speechBubble: {
+    backgroundColor: color.border,
+    borderRadius: 16,
+    paddingHorizontal: 16,
+    paddingVertical: 10,
+    position: "relative",
+  },
+  speechText: {
+    color: color.textWhite,
+    fontSize: 14,
+    fontWeight: "500",
+  },
+  speechTail: {
+    position: "absolute",
+    top: -8,
+    left: "50%",
+    marginLeft: -8,
+    width: 0,
+    height: 0,
+    borderLeftWidth: 8,
+    borderRightWidth: 8,
+    borderBottomWidth: 8,
+    borderLeftColor: "transparent",
+    borderRightColor: "transparent",
+    borderBottomColor: color.border,
+  },
   title: {
     color: color.textWhite,
     fontSize: 20,
     fontWeight: "bold",
     textAlign: "center",
+    marginBottom: 8,
+  },
+  message: {
+    color: color.textMuted,
+    fontSize: 14,
+    textAlign: "center",
     marginBottom: 24,
+    lineHeight: 22,
   },
   buttonContainer: {
     flexDirection: "row",

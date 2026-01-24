@@ -24,7 +24,7 @@ export function LoginButton({ isLoggingIn, onLogin }: LoginButtonProps) {
         width: "100%",
       }}
     >
-      {isLoggingIn ? "ログイン中..." : "Xでログインする"}
+      {isLoggingIn ? "認証中..." : "Xアカウントで認証しています"}
     </Button>
   );
 }

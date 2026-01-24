@@ -1,0 +1,87 @@
+name: PR Diff Check
+
+on:
+  pull_request:
+    types: [opened, synchronize, reopened]
+
+jobs:
+  check-critical-files:
+    name: Check Critical Files
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      
+      - name: Get changed files
+        id: changed-files
+        uses: tj-actions/changed-files@v44
+        with:
+          files: |
+            hooks/use-auth.ts
+            components/organisms/login-prompt-modal.tsx
+            app/oauth/**
+            server/twitter-*.ts
+            components/molecules/colorful-challenge-card.tsx
+            components/molecules/optimized-image.tsx
+            app/(tabs)/index.tsx
+            app/(tabs)/mypage.tsx
+            features/home/**
+            features/mypage/**
+      
+      - name: Check critical files changed
+        if: steps.changed-files.outputs.any_changed == 'true'
+        run: |
+          echo "⚠️ Critical files have been changed:"
+          echo "${{ steps.changed-files.outputs.all_changed_files }}"
+          echo ""
+          echo "Please ensure the following features still work:"
+          echo "- ✅ Login flow (custom authentication screen)"
+          echo "- ✅ Thumbnail display on challenge cards"
+          echo "- ✅ Favorite functionality"
+          echo "- ✅ Home screen layout"
+          echo "- ✅ My page layout"
+          echo ""
+          echo "See docs/critical-features-checklist.md for detailed checklist"
+      
+      - name: Comment on PR
+        if: steps.changed-files.outputs.any_changed == 'true'
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const changedFiles = `${{ steps.changed-files.outputs.all_changed_files }}`.split(' ');
+            const fileList = changedFiles.map(f => `- \`<LaTex>${f}\``).join('\n');
+            
+            const body = `## ⚠️ Critical Files Changed
+            
+The following critical files have been modified:
+$</LaTex>{fileList}
+
+**Please verify these features still work:**
+- ✅ Login flow (custom authentication screen)
+- ✅ Thumbnail display on challenge cards
+- ✅ Favorite functionality
+- ✅ Home screen layout
+- ✅ My page layout
+
+See [docs/critical-features-checklist.md](../blob/main/docs/critical-features-checklist.md) for detailed checklist.
+
+**Before merging:**
+1. Test all affected features manually
+2. Run \`pnpm run check\` and \`pnpm run lint\`
+3. Check diff carefully using \`git diff\`
+4. Verify no unintended changes were made`;
+
+            github.rest.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: body
+            });
+      
+      - name: Show diff summary
+        run: |
+          echo "📊 Diff Summary:"
+          git diff --stat origin/${{ github.base_ref }}...HEAD
