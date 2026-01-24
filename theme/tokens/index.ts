@@ -2,7 +2,7 @@
 // グローバルトークンのエクスポート
 
 export { palette } from "./palette";
-export type { Palette } from "./palette";
+export type { PaletteKey, PaletteValue } from "./palette";
 
 export { color } from "./semantic";
 export type { SemanticColor } from "./semantic";

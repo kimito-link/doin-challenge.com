@@ -1,18 +1,8 @@
-/**
- * 参加完了モーダル（シェア促進）
- * 
- * v6.64: 仕様確定版
- * - 「あなたの参加で◯◯県が点灯」演出
- * - 達成率・残り人数を大きく表示
- * - ワンタップ共有導線（X）
- * - 黒ベースUI統一
- */
 import { Modal, View, Text, Pressable, StyleSheet, Animated, Platform } from "react-native";
-import { color } from "@/theme/tokens";
+import { color, palette } from "@/theme/tokens";
 import { Image } from "expo-image";
 import MaterialIcons from "@expo/vector-icons/MaterialIcons";
 import FontAwesome5 from "@expo/vector-icons/FontAwesome5";
-import { FontAwesome6 } from "@expo/vector-icons";
 import { useEffect, useRef, useState } from "react";
 import { LinearGradient } from "expo-linear-gradient";
 import * as Haptics from "expo-haptics";
@@ -30,20 +20,18 @@ interface SharePromptModalProps {
   participantImage?: string;
   message?: string;
   contribution?: number;
-  // 進捗情報
+  // 進捗情報（新規追加）
   currentParticipants?: number;
   goalParticipants?: number;
   participantNumber?: number; // あなたが◯人目
   prefecture?: string;
-  // 県点灯情報（新規）
-  isNewPrefecture?: boolean; // この県が初めて点灯したか
 }
 
 /**
- * 参加表明後のシェア促進モーダル（v6.64強化版）
- * - 「あなたの参加で◯◯県が点灯」演出
- * - 達成率・残り人数を大きく表示
- * - ワンタップ共有導線
+ * 参加表明後のシェア促進モーダル（強化版）
+ * - 進捗バー表示
+ * - 「あなたが◯人目の参加者です」表示
+ * - シェア導線を強化
  */
 export function SharePromptModal({
   visible,
@@ -60,12 +48,11 @@ export function SharePromptModal({
   goalParticipants = 100,
   participantNumber,
   prefecture,
-  isNewPrefecture = false,
 }: SharePromptModalProps) {
   const scaleAnim = useRef(new Animated.Value(0.8)).current;
   const opacityAnim = useRef(new Animated.Value(0)).current;
   const progressAnim = useRef(new Animated.Value(0)).current;
-  const prefectureGlowAnim = useRef(new Animated.Value(0)).current;
+  const numberAnim = useRef(new Animated.Value(0)).current;
   const [isSharing, setIsSharing] = useState(false);
   const [displayNumber, setDisplayNumber] = useState(0);
 
@@ -73,9 +60,6 @@ export function SharePromptModal({
   const progressPercent = goalParticipants > 0 
     ? Math.min((currentParticipants / goalParticipants) * 100, 100) 
     : 0;
-
-  // 残り人数
-  const remainingCount = Math.max(goalParticipants - currentParticipants, 0);
 
   useEffect(() => {
     if (visible) {
@@ -106,24 +90,6 @@ export function SharePromptModal({
         useNativeDriver: false,
       }).start();
 
-      // 県点灯アニメーション（新規県の場合）
-      if (prefecture && isNewPrefecture) {
-        Animated.loop(
-          Animated.sequence([
-            Animated.timing(prefectureGlowAnim, {
-              toValue: 1,
-              duration: 800,
-              useNativeDriver: false,
-            }),
-            Animated.timing(prefectureGlowAnim, {
-              toValue: 0.3,
-              duration: 800,
-              useNativeDriver: false,
-            }),
-          ])
-        ).start();
-      }
-
       // 参加者番号カウントアップアニメーション
       if (participantNumber) {
         const duration = 1000;
@@ -143,10 +109,9 @@ export function SharePromptModal({
       scaleAnim.setValue(0.8);
       opacityAnim.setValue(0);
       progressAnim.setValue(0);
-      prefectureGlowAnim.setValue(0);
       setDisplayNumber(0);
     }
-  }, [visible, scaleAnim, opacityAnim, progressAnim, prefectureGlowAnim, progressPercent, participantNumber, prefecture, isNewPrefecture]);
+  }, [visible, scaleAnim, opacityAnim, progressAnim, progressPercent, participantNumber]);
 
   const handleShare = async () => {
     setIsSharing(true);
@@ -171,11 +136,6 @@ export function SharePromptModal({
   const progressWidth = progressAnim.interpolate({
     inputRange: [0, 100],
     outputRange: ["0%", "100%"],
-  });
-
-  const glowOpacity = prefectureGlowAnim.interpolate({
-    inputRange: [0, 1],
-    outputRange: [0.3, 1],
   });
 
   return (
@@ -203,72 +163,15 @@ export function SharePromptModal({
               end={{ x: 1, y: 1 }}
               style={styles.iconGradient}
             >
-              <MaterialIcons name="celebration" size={40} color="#fff" />
+              <MaterialIcons name="check" size={40} color={color.textWhite} />
             </LinearGradient>
           </View>
 
           {/* タイトル */}
           <Text style={styles.title}>参加表明完了！</Text>
-
-          {/* 県点灯演出（メイン演出） */}
-          {prefecture && (
-            <Animated.View 
-              style={[
-                styles.prefectureHighlight,
-                isNewPrefecture && { opacity: glowOpacity }
-              ]}
-            >
-              <View style={styles.prefectureIconContainer}>
-                <FontAwesome6 name="location-dot" size={24} color={color.accentPrimary} />
-              </View>
-              <View style={styles.prefectureTextContainer}>
-                <Text style={styles.prefectureMainText}>
-                  {isNewPrefecture ? (
-                    <>あなたの参加で{"\n"}<Text style={styles.prefectureName}>{prefecture}</Text>が点灯！</>
-                  ) : (
-                    <><Text style={styles.prefectureName}>{prefecture}</Text>から参加</>
-                  )}
-                </Text>
-                {isNewPrefecture && (
-                  <Text style={styles.prefectureSubText}>
-                    このチャレンジで初めての{prefecture}からの参加者です
-                  </Text>
-                )}
-              </View>
-            </Animated.View>
-          )}
-
-          {/* 達成率・残り人数（大きく表示） */}
-          <View style={styles.progressSection}>
-            {/* 達成率 */}
-            <View style={styles.progressMainDisplay}>
-              <Text style={styles.progressPercentLarge}>
-                {Math.round(progressPercent)}
-                <Text style={styles.progressPercentUnit}>%</Text>
-              </Text>
-              <Text style={styles.progressPercentLabel}>達成</Text>
-            </View>
-
-            {/* 進捗バー */}
-            <View style={styles.progressBarContainer}>
-              <Animated.View 
-                style={[
-                  styles.progressBar, 
-                  { width: progressWidth }
-                ]} 
-              />
-            </View>
-
-            {/* 残り人数 */}
-            <View style={styles.remainingContainer}>
-              <Text style={styles.remainingText}>
-                あと<Text style={styles.remainingNumber}>{remainingCount}</Text>人で目標達成！
-              </Text>
-              <Text style={styles.currentStatus}>
-                {currentParticipants} / {goalParticipants}人
-              </Text>
-            </View>
-          </View>
+          <Text style={styles.subtitle}>
+            「{challengeTitle}」への参加を表明しました
+          </Text>
 
           {/* あなたが◯人目の参加者です */}
           {participantNumber && (
@@ -278,11 +181,47 @@ export function SharePromptModal({
                 <Text style={styles.participantNumberValue}>{displayNumber || participantNumber}</Text>
                 <Text style={styles.participantNumberUnit}>人目</Text>
               </View>
-              <Text style={styles.participantNumberLabel}>の参加者</Text>
+              <Text style={styles.participantNumberLabel}>の参加者です！</Text>
             </View>
           )}
 
-          {/* 参加者情報カード（コンパクト版） */}
+          {/* 進捗バー */}
+          <View style={styles.progressSection}>
+            <View style={styles.progressHeader}>
+              <View style={styles.progressLabelContainer}>
+                <FontAwesome5 name="users" size={14} color={color.accentPrimary} />
+                <Text style={styles.progressLabel}>現在の参加者</Text>
+              </View>
+              <Text style={styles.progressNumbers}>
+                <Text style={styles.progressCurrent}>{currentParticipants}</Text>
+                <Text style={styles.progressSeparator}> / </Text>
+                <Text style={styles.progressGoal}>{goalParticipants}人</Text>
+              </Text>
+            </View>
+            <View style={styles.progressBarContainer}>
+              <Animated.View 
+                style={[
+                  styles.progressBar, 
+                  { width: progressWidth }
+                ]} 
+              />
+            </View>
+            <Text style={styles.progressPercent}>
+              達成率 {Math.round(progressPercent)}%
+            </Text>
+          </View>
+
+          {/* 地域表示（オプション） */}
+          {prefecture && (
+            <View style={styles.prefectureContainer}>
+              <FontAwesome5 name="map-marker-alt" size={14} color={color.accentAlt} />
+              <Text style={styles.prefectureText}>
+                {prefecture}からの参加が記録されました
+              </Text>
+            </View>
+          )}
+
+          {/* 参加者情報カード */}
           {participantName && (
             <View style={styles.participantCard}>
               <View style={styles.participantHeader}>
@@ -303,54 +242,60 @@ export function SharePromptModal({
                     <Text style={styles.participantUsername}>@{participantUsername}</Text>
                   )}
                 </View>
-                {contribution && contribution > 1 && (
+                {contribution && (
                   <View style={styles.contributionBadge}>
                     <Text style={styles.contributionText}>+{contribution}</Text>
+                    <Text style={styles.contributionLabel}>貢献</Text>
                   </View>
                 )}
               </View>
               {message && (
                 <View style={styles.messageBox}>
-                  <Text style={styles.messageText} numberOfLines={2}>{message}</Text>
+                  <Text style={styles.messageText}>{message}</Text>
                 </View>
               )}
             </View>
           )}
 
           {/* シェア促進メッセージ */}
-          <View style={styles.sharePromptContainer}>
-            <FontAwesome5 name="share-alt" size={14} color={color.accentPrimary} />
-            <Text style={styles.sharePromptText}>
-              シェアして仲間を増やそう！
+          <View style={styles.messageContainer}>
+            <Text style={styles.message}>
+              仲間を増やして目標達成を目指そう！
+            </Text>
+            <Text style={styles.subMessage}>
+              シェアで参加者が増えると達成率がアップ
             </Text>
           </View>
 
-          {/* ワンタップ共有ボタン */}
+          {/* ボタン */}
           <View style={styles.buttonContainer}>
             <Pressable
               onPress={handleShare}
               disabled={isSharing}
               style={({ pressed }) => [
                 styles.shareButton,
-                pressed && !isSharing && { transform: [{ scale: 0.98 }], opacity: 0.9 },
+                pressed && !isSharing && { opacity: 0.8 },
               ]}
             >
-              <View style={styles.shareButtonInner}>
+              <LinearGradient
+                colors={["#000000", color.surface]}
+                style={styles.shareButtonGradient}
+              >
                 <Text style={styles.xLogo}>𝕏</Text>
                 <Text style={styles.shareButtonText}>
-                  {isSharing ? "シェア中..." : "今すぐシェア"}
+                  {isSharing ? "シェア中..." : "Xでシェアする"}
                 </Text>
-              </View>
+              </LinearGradient>
             </Pressable>
 
             <Pressable
               onPress={handleSkip}
               style={({ pressed }) => [
                 styles.skipButton,
-                pressed && { opacity: 0.7 },
+                pressed && { opacity: 0.7, transform: [{ scale: 0.97 }] },
               ]}
             >
-              <Text style={styles.skipButtonText}>あとでシェア</Text>
+              <Text style={styles.skipButtonText}>今回はスキップ</Text>
             </Pressable>
           </View>
         </Animated.View>
@@ -362,137 +307,19 @@ export function SharePromptModal({
 const styles = StyleSheet.create({
   overlay: {
     flex: 1,
-    backgroundColor: "rgba(0, 0, 0, 0.85)",
+    backgroundColor: "rgba(0, 0, 0, 0.7)",
     justifyContent: "center",
     alignItems: "center",
-    padding: 20,
+    padding: 24,
   },
   container: {
-    backgroundColor: color.bg,
+    backgroundColor: color.surface,
     borderRadius: 24,
     padding: 24,
     width: "100%",
-    maxWidth: 380,
+    maxWidth: 360,
     alignItems: "center",
   },
-  iconContainer: {
-    marginBottom: 16,
-  },
-  iconGradient: {
-    width: 72,
-    height: 72,
-    borderRadius: 36,
-    alignItems: "center",
-    justifyContent: "center",
-  },
-  title: {
-    color: color.textPrimary,
-    fontSize: 24,
-    fontWeight: "bold",
-    marginBottom: 20,
-  },
-
-  // 県点灯演出
-  prefectureHighlight: {
-    flexDirection: "row",
-    alignItems: "center",
-    backgroundColor: `${color.accentPrimary}15`,
-    borderWidth: 1,
-    borderColor: `${color.accentPrimary}40`,
-    borderRadius: 16,
-    padding: 16,
-    width: "100%",
-    marginBottom: 20,
-  },
-  prefectureIconContainer: {
-    width: 48,
-    height: 48,
-    borderRadius: 24,
-    backgroundColor: `${color.accentPrimary}20`,
-    alignItems: "center",
-    justifyContent: "center",
-    marginRight: 12,
-  },
-  prefectureTextContainer: {
-    flex: 1,
-  },
-  prefectureMainText: {
-    color: color.textPrimary,
-    fontSize: 16,
-    fontWeight: "600",
-    lineHeight: 22,
-  },
-  prefectureName: {
-    color: color.accentPrimary,
-    fontWeight: "bold",
-    fontSize: 18,
-  },
-  prefectureSubText: {
-    color: color.textMuted,
-    fontSize: 12,
-    marginTop: 4,
-  },
-
-  // 達成率・残り人数
-  progressSection: {
-    width: "100%",
-    backgroundColor: color.surface,
-    borderRadius: 16,
-    padding: 20,
-    marginBottom: 16,
-    alignItems: "center",
-  },
-  progressMainDisplay: {
-    alignItems: "center",
-    marginBottom: 16,
-  },
-  progressPercentLarge: {
-    color: color.accentPrimary,
-    fontSize: 56,
-    fontWeight: "bold",
-    lineHeight: 60,
-  },
-  progressPercentUnit: {
-    fontSize: 28,
-  },
-  progressPercentLabel: {
-    color: color.textMuted,
-    fontSize: 14,
-    marginTop: 4,
-  },
-  progressBarContainer: {
-    height: 10,
-    backgroundColor: color.border,
-    borderRadius: 5,
-    overflow: "hidden",
-    width: "100%",
-    marginBottom: 12,
-  },
-  progressBar: {
-    height: "100%",
-    backgroundColor: color.accentPrimary,
-    borderRadius: 5,
-  },
-  remainingContainer: {
-    alignItems: "center",
-  },
-  remainingText: {
-    color: color.textPrimary,
-    fontSize: 16,
-    fontWeight: "600",
-  },
-  remainingNumber: {
-    color: color.accentPrimary,
-    fontSize: 20,
-    fontWeight: "bold",
-  },
-  currentStatus: {
-    color: color.textMuted,
-    fontSize: 13,
-    marginTop: 4,
-  },
-
-  // 参加者番号
   participantNumberContainer: {
     flexDirection: "row",
     alignItems: "center",
@@ -506,30 +333,96 @@ const styles = StyleSheet.create({
   participantNumberBadge: {
     flexDirection: "row",
     alignItems: "baseline",
-    backgroundColor: color.surface,
-    borderWidth: 1,
-    borderColor: color.accentPrimary,
+    backgroundColor: color.accentPrimary,
     paddingHorizontal: 12,
     paddingVertical: 4,
     borderRadius: 16,
   },
   participantNumberValue: {
-    color: color.accentPrimary,
-    fontSize: 20,
+    color: color.textWhite,
+    fontSize: 24,
     fontWeight: "bold",
   },
   participantNumberUnit: {
-    color: color.accentPrimary,
-    fontSize: 12,
+    color: color.textWhite,
+    fontSize: 14,
     fontWeight: "600",
     marginLeft: 2,
   },
-
-  // 参加者カード
-  participantCard: {
-    backgroundColor: color.surface,
+  progressSection: {
+    width: "100%",
+    backgroundColor: color.bg,
     borderRadius: 12,
-    padding: 12,
+    padding: 16,
+    marginBottom: 16,
+  },
+  progressHeader: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+    marginBottom: 8,
+  },
+  progressLabelContainer: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 6,
+  },
+  progressLabel: {
+    color: color.textMuted,
+    fontSize: 13,
+  },
+  progressNumbers: {
+    flexDirection: "row",
+    alignItems: "baseline",
+  },
+  progressCurrent: {
+    color: color.accentPrimary,
+    fontSize: 18,
+    fontWeight: "bold",
+  },
+  progressSeparator: {
+    color: color.textMuted,
+    fontSize: 14,
+  },
+  progressGoal: {
+    color: color.textMuted,
+    fontSize: 14,
+  },
+  progressBarContainer: {
+    height: 8,
+    backgroundColor: color.border,
+    borderRadius: 4,
+    overflow: "hidden",
+  },
+  progressBar: {
+    height: "100%",
+    backgroundColor: color.accentPrimary,
+    borderRadius: 4,
+  },
+  progressPercent: {
+    color: color.textSubtle,
+    fontSize: 12,
+    textAlign: "right",
+    marginTop: 4,
+  },
+  prefectureContainer: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 6,
+    backgroundColor: "rgba(221, 101, 0, 0.1)",
+    paddingHorizontal: 12,
+    paddingVertical: 8,
+    borderRadius: 8,
+    marginBottom: 16,
+  },
+  prefectureText: {
+    color: color.accentAlt,
+    fontSize: 13,
+  },
+  participantCard: {
+    backgroundColor: color.border,
+    borderRadius: 12,
+    padding: 16,
     width: "100%",
     marginBottom: 16,
   },
@@ -538,67 +431,102 @@ const styles = StyleSheet.create({
     alignItems: "center",
   },
   participantAvatar: {
-    width: 40,
-    height: 40,
-    borderRadius: 20,
+    width: 48,
+    height: 48,
+    borderRadius: 24,
     alignItems: "center",
     justifyContent: "center",
     overflow: "hidden",
   },
+  avatarImage: {
+    width: 48,
+    height: 48,
+    borderRadius: 24,
+    alignItems: "center",
+    justifyContent: "center",
+  },
   avatarText: {
-    color: "#fff",
-    fontSize: 16,
+    color: color.textWhite,
+    fontSize: 20,
     fontWeight: "bold",
   },
   participantInfo: {
     flex: 1,
-    marginLeft: 10,
+    marginLeft: 12,
   },
   participantName: {
-    color: color.textPrimary,
-    fontSize: 14,
+    color: color.textWhite,
+    fontSize: 16,
     fontWeight: "600",
   },
   participantUsername: {
-    color: color.textMuted,
-    fontSize: 12,
+    color: color.hostAccentLegacy,
+    fontSize: 14,
   },
   contributionBadge: {
-    backgroundColor: `${color.accentPrimary}20`,
-    paddingHorizontal: 8,
-    paddingVertical: 4,
-    borderRadius: 8,
+    alignItems: "center",
   },
   contributionText: {
     color: color.accentPrimary,
-    fontSize: 14,
+    fontSize: 24,
     fontWeight: "bold",
   },
+  contributionLabel: {
+    color: color.textSubtle,
+    fontSize: 11,
+  },
   messageBox: {
-    backgroundColor: color.bg,
+    backgroundColor: color.surface,
     borderRadius: 8,
-    padding: 10,
-    marginTop: 10,
+    padding: 12,
+    marginTop: 12,
   },
   messageText: {
-    color: color.textMuted,
-    fontSize: 13,
-    lineHeight: 18,
+    color: color.textPrimary,
+    fontSize: 14,
+    lineHeight: 20,
   },
-
-  // シェア促進
-  sharePromptContainer: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 8,
+  iconContainer: {
     marginBottom: 16,
   },
-  sharePromptText: {
+  iconGradient: {
+    width: 72,
+    height: 72,
+    borderRadius: 36,
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  title: {
+    color: color.textWhite,
+    fontSize: 22,
+    fontWeight: "bold",
+    marginBottom: 8,
+  },
+  subtitle: {
     color: color.textMuted,
     fontSize: 14,
+    textAlign: "center",
+    marginBottom: 16,
   },
-
-  // ボタン
+  messageContainer: {
+    backgroundColor: color.bg,
+    borderRadius: 12,
+    padding: 16,
+    width: "100%",
+    marginBottom: 20,
+  },
+  message: {
+    color: color.textWhite,
+    fontSize: 15,
+    fontWeight: "600",
+    textAlign: "center",
+    marginBottom: 4,
+  },
+  subMessage: {
+    color: color.textMuted,
+    fontSize: 13,
+    textAlign: "center",
+  },
   buttonContainer: {
     width: "100%",
     gap: 12,
@@ -606,32 +534,31 @@ const styles = StyleSheet.create({
   shareButton: {
     borderRadius: 12,
     overflow: "hidden",
-    backgroundColor: "#000",
   },
-  shareButtonInner: {
+  shareButtonGradient: {
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "center",
-    paddingVertical: 16,
+    paddingVertical: 14,
     paddingHorizontal: 24,
-    gap: 10,
+    gap: 8,
   },
   xLogo: {
-    color: "#fff",
-    fontSize: 20,
+    color: color.textWhite,
+    fontSize: 18,
     fontWeight: "bold",
   },
   shareButtonText: {
-    color: "#fff",
+    color: color.textWhite,
     fontSize: 16,
-    fontWeight: "bold",
+    fontWeight: "600",
   },
   skipButton: {
     paddingVertical: 12,
     alignItems: "center",
   },
   skipButtonText: {
-    color: color.textMuted,
+    color: color.textSubtle,
     fontSize: 14,
   },
 });

@@ -3,25 +3,25 @@ import { describe, it, expect } from "vitest";
 // Design System Tests
 describe("Design System", () => {
   describe("Colors", () => {
-    it("should have primary color defined (pink per spec)", async () => {
+    it("should have primary color defined", async () => {
       const { colors } = await import("../constants/design-system");
-      // v6.65: 仕様確定メモ準拠 - ピンク#EC4899
+      // Updated for Black Base + Pink Accent palette
       expect(colors.primary.default).toBe("#EC4899");
     });
 
-    it("should have background colors defined (black base per spec)", async () => {
+    it("should have background colors defined", async () => {
       const { colors } = await import("../constants/design-system");
-      // v6.65: 仕様確定メモ準拠 - 黒ベース#0a0a0a
+      // Updated for Black Base palette
       expect(colors.background.primary).toBe("#0a0a0a");
       expect(colors.background.secondary).toBe("#171717");
     });
 
     it("should have status colors defined", async () => {
       const { colors } = await import("../constants/design-system");
-      // v6.65: 仕様確定メモ準拠 - 黄色廃止
+      // Updated for Black Base + Pink Accent palette
       expect(colors.status.success).toBe("#22C55E"); // green
-      expect(colors.status.error).toBe("#EF4444");   // red (danger only)
-      expect(colors.status.warning).toBe("#EC4899"); // pink (yellow abolished)
+      expect(colors.status.error).toBe("#EF4444");   // red
+      expect(colors.status.warning).toBe("#A855F7"); // purple (yellow deprecated)
     });
   });
 
