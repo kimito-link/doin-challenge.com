@@ -1,20 +1,31 @@
-import { ThemedView } from "@/components/atoms/themed-view";
-import { LoginLoadingScreen } from "@/components/organisms/login-loading-screen";
 import * as Api from "@/lib/_core/api";
 import * as Auth from "@/lib/_core/auth";
 import * as Linking from "expo-linking";
 import { useLocalSearchParams } from "expo-router";
 import { navigateReplace } from "@/lib/navigation/app-routes";
 import { useEffect, useState } from "react";
-import { Text, View, StyleSheet } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { saveLoginSuccessPending } from "@/lib/login-success-context";
-import { Image } from "expo-image";
 import { useColors } from "@/hooks/use-colors";
-import { BlinkingLink } from "@/components/atoms/blinking-character";
+import { LinkAuthResult } from "@/components/organisms/link-auth-result";
+import { LinkAuthLoading } from "@/components/organisms/link-auth-loading";
 
-type AuthStatus = "processing" | "success" | "error";
-type AuthStep = 1 | 2 | 3; // 1: Twitter認証中, 2: ユーザー情報取得中, 3: 完了
+type AuthStatus = "processing" | "success" | "error" | "cancel";
+type AuthStep = 1 | 2 | 3; // 1: ログイン中, 2: ユーザー情報取得中, 3: 完了
+type ErrorType = "network" | "oauth" | "other";
+
+/**
+ * OAuthエラーを種別分類する
+ * 
+ * @param error - エラー文字列
+ * @returns エラー種別（network/oauth/other）
+ */
+function classifyOAuthError(error?: string): ErrorType {
+  if (!error) return "other";
+  if (error.includes("network") || error.includes("fetch")) return "network";
+  if (error.includes("oauth") || error.includes("exchange")) return "oauth";
+  return "other";
+}
 
 export default function OAuthCallback() {
 
@@ -29,6 +40,8 @@ export default function OAuthCallback() {
   const [status, setStatus] = useState<AuthStatus>("processing");
   const [step, setStep] = useState<AuthStep>(1);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
+  const [errorType, setErrorType] = useState<ErrorType>("other");
+  const [requestId, setRequestId] = useState<string | undefined>(undefined);
 
   useEffect(() => {
     const handleCallback = async () => {
@@ -41,7 +54,7 @@ export default function OAuthCallback() {
         user: params.user ? "present" : "missing",
       });
       try {
-        // ステップ1: Twitter認証中
+        // ステップ1: ログイン中
         setStep(1);
 
         // Check for sessionToken in params first (web OAuth callback from server redirect)
@@ -81,7 +94,7 @@ export default function OAuthCallback() {
           // ステップ3: 完了
           setStep(3);
           setStatus("success");
-          console.log("[OAuth] Web authentication successful, redirecting to home...");
+          console.log("[OAuth] Web login successful, redirecting to home...");
           setTimeout(() => {
             navigateReplace.toHome();
           }, 1500);
@@ -116,8 +129,22 @@ export default function OAuthCallback() {
           params.error || (url ? new URL(url, "http://dummy").searchParams.get("error") : null);
         if (error) {
           console.error("[OAuth] Error parameter found:", error);
+          
+          // キャンセル判定
+          if (error === "access_denied") {
+            setStatus("cancel");
+            return;
+          }
+          
+          // エラー種別を判定
+          setErrorType(classifyOAuthError(error));
+          
           setStatus("error");
           setErrorMessage(error || "OAuth error occurred");
+          // requestIdを生成（開発環境のみ）
+          if (process.env.NODE_ENV === "development") {
+            setRequestId(`ERR-${Date.now()}`);
+          }
           return;
         }
 
@@ -240,7 +267,7 @@ export default function OAuthCallback() {
           // ステップ3: 完了
           setStep(3);
           setStatus("success");
-          console.log("[OAuth] Authentication successful, redirecting to home...");
+          console.log("[OAuth] Login successful, redirecting to home...");
 
           // Redirect to home after a short delay
           setTimeout(() => {
@@ -254,91 +281,57 @@ export default function OAuthCallback() {
         }
       } catch (error) {
         console.error("[OAuth] Callback error:", error);
+        
+        // エラー種別を判定
+        const errorMsg = error instanceof Error ? error.message : "Failed to complete login";
+        setErrorType(classifyOAuthError(errorMsg));
+        
         setStatus("error");
-        setErrorMessage(
-          error instanceof Error ? error.message : "Failed to complete authentication",
-        );
+        setErrorMessage(errorMsg);
+        // requestIdを生成（開発環境のみ）
+        if (process.env.NODE_ENV === "development") {
+          setRequestId(`ERR-${Date.now()}`);
+        }
       }
     };
 
     handleCallback();
   }, [params.code, params.state, params.error, params.sessionToken, params.user]);
 
-  // エラー画面
-  if (status === "error") {
+  // キャンセル画面
+  if (status === "cancel") {
     return (
       <SafeAreaView style={{ flex: 1, backgroundColor: colors.background }} edges={["top", "bottom", "left", "right"]}>
-        <View style={styles.errorContainer}>
-          {/* ロゴ */}
-          <Image
-            source={require("@/assets/images/icon.png")}
-            style={styles.logo}
-            contentFit="contain"
-          />
-          
-          {/* キャラクター（困った表情） */}
-          <BlinkingLink
-            variant="halfClosed"
-            size={150}
-            blinkInterval={3000}
-          />
-          
-          {/* エラーメッセージ */}
-          <Text style={[styles.errorTitle, { color: colors.error }]}>
-            ログインできませんでした
-          </Text>
-          <Text style={[styles.errorMessage, { color: colors.muted }]}>
-            {errorMessage === "access_denied" 
-              ? "認証がキャンセルされました"
-              : errorMessage || "認証に失敗しました"}
-          </Text>
-          
-          {/* ヒント */}
-          <Text style={[styles.hint, { color: colors.muted }]}>
-            もう一度お試しください
-          </Text>
-        </View>
+        <LinkAuthResult
+          type="cancel"
+          onBack={() => navigateReplace.toMypageTab()}
+        />
       </SafeAreaView>
     );
   }
 
-  // ローディング画面（進捗インジケーター付き）
+  // エラー画面
+  if (status === "error") {
+    return (
+      <SafeAreaView style={{ flex: 1, backgroundColor: colors.background }} edges={["top", "bottom", "left", "right"]}>
+        <LinkAuthResult
+          type="error"
+          errorType={errorType}
+          requestId={requestId}
+          onRetry={() => {
+            // 再試行：ログイン画面に戻る
+            navigateReplace.toMypageTab();
+          }}
+          onBack={() => navigateReplace.toMypageTab()}
+        />
+      </SafeAreaView>
+    );
+  }
+
+  // ローディング画面
   return (
-    <SafeAreaView style={{ flex: 1 }} edges={["top", "bottom", "left", "right"]}>
-      <LoginLoadingScreen currentStep={step} />
+    <SafeAreaView style={{ flex: 1, backgroundColor: colors.background }} edges={["top", "bottom", "left", "right"]}>
+      <LinkAuthLoading currentStep={step} />
     </SafeAreaView>
   );
 }
-
-const styles = StyleSheet.create({
-  errorContainer: {
-    flex: 1,
-    alignItems: "center",
-    justifyContent: "center",
-    padding: 24,
-  },
-  logo: {
-    width: 64,
-    height: 64,
-    marginBottom: 16,
-  },
-  errorTitle: {
-    fontSize: 20,
-    fontWeight: "bold",
-    marginTop: 24,
-    marginBottom: 8,
-  },
-  errorMessage: {
-    fontSize: 14,
-    textAlign: "center",
-    marginBottom: 16,
-  },
-  hint: {
-    fontSize: 12,
-    textAlign: "center",
-    position: "absolute",
-    bottom: 40,
-    left: 24,
-    right: 24,
-  },
-});

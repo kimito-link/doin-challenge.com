@@ -4352,3 +4352,38 @@ features/create/
   - [ ] 失敗画面を実装（requestIdはdevのみ表示）
   - [ ] ログアウト確認画面を実装（「データは消えません」文言）
   - [ ] 絵文字を全て削除し、りんくのキャラクター/吹き出しに統一
+
+## ログインUX改善 Phase 2（v6.6x）
+
+### 既存コードの確認
+- [x] login()自動実行が残っていないか確認（useEffect/AuthGuard）
+- [x] 絵文字が残っていないか確認
+- [x] 「認証」という言葉が残っていないか確認（oauth/callback.tsxとoauth/twitter-callback.tsxを修正）
+- [x] 専門用語が残っていないか確認
+
+### コンポーネント作成
+- [x] LinkAuthResultコンポーネント作成（キャンセル/エラー/成功画面）
+- [x] LinkAuthLoadingコンポーネント作成
+- [x] LogoutConfirmModalコンポーネント作成
+
+### 機能実装
+- [x] OAuthコールバック処理の実装（キャンセル/エラー/成功の判定）
+- [x] マイページにログアウト確認モーダルを統合（既存のLogoutConfirmModalをPhase 2仕様に修正）
+- [x] エラー種別の判定ロジック（network/oauth/other）
+- [x] requestIdの表示（開発環境のみ）
+
+### 最適化
+- [x] errorType判定ロジックを関数化（classifyOAuthError関数）
+
+### テスト
+- [ ] LinkAuthResultのユニットテスト
+- [ ] LinkAuthLoadingのユニットテスト
+- [ ] LogoutConfirmModalのユニットテスト
+- [ ] E2Eテスト（キャンセル画面の検知）
+
+### 動作確認
+- [ ] キャンセルフローの確認
+- [ ] エラーフローの確認（3種類）
+- [ ] ローディング画面の確認
+- [ ] ログアウトフローの確認
+- [ ] public E2Eで検証（/mypage未ログイン表示、キャンセル画面表示、console.error/5xxなし）

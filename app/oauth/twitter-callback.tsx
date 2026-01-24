@@ -69,8 +69,8 @@ export default function TwitterOAuthCallback() {
           try {
             const errorData = JSON.parse(decodeURIComponent(params.error));
             if (errorData.code === "access_denied") {
-              // ユーザーが認証をキャンセルした場合
-              setErrorMessage("認証がキャンセルされました。ログインするにはTwitter認証を許可してください。");
+              // ユーザーがログインをキャンセルした場合
+              setErrorMessage("ログインをキャンセルしました。ログインするにはXでの許可が必要です。");
               setErrorType("cancelled");
             } else if (errorData.message) {
               // ユーザーフレンドリーなエラーメッセージに変換
@@ -78,17 +78,17 @@ export default function TwitterOAuthCallback() {
                 setErrorMessage("ネットワークエラーが発生しました。もう一度お試しください。");
                 setErrorType("network");
               } else if (errorData.message.includes("Invalid or expired state")) {
-                setErrorMessage("認証の有効期限が切れました。もう一度ログインしてください。");
+                setErrorMessage("ログインの有効期限が切れました。もう一度ログインしてください。");
                 setErrorType("expired");
               } else if (errorData.message.includes("exchange code")) {
-                setErrorMessage("Twitter認証に失敗しました。もう一度お試しください。");
+                setErrorMessage("ログインできませんでした。もう一度お試しください。");
                 setErrorType("general");
               } else {
                 setErrorMessage(errorData.message);
                 setErrorType("general");
               }
             } else {
-              setErrorMessage("認証に失敗しました");
+              setErrorMessage("ログインできませんでした");
               setErrorType("general");
             }
           } catch {
@@ -102,7 +102,7 @@ export default function TwitterOAuthCallback() {
         if (!params.data) {
           console.error("[Twitter OAuth] Missing data parameter");
           setStatus("error");
-          setErrorMessage("認証データが見つかりません");
+          setErrorMessage("ログイン情報が見つかりません");
           return;
         }
 
@@ -167,7 +167,7 @@ export default function TwitterOAuthCallback() {
           console.log("[Twitter OAuth] Account saved for multi-account switching");
 
           setStatus("success");
-          console.log("[Twitter OAuth] Authentication successful");
+          console.log("[Twitter OAuth] Login successful");
           
           // ログイン前に保存したリダイレクト先を取得
           let returnUrl = "/(tabs)/mypage";
@@ -210,13 +210,13 @@ export default function TwitterOAuthCallback() {
         } catch (parseError) {
           console.error("[Twitter OAuth] Failed to parse user data:", parseError);
           setStatus("error");
-          setErrorMessage("認証データの解析に失敗しました");
+          setErrorMessage("ログイン情報の解析に失敗しました");
         }
       } catch (error) {
         console.error("[Twitter OAuth] Callback error:", error);
         setStatus("error");
         setErrorMessage(
-          error instanceof Error ? error.message : "認証の完了に失敗しました"
+          error instanceof Error ? error.message : "ログインの完了に失敗しました"
         );
       }
     };
@@ -246,7 +246,7 @@ export default function TwitterOAuthCallback() {
             
             <ActivityIndicator size="large" color={color.orange500} />
             <Text className="mt-2 text-base leading-6 text-center text-foreground">
-              認証を完了しています...
+              ログイン中...
             </Text>
           </View>
         )}
@@ -267,7 +267,7 @@ export default function TwitterOAuthCallback() {
             />
             
             <Text className="text-xl font-bold text-center text-success">
-              認証成功！
+              ログイン完了！
             </Text>
             <Text className="text-base leading-6 text-center text-muted">
               リダイレクトしています...
@@ -296,7 +296,7 @@ export default function TwitterOAuthCallback() {
             />
             
             <Text className="mb-2 text-xl font-bold leading-7 text-error">
-              認証に失敗しました
+              ログインできませんでした
             </Text>
             <Text className="text-base leading-6 text-center text-foreground px-4">
               {errorMessage}
