@@ -19,7 +19,10 @@ interface UseMypageActionsReturn {
   // Login
   isLoggingIn: boolean;
   loginPattern: any;
-  handleLogin: () => Promise<void>;
+  handleLogin: () => void;
+  handleLoginConfirm: () => Promise<void>;
+  handleLoginCancel: () => void;
+  showLoginConfirmModal: boolean;
   setLoginPattern: (pattern: any) => void;
   
   // Logout
@@ -72,6 +75,7 @@ export function useMypageActions({
   const [loginPattern, setLoginPattern] = useState(() => getRandomPattern());
   const [showLogoutModal, setShowLogoutModal] = useState(false);
   const [showAccountSwitcher, setShowAccountSwitcher] = useState(false);
+  const [showLoginConfirmModal, setShowLoginConfirmModal] = useState(false);
 
   // ログイン時にフォロー状態を更新
   useEffect(() => {
@@ -93,13 +97,22 @@ export function useMypageActions({
     }
   }, [isAuthenticated, user, checkingFollowStatus, checkFollowStatusFromServer]);
 
-  const handleLogin = async () => {
+  const handleLoginButtonPress = () => {
+    setShowLoginConfirmModal(true);
+  };
+
+  const handleLoginConfirm = async () => {
+    setShowLoginConfirmModal(false);
     setIsLoggingIn(true);
     try {
       await login();
     } finally {
       setTimeout(() => setIsLoggingIn(false), 3000);
     }
+  };
+
+  const handleLoginCancel = () => {
+    setShowLoginConfirmModal(false);
   };
 
   const handleLogout = () => {
@@ -123,7 +136,10 @@ export function useMypageActions({
     // Login
     isLoggingIn,
     loginPattern,
-    handleLogin,
+    handleLogin: handleLoginButtonPress,
+    handleLoginConfirm,
+    handleLoginCancel,
+    showLoginConfirmModal,
     setLoginPattern,
     
     // Logout
