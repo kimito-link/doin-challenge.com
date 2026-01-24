@@ -11,7 +11,6 @@ import { TutorialResetButton } from "@/components/molecules/tutorial-reset-butto
 import { ProfileCard } from "./ProfileCard";
 import { SettingsLinkItem } from "./SettingsLinkItem";
 import { BadgeSection } from "./sections/BadgeSection";
-import { FavoriteSection } from "./sections/FavoriteSection";
 import { ParticipationSection } from "./sections/ParticipationSection";
 import { HostedChallengeSection } from "./sections/HostedChallengeSection";
 import { RoleSection } from "./sections/RoleSection";
@@ -126,9 +125,6 @@ export function AuthenticatedContent({
 
       {/* バッジセクション */}
       <BadgeSection badges={myBadges} />
-
-      {/* お気に入りチャレンジセクション */}
-      <FavoriteSection onChallengePress={onChallengePress} />
 
       {/* 参加チャレンジセクション */}
       <ParticipationSection 
