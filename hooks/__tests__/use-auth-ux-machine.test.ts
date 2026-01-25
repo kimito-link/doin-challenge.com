@@ -1,8 +1,8 @@
 /**
  * Phase 2: ログインUX改善
- * PR-2: useAuthUxMachine のユニットテスト
+ * PR-3: useAuthUxMachine のユニットテスト
  * 
- * FSMの状態遷移をテスト（idle → confirm → redirecting）
+ * FSMの状態遷移をテスト（idle → confirm → redirecting → waitingReturn）
  */
 
 import { describe, it, expect, vi, beforeEach } from "vitest";
@@ -18,7 +18,7 @@ vi.mock("@/hooks/use-auth", () => ({
   }),
 }));
 
-describe("useAuthUxMachine (PR-2: idle → confirm → redirecting)", () => {
+describe("useAuthUxMachine (PR-3: idle → confirm → redirecting → waitingReturn)", () => {
   beforeEach(() => {
     vi.clearAllMocks();
   });
@@ -70,7 +70,7 @@ describe("useAuthUxMachine (PR-2: idle → confirm → redirecting)", () => {
     expect(result.current.state.name).toBe("idle");
   });
 
-  it("confirmYes で confirm → redirecting に遷移（PR-2）", async () => {
+  it("confirmYes で confirm → redirecting → waitingReturn に遷移（PR-3）", async () => {
     const { result } = renderHook(() => useAuthUxMachine());
 
     // idle → confirm
@@ -79,11 +79,37 @@ describe("useAuthUxMachine (PR-2: idle → confirm → redirecting)", () => {
     });
     expect(result.current.state.name).toBe("confirm");
 
-    // confirmYes → redirecting
+    // confirmYes → redirecting → waitingReturn
     await act(async () => {
       await result.current.confirmYes();
     });
-    expect(result.current.state.name).toBe("redirecting");
+    expect(result.current.state.name).toBe("waitingReturn");
+    if (result.current.state.name === "waitingReturn") {
+      expect(result.current.state.startedAt).toBeGreaterThan(0);
+      expect(result.current.state.timeoutMs).toBe(30000);
+    }
+  });
+
+  it("waitingReturn 状態から30秒後にタイムアウトで cancel に遷移", async () => {
+    vi.useFakeTimers();
+    const { result } = renderHook(() => useAuthUxMachine());
+
+    // idle → confirm → waitingReturn
+    act(() => {
+      result.current.tapLogin();
+    });
+    await act(async () => {
+      await result.current.confirmYes();
+    });
+    expect(result.current.state.name).toBe("waitingReturn");
+
+    // 30秒後にタイムアウト
+    act(() => {
+      vi.advanceTimersByTime(30000);
+    });
+    expect(result.current.state.name).toBe("idle"); // cancel → idle
+
+    vi.useRealTimers();
   });
 
   it("reset で任意の状態から idle に戻る", () => {

@@ -1,6 +1,6 @@
 /**
  * Phase 2: ログインUX改善
- * PR-2: redirecting状態追加（login()呼び出し）
+ * PR-3: waitingReturn状態とタイムアウト処理追加
  * 
  * このファイルはPhase 2実装ガイドに基づいて作成されています。
  * docs/phase2-implementation-guide.md を参照してください。
@@ -84,13 +84,23 @@ function authUxReducer(state: AuthUxState, action: AuthUxAction): AuthUxState {
       // キャンセルされたら idle に戻る
       return { name: "idle" };
 
-    // 以下は後続PRで実装予定
     case "WAITING_RETURN_START":
+      // redirecting → waitingReturn
+      if (state.name === "redirecting") {
+        return {
+          name: "waitingReturn",
+          startedAt: action.startedAt,
+          timeoutMs: action.timeoutMs,
+        };
+      }
+      return state;
+
+    // 以下は後続PRで実装予定
     case "SUCCESS":
     case "ERROR":
     case "RETRY":
     case "BACK_WITHOUT_LOGIN":
-      // PR-2では未実装
+      // PR-3では未実装
       return state;
 
     default:
@@ -101,13 +111,34 @@ function authUxReducer(state: AuthUxState, action: AuthUxAction): AuthUxState {
 /**
  * 認証UX状態管理フック
  * 
- * PR-2: idle → confirm → redirecting まで実装
+ * PR-3: idle → confirm → redirecting → waitingReturn まで実装
  * 
  * @returns 状態と状態遷移関数
  */
 export function useAuthUxMachine() {
   const [state, dispatch] = useReducer(authUxReducer, { name: "idle" });
   const { login } = useAuth();
+
+  // タイムアウト処理（waitingReturn状態で30秒経過したらcancel）
+  useEffect(() => {
+    if (state.name !== "waitingReturn") return;
+
+    const elapsed = Date.now() - state.startedAt;
+    const remaining = state.timeoutMs - elapsed;
+
+    if (remaining <= 0) {
+      // すでにタイムアウト
+      dispatch({ type: "CANCEL", kind: "timeout" });
+      return;
+    }
+
+    // タイマー設定
+    const timer = setTimeout(() => {
+      dispatch({ type: "CANCEL", kind: "timeout" });
+    }, remaining);
+
+    return () => clearTimeout(timer);
+  }, [state]);
 
   // ログインボタンタップ
   const tapLogin = useCallback(
@@ -123,10 +154,21 @@ export function useAuthUxMachine() {
     // redirecting状態に遷移後、login()を呼び出す
     try {
       await login();
-      // login()の成否はAuth Contextが管理するので、ここでは何もしない
+      // login()成功後、waitingReturn状態に遷移（30秒タイムアウト）
+      dispatch({
+        type: "WAITING_RETURN_START",
+        startedAt: Date.now(),
+        timeoutMs: 30000, // 30秒
+      });
     } catch (error) {
       // エラーは無視（Auth Contextが管理）
       console.error("[useAuthUxMachine] login() error:", error);
+      // waitingReturn状態に遷移（エラー検知はAuth Contextで行う）
+      dispatch({
+        type: "WAITING_RETURN_START",
+        startedAt: Date.now(),
+        timeoutMs: 30000,
+      });
     }
   }, [login]);
 
