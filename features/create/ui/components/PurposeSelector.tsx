@@ -24,9 +24,27 @@ export function PurposeSelector({ selectedPurpose, onSelect }: PurposeSelectorPr
       <Text style={{ color: colors.muted, fontSize: 14, marginBottom: 8 }}>
         目的
       </Text>
-      <Text style={{ color: colors.muted, fontSize: 12, marginBottom: 12, opacity: 0.7 }}>
-        チャレンジの目的を選択してください
-      </Text>
+      
+      {/* りんく吹き出し（案内文言） */}
+      <View style={{ 
+        backgroundColor: `${colors.primary}10`, 
+        borderLeftWidth: 3, 
+        borderLeftColor: colors.primary,
+        padding: 12,
+        borderRadius: 8,
+        marginBottom: 12,
+      }}>
+        <View style={{ flexDirection: "row", alignItems: "center", marginBottom: 4 }}>
+          <Text style={{ fontSize: 16, marginRight: 6 }}>🎀</Text>
+          <Text style={{ color: colors.foreground, fontSize: 13, fontWeight: "600" }}>
+            りんくからのお知らせ
+          </Text>
+        </View>
+        <Text style={{ color: colors.foreground, fontSize: 12, lineHeight: 18 }}>
+          今はライブ動員に集中しています。YouTubeプレミア同時視聴や作品リリースの反応を見る機能は、後で追加予定です。
+        </Text>
+      </View>
+      
       <View style={{ gap: 8 }}>
         {PURPOSES.map((purpose) => {
           const isSelected = selectedPurpose === purpose.id;

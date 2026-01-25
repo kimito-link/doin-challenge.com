@@ -22,15 +22,24 @@ export const GENRES = [
 export type GenreId = typeof GENRES[number]["id"];
 
 // 目的（チャレンジの目的）
+// 現在はライブ動員のみに集中（将来的にstreaming/releaseを追加予定）
 export const PURPOSES = [
   { id: "live", label: "ライブ・イベント", icon: "🎪", description: "ライブ、コンサート、ファンミーティングなど" },
+] as const;
+
+// 将来追加予定の目的（伏線）
+// { id: "streaming", label: "配信イベント", icon: "📡", description: "YouTubeプレミア同時視聴など" },
+// { id: "release", label: "作品リリース", icon: "💿", description: "漫画、楽曲、動画などの反応を見る" },
+
+// 既存データ用のフォールバック定義（表示のみ、新規作成不可）
+export const LEGACY_PURPOSES = [
   { id: "streaming", label: "配信イベント", icon: "📡", description: "YouTube配信、ミクチャ、ツイキャスなど" },
   { id: "release", label: "リリース", icon: "💿", description: "CD、DVD、グッズのリリースイベント" },
   { id: "birthday", label: "生誕祭", icon: "🎂", description: "メンバーの誕生日イベント" },
   { id: "anniversary", label: "周年イベント", icon: "🎉", description: "デビュー周年、グループ結成周年など" },
   { id: "goods", label: "グッズ・物販", icon: "🛍️", description: "グッズ販売、物販イベント" },
   { id: "survey", label: "調査・アンケート", icon: "📊", description: "ファン調査、アンケート企画" },
-  { id: "other", label: "その他", icon: "📌", description: "上記に当てはまらないもの" },
+  { id: "other", label: "その他", icon: "📋", description: "上記に当てはまらないもの" },
 ] as const;
 
 export type PurposeId = typeof PURPOSES[number]["id"];
@@ -40,9 +49,14 @@ export function getGenreById(id: GenreId | string | null | undefined) {
   return GENRES.find((g) => g.id === id) || null;
 }
 
-// 目的IDから目的情報を取得
+// 目的IDから目的情報を取得（フォールバック対応）
 export function getPurposeById(id: PurposeId | string | null | undefined) {
-  return PURPOSES.find((p) => p.id === id) || null;
+  // まずPURPOSESから検索
+  const purpose = PURPOSES.find((p) => p.id === id);
+  if (purpose) return purpose;
+  
+  // 見つからなければLEGACY_PURPOSESから検索（既存データ用）
+  return LEGACY_PURPOSES.find((p) => p.id === id) || null;
 }
 
 // ジャンルと目的の組み合わせからラベルを生成
