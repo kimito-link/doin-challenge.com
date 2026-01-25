@@ -1,12 +1,13 @@
 /**
  * Phase 2: ログインUX改善
- * PR-1: FSMの器だけ（idle/confirmだけ、login呼ばない）
+ * PR-2: redirecting状態追加（login()呼び出し）
  * 
  * このファイルはPhase 2実装ガイドに基づいて作成されています。
  * docs/phase2-implementation-guide.md を参照してください。
  */
 
-import { useReducer, useCallback } from "react";
+import { useReducer, useCallback, useEffect } from "react";
+import { useAuth } from "@/hooks/use-auth";
 
 /**
  * 認証UXの状態定義
@@ -55,10 +56,9 @@ function authUxReducer(state: AuthUxState, action: AuthUxAction): AuthUxState {
       return state;
 
     case "CONFIRM_YES":
-      // confirm → redirecting（PR-2で実装予定）
+      // confirm → redirecting
       if (state.name === "confirm") {
-        // PR-1では何もしない（次のPRで実装）
-        return state;
+        return { name: "redirecting" };
       }
       return state;
 
@@ -73,15 +73,24 @@ function authUxReducer(state: AuthUxState, action: AuthUxAction): AuthUxState {
       // どの状態からでも idle に戻る
       return { name: "idle" };
 
-    // 以下は後続PRで実装予定
     case "REDIRECTING_START":
+      // idle/confirm → redirecting
+      if (state.name === "idle" || state.name === "confirm") {
+        return { name: "redirecting" };
+      }
+      return state;
+
+    case "CANCEL":
+      // キャンセルされたら idle に戻る
+      return { name: "idle" };
+
+    // 以下は後続PRで実装予定
     case "WAITING_RETURN_START":
     case "SUCCESS":
-    case "CANCEL":
     case "ERROR":
     case "RETRY":
     case "BACK_WITHOUT_LOGIN":
-      // PR-1では未実装
+      // PR-2では未実装
       return state;
 
     default:
@@ -92,12 +101,13 @@ function authUxReducer(state: AuthUxState, action: AuthUxAction): AuthUxState {
 /**
  * 認証UX状態管理フック
  * 
- * PR-1: idle ↔ confirm のみ実装
+ * PR-2: idle → confirm → redirecting まで実装
  * 
  * @returns 状態と状態遷移関数
  */
 export function useAuthUxMachine() {
   const [state, dispatch] = useReducer(authUxReducer, { name: "idle" });
+  const { login } = useAuth();
 
   // ログインボタンタップ
   const tapLogin = useCallback(
@@ -108,9 +118,17 @@ export function useAuthUxMachine() {
   );
 
   // 確認モーダルで「はい」
-  const confirmYes = useCallback(() => {
+  const confirmYes = useCallback(async () => {
     dispatch({ type: "CONFIRM_YES" });
-  }, []);
+    // redirecting状態に遷移後、login()を呼び出す
+    try {
+      await login();
+      // login()の成否はAuth Contextが管理するので、ここでは何もしない
+    } catch (error) {
+      // エラーは無視（Auth Contextが管理）
+      console.error("[useAuthUxMachine] login() error:", error);
+    }
+  }, [login]);
 
   // 確認モーダルで「いいえ」
   const confirmNo = useCallback(() => {

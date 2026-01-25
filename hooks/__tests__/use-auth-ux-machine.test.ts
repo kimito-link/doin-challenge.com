@@ -1,15 +1,28 @@
 /**
  * Phase 2: ログインUX改善
- * PR-1: useAuthUxMachine のユニットテスト
+ * PR-2: useAuthUxMachine のユニットテスト
  * 
- * FSMの状態遷移をテスト（idle ↔ confirm のみ）
+ * FSMの状態遷移をテスト（idle → confirm → redirecting）
  */
 
-import { describe, it, expect } from "vitest";
+import { describe, it, expect, vi, beforeEach } from "vitest";
 import { renderHook, act } from "@testing-library/react";
 import { useAuthUxMachine } from "../use-auth-ux-machine";
 
-describe("useAuthUxMachine (PR-1: idle ↔ confirm)", () => {
+// useAuth をモック
+vi.mock("@/hooks/use-auth", () => ({
+  useAuth: () => ({
+    login: vi.fn().mockResolvedValue(undefined),
+    user: null,
+    isAuthenticated: false,
+  }),
+}));
+
+describe("useAuthUxMachine (PR-2: idle → confirm → redirecting)", () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+  });
+
   it("初期状態は idle", () => {
     const { result } = renderHook(() => useAuthUxMachine());
     expect(result.current.state.name).toBe("idle");
@@ -57,7 +70,7 @@ describe("useAuthUxMachine (PR-1: idle ↔ confirm)", () => {
     expect(result.current.state.name).toBe("idle");
   });
 
-  it("confirmYes は PR-1 では何もしない（次のPRで実装）", () => {
+  it("confirmYes で confirm → redirecting に遷移（PR-2）", async () => {
     const { result } = renderHook(() => useAuthUxMachine());
 
     // idle → confirm
@@ -66,11 +79,11 @@ describe("useAuthUxMachine (PR-1: idle ↔ confirm)", () => {
     });
     expect(result.current.state.name).toBe("confirm");
 
-    // confirmYes（PR-1では何もしない）
-    act(() => {
-      result.current.confirmYes();
+    // confirmYes → redirecting
+    await act(async () => {
+      await result.current.confirmYes();
     });
-    expect(result.current.state.name).toBe("confirm"); // 状態変化なし
+    expect(result.current.state.name).toBe("redirecting");
   });
 
   it("reset で任意の状態から idle に戻る", () => {
@@ -101,13 +114,13 @@ describe("useAuthUxMachine (PR-1: idle ↔ confirm)", () => {
     expect(result.current.state.name).toBe("idle"); // 変化なし
   });
 
-  it("idle 状態で confirmYes を呼んでも状態変化なし", () => {
+  it("idle 状態で confirmYes を呼んでも状態変化なし", async () => {
     const { result } = renderHook(() => useAuthUxMachine());
 
     expect(result.current.state.name).toBe("idle");
 
-    act(() => {
-      result.current.confirmYes();
+    await act(async () => {
+      await result.current.confirmYes();
     });
 
     expect(result.current.state.name).toBe("idle"); // 変化なし

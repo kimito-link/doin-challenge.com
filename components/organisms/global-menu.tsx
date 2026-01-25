@@ -14,7 +14,7 @@ import { navigate } from "@/lib/navigation";
 import MaterialIcons from "@expo/vector-icons/MaterialIcons";
 import { useAuth } from "@/hooks/use-auth";
 import { LogoutConfirmModal } from "@/components/molecules/logout-confirm-modal";
-import { LoginConfirmModal } from "@/components/auth-ux";
+import { LoginConfirmModal, RedirectingScreen } from "@/components/auth-ux";
 import { useAuthUxMachine } from "@/hooks/use-auth-ux-machine";
 import * as Haptics from "expo-haptics";
 
@@ -356,6 +356,9 @@ export function GlobalMenu({ isVisible, onClose }: GlobalMenuProps) {
         onConfirm={confirmYes}
         onCancel={confirmNo}
       />
+
+      {/* Redirecting画面 (Phase 2 PR-2) */}
+      <RedirectingScreen visible={state.name === "redirecting"} />
     </>
   );
 }
