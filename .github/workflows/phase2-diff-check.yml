@@ -1,0 +1,123 @@
+name: Phase 2 Diff Check (OAuth Protection)
+
+on:
+  pull_request:
+    branches:
+      - main
+
+jobs:
+  diff-check:
+    name: Check for dangerous OAuth/auth changes
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      
+      - name: Get changed files
+        id: changed-files
+        run: |
+          # Get list of changed files in this PR
+          git fetch origin main
+          CHANGED_FILES=$(git diff --name-only origin/main...HEAD)
+          echo "Changed files:"
+          echo "$CHANGED_FILES"
+          echo "changed_files<<EOF" >> $GITHUB_OUTPUT
+          echo "$CHANGED_FILES" >> $GITHUB_OUTPUT
+          echo "EOF" >> $GITHUB_OUTPUT
+      
+      - name: Check for dangerous file changes
+        id: file-check
+        run: |
+          CHANGED_FILES="${{ steps.changed-files.outputs.changed_files }}"
+          DANGEROUS_PATTERNS=(
+            "app/oauth/"
+            "server/twitter"
+            "hooks/use-auth.ts"
+            "lib/auth-provider.tsx"
+            "oauth"
+            "middleware"
+            "api/.*auth"
+          )
+          
+          VIOLATIONS=""
+          for pattern in "${DANGEROUS_PATTERNS[@]}"; do
+            if echo "$CHANGED_FILES" | grep -qE "$pattern"; then
+              VIOLATIONS="${VIOLATIONS}\n- Files matching pattern: $pattern"
+            fi
+          done
+          
+          if [ -n "$VIOLATIONS" ]; then
+            echo "violations=true" >> $GITHUB_OUTPUT
+            echo "violation_details<<EOF" >> $GITHUB_OUTPUT
+            echo -e "$VIOLATIONS" >> $GITHUB_OUTPUT
+            echo "EOF" >> $GITHUB_OUTPUT
+          else
+            echo "violations=false" >> $GITHUB_OUTPUT
+          fi
+      
+      - name: Check for forbidden keywords in diff
+        id: keyword-check
+        run: |
+          git fetch origin main
+          DIFF_CONTENT=$(git diff origin/main...HEAD)
+          
+          FORBIDDEN_KEYWORDS=(
+            "callback"
+            "oauth"
+            "pkce"
+            "code_verifier"
+            "redirect_uri"
+            "state="
+            "token"
+            "twitter-callback"
+          )
+          
+          KEYWORD_VIOLATIONS=""
+          for keyword in "${FORBIDDEN_KEYWORDS[@]}"; do
+            if echo "$DIFF_CONTENT" | grep -qiE "\+.*$keyword"; then
+              KEYWORD_VIOLATIONS="${KEYWORD_VIOLATIONS}\n- Keyword found in diff: $keyword"
+            fi
+          done
+          
+          if [ -n "$KEYWORD_VIOLATIONS" ]; then
+            echo "violations=true" >> $GITHUB_OUTPUT
+            echo "violation_details<<EOF" >> $GITHUB_OUTPUT
+            echo -e "$KEYWORD_VIOLATIONS" >> $GITHUB_OUTPUT
+            echo "EOF" >> $GITHUB_OUTPUT
+          else
+            echo "violations=false" >> $GITHUB_OUTPUT
+          fi
+      
+      - name: Report violations and fail if found
+        if: steps.file-check.outputs.violations == 'true' || steps.keyword-check.outputs.violations == 'true'
+        run: |
+          echo "::error::⚠️ DANGEROUS CHANGES DETECTED IN PHASE 2 PR ⚠️"
+          echo ""
+          echo "Phase 2 is UI-only and should NOT touch OAuth/auth internals."
+          echo ""
+          
+          if [ "${{ steps.file-check.outputs.violations }}" == "true" ]; then
+            echo "::error::Dangerous file changes detected:"
+            echo "${{ steps.file-check.outputs.violation_details }}"
+            echo ""
+          fi
+          
+          if [ "${{ steps.keyword-check.outputs.violations }}" == "true" ]; then
+            echo "::error::Forbidden keywords found in diff:"
+            echo "${{ steps.keyword-check.outputs.violation_details }}"
+            echo ""
+          fi
+          
+          echo "::error::❌ This PR violates Phase 2 safety rules."
+          echo "::error::Please review docs/phase2-implementation-guide.md (NG集)"
+          echo "::error::If you need to modify OAuth/auth code, this should be a separate phase."
+          exit 1
+      
+      - name: Success - No dangerous changes detected
+        if: steps.file-check.outputs.violations != 'true' && steps.keyword-check.outputs.violations != 'true'
+        run: |
+          echo "✅ No dangerous OAuth/auth changes detected"
+          echo "✅ This PR is safe to proceed with Phase 2 implementation"
