@@ -42,7 +42,14 @@ export const LEGACY_PURPOSES = [
   { id: "other", label: "その他", icon: "📋", description: "上記に当てはまらないもの" },
 ] as const;
 
-export type PurposeId = typeof PURPOSES[number]["id"];
+// 新規作成でサポートされる目的（現在はliveのみ）
+export type SupportedPurposeId = typeof PURPOSES[number]["id"];
+
+// 既存データで使われている可能性があるレガシー目的
+export type LegacyPurposeId = typeof LEGACY_PURPOSES[number]["id"];
+
+// 全ての目的ID（新規 + レガシー）
+export type PurposeId = SupportedPurposeId | LegacyPurposeId;
 
 // ジャンルIDからジャンル情報を取得
 export function getGenreById(id: GenreId | string | null | undefined) {
@@ -71,5 +78,5 @@ export function getCategoryLabel(genreId: GenreId | string | null | undefined, p
   } else if (purpose) {
     return `${purpose.icon} ${purpose.label}`;
   }
-  return "";
+  return "カテゴリ未設定";
 }
