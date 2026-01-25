@@ -4378,3 +4378,29 @@ features/create/
 - [x] りんく吹き出しでの案内文言追加
 - [x] 法務的に安全な表現に統一（「売れる」→「判断材料になる」）
 - [ ] チェックポイント保存
+
+
+## Phase 2: PR-4〜PR-7（ログインUX改善完了）
+
+### PR-4: success状態実装
+- [ ] FSMにsuccess/retry/backWithoutLogin処理を追加
+- [ ] SuccessScreenコンポーネント作成
+- [ ] GlobalMenuに統合
+- [ ] ユニットテスト更新
+- [ ] チェックポイント保存
+
+### PR-5: cancel状態実装
+- [ ] CancelScreenコンポーネント作成
+- [ ] GlobalMenuに統合
+- [ ] ユニットテスト更新
+
+### PR-6: error状態実装
+- [ ] ErrorScreenコンポーネント作成
+- [ ] GlobalMenuに統合
+- [ ] ユニットテスト更新
+
+### PR-7: 全状態統合とテスト
+- [ ] Auth Context監視（isLoggedIn変化検知）
+- [ ] エンドツーエンドテスト
+- [ ] レスポンシブチェック（375px/768px/1024px）
+- [ ] 最終チェックポイント保存
