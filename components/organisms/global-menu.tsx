@@ -14,6 +14,8 @@ import { navigate } from "@/lib/navigation";
 import MaterialIcons from "@expo/vector-icons/MaterialIcons";
 import { useAuth } from "@/hooks/use-auth";
 import { LogoutConfirmModal } from "@/components/molecules/logout-confirm-modal";
+import { LoginConfirmModal } from "@/components/auth-ux";
+import { useAuthUxMachine } from "@/hooks/use-auth-ux-machine";
 import * as Haptics from "expo-haptics";
 
 // キャラクター画像
@@ -28,9 +30,9 @@ interface GlobalMenuProps {
 
 export function GlobalMenu({ isVisible, onClose }: GlobalMenuProps) {
   
-  const { user, login, isAuthenticated } = useAuth();
+  const { user, isAuthenticated } = useAuth();
   const [showLogoutModal, setShowLogoutModal] = useState(false);
-  const [isLoggingIn, setIsLoggingIn] = useState(false);
+  const { state, tapLogin, confirmYes, confirmNo } = useAuthUxMachine();
 
   const handleHaptic = () => {
     if (Platform.OS !== "web") {
@@ -38,15 +40,9 @@ export function GlobalMenu({ isVisible, onClose }: GlobalMenuProps) {
     }
   };
 
-  const handleLogin = async () => {
+  const handleLogin = () => {
     handleHaptic();
-    setIsLoggingIn(true);
-    onClose();
-    try {
-      await login();
-    } finally {
-      setTimeout(() => setIsLoggingIn(false), 3000);
-    }
+    tapLogin();
   };
 
   const handleLogout = () => {
@@ -233,7 +229,6 @@ export function GlobalMenu({ isVisible, onClose }: GlobalMenuProps) {
                     </Text>
                     <Pressable
                       onPress={handleLogin}
-                      disabled={isLoggingIn}
                       style={({ pressed }) => [{
                         flexDirection: "row",
                         alignItems: "center",
@@ -242,9 +237,8 @@ export function GlobalMenu({ isVisible, onClose }: GlobalMenuProps) {
                         paddingHorizontal: 20,
                         paddingVertical: 12,
                         borderRadius: 24,
-                        opacity: isLoggingIn ? 0.7 : 1,
                         width: "100%",
-                      }, pressed && !isLoggingIn && { opacity: 0.7 }]}
+                      }, pressed && { opacity: 0.7 }]}
                     >
                       <MaterialIcons
                         name="login"
@@ -259,7 +253,7 @@ export function GlobalMenu({ isVisible, onClose }: GlobalMenuProps) {
                           fontWeight: "600",
                         }}
                       >
-                        {isLoggingIn ? "ログイン中..." : "Xでログイン"}
+                        Xでログイン
                       </Text>
                     </Pressable>
                   </View>
@@ -348,6 +342,19 @@ export function GlobalMenu({ isVisible, onClose }: GlobalMenuProps) {
         visible={showLogoutModal}
         onCancel={() => setShowLogoutModal(false)}
         onConfirm={confirmLogout}
+      />
+
+      {/* ログイン確認モーダル (Phase 2) */}
+      <LoginConfirmModal
+        open={state.name === "confirm"}
+        speech={{
+          title: "りんく",
+          message: "Xの画面に移動してログインするよ。戻ってきたら自動で続きに進むよ。",
+        }}
+        confirmLabel="Xでログインする"
+        cancelLabel="やめる"
+        onConfirm={confirmYes}
+        onCancel={confirmNo}
       />
     </>
   );
