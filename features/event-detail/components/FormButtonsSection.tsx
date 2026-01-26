@@ -7,10 +7,11 @@ import { View, Text, Pressable } from "react-native";
 import { LinearGradient } from "expo-linear-gradient";
 import { color } from "@/theme/tokens";
 import { useColors } from "@/hooks/use-colors";
+import type { Gender } from "@/components/ui/gender-selector";
 
 interface FormButtonsSectionProps {
   prefecture: string;
-  gender: string;
+  gender: Gender;
   isSubmitting: boolean;
   onSubmit: () => void;
   onCancel: () => void;

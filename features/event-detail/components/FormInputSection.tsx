@@ -10,6 +10,7 @@
  */
 
 import { View } from "react-native";
+import type { Gender } from "@/components/ui/gender-selector";
 import {
   UserInfoSection,
   PrefectureSelector,
@@ -33,8 +34,8 @@ interface FormInputSectionProps {
   setMessage: (value: string) => void;
   prefecture: string;
   setPrefecture: (value: string) => void;
-  gender: "male" | "female" | "";
-  setGender: (value: "male" | "female" | "") => void;
+  gender: Gender;
+  setGender: (value: Gender) => void;
   allowVideoUse: boolean;
   setAllowVideoUse: (value: boolean) => void;
   showPrefectureList: boolean;

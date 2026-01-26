@@ -108,6 +108,7 @@ export function TicketInfoSection({
                   placeholder="3000"
                   placeholderTextColor={createText.placeholder}
                   keyboardType="numeric"
+                  inputMode="numeric"
                   style={{
                     backgroundColor: createUI.inputBg,
                     borderRadius: 8,
@@ -132,6 +133,7 @@ export function TicketInfoSection({
                   placeholder="3500"
                   placeholderTextColor={createText.placeholder}
                   keyboardType="numeric"
+                  inputMode="numeric"
                   style={{
                     backgroundColor: createUI.inputBg,
                     borderRadius: 8,

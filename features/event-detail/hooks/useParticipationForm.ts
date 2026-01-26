@@ -9,6 +9,7 @@ import * as Haptics from "expo-haptics";
 import { trpc } from "@/lib/trpc";
 import { lookupTwitterUser, getErrorMessage } from "@/lib/api";
 import { SHARE_PROMPT_DELAY, SCROLL_TO_MESSAGES_DELAY } from "../constants";
+import type { Gender } from "@/components/ui/gender-selector";
 import type { 
   Companion, 
   LookedUpProfile, 
@@ -38,8 +39,8 @@ interface UseParticipationFormReturn {
   setDisplayName: (value: string) => void;
   prefecture: string;
   setPrefecture: (value: string) => void;
-  gender: "male" | "female" | "";
-  setGender: (value: "male" | "female" | "") => void;
+  gender: Gender;
+  setGender: (value: Gender) => void;
   allowVideoUse: boolean;
   setAllowVideoUse: (value: boolean) => void;
   showForm: boolean;
@@ -101,7 +102,7 @@ export function useParticipationForm({
   const [message, setMessage] = useState("");
   const [displayName, setDisplayName] = useState("");
   const [prefecture, setPrefecture] = useState("");
-  const [gender, setGender] = useState<"male" | "female" | "">("");
+  const [gender, setGender] = useState<Gender>("");
   const [allowVideoUse, setAllowVideoUse] = useState(true);
   const [showForm, setShowForm] = useState(false);
   const [showPrefectureList, setShowPrefectureList] = useState(false);

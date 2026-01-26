@@ -9,7 +9,7 @@ import { color } from "@/theme/tokens";
 import { palette } from "@/theme/tokens/palette";
 import { useColors } from "@/hooks/use-colors";
 
-export type Gender = "male" | "female" | "";
+export type Gender = "male" | "female" | "unspecified" | "";
 
 export interface GenderSelectorProps {
   /** 選択された性別 */

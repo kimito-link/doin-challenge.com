@@ -792,6 +792,12 @@ async function updateUserRole(userId, role) {
   await db.update(users).set({ role }).where(eq(users.id, userId));
   return true;
 }
+async function updateUserGender(userId, gender) {
+  const db = await getDb();
+  if (!db) return false;
+  await db.update(users).set({ gender }).where(eq(users.id, userId));
+  return true;
+}
 async function getUserByTwitterId(twitterId) {
   const db = await getDb();
   if (!db) return null;
@@ -3068,6 +3074,7 @@ __export(db_exports, {
   updateParticipation: () => updateParticipation,
   updateReminder: () => updateReminder,
   updateTicketTransferStatus: () => updateTicketTransferStatus,
+  updateUserGender: () => updateUserGender,
   updateUserRole: () => updateUserRole,
   upsertNotificationSettings: () => upsertNotificationSettings,
   upsertUser: () => upsertUser
@@ -5609,6 +5616,12 @@ var profilesRouter = router({
   })).query(async ({ ctx, input }) => {
     const userId = ctx.user?.id;
     return getRecommendedHosts(userId, input.categoryId, input.limit);
+  }),
+  // ユーザーの性別を更新
+  updateGender: protectedProcedure.input(z18.object({
+    gender: z18.enum(["male", "female", "other"]).nullable()
+  })).mutation(async ({ ctx, input }) => {
+    return updateUserGender(ctx.user.id, input.gender);
   })
 });
 

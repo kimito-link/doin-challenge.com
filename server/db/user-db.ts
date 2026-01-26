@@ -93,6 +93,13 @@ export async function updateUserRole(userId: number, role: "user" | "admin") {
   return true;
 }
 
+export async function updateUserGender(userId: number, gender: "male" | "female" | "other" | null) {
+  const db = await getDb();
+  if (!db) return false;
+  await db.update(users).set({ gender }).where(eq(users.id, userId));
+  return true;
+}
+
 
 /**
  * twitterIdでユーザーを取得（外部共有URL用）

@@ -25,6 +25,8 @@ export type User = {
   };
   // Admin role
   role?: "user" | "admin";
+  // Gender
+  gender?: "male" | "female" | "other" | null;
 };
 
 export async function getSessionToken(): Promise<string | null> {

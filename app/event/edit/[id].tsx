@@ -456,6 +456,7 @@ export default function EditChallengeScreen() {
                   placeholder="前売り価格（円）"
                   placeholderTextColor={colors.muted}
                   keyboardType="numeric"
+                  inputMode="numeric"
                 />
                 <TextInput
                   style={{
@@ -472,6 +473,7 @@ export default function EditChallengeScreen() {
                   placeholder="当日価格（円）"
                   placeholderTextColor={colors.muted}
                   keyboardType="numeric"
+                  inputMode="numeric"
                 />
                 <TextInput
                   style={{

@@ -50,10 +50,26 @@
 - [x] スワイプ時のコンテンツズレを修正（ScrollViewをViewに変更）
 - [x] 全画面で同じ挙動のトンマナに統一
 
-### Phase 9: マイページで性別を設定できるようにする
+### Phase 9: 数字入力欄に入力補助を追加
+- [x] 数値入力フィールドを全て検索
+- [x] 前売り券・当日券の入力欄にinputMode="numeric"を追加（TicketInfoSection.tsx, event/edit/[id].tsx）
+- [x] Gender型の定義を簡素化してAPIと整合性を保つ
+
+### Phase 10: マイページで性別を設定できるようにする
 - [x] usersテーブルにgenderフィールドを追加（drizzle/schema/users.ts）
-- [ ] マイページに性別選択UIを追加（入力したものがちゃんとコンポーネント化）
-- [ ] 性別データを保存するAPIを実装
+- [x] マイページの現在の実装を確認
+- [x] 性別選択UIコンポーネントを作成（GenderSection.tsx）
+- [x] マイページに性別選択UIを追加（AuthenticatedContent.tsx）
+- [x] 性別データを保存するAPIを実装（profiles.updateGender）
+- [x] クライアント側のAuth.User型にgenderフィールドを追加
+- [x] 楽観更新とinvalidateを実装（GPTの推奨実装に従う）
+
+### Phase 10: 招待リンクのQRコード生成を実装
+- [ ] react-native-qrcode-svgライブラリをインストール
+- [ ] 招待画面のQRコード表示部分を修正
+- [ ] 実際のQRコードを生成する機能を実装
+
+### Phase 11: 主催者の性別による色分けを実装
 
 ### Phase 8: ホーム画面の主催者の性別による色分け
 - [x] ホーム画面のチャレンジカードコンポーネントを特定（features/home/components/ChallengeCard.tsx）
