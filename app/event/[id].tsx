@@ -208,6 +208,7 @@ export default function ChallengeDetailScreen() {
             onFanPress={(fan) => modalState.setSelectedFan(fan)}
             highlightPrefecture={participationForm.lastParticipation?.prefecture}
             onPrefecturePress={(prefName) => modalState.setSelectedPrefectureForModal(prefName)}
+            attendanceTypeCounts={eventDetail.attendanceTypeCounts}
           />
 
           {/* 応援メッセージセクション */}

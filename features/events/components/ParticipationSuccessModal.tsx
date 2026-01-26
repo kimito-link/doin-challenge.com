@@ -25,6 +25,12 @@ export interface ParticipationSuccessModalProps {
   attendanceType: AttendanceType;
   participantNumber?: number; // 参加順番（APIから取得、Phase 2では未実装）
   prefecture?: string; // 参加者の都道府県（Phase 3で使用）
+  attendanceTypeCounts?: {
+    venue: number;
+    streaming: number;
+    both: number;
+    total: number;
+  };
 }
 
 export function ParticipationSuccessModal({
@@ -33,6 +39,7 @@ export function ParticipationSuccessModal({
   attendanceType,
   participantNumber,
   prefecture,
+  attendanceTypeCounts,
 }: ParticipationSuccessModalProps) {
   const colors = useColors();
 
@@ -84,6 +91,24 @@ export function ParticipationSuccessModal({
                 message={`${participantMessage}ありがとう！\n${attendanceMessage}`}
               />
             </View>
+
+            {/* 参加方法別内訳 */}
+            {attendanceTypeCounts && (
+              <View style={styles.countersContainer}>
+                <View style={styles.counterCard}>
+                  <Text style={[styles.counterLabel, { color: colors.muted }]}>🏟️ 会場参加</Text>
+                  <Text style={[styles.counterValue, { color: colors.foreground }]}>
+                    {attendanceTypeCounts.venue + attendanceTypeCounts.both}
+                  </Text>
+                </View>
+                <View style={styles.counterCard}>
+                  <Text style={[styles.counterLabel, { color: colors.muted }]}>📺 配信視聴</Text>
+                  <Text style={[styles.counterValue, { color: colors.foreground }]}>
+                    {attendanceTypeCounts.streaming + attendanceTypeCounts.both}
+                  </Text>
+                </View>
+              </View>
+            )}
 
             {/* 県点灯演出 */}
             {prefecture && (
@@ -160,6 +185,27 @@ const styles = StyleSheet.create({
   mapContainer: {
     width: "100%",
     marginBottom: 20,
+  },
+  countersContainer: {
+    width: "100%",
+    flexDirection: "row",
+    gap: 12,
+    marginBottom: 20,
+  },
+  counterCard: {
+    flex: 1,
+    backgroundColor: color.surface,
+    borderRadius: 12,
+    padding: 12,
+    alignItems: "center",
+  },
+  counterLabel: {
+    fontSize: 12,
+    marginBottom: 4,
+  },
+  counterValue: {
+    fontSize: 24,
+    fontWeight: "bold",
   },
   closeButton: {
     width: "100%",

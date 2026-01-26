@@ -28,6 +28,13 @@ interface ParticipantsOverviewProps {
   highlightPrefecture?: string | null;
   /** 都道府県がタップされたときのコールバック */
   onPrefecturePress?: (prefecture: string) => void;
+  /** 参加方法別集計 */
+  attendanceTypeCounts?: {
+    venue: number;
+    streaming: number;
+    both: number;
+    total: number;
+  };
 }
 
 export function ParticipantsOverview({
@@ -38,6 +45,7 @@ export function ParticipantsOverview({
   onFanPress,
   highlightPrefecture,
   onPrefecturePress,
+  attendanceTypeCounts,
 }: ParticipantsOverviewProps) {
   const colors = useColors();
   
@@ -57,6 +65,31 @@ export function ParticipantsOverview({
         challengeId={challengeId}
         challengeTitle={challengeTitle}
       />
+
+      {/* 参加方法別カウンター */}
+      {attendanceTypeCounts && (
+        <View style={{ marginTop: 16, marginHorizontal: 16 }}>
+          <View style={{ backgroundColor: color.surface, borderRadius: 16, padding: 16 }}>
+            <Text style={{ color: colors.foreground, fontSize: 18, fontWeight: "bold", marginBottom: 12 }}>
+              参加方法別内訳
+            </Text>
+            <View style={{ flexDirection: "row", gap: 12 }}>
+              <View style={{ flex: 1, backgroundColor: color.bg, borderRadius: 12, padding: 12 }}>
+                <Text style={{ color: colors.muted, fontSize: 12, marginBottom: 4 }}>🏟️ 会場参加</Text>
+                <Text style={{ color: colors.foreground, fontSize: 24, fontWeight: "bold" }}>
+                  {attendanceTypeCounts.venue + attendanceTypeCounts.both}
+                </Text>
+              </View>
+              <View style={{ flex: 1, backgroundColor: color.bg, borderRadius: 12, padding: 12 }}>
+                <Text style={{ color: colors.muted, fontSize: 12, marginBottom: 4 }}>📺 配信視聴</Text>
+                <Text style={{ color: colors.foreground, fontSize: 24, fontWeight: "bold" }}>
+                  {attendanceTypeCounts.streaming + attendanceTypeCounts.both}
+                </Text>
+              </View>
+            </View>
+          </View>
+        </View>
+      )}
 
       {/* デフォルメ日本地図 */}
       <JapanMapDeformed
