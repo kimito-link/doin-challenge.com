@@ -39,6 +39,8 @@ import {
   CountdownSection,
   ProgressSection,
   EventInfoSection,
+  EventBasicInfo,
+  EventDescription,
   TicketInfoSection,
   HostManagementSection,
   ShareSection,

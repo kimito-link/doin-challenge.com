@@ -103,7 +103,29 @@
 - [x] チャレンジ作成時にpurposeを保存する実装（createEvent関数）
 - [x] 既存データのpurposeをliveに更新（バッチ処理実行済み、0件）
 
-### Phase 16: Web固めフェーズ - ジャンル選択実装（A: マイページ）
-- [ ] マイページのジャンル選択UIを実装
-- [ ] legacy値を持つ場合のフォールバック表示
-- [ ] りんく吹き出しで説明（編集はliveのみ）
+### Phase 16: Web固めフェーズ - マイページのジャンル選択UI実装
+- [x] usersテーブルにgenreフィールドを追加（マイグレーション実行済み）
+- [x] profiles.updateGenre mutationを実装（server/routers/profiles.ts）
+- [x] updateUserGenre関数を実装（server/db/user-db.ts）
+- [x] Auth.User型にgenreフィールドを追加（lib/_core/auth.ts）
+- [x] GenreSelectorコンポーネントを作成（components/ui/genre-selector.tsx）
+- [x] GenreSectionコンポーネントを作成（features/mypage/components/sections/GenreSection.tsx）
+- [x] AuthenticatedContentにGenreSectionを追加し、onGenreChangeハンドラーを実装
+- [x] 楽観更新とinvalidateを実装（GenderSectionと同様）
+
+### Phase 17: Web固めフェーズ - 応援コメントに日時を追加
+- [x] 応援メッセージカードに日時表示を追加（「○分前」「○時間前」「○日前」形式）
+- [x] createdAtフィールドを使用して相対時間を表示（getRelativeTime関数）
+- [x] 動員の勢い・速度が可視化されるようにする
+
+### Phase 18: Web固めフェーズ - チャレンジ詳細画面のファーストビュー最適化
+- [ ] ファーストビューの情報を優先順位順に再配置
+- [ ] タイトル・日時・場所・参加予定数・目標と進捗・参加表明CTAを上部に配置
+- [ ] 応援メッセージを下部に移動
+- [ ] 文言の統一（「参加者数」→「参加予定数」など）
+
+### Phase 18: Web固めフェーズ - 参加表明フローの完了演出実装
+- [ ] 参加表明後の成功フィードバックを実装（アニメーション・トースト）
+- [ ] 進捗バーのアニメーション更新
+- [ ] 楽観更新で即座にUIを更新
+- [ ] 失敗時のロールバック処理

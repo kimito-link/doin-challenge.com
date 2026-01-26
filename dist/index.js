@@ -82,6 +82,7 @@ var init_users = __esm({
       loginMethod: varchar("loginMethod", { length: 64 }),
       role: mysqlEnum("role", ["user", "admin"]).default("user").notNull(),
       gender: mysqlEnum("gender", ["male", "female", "other"]),
+      genre: mysqlEnum("genre", ["idol", "artist", "vtuber", "streamer", "band", "dancer", "voice_actor", "other"]),
       createdAt: timestamp("createdAt").defaultNow().notNull(),
       updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
       lastSignedIn: timestamp("lastSignedIn").defaultNow().notNull()
@@ -799,6 +800,12 @@ async function updateUserGender(userId, gender) {
   const db = await getDb();
   if (!db) return false;
   await db.update(users).set({ gender }).where(eq(users.id, userId));
+  return true;
+}
+async function updateUserGenre(userId, genre) {
+  const db = await getDb();
+  if (!db) return false;
+  await db.update(users).set({ genre }).where(eq(users.id, userId));
   return true;
 }
 async function getUserByTwitterId(twitterId) {
@@ -3118,6 +3125,7 @@ __export(db_exports, {
   updateReminder: () => updateReminder,
   updateTicketTransferStatus: () => updateTicketTransferStatus,
   updateUserGender: () => updateUserGender,
+  updateUserGenre: () => updateUserGenre,
   updateUserRole: () => updateUserRole,
   upsertNotificationSettings: () => upsertNotificationSettings,
   upsertUser: () => upsertUser
@@ -5670,6 +5678,12 @@ var profilesRouter = router({
     gender: z18.enum(["male", "female", "other"]).nullable()
   })).mutation(async ({ ctx, input }) => {
     return updateUserGender(ctx.user.id, input.gender);
+  }),
+  // ユーザーのジャンルを更新
+  updateGenre: protectedProcedure.input(z18.object({
+    genre: z18.enum(["idol", "artist", "vtuber", "streamer", "band", "dancer", "voice_actor", "other"]).nullable()
+  })).mutation(async ({ ctx, input }) => {
+    return updateUserGenre(ctx.user.id, input.genre);
   })
 });
 

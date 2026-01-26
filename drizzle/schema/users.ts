@@ -21,6 +21,7 @@ export const users = mysqlTable("users", {
   loginMethod: varchar("loginMethod", { length: 64 }),
   role: mysqlEnum("role", ["user", "admin"]).default("user").notNull(),
   gender: mysqlEnum("gender", ["male", "female", "other"]),
+  genre: mysqlEnum("genre", ["idol", "artist", "vtuber", "streamer", "band", "dancer", "voice_actor", "other"]),
   createdAt: timestamp("createdAt").defaultNow().notNull(),
   updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
   lastSignedIn: timestamp("lastSignedIn").defaultNow().notNull(),

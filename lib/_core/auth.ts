@@ -27,6 +27,8 @@ export type User = {
   role?: "user" | "admin";
   // Gender
   gender?: "male" | "female" | "other" | null;
+  // Genre
+  genre?: "idol" | "artist" | "vtuber" | "streamer" | "band" | "dancer" | "voice_actor" | "other" | null;
 };
 
 export async function getSessionToken(): Promise<string | null> {

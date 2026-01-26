@@ -8,6 +8,8 @@ export { EventHeaderSection } from "./EventHeaderSection";
 export { CountdownSection } from "./CountdownSection";
 export { ProgressSection } from "./ProgressSection";
 export { EventInfoSection } from "./EventInfoSection";
+export { EventBasicInfo } from "./EventBasicInfo";
+export { EventDescription } from "./EventDescription";
 export { TicketInfoSection } from "./TicketInfoSection";
 export { HostManagementSection } from "./HostManagementSection";
 export { ShareSection } from "./ShareSection";

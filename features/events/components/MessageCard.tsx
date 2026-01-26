@@ -11,6 +11,7 @@ import { palette } from "@/theme/tokens/palette";
 import { OptimizedAvatar } from "@/components/molecules/optimized-image";
 import { Button } from "@/components/ui/button";
 import type { Participation, Companion } from "@/types/participation";
+import { getRelativeTime } from "@/lib/date-utils";
 
 /** 同伴者の表示用型 */
 interface CompanionDisplay {
@@ -155,6 +156,12 @@ export function MessageCard({
           <Text style={{ color: eventText.accent, fontSize: eventFont.body, fontWeight: "bold" }}>
             +{participation.contribution || 1}人
           </Text>
+          {/* 日時表示 */}
+          {participation.createdAt && (
+            <Text style={{ color: eventText.hint, fontSize: eventFont.meta, marginTop: 2 }}>
+              {getRelativeTime(participation.createdAt)}
+            </Text>
+          )}
         </View>
       </View>
 

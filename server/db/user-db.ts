@@ -100,6 +100,13 @@ export async function updateUserGender(userId: number, gender: "male" | "female"
   return true;
 }
 
+export async function updateUserGenre(userId: number, genre: "idol" | "artist" | "vtuber" | "streamer" | "band" | "dancer" | "voice_actor" | "other" | null) {
+  const db = await getDb();
+  if (!db) return false;
+  await db.update(users).set({ genre }).where(eq(users.id, userId));
+  return true;
+}
+
 
 /**
  * twitterIdでユーザーを取得（外部共有URL用）

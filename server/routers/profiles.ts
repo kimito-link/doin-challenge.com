@@ -51,4 +51,13 @@ export const profilesRouter = router({
     .mutation(async ({ ctx, input }) => {
       return db.updateUserGender(ctx.user.id, input.gender);
     }),
+  
+  // ユーザーのジャンルを更新
+  updateGenre: protectedProcedure
+    .input(z.object({ 
+      genre: z.enum(["idol", "artist", "vtuber", "streamer", "band", "dancer", "voice_actor", "other"]).nullable(),
+    }))
+    .mutation(async ({ ctx, input }) => {
+      return db.updateUserGenre(ctx.user.id, input.genre);
+    }),
 });
