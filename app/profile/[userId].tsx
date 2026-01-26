@@ -12,6 +12,7 @@ import { useColors } from "@/hooks/use-colors";
 import MaterialIcons from "@expo/vector-icons/MaterialIcons";
 import { LinearGradient } from "expo-linear-gradient";
 import { AppHeader } from "@/components/organisms/app-header";
+import { RefreshingIndicator } from "@/components/molecules/refreshing-indicator";
 
 // バッジアイコンマッピング
 const badgeIcons: Record<string, string> = {
@@ -36,12 +37,17 @@ export default function ProfileScreen() {
 
   const parsedUserId = parseInt(userId || "0");
 
-  const { data: profile, isLoading, refetch } = trpc.profiles.get.useQuery(
+  const { data: profile, isLoading, isFetching, refetch } = trpc.profiles.get.useQuery(
     { userId: parsedUserId },
     { enabled: !!userId }
   ) as any;
 
   const isOwnProfile = user?.id === parsedUserId;
+
+  // ローディング状態を分離
+  const hasData = !!profile;
+  const isInitialLoading = isLoading && !hasData;
+  const isRefreshing = isFetching && hasData;
 
   // フォロー状態を取得
   const { data: isFollowing, refetch: refetchFollowStatus } = trpc.follows.isFollowing.useQuery(
@@ -108,7 +114,7 @@ export default function ProfileScreen() {
     }
   };
 
-  if (isLoading) {
+  if (isInitialLoading) {
     return (
       <ScreenContainer containerClassName="bg-background">
         <View style={{ flex: 1, alignItems: "center", justifyContent: "center" }}>
@@ -136,6 +142,7 @@ export default function ProfileScreen() {
 
   return (
     <ScreenContainer containerClassName="bg-background">
+      {isRefreshing && <RefreshingIndicator isRefreshing={isRefreshing} />}
       <ScrollView
         refreshControl={
           <RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={color.hostAccentLegacy} />

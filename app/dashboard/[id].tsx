@@ -11,6 +11,7 @@ import { LinearGradient } from "expo-linear-gradient";
 import { useMemo } from "react";
 import { AppHeader } from "@/components/organisms/app-header";
 import { ExportButton } from "@/components/molecules/export-button";
+import { RefreshingIndicator } from "@/components/molecules/refreshing-indicator";
 import type { ExportData } from "@/lib/export-stats";
 import type { Challenge } from "@/drizzle/schema";
 import { ParticipantRanking } from "@/components/organisms/participant-ranking";
@@ -430,23 +431,29 @@ export default function DashboardScreen() {
   const { user } = useAuth();
 
   // チャレンジ詳細を取得
-  const { data: challenge, isLoading: challengeLoading } = trpc.events.getById.useQuery(
+  const { data: challenge, isLoading: challengeLoading, isFetching: challengeFetching } = trpc.events.getById.useQuery(
     { id: Number(id) },
     { enabled: !!id }
   );
 
   // 参加者一覧を取得
-  const { data: participations = [], isLoading: participationsLoading } = trpc.participations.listByEvent.useQuery(
+  const { data: participations = [], isLoading: participationsLoading, isFetching: participationsFetching } = trpc.participations.listByEvent.useQuery(
     { eventId: Number(id) },
     { enabled: !!id }
   );
 
   const isLoading = challengeLoading || participationsLoading;
+  const isFetching = challengeFetching || participationsFetching;
+
+  // ローディング状態を分離
+  const hasData = !!challenge && participations.length >= 0;
+  const isInitialLoading = isLoading && !hasData;
+  const isRefreshing = isFetching && hasData;
 
   // 主催者かどうかチェック
   const isHost = user && challenge && (user.id === challenge.hostUserId);
 
-  if (isLoading) {
+  if (isInitialLoading) {
     return (
       <ScreenContainer className="p-4">
         <View style={{ flex: 1, alignItems: "center", justifyContent: "center" }}>
@@ -474,6 +481,7 @@ export default function DashboardScreen() {
 
   return (
     <ScreenContainer>
+      {isRefreshing && <RefreshingIndicator isRefreshing={isRefreshing} />}
       <ScrollView style={{ flex: 1 }} contentContainerStyle={{ padding: 16 }}>
         {/* ヘッダー */}
         <AppHeader 
