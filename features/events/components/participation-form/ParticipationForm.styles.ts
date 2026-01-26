@@ -436,4 +436,34 @@ export const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: "bold",
   },
+  attendanceTypeContainer: {
+    flexDirection: "row",
+    gap: 8,
+    marginBottom: 8,
+  },
+  attendanceTypeButton: {
+    flex: 1,
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
+    paddingVertical: 12,
+    paddingHorizontal: 8,
+    borderRadius: 12,
+    gap: 6,
+    borderWidth: 1,
+    borderColor: color.border,
+  },
+  attendanceTypeButtonActive: {
+    borderColor: color.accentPrimary,
+  },
+  attendanceTypeText: {
+    fontSize: 13,
+    fontWeight: "600",
+  },
+  attendanceTypeHint: {
+    fontSize: 12,
+    color: color.textHint,
+    marginTop: 4,
+    lineHeight: 16,
+  },
 });

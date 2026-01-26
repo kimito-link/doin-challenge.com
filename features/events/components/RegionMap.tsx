@@ -11,6 +11,8 @@ import type { Participation } from "@/types/participation";
 export interface RegionMapProps {
   /** 参加者リスト */
   participations: Participation[];
+  /** 強調表示する都道府県（参加完了時のアニメーション用） */
+  highlightPrefecture?: string;
 }
 
 /** 地域グループのViewModel */
@@ -20,7 +22,7 @@ export interface RegionGroupVM {
   prefectures: string[];
 }
 
-export function RegionMap({ participations }: RegionMapProps) {
+export function RegionMap({ participations, highlightPrefecture }: RegionMapProps) {
   const colors = useColors();
   
   // 地域ごとの参加者数を集計
@@ -36,18 +38,20 @@ export function RegionMap({ participations }: RegionMapProps) {
         {regionGroups.map((region) => {
           const count = regionCounts[region.name as RegionName] || 0;
           const intensity = count / maxCount;
+          // 強調表示する都道府県がこの地域に含まれるかチェック
+          const isHighlighted = highlightPrefecture && (region.prefectures as readonly string[]).includes(highlightPrefecture);
 
           return (
             <View
               key={region.name}
               style={{
                 width: "48%",
-                backgroundColor: "#1A1D21",
+                backgroundColor: isHighlighted ? "rgba(236, 72, 153, 0.2)" : "#1A1D21",
                 borderRadius: 8,
                 padding: 12,
                 marginBottom: 8,
-                borderWidth: 1,
-                borderColor: count > 0 ? `rgba(236, 72, 153, ${0.3 + intensity * 0.7})` : "#2D3139",
+                borderWidth: isHighlighted ? 2 : 1,
+                borderColor: isHighlighted ? "rgba(236, 72, 153, 1)" : (count > 0 ? `rgba(236, 72, 153, ${0.3 + intensity * 0.7})` : "#2D3139"),
               }}
             >
               <Text style={{ color: eventText.secondary, fontSize: eventFont.meta }}>{region.name}</Text>
