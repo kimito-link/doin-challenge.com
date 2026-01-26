@@ -398,7 +398,7 @@ function StatsSummary({ challenge, participations }: { challenge: Challenge | nu
         </View>
         <View style={{ width: "100%", backgroundColor: color.surface, borderRadius: 8, padding: 16 }}>
           <View style={{ flexDirection: "row", justifyContent: "space-between", marginBottom: 8 }}>
-            <Text style={{ color: color.textSubtle, fontSize: 12 }}>目標達成率</Text>
+            <Text style={{ color: color.textSubtle, fontSize: 12 }}>目標達成率（参加予定）</Text>
             <Text style={{ color: color.accentPrimary, fontSize: 14, fontWeight: "bold" }}>
               {stats.progressRate.toFixed(1)}%
             </Text>

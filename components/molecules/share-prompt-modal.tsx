@@ -207,7 +207,7 @@ export function SharePromptModal({
               />
             </View>
             <Text style={styles.progressPercent}>
-              達成率 {Math.round(progressPercent)}%
+              達成率 {Math.round(progressPercent)}%（参加予定）
             </Text>
           </View>
 

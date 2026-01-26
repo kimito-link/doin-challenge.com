@@ -84,7 +84,7 @@ export function ProgressSection({
       >
         {/* 達成状況 */}
         <View style={{ alignItems: "center", marginBottom: 16 }}>
-          <Text style={{ color: color.textSecondary, fontSize: 14 }}>現在の達成状況</Text>
+          <Text style={{ color: color.textSecondary, fontSize: 14 }}>現在の達成状況（参加予定）</Text>
           <View style={{ flexDirection: "row", alignItems: "baseline" }}>
             <Text style={{ color: color.accentPrimary, fontSize: 48, fontWeight: "bold" }}>
               {currentValue}

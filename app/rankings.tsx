@@ -282,7 +282,7 @@ export default function RankingsScreen() {
                   {((item as ContributionRankingItem).totalContribution || (item as HostRankingItem).totalParticipants || 0).toLocaleString()}
                 </Text>
                 <Text style={{ color: color.textMuted, fontSize: 10 }}>
-                  {tab === "contribution" ? "貢献度" : "総参加予定数"}
+                  {tab === "contribution" ? "貢献度" : "総参加予定数（現時点）"}
                 </Text>
               </View>
             </View>
