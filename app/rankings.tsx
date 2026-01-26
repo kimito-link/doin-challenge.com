@@ -142,7 +142,7 @@ export default function RankingsScreen() {
         <Text style={{ color: color.textSubtle, fontSize: 11 }}>
           {tab === "contribution" 
             ? "貢献度: チャレンジへの参加・同伴・拡散で獲得したポイントのランキング"
-            : "主催者: チャレンジを作成した人の総動員数ランキング"}
+            : "主催者: チャレンジを作成した人の総参加予定数ランキング"}
         </Text>
       </View>
 
@@ -282,7 +282,7 @@ export default function RankingsScreen() {
                   {((item as ContributionRankingItem).totalContribution || (item as HostRankingItem).totalParticipants || 0).toLocaleString()}
                 </Text>
                 <Text style={{ color: color.textMuted, fontSize: 10 }}>
-                  {tab === "contribution" ? "貢献度" : "総動員数"}
+                  {tab === "contribution" ? "貢献度" : "総参加予定数"}
                 </Text>
               </View>
             </View>

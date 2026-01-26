@@ -26,7 +26,7 @@ const characterImages = {
 
 // 目標タイプの設定
 const goalTypes = [
-  { id: "attendance", label: "動員", icon: "people", unit: "人", description: "ライブ・イベントの参加者数" },
+  { id: "attendance", label: "会場参加", icon: "people", unit: "人", description: "ライブ・イベントの参加予定者数" },
   { id: "followers", label: "フォロワー", icon: "person-add", unit: "人", description: "SNSのフォロワー増加目標" },
   { id: "viewers", label: "同時視聴", icon: "visibility", unit: "人", description: "配信・プレミア公開の同接" },
   { id: "points", label: "ポイント", icon: "star", unit: "pt", description: "ミクチャ等のイベントポイント" },

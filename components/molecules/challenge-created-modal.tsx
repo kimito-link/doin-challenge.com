@@ -78,39 +78,39 @@ export function ChallengeCreatedModal({
 
     switch (type) {
       case "twitter":
-        return `【参加者募集中🎉】
+        return `【参加予定表明募集中🎉】
 
 ${challengeTitle}
 ${dateStr} ${venueStr}
 
-${goalStr ? `${goalStr}達成を目指しています！` : "みんなの参加を待ってます！"}
+${goalStr ? `${goalStr}達成を目指しています！` : "みんなの参加予定を待ってます！"}
 
-参加表明はこちらから👇
+参加予定の表明はこちらから👇
 ${url}
 
 #動員チャレンジ #${hostName}`;
 
       case "instagram":
-        return `【参加者募集中🎉】
+        return `【参加予定表明募集中🎉】
 
 ${challengeTitle}
 ${dateStr} ${venueStr}
 
-${goalStr ? `${goalStr}達成を目指しています！` : "みんなの参加を待ってます！"}
+${goalStr ? `${goalStr}達成を目指しています！` : "みんなの参加予定を待ってます！"}
 
-プロフィールのリンクから参加表明できます✨
+プロフィールのリンクから参加予定を表明できます✨
 
 #動員チャレンジ #${hostName.replace(/\s/g, "")}`;
 
       case "line":
-        return `【参加者募集中】
+        return `【参加予定表明募集中】
 
 ${challengeTitle}
 ${dateStr} ${venueStr}
 
-${goalStr ? `${goalStr}達成を目指してます！` : "みんなの参加待ってます！"}
+${goalStr ? `${goalStr}達成を目指してます！` : "みんなの参加予定を待ってます！"}
 
-参加表明はこちら↓
+参加予定の表明はこちら↓
 ${url}`;
     }
   };
@@ -205,7 +205,7 @@ ${url}`;
               チャレンジを作成しました！
             </Text>
             <Text style={[styles.subtitle, { color: colors.muted }]}>
-              次のステップで参加者を集めましょう
+              参加予定を可視化して、応援を集めましょう
             </Text>
           </View>
 

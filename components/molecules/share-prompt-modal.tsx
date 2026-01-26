@@ -181,7 +181,7 @@ export function SharePromptModal({
                 <Text style={styles.participantNumberValue}>{displayNumber || participantNumber}</Text>
                 <Text style={styles.participantNumberUnit}>人目</Text>
               </View>
-              <Text style={styles.participantNumberLabel}>の参加者です！</Text>
+              <Text style={styles.participantNumberLabel}>人目の参加予定者です！</Text>
             </View>
           )}
 
@@ -190,7 +190,7 @@ export function SharePromptModal({
             <View style={styles.progressHeader}>
               <View style={styles.progressLabelContainer}>
                 <FontAwesome5 name="users" size={14} color={color.accentPrimary} />
-                <Text style={styles.progressLabel}>現在の参加者</Text>
+                <Text style={styles.progressLabel}>現在の参加予定者</Text>
               </View>
               <Text style={styles.progressNumbers}>
                 <Text style={styles.progressCurrent}>{currentParticipants}</Text>
@@ -216,7 +216,7 @@ export function SharePromptModal({
             <View style={styles.prefectureContainer}>
               <FontAwesome5 name="map-marker-alt" size={14} color={color.accentAlt} />
               <Text style={styles.prefectureText}>
-                {prefecture}からの参加が記録されました
+                {prefecture}からの参加予定が記録されました
               </Text>
             </View>
           )}
@@ -263,7 +263,7 @@ export function SharePromptModal({
               仲間を増やして目標達成を目指そう！
             </Text>
             <Text style={styles.subMessage}>
-              シェアで参加者が増えると達成率がアップ
+              シェアで参加予定者が増えると達成率がアップ
             </Text>
           </View>
 
