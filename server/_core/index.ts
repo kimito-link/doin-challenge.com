@@ -12,6 +12,7 @@ import { getErrorLogs, getErrorStats, resolveError, resolveAllErrors, clearError
 import { checkSchemaIntegrity, notifySchemaIssue, type SchemaCheckResult } from "../schema-check";
 import { getOpenApiSpec } from "../openapi";
 import swaggerUi from "swagger-ui-express";
+import { initWebSocketServer } from "../websocket";
 
 function isPortAvailable(port: number): Promise<boolean> {
   return new Promise((resolve) => {
@@ -305,6 +306,9 @@ async function startServer() {
   if (port !== preferredPort) {
     console.log(`Port ${preferredPort} is busy, using port ${port} instead`);
   }
+
+  // WebSocketサーバーを初期化
+  initWebSocketServer(server);
 
   server.listen(port, () => {
     console.log(`[api] server listening on port ${port}`);

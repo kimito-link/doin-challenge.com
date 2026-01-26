@@ -7,10 +7,23 @@ import { trpc } from "@/lib/trpc";
 import { useAuth } from "@/hooks/use-auth";
 import { AppHeader } from "@/components/organisms/app-header";
 import { RefreshingIndicator } from "@/components/molecules/refreshing-indicator";
+import { useWebSocket } from "@/lib/websocket-client";
+import { useQueryClient } from "@tanstack/react-query";
 
 export default function MessagesScreen() {
-  
+  const queryClient = useQueryClient();
   const { user } = useAuth();
+  
+  // WebSocket接続を確立
+  const { status: wsStatus } = useWebSocket({
+    onMessage: (message) => {
+      console.log("[Messages] New message received:", message);
+      // メッセージ一覧を再取得
+      queryClient.invalidateQueries({ queryKey: [["dm", "conversations"]] });
+      queryClient.invalidateQueries({ queryKey: [["dm", "unreadCount"]] });
+    },
+    enabled: !!user,
+  });
 
   // 会話一覧を取得（無限スクロール対応）
   const { 

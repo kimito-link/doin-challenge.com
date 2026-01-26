@@ -13,11 +13,24 @@ import * as Notifications from "expo-notifications";
 import { Platform } from "react-native";
 import { AppHeader } from "@/components/organisms/app-header";
 import { RefreshingIndicator } from "@/components/molecules/refreshing-indicator";
+import { useWebSocket } from "@/lib/websocket-client";
+import { useQueryClient } from "@tanstack/react-query";
 
 export default function NotificationsScreen() {
   const colors = useColors();
+  const queryClient = useQueryClient();
   
   const { user, isAuthenticated } = useAuth();
+  
+  // WebSocket接続を確立
+  const { status: wsStatus } = useWebSocket({
+    onNotification: (notification) => {
+      console.log("[Notifications] New notification received:", notification);
+      // 通知一覧を再取得
+      queryClient.invalidateQueries({ queryKey: [["notifications", "list"]] });
+    },
+    enabled: isAuthenticated,
+  });
   
   const [expoPushToken, setExpoPushToken] = useState<string | null>(null);
   const [notificationPermission, setNotificationPermission] = useState(false);

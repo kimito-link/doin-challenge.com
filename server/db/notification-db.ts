@@ -43,7 +43,20 @@ export async function createNotification(data: InsertNotification) {
   const db = await getDb();
   if (!db) throw new Error("Database not available");
   const result = await db.insert(notifications).values(data);
-  return result[0].insertId;
+  const notificationId = result[0].insertId;
+  
+  // WebSocketで通知を配信
+  try {
+    const { sendNotificationToUser } = await import("../websocket");
+    sendNotificationToUser(data.userId.toString(), {
+      id: notificationId,
+      ...data,
+    });
+  } catch (error) {
+    console.error("[WebSocket] Failed to send notification:", error);
+  }
+  
+  return notificationId;
 }
 
 export async function getNotificationsByUserId(

@@ -59,7 +59,20 @@ export async function sendDirectMessage(dm: InsertDirectMessage) {
   const db = await getDb();
   if (!db) return null;
   const result = await db.insert(directMessages).values(dm);
-  return result[0].insertId;
+  const messageId = result[0].insertId;
+  
+  // WebSocketでメッセージを配信（受信者にのみ）
+  try {
+    const { sendMessageToUser } = await import("../websocket");
+    sendMessageToUser(dm.toUserId.toString(), {
+      id: messageId,
+      ...dm,
+    });
+  } catch (error) {
+    console.error("[WebSocket] Failed to send message:", error);
+  }
+  
+  return messageId;
 }
 
 export async function getDirectMessagesForUser(userId: number) {

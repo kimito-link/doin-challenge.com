@@ -1,25 +1,31 @@
 # Project TODO
 
-## v6.68: 無限スクロール、画像遅延読み込み、オフライン対応の実装
+## v6.69: リアルタイム通知、検索機能強化、プッシュ通知の実装
 
-### Phase 1: 無限スクロールの実装（バックエンドAPI修正）
-- [x] 通知APIに`cursor`と`limit`パラメータを追加
-- [x] 通知DBクエリを修正（cursor対応）
-- [x] メッセージAPIに`cursor`と`limit`パラメータを追加
-- [x] メッセージDBクエリを修正（cursor対応）
+### Phase 1: WebSocketリアルタイム通知の実装
+- [x] バックエンドにWebSocketサーバーを追加
+- [x] 新しい通知をWebSocketで配信
+- [x] 新しいメッセージをWebSocketで配信
+- [x] フロントエンドでWebSocket接続を確立
+- [x] リアルタイム通知を受信してUIを更新
+- [x] リアルタイムメッセージを受信してUIを更新
 
-### Phase 2: 無限スクロールの実装（フロントエンド修正）
-- [x] 通知画面を`useInfiniteQuery`に変更
-- [x] 通知画面に`onEndReached`を実装
-- [x] メッセージ一覧画面を`useInfiniteQuery`に変更
-- [x] メッセージ一覧画面に`onEndReached`を実装
+### Phase 2: 検索機能の強化（イベント、ユーザー、メッセージ）
+- [ ] イベント検索APIに全文検索を追加
+- [ ] ユーザー検索APIに全文検索を追加
+- [ ] メッセージ検索APIに全文検索を追加
+- [ ] イベント一覧画面に検索バーを追加
+- [ ] ユーザー検索画面に検索バーを追加
+- [ ] メッセージ一覧画面に検索バーを追加
 
-### Phase 3: 画像の遅延読み込み実装
-- [x] イベント一覧の画像に`placeholder`を追加 - スキップ（expo-imageがデフォルトで対応）
-- [x] プロフィール画面の画像に`placeholder`を追加 - スキップ（expo-imageがデフォルトで対応）
-- [x] ランキング画面の画像に`placeholder`を追加 - スキップ（expo-imageがデフォルトで### Phase 4: オフライン対応の強化
-- [x] `@tanstack/react-query-persist-client`をインストール
-- [x] `AsyncStoragePersister`を設定
-- [x] `PersistQueryClientProvider`を統合## Phase 5: チェックポイント保存とデプロイ
+### Phase 3: プッシュ通知の実装
+- [ ] `expo-notifications`の設定
+- [ ] プッシュ通知トークンの取得と保存
+- [ ] バックエンドにプッシュ通知送信機能を追加
+- [ ] 新しい通知をプッシュ通知で送信
+- [ ] 新しいメッセージをプッシュ通知で送信
+- [ ] プッシュ通知をタップした時の画面遷移を実装
+
+### Phase 4: チェックポイント保存とデプロイ
 - [ ] チェックポイント保存
 - [ ] GitHubへのpush

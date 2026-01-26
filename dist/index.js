@@ -1231,6 +1231,139 @@ var init_participation_db = __esm({
   }
 });
 
+// server/websocket.ts
+var websocket_exports = {};
+__export(websocket_exports, {
+  initWebSocketServer: () => initWebSocketServer,
+  sendMessageToUser: () => sendMessageToUser,
+  sendNotificationToUser: () => sendNotificationToUser
+});
+import { WebSocketServer, WebSocket } from "ws";
+import { jwtVerify } from "jose";
+function initWebSocketServer(server) {
+  const wss = new WebSocketServer({
+    server,
+    path: "/ws"
+  });
+  const interval = setInterval(() => {
+    wss.clients.forEach((ws) => {
+      if (ws.isAlive === false) {
+        return ws.terminate();
+      }
+      ws.isAlive = false;
+      ws.ping();
+    });
+  }, 3e4);
+  wss.on("close", () => {
+    clearInterval(interval);
+  });
+  wss.on("connection", async (ws, req) => {
+    const url = new URL(req.url || "", `http://${req.headers.host}`);
+    const token = url.searchParams.get("token");
+    if (!token) {
+      ws.close(1008, "Unauthorized: No token provided");
+      return;
+    }
+    try {
+      const secret = new TextEncoder().encode(ENV.cookieSecret);
+      const { payload } = await jwtVerify(token, secret);
+      const userId = payload.sub;
+      if (!userId) {
+        ws.close(1008, "Unauthorized: Invalid user ID");
+        return;
+      }
+      ws.userId = userId;
+      ws.isAlive = true;
+      if (!clients.has(ws.userId)) {
+        clients.set(ws.userId, /* @__PURE__ */ new Set());
+      }
+      clients.get(ws.userId).add(ws);
+      console.log(`[WebSocket] User ${ws.userId} connected`);
+      ws.on("pong", () => {
+        ws.isAlive = true;
+      });
+      ws.on("message", (data) => {
+        try {
+          const message = JSON.parse(data.toString());
+          handleMessage(ws, message);
+        } catch (error) {
+          console.error("[WebSocket] Failed to parse message:", error);
+        }
+      });
+      ws.on("close", () => {
+        if (ws.userId) {
+          const userClients = clients.get(ws.userId);
+          if (userClients) {
+            userClients.delete(ws);
+            if (userClients.size === 0) {
+              clients.delete(ws.userId);
+            }
+          }
+          console.log(`[WebSocket] User ${ws.userId} disconnected`);
+        }
+      });
+      ws.on("error", (error) => {
+        console.error("[WebSocket] Error:", error);
+      });
+    } catch (error) {
+      console.error("[WebSocket] Authentication failed:", error);
+      ws.close(1008, "Unauthorized: Invalid token");
+    }
+  });
+  console.log("[WebSocket] Server initialized on /ws");
+}
+function handleMessage(ws, message) {
+  switch (message.type) {
+    case "ping":
+      ws.send(JSON.stringify({ type: "pong" }));
+      break;
+    default:
+      console.log(`[WebSocket] Received message from ${ws.userId}:`, message);
+  }
+}
+function sendNotificationToUser(userId, notification) {
+  const userClients = clients.get(userId);
+  if (!userClients || userClients.size === 0) {
+    console.log(`[WebSocket] User ${userId} is not connected`);
+    return;
+  }
+  const message = {
+    type: "notification",
+    data: notification
+  };
+  userClients.forEach((client) => {
+    if (client.readyState === WebSocket.OPEN) {
+      client.send(JSON.stringify(message));
+    }
+  });
+  console.log(`[WebSocket] Sent notification to user ${userId}`);
+}
+function sendMessageToUser(userId, messageData) {
+  const userClients = clients.get(userId);
+  if (!userClients || userClients.size === 0) {
+    console.log(`[WebSocket] User ${userId} is not connected`);
+    return;
+  }
+  const message = {
+    type: "message",
+    data: messageData
+  };
+  userClients.forEach((client) => {
+    if (client.readyState === WebSocket.OPEN) {
+      client.send(JSON.stringify(message));
+    }
+  });
+  console.log(`[WebSocket] Sent message to user ${userId}`);
+}
+var clients;
+var init_websocket = __esm({
+  "server/websocket.ts"() {
+    "use strict";
+    init_env();
+    clients = /* @__PURE__ */ new Map();
+  }
+});
+
 // server/db/notification-db.ts
 async function getNotificationSettings(userId) {
   const db = await getDb();
@@ -1263,7 +1396,17 @@ async function createNotification(data) {
   const db = await getDb();
   if (!db) throw new Error("Database not available");
   const result = await db.insert(notifications).values(data);
-  return result[0].insertId;
+  const notificationId = result[0].insertId;
+  try {
+    const { sendNotificationToUser: sendNotificationToUser2 } = await Promise.resolve().then(() => (init_websocket(), websocket_exports));
+    sendNotificationToUser2(data.userId.toString(), {
+      id: notificationId,
+      ...data
+    });
+  } catch (error) {
+    console.error("[WebSocket] Failed to send notification:", error);
+  }
+  return notificationId;
 }
 async function getNotificationsByUserId(userId, limit = 20, cursor) {
   const db = await getDb();
@@ -1541,7 +1684,17 @@ async function sendDirectMessage(dm) {
   const db = await getDb();
   if (!db) return null;
   const result = await db.insert(directMessages).values(dm);
-  return result[0].insertId;
+  const messageId = result[0].insertId;
+  try {
+    const { sendMessageToUser: sendMessageToUser2 } = await Promise.resolve().then(() => (init_websocket(), websocket_exports));
+    sendMessageToUser2(dm.toUserId.toString(), {
+      id: messageId,
+      ...dm
+    });
+  } catch (error) {
+    console.error("[WebSocket] Failed to send message:", error);
+  }
+  return messageId;
 }
 async function getDirectMessagesForUser(userId) {
   const db = await getDb();
@@ -2993,7 +3146,7 @@ init_db2();
 init_env();
 import axios from "axios";
 import { parse as parseCookieHeader } from "cookie";
-import { SignJWT, jwtVerify } from "jose";
+import { SignJWT, jwtVerify as jwtVerify2 } from "jose";
 var isNonEmptyString = (value) => typeof value === "string" && value.length > 0;
 var EXCHANGE_TOKEN_PATH = `/webdev.v1.WebDevAuthPublicService/ExchangeToken`;
 var GET_USER_INFO_PATH = `/webdev.v1.WebDevAuthPublicService/GetUserInfo`;
@@ -3124,7 +3277,7 @@ var SDKServer = class {
     }
     try {
       const secretKey = this.getSessionSecret();
-      const { payload } = await jwtVerify(cookieValue, secretKey, {
+      const { payload } = await jwtVerify2(cookieValue, secretKey, {
         algorithms: ["HS256"]
       });
       const { openId, appId, name } = payload;
@@ -6765,6 +6918,7 @@ function getOpenApiSpec() {
 }
 
 // server/_core/index.ts
+init_websocket();
 import swaggerUi from "swagger-ui-express";
 function isPortAvailable(port) {
   return new Promise((resolve) => {
@@ -6995,6 +7149,7 @@ async function startServer() {
   if (port !== preferredPort) {
     console.log(`Port ${preferredPort} is busy, using port ${port} instead`);
   }
+  initWebSocketServer(server);
   server.listen(port, () => {
     console.log(`[api] server listening on port ${port}`);
   });
