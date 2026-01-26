@@ -9,6 +9,7 @@ import { Image } from "expo-image";
 import MaterialIcons from "@expo/vector-icons/MaterialIcons";
 import { LinearGradient } from "expo-linear-gradient";
 import { color } from "@/theme/tokens";
+import { eventUI } from "@/features/events/ui/theme/tokens";
 import { useColors } from "@/hooks/use-colors";
 import { prefectures } from "@/constants/prefectures";
 import { styles } from "./ParticipationForm.styles";
@@ -42,6 +43,8 @@ export function ParticipationForm({
   onAddCompanion,
   onRemoveCompanion,
   onCancelAddCompanion,
+  attendanceType,
+  onAttendanceTypeChange,
   onSubmit,
   isSubmitting,
   isEditMode = false,
@@ -126,6 +129,82 @@ export function ParticipationForm({
             </Text>
           )}
         </View>
+      </View>
+
+      {/* 参加方法選択 */}
+      <View style={styles.inputSection}>
+        <Text style={[styles.inputLabel, { color: colors.foreground }]}>
+          参加方法
+        </Text>
+        <View style={styles.attendanceTypeContainer}>
+          <Button
+            variant={attendanceType === "venue" ? "primary" : "secondary"}
+            onPress={() => onAttendanceTypeChange("venue")}
+            style={[
+              styles.attendanceTypeButton,
+              attendanceType === "venue" && styles.attendanceTypeButtonActive,
+            ]}
+          >
+            <MaterialIcons
+              name="location-on"
+              size={20}
+              color={attendanceType === "venue" ? color.textWhite : color.accentPrimary}
+            />
+            <Text style={[
+              styles.attendanceTypeText,
+              { color: attendanceType === "venue" ? color.textWhite : colors.foreground }
+            ]}>
+              会場参加
+            </Text>
+          </Button>
+          
+          <Button
+            variant={attendanceType === "streaming" ? "primary" : "secondary"}
+            onPress={() => onAttendanceTypeChange("streaming")}
+            style={[
+              styles.attendanceTypeButton,
+              attendanceType === "streaming" && styles.attendanceTypeButtonActive,
+            ]}
+          >
+            <MaterialIcons
+              name="play-circle"
+              size={20}
+              color={attendanceType === "streaming" ? color.textWhite : color.accentPrimary}
+            />
+            <Text style={[
+              styles.attendanceTypeText,
+              { color: attendanceType === "streaming" ? color.textWhite : colors.foreground }
+            ]}>
+              配信視聴
+            </Text>
+          </Button>
+          
+          <Button
+            variant={attendanceType === "both" ? "primary" : "secondary"}
+            onPress={() => onAttendanceTypeChange("both")}
+            style={[
+              styles.attendanceTypeButton,
+              attendanceType === "both" && styles.attendanceTypeButtonActive,
+            ]}
+          >
+            <MaterialIcons
+              name="done-all"
+              size={20}
+              color={attendanceType === "both" ? color.textWhite : color.accentPrimary}
+            />
+            <Text style={[
+              styles.attendanceTypeText,
+              { color: attendanceType === "both" ? color.textWhite : colors.foreground }
+            ]}>
+              両方
+            </Text>
+          </Button>
+        </View>
+        <Text style={styles.attendanceTypeHint}>
+          {attendanceType === "venue" && "会場に足を運んで、生の熱量を共有する"}
+          {attendanceType === "streaming" && "同じ時間に配信を見て、みんなと熱狂を共有する"}
+          {attendanceType === "both" && "会場でも配信でも、同じ時間に熱狂を共有する"}
+        </Text>
       </View>
 
       {/* 応援メッセージ入力 */}
@@ -224,7 +303,7 @@ export function ParticipationForm({
             onPress={() => onGenderChange("female")}
             style={[
               styles.genderButton,
-              gender === "female" && { backgroundColor: "#EC4899", borderColor: "#EC4899" },
+              gender === "female" && { backgroundColor: eventUI.badge, borderColor: eventUI.badge },
             ]}
           >
             <Text style={[

@@ -40,6 +40,10 @@ export type ParticipationFormProps = {
   allowVideoUse: boolean;
   onAllowVideoUseChange: (allow: boolean) => void;
   
+  // 参加方法
+  attendanceType: "venue" | "streaming" | "both";
+  onAttendanceTypeChange: (type: "venue" | "streaming" | "both") => void;
+  
   // 都道府県選択
   showPrefectureList: boolean;
   onTogglePrefectureList: () => void;
