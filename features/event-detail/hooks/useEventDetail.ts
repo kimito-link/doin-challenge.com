@@ -46,10 +46,14 @@ interface UseEventDetailReturn {
   currentUserTwitterId: string | undefined;
   
   // Loading states
+  hasData: boolean;
+  isInitialLoading: boolean;
+  isRefreshing: boolean;
+  /** @deprecated Use isInitialLoading instead */
   isLoading: boolean;
+  /** @deprecated Use isInitialLoading instead */
   challengeLoading: boolean;
   participationsLoading: boolean;
-  isRefreshing: boolean;
   
   // User & Auth
   user: ReturnType<typeof useAuth>["user"];
@@ -77,12 +81,14 @@ export function useEventDetail({ challengeId }: UseEventDetailOptions): UseEvent
   // Data queries
   const { 
     data: challenge, 
-    isLoading: challengeLoading 
+    isLoading: challengeLoading,
+    isFetching: challengeFetching
   } = trpc.events.getById.useQuery({ id: challengeId });
   
   const { 
     data: participations, 
-    isLoading: participationsLoading, 
+    isLoading: participationsLoading,
+    isFetching: participationsFetching,
     refetch: refetchParticipations 
   } = trpc.participations.listByEvent.useQuery({ eventId: challengeId });
   
@@ -235,10 +241,13 @@ export function useEventDetail({ challengeId }: UseEventDetailOptions): UseEvent
     currentUserTwitterId,
     
     // Loading states
-    isLoading: challengeLoading || participationsLoading,
+    hasData: !!challenge,
+    isInitialLoading: (challengeLoading || participationsLoading) && !challenge,
+    isRefreshing: (challengeFetching || participationsFetching) && !!challenge,
+    // Deprecated
+    isLoading: (challengeLoading || participationsLoading) && !challenge,
     challengeLoading,
     participationsLoading,
-    isRefreshing,
     
     // User & Auth
     user,

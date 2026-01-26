@@ -19,6 +19,7 @@ import { RegionParticipantsModal } from "@/components/molecules/region-participa
 import { HostProfileModal } from "@/components/organisms/host-profile-modal";
 import { FanProfileModal } from "@/components/organisms/fan-profile-modal";
 import { SharePromptModal } from "@/components/molecules/share-prompt-modal";
+import { RefreshingIndicator } from "@/components/molecules/refreshing-indicator";
 import { LinkSpeech } from "@/components/organisms/link-speech";
 import { shareParticipation } from "@/lib/share";
 import {
@@ -45,6 +46,7 @@ import {
   ParticipantsOverview,
   ParticipationFormSection,
 } from "@/features/event-detail";
+import { usePerformanceMonitor } from "@/lib/performance-monitor";
 
 export default function ChallengeDetailScreen() {
   const colors = useColors();
@@ -54,6 +56,14 @@ export default function ChallengeDetailScreen() {
 
   // Event detail data hook
   const eventDetail = useEventDetail({ challengeId });
+  
+  // Performance monitoring
+  usePerformanceMonitor(
+    "EventDetail",
+    eventDetail.hasData,
+    eventDetail.isInitialLoading,
+    !eventDetail.hasData
+  );
   
   // Modal state hook
   const modalState = useModalState();
@@ -78,8 +88,8 @@ export default function ChallengeDetailScreen() {
     refetch: eventDetail.refetch,
   });
 
-  // Loading state
-  if (eventDetail.challengeLoading) {
+  // Loading state (初回のみスケルトン表示)
+  if (eventDetail.isInitialLoading) {
     return <EventDetailSkeleton />;
   }
 
@@ -111,6 +121,8 @@ export default function ChallengeDetailScreen() {
 
   return (
     <ScreenContainer edges={["top", "left", "right"]} containerClassName="bg-background">
+      {/* 更新中インジケータ */}
+      <RefreshingIndicator isRefreshing={eventDetail.isRefreshing} />
       <KeyboardAvoidingView
         behavior={Platform.OS === "ios" ? "padding" : "height"}
         style={{ flex: 1 }}

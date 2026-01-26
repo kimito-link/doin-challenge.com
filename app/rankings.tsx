@@ -10,6 +10,8 @@ import { useAuth } from "@/hooks/use-auth";
 import MaterialIcons from "@expo/vector-icons/MaterialIcons";
 import { LinearGradient } from "expo-linear-gradient";
 import { AppHeader } from "@/components/organisms/app-header";
+import { RefreshingIndicator } from "@/components/molecules/refreshing-indicator";
+import { usePerformanceMonitor } from "@/lib/performance-monitor";
 
 type PeriodType = "weekly" | "monthly" | "all";
 
@@ -48,9 +50,9 @@ export default function RankingsScreen() {
   const [period, setPeriod] = useState<PeriodType>("monthly");
   const [tab, setTab] = useState<"contribution" | "hosts">("contribution");
   
-  const { data: contributionRanking, isLoading: contributionLoading, refetch: refetchContribution } = 
+  const { data: contributionRanking, isLoading: contributionLoading, isFetching: contributionFetching, refetch: refetchContribution } = 
     trpc.rankings.contribution.useQuery({ period, limit: 50 });
-  const { data: hostRanking, isLoading: hostLoading, refetch: refetchHost } = 
+  const { data: hostRanking, isLoading: hostLoading, isFetching: hostFetching, refetch: refetchHost } = 
     trpc.rankings.hosts.useQuery({ limit: 50 });
   const { data: myPosition } = trpc.rankings.myPosition.useQuery(
     { period },
@@ -67,11 +69,26 @@ export default function RankingsScreen() {
     setRefreshing(false);
   };
 
+  // ローディング状態の分離
   const isLoading = tab === "contribution" ? contributionLoading : hostLoading;
+  const isFetching = tab === "contribution" ? contributionFetching : hostFetching;
   const data = tab === "contribution" ? contributionRanking : hostRanking;
+  const hasData = !!data && data.length > 0;
+  const isInitialLoading = isLoading && !hasData;
+  const isRefreshing = isFetching && hasData;
+  
+  // Performance monitoring
+  usePerformanceMonitor(
+    "Rankings",
+    hasData,
+    isInitialLoading,
+    !hasData
+  );
 
   return (
     <ScreenContainer containerClassName="bg-background">
+      {/* 更新中インジケータ */}
+      <RefreshingIndicator isRefreshing={isRefreshing} />
       {/* ヘッダー */}
       <AppHeader 
         title="君斗りんくの動員ちゃれんじ" 
@@ -204,7 +221,7 @@ export default function RankingsScreen() {
         </View>
       )}
 
-      {isLoading ? (
+      {isInitialLoading ? (
         <View style={{ flex: 1, alignItems: "center", justifyContent: "center" }}>
           <Text style={{ color: color.textMuted }}>読み込み中...</Text>
         </View>

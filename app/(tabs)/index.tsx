@@ -28,6 +28,7 @@ import {
   type HomeTabType,
 } from "@/features/home";
 import type { Challenge, FilterType } from "@/types/challenge";
+import { usePerformanceMonitor } from "@/lib/performance-monitor";
 
 export default function HomeScreen() {
   const { isDesktop } = useResponsive();
@@ -54,6 +55,14 @@ export default function HomeScreen() {
     searchQuery,
     categoryFilter,
   });
+  
+  // Performance monitoring
+  usePerformanceMonitor(
+    "Home",
+    homeData.hasData,
+    homeData.isInitialLoading,
+    !homeData.hasData
+  );
   
   // アクションフック
   const homeActions = useHomeActions({
