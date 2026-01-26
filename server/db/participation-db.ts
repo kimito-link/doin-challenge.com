@@ -240,6 +240,34 @@ export async function getParticipationsByPrefectureFilter(challengeId: number, p
     .orderBy(desc(participations.createdAt));
 }
 
+// 参加方法別集計を取得
+export async function getAttendanceTypeCounts(challengeId: number) {
+  const db = await getDb();
+  if (!db) return { venue: 0, streaming: 0, both: 0, total: 0 };
+  
+  const result = await db.select().from(participations)
+    .where(and(
+      eq(participations.challengeId, challengeId),
+      isNull(participations.deletedAt)
+    ));
+  
+  const counts = {
+    venue: 0,
+    streaming: 0,
+    both: 0,
+    total: result.length,
+  };
+  
+  result.forEach(p => {
+    const type = p.attendanceType || "venue";
+    if (type === "venue") counts.venue += 1;
+    else if (type === "streaming") counts.streaming += 1;
+    else if (type === "both") counts.both += 1;
+  });
+  
+  return counts;
+}
+
 // 都道府県ランキングを取得
 export async function getPrefectureRanking(challengeId: number) {
   const db = await getDb();

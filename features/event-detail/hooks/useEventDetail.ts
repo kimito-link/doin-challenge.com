@@ -32,6 +32,7 @@ interface UseEventDetailReturn {
   myParticipation: Participation | null;
   momentum: MomentumData;
   prefectureCounts: PrefectureCounts;
+  attendanceTypeCounts: { venue: number; streaming: number; both: number; total: number } | undefined;
   
   // Computed values
   eventDate: Date | null;
@@ -84,6 +85,9 @@ export function useEventDetail({ challengeId }: UseEventDetailOptions): UseEvent
     isLoading: participationsLoading, 
     refetch: refetchParticipations 
   } = trpc.participations.listByEvent.useQuery({ eventId: challengeId });
+  
+  // 参加方法別集計
+  const { data: attendanceTypeCounts } = trpc.participations.getAttendanceTypeCounts.useQuery({ eventId: challengeId });
   
   const { data: challengeCompanions } = trpc.companions.forChallenge.useQuery(
     { challengeId },
@@ -217,6 +221,7 @@ export function useEventDetail({ challengeId }: UseEventDetailOptions): UseEvent
     myParticipation,
     momentum,
     prefectureCounts,
+    attendanceTypeCounts,
     
     // Computed values
     eventDate,

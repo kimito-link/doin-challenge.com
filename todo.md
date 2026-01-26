@@ -4542,3 +4542,33 @@ features/create/
 ### Phase 4: テストとチェックポイント保存
 - [x] 全画面でのテスト
 - [x] チェックポイント保存
+
+
+## 主催者チェックリストとPR2実装 v4.9.0
+
+### Phase 1: 主催者チェックリストの設計と実装
+- [x] イベント作成完了後に表示するチェックリストモーダルを設計
+- [x] ChallengeCreatedModal.tsxが既に実装済み
+- [x] チェックリスト項目:
+  - [x] ✅ 告知する（SNSやコミュニティで告知）
+  - [x] ✅ URLを貼る（イベントページのURLを共有）
+  - [x] ✅ 進捗を見る（ダッシュボードで参加状況を確認）
+- [x] イベント作成フローに統合
+
+### Phase 2: PR2 - DBマイグレーション（attendanceTypeカラム追加）
+- [x] participationテーブルにattendanceTypeカラムを追加
+- [x] 既存データをvenueで埋める（DEFAULT 'venue'で自動対応）
+- [x] マイグレーションを実行
+
+### Phase 3: PR2 - 集計APIの実装
+- [x] 集計APIでcounts: { venue, streaming, both, total }を返す
+- [x] tRPCエンドポイントを更新（getAttendanceTypeCounts）
+- [x] create APIにattendanceTypeパラメータを追加
+
+### Phase 4: PR2 - UIの拡張（内訳表示）
+- [ ] イベント詳細画面に2カウンター表示（会場参加/配信視聴）
+- [ ] 参加完了モーダルに内訳表示
+
+### Phase 5: テストとチェックポイント保存
+- [ ] 全機能のテスト
+- [ ] チェックポイント保存

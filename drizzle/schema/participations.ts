@@ -32,6 +32,8 @@ export const participations = mysqlTable("participations", {
   gender: mysqlEnum("gender", ["male", "female", "unspecified"]).default("unspecified").notNull(),
   contribution: int("contribution").default(1).notNull(),
   isAnonymous: boolean("isAnonymous").default(false).notNull(),
+  // 参加方法: venue(会場), streaming(配信), both(両方)
+  attendanceType: mysqlEnum("attendanceType", ["venue", "streaming", "both"]).default("venue").notNull(),
   createdAt: timestamp("createdAt").defaultNow().notNull(),
   updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
   // ソフトデリート用カラム

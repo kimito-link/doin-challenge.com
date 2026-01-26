@@ -250,6 +250,8 @@ var init_participations = __esm({
       gender: mysqlEnum3("gender", ["male", "female", "unspecified"]).default("unspecified").notNull(),
       contribution: int3("contribution").default(1).notNull(),
       isAnonymous: boolean3("isAnonymous").default(false).notNull(),
+      // 参加方法: venue(会場), streaming(配信), both(両方)
+      attendanceType: mysqlEnum3("attendanceType", ["venue", "streaming", "both"]).default("venue").notNull(),
       createdAt: timestamp3("createdAt").defaultNow().notNull(),
       updatedAt: timestamp3("updatedAt").defaultNow().onUpdateNow().notNull(),
       // ソフトデリート用カラム
@@ -1064,6 +1066,27 @@ async function getParticipationsByPrefectureFilter(challengeId, prefecture) {
   const db = await getDb();
   if (!db) return [];
   return db.select().from(participations).where(sql`${participations.challengeId} = ${challengeId} AND ${participations.prefecture} = ${prefecture} AND ${participations.deletedAt} IS NULL`).orderBy(desc(participations.createdAt));
+}
+async function getAttendanceTypeCounts(challengeId) {
+  const db = await getDb();
+  if (!db) return { venue: 0, streaming: 0, both: 0, total: 0 };
+  const result = await db.select().from(participations).where(and(
+    eq(participations.challengeId, challengeId),
+    isNull(participations.deletedAt)
+  ));
+  const counts = {
+    venue: 0,
+    streaming: 0,
+    both: 0,
+    total: result.length
+  };
+  result.forEach((p) => {
+    const type = p.attendanceType || "venue";
+    if (type === "venue") counts.venue += 1;
+    else if (type === "streaming") counts.streaming += 1;
+    else if (type === "both") counts.both += 1;
+  });
+  return counts;
 }
 async function getPrefectureRanking(challengeId) {
   const db = await getDb();
@@ -2761,6 +2784,7 @@ __export(db_exports, {
   getAllCategories: () => getAllCategories,
   getAllEvents: () => getAllEvents,
   getAllUsers: () => getAllUsers,
+  getAttendanceTypeCounts: () => getAttendanceTypeCounts,
   getAuditLogs: () => getAuditLogs,
   getAuditLogsByRequestId: () => getAuditLogsByRequestId,
   getBadgeById: () => getBadgeById,
@@ -4198,6 +4222,10 @@ var participationsRouter = router({
   listByEvent: publicProcedure.input(z2.object({ eventId: z2.number() })).query(async ({ input }) => {
     return getParticipationsByEventId(input.eventId);
   }),
+  // 参加方法別集計
+  getAttendanceTypeCounts: publicProcedure.input(z2.object({ eventId: z2.number() })).query(async ({ input }) => {
+    return getAttendanceTypeCounts(input.eventId);
+  }),
   // 自分の参加一覧
   myParticipations: protectedProcedure.query(async ({ ctx }) => {
     return getParticipationsByUserId(ctx.user.id);
@@ -4209,6 +4237,7 @@ var participationsRouter = router({
     companionCount: z2.number().default(0),
     prefecture: z2.string().optional(),
     gender: z2.enum(["male", "female", "unspecified"]).optional(),
+    attendanceType: z2.enum(["venue", "streaming", "both"]).default("venue"),
     twitterId: z2.string().optional(),
     displayName: z2.string(),
     username: z2.string().optional(),
@@ -4238,6 +4267,7 @@ var participationsRouter = router({
         companionCount: input.companionCount,
         prefecture: input.prefecture,
         gender: input.gender || "unspecified",
+        attendanceType: input.attendanceType || "venue",
         isAnonymous: false
       });
       if (participationId && ctx.requestId) {
