@@ -34,7 +34,7 @@ export const characterDetails: Record<string, CharacterInfo> = {
   },
   konta: {
     id: "konta",
-    name: "コンタ",
+    name: "こん太",
     image: characterImages.kontaYukkuri,
     description: "りんくの相棒のキツネ。友達を誘って盛り上げるのが得意。一人の参加が大きな波になることを知っている。",
     personality: "ちょっとイタズラ好きだけど、根は優しい。仲間思いで、みんなを繋げる架け橋になりたいと思っている。",
@@ -97,7 +97,7 @@ export const loginPatterns: LoginPattern[] = [
   {
     id: 4,
     character: "kontaYukkuri",
-    title: "コンタだよ！",
+    title: "こん太だよ！",
     message: "友達を誘って、みんなで盛り上げよう！\n一人の参加が、大きな波になるんだ。",
     highlight: "一緒に盛り上げよう！",
     gradientColors: mypageGradient.kontaGold,

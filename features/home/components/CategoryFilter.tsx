@@ -58,6 +58,10 @@ export function CategoryFilter({ categories, selectedCategory, onSelectCategory 
   
   if (!categories || categories.length === 0) return null;
   
+  // レガシーカテゴリー（「ホスト」「キャバ嬢」）を除外
+  const LEGACY_CATEGORIES = ["ホスト", "キャバ嬢"];
+  const filteredCategories = categories.filter((cat) => !LEGACY_CATEGORIES.includes(cat.name));
+  
   // チップコンテンツ
   const content = (
     <View style={{ 
@@ -72,7 +76,7 @@ export function CategoryFilter({ categories, selectedCategory, onSelectCategory 
         全カテゴリ
       </CategoryChip>
       
-      {categories.map((cat) => (
+      {filteredCategories.map((cat) => (
         <CategoryChip 
           key={cat.id} 
           active={selectedCategory === cat.id} 

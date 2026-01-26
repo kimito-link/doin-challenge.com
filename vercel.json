@@ -1,6 +1,6 @@
 {
   "version": 2,
-  "buildCommand": "echo 'v5.71 build' && rm -rf node_modules/.cache dist && mkdir -p node_modules/react-native-css-interop/.cache && npx tailwindcss -i ./global.css -o ./node_modules/react-native-css-interop/.cache/web.css && pnpm run build && npx expo export -p web",
+  "buildCommand": "echo 'v5.72 build (cache clear)' && rm -rf node_modules/.cache dist .expo && mkdir -p node_modules/react-native-css-interop/.cache && npx tailwindcss -i ./global.css -o ./node_modules/react-native-css-interop/.cache/web.css && pnpm run build && npx expo export -p web",
   "installCommand": "pnpm install",
   "outputDirectory": "dist",
 
