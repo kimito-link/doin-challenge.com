@@ -23,6 +23,7 @@ export const challenges = mysqlTable("challenges", {
   hostProfileImage: text("hostProfileImage"),
   hostFollowersCount: int("hostFollowersCount").default(0),
   hostDescription: text("hostDescription"),
+  hostGender: mysqlEnum("hostGender", ["male", "female", "other"]),
   // チャレンジ情報
   title: varchar("title", { length: 255 }).notNull(),
   slug: varchar("slug", { length: 255 }),

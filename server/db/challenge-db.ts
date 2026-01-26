@@ -1,6 +1,7 @@
-import { getDb, eq, desc, sql } from "./connection";
+import { getDb, eq, desc, sql, and, ne, or, isNull, asc, like } from "./connection";
 import { generateSlug } from "./connection";
-import { challenges, InsertChallenge } from "../../drizzle/schema";
+import { challenges, InsertChallenge, users } from "../../drizzle/schema";
+import { getTableColumns } from "drizzle-orm";
 
 // 後方互換性のためのエイリアス
 const events = challenges;
@@ -21,12 +22,22 @@ export async function getAllEvents() {
   const db = await getDb();
   if (!db) return eventsCache.data ?? [];
   
-  const result = await db.select().from(events).where(eq(events.isPublic, true)).orderBy(desc(events.eventDate));
+  // usersテーブルとLEFT JOINしてhostGenderを取得
+  const eventColumns = getTableColumns(events);
+  const result = await db
+    .select({
+      ...eventColumns,
+      hostGender: users.gender,
+    })
+    .from(events)
+    .leftJoin(users, eq(events.hostUserId, users.id))
+    .where(eq(events.isPublic, true))
+    .orderBy(desc(events.eventDate));
   
   // キャッシュを更新
-  eventsCache = { data: result, timestamp: now };
+  eventsCache = { data: result as any, timestamp: now };
   
-  return result;
+  return result as any;
 }
 
 // キャッシュを無効化（イベント作成/更新/削除時に呼び出す）

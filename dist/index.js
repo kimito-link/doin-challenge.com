@@ -138,6 +138,7 @@ var init_challenges = __esm({
       hostProfileImage: text2("hostProfileImage"),
       hostFollowersCount: int2("hostFollowersCount").default(0),
       hostDescription: text2("hostDescription"),
+      hostGender: mysqlEnum2("hostGender", ["male", "female", "other"]),
       // チャレンジ情報
       title: varchar2("title", { length: 255 }).notNull(),
       slug: varchar2("slug", { length: 255 }),
@@ -824,6 +825,7 @@ var init_user_db = __esm({
 });
 
 // server/db/challenge-db.ts
+import { getTableColumns } from "drizzle-orm";
 async function getAllEvents() {
   const now = Date.now();
   if (eventsCache.data && now - eventsCache.timestamp < EVENTS_CACHE_TTL) {
@@ -831,7 +833,11 @@ async function getAllEvents() {
   }
   const db = await getDb();
   if (!db) return eventsCache.data ?? [];
-  const result = await db.select().from(events2).where(eq(events2.isPublic, true)).orderBy(desc(events2.eventDate));
+  const eventColumns = getTableColumns(events2);
+  const result = await db.select({
+    ...eventColumns,
+    hostGender: users.gender
+  }).from(events2).leftJoin(users, eq(events2.hostUserId, users.id)).where(eq(events2.isPublic, true)).orderBy(desc(events2.eventDate));
   eventsCache = { data: result, timestamp: now };
   return result;
 }

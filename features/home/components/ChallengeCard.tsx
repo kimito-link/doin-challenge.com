@@ -7,6 +7,7 @@ import { LinearGradient } from "expo-linear-gradient";
 import MaterialIcons from "@expo/vector-icons/MaterialIcons";
 import { useColors } from "@/hooks/use-colors";
 import { homeColor, homeGradient, homeUI, homeText } from "@/features/home/ui/theme/tokens";
+import { palette } from "@/theme/tokens/palette";
 import { useResponsive } from "@/hooks/use-responsive";
 import { AnimatedCard } from "@/components/molecules/animated-pressable";
 import { LazyAvatar } from "@/components/molecules/lazy-image";
@@ -46,6 +47,13 @@ export function ChallengeCard({
   const unit = challenge.goalUnit || goalConfig.unit;
   const remaining = Math.max(challenge.goalValue - challenge.currentValue, 0);
 
+  // 主催者の性別による色分け（左側に2pxの色付きボーダー）
+  const getGenderBorderColor = () => {
+    if (challenge.hostGender === "male") return palette.genderMale;
+    if (challenge.hostGender === "female") return palette.genderFemale;
+    return "transparent";
+  };
+
   // width(px)が来たらそれを使用、来なければ従来互換でフォールバック
   const fallbackCardWidth = numColumns === 3 ? "31%" : numColumns === 2 ? "47%" : "100%";
   const cardWidth = width ?? fallbackCardWidth;
@@ -61,6 +69,8 @@ export function ChallengeCard({
         overflow: "hidden",
         borderWidth: 1,
         borderColor: homeUI.border,
+        borderLeftWidth: 2,
+        borderLeftColor: getGenderBorderColor(),
         width: cardWidth as any,
         marginBottom: 8, // 行間の余白
         shadowColor: "#000",

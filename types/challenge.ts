@@ -14,6 +14,7 @@ export interface Challenge {
   hostUsername: string | null;
   hostProfileImage: string | null;
   hostFollowersCount: number | null;
+  hostGender?: "male" | "female" | "other" | null;
   title: string;
   description: string | null;
   goalType: string;

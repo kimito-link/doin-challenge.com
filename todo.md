@@ -65,17 +65,17 @@
 - [x] 楽観更新とinvalidateを実装（GPTの推奨実装に従う）
 
 ### Phase 10: 招待リンクのQRコード生成を実装
-- [ ] react-native-qrcode-svgライブラリをインストール
-- [ ] 招待画面のQRコード表示部分を修正
-- [ ] 実際のQRコードを生成する機能を実装
+- [x] react-native-qrcode-svgライブラリをインストール
+- [x] 招待画面のQRコード表示部分を修正
+- [x] 実際のQRコードを生成する機能を実装（ロゴ付き）
 
 ### Phase 11: 主催者の性別による色分けを実装
-
-### Phase 8: ホーム画面の主催者の性別による色分け
 - [x] ホーム画面のチャレンジカードコンポーネントを特定（features/home/components/ChallengeCard.tsx）
 - [x] 主催者の性別データを取得する方法を確認（マイページで設定）
-- [ ] Challenge型にhostGenderフィールドを追加
-- [ ] 主催者の性別に応じた枠線の色分けを実装（応援メッセージと同じトンマナ）
+- [x] Challenge型にhostGenderフィールドを追加
+- [x] challengesテーブルにhostGenderカラムを追加（マイグレーション実行済み）
+- [x] getAllEvents関数でusersテーブルとLEFT JOINしてhostGenderを取得
+- [x] 主催者の性別に応じた枠線の色分けを実装（左側に2pxの色付きボーダー）
 
 ### Phase 6: チェックポイント保存とデプロイ
 - [ ] チェックポイント保存

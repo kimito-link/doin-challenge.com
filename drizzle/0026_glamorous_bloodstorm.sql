@@ -1,0 +1,1 @@
+ALTER TABLE `challenges` ADD `hostGender` enum('male','female','other');

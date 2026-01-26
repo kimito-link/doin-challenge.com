@@ -11,6 +11,7 @@ import MaterialIcons from "@expo/vector-icons/MaterialIcons";
 import { LinearGradient } from "expo-linear-gradient";
 // Clipboardはネイティブ機能を使用
 import * as Haptics from "expo-haptics";
+import QRCode from "react-native-qrcode-svg";
 import { AppHeader } from "@/components/organisms/app-header";
 import { RefreshingIndicator } from "@/components/molecules/refreshing-indicator";
 import { useColors } from "@/hooks/use-colors";
@@ -550,37 +551,37 @@ export default function InviteScreen() {
           )}
         </View>
 
-        {/* QRコード風のプレースホルダー */}
-        <View style={{ padding: 16 }}>
-          <Text style={{ color: color.textWhite, fontSize: 16, fontWeight: "bold", marginBottom: 12 }}>
-            QRコード
-          </Text>
-          <View
-            style={{
-              backgroundColor: color.textWhite,
-              borderRadius: 12,
-              padding: 20,
-              alignItems: "center",
-              alignSelf: "center",
-            }}
-          >
+        {/* QRコード */}
+        {inviteUrl && (
+          <View style={{ padding: 16 }}>
+            <Text style={{ color: color.textWhite, fontSize: 16, fontWeight: "bold", marginBottom: 12 }}>
+              QRコード
+            </Text>
             <View
               style={{
-                width: 150,
-                height: 150,
-                backgroundColor: "#f0f0f0",
+                backgroundColor: color.textWhite,
+                borderRadius: 12,
+                padding: 20,
                 alignItems: "center",
-                justifyContent: "center",
-                borderRadius: 8,
+                alignSelf: "center",
               }}
             >
-              <MaterialIcons name="qr-code-2" size={100} color="#333" />
+              <QRCode
+                value={inviteUrl}
+                size={200}
+                color="#000"
+                backgroundColor="#fff"
+                logo={require("@/assets/images/icon.png")}
+                logoSize={40}
+                logoBackgroundColor="#fff"
+                logoBorderRadius={8}
+              />
+              <Text style={{ color: "#666", fontSize: 12, marginTop: 12 }}>
+                スキャンして参加
+              </Text>
             </View>
-            <Text style={{ color: "#666", fontSize: 12, marginTop: 8 }}>
-              スキャンして参加
-            </Text>
           </View>
-        </View>
+        )}
 
         {/* 招待特典 */}
         <View style={{ padding: 16 }}>

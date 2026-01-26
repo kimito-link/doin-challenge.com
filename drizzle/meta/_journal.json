@@ -183,6 +183,13 @@
       "when": 1769454647128,
       "tag": "0025_chilly_gideon",
       "breakpoints": true
+    },
+    {
+      "idx": 26,
+      "version": "5",
+      "when": 1769460044173,
+      "tag": "0026_glamorous_bloodstorm",
+      "breakpoints": true
     }
   ]
 }
