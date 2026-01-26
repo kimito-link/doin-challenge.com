@@ -104,6 +104,9 @@ export function TwitterUserCard({
         ]}
         contentFit="cover"
         transition={200}
+        placeholder={{ uri: "https://abs.twimg.com/sticky/default_profile_images/default_profile_normal.png" }}
+        placeholderContentFit="cover"
+        cachePolicy="memory-disk"
       />
 
       {/* ユーザー情報 */}
@@ -236,9 +239,13 @@ export function TwitterUserCompact({
           width: avatarSize,
           height: avatarSize,
           borderRadius: avatarSize / 2,
+          backgroundColor: color.surfaceDark,
         }}
         contentFit="cover"
         transition={200}
+        placeholder={{ uri: "https://abs.twimg.com/sticky/default_profile_images/default_profile_normal.png" }}
+        placeholderContentFit="cover"
+        cachePolicy="memory-disk"
       />
       <Text
         style={{ fontSize, color: color.textPrimary, fontWeight: '500' }}
@@ -282,9 +289,13 @@ export function TwitterAvatar({
         width: size,
         height: size,
         borderRadius: size / 2,
+        backgroundColor: color.surfaceDark,
       }}
       contentFit="cover"
       transition={200}
+      placeholder={{ uri: "https://abs.twimg.com/sticky/default_profile_images/default_profile_normal.png" }}
+      placeholderContentFit="cover"
+      cachePolicy="memory-disk"
     />
   );
 
