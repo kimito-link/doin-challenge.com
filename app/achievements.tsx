@@ -10,6 +10,7 @@ import { EmojiIcon } from "@/components/ui/emoji-icon";
 import { LinearGradient } from "expo-linear-gradient";
 import { useMemo } from "react";
 import { AppHeader } from "@/components/organisms/app-header";
+import { RefreshingIndicator } from "@/components/molecules/refreshing-indicator";
 
 const { width: screenWidth } = Dimensions.get("window");
 
@@ -175,13 +176,20 @@ export default function AchievementsScreen() {
   const { user } = useAuth();
 
   // ユーザーの統計情報を取得
-  const { data: myParticipations = [] } = trpc.participations.myParticipations.useQuery(undefined, {
+  const { data: myParticipations = [], isLoading: participationsLoading, isFetching: participationsFetching } = trpc.participations.myParticipations.useQuery(undefined, {
     enabled: !!user,
   });
   
-  const { data: myEvents = [] } = trpc.events.myEvents.useQuery(undefined, {
+  const { data: myEvents = [], isLoading: eventsLoading, isFetching: eventsFetching } = trpc.events.myEvents.useQuery(undefined, {
     enabled: !!user,
   });
+
+  // ローディング状態を分離
+  const isLoading = participationsLoading || eventsLoading;
+  const isFetching = participationsFetching || eventsFetching;
+  const hasData = myParticipations.length >= 0 && myEvents.length >= 0;
+  const isInitialLoading = isLoading && !hasData;
+  const isRefreshing = isFetching && hasData;
 
   // アチーブメントの解除状況を計算
   const achievementStatus = useMemo(() => {
@@ -346,6 +354,7 @@ export default function AchievementsScreen() {
 
   return (
     <ScreenContainer>
+      {isRefreshing && <RefreshingIndicator isRefreshing={isRefreshing} />}
       <ScrollView style={{ flex: 1 }} contentContainerStyle={{ padding: 16 }}>
         {/* ヘッダー */}
         <AppHeader 

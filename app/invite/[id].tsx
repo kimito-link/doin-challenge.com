@@ -12,6 +12,7 @@ import { LinearGradient } from "expo-linear-gradient";
 // Clipboardはネイティブ機能を使用
 import * as Haptics from "expo-haptics";
 import { AppHeader } from "@/components/organisms/app-header";
+import { RefreshingIndicator } from "@/components/molecules/refreshing-indicator";
 import { useColors } from "@/hooks/use-colors";
 
 export default function InviteScreen() {
@@ -35,10 +36,15 @@ export default function InviteScreen() {
   const challengeId = parseInt(id || "0", 10);
   const isValidId = !isNaN(challengeId) && challengeId > 0;
 
-  const { data: challenge, isLoading, error } = trpc.events.getById.useQuery(
+  const { data: challenge, isLoading, isFetching, error } = trpc.events.getById.useQuery(
     { id: challengeId },
     { enabled: isValidId }
   );
+
+  // ローディング状態を分離
+  const hasData = !!challenge;
+  const isInitialLoading = isLoading && !hasData;
+  const isRefreshing = isFetching && hasData;
 
   // デバッグログ
   console.log("[InviteScreen] id:", id, "challengeId:", challengeId, "isValidId:", isValidId, "challenge:", challenge?.id);
@@ -159,7 +165,7 @@ export default function InviteScreen() {
     setShowCustomForm(false);
   };
 
-  if (isLoading) {
+  if (isInitialLoading) {
     return (
       <ScreenContainer containerClassName="bg-background">
         <View style={{ flex: 1, alignItems: "center", justifyContent: "center" }}>
@@ -203,6 +209,7 @@ export default function InviteScreen() {
 
   return (
     <ScreenContainer containerClassName="bg-background">
+      {isRefreshing && <RefreshingIndicator isRefreshing={isRefreshing} />}
       <ScrollView>
         {/* ヘッダー */}
         <AppHeader 

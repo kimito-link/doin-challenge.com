@@ -6,14 +6,20 @@ import { ScreenContainer } from "@/components/organisms/screen-container";
 import { trpc } from "@/lib/trpc";
 import { useAuth } from "@/hooks/use-auth";
 import { AppHeader } from "@/components/organisms/app-header";
+import { RefreshingIndicator } from "@/components/molecules/refreshing-indicator";
 
 export default function MessagesScreen() {
   
   const { user } = useAuth();
 
-  const { data: conversations, isLoading } = trpc.dm.conversations.useQuery(undefined, {
+  const { data: conversations, isLoading, isFetching } = trpc.dm.conversations.useQuery(undefined, {
     enabled: !!user,
   });
+
+  // ローディング状態を分離
+  const hasData = !!conversations && conversations.length >= 0;
+  const isInitialLoading = isLoading && !hasData;
+  const isRefreshing = isFetching && hasData;
   const { data: unreadCount } = trpc.dm.unreadCount.useQuery(undefined, {
     enabled: !!user,
   });
@@ -117,7 +123,8 @@ export default function MessagesScreen() {
       </View>
 
       {/* 会話一覧 */}
-      {isLoading ? (
+      {isRefreshing && <RefreshingIndicator isRefreshing={isRefreshing} />}
+      {isInitialLoading ? (
         <View className="flex-1 items-center justify-center">
           <Text className="text-muted">読み込み中...</Text>
         </View>
