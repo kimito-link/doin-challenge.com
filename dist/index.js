@@ -9,7 +9,7 @@ var __export = (target, all) => {
 };
 
 // server/db/connection.ts
-import { eq, desc, and, sql, isNull, or, gte, lte, inArray, asc, ne, like, count } from "drizzle-orm";
+import { eq, desc, and, sql, isNull, or, gte, lte, lt, inArray, asc, ne, like, count } from "drizzle-orm";
 import { drizzle } from "drizzle-orm/mysql2";
 async function getDb() {
   if (!_db && process.env.DATABASE_URL) {
@@ -1265,10 +1265,11 @@ async function createNotification(data) {
   const result = await db.insert(notifications).values(data);
   return result[0].insertId;
 }
-async function getNotificationsByUserId(userId, limit = 50) {
+async function getNotificationsByUserId(userId, limit = 20, cursor) {
   const db = await getDb();
   if (!db) return [];
-  return db.select().from(notifications).where(eq(notifications.userId, userId)).orderBy(desc(notifications.createdAt)).limit(limit);
+  const conditions = cursor ? and(eq(notifications.userId, userId), lt(notifications.id, cursor)) : eq(notifications.userId, userId);
+  return db.select().from(notifications).where(conditions).orderBy(desc(notifications.createdAt)).limit(limit);
 }
 async function markNotificationAsRead(id) {
   const db = await getDb();
@@ -1571,12 +1572,14 @@ async function markAllMessagesAsRead(userId, fromUserId) {
   if (!db) return;
   await db.update(directMessages).set({ isRead: true, readAt: /* @__PURE__ */ new Date() }).where(and(eq(directMessages.toUserId, userId), eq(directMessages.fromUserId, fromUserId)));
 }
-async function getConversationList(userId) {
+async function getConversationList(userId, limit = 20, cursor) {
   const db = await getDb();
   if (!db) return [];
-  const messages = await db.select().from(directMessages).where(sql`${directMessages.fromUserId} = ${userId} OR ${directMessages.toUserId} = ${userId}`).orderBy(desc(directMessages.createdAt));
+  const conditions = cursor ? sql`(${directMessages.fromUserId} = ${userId} OR ${directMessages.toUserId} = ${userId}) AND ${directMessages.id} < ${cursor}` : sql`${directMessages.fromUserId} = ${userId} OR ${directMessages.toUserId} = ${userId}`;
+  const messages = await db.select().from(directMessages).where(conditions).orderBy(desc(directMessages.createdAt)).limit(limit * 3);
   const conversationMap = /* @__PURE__ */ new Map();
   for (const msg of messages) {
+    if (conversationMap.size >= limit) break;
     const partnerId = msg.fromUserId === userId ? msg.toUserId : msg.fromUserId;
     const key = `${partnerId}-${msg.challengeId}`;
     if (!conversationMap.has(key)) {
@@ -3329,7 +3332,7 @@ function registerOAuthRoutes(app) {
 init_db2();
 init_schema2();
 import crypto from "crypto";
-import { eq as eq3, lt } from "drizzle-orm";
+import { eq as eq3, lt as lt3 } from "drizzle-orm";
 
 // server/rate-limit-handler.ts
 var DEFAULT_OPTIONS = {
@@ -3536,7 +3539,7 @@ async function storePKCEData(state, codeVerifier, callbackUrl) {
         return;
       }
       const expiresAt = new Date(Date.now() + 10 * 60 * 1e3);
-      await db.delete(oauthPkceData).where(lt(oauthPkceData.expiresAt, /* @__PURE__ */ new Date())).catch(() => {
+      await db.delete(oauthPkceData).where(lt3(oauthPkceData.expiresAt, /* @__PURE__ */ new Date())).catch(() => {
       });
       await db.insert(oauthPkceData).values({
         state,
@@ -4583,8 +4586,20 @@ var notificationsRouter = router({
     return { success: true };
   }),
   // 通知履歴取得
-  list: protectedProcedure.query(async ({ ctx }) => {
-    return getNotificationsByUserId(ctx.user.id);
+  list: protectedProcedure.input(z3.object({
+    limit: z3.number().optional().default(20),
+    cursor: z3.number().optional()
+    // 最後に取得したnotificationId
+  })).query(async ({ ctx, input }) => {
+    const notifications2 = await getNotificationsByUserId(
+      ctx.user.id,
+      input.limit,
+      input.cursor
+    );
+    return {
+      items: notifications2,
+      nextCursor: notifications2.length === input.limit ? notifications2[notifications2.length - 1].id : void 0
+    };
   }),
   // 通知を既読にする
   markAsRead: protectedProcedure.input(z3.object({ id: z3.number() })).mutation(async ({ input }) => {
@@ -5054,8 +5069,20 @@ var dmRouter = router({
     return { success: !!result, id: result };
   }),
   // 会話一覧を取得
-  conversations: protectedProcedure.query(async ({ ctx }) => {
-    return getConversationList(ctx.user.id);
+  conversations: protectedProcedure.input(z11.object({
+    limit: z11.number().optional().default(20),
+    cursor: z11.number().optional()
+    // 最後に取得したmessageId
+  })).query(async ({ ctx, input }) => {
+    const conversations = await getConversationList(
+      ctx.user.id,
+      input.limit,
+      input.cursor
+    );
+    return {
+      items: conversations,
+      nextCursor: conversations.length === input.limit ? conversations[conversations.length - 1].id : void 0
+    };
   }),
   // 特定の会話を取得
   getConversation: protectedProcedure.input(z11.object({

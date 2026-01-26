@@ -12,14 +12,31 @@ export default function MessagesScreen() {
   
   const { user } = useAuth();
 
-  const { data: conversations, isLoading, isFetching } = trpc.dm.conversations.useQuery(undefined, {
-    enabled: !!user,
-  });
+  // 会話一覧を取得（無限スクロール対応）
+  const { 
+    data, 
+    isLoading, 
+    isFetching, 
+    fetchNextPage, 
+    hasNextPage, 
+    isFetchingNextPage 
+  } = trpc.dm.conversations.useInfiniteQuery(
+    { limit: 20 },
+    {
+      enabled: !!user,
+      getNextPageParam: (lastPage) => lastPage.nextCursor,
+      staleTime: 5 * 60 * 1000, // 5分間キャッシュを保持
+      gcTime: 30 * 60 * 1000, // 30分間キャッシュを保持
+    }
+  );
+
+  // ページをフラット化
+  const conversations = data?.pages.flatMap(page => page.items) ?? [];
 
   // ローディング状態を分離
-  const hasData = !!conversations && conversations.length >= 0;
+  const hasData = conversations.length > 0;
   const isInitialLoading = isLoading && !hasData;
-  const isRefreshing = isFetching && hasData;
+  const isRefreshing = isFetching && hasData && !isFetchingNextPage;
   const { data: unreadCount } = trpc.dm.unreadCount.useQuery(undefined, {
     enabled: !!user,
   });
@@ -134,6 +151,20 @@ export default function MessagesScreen() {
           renderItem={renderConversation}
           keyExtractor={(item) => `${item.id}`}
           showsVerticalScrollIndicator={false}
+          // 無限スクロール
+          onEndReached={() => {
+            if (hasNextPage && !isFetchingNextPage) {
+              fetchNextPage();
+            }
+          }}
+          onEndReachedThreshold={0.5}
+          ListFooterComponent={() => 
+            isFetchingNextPage ? (
+              <View className="p-4 items-center">
+                <Text className="text-muted">読み込み中...</Text>
+              </View>
+            ) : null
+          }
           // パフォーマンス最適化
           windowSize={5}
           maxToRenderPerBatch={10}

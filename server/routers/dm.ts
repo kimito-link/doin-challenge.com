@@ -29,8 +29,23 @@ export const dmRouter = router({
 
   // 会話一覧を取得
   conversations: protectedProcedure
-    .query(async ({ ctx }) => {
-      return db.getConversationList(ctx.user.id);
+    .input(z.object({
+      limit: z.number().optional().default(20),
+      cursor: z.number().optional(), // 最後に取得したmessageId
+    }))
+    .query(async ({ ctx, input }) => {
+      const conversations = await db.getConversationList(
+        ctx.user.id,
+        input.limit,
+        input.cursor
+      );
+      
+      return {
+        items: conversations,
+        nextCursor: conversations.length === input.limit 
+          ? conversations[conversations.length - 1].id 
+          : undefined,
+      };
     }),
 
   // 特定の会話を取得

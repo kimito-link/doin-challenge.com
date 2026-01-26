@@ -34,9 +34,25 @@ export const notificationsRouter = router({
     }),
 
   // 通知履歴取得
-  list: protectedProcedure.query(async ({ ctx }) => {
-    return db.getNotificationsByUserId(ctx.user.id);
-  }),
+  list: protectedProcedure
+    .input(z.object({
+      limit: z.number().optional().default(20),
+      cursor: z.number().optional(), // 最後に取得したnotificationId
+    }))
+    .query(async ({ ctx, input }) => {
+      const notifications = await db.getNotificationsByUserId(
+        ctx.user.id,
+        input.limit,
+        input.cursor
+      );
+      
+      return {
+        items: notifications,
+        nextCursor: notifications.length === input.limit 
+          ? notifications[notifications.length - 1].id 
+          : undefined,
+      };
+    }),
 
   // 通知を既読にする
   markAsRead: protectedProcedure

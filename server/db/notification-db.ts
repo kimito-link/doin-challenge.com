@@ -1,4 +1,4 @@
-import { getDb, eq, desc, and } from "./connection";
+import { getDb, eq, desc, and, lt } from "./connection";
 import { notificationSettings, notifications, InsertNotificationSetting, InsertNotification } from "../../drizzle/schema";
 
 export async function getNotificationSettings(userId: number) {
@@ -46,11 +46,21 @@ export async function createNotification(data: InsertNotification) {
   return result[0].insertId;
 }
 
-export async function getNotificationsByUserId(userId: number, limit = 50) {
+export async function getNotificationsByUserId(
+  userId: number,
+  limit: number = 20,
+  cursor?: number
+) {
   const db = await getDb();
   if (!db) return [];
+  
+  // cursorがある場合は、そのidより小さい通知を取得
+  const conditions = cursor 
+    ? and(eq(notifications.userId, userId), lt(notifications.id, cursor))
+    : eq(notifications.userId, userId);
+  
   return db.select().from(notifications)
-    .where(eq(notifications.userId, userId))
+    .where(conditions)
     .orderBy(desc(notifications.createdAt))
     .limit(limit);
 }

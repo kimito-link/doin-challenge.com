@@ -1,4 +1,4 @@
-import { getDb, eq, desc, sql, and } from "./connection";
+import { getDb, eq, desc, sql, and, lt } from "./connection";
 import { reminders, directMessages, challengeTemplates, InsertReminder, InsertDirectMessage, InsertChallengeTemplate } from "../../drizzle/schema";
 
 // ========== Reminders (リマインダー) ==========
@@ -102,17 +102,29 @@ export async function markAllMessagesAsRead(userId: number, fromUserId: number) 
     .where(and(eq(directMessages.toUserId, userId), eq(directMessages.fromUserId, fromUserId)));
 }
 
-export async function getConversationList(userId: number) {
+export async function getConversationList(
+  userId: number,
+  limit: number = 20,
+  cursor?: number
+) {
   const db = await getDb();
   if (!db) return [];
+  
+  // cursorがある場合は、そのidより小さいメッセージを取得
+  const conditions = cursor
+    ? sql`(${directMessages.fromUserId} = ${userId} OR ${directMessages.toUserId} = ${userId}) AND ${directMessages.id} < ${cursor}`
+    : sql`${directMessages.fromUserId} = ${userId} OR ${directMessages.toUserId} = ${userId}`;
+  
   // 最新のメッセージを持つ会話相手のリストを取得
   const messages = await db.select().from(directMessages)
-    .where(sql`${directMessages.fromUserId} = ${userId} OR ${directMessages.toUserId} = ${userId}`)
-    .orderBy(desc(directMessages.createdAt));
+    .where(conditions)
+    .orderBy(desc(directMessages.createdAt))
+    .limit(limit * 3); // ユニークな会話を十分に取得するために多めに取得
   
   // ユニークな会話相手を抽出
   const conversationMap = new Map<string, typeof messages[0]>();
   for (const msg of messages) {
+    if (conversationMap.size >= limit) break; // limitに達したら終了
     const partnerId = msg.fromUserId === userId ? msg.toUserId : msg.fromUserId;
     const key = `${partnerId}-${msg.challengeId}`;
     if (!conversationMap.has(key)) {

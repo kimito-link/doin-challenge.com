@@ -1,5 +1,6 @@
 import "@/global.css";
-import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import { QueryClient } from "@tanstack/react-query";
+import { PersistQueryClientProvider } from "@tanstack/react-query-persist-client";
 import { Stack } from "expo-router";
 import { StatusBar } from "expo-status-bar";
 import { useCallback, useEffect, useMemo, useState } from "react";
@@ -22,6 +23,7 @@ import type { EdgeInsets, Metrics, Rect } from "react-native-safe-area-context";
 
 import { trpc, createTRPCClient } from "@/lib/trpc";
 import { createPerformanceQueryCache, createPerformanceMutationCache } from "@/lib/performance-auto-monitor";
+import { asyncStoragePersister } from "@/lib/query-persister";
 import { initManusRuntime, subscribeSafeAreaInsets } from "@/lib/_core/manus-runtime";
 import { preloadCriticalImages } from "@/lib/image-preload";
 import { registerServiceWorker } from "@/lib/service-worker";
@@ -180,7 +182,10 @@ export default function RootLayout() {
   const content = (
     <GestureHandlerRootView style={{ flex: 1, overflow: "hidden" }}>
       <trpc.Provider client={trpcClient} queryClient={queryClient}>
-        <QueryClientProvider client={queryClient}>
+        <PersistQueryClientProvider 
+          client={queryClient} 
+          persistOptions={{ persister: asyncStoragePersister }}
+        >
           <AutoLoginProvider>
             <LoginSuccessProvider>
               <TutorialProvider>
@@ -205,7 +210,7 @@ export default function RootLayout() {
               </TutorialProvider>
             </LoginSuccessProvider>
           </AutoLoginProvider>
-        </QueryClientProvider>
+        </PersistQueryClientProvider>
       </trpc.Provider>
     </GestureHandlerRootView>
   );

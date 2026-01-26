@@ -1,4 +1,4 @@
-import { Text, View, Pressable, ScrollView, Switch, ActivityIndicator } from "react-native";
+import { Text, View, Pressable, ScrollView, ActivityIndicator, FlatList } from "react-native";
 import * as Haptics from "expo-haptics";
 import { color, palette } from "@/theme/tokens";
 import { navigate, navigateBack } from "@/lib/navigation";
@@ -22,16 +22,32 @@ export default function NotificationsScreen() {
   const [expoPushToken, setExpoPushToken] = useState<string | null>(null);
   const [notificationPermission, setNotificationPermission] = useState(false);
   
-  // 通知履歴を取得
-  const { data: notificationList, isLoading, isFetching, refetch } = trpc.notifications.list.useQuery(
-    undefined,
-    { enabled: isAuthenticated }
+  // 通知履歴を取得（無限スクロール対応）
+  const { 
+    data, 
+    isLoading, 
+    isFetching, 
+    fetchNextPage, 
+    hasNextPage, 
+    isFetchingNextPage,
+    refetch 
+  } = trpc.notifications.list.useInfiniteQuery(
+    { limit: 20 },
+    {
+      enabled: isAuthenticated,
+      getNextPageParam: (lastPage) => lastPage.nextCursor,
+      staleTime: 5 * 60 * 1000, // 5分間キャッシュを保持
+      gcTime: 30 * 60 * 1000, // 30分間キャッシュを保持
+    }
   );
 
+  // ページをフラット化
+  const notificationList = data?.pages.flatMap(page => page.items) ?? [];
+
   // ローディング状態を分離
-  const hasData = !!notificationList && notificationList.length >= 0;
+  const hasData = notificationList.length > 0;
   const isInitialLoading = isLoading && !hasData;
-  const isRefreshing = isFetching && hasData;
+  const isRefreshing = isFetching && hasData && !isFetchingNextPage;
   
   const markAsReadMutation = trpc.notifications.markAsRead.useMutation({
     onSuccess: () => refetch(),
@@ -121,7 +137,7 @@ export default function NotificationsScreen() {
   return (
     <ScreenContainer edges={["top", "left", "right"]} containerClassName="bg-background">
       {isRefreshing && <RefreshingIndicator isRefreshing={isRefreshing} />}
-      <ScrollView style={{ flex: 1, backgroundColor: colors.background }}>
+
         {/* ヘッダー */}
         <AppHeader 
           title="君斗りんくの動員ちゃれんじ" 
@@ -201,13 +217,16 @@ export default function NotificationsScreen() {
         )}
 
         {/* 通知リスト */}
-        <View style={{ paddingHorizontal: 16 }}>
-          {isInitialLoading ? (
-            <View style={{ alignItems: "center", paddingVertical: 40 }}>
-              <ActivityIndicator size="large" color={color.accentPrimary} />
-            </View>
-          ) : notificationList && notificationList.length > 0 ? (
-            notificationList.map((notification) => (
+        {isInitialLoading ? (
+          <View style={{ alignItems: "center", paddingVertical: 40 }}>
+            <ActivityIndicator size="large" color={color.accentPrimary} />
+          </View>
+        ) : (
+          <FlatList
+            data={notificationList}
+            keyExtractor={(item) => item.id.toString()}
+            contentContainerStyle={{ paddingHorizontal: 16 }}
+            renderItem={({ item: notification }) => (
               <Pressable
                 key={notification.id}
                 onPress={() => {
@@ -265,19 +284,31 @@ export default function NotificationsScreen() {
                   )}
                 </View>
               </Pressable>
-            ))
-          ) : (
-            <View style={{ alignItems: "center", paddingVertical: 40 }}>
-              <MaterialIcons name="notifications-none" size={64} color={color.textSubtle} />
-              <Text style={{ color: color.textMuted, fontSize: 16, marginTop: 16 }}>
-                通知はありません
-              </Text>
-            </View>
-          )}
-        </View>
-
-        <View style={{ height: 100 }} />
-      </ScrollView>
+            )}
+            onEndReached={() => {
+              if (hasNextPage && !isFetchingNextPage) {
+                fetchNextPage();
+              }
+            }}
+            onEndReachedThreshold={0.5}
+            removeClippedSubviews={Platform.OS === "android"}
+            ListFooterComponent={() => 
+              isFetchingNextPage ? (
+                <View style={{ padding: 16, alignItems: "center" }}>
+                  <ActivityIndicator color={color.accentPrimary} />
+                </View>
+              ) : null
+            }
+            ListEmptyComponent={() => (
+              <View style={{ alignItems: "center", paddingVertical: 40 }}>
+                <MaterialIcons name="notifications-none" size={64} color={color.textSubtle} />
+                <Text style={{ color: color.textMuted, fontSize: 16, marginTop: 16 }}>
+                  通知はありません
+                </Text>
+              </View>
+            )}
+          />
+        )}
     </ScreenContainer>
   );
 }
