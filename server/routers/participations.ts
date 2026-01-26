@@ -109,7 +109,11 @@ export const participationsRouter = router({
           }
         }
         
-        return { id: participationId, requestId: ctx.requestId };
+        // Get participant number (total participations for this challenge)
+        const participations = await db.getParticipationsByEventId(input.challengeId);
+        const participantNumber = participations.length;
+        
+        return { id: participationId, requestId: ctx.requestId, participantNumber };
       } catch (error) {
         console.error("[Participation Create] Error:", error);
         const errorMessage = error instanceof Error ? error.message : String(error);

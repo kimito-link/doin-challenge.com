@@ -14,6 +14,7 @@ import {
   ParticipantsList,
   ContributionRanking,
 } from "@/features/events/components";
+import { JapanMapDeformed } from "@/components/molecules/japan-map-deformed";
 import type { Participation } from "@/types/participation";
 import type { FanProfile } from "../types";
 
@@ -23,6 +24,10 @@ interface ParticipantsOverviewProps {
   participations: Participation[] | undefined;
   followerIds: number[] | undefined;
   onFanPress: (fan: FanProfile) => void;
+  /** 点灯させる都道府県（参加完了時） */
+  highlightPrefecture?: string | null;
+  /** 都道府県がタップされたときのコールバック */
+  onPrefecturePress?: (prefecture: string) => void;
 }
 
 export function ParticipantsOverview({
@@ -31,6 +36,8 @@ export function ParticipantsOverview({
   participations,
   followerIds,
   onFanPress,
+  highlightPrefecture,
+  onPrefecturePress,
 }: ParticipantsOverviewProps) {
   const colors = useColors();
   
@@ -49,6 +56,18 @@ export function ParticipantsOverview({
       <TicketTransferSection
         challengeId={challengeId}
         challengeTitle={challengeTitle}
+      />
+
+      {/* デフォルメ日本地図 */}
+      <JapanMapDeformed
+        prefectureCounts={participations.reduce((acc, p) => {
+          if (p.prefecture) {
+            acc[p.prefecture] = (acc[p.prefecture] || 0) + (p.contribution || 1);
+          }
+          return acc;
+        }, {} as Record<string, number>)}
+        highlightPrefecture={highlightPrefecture}
+        onPrefecturePress={onPrefecturePress}
       />
 
       {/* 地域別マップ */}

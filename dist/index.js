@@ -4277,7 +4277,9 @@ var participationsRouter = router({
           await confirmInvitationUse(invitation.id, ctx.user.id, participationId);
         }
       }
-      return { id: participationId, requestId: ctx.requestId };
+      const participations2 = await getParticipationsByEventId(input.challengeId);
+      const participantNumber = participations2.length;
+      return { id: participationId, requestId: ctx.requestId, participantNumber };
     } catch (error) {
       console.error("[Participation Create] Error:", error);
       const errorMessage = error instanceof Error ? error.message : String(error);

@@ -19,6 +19,7 @@ import { RegionParticipantsModal } from "@/components/molecules/region-participa
 import { HostProfileModal } from "@/components/organisms/host-profile-modal";
 import { FanProfileModal } from "@/components/organisms/fan-profile-modal";
 import { SharePromptModal } from "@/components/molecules/share-prompt-modal";
+import { LinkSpeech } from "@/components/organisms/link-speech";
 import { shareParticipation } from "@/lib/share";
 import {
   MessagesSection,
@@ -205,6 +206,8 @@ export default function ChallengeDetailScreen() {
             participations={participations}
             followerIds={eventDetail.followerIds}
             onFanPress={(fan) => modalState.setSelectedFan(fan)}
+            highlightPrefecture={participationForm.lastParticipation?.prefecture}
+            onPrefecturePress={(prefName) => modalState.setSelectedPrefectureForModal(prefName)}
           />
 
           {/* 応援メッセージセクション */}
@@ -296,6 +299,21 @@ export default function ChallengeDetailScreen() {
         companions={participationForm.companions}
         message={participationForm.message}
       />
+
+      {/* りんく吹き出し: ◯人目の参加だよ！ */}
+      {participationForm.showParticipantNumberSpeech && participationForm.participantNumber && (
+        <View style={{
+          position: "absolute",
+          bottom: 100,
+          left: 16,
+          right: 16,
+          zIndex: 1000,
+        }}>
+          <LinkSpeech
+            message={`あなたは${participationForm.participantNumber}人目の参加だよ！\nみんなで盛り上げよう！`}
+          />
+        </View>
+      )}
 
       {/* シェア促進モーダル */}
       <SharePromptModal

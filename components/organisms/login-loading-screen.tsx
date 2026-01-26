@@ -126,15 +126,6 @@ export function LoginLoadingScreen({
 
   return (
     <View style={[styles.container, { backgroundColor: colors.background }]}>
-      {/* ロゴ */}
-      <View style={styles.logoContainer}>
-        <Image
-          source={require("@/assets/images/icon.png")}
-          style={styles.logo}
-          contentFit="contain"
-        />
-      </View>
-
       {/* キャラクター（りんくちゃん） */}
       <Animated.View
         style={[
@@ -249,15 +240,9 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     padding: 24,
   },
-  logoContainer: {
-    marginBottom: 16,
-  },
-  logo: {
-    width: 64,
-    height: 64,
-  },
   characterContainer: {
     marginBottom: 8,
+    marginTop: 40,
   },
   speechBubble: {
     paddingHorizontal: 20,

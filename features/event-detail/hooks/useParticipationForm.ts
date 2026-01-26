@@ -4,8 +4,8 @@
  */
 
 import { useState, useRef } from "react";
-import { Alert, ScrollView, View } from "react-native";
-import { useRouter } from "expo-router";
+import { ScrollView, View, Alert, Platform } from "react-native";
+import * as Haptics from "expo-haptics";
 import { trpc } from "@/lib/trpc";
 import { lookupTwitterUser, getErrorMessage } from "@/lib/api";
 import { SHARE_PROMPT_DELAY, SCROLL_TO_MESSAGES_DELAY } from "../constants";
@@ -70,6 +70,11 @@ interface UseParticipationFormReturn {
   lastParticipation: LastParticipation | null;
   setLastParticipation: (value: LastParticipation | null) => void;
   
+  // Participant number speech
+  showParticipantNumberSpeech: boolean;
+  setShowParticipantNumberSpeech: (value: boolean) => void;
+  participantNumber: number | null;
+  
   // Refs
   scrollViewRef: React.RefObject<ScrollView | null>;
   messagesRef: React.RefObject<View | null>;
@@ -92,8 +97,6 @@ export function useParticipationForm({
   login,
   refetch,
 }: UseParticipationFormOptions): UseParticipationFormReturn {
-  const router = useRouter();
-  
   // Form state
   const [message, setMessage] = useState("");
   const [displayName, setDisplayName] = useState("");
@@ -118,13 +121,29 @@ export function useParticipationForm({
   const [showSharePrompt, setShowSharePrompt] = useState(false);
   const [lastParticipation, setLastParticipation] = useState<LastParticipation | null>(null);
   
+  // Participant number speech state
+  const [showParticipantNumberSpeech, setShowParticipantNumberSpeech] = useState(false);
+  const [participantNumber, setParticipantNumber] = useState<number | null>(null);
+  
   // Refs
   const scrollViewRef = useRef<ScrollView>(null);
   const messagesRef = useRef<View>(null);
   
   // Mutations
   const createParticipationMutation = trpc.participations.create.useMutation({
-    onSuccess: async () => {
+    onSuccess: async (data) => {
+      // Haptic feedback (success)
+      if (Platform.OS !== "web") {
+        Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+      }
+      
+      // Show success message
+      Alert.alert(
+        "参加表明が完了しました！",
+        "ありがとうございます！",
+        [{ text: "OK", style: "default" }]
+      );
+      
       setLastParticipation({
         name: user?.name || "",
         username: user?.username || undefined,
@@ -143,6 +162,11 @@ export function useParticipationForm({
       
       await refetch();
       
+      // Set participant number (from mutation response)
+      if (data?.participantNumber) {
+        setParticipantNumber(data.participantNumber);
+      }
+      
       // Scroll to messages
       setTimeout(() => {
         messagesRef.current?.measureLayout(
@@ -156,10 +180,20 @@ export function useParticipationForm({
         );
       }, SCROLL_TO_MESSAGES_DELAY);
       
-      // Show share prompt
+      // Show participant number speech + prefecture highlight (500ms after)
+      setTimeout(() => {
+        setShowParticipantNumberSpeech(true);
+      }, 500);
+      
+      // Hide participant number speech after 3 seconds
+      setTimeout(() => {
+        setShowParticipantNumberSpeech(false);
+      }, 3500);
+      
+      // Show share prompt (6 seconds after - 2.5s after speech ends)
       setTimeout(() => {
         setShowSharePrompt(true);
-      }, SHARE_PROMPT_DELAY);
+      }, 6000);
     },
     onError: (error) => {
       console.error("Participation error:", error);
@@ -334,6 +368,11 @@ export function useParticipationForm({
     setShowSharePrompt,
     lastParticipation,
     setLastParticipation,
+    
+    // Participant number speech
+    showParticipantNumberSpeech,
+    setShowParticipantNumberSpeech,
+    participantNumber,
     
     // Refs
     scrollViewRef,
