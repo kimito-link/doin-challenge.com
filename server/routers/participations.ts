@@ -21,6 +21,13 @@ export const participationsRouter = router({
       return db.getParticipationsByEventId(input.eventId);
     }),
 
+  // 参加方法別集計
+  getAttendanceTypeCounts: publicProcedure
+    .input(z.object({ eventId: z.number() }))
+    .query(async ({ input }) => {
+      return db.getAttendanceTypeCounts(input.eventId);
+    }),
+
   // 自分の参加一覧
   myParticipations: protectedProcedure.query(async ({ ctx }) => {
     return db.getParticipationsByUserId(ctx.user.id);
@@ -34,6 +41,7 @@ export const participationsRouter = router({
       companionCount: z.number().default(0),
       prefecture: z.string().optional(),
       gender: z.enum(["male", "female", "unspecified"]).optional(),
+      attendanceType: z.enum(["venue", "streaming", "both"]).default("venue"),
       twitterId: z.string().optional(),
       displayName: z.string(),
       username: z.string().optional(),
@@ -65,6 +73,7 @@ export const participationsRouter = router({
           companionCount: input.companionCount,
           prefecture: input.prefecture,
           gender: input.gender || "unspecified",
+          attendanceType: input.attendanceType || "venue",
           isAnonymous: false,
         });
         
@@ -109,7 +118,11 @@ export const participationsRouter = router({
           }
         }
         
-        return { id: participationId, requestId: ctx.requestId };
+        // Get participant number (total participations for this challenge)
+        const participations = await db.getParticipationsByEventId(input.challengeId);
+        const participantNumber = participations.length;
+        
+        return { id: participationId, requestId: ctx.requestId, participantNumber };
       } catch (error) {
         console.error("[Participation Create] Error:", error);
         const errorMessage = error instanceof Error ? error.message : String(error);

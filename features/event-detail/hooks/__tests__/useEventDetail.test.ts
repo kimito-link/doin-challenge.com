@@ -131,6 +131,12 @@ vi.mock("@/lib/trpc", () => ({
           refetch: vi.fn().mockResolvedValue(undefined),
         }),
       },
+      getAttendanceTypeCounts: {
+        useQuery: () => ({
+          data: { venue: 30, streaming: 15, both: 5, total: 50 },
+          isLoading: false,
+        }),
+      },
     },
     companions: {
       forChallenge: {
