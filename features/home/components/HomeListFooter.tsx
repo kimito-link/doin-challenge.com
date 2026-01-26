@@ -8,6 +8,7 @@ import { color } from "@/theme/tokens";
 import { CachedDataIndicator } from "@/components/organisms/offline-banner";
 import { SyncStatusIndicator } from "@/components/atoms/sync-status-indicator";
 import { ScrollMoreIndicator } from "@/components/atoms/character-loading-indicator";
+import { LoadingMoreIndicator } from "@/components/molecules/loading-more-indicator";
 import { 
   FeaturedChallenge, 
   EngagementSection, 
@@ -27,6 +28,7 @@ interface HomeListFooterProps {
   isStaleData: boolean;
   
   // Pagination
+  isLoadingMore?: boolean;
   isFetchingNextPage: boolean;
   hasNextPage: boolean;
   isFetchingNextSearchPage: boolean;
@@ -42,18 +44,24 @@ export function HomeListFooter({
   isSearching,
   isOffline,
   isStaleData,
+  isLoadingMore,
   isFetchingNextPage,
   hasNextPage,
   isFetchingNextSearchPage,
   hasNextSearchPage,
   onChallengePress,
 }: HomeListFooterProps) {
+  // 後方互換性のためisLoadingMoreを優先
+  const loadingMore = isLoadingMore ?? (isSearching ? isFetchingNextSearchPage : isFetchingNextPage);
   return (
     <>
+      {/* 無限スクロール中インジケータ */}
+      <LoadingMoreIndicator isLoadingMore={loadingMore} />
+      
       {/* ページネーションインジケーター（キャラクター付き） */}
       <ScrollMoreIndicator
         hasNextPage={isSearching ? hasNextSearchPage : hasNextPage}
-        isFetching={isSearching ? isFetchingNextSearchPage : isFetchingNextPage}
+        isFetching={loadingMore}
       />
       
       {/* 注目のチャレンジ */}

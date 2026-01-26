@@ -48,6 +48,8 @@ interface HomeListHeaderProps {
   top3: Challenge[];
   featuredChallenge: Challenge | null;
   displayChallengesCount: number;
+  isInitialLoading?: boolean;
+  /** @deprecated Use isInitialLoading instead */
   isDataLoading: boolean;
   totalChallengesCount?: number;
   
@@ -71,14 +73,17 @@ export function HomeListHeader({
   top3,
   featuredChallenge,
   displayChallengesCount,
+  isInitialLoading,
   isDataLoading,
   totalChallengesCount = 0,
   onChallengePress,
 }: HomeListHeaderProps) {
+  // 後方互換性のためisInitialLoadingを優先
+  const loading = isInitialLoading ?? isDataLoading;
   // フィルターが適用されているかどうか
   const isFilterApplied = filter !== "all" || categoryFilter !== null;
   // フィルター適用後に該当なしの場合
-  const noResultsAfterFilter = isFilterApplied && displayChallengesCount === 0 && totalChallengesCount > 0 && !isDataLoading;
+  const noResultsAfterFilter = isFilterApplied && displayChallengesCount === 0 && totalChallengesCount > 0 && !loading;
   // タブ変更時にフィルターも連動
   const handleTabChange = (tab: HomeTabType) => {
     onTabChange?.(tab);
@@ -170,15 +175,15 @@ export function HomeListHeader({
       )}
 
       {/* 3ステップ説明（初回訪問時のみ表示） */}
-      {displayChallengesCount === 0 && !isDataLoading && !noResultsAfterFilter && (
+      {displayChallengesCount === 0 && !loading && !noResultsAfterFilter && (
         <OnboardingSteps />
       )}
 
       {/* デモ体験ボタン（フィルター適用時は非表示） */}
       {!isFilterApplied && <ExperienceBanner />}
       
-      {/* データ読み込み中のスケルトン表示 */}
-      {isDataLoading && (
+      {/* 初回ロード中のスケルトン表示 */}
+      {loading && (
         <View style={{ paddingHorizontal: 16, paddingTop: 16 }}>
           <ChallengeCardSkeleton />
           <ChallengeCardSkeleton />

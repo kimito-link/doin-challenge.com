@@ -15,6 +15,7 @@ import { AppHeader } from "@/components/organisms/app-header";
 import { SimpleRefreshControl } from "@/components/molecules/enhanced-refresh-control";
 import { ColorfulChallengeCard } from "@/components/molecules/colorful-challenge-card";
 import { FloatingActionButton } from "@/components/atoms/floating-action-button";
+import { RefreshingIndicator } from "@/components/molecules/refreshing-indicator";
 import { EncouragementModal, useEncouragementModal } from "@/components/molecules/encouragement-modal";
 import { 
   ChallengeCard, 
@@ -107,6 +108,9 @@ export default function HomeScreen() {
 
   return (
     <ScreenContainer containerClassName="bg-background">
+      {/* 更新中インジケータ */}
+      <RefreshingIndicator isRefreshing={homeData.isRefreshing} />
+      
       {/* ヘッダー */}
       <AppHeader 
         title="君斗りんくの動員ちゃれんじ" 
@@ -116,7 +120,7 @@ export default function HomeScreen() {
       />
 
       {/* チャレンジリスト */}
-      {homeData.displayChallenges.length > 0 || homeData.isDataLoading ? (
+      {homeData.displayChallenges.length > 0 || homeData.isInitialLoading ? (
         <FlatList
           key={isSearching ? `grid-${numColumns}` : "ranking-list"}
           data={isSearching ? homeData.displayChallenges : homeData.rest}
@@ -140,6 +144,7 @@ export default function HomeScreen() {
               featuredChallenge={homeData.featuredChallenge}
               displayChallengesCount={homeData.displayChallenges.length}
               totalChallengesCount={homeData.challenges.length}
+              isInitialLoading={homeData.isInitialLoading}
               isDataLoading={homeData.isDataLoading}
               onChallengePress={homeActions.handleChallengePress}
             />
@@ -170,6 +175,7 @@ export default function HomeScreen() {
               isSearching={isSearching}
               isOffline={homeData.isOffline}
               isStaleData={homeData.isStaleData}
+              isLoadingMore={homeData.isLoadingMore}
               isFetchingNextPage={homeData.isFetchingNextPage}
               hasNextPage={homeData.hasNextPage}
               isFetchingNextSearchPage={homeData.isFetchingNextSearchPage}

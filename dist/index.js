@@ -6789,6 +6789,45 @@ async function startServer() {
       builtAt: process.env.BUILT_AT || "unknown",
       nodeEnv: process.env.NODE_ENV || "development"
     };
+    let dbStatus = { connected: false, latency: 0, error: "" };
+    try {
+      const { getDb: getDb2 } = await Promise.resolve().then(() => (init_db2(), db_exports));
+      const startTime = Date.now();
+      const db = await getDb2();
+      if (db) {
+        await db.execute("SELECT 1");
+        dbStatus = {
+          connected: true,
+          latency: Date.now() - startTime,
+          error: ""
+        };
+      } else {
+        dbStatus.error = "DATABASE_URL\u304C\u8A2D\u5B9A\u3055\u308C\u3066\u3044\u307E\u305B\u3093";
+      }
+    } catch (err) {
+      dbStatus.error = err instanceof Error ? err.message : "\u63A5\u7D9A\u30A8\u30E9\u30FC";
+    }
+    const checkCritical = _req.query.critical === "true";
+    let criticalApis = {};
+    if (checkCritical && dbStatus.connected) {
+      try {
+        const caller = appRouter.createCaller(await createContext({ req: _req, res, info: {} }));
+        try {
+          await caller.events.list();
+          criticalApis.homeEvents = { ok: true };
+        } catch (err) {
+          criticalApis.homeEvents = { ok: false, error: err instanceof Error ? err.message : String(err) };
+        }
+        try {
+          await caller.rankings.hosts({ limit: 1 });
+          criticalApis.rankings = { ok: true };
+        } catch (err) {
+          criticalApis.rankings = { ok: false, error: err instanceof Error ? err.message : String(err) };
+        }
+      } catch (err) {
+        criticalApis.error = err instanceof Error ? err.message : String(err);
+      }
+    }
     const checkSchema = _req.query.schema === "true";
     let schemaCheck;
     if (checkSchema) {
@@ -6808,8 +6847,12 @@ async function startServer() {
         };
       }
     }
+    const overallOk = dbStatus.connected && (!checkCritical || Object.values(criticalApis).every((api) => typeof api === "object" && "ok" in api && api.ok));
     res.json({
       ...baseInfo,
+      ok: overallOk,
+      db: dbStatus,
+      ...checkCritical && { critical: criticalApis },
       ...schemaCheck && { schema: schemaCheck }
     });
   });

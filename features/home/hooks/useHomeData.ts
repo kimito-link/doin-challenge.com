@@ -41,7 +41,13 @@ interface UseHomeDataReturn {
   };
   
   // Loading states
+  hasData: boolean;
+  isInitialLoading: boolean;
+  isRefreshing: boolean;
+  isLoadingMore: boolean;
+  /** @deprecated Use isInitialLoading instead */
   isLoading: boolean;
+  /** @deprecated Use isInitialLoading instead */
   isDataLoading: boolean;
   isStaleData: boolean;
   refreshing: boolean;
@@ -120,10 +126,21 @@ export function useHomeData({
   
   // キャッシュ優先表示
   const challenges = apiChallenges.length > 0 ? apiChallenges : (cachedChallenges ?? []);
+  const hasData = challenges.length > 0;
   
-  // ローディング状態
-  const isLoading = false;
-  const isDataLoading = challenges.length === 0 && isApiLoading && !hasInitialCache;
+  // ローディング状態を分離
+  // isInitialLoading: 初回ロード中（データなし）
+  const isInitialLoading = isApiLoading && !hasData;
+  
+  // isRefreshing: データ保持したまま裏で更新中（ページネーション除く）
+  const isRefreshing = isFetching && hasData && !isFetchingNextPage;
+  
+  // isLoadingMore: 無限スクロール中（リスト末尾）
+  const isLoadingMore = isFetchingNextPage;
+  
+  // 後方互換性（非推奨）
+  const isLoading = isInitialLoading;
+  const isDataLoading = isInitialLoading;
 
   // 検索結果の無限スクロール対応
   const {
@@ -255,6 +272,10 @@ export function useHomeData({
     tabCounts,
     
     // Loading states
+    hasData,
+    isInitialLoading,
+    isRefreshing,
+    isLoadingMore,
     isLoading,
     isDataLoading,
     isStaleData,

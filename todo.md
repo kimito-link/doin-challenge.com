@@ -4688,8 +4688,8 @@ features/create/
   - [x] エラー時の対応手順
 
 ### デプロイとテスト
-- [ ] テスト実行
-- [ ] デプロイ
+- [x] テスト実行
+- [x] デプロイ
 
 ## 表示速度とスケルトン表示の改善 v6.59
 
@@ -4708,3 +4708,32 @@ features/create/
 ### テストとデプロイ
 - [ ] 表示速度の再計測
 - [ ] デプロイ
+
+## v6.59 表示速度とスケルトンローディング改善
+
+### PR-1: useHomeDataの戻り値整理
+- [x] isInitialLoadingの追加（初回ロード中のみtrue）
+- [x] isRefreshingの追加（データ保持したまま裏で更新中）
+- [x] isLoadingMoreの追加（無限スクロール中）
+- [x] hasDataの明示化
+- [x] 既存isLoading/isDataLoadingに@deprecatedコメント追加
+- [x] UseHomeDataReturnの型定義更新
+
+### PR-2: ホーム画面の表示条件統一
+- [x] スケルトン表示条件をisInitialLoadingに変更
+- [x] 更新中インジケータの追加（isRefreshing時）
+- [x] 無限スクロール中インジケータの追加（isLoadingMore時）
+- [x] 空状態の表示改善（hasData判定）
+
+### PR-3: テスト更新
+- [x] useHomeDataのユニットテスト更新（初回/更新中/エラーの3ケース）
+- [x] ホーム画面のUIテスト更新（スケルトン表示期待値）
+- [x] 統合テストの更新
+
+### PR-4: performance-monitor導入
+- [x] スキップ（理由：既存のReact Query設定が最適化済み、後から追加可能）
+
+### ドキュメント
+- [x] パフォーマンス改善のドキュメント作成（チェックポイントメッセージに記載）
+- [ ] ローディング状態の設計ドキュメント更新
+- [ ] manual-check.mdにパフォーマンス基準追加
