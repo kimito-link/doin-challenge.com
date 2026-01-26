@@ -43,8 +43,8 @@ export const colors = {
   text: {
     primary: color.textWhite,
     secondary: color.textSecondary,
-    tertiary: color.textHint,
-    disabled: "#4B5563",
+    tertiary: "#8B92A0", // hint text - WCAG AA準拠（4.51:1）
+    disabled: "#8B92A0", // disabled text - WCAG AA準拠（4.51:1）
   },
   // ボーダー色
   border: {

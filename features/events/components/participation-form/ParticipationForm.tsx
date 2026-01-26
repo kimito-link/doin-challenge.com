@@ -9,6 +9,7 @@ import { Image } from "expo-image";
 import MaterialIcons from "@expo/vector-icons/MaterialIcons";
 import { LinearGradient } from "expo-linear-gradient";
 import { color } from "@/theme/tokens";
+import { eventUI } from "@/features/events/ui/theme/tokens";
 import { useColors } from "@/hooks/use-colors";
 import { prefectures } from "@/constants/prefectures";
 import { styles } from "./ParticipationForm.styles";
@@ -224,7 +225,7 @@ export function ParticipationForm({
             onPress={() => onGenderChange("female")}
             style={[
               styles.genderButton,
-              gender === "female" && { backgroundColor: "#EC4899", borderColor: "#EC4899" },
+              gender === "female" && { backgroundColor: eventUI.badge, borderColor: eventUI.badge },
             ]}
           >
             <Text style={[

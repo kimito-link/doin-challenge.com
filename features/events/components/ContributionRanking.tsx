@@ -121,7 +121,7 @@ export function ContributionRanking({
                 <View
                   style={{
                     marginLeft: 6,
-                    backgroundColor: "#8B5CF6",
+                    backgroundColor: eventUI.badgeFollower,
                     paddingHorizontal: 6,
                     paddingVertical: 2,
                     borderRadius: 8,

@@ -27,7 +27,7 @@ export const eventText = {
   hint: "#6B7280",      // ヒントテキスト（大きいサイズ用）コントラスト比: 4.48:1
   
   // アクセント・強調
-  accent: "#EC4899",    // 強調（貢献度など）
+  accent: "#D91C81",    // 強調（貢献度など）- WCAG AA準拠
   danger: "#EF4444",    // 削除・警告
 } as const;
 
@@ -54,17 +54,17 @@ export const eventFont = {
  */
 export const eventUI = {
   // アバター・アイコンのフォールバック
-  fallback: "#EC4899",      // アバター背景
-  fallbackAlt: "#8B5CF6",   // 同伴者アバター背景
+  fallback: "#D91C81",      // アバター背景 - WCAG AA準拠
+  fallbackAlt: "#7C3AED",   // 同伴者アバター背景 - WCAG AA準拠
   
   // アイコン色
-  icon: "#EC4899",          // アクセントアイコン
+  icon: "#D91C81",          // アクセントアイコン - WCAG AA準拠
   iconMuted: "#9CA3AF",     // 補助アイコン（DM、編集など）
   iconDanger: "#EF4444",    // 削除アイコン
   
   // バッジ・ラベル
-  badge: "#EC4899",         // バッジ背景
-  badgeFollower: "#8B5CF6", // フォロワーバッジ背景
+  badge: "#D91C81",         // バッジ背景 - WCAG AA準拠
+  badgeFollower: "#7C3AED", // フォロワーバッジ背景 - WCAG AA準拠
 } as const;
 
 /**

@@ -2,6 +2,7 @@ import { View, Text, ScrollView, StyleSheet } from "react-native";
 import { Button } from "@/components/ui/button";
 import MaterialIcons from "@expo/vector-icons/MaterialIcons";
 import { color } from "@/theme/tokens";
+import { eventUI } from "@/features/events/ui/theme/tokens";
 import { useColors } from "@/hooks/use-colors";
 import { regionGroups, prefectures } from "@/constants/prefectures";
 import { MessageCard } from "./MessageCard";
@@ -216,7 +217,7 @@ export function MessagesSection({
               onPress={() => onGenderFilterChange("female")}
               style={[
                 styles.genderFilterButton,
-                selectedGenderFilter === "female" && { backgroundColor: "#EC4899" },
+                selectedGenderFilter === "female" && { backgroundColor: eventUI.badge },
               ]}
             >
               <Text style={[

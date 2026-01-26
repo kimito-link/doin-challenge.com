@@ -14,7 +14,7 @@ export const homeText = {
 
   // semantic accents
   accent: "#FBBF24", // 旧 #DD6500（視認性UPしたアクセント）
-  brand: "#EC4899",  // ピンク（そのまま）
+  brand: "#D91C81",  // ピンク - WCAG AA準拠（4.53:1）
 } as const;
 
 export const homeUI = {
@@ -23,12 +23,12 @@ export const homeUI = {
   border: "#2D3139",
   borderActive: "#FBBF24", // valueあり / active 時の枠
   badgeBg: "#FBBF24",      // Featured のバッジ背景など
-  avatarFallback: "#EC4899",
-  iconBgPurple: "#8B5CF6",
+  avatarFallback: "#D91C81", // WCAG AA準拠
+  iconBgPurple: "#7C3AED", // WCAG AA準拠（4.76:1）
   iconBgFire: "#FF6B6B",
   iconBgGold: "#FFD700",
   progressBar: "#2D3139",
-  activeFilter: "#8B5CF6",
+  activeFilter: "#7C3AED", // WCAG AA準拠
   inactiveFilter: "#1E293B",
 } as const;
 

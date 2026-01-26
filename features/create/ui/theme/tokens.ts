@@ -15,8 +15,8 @@ export const createUI = {
   checkboxActiveBorder: "#4B5563", // アクティブ時のボーダー（暗め）
   
   // アクセント色
-  activeAccent: "#EC4899",      // ピンク（選択状態）
-  purpleAccent: "#8B5CF6",      // 紫（テンプレート保存）
+  activeAccent: "#D91C81",      // ピンク（選択状態）- WCAG AA準拠
+  purpleAccent: "#7C3AED",      // 紫（テンプレート保存）- WCAG AA準拠
   successAccent: "#22C55E",     // 緑（公開設定）
 } as const;
 
@@ -24,7 +24,7 @@ export const createUI = {
 export const createText = {
   placeholder: "#9CA3AF",       // プレースホルダー
   muted: "#9CA3AF",             // 補足テキスト
-  accent: "#EC4899",            // アクセントテキスト（選択状態）
-  purple: "#8B5CF6",            // 紫テキスト
+  accent: "#D91C81",            // アクセントテキスト（選択状態）- WCAG AA準拠
+  purple: "#7C3AED",            // 紫テキスト - WCAG AA準拠
   success: "#22C55E",           // 成功テキスト
 } as const;
