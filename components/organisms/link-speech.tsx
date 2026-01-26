@@ -19,8 +19,8 @@ interface LinkSpeechProps {
 export function LinkSpeech({ 
   message, 
   characterImage = require("@/assets/images/characters/rinku.png"),
-  backgroundColor = "rgba(236, 72, 153, 0.1)",
-  borderColor = "rgba(236, 72, 153, 0.3)",
+  backgroundColor = "rgba(255, 255, 255, 0.95)",
+  borderColor = "rgba(236, 72, 153, 0.8)",
 }: LinkSpeechProps) {
   return (
     <View style={{ 
@@ -50,9 +50,10 @@ export function LinkSpeech({
         borderColor,
       }}>
         <Text style={{ 
-          color: "#4B5563", 
+          color: "#1A1D21", 
           fontSize: 14, 
           lineHeight: 21,
+          fontWeight: "500",
         }}>
           {message}
         </Text>
