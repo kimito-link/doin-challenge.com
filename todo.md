@@ -4439,4 +4439,23 @@ features/create/
 - [x] PurposeIdの型整理（SupportedPurposeId / LegacyPurposeId / PurposeId）
 - [x] getCategoryLabelの空文字を明示化（"" → "カテゴリ未設定"）
 - [x] りんく文言の最終確定（既に完璧な文言が実装済み）
+- [x] チェックポイント保存
+
+
+## Phase 2完成 + デプロイ v4.6.0
+
+### Phase 2（ログインUX改善）完成
+
+- [x] PR-4: success状態実装（ログイン成功画面 + 自動close）
+- [x] PR-5: cancel状態実装（retry/back導線）
+- [x] PR-6: error状態実装（エラーメッセージ表示）
+- [x] PR-7: Auth Context監視実装（ログイン成否の自動検知）
+- [x] 全テストパス確認
 - [ ] チェックポイント保存
+
+### デプロイ
+
+- [ ] GitHubにpush（origin main）
+- [ ] GitHubにpush（production main:main）
+- [ ] GitHub Actions実行確認
+- [ ] 本番環境動作確認（doin-challenge.com）

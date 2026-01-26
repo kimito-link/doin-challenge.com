@@ -95,12 +95,38 @@ function authUxReducer(state: AuthUxState, action: AuthUxAction): AuthUxState {
       }
       return state;
 
-    // 以下は後続PRで実装予定
     case "SUCCESS":
+      // waitingReturn → success
+      if (state.name === "waitingReturn") {
+        return { name: "success" };
+      }
+      return state;
+
     case "ERROR":
+      // waitingReturn → error
+      if (state.name === "waitingReturn") {
+        return {
+          name: "error",
+          message: action.message,
+        };
+      }
+      return state;
+
     case "RETRY":
+      // cancel/error → confirm
+      if (state.name === "cancel" || state.name === "error") {
+        return {
+          name: "confirm",
+          reason: "need_login",
+        };
+      }
+      return state;
+
     case "BACK_WITHOUT_LOGIN":
-      // PR-3では未実装
+      // cancel/error/success → idle
+      if (state.name === "cancel" || state.name === "error" || state.name === "success") {
+        return { name: "idle" };
+      }
       return state;
 
     default:
@@ -111,13 +137,31 @@ function authUxReducer(state: AuthUxState, action: AuthUxAction): AuthUxState {
 /**
  * 認証UX状態管理フック
  * 
- * PR-3: idle → confirm → redirecting → waitingReturn まで実装
+ * PR-7: Auth Context監視を追加してログイン成否を自動検知
  * 
  * @returns 状態と状態遷移関数
  */
 export function useAuthUxMachine() {
   const [state, dispatch] = useReducer(authUxReducer, { name: "idle" });
-  const { login } = useAuth();
+  const { login, isAuthenticated, error: authError } = useAuth();
+
+  // Auth Context監視（PR-7: ログイン成否の自動検知）
+  useEffect(() => {
+    if (state.name !== "waitingReturn") return;
+
+    // ログイン成功を検知
+    if (isAuthenticated) {
+      dispatch({ type: "SUCCESS" });
+      return;
+    }
+
+    // エラーを検知
+    if (authError) {
+      const errorMessage = authError instanceof Error ? authError.message : String(authError);
+      dispatch({ type: "ERROR", message: errorMessage });
+      return;
+    }
+  }, [state, isAuthenticated, authError]);
 
   // タイムアウト処理（waitingReturn状態で30秒経過したらcancel）
   useEffect(() => {
@@ -182,11 +226,35 @@ export function useAuthUxMachine() {
     dispatch({ type: "RESET" });
   }, []);
 
+  // 成功（waitingReturn → success）
+  const success = useCallback(() => {
+    dispatch({ type: "SUCCESS" });
+  }, []);
+
+  // エラー（waitingReturn → error）
+  const error = useCallback((message?: string) => {
+    dispatch({ type: "ERROR", message });
+  }, []);
+
+  // リトライ（cancel/error → confirm）
+  const retry = useCallback(() => {
+    dispatch({ type: "RETRY" });
+  }, []);
+
+  // ログインせずに戻る（cancel/error/success → idle）
+  const backWithoutLogin = useCallback(() => {
+    dispatch({ type: "BACK_WITHOUT_LOGIN" });
+  }, []);
+
   return {
     state,
     tapLogin,
     confirmYes,
     confirmNo,
     reset,
+    success,
+    error,
+    retry,
+    backWithoutLogin,
   };
 }

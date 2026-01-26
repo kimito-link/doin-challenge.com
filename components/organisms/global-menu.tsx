@@ -15,6 +15,9 @@ import MaterialIcons from "@expo/vector-icons/MaterialIcons";
 import { useAuth } from "@/hooks/use-auth";
 import { LogoutConfirmModal } from "@/components/molecules/logout-confirm-modal";
 import { LoginConfirmModal, RedirectingScreen, WaitingReturnScreen } from "@/components/auth-ux";
+import { SuccessScreen } from "@/components/molecules/auth-ux/SuccessScreen";
+import { CancelScreen } from "@/components/molecules/auth-ux/CancelScreen";
+import { ErrorScreen } from "@/components/molecules/auth-ux/ErrorScreen";
 import { useAuthUxMachine } from "@/hooks/use-auth-ux-machine";
 import * as Haptics from "expo-haptics";
 
@@ -32,7 +35,7 @@ export function GlobalMenu({ isVisible, onClose }: GlobalMenuProps) {
   
   const { user, isAuthenticated } = useAuth();
   const [showLogoutModal, setShowLogoutModal] = useState(false);
-  const { state, tapLogin, confirmYes, confirmNo } = useAuthUxMachine();
+  const { state, tapLogin, confirmYes, confirmNo, retry, backWithoutLogin } = useAuthUxMachine();
 
   const handleHaptic = () => {
     if (Platform.OS !== "web") {
@@ -369,6 +372,41 @@ export function GlobalMenu({ isVisible, onClose }: GlobalMenuProps) {
             : undefined
         }
       />
+
+      {/* Success画面 (Phase 2 PR-4) */}
+      <Modal
+        visible={state.name === "success"}
+        transparent
+        animationType="fade"
+      >
+        <SuccessScreen onClose={backWithoutLogin} />
+      </Modal>
+
+      {/* Cancel画面 (Phase 2 PR-5) */}
+      <Modal
+        visible={state.name === "cancel"}
+        transparent
+        animationType="fade"
+      >
+        <CancelScreen
+          kind={state.name === "cancel" ? state.kind : "user"}
+          onRetry={retry}
+          onBack={backWithoutLogin}
+        />
+      </Modal>
+
+      {/* Error画面 (Phase 2 PR-6) */}
+      <Modal
+        visible={state.name === "error"}
+        transparent
+        animationType="fade"
+      >
+        <ErrorScreen
+          message={state.name === "error" ? state.message : undefined}
+          onRetry={retry}
+          onBack={backWithoutLogin}
+        />
+      </Modal>
     </>
   );
 }
