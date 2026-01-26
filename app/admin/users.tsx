@@ -5,6 +5,7 @@
  */
 
 import { ScreenContainer } from "@/components/organisms/screen-container";
+import { RefreshingIndicator } from "@/components/molecules/refreshing-indicator";
 import { useColors } from "@/hooks/use-colors";
 import { trpc } from "@/lib/trpc";
 import { useCallback, useState } from "react";
@@ -37,9 +38,14 @@ export default function UsersScreen() {
   const [selectedUser, setSelectedUser] = useState<User | null>(null);
 
   // ユーザー一覧を取得
-  const { data: users, isLoading, refetch, error } = trpc.admin.users.useQuery(undefined, {
+  const { data: users, isLoading, isFetching, refetch, error } = trpc.admin.users.useQuery(undefined, {
     retry: false,
   });
+
+  // ローディング状態を分離
+  const hasData = !!users && users.length > 0;
+  const isInitialLoading = isLoading && !hasData;
+  const isRefreshing = isFetching && hasData;
 
   // ユーザー権限変更
   const updateRoleMutation = trpc.admin.updateUserRole.useMutation({
@@ -97,7 +103,7 @@ export default function UsersScreen() {
     refetch();
   }, [refetch]);
 
-  if (isLoading) {
+  if (isInitialLoading) {
     return (
       <ScreenContainer className="flex-1 items-center justify-center">
         <ActivityIndicator size="large" color={colors.primary} />
@@ -108,11 +114,12 @@ export default function UsersScreen() {
 
   return (
     <ScreenContainer>
+      {isRefreshing && <RefreshingIndicator isRefreshing={isRefreshing} />}
       <ScrollView
         className="flex-1"
         contentContainerStyle={{ padding: 16 }}
         refreshControl={
-          <RefreshControl refreshing={isLoading} onRefresh={onRefresh} />
+          <RefreshControl refreshing={isRefreshing} onRefresh={onRefresh} />
         }
       >
         {/* ヘッダー */}
