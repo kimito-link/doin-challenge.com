@@ -66,6 +66,26 @@ export function getPurposeById(id: PurposeId | string | null | undefined) {
   return LEGACY_PURPOSES.find((p) => p.id === id) || null;
 }
 
+// legacy目的をliveにフォールバック
+export function normalizePurpose(id: PurposeId | string | null | undefined): SupportedPurposeId {
+  // nullまたはundefinedの場合はliveにフォールバック
+  if (!id) return "live";
+  
+  // サポートされている目的の場合はそのまま返す
+  if (PURPOSES.some((p) => p.id === id)) {
+    return id as SupportedPurposeId;
+  }
+  
+  // legacy目的の場合はliveにフォールバック
+  return "live";
+}
+
+// legacy目的かどうかを判定
+export function isLegacyPurpose(id: PurposeId | string | null | undefined): boolean {
+  if (!id) return false;
+  return LEGACY_PURPOSES.some((p) => p.id === id);
+}
+
 // ジャンルと目的の組み合わせからラベルを生成
 export function getCategoryLabel(genreId: GenreId | string | null | undefined, purposeId: PurposeId | string | null | undefined): string {
   const genre = getGenreById(genreId);

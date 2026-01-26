@@ -152,6 +152,8 @@ var init_challenges = __esm({
       eventType: mysqlEnum2("eventType", ["solo", "group"]).default("solo").notNull(),
       // カテゴリ
       categoryId: int2("categoryId"),
+      // 目的（現在はliveのみサポート）
+      purpose: mysqlEnum2("purpose", ["live"]).default("live"),
       // 日時・場所
       eventDate: timestamp2("eventDate").notNull(),
       venue: varchar2("venue", { length: 255 }),
@@ -876,11 +878,12 @@ async function createEvent(data) {
   const eventDate = data.eventDate ? new Date(data.eventDate).toISOString().slice(0, 19).replace("T", " ") : now;
   const slug = data.slug || generateSlug(data.title);
   const ticketSaleStart = data.ticketSaleStart ? new Date(data.ticketSaleStart).toISOString().slice(0, 19).replace("T", " ") : null;
+  const purpose = "live";
   const result = await db.execute(sql`
     INSERT INTO challenges (
       hostUserId, hostTwitterId, hostName, hostUsername, hostProfileImage, hostFollowersCount, hostDescription, hostGender,
       title, description, goalType, goalValue, goalUnit, currentValue,
-      eventType, categoryId, eventDate, venue, prefecture,
+      eventType, categoryId, purpose, eventDate, venue, prefecture,
       ticketPresale, ticketDoor, ticketSaleStart, ticketUrl, externalUrl,
       status, isPublic, createdAt, updatedAt
     ) VALUES (
@@ -900,6 +903,7 @@ async function createEvent(data) {
       ${data.currentValue ?? 0},
       ${data.eventType ?? "solo"},
       ${data.categoryId ?? null},
+      ${purpose},
       ${eventDate},
       ${data.venue ?? null},
       ${data.prefecture ?? null},

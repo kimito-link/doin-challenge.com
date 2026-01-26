@@ -90,3 +90,20 @@
 - [x] 既存チャレンジのhostGenderを一括同期するバッチ処理を実装（syncChallengeHostGender関数）
 - [x] events.syncHostGender APIエンドポイントを追加
 - [x] バッチ処理を実行して既存データを同期（対象データなし）
+
+### Phase 14: Web固めフェーズ - 設計資料作成
+- [x] 遷移図1枚を作成（作成→表示→編集の遷移）
+- [x] りんく吹き出し文言を作成（legacy向け説明）
+- [x] SUPPORTED_PURPOSES + フォールバック最小TSを作成
+- [x] docs/web-solidification-phase.mdに全てをまとめた
+
+### Phase 15: Web固めフェーズ - purpose実装（B: 目標作成フォーム）
+- [x] データベースにpurposeカラムを追加（mysqlEnumでliveのみサポート）
+- [x] normalizePurposeとisLegacyPurpose関数を追加（event-categories.ts）
+- [x] チャレンジ作成時にpurposeを保存する実装（createEvent関数）
+- [x] 既存データのpurposeをliveに更新（バッチ処理実行済み、0件）
+
+### Phase 16: Web固めフェーズ - ジャンル選択実装（A: マイページ）
+- [ ] マイページのジャンル選択UIを実装
+- [ ] legacy値を持つ場合のフォールバック表示
+- [ ] りんく吹き出しで説明（編集はliveのみ）

@@ -190,6 +190,13 @@
       "when": 1769460044173,
       "tag": "0026_glamorous_bloodstorm",
       "breakpoints": true
+    },
+    {
+      "idx": 27,
+      "version": "5",
+      "when": 1769469397227,
+      "tag": "0027_hot_moon_knight",
+      "breakpoints": true
     }
   ]
 }

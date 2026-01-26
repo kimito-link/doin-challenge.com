@@ -37,6 +37,8 @@ export const challenges = mysqlTable("challenges", {
   eventType: mysqlEnum("eventType", ["solo", "group"]).default("solo").notNull(),
   // カテゴリ
   categoryId: int("categoryId"),
+  // 目的（現在はliveのみサポート）
+  purpose: mysqlEnum("purpose", ["live"]).default("live"),
   // 日時・場所
   eventDate: timestamp("eventDate").notNull(),
   venue: varchar("venue", { length: 255 }),
