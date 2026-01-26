@@ -124,6 +124,10 @@ export const styles = StyleSheet.create({
   inputLabel: {
     fontSize: 14,
     fontWeight: "600",
+    marginBottom: 4,
+  },
+  inputHint: {
+    fontSize: 12,
     marginBottom: 8,
   },
   messageInput: {

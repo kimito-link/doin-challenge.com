@@ -260,10 +260,10 @@ export function SharePromptModal({
           {/* シェア促進メッセージ */}
           <View style={styles.messageContainer}>
             <Text style={styles.message}>
-              仲間を増やして目標達成を目指そう！
+              同じ時間を共有する仲間を増やそう！
             </Text>
             <Text style={styles.subMessage}>
-              シェアで参加予定者が増えると達成率がアップ
+              リアルタイムで一緒に盛り上がる仲間を募集中
             </Text>
           </View>
 

@@ -131,7 +131,7 @@ ${url}`;
     {
       id: "share_twitter",
       label: "Twitterで告知",
-      description: "フォロワーに参加を呼びかけよう",
+      description: "同じ時間を共有する仲間を募集",
       icon: "twitter",
       action: () => handleCopy("twitter"),
       actionLabel: "告知文をコピー",

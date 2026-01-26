@@ -311,7 +311,7 @@ export default function ChallengeDetailScreen() {
           zIndex: 1000,
         }}>
           <LinkSpeech
-            message={`あなたは${participationForm.participantNumber}人目の参加表明だよ！\nみんなで盛り上げよう！`}
+            message={`あなたは${participationForm.participantNumber}人目の参加表明だよ！\n同じ時間を共有する仲間が増えてるね♪`}
           />
         </View>
       )}

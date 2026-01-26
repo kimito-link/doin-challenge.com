@@ -134,7 +134,10 @@ export function ParticipationForm({
       {/* 参加方法選択 */}
       <View style={styles.inputSection}>
         <Text style={[styles.inputLabel, { color: colors.foreground }]}>
-          参加方法
+          リアルタイム参加方法
+        </Text>
+        <Text style={[styles.inputHint, { color: colors.muted }]}>
+          同じ時間を共有する仲間を募集中
         </Text>
         <View style={styles.attendanceTypeContainer}>
           <Button
