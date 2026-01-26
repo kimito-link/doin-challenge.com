@@ -21,6 +21,7 @@ import {
 import type { EdgeInsets, Metrics, Rect } from "react-native-safe-area-context";
 
 import { trpc, createTRPCClient } from "@/lib/trpc";
+import { createPerformanceQueryCache, createPerformanceMutationCache } from "@/lib/performance-auto-monitor";
 import { initManusRuntime, subscribeSafeAreaInsets } from "@/lib/_core/manus-runtime";
 import { preloadCriticalImages } from "@/lib/image-preload";
 import { registerServiceWorker } from "@/lib/service-worker";
@@ -143,13 +144,16 @@ export default function RootLayout() {
   const [queryClient] = useState(
     () =>
       new QueryClient({
+        // v6.65: パフォーマンス計測の自動化（開発環境のみ）
+        queryCache: createPerformanceQueryCache(),
+        mutationCache: createPerformanceMutationCache(),
         defaultOptions: {
           queries: {
             // Disable automatic refetching on window focus for mobile
             refetchOnWindowFocus: false,
             // Retry failed requests once
             retry: 1,
-            // v5.36: キャッシュ期間を延長。2回目以降の表示を瞬時に
+            // v5.36: キャッシュ期間を延長。２回目以降の表示を瞬時に
             // Cache data for 30 minutes (stale-while-revalidate)
             staleTime: 30 * 60 * 1000,
             // Keep cached data for 2 hours

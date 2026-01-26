@@ -6,6 +6,7 @@
  */
 
 import { View, Text, ScrollView, Pressable, StyleSheet, ActivityIndicator, RefreshControl } from "react-native";
+import { RefreshingIndicator } from "@/components/molecules/refreshing-indicator";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useColors } from "@/hooks/use-colors";
 import { trpc } from "@/lib/trpc";
@@ -19,7 +20,12 @@ export default function DataIntegrityScreen() {
   const [refreshing, setRefreshing] = useState(false);
   
   // データ整合性レポートを取得
-  const { data: report, isLoading, refetch } = trpc.admin.getDataIntegrityReport.useQuery();
+  const { data: report, isLoading, isFetching, refetch } = trpc.admin.getDataIntegrityReport.useQuery();
+  
+  // ローディング状態を分離
+  const hasData = !!report;
+  const isInitialLoading = isLoading && !hasData;
+  const isRefreshing = isFetching && hasData;
   
   // 再計算mutation
   const recalculateMutation = trpc.admin.recalculateCurrentValues.useMutation({
@@ -40,7 +46,7 @@ export default function DataIntegrityScreen() {
     }
   };
 
-  if (isLoading) {
+  if (isInitialLoading) {
     return (
       <View className="flex-1 bg-background items-center justify-center">
         <ActivityIndicator size="large" color={colors.primary} />
@@ -62,6 +68,7 @@ export default function DataIntegrityScreen() {
         <RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={colors.primary} />
       }
     >
+      {isRefreshing && <RefreshingIndicator isRefreshing={isRefreshing} />}
       <View className="p-6">
         {/* ヘッダー */}
         <View className="mb-6">

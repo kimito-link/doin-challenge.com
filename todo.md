@@ -4859,3 +4859,20 @@ features/create/
 - [ ] 全画面のテスト実行
 - [ ] チェックポイント保存
 - [ ] ドキュメント更新
+
+## v6.65: 管理画面の最適化とパフォーマンス計測の自動化
+
+### Phase 1: 管理画面8画面へのローディング状態設計適用
+- [x] データ整合性画面 (app/admin/data-integrity.tsx)
+- [x] 参加管理画面 (app/admin/participations.tsx)
+- [x] 管理ダッシュボード (app/admin/index.tsx)
+- [x] API使用状況画面 (app/admin/api-usage.tsx) - スキップ（trpc不使用）
+- [x] エラーログ画面 (app/admin/errors.tsx) - スキップ（trpc不使用）
+- [x] イベント管理画面 (app/admin/challenges.tsx)
+- [x] カテゴリ管理画面 (app/admin/categories.tsx)
+- [x] システム情報画面 (app/admin/system.tsx) - スキップ（軽微なデータ取得のみ）
+
+### Phase 2: パフォーマンス計測の自動化実装
+- [x] Metro Bundlerへのログ統合
+- [x] 開発環境での自動計測設定
+- [x] パフォーマンスメトリクスのダッシュボード作成（オプション） - スキップ（コンソールログで十分）

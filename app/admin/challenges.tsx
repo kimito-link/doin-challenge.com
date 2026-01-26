@@ -5,6 +5,7 @@
  */
 
 import { ScreenContainer } from "@/components/organisms/screen-container";
+import { RefreshingIndicator } from "@/components/molecules/refreshing-indicator";
 import { color, palette } from "@/theme/tokens";
 import { useColors } from "@/hooks/use-colors";
 import { trpc } from "@/lib/trpc";
@@ -29,7 +30,12 @@ export default function ChallengesScreen() {
   const [filter, setFilter] = useState<"all" | "public" | "private">("all");
 
   // チャレンジ一覧を取得
-  const { data: challenges, isLoading, refetch } = trpc.events.list.useQuery();
+  const { data: challenges, isLoading, isFetching, refetch } = trpc.events.list.useQuery();
+  
+  // ローディング状態を分離
+  const hasData = !!challenges && challenges.length >= 0;
+  const isInitialLoading = isLoading && !hasData;
+  const isRefreshing = isFetching && hasData;
 
   // 公開状態を切り替え
   const togglePublicMutation = trpc.events.update.useMutation({
@@ -99,7 +105,7 @@ export default function ChallengesScreen() {
     });
   };
 
-  if (isLoading) {
+  if (isInitialLoading) {
     return (
       <ScreenContainer className="flex-1 items-center justify-center">
         <ActivityIndicator size="large" color={colors.primary} />
@@ -110,6 +116,7 @@ export default function ChallengesScreen() {
 
   return (
     <ScreenContainer>
+      {isRefreshing && <RefreshingIndicator isRefreshing={isRefreshing} />}
       <ScrollView
         className="flex-1"
         contentContainerStyle={{ padding: 16 }}

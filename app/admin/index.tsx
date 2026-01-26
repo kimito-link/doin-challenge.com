@@ -6,6 +6,7 @@
  */
 
 import { ScreenContainer } from "@/components/organisms/screen-container";
+import { RefreshingIndicator } from "@/components/molecules/refreshing-indicator";
 import { AppHeader } from "@/components/organisms/app-header";
 import { color, palette } from "@/theme/tokens";
 import { useColors } from "@/hooks/use-colors";
@@ -44,8 +45,18 @@ export default function AdminDashboard() {
   const isAdmin = user?.username && ADMIN_TWITTER_IDS.includes(user.username);
 
   // 統計データを取得
-  const { data: challenges, isLoading: loadingChallenges } = trpc.events.list.useQuery();
-  const { data: categories, isLoading: loadingCategories } = trpc.categories.list.useQuery();
+  const { data: challenges, isLoading: loadingChallenges, isFetching: fetchingChallenges } = trpc.events.list.useQuery();
+  const { data: categories, isLoading: loadingCategories, isFetching: fetchingCategories } = trpc.categories.list.useQuery();
+  
+  // ローディング状態を分離
+  const hasChallengesData = !!challenges && challenges.length >= 0;
+  const hasCategoriesData = !!categories && categories.length >= 0;
+  const hasData = hasChallengesData && hasCategoriesData;
+  
+  const isLoading = loadingChallenges || loadingCategories;
+  const isFetching = fetchingChallenges || fetchingCategories;
+  const isInitialLoading = isLoading && !hasData;
+  const isRefreshing = isFetching && hasData;
 
   const stats: StatCard[] = [
     {
@@ -75,8 +86,6 @@ export default function AdminDashboard() {
       color: colors.muted,
     },
   ];
-
-  const isLoading = loadingChallenges || loadingCategories;
 
   // ローディング中
   if (authLoading) {
@@ -166,7 +175,8 @@ export default function AdminDashboard() {
         </View>
 
         {/* 統計カード */}
-        {isLoading ? (
+        {isRefreshing && <RefreshingIndicator isRefreshing={isRefreshing} />}
+        {isInitialLoading ? (
           <View className="items-center justify-center py-12">
             <ActivityIndicator size="large" color={colors.primary} />
             <Text className="mt-4 text-muted">読み込み中...</Text>

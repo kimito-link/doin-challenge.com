@@ -9,6 +9,7 @@
  */
 
 import { ScreenContainer } from "@/components/organisms/screen-container";
+import { RefreshingIndicator } from "@/components/molecules/refreshing-indicator";
 import { useColors } from "@/hooks/use-colors";
 import { trpc } from "@/lib/trpc";
 import { useCallback, useState } from "react";
@@ -65,6 +66,7 @@ export default function ParticipationsScreen() {
   const {
     data: deletedParticipations,
     isLoading: isLoadingDeleted,
+    isFetching: isFetchingDeleted,
     refetch: refetchDeleted,
     error: deletedError,
   } = trpc.admin.participations.listDeleted.useQuery(
@@ -80,6 +82,7 @@ export default function ParticipationsScreen() {
   const {
     data: auditLogs,
     isLoading: isLoadingAudit,
+    isFetching: isFetchingAudit,
     refetch: refetchAudit,
     error: auditError,
   } = trpc.admin.participations.getAuditLogs.useQuery(
@@ -269,11 +272,31 @@ export default function ParticipationsScreen() {
     }
   }, [activeTab, refetchDeleted, refetchAudit]);
 
+  // ローディング状態を分離
+  const hasDeletedData = !!deletedParticipations && deletedParticipations.length >= 0;
+  const hasAuditData = !!auditLogs && auditLogs.length >= 0;
+  const hasData = activeTab === "deleted" ? hasDeletedData : hasAuditData;
+  
   const isLoading = activeTab === "deleted" ? isLoadingDeleted : isLoadingAudit;
+  const isFetching = activeTab === "deleted" ? isFetchingDeleted : isFetchingAudit;
+  const isInitialLoading = isLoading && !hasData;
+  const isRefreshing = isFetching && hasData;
+  
   const error = activeTab === "deleted" ? deletedError : auditError;
+
+  // 初回ロード中はスケルトン表示
+  if (isInitialLoading) {
+    return (
+      <ScreenContainer className="flex-1 items-center justify-center">
+        <ActivityIndicator size="large" />
+        <Text className="text-muted mt-4">データを読み込み中...</Text>
+      </ScreenContainer>
+    );
+  }
 
   return (
     <ScreenContainer>
+      {isRefreshing && <RefreshingIndicator isRefreshing={isRefreshing} />}
       <ScrollView
         className="flex-1"
         contentContainerStyle={{ padding: 16 }}

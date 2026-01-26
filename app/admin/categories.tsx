@@ -5,6 +5,7 @@
  */
 
 import { ScreenContainer } from "@/components/organisms/screen-container";
+import { RefreshingIndicator } from "@/components/molecules/refreshing-indicator";
 import { color, palette } from "@/theme/tokens";
 import { useColors } from "@/hooks/use-colors";
 import { trpc } from "@/lib/trpc";
@@ -46,7 +47,12 @@ export default function CategoriesScreen() {
   const [newDescription, setNewDescription] = useState("");
 
   // カテゴリ一覧を取得
-  const { data: categories, isLoading, refetch } = trpc.categories.list.useQuery();
+  const { data: categories, isLoading, isFetching, refetch } = trpc.categories.list.useQuery();
+  
+  // ローディング状態を分離
+  const hasData = !!categories && categories.length >= 0;
+  const isInitialLoading = isLoading && !hasData;
+  const isRefreshing = isFetching && hasData;
   
   // カテゴリ作成
   const createMutation = trpc.categories.create.useMutation({
@@ -140,7 +146,7 @@ export default function CategoriesScreen() {
     });
   };
 
-  if (isLoading) {
+  if (isInitialLoading) {
     return (
       <ScreenContainer className="flex-1 items-center justify-center">
         <ActivityIndicator size="large" color={colors.primary} />
@@ -151,6 +157,7 @@ export default function CategoriesScreen() {
 
   return (
     <ScreenContainer>
+      {isRefreshing && <RefreshingIndicator isRefreshing={isRefreshing} />}
       <ScrollView
         className="flex-1"
         contentContainerStyle={{ padding: 16 }}
