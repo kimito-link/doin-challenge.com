@@ -9,6 +9,7 @@ import { color } from "@/theme/tokens";
 import { settingsStyles as styles } from "./SettingsSections.styles";
 import { Button } from "@/components/ui/button";
 import type { SessionExpiryInfo } from "@/lib/token-manager";
+import { AppFooter } from "@/components/atoms/app-footer";
 
 type User = {
   id: number;
@@ -254,16 +255,13 @@ export function SettingsFooter({
 }) {
   return (
     <View style={styles.footer}>
-      <View style={styles.footerLogoContainer}>
-        <Image
-          source={require("@/assets/images/logo/logo-color.jpg")}
-          style={styles.footerLogo}
-          contentFit="contain"
-        />
-        <Text style={styles.footerAppName}>動員ちゃれんじ</Text>
-      </View>
-      <Text style={styles.footerVersion}>v1.0.0</Text>
-      <Text style={styles.footerSubtext}>設定はこのデバイスに保存されます</Text>
+        <AppFooter 
+        showLogo 
+        showAppName 
+        showVersion 
+        showSubtext 
+        showCopyright 
+      />
       
       <View style={styles.footerLinks}>
         <Button variant="ghost" onPress={onTwitter} style={styles.footerLink}>
@@ -271,10 +269,6 @@ export function SettingsFooter({
           <Text style={styles.footerLinkText}>@doin_challenge</Text>
         </Button>
       </View>
-      
-      <Text style={styles.footerCopyright}>
-        © 2024 KimitoLink. All rights reserved.
-      </Text>
     </View>
   );
 }

@@ -2,7 +2,7 @@
  * HomeTabNavigation - ホーム画面のタブナビゲーション
  * 総合/ソロ/グループ/お気に入りのタブ切り替え
  */
-import { View, Text, Pressable, StyleSheet, ScrollView, Platform } from "react-native";
+import { View, Text, Pressable, StyleSheet, Platform } from "react-native";
 import MaterialIcons from "@expo/vector-icons/MaterialIcons";
 import * as Haptics from "expo-haptics";
 import { useColors } from "@/hooks/use-colors";
@@ -51,11 +51,7 @@ export function HomeTabNavigation({
 
   return (
     <View style={styles.container}>
-      <ScrollView 
-        horizontal 
-        showsHorizontalScrollIndicator={false}
-        contentContainerStyle={styles.scrollContent}
-      >
+      <View style={styles.scrollContent}>
         {TABS.map((tab) => {
           const isActive = activeTab === tab.id;
           const count = counts?.[tab.id];
@@ -90,7 +86,7 @@ export function HomeTabNavigation({
             </Pressable>
           );
         })}
-      </ScrollView>
+      </View>
     </View>
   );
 }
@@ -100,8 +96,10 @@ const styles = StyleSheet.create({
     marginVertical: 8,
   },
   scrollContent: {
+    flexDirection: "row",
     paddingHorizontal: 16,
     gap: 8,
+    flexWrap: "wrap",
   },
   tab: {
     flexDirection: "row",

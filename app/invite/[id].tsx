@@ -98,7 +98,7 @@ export default function InviteScreen() {
   }, [id, user]);
 
   const inviteUrl = inviteCode 
-    ? `https://douin-challenge.app/join/${inviteCode}`
+    ? `https://doin-challenge.com/join/${inviteCode}`
     : null;
 
   // シェアメッセージを生成（カスタムメッセージ対応）

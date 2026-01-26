@@ -23,6 +23,44 @@
 - [x] RegionMapを黒ベースのカードデザインに統一
 - [x] CompanionListを黒ベースのカードデザインに統一
 
-### Phase 4: チェックポイント保存とデプロイ
+### Phase 4: マイページと主催者カードのデザイン統一
+- [x] マイページのTwitterカードコンポーネントを特定（ProfileCard.tsx）
+- [x] 主催者カードコンポーネントを特定（EventHeader.tsx）
+- [x] マイページのTwitterカードを黒ベースのデザインに統一
+- [x] 主催者カードを黒ベースのデザインに統一
+
+### Phase 5: 招待リンク生成の問題修正
+- [x] 招待リンク生成コンポーネントを特定（app/invite/[id].tsx）
+- [x] 招待リンク生成のAPI呼び出しを確認（invitations.create）
+- [x] 招待リンクのドメインを修正（douin-challenge.app → doin-challenge.com）
+- [x] QRコードの生成ロジックを確認（現在は静的アイコン表示）
+
+### Phase 6: バージョン情報とコピーライトのコンポーネント化
+- [x] 現在のバージョン情報表示箇所を特定（features/settings/components/SettingsSections.tsx）
+- [x] バージョン情報とコピーライトの共通コンポーネントを作成（components/atoms/app-footer.tsx）
+- [x] コピーライトを「© 動員ちゃれんじ」に変更（年は入れない）
+- [x] 設定画面を共通コンポーネントに置き換え
+
+### Phase 7: TypeScriptエラーを修正
+- [x] tests/auth.logout.test.tsのgenderフィールドを追加
+
+### Phase 8: ホーム画面のスワイプ挙動を調査・修正
+- [x] ホーム画面のスワイプ挙動を調査
+- [x] ランキング画面（チャレンジページ）の正常な挙動を参考にする
+- [x] スワイプ時のコンテンツズレを修正（ScrollViewをViewに変更）
+- [x] 全画面で同じ挙動のトンマナに統一
+
+### Phase 9: マイページで性別を設定できるようにする
+- [x] usersテーブルにgenderフィールドを追加（drizzle/schema/users.ts）
+- [ ] マイページに性別選択UIを追加（入力したものがちゃんとコンポーネント化）
+- [ ] 性別データを保存するAPIを実装
+
+### Phase 8: ホーム画面の主催者の性別による色分け
+- [x] ホーム画面のチャレンジカードコンポーネントを特定（features/home/components/ChallengeCard.tsx）
+- [x] 主催者の性別データを取得する方法を確認（マイページで設定）
+- [ ] Challenge型にhostGenderフィールドを追加
+- [ ] 主催者の性別に応じた枠線の色分けを実装（応援メッセージと同じトンマナ）
+
+### Phase 6: チェックポイント保存とデプロイ
 - [ ] チェックポイント保存
 - [ ] GitHubへのpush

@@ -3,6 +3,7 @@ import { Image } from "expo-image";
 import { LinearGradient } from "expo-linear-gradient";
 import MaterialIcons from "@expo/vector-icons/MaterialIcons";
 import { color } from "@/theme/tokens";
+import { palette } from "@/theme/tokens/palette";
 import { useColors } from "@/hooks/use-colors";
 import { OptimizedAvatar } from "@/components/molecules/optimized-image";
 import { Button } from "@/components/ui/button";
@@ -168,9 +169,11 @@ const styles = StyleSheet.create({
     left: 12,
     flexDirection: "row",
     alignItems: "center",
-    backgroundColor: "rgba(0,0,0,0.6)",
-    borderRadius: 24,
+    backgroundColor: palette.gray800,
+    borderRadius: 12,
     paddingRight: 12,
+    borderWidth: 1,
+    borderColor: palette.gray700,
   },
   hostAvatar: {
     borderWidth: 2,
