@@ -37,6 +37,9 @@ export default function ProfileScreen() {
 
   const parsedUserId = parseInt(userId || "0");
 
+  // tRPC utils for prefetching
+  const utils = trpc.useUtils();
+
   const { data: profile, isLoading, isFetching, refetch } = trpc.profiles.get.useQuery(
     { userId: parsedUserId },
     { enabled: !!userId }
@@ -356,7 +359,11 @@ export default function ProfileScreen() {
               profile.recentParticipations.map((participation: any, index: number) => (
                 <Pressable
                   key={index}
-                  onPress={() => navigate.toEventDetail(participation.challengeId || 0)}
+                  onPress={() => {
+                    // プリフェッチ: イベント詳細画面のデータを事前に取得
+                    utils.events.getById.prefetch({ id: participation.challengeId || 0 });
+                    navigate.toEventDetail(participation.challengeId || 0);
+                  }}
                   style={{
                     backgroundColor: color.surfaceDark,
                     borderRadius: 12,

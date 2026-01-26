@@ -21,6 +21,9 @@ interface UseHomeActionsReturn {
 }
 
 export function useHomeActions({ refetch }: UseHomeActionsOptions): UseHomeActionsReturn {
+  // tRPC utils for prefetching
+  const utils = trpc.useUtils();
+  
   // チャレンジ削除ミューテーション
   const deleteChallengeMutation = trpc.events.delete.useMutation({
     onSuccess: () => {
@@ -33,6 +36,8 @@ export function useHomeActions({ refetch }: UseHomeActionsOptions): UseHomeActio
   });
 
   const handleChallengePress = (challengeId: number) => {
+    // プリフェッチ: イベント詳細画面のデータを事前に取得
+    utils.events.getById.prefetch({ id: challengeId });
     navigate.toEventDetail(challengeId);
   };
 
