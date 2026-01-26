@@ -76,7 +76,7 @@ export function ContributionRanking({
             flexDirection: "row",
             alignItems: "center",
             backgroundColor: "#1A1D21",
-            borderRadius: 8,
+            borderRadius: 12,
             padding: 12,
             marginBottom: 8,
             borderWidth: index === 0 ? 2 : 1,

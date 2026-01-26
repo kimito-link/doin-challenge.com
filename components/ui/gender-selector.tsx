@@ -1,10 +1,12 @@
 /**
  * GenderSelector Component
  * 汎用性別選択ラジオボタン
+ * v6.70: 黒ベースのカードデザインに統一（貢献度ランキング、応援メッセージと同じトンマナ）
  */
 
 import { View, Text, Pressable } from "react-native";
 import { color } from "@/theme/tokens";
+import { palette } from "@/theme/tokens/palette";
 import { useColors } from "@/hooks/use-colors";
 
 export type Gender = "male" | "female" | "";
@@ -65,7 +67,7 @@ export function GenderSelector({
           onPress={() => !disabled && onChange("male")}
           emoji="👨"
           label={maleLabel}
-          selectedColor={color.info}
+          selectedColor={palette.genderMale}
           showRequiredBorder={required && value === ""}
           disabled={disabled}
         />
@@ -76,7 +78,7 @@ export function GenderSelector({
           onPress={() => !disabled && onChange("female")}
           emoji="👩"
           label={femaleLabel}
-          selectedColor={color.accentPrimary}
+          selectedColor={palette.genderFemale}
           showRequiredBorder={required && value === ""}
           disabled={disabled}
         />
@@ -118,18 +120,18 @@ function GenderOption({
       disabled={disabled}
       style={{
         flex: 1,
-        backgroundColor: selected ? selectedColor : colors.background,
+        backgroundColor: palette.gray800, // 黒ベースで統一（MessageCard、ContributionRankingと同じ）
         borderRadius: 12,
         padding: 16,
         alignItems: "center",
         borderWidth: 2,
-        borderColor: selected ? selectedColor : showRequiredBorder ? color.accentPrimary : color.border,
+        borderColor: selected ? selectedColor : showRequiredBorder ? color.accentPrimary : palette.gray700,
         opacity: disabled ? 0.5 : 1,
       }}
     >
-      <Text style={{ fontSize: 24, marginBottom: 4 }}>{emoji}</Text>
+      <Text style={{ fontSize: 32, marginBottom: 4 }}>{emoji}</Text>
       <Text style={{ 
-        color: selected ? color.textWhite : color.textSecondary, 
+        color: selected ? selectedColor : color.textSecondary, 
         fontSize: 14, 
         fontWeight: "600" 
       }}>

@@ -7,6 +7,7 @@ import { View, Text, Pressable } from "react-native";
 import { Image } from "expo-image";
 import MaterialIcons from "@expo/vector-icons/MaterialIcons";
 import { color } from "@/theme/tokens";
+import { palette } from "@/theme/tokens/palette";
 import { useColors } from "@/hooks/use-colors";
 import type { Companion } from "../../types";
 
@@ -46,13 +47,13 @@ function CompanionItem({
   return (
     <View
       style={{
-        backgroundColor: colors.background,
+        backgroundColor: palette.gray800,
         borderRadius: 12,
         padding: 12,
         flexDirection: "row",
         alignItems: "center",
         borderWidth: 1,
-        borderColor: companion.profileImage ? color.twitter : color.border,
+        borderColor: companion.profileImage ? color.twitter : palette.gray700,
       }}
     >
       {/* アバター */}

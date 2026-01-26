@@ -4,6 +4,7 @@
  */
 import { View, Text } from "react-native";
 import { useColors } from "@/hooks/use-colors";
+import { palette } from "@/theme/tokens/palette";
 import { eventText, eventFont } from "@/features/events/ui/theme/tokens";
 import { regionGroups, countByRegion, type RegionName } from "@/constants/prefectures";
 import type { Participation } from "@/types/participation";
@@ -46,12 +47,12 @@ export function RegionMap({ participations, highlightPrefecture }: RegionMapProp
               key={region.name}
               style={{
                 width: "48%",
-                backgroundColor: isHighlighted ? "rgba(236, 72, 153, 0.2)" : "#1A1D21",
-                borderRadius: 8,
+                backgroundColor: isHighlighted ? "rgba(236, 72, 153, 0.2)" : palette.gray800,
+                borderRadius: 12,
                 padding: 12,
                 marginBottom: 8,
                 borderWidth: isHighlighted ? 2 : 1,
-                borderColor: isHighlighted ? "rgba(236, 72, 153, 1)" : (count > 0 ? `rgba(236, 72, 153, ${0.3 + intensity * 0.7})` : "#2D3139"),
+                borderColor: isHighlighted ? "rgba(236, 72, 153, 1)" : (count > 0 ? `rgba(236, 72, 153, ${0.3 + intensity * 0.7})` : palette.gray700),
               }}
             >
               <Text style={{ color: eventText.secondary, fontSize: eventFont.meta }}>{region.name}</Text>
