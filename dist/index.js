@@ -9,7 +9,7 @@ var __export = (target, all) => {
 };
 
 // server/db/connection.ts
-import { eq, desc, and, sql, isNull, or, gte, lte, lt, inArray, asc, ne, like, count } from "drizzle-orm";
+import { eq, desc, and, sql, isNull, isNotNull, or, gte, lte, lt, inArray, asc, ne, like, count } from "drizzle-orm";
 import { drizzle } from "drizzle-orm/mysql2";
 async function getDb() {
   if (!_db && process.env.DATABASE_URL) {
@@ -863,25 +863,35 @@ async function getEventsByHostTwitterId(hostTwitterId) {
 async function createEvent(data) {
   const db = await getDb();
   if (!db) throw new Error("Database not available");
+  let hostUserId = data.hostUserId;
+  let hostGender = data.hostGender;
+  if (data.hostTwitterId && !hostUserId) {
+    const userResult = await db.select().from(users).where(eq(users.openId, data.hostTwitterId));
+    if (userResult.length > 0) {
+      hostUserId = userResult[0].id;
+      hostGender = userResult[0].gender;
+    }
+  }
   const now = (/* @__PURE__ */ new Date()).toISOString().slice(0, 19).replace("T", " ");
   const eventDate = data.eventDate ? new Date(data.eventDate).toISOString().slice(0, 19).replace("T", " ") : now;
   const slug = data.slug || generateSlug(data.title);
   const ticketSaleStart = data.ticketSaleStart ? new Date(data.ticketSaleStart).toISOString().slice(0, 19).replace("T", " ") : null;
   const result = await db.execute(sql`
     INSERT INTO challenges (
-      hostUserId, hostTwitterId, hostName, hostUsername, hostProfileImage, hostFollowersCount, hostDescription,
+      hostUserId, hostTwitterId, hostName, hostUsername, hostProfileImage, hostFollowersCount, hostDescription, hostGender,
       title, description, goalType, goalValue, goalUnit, currentValue,
       eventType, categoryId, eventDate, venue, prefecture,
       ticketPresale, ticketDoor, ticketSaleStart, ticketUrl, externalUrl,
       status, isPublic, createdAt, updatedAt
     ) VALUES (
-      ${data.hostUserId ?? null},
+      ${hostUserId ?? null},
       ${data.hostTwitterId ?? null},
       ${data.hostName},
       ${data.hostUsername ?? null},
       ${data.hostProfileImage ?? null},
       ${data.hostFollowersCount ?? 0},
       ${data.hostDescription ?? null},
+      ${hostGender ?? null},
       ${data.title},
       ${data.description ?? null},
       ${data.goalType ?? "attendance"},
@@ -931,6 +941,28 @@ async function searchChallenges(query) {
     const venue = (c.venue || "").toLowerCase();
     return title.includes(normalizedQuery) || hostName.includes(normalizedQuery) || description.includes(normalizedQuery) || venue.includes(normalizedQuery);
   });
+}
+async function syncChallengeHostGender() {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+  const challengesWithHostUserId = await db.select().from(challenges).where(isNotNull(challenges.hostUserId));
+  console.log(`[syncChallengeHostGender] Found ${challengesWithHostUserId.length} challenges with hostUserId`);
+  let updatedCount = 0;
+  for (const challenge of challengesWithHostUserId) {
+    if (!challenge.hostUserId) continue;
+    const userResult = await db.select().from(users).where(eq(users.id, challenge.hostUserId));
+    if (userResult.length > 0 && userResult[0].gender) {
+      await db.update(challenges).set({ hostGender: userResult[0].gender }).where(eq(challenges.id, challenge.id));
+      updatedCount++;
+      console.log(`[syncChallengeHostGender] Updated challenge ${challenge.id} with gender ${userResult[0].gender}`);
+    }
+  }
+  invalidateEventsCache();
+  console.log(`[syncChallengeHostGender] Completed: ${updatedCount}/${challengesWithHostUserId.length} challenges updated`);
+  return {
+    total: challengesWithHostUserId.length,
+    updated: updatedCount
+  };
 }
 var events2, eventsCache, EVENTS_CACHE_TTL;
 var init_challenge_db = __esm({
@@ -3068,6 +3100,7 @@ __export(db_exports, {
   sendDirectMessage: () => sendDirectMessage,
   softDeleteParticipation: () => softDeleteParticipation,
   sql: () => sql,
+  syncChallengeHostGender: () => syncChallengeHostGender,
   ticketTransfers: () => ticketTransfers,
   ticketWaitlist: () => ticketWaitlist,
   unfollowUser: () => unfollowUser,
@@ -4380,6 +4413,11 @@ var eventsRouter = router({
     }
     await deleteEvent(input.id);
     return { success: true };
+  }),
+  // 既存チャレンジのhostGenderを同期（管理者専用）
+  syncHostGender: publicProcedure.mutation(async () => {
+    const result = await syncChallengeHostGender();
+    return result;
   })
 });
 

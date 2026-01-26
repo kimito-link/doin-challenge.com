@@ -78,5 +78,15 @@
 - [x] 主催者の性別に応じた枠線の色分けを実装（左側に2pxの色付きボーダー）
 
 ### Phase 6: チェックポイント保存とデプロイ
-- [ ] チェックポイント保存
-- [ ] GitHubへのpush
+- [x] チェックポイント保存（v6.82）
+- [x] GitHubへのpush
+
+### Phase 12: チャレンジ作成時にhostGenderを保存
+- [x] チャレンジ作成APIでhostGenderを取得・保存する処理を追加
+- [x] createEvent関数でhostTwitterIdからusersテーブルを検索してhostUserIdとhostGenderを取得
+- [x] INSERT文にhostGenderカラムを追加
+
+### Phase 13: 既存チャレンジのhostGenderを同期
+- [x] 既存チャレンジのhostGenderを一括同期するバッチ処理を実装（syncChallengeHostGender関数）
+- [x] events.syncHostGender APIエンドポイントを追加
+- [x] バッチ処理を実行して既存データを同期（対象データなし）

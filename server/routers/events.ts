@@ -189,4 +189,11 @@ export const eventsRouter = router({
       await db.deleteEvent(input.id);
       return { success: true };
     }),
+
+  // 既存チャレンジのhostGenderを同期（管理者専用）
+  syncHostGender: publicProcedure
+    .mutation(async () => {
+      const result = await db.syncChallengeHostGender();
+      return result;
+    }),
 });
