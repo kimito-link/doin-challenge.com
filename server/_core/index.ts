@@ -74,6 +74,54 @@ async function startServer() {
       nodeEnv: process.env.NODE_ENV || "development",
     };
 
+    // DB接続確認
+    let dbStatus = { connected: false, latency: 0, error: "" };
+    try {
+      const { getDb } = await import("../db");
+      const startTime = Date.now();
+      const db = await getDb();
+      if (db) {
+        await db.execute("SELECT 1");
+        dbStatus = {
+          connected: true,
+          latency: Date.now() - startTime,
+          error: "",
+        };
+      } else {
+        dbStatus.error = "DATABASE_URLが設定されていません";
+      }
+    } catch (err) {
+      dbStatus.error = err instanceof Error ? err.message : "接続エラー";
+    }
+
+    // クリティカルAPI確認（オプション）
+    const checkCritical = _req.query.critical === "true";
+    let criticalApis: Record<string, { ok: boolean; error?: string }> & { error?: string } = {};
+
+    if (checkCritical && dbStatus.connected) {
+      try {
+        const caller = appRouter.createCaller(await createContext({ req: _req as any, res: res as any, info: {} as any }));
+
+        // homeEvents: イベント一覧取得
+        try {
+          await caller.events.list();
+          criticalApis.homeEvents = { ok: true };
+        } catch (err) {
+          criticalApis.homeEvents = { ok: false, error: err instanceof Error ? err.message : String(err) };
+        }
+
+        // rankings: ランキング取得
+        try {
+          await caller.rankings.hosts({ limit: 1 });
+          criticalApis.rankings = { ok: true };
+        } catch (err) {
+          criticalApis.rankings = { ok: false, error: err instanceof Error ? err.message : String(err) };
+        }
+      } catch (err) {
+        criticalApis.error = err instanceof Error ? err.message : String(err);
+      }
+    }
+
     // スキーマチェックはオプション（?schema=true で有効化）
     const checkSchema = _req.query.schema === "true";
     let schemaCheck: SchemaCheckResult | undefined;
@@ -98,8 +146,15 @@ async function startServer() {
       }
     }
 
+    // 全体のokステータス
+    const overallOk = dbStatus.connected && 
+      (!checkCritical || Object.values(criticalApis).every(api => typeof api === 'object' && 'ok' in api && api.ok));
+
     res.json({
       ...baseInfo,
+      ok: overallOk,
+      db: dbStatus,
+      ...(checkCritical && { critical: criticalApis }),
       ...(schemaCheck && { schema: schemaCheck }),
     });
   });

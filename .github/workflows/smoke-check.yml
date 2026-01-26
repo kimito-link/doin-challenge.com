@@ -1,0 +1,101 @@
+name: Smoke Check
+
+on:
+  # デプロイ後に手動で実行
+  workflow_dispatch:
+  # または、mainブランチへのプッシュ後に実行
+  # push:
+  #   branches: [main]
+
+jobs:
+  smoke-test:
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Wait for deployment
+        run: sleep 30
+        
+      - name: Check /api/health (basic)
+        run: |
+          response=$(curl -s -w "\n%{http_code}" https://doin-challenge.com/api/health)
+          http_code=$(echo "$response" | tail -n1)
+          body=$(echo "$response" | sed '$d')
+          
+          echo "HTTP Status: $http_code"
+          echo "Response: $body"
+          
+          if [ "$http_code" != "200" ]; then
+            echo "❌ Health check failed with status $http_code"
+            exit 1
+          fi
+          
+          ok=$(echo "$body" | jq -r '.ok')
+          if [ "$ok" != "true" ]; then
+            echo "❌ Health check returned ok=false"
+            echo "$body" | jq '.'
+            exit 1
+          fi
+          
+          echo "✅ Basic health check passed"
+      
+      - name: Check /api/health (with DB)
+        run: |
+          response=$(curl -s https://doin-challenge.com/api/health)
+          
+          db_connected=$(echo "$response" | jq -r '.db.connected')
+          if [ "$db_connected" != "true" ]; then
+            echo "❌ Database connection failed"
+            echo "$response" | jq '.db'
+            exit 1
+          fi
+          
+          db_latency=$(echo "$response" | jq -r '.db.latency')
+          echo "DB Latency: ${db_latency}ms"
+          
+          if [ "$db_latency" -gt 1000 ]; then
+            echo "⚠️  Warning: DB latency is high (${db_latency}ms)"
+          fi
+          
+          echo "✅ Database connection check passed"
+      
+      - name: Check /api/health (critical APIs)
+        run: |
+          response=$(curl -s "https://doin-challenge.com/api/health?critical=true")
+          
+          home_events_ok=$(echo "$response" | jq -r '.critical.homeEvents.ok')
+          rankings_ok=$(echo "$response" | jq -r '.critical.rankings.ok')
+          
+          if [ "$home_events_ok" != "true" ]; then
+            echo "❌ homeEvents API check failed"
+            echo "$response" | jq '.critical.homeEvents'
+            exit 1
+          fi
+          
+          if [ "$rankings_ok" != "true" ]; then
+            echo "❌ rankings API check failed"
+            echo "$response" | jq '.critical.rankings'
+            exit 1
+          fi
+          
+          echo "✅ Critical APIs check passed"
+      
+      - name: Check tRPC endpoint
+        run: |
+          response=$(curl -s -w "\n%{http_code}" https://doin-challenge.com/api/trpc/events.list)
+          http_code=$(echo "$response" | tail -n1)
+          
+          if [ "$http_code" != "200" ]; then
+            echo "❌ tRPC endpoint check failed with status $http_code"
+            exit 1
+          fi
+          
+          echo "✅ tRPC endpoint check passed"
+      
+      - name: Summary
+        if: success()
+        run: |
+          echo "🎉 All smoke checks passed!"
+          echo "✅ Health endpoint"
+          echo "✅ Database connection"
+          echo "✅ Critical APIs (homeEvents, rankings)"
+          echo "✅ tRPC endpoint"

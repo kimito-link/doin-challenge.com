@@ -4653,4 +4653,58 @@ features/create/
 - [x] アイコン表示コンポーネントの確認
 - [x] 画像読み込みエラーの原因特定
 - [x] 修正（placeholder、cachePolicy追加）
+- [x] デプロイ
+
+## API反映確認ワークフロー v6.58
+
+### L1: サーバー側の自動スモーク
+- [x] `/api/health`エンドポイントの拡張
+  - [x] DB接続確認（latency計測）
+  - [x] バージョン情報（gitSha, builtAt）
+  - [x] クリティカルAPI確認（homeEvents, rankings）
+  - [x] オプションパラメータ（?critical=true）
+- [x] GitHub Actions `smoke-check.yml`の追加
+  - [x] デプロイ後に`/api/health`をcurl
+  - [x] DB接続確認
+  - [x] クリティカルAPI確認
+  - [x] tRPCエンドポイント確認
+  - [x] 失敗時のエラー表示
+
+### L2: Vitest統合テスト
+- [x] tRPC統合テストの雛形作成
+  - [x] events.list（落ちない）
+  - [x] rankings.hosts（落ちない）
+  - [x] rankings.contribution（落ちない）
+  - [x] /api/health（ok=true）
+  - [x] /api/health?critical=true（クリティカルAPI）
+
+### L3: 手動チェックリスト
+- [x] `docs/manual-check.md`の作成
+  - [x] ホーム一覧表示（1秒以内）
+  - [x] イベント詳細表示（参加者数/地図）
+  - [x] ランキング表示
+  - [x] ログイン（X→戻る→マイページ表示）
+  - [x] パフォーマンス目標（1秒以内）
+  - [x] エラー時の対応手順
+
+### デプロイとテスト
+- [ ] テスト実行
+- [ ] デプロイ
+
+## 表示速度とスケルトン表示の改善 v6.59
+
+### 現状調査
+- [ ] 各画面のローディング時間計測
+- [ ] スケルトン表示が出る箇所の特定
+- [ ] React Queryのキャッシュ設定確認
+- [ ] 画像読み込み速度の確認
+
+### 改善実装
+- [ ] React QueryのstaleTime調整
+- [ ] 画像のプリロード
+- [ ] 初回表示の最適化
+- [ ] スケルトン表示の削減または改善
+
+### テストとデプロイ
+- [ ] 表示速度の再計測
 - [ ] デプロイ
