@@ -30,6 +30,7 @@ import { registerServiceWorker } from "@/lib/service-worker";
 import { initAutoSync } from "@/lib/offline-sync";
 import { startNetworkMonitoring, stopNetworkMonitoring } from "@/lib/api";
 import { initSyncHandlers } from "@/lib/sync-handlers";
+import { initSentry } from "@/lib/sentry";
 import { AutoLoginProvider } from "@/lib/auto-login-provider";
 import { TutorialProvider, useTutorial } from "@/lib/tutorial-context";
 import { TutorialOverlay } from "@/components/organisms/tutorial-overlay";
@@ -114,6 +115,8 @@ export default function RootLayout() {
 
   // Initialize Manus runtime for cookie injection from parent container
   useEffect(() => {
+    // Sentryの初期化（エラー監視）
+    initSentry();
     initManusRuntime();
     // 重要な画像をプリロード（キャラクター等）
     preloadCriticalImages();

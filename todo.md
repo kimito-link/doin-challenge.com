@@ -225,3 +225,27 @@
   - [x] 手動確認を前提としない運用の確立
   - [x] GATE1-SETUP.mdの作成
   - [x] チェックポイント保存（v6.122）
+
+
+### Phase 60: Gate 1要件の完全確立（監視・検知体制）
+- [x] GitHub Secrets設定ガイドの作成
+  - [x] VERCEL_TOKEN取得手順の詳細化
+  - [x] VERCEL_ORG_ID / VERCEL_PROJECT_ID取得手順の詳細化
+  - [x] GitHub Secretsへの設定手順の詳細化
+  - [x] docs/GITHUB-SECRETS-SETUP.mdの作成
+- [x] UptimeRobot監視設定ガイドの作成
+  - [x] 監視対象エンドポイントの決定（/api/readyz, /api/health）
+  - [x] 監視間隔・タイムアウトの設定（5分間隔、30秒タイムアウト）
+  - [x] アラート通知の設定（Email, Slack）
+  - [x] docs/UPTIMEROBOT-SETUP.mdの作成
+- [x] Sentry導入の実装
+  - [x] Sentryパッケージのインストール（@sentry/react, @sentry/node）
+  - [x] クライアント側Sentryの設定（lib/sentry.ts）
+  - [x] app/_layout.tsxにSentry初期化を追加
+  - [x] docs/SENTRY-SETUP.mdの作成
+- [x] Gate 1要件の実装完了
+  - [x] デプロイ反映確認機構の実装（v6.122）
+  - [x] GitHub Secrets設定ガイドの作成
+  - [x] UptimeRobot監視設定ガイドの作成
+  - [x] Sentry導入ガイドの作成
+  - [x] チェックポイント保存（v6.123）
