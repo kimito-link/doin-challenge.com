@@ -226,5 +226,13 @@
   - [x] 「いいね」数を表示
   - [x] ログインユーザーのみ「いいね」可能
   - [x] リアルタイムで「いいね」数を更新（Pollingで自動更新）
-- [ ] チェックポイント保存（v6.94）
+- [x] チェックポイント保存（v6.94）
+- [x] GitHubへのpush（既に同期済み）
+
+### Phase 30: 目標達成時の演出を追加
+- [x] 紙吹雪アニメーションライブラリを追加（react-native-confetti-cannon）
+- [x] 目標達成検出ロジックを実装（進捗が100%に到達したとき）
+- [x] 紙吹雪演出をイベント詳細画面に追加（ConfettiCannon）
+- [x] Haptic feedbackで達成感を強化（Haptics.notificationAsync）
+- [ ] チェックポイント保存（v6.95）
 - [ ] GitHubへのpush

@@ -24,6 +24,8 @@ import { LinkSpeech } from "@/components/organisms/link-speech";
 import { Toast } from "@/components/ui/toast";
 import { NotificationOnboardingModal } from "@/components/molecules/notification-onboarding-modal";
 import { ParticipationBanner } from "@/components/ui/participation-banner";
+import ConfettiCannon from "react-native-confetti-cannon";
+import * as Haptics from "expo-haptics";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import * as Notifications from "expo-notifications";
 import { useState, useEffect, useRef, useMemo } from "react";
@@ -76,6 +78,10 @@ export default function ChallengeDetailScreen() {
   // 「いいね」の状態
   const [likedParticipations, setLikedParticipations] = useState<Set<number>>(new Set());
   
+  // 目標達成の状態
+  const [showConfetti, setShowConfetti] = useState(false);
+  const previousProgress = useRef<number>(0);
+  
   const { id } = useLocalSearchParams<{ id: string }>();
   const challengeId = parseInt(id || "0", 10);
 
@@ -112,6 +118,19 @@ export default function ChallengeDetailScreen() {
       subscription.remove();
     };
   }, [eventDetail.refetch]);
+  
+  // 目標達成検出（進捗が100%に到達したとき）
+  useEffect(() => {
+    if (eventDetail.progress >= 100 && previousProgress.current < 100) {
+      // 目標達成！
+      setShowConfetti(true);
+      // Haptic feedbackで達成感を強化
+      Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+      // 3秒後に紙吹雪を停止
+      setTimeout(() => setShowConfetti(false), 3000);
+    }
+    previousProgress.current = eventDetail.progress;
+  }, [eventDetail.progress]);
   
   // Polling機構（10秒間隔、画面表示中のみ）
   useInterval(
@@ -613,6 +632,16 @@ export default function ChallengeDetailScreen() {
             setShowParticipationBanner(false);
             setNewParticipantName(null);
           }}
+        />
+      )}
+      
+      {/* 目標達成時の紙吹雪 */}
+      {showConfetti && (
+        <ConfettiCannon
+          count={200}
+          origin={{ x: -10, y: 0 }}
+          autoStart={true}
+          fadeOut={true}
         />
       )}
     </ScreenContainer>
