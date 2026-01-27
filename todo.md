@@ -3,6 +3,7 @@
 ## 実質的な残タスク
 
 ### Phase 51: 最終調整とデプロイ準備
+- [x] チェックポイント保存（v6.115）
 - [ ] 文言の統一
   - [x] constants/labels.tsの作成
   - [x] 「参加者数」→「参加予定数」に統一（優先度高の4ファイル、計9箇所）
@@ -96,3 +97,12 @@
 - [x] 開発環境の統一性強化（.editorconfig、.gitignore）
 
 </details>
+
+
+### Phase 52: Sentry設定とEMFILEエラー対策
+- [x] Sentry環境変数の設定ガイド作成
+  - [x] 既存のdocs/sentry-setup.mdが充分に詳細（新規作成不要）
+- [x] .watchmanconfigの更新（EMFILEエラー対策）
+  - [x] 監視対象からdocs/、.github/等を除外
+  - [ ] Metro Bundlerの起動確認（サンドボックス再起動後）
+- [ ] チェックポイント保存（v6.116）
