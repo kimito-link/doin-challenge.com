@@ -4871,6 +4871,53 @@ var notificationsRouter = router({
   markAllAsRead: protectedProcedure.mutation(async ({ ctx }) => {
     await markAllNotificationsAsRead(ctx.user.id);
     return { success: true };
+  }),
+  // テスト通知を送信
+  sendTestNotification: protectedProcedure.input(z3.object({
+    challengeId: z3.number(),
+    type: z3.enum(["goal", "milestone", "participant"])
+  })).mutation(async ({ ctx, input }) => {
+    const event = await getEventById(input.challengeId);
+    if (!event) {
+      throw new Error("Event not found");
+    }
+    let notificationType;
+    if (input.type === "goal") {
+      notificationType = "goal";
+    } else if (input.type === "milestone") {
+      notificationType = "milestone";
+    } else {
+      notificationType = "participant";
+    }
+    const users2 = await getUsersWithNotificationEnabled(
+      input.challengeId,
+      notificationType
+    );
+    let title;
+    let body;
+    if (input.type === "goal") {
+      title = "\u{1F3C6} \u76EE\u6A19\u9054\u6210\uFF01";
+      body = `${event.title}\u304C\u76EE\u6A19\u3092\u9054\u6210\u3057\u307E\u3057\u305F\uFF01`;
+    } else if (input.type === "milestone") {
+      title = "\u{1F6A9} \u30DE\u30A4\u30EB\u30B9\u30C8\u30FC\u30F3\u9054\u6210\uFF01";
+      body = `${event.title}\u304C50%\u3092\u9054\u6210\u3057\u307E\u3057\u305F\uFF01`;
+    } else {
+      title = "\u{1F389} \u65B0\u3057\u3044\u53C2\u52A0\u8005\uFF01";
+      body = `\u30C6\u30B9\u30C8\u30E6\u30FC\u30B6\u30FC\u3055\u3093\u304C\u53C2\u52A0\u8868\u660E\u3057\u307E\u3057\u305F\uFF01`;
+    }
+    for (const user of users2) {
+      await createNotification({
+        userId: user.userId,
+        challengeId: input.challengeId,
+        type: input.type === "goal" ? "goal_reached" : input.type === "milestone" ? "milestone_50" : "new_participant",
+        title,
+        body
+      });
+    }
+    return {
+      success: true,
+      sentCount: users2.length
+    };
   })
 });
 

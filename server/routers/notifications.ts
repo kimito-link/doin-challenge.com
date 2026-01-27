@@ -67,4 +67,63 @@ export const notificationsRouter = router({
     await db.markAllNotificationsAsRead(ctx.user.id);
     return { success: true };
   }),
+
+  // テスト通知を送信
+  sendTestNotification: protectedProcedure
+    .input(z.object({
+      challengeId: z.number(),
+      type: z.enum(["goal", "milestone", "participant"]),
+    }))
+    .mutation(async ({ ctx, input }) => {
+      // イベント情報を取得
+      const event = await db.getEventById(input.challengeId);
+      if (!event) {
+        throw new Error("Event not found");
+      }
+
+      // 通知を受け取るユーザーを取得
+      let notificationType: "goal" | "milestone" | "participant";
+      if (input.type === "goal") {
+        notificationType = "goal";
+      } else if (input.type === "milestone") {
+        notificationType = "milestone";
+      } else {
+        notificationType = "participant";
+      }
+
+      const users = await db.getUsersWithNotificationEnabled(
+        input.challengeId,
+        notificationType
+      );
+
+      // 通知の内容を生成
+      let title: string;
+      let body: string;
+      if (input.type === "goal") {
+        title = "🏆 目標達成！";
+        body = `${event.title}が目標を達成しました！`;
+      } else if (input.type === "milestone") {
+        title = "🚩 マイルストーン達成！";
+        body = `${event.title}が50%を達成しました！`;
+      } else {
+        title = "🎉 新しい参加者！";
+        body = `テストユーザーさんが参加表明しました！`;
+      }
+
+      // 各ユーザーに通知を作成
+      for (const user of users) {
+        await db.createNotification({
+          userId: user.userId,
+          challengeId: input.challengeId,
+          type: input.type === "goal" ? "goal_reached" : input.type === "milestone" ? "milestone_50" : "new_participant",
+          title,
+          body,
+        });
+      }
+
+      return {
+        success: true,
+        sentCount: users.length,
+      };
+    }),
 });
