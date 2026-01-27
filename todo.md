@@ -454,5 +454,18 @@
 - [x] Dependabotの設定（.github/dependabot.yml）
   - [x] npm依存関係の自動更新
   - [x] GitHub Actionsの自動更新
-- [ ] チェックポイント保存（v6.109）
+- [x] チェックポイント保存（v6.109）
+- [x] GitHubへのpush
+
+### Phase 46: セキュリティポリシーとIssueテンプレートの作成
+- [x] SECURITY.mdの作成
+  - [x] サポートされるバージョン
+  - [x] 脆弱性報告手順
+  - [x] セキュリティアップデート方針
+  - [x] 緊急時の連絡先
+- [x] Issueテンプレートの作成
+  - [x] バグレポート用テンプレート（.github/ISSUE_TEMPLATE/bug_report.yml）
+  - [x] 機能リクエスト用テンプレート（.github/ISSUE_TEMPLATE/feature_request.yml）
+  - [x] 質問用テンプレート（.github/ISSUE_TEMPLATE/question.yml）
+- [ ] チェックポイント保存（v6.110）
 - [ ] GitHubへのpush

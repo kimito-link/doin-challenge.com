@@ -1,0 +1,74 @@
+name: ❓ 質問
+description: 使い方や仕様について質問する
+title: "[Question]: "
+labels: ["question"]
+assignees: []
+
+body:
+  - type: markdown
+    attributes:
+      value: |
+        質問をありがとうございます！以下のフォームに記入してください。
+        
+        **注意**: 技術的な質問は[GitHub Discussions](https://github.com/kimito-link/doin-challenge.com/discussions)の方が適している場合があります。
+
+  - type: textarea
+    id: question
+    attributes:
+      label: 質問内容
+      description: 質問を明確に記載してください
+      placeholder: 例: イベント作成時に「目標参加者数」を設定する意味は何ですか？
+    validations:
+      required: true
+
+  - type: textarea
+    id: context
+    attributes:
+      label: 背景・状況
+      description: 質問の背景や、どのような状況で疑問が生じたか説明してください
+      placeholder: 例: イベントを作成しようとしたところ、「目標参加者数」という項目があり、何を入力すべきか分かりませんでした
+    validations:
+      required: true
+
+  - type: textarea
+    id: tried
+    attributes:
+      label: 試したこと
+      description: 問題を解決するために試したことがあれば記載してください
+      placeholder: |
+        - READMEを確認しました
+        - ドキュメントを検索しました
+        - 既存のIssueを検索しました
+
+  - type: dropdown
+    id: category
+    attributes:
+      label: カテゴリ
+      description: 質問のカテゴリを選択してください
+      options:
+        - 使い方
+        - 仕様・動作
+        - 開発環境
+        - デプロイ
+        - その他
+    validations:
+      required: true
+
+  - type: textarea
+    id: additional
+    attributes:
+      label: 追加情報
+      description: その他、参考になる情報があれば記載してください
+
+  - type: checkboxes
+    id: checklist
+    attributes:
+      label: チェックリスト
+      description: 以下の項目を確認してください
+      options:
+        - label: READMEとドキュメントを確認しました
+          required: true
+        - label: 既存のIssueとDiscussionsを検索しました
+          required: true
+        - label: 質問を明確に記載しました
+          required: true
