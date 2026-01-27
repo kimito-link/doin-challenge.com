@@ -23,7 +23,7 @@ describe("Tutorial Steps Definition (Merit-Based)", () => {
 
   // 主催者向けチュートリアル（6ステップ）
   const HOST_STEPS = [
-    { message: "会場選び、迷う？", subMessage: "参加者数を事前に予測できます" },
+    { message: "会場選び、迷う？", subMessage: "参加予定数を事前に予測できます" },
     { message: "参加者が見える", subMessage: "どの地域から来るかマップで確認" },
     { message: "影響力もわかる", subMessage: "フォロワー数で集客力を予測" },
     { message: "常連を大切に", subMessage: "何度も来てくれるファンを特別扱い" },
@@ -102,7 +102,7 @@ describe("Merit Communication", () => {
 
   it("主催者向けメリットが明確に伝わる", () => {
     const HOST_MERITS = [
-      "参加者数を事前に予測できます",
+      "参加予定数を事前に予測できます",
       "どの地域から来るかマップで確認",
       "フォロワー数で集客力を予測",
       "何度も来てくれるファンを特別扱い",

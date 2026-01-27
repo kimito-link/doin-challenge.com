@@ -451,7 +451,7 @@ export function GrowthTrajectoryChart({ data, targetCount, title = "動員まで
       <View style={styles.legend}>
         <View style={styles.legendItem}>
           <View style={[styles.legendLine, { backgroundColor: color.coral }]} />
-          <Text style={[styles.legendText, { fontSize: config.legendSize }]}>参加者数の推移</Text>
+          <Text style={[styles.legendText, { fontSize: config.legendSize }]}>参加予定数の推移</Text>
         </View>
         <View style={styles.legendItem}>
           <View style={[styles.legendLine, { backgroundColor: color.successDark, borderStyle: "dashed" }]} />

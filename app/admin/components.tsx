@@ -292,7 +292,7 @@ export default function ComponentsScreen() {
             <SubSection title="ステータス表示">
               <View className="bg-surface p-4 rounded-xl border border-border">
                 <View className="flex-row items-center justify-between">
-                  <Text className="text-foreground font-semibold">参加者数</Text>
+                  <Text className="text-foreground font-semibold">参加予定数</Text>
                   <View className="flex-row items-center" style={{ gap: 4 }}>
                     <Text className="text-2xl font-bold" style={{ color: colors.primary }}>45</Text>
                     <Text className="text-muted">/ 100人</Text>

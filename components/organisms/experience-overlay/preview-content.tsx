@@ -518,7 +518,7 @@ export function PreviewContent({ type }: PreviewContentProps) {
           <View style={styles.statsGrid}>
             <View style={styles.statsItem}>
               <Text style={styles.statsValue}>65</Text>
-              <Text style={styles.statsLabel}>参加者数</Text>
+              <Text style={styles.statsLabel}>参加予定数</Text>
             </View>
             <View style={styles.statsItem}>
               <Text style={styles.statsValue}>12</Text>

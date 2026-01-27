@@ -50,7 +50,7 @@ export function RegionParticipantsModal({
     return name.replace(/(県|府|都|道)$/, "");
   };
 
-  // 各都道府県の参加者数を計算
+  // 各都道府県の参加予定数を計算
   const prefectureCounts: { [key: string]: number } = {};
   prefectures.forEach(pref => {
     const normalizedPref = normalize(pref);
