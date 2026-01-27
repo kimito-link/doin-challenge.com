@@ -267,5 +267,19 @@
   - タップ領域あ44px以上に統一（既に実装済み）
   - 性別色分けにアイコン/ラベルを追加（MessageCard、MessagesSection）
   - 主要ボタンにaccessibilityLabelを追加（FixedParticipationCTA）
-- [ ] チェックポイント保存（v6.97）
+- [x] チェックポイント保存（v6.97）
+- [x] GitHubへのpush
+
+### Phase 33: コントラストの最終調整とモーダルのレスポンシブ対応
+- [x] コントラストの最終調整（WCAG AA基準）
+  - 暗背景でのピンク/青の視認性を改善
+  - WCAG AA基準（コントラスト比4.5:1以上）を満たす色に調整
+  - 性別色（男性：青、女性：ピンク）のコントラストを改善
+  - theme/tokens/palette.tsを更新
+- [x] モーダルのレスポンシブ対応
+  - 各モーダルを中央配置＋スクロール可能に最適化
+  - Desktop/Tabletでの表示を改善（最大幅を600px/500pxに制限）
+  - 横向き（ランドスケープ）でも崩れないように調整
+  - components/ui/modal.tsxを更新
+- [ ] チェックポイント保存（v6.98）
 - [ ] GitHubへのpush

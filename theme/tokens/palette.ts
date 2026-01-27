@@ -58,11 +58,11 @@ export const palette = {
   blue400: "#60A5FA",         // info light
   blue600: "#2563EB",         // info dark
 
-  // Gender colors（性別ボーダー用）
-  genderMale: "#3B82F6",      // 男性: 青
-  genderFemale: "#F472B6",    // 女性: ピンク（v6.63仕様）
+  // Gender colors（性別ボーダー用）- WCAG AA準拠
+  genderMale: "#60A5FA",      // 男性: 青（コントラスト比4.5:1以上）
+  genderFemale: "#F9A8D4",    // 女性: ピンク（コントラスト比4.5:1以上）
   genderNeutral: "rgba(255,255,255,0.12)", // 未設定: ニュートラル
-  genderOther: "#A855F7",     // その他: パープル
+  genderOther: "#C084FC",     // その他: パープル（明るく）
 
   // Special / Rank
   gold: "#F59E0B",            // ゴールド（ランク）→ アンバー系

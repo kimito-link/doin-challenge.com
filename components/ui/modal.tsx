@@ -15,6 +15,7 @@ import {
   ScrollView,
   KeyboardAvoidingView,
 } from "react-native";
+import { useResponsive } from "@/hooks/use-responsive";
 import MaterialIcons from "@expo/vector-icons/MaterialIcons";
 import * as Haptics from "expo-haptics";
 import { color } from "@/theme/tokens";
@@ -95,9 +96,13 @@ export function Modal({
   maxWidth = 400,
   maxHeight = "80%" as `${number}%`,
 }: ModalProps) {
+  const { isDesktop, isTablet } = useResponsive();
   const scaleAnim = useRef(new Animated.Value(0.9)).current;
   const opacityAnim = useRef(new Animated.Value(0)).current;
   const slideAnim = useRef(new Animated.Value(SCREEN_HEIGHT)).current;
+  
+  // レスポンシブ対応: Desktop/Tabletでは最大幅を制限
+  const responsiveMaxWidth = isDesktop ? 600 : isTablet ? 500 : maxWidth;
 
   useEffect(() => {
     if (visible) {
@@ -159,7 +164,7 @@ export function Modal({
         {
           transform: [{ scale: scaleAnim }],
           opacity: opacityAnim,
-          maxWidth,
+          maxWidth: responsiveMaxWidth,
         },
       ]
     : [
@@ -167,6 +172,8 @@ export function Modal({
         {
           transform: [{ translateY: slideAnim }],
           maxHeight,
+          maxWidth: responsiveMaxWidth,
+          alignSelf: "center" as const,
         },
       ];
 
