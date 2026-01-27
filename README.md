@@ -179,16 +179,26 @@ pnpm start
 - **[パフォーマンスチェックリスト](./docs/performance-checklist.md)**: パフォーマンス最適化
 - **[UI/UXチェックリスト](./docs/ui-ux-checklist.md)**: UI/UXの最終調整
 
+### Gate 1: 壊れない運用
+
+「CIが緑＝本番にそのコードが確実に出ている」状態を実現するための基盤です。
+
+- **[Gate 1セットアップガイド](./docs/GATE1-SETUP.md)**: 全体像とセットアップ手順
+- **[GitHub Secrets設定](./docs/GITHUB-SECRETS-SETUP.md)**: VERCEL_TOKEN等の設定手順
+- **[UptimeRobot設定](./docs/UPTIMEROBOT-SETUP.md)**: 監視設定手順
+- **[Sentry設定](./docs/SENTRY-SETUP.md)**: エラー監視設定手順
+
+**主要機能:**
+
+1. **Vercel明示的デプロイ**: GitHub ActionsからVercelへの明示的トリガー
+2. **デプロイ反映確認**: commitSha照合でデプロイ完了を機械的に確認
+3. **監視・検知**: UptimeRobotでダウンタイム検知、Sentryでエラー監視
+
 ### 運用ガイド
 
 - **[ロールバック手順](./docs/rollback-procedure.md)**: 緊急時のロールバック手順
 - **[緊急時の対応フロー](./docs/emergency-response.md)**: 緊急時の対応フロー
 - **[Feature Flags](./docs/feature-flags.md)**: Feature Flagsの使い方
-
-### セットアップガイド
-
-- **[Sentry設定](./docs/sentry-setup.md)**: Sentryのセットアップ手順
-- **[UptimeRobot設定](./docs/uptime-robot-setup.md)**: UptimeRobotのセットアップ手順
 
 ### Phase 2: ログインUX改善
 
