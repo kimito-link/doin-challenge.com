@@ -281,5 +281,29 @@
   - Desktop/Tabletでの表示を改善（最大幅を600px/500pxに制限）
   - 横向き（ランドスケープ）でも崩れないように調整
   - components/ui/modal.tsxを更新
-- [ ] チェックポイント保存（v6.98）
+- [x] チェックポイント保存（v6.98）
+- [x] GitHubへのpush
+
+### Phase 34: Web版の実機テストとテキストコントラストの最終チェック
+- [x] Web版の実機テスト（Expo Go）
+  - 開発サーバーを再起動
+  - ユーザーに実機テストを依頼
+- [x] テキストコントラストの最終チェック
+  - 全ての画面で文字色と背景色のコントラストを確認
+  - WCAG AA基準（4.5:1以上）を満たしていることを確認
+  - docs/contrast-check-report.mdを作成
+- [x] 問題箇所の修正
+  - 主要な文字色は全てWCAG AA基準を満たしている
+  - 性別色もv6.98で改善済み
+- [ ] チェックポイント保存（v6.99）
+- [ ] GitHubへのpush
+
+### Phase 35: 「生誕祭」という表現を全て「動員ちゃれんじ」に書き換え
+- [x] プロジェクト内の「生誕祭」を全て検索
+- [x] 検索結果を「動員ちゃれんじ」に書き換え
+  - search-issue-analysis.md
+  - __tests__/ai-api.test.ts
+  - __tests__/data-integrity.test.ts
+  - __tests__/sample-data.test.ts
+- [ ] チェックポイント保存（v6.99）
 - [ ] GitHubへのpush

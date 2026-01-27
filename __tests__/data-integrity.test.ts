@@ -11,7 +11,7 @@ describe("generateSlug", () => {
   // モック用のgenerateSlug関数（実際の実装をシミュレート）
   function generateSlug(title: string): string {
     const translations: Record<string, string> = {
-      '生誕祭': 'birthday',
+      '動員ちゃれんじ': 'mobilization-challenge',
       'ライブ': 'live',
       'ワンマン': 'oneman',
       '動員': 'attendance',
@@ -50,7 +50,7 @@ describe("generateSlug", () => {
 
   it("日本語タイトルを英語スラッグに変換する", () => {
     // 日本語が連続している場合はハイフンなしで結合される
-    expect(generateSlug("生誕祭ライブ")).toBe("birthdaylive");
+    expect(generateSlug("動員ちゃれんじライブ")).toBe("mobilization-challengelive");
     expect(generateSlug("ワンマンライブ動員100人チャレンジ")).toBe("onemanliveattendance-100-challenge");
   });
 

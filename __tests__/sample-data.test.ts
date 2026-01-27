@@ -6,7 +6,7 @@ describe("Sample Data Generation", () => {
       {
         hostName: "りんく",
         hostUsername: "kimitolink",
-        title: "生誕祭ライブ 動員100人達成チャレンジ",
+        title: "動員ちゃれんじライブ 100人達成チャレンジ",
         goalType: "attendance",
         goalValue: 100,
         eventType: "solo",
