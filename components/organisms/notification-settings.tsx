@@ -202,7 +202,7 @@ export function NotificationSettingsPanel({ onClose }: NotificationSettingsProps
           icon="emoji-events"
           iconColor={color.warning}
           title="目標達成"
-          description="チャレンジが目標を達成したとき"
+          description="目標人数に到達したときに通知します"
           value={settings.goalReached}
           onValueChange={(value) => updateSetting("goalReached", value)}
           disabled={notificationsDisabled}
@@ -212,7 +212,7 @@ export function NotificationSettingsPanel({ onClose }: NotificationSettingsProps
           icon="flag"
           iconColor={color.successDark}
           title="マイルストーン"
-          description="25%、50%、75%達成時"
+          description="進捗が25%、50%、75%に到達したときに通知します"
           value={settings.milestones}
           onValueChange={(value) => updateSetting("milestones", value)}
           disabled={notificationsDisabled}
@@ -222,7 +222,7 @@ export function NotificationSettingsPanel({ onClose }: NotificationSettingsProps
           icon="person-add"
           iconColor={color.info}
           title="新規参加者"
-          description="誰かがチャレンジに参加したとき"
+          description="新しい参加者が参加表明したときに通知します"
           value={settings.newParticipants}
           onValueChange={(value) => updateSetting("newParticipants", value)}
           disabled={notificationsDisabled}
@@ -232,7 +232,7 @@ export function NotificationSettingsPanel({ onClose }: NotificationSettingsProps
           icon="update"
           iconColor={color.accentAlt}
           title="チャレンジ更新"
-          description="イベントリマインダーなど"
+          description="イベント開始のリマインダーなどを通知します"
           value={settings.challengeUpdates}
           onValueChange={(value) => updateSetting("challengeUpdates", value)}
           disabled={notificationsDisabled}
