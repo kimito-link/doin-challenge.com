@@ -153,9 +153,15 @@
 - [x] 通知の送信タイミングを設計（参加表明成功時）
 - [x] createNotification関数とgetUsersWithNotificationEnabled関数を使用
 - [x] 通知の許可リクエストは既に実装済み（app/notifications.tsx）
-
 ### Phase 23: チェックポイント保存とデプロイ
-- [ ] チェックポイント保存（v6.88）
-- [ ] GitHubへのpush
-- [ ] Expo Goで実機テスト
+- [x] チェックポイント保存（v6.88）
+- [x] GitHubへのpush（既に同期済み）
+- [ ] Publish（ユーザーがボタンをクリック）oで実機テスト
 - [ ] Publish
+
+### Phase 24: 通知設定の最適化
+- [x] 通知設定のデフォルト値を設定（新規参加者の通知をオンにする）
+- [x] 初回起動時の通知設定オンボーディングを追加
+- [x] 通知許可のリクエストUIを改善（NotificationOnboardingModalコンポーネント）
+- [ ] チェックポイント保存（v6.89）
+- [ ] GitHubへのpush

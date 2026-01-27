@@ -19,7 +19,20 @@ export async function upsertNotificationSettings(userId: number, challengeId: nu
     await db.update(notificationSettings).set(data)
       .where(and(eq(notificationSettings.userId, userId), eq(notificationSettings.challengeId, challengeId)));
   } else {
-    await db.insert(notificationSettings).values({ userId, challengeId, ...data });
+    // 新規作成時のデフォルト値
+    const defaultSettings = {
+      onGoalReached: true,
+      onMilestone25: true,
+      onMilestone50: true,
+      onMilestone75: true,
+      onNewParticipant: true, // 新規参加者の通知をデフォルトでオン
+    };
+    await db.insert(notificationSettings).values({ 
+      userId, 
+      challengeId, 
+      ...defaultSettings,
+      ...data // 明示的に指定された値で上書き
+    });
   }
 }
 

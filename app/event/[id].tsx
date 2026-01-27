@@ -22,6 +22,10 @@ import { SharePromptModal } from "@/components/molecules/share-prompt-modal";
 import { RefreshingIndicator } from "@/components/molecules/refreshing-indicator";
 import { LinkSpeech } from "@/components/organisms/link-speech";
 import { Toast } from "@/components/ui/toast";
+import { NotificationOnboardingModal } from "@/components/molecules/notification-onboarding-modal";
+import AsyncStorage from "@react-native-async-storage/async-storage";
+import * as Notifications from "expo-notifications";
+import { useState, useEffect } from "react";
 import { shareParticipation } from "@/lib/share";
 import {
   MessagesSection,
@@ -54,6 +58,9 @@ import { usePerformanceMonitor } from "@/lib/performance-monitor";
 export default function ChallengeDetailScreen() {
   const colors = useColors();
   
+  // 通知オンボーディングの状態
+  const [showNotificationOnboarding, setShowNotificationOnboarding] = useState(false);
+  
   const { id } = useLocalSearchParams<{ id: string }>();
   const challengeId = parseInt(id || "0", 10);
 
@@ -67,6 +74,57 @@ export default function ChallengeDetailScreen() {
     eventDetail.isInitialLoading,
     !eventDetail.hasData
   );
+  
+  // 初回訪問時に通知オンボーディングを表示
+  useEffect(() => {
+    const checkFirstVisit = async () => {
+      if (Platform.OS === "web") return; // Webではプッシュ通知をサポートしない
+      
+      try {
+        const hasSeenOnboarding = await AsyncStorage.getItem("hasSeenNotificationOnboarding");
+        if (!hasSeenOnboarding) {
+          // 通知許可の状態を確認
+          const { status } = await Notifications.getPermissionsAsync();
+          if (status !== "granted") {
+            // データが読み込まれてから1.5秒後に表示
+            setTimeout(() => {
+              setShowNotificationOnboarding(true);
+            }, 1500);
+          }
+        }
+      } catch (error) {
+        console.error("Failed to check notification onboarding:", error);
+      }
+    };
+    
+    if (eventDetail.hasData) {
+      checkFirstVisit();
+    }
+  }, [eventDetail.hasData]);
+  
+  // 通知を有効にする
+  const handleEnableNotifications = async () => {
+    try {
+      const { status } = await Notifications.requestPermissionsAsync();
+      if (status === "granted") {
+        // 通知設定をデフォルトで有効化（バックエンドで自動的に設定される）
+        await AsyncStorage.setItem("hasSeenNotificationOnboarding", "true");
+        setShowNotificationOnboarding(false);
+      }
+    } catch (error) {
+      console.error("Failed to enable notifications:", error);
+    }
+  };
+  
+  // 通知オンボーディングをスキップ
+  const handleSkipNotifications = async () => {
+    try {
+      await AsyncStorage.setItem("hasSeenNotificationOnboarding", "true");
+      setShowNotificationOnboarding(false);
+    } catch (error) {
+      console.error("Failed to skip notification onboarding:", error);
+    }
+  };
   
   // Modal state hook
   const modalState = useModalState();
@@ -444,6 +502,13 @@ export default function ChallengeDetailScreen() {
         message={participationForm.toastMessage}
         type={participationForm.toastType}
         onHide={() => participationForm.setShowToast(false)}
+      />
+      
+      {/* 通知オンボーディングモーダル */}
+      <NotificationOnboardingModal
+        visible={showNotificationOnboarding}
+        onClose={handleSkipNotifications}
+        onEnable={handleEnableNotifications}
       />
     </ScreenContainer>
   );
