@@ -266,7 +266,7 @@ export default function DemoScreen() {
               />
             </View>
             <Text className="text-sm text-muted mt-1 text-right">
-              達成率 {progress.toFixed(1)}%（参加予定）
+              進捗 {progress.toFixed(1)}%（参加予定）
             </Text>
           </View>
 

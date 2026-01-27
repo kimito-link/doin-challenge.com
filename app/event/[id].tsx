@@ -21,6 +21,7 @@ import { FanProfileModal } from "@/components/organisms/fan-profile-modal";
 import { SharePromptModal } from "@/components/molecules/share-prompt-modal";
 import { RefreshingIndicator } from "@/components/molecules/refreshing-indicator";
 import { LinkSpeech } from "@/components/organisms/link-speech";
+import { Toast } from "@/components/ui/toast";
 import { shareParticipation } from "@/lib/share";
 import {
   MessagesSection,
@@ -435,6 +436,14 @@ export default function ChallengeDetailScreen() {
         onConfirm={eventActions.handleDeleteParticipation}
         participation={eventActions.deleteTargetParticipation}
         isDeleting={eventActions.isDeleting}
+      />
+
+      {/* トースト通知 */}
+      <Toast
+        visible={participationForm.showToast}
+        message={participationForm.toastMessage}
+        type={participationForm.toastType}
+        onHide={() => participationForm.setShowToast(false)}
       />
     </ScreenContainer>
   );

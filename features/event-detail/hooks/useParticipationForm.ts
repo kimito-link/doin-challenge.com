@@ -76,6 +76,12 @@ interface UseParticipationFormReturn {
   setShowParticipantNumberSpeech: (value: boolean) => void;
   participantNumber: number | null;
   
+  // Toast notification
+  showToast: boolean;
+  setShowToast: (value: boolean) => void;
+  toastMessage: string;
+  toastType: "success" | "error";
+  
   // Refs
   scrollViewRef: React.RefObject<ScrollView | null>;
   messagesRef: React.RefObject<View | null>;
@@ -126,6 +132,11 @@ export function useParticipationForm({
   const [showParticipantNumberSpeech, setShowParticipantNumberSpeech] = useState(false);
   const [participantNumber, setParticipantNumber] = useState<number | null>(null);
   
+  // Toast notification state
+  const [showToast, setShowToast] = useState(false);
+  const [toastMessage, setToastMessage] = useState("");
+  const [toastType, setToastType] = useState<"success" | "error">("success");
+  
   // Refs
   const scrollViewRef = useRef<ScrollView>(null);
   const messagesRef = useRef<View>(null);
@@ -138,12 +149,10 @@ export function useParticipationForm({
         Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
       }
       
-      // Show success message
-      Alert.alert(
-        "参加表明が完了しました！",
-        "ありがとうございます！",
-        [{ text: "OK", style: "default" }]
-      );
+      // Show success toast
+      setToastMessage("参加表明が完了しました！");
+      setToastType("success");
+      setShowToast(true);
       
       setLastParticipation({
         name: user?.name || "",
@@ -199,14 +208,11 @@ export function useParticipationForm({
     onError: (error) => {
       console.error("Participation error:", error);
       const errorMessage = error.message || "参加表明の登録に失敗しました";
-      Alert.alert(
-        "参加表明エラー",
-        errorMessage,
-        [
-          { text: "もう一度試す", onPress: () => {} },
-          { text: "閉じる", style: "cancel" },
-        ]
-      );
+      
+      // Show error toast
+      setToastMessage(errorMessage);
+      setToastType("error");
+      setShowToast(true);
     },
   });
   
@@ -374,6 +380,12 @@ export function useParticipationForm({
     showParticipantNumberSpeech,
     setShowParticipantNumberSpeech,
     participantNumber,
+    
+    // Toast notification
+    showToast,
+    setShowToast,
+    toastMessage,
+    toastType,
     
     // Refs
     scrollViewRef,
