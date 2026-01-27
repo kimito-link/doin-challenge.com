@@ -989,13 +989,20 @@ var init_challenge_db = __esm({
 });
 
 // server/db/participation-db.ts
-async function getParticipationsByEventId(eventId) {
+async function getParticipationsByEventId(eventId, limit, offset) {
   const db = await getDb();
   if (!db) return [];
-  return db.select().from(participations).where(and(
+  let query = db.select().from(participations).where(and(
     eq(participations.challengeId, eventId),
     isNull(participations.deletedAt)
   )).orderBy(desc(participations.createdAt));
+  if (limit !== void 0) {
+    query = query.limit(limit);
+    if (offset !== void 0 && offset > 0) {
+      query = query.offset(offset);
+    }
+  }
+  return query;
 }
 async function getParticipationsByUserId(userId) {
   const db = await getDb();
@@ -4439,8 +4446,12 @@ init_db2();
 init_schema2();
 var participationsRouter = router({
   // イベントの参加者一覧
-  listByEvent: publicProcedure.input(z2.object({ eventId: z2.number() })).query(async ({ input }) => {
-    return getParticipationsByEventId(input.eventId);
+  listByEvent: publicProcedure.input(z2.object({
+    eventId: z2.number(),
+    limit: z2.number().optional(),
+    offset: z2.number().optional()
+  })).query(async ({ input }) => {
+    return getParticipationsByEventId(input.eventId, input.limit, input.offset);
   }),
   // 参加方法別集計
   getAttendanceTypeCounts: publicProcedure.input(z2.object({ eventId: z2.number() })).query(async ({ input }) => {
@@ -4529,6 +4540,25 @@ var participationsRouter = router({
       }
       const participations2 = await getParticipationsByEventId(input.challengeId);
       const participantNumber = participations2.length;
+      try {
+        const challenge = await getEventById(input.challengeId);
+        if (challenge) {
+          const usersWithNotification = await getUsersWithNotificationEnabled(input.challengeId, "participant");
+          for (const setting of usersWithNotification) {
+            if (setting.userId === ctx.user?.id) continue;
+            await createNotification({
+              userId: setting.userId,
+              challengeId: input.challengeId,
+              type: "new_participant",
+              title: "\u{1F389} \u65B0\u3057\u3044\u53C2\u52A0\u8005\uFF01",
+              body: `${input.displayName}\u3055\u3093\u304C\u53C2\u52A0\u8868\u660E\u3057\u307E\u3057\u305F\uFF01\u73FE\u5728${participantNumber}\u4EBA`,
+              sentAt: /* @__PURE__ */ new Date()
+            });
+          }
+        }
+      } catch (notificationError) {
+        console.error("[Notification] Failed to send notification:", notificationError);
+      }
       return { id: participationId, requestId: ctx.requestId, participantNumber };
     } catch (error) {
       console.error("[Participation Create] Error:", error);

@@ -18,16 +18,34 @@ import { invalidateEventsCache } from "./challenge-db";
 
 /**
  * イベントの参加者一覧を取得（削除済みを除く）
+ * @param eventId イベントID
+ * @param limit 取得件数（省略時は全件）
+ * @param offset オフセット（省略時は0）
  */
-export async function getParticipationsByEventId(eventId: number) {
+export async function getParticipationsByEventId(
+  eventId: number,
+  limit?: number,
+  offset?: number
+) {
   const db = await getDb();
   if (!db) return [];
-  return db.select().from(participations)
+  
+  let query = db.select().from(participations)
     .where(and(
       eq(participations.challengeId, eventId),
       isNull(participations.deletedAt)
     ))
     .orderBy(desc(participations.createdAt));
+  
+  // ページネーションが指定されている場合
+  if (limit !== undefined) {
+    query = query.limit(limit) as any;
+    if (offset !== undefined && offset > 0) {
+      query = query.offset(offset) as any;
+    }
+  }
+  
+  return query;
 }
 
 /**

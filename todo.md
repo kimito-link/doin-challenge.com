@@ -139,3 +139,23 @@
 - [ ] ジャンル選択・日時表示・レイアウト最適化・参加表明演出の動作を確認
 - [x] チェックポイント保存（v6.87）
 - [ ] Publish
+
+### Phase 21: 応援メッセージのパフォーマンス改善（簡易版）
+- [x] バックエンドAPIにページネーション機能を追加（participations.listByEvent）
+- [x] getParticipationsByEventId関数にlimit/offsetパラメータを追加
+- [x] MessageSectionコンポーネントで.map()をFlatListに変更
+- [x] FlatListの最適化オプションを追加（removeClippedSubviews, maxToRenderPerBatchなど）
+- [x] 既存のフィルター機能を維持（全件取得のまま）
+
+### Phase 22: プッシュ通知機能実装
+- [x] 参加表明後にプッシュ通知を送信する機能を追加
+- [x] 通知の内容を設計（「🎉 新しい参加者！」「○○さんが参加表明しました！現在○○人」）
+- [x] 通知の送信タイミングを設計（参加表明成功時）
+- [x] createNotification関数とgetUsersWithNotificationEnabled関数を使用
+- [x] 通知の許可リクエストは既に実装済み（app/notifications.tsx）
+
+### Phase 23: チェックポイント保存とデプロイ
+- [ ] チェックポイント保存（v6.88）
+- [ ] GitHubへのpush
+- [ ] Expo Goで実機テスト
+- [ ] Publish

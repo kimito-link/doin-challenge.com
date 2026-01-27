@@ -16,9 +16,13 @@ import { AUDIT_ACTIONS, ENTITY_TYPES } from "../../drizzle/schema";
 export const participationsRouter = router({
   // イベントの参加者一覧
   listByEvent: publicProcedure
-    .input(z.object({ eventId: z.number() }))
+    .input(z.object({ 
+      eventId: z.number(),
+      limit: z.number().optional(),
+      offset: z.number().optional(),
+    }))
     .query(async ({ input }) => {
-      return db.getParticipationsByEventId(input.eventId);
+      return db.getParticipationsByEventId(input.eventId, input.limit, input.offset);
     }),
 
   // 参加方法別集計
@@ -121,6 +125,33 @@ export const participationsRouter = router({
         // Get participant number (total participations for this challenge)
         const participations = await db.getParticipationsByEventId(input.challengeId);
         const participantNumber = participations.length;
+        
+        // 参加表明後にプッシュ通知を送信
+        try {
+          const challenge = await db.getEventById(input.challengeId);
+          if (challenge) {
+            // 通知を受け取るユーザーを取得
+            const usersWithNotification = await db.getUsersWithNotificationEnabled(input.challengeId, "participant");
+            
+            // 各ユーザーに通知を作成
+            for (const setting of usersWithNotification) {
+              // 自分自身の参加表明には通知しない
+              if (setting.userId === ctx.user?.id) continue;
+              
+              await db.createNotification({
+                userId: setting.userId,
+                challengeId: input.challengeId,
+                type: "new_participant",
+                title: "🎉 新しい参加者！",
+                body: `${input.displayName}さんが参加表明しました！現在${participantNumber}人`,
+                sentAt: new Date(),
+              });
+            }
+          }
+        } catch (notificationError) {
+          console.error("[Notification] Failed to send notification:", notificationError);
+          // 通知の送信に失敗しても参加表明は成功とする
+        }
         
         return { id: participationId, requestId: ctx.requestId, participantNumber };
       } catch (error) {
