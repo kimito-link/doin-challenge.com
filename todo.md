@@ -497,5 +497,17 @@
   - [x] 機能の使い方に関する質問
   - [x] トラブルシューティングの補足
   - [x] デプロイに関する質問
-- [ ] チェックポイント保存（v6.112）
+- [x] チェックポイント保存（v6.112）
+- [x] GitHubへのpush
+
+### Phase 49: README.mdの最終更新とエラー修正
+- [x] 開発サーバーのエラー修正
+  - [x] 「EMFILE: too many open files」エラーの修正（サーバー再起動）
+  - [x] 開発サーバーの再起動確認
+- [x] README.mdの最終更新
+  - [x] CHANGELOG.mdへのリンク追加
+  - [x] FAQ.mdへのリンク追加
+  - [x] バッジの追加（ライセンス、TypeScript、React Native、Expo）
+  - [x] 目次の整理
+- [ ] チェックポイント保存（v6.113）
 - [ ] GitHubへのpush

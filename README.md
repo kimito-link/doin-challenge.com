@@ -1,6 +1,21 @@
-# 君斗りんくの動員ちゃれんじ (doin-challenge.com)
+# 動員ちゃれんじ
 
-クリエイター（君斗りんく）のイベント動員を支援するWebアプリケーション。ファンが参加予定を表明し、応援メッセージを投稿することで、イベントの盛り上がりを可視化します。
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+[![TypeScript](https://img.shields.io/badge/TypeScript-5.9-blue.svg)](https://www.typescriptlang.org/)
+[![React Native](https://img.shields.io/badge/React%20Native-0.81-61DAFB.svg)](https://reactnative.dev/)
+[![Expo](https://img.shields.io/badge/Expo-54-000020.svg)](https://expo.dev/)
+
+クリエイター（君斥りんく）のイベント動員を支援するWebアプリケーション。ファンが参加予定を表明し、応援メッセージを投稿することで、イベントの盛り上がりを可視化します。
+
+## 📚 ドキュメント
+
+- **[🚀 セットアップガイド](#-セットアップ)**: 開発環境の構築手順
+- **[📝 変更履歴](./CHANGELOG.md)**: バージョン履歴と変更内容
+- **[❓ FAQ](./FAQ.md)**: よくある質問と回答
+- **[🤝 コントリビューションガイド](./CONTRIBUTING.md)**: コーディング規約とプロセス
+- **[🛡️ セキュリティポリシー](./SECURITY.md)**: 脆弱性報告手順
+- **[📜 行動規範](./CODE_OF_CONDUCT.md)**: コミュニティガイドライン
+- **[📜 ライセンス](./LICENSE.md)**: MITライセンス
 
 ---
 
