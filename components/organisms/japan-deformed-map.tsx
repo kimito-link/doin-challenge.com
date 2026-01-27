@@ -108,7 +108,7 @@ function getHeatColor(count: number, maxCount: number, baseColor: { bg: string; 
     return { bg: color.mapInactive, text: color.textMuted, border: color.border, hasParticipants: false };
   }
   
-  // 参加者がいる場合は赤系の色に（参加者数に応じて濃くなる）
+  // 参加者がいる場合は赤系の色に（参加予定数に応じて濃くなる）
   const intensity = Math.min(count / Math.max(maxCount, 1), 1);
   
   if (intensity >= 0.8) {

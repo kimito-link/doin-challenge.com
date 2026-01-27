@@ -7,7 +7,7 @@
 import { color } from "@/theme/tokens";
 
 /**
- * 参加者数に応じたヒートマップの色を取得
+ * 参加予定数に応じたヒートマップの色を取得
  * 黄色(少) → オレンジ → 赤 → 濃い赤(多)
  */
 export function getHeatColor(count: number, maxCount: number): string {
@@ -53,7 +53,7 @@ export function getShortPrefectureName(name: string): string {
 }
 
 /**
- * 参加者数に応じた動的アイコンを取得
+ * 参加予定数に応じた動的アイコンを取得
  */
 export function getDynamicIcon(count: number): string {
   if (count === 0) return "😢";

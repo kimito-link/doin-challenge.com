@@ -131,7 +131,7 @@ export type InsertChallengeTemplate = typeof challengeTemplates.$inferInsert;
 // =============================================================================
 
 /**
- * 統計データテーブル（参加者数推移など）
+ * 統計データテーブル（参加予定数推移など）
  */
 export const challengeStats = mysqlTable("challenge_stats", {
   id: int("id").autoincrement().primaryKey(),

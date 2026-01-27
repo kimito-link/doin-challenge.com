@@ -17,6 +17,7 @@ import { Ionicons } from "@expo/vector-icons";
 import MaterialIcons from "@expo/vector-icons/MaterialIcons";
 import * as Haptics from "expo-haptics";
 import { navigate } from "@/lib/navigation/app-routes";
+import type { Challenge } from "@/types/challenge";
 
 // 管理者のTwitter ID
 const ADMIN_TWITTER_IDS = [
@@ -75,13 +76,13 @@ export default function AdminDashboard() {
     },
     {
       title: "公開中",
-      value: challenges?.filter((c: any) => c.isPublic).length ?? 0,
+      value: challenges?.filter((c: Challenge) => c.isPublic).length ?? 0,
       icon: "eye-outline",
       color: color.info,
     },
     {
       title: "非公開",
-      value: challenges?.filter((c: any) => !c.isPublic).length ?? 0,
+      value: challenges?.filter((c: Challenge) => !c.isPublic).length ?? 0,
       icon: "eye-off-outline",
       color: colors.muted,
     },
@@ -326,7 +327,7 @@ export default function AdminDashboard() {
           <Text className="text-lg font-semibold text-foreground mb-3">最近のチャレンジ</Text>
           {challenges && challenges.length > 0 ? (
             <View className="gap-2">
-              {challenges.slice(0, 5).map((challenge: any) => (
+              {challenges.slice(0, 5).map((challenge: Challenge) => (
                 <View
                   key={challenge.id}
                   className="bg-surface rounded-lg p-4 border border-border"

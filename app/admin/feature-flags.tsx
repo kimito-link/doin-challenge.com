@@ -47,7 +47,7 @@ export default function FeatureFlagsScreen() {
                     リアルタイム更新（Polling）
                   </Text>
                   <Text className="mt-1 text-sm text-muted">
-                    参加者数・応援メッセージの自動更新
+                    参加予定数・応援メッセージの自動更新
                   </Text>
                 </View>
                 <Switch

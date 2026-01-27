@@ -84,7 +84,7 @@ function JapanMapInner({ prefectureCounts, onPrefecturePress, selectedPrefecture
   const mapHeight = mapWidth * 1.2;
   const scale = mapWidth / 400;
 
-  // 地域ごとの参加者数を集計
+  // 地域ごとの参加予定数を集計
   const regionCounts = useMemo(() => {
     const counts: { [region: string]: number } = {};
     regionGroups.forEach(region => {
@@ -229,7 +229,7 @@ export function JapanMap(props: JapanMapProps) {
 
 // シンプルな地域別表示（グリッドの代わり）
 export function SimpleRegionMap({ prefectureCounts }: { prefectureCounts: PrefectureCount }) {
-  // 地域ごとの参加者数を集計
+  // 地域ごとの参加予定数を集計
   const regionCounts = useMemo(() => {
     const counts: { [region: string]: number } = {};
     regionGroups.forEach(region => {

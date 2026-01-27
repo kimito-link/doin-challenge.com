@@ -120,7 +120,7 @@ export async function shareParticipation(
   challengeId: number,
   currentParticipants?: number
 ): Promise<boolean> {
-  // 参加者数があれば社会的証明を追加
+  // 参加予定数があれば社会的証明を追加
   const socialProof = currentParticipants && currentParticipants > 10
     ? `\n\n${currentParticipants}人が参加中！`
     : "";

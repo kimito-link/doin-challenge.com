@@ -11,7 +11,7 @@ import { normalizePrefectureName } from "./utils";
 import type { PrefectureCount, HotPrefecture } from "./types";
 
 export function useHeatmapData(prefectureCounts: PrefectureCount) {
-  // 都道府県ごとの参加者数を集計（コード別）
+  // 都道府県ごとの参加予定数を集計（コード別）
   const prefectureCounts47 = useMemo(() => {
     const counts: Record<number, number> = {};
     Object.entries(prefectureCounts).forEach(([name, count]) => {
@@ -24,17 +24,17 @@ export function useHeatmapData(prefectureCounts: PrefectureCount) {
     return counts;
   }, [prefectureCounts]);
 
-  // 最大参加者数（都道府県）
+  // 最大参加予定数（都道府県）
   const maxPrefectureCount = useMemo(() => {
     return Math.max(...Object.values(prefectureCounts47), 0);
   }, [prefectureCounts47]);
 
-  // 総参加者数
+  // 総参加予定数
   const totalCount = useMemo(() => {
     return Object.values(prefectureCounts).reduce((sum, count) => sum + count, 0);
   }, [prefectureCounts]);
 
-  // 地域ごとの参加者数を集計
+  // 地域ごとの参加予定数を集計
   const regionCounts = useMemo(() => {
     const counts: Record<string, number> = {};
     REGION_GROUPS.forEach(region => {
@@ -46,7 +46,7 @@ export function useHeatmapData(prefectureCounts: PrefectureCount) {
     return counts;
   }, [prefectureCounts]);
 
-  // 最大参加者数（地域）
+  // 最大参加予定数（地域）
   const maxRegionCount = useMemo(() => {
     return Math.max(...Object.values(regionCounts), 1);
   }, [regionCounts]);

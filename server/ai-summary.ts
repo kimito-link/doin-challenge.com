@@ -53,7 +53,7 @@ export async function calculateParticipantSummary(challengeId: number): Promise<
   const db = await getDb();
   if (!db) throw new Error("Database not available");
   
-  // 総参加者数
+  // 総参加予定数
   const totalResult = await db
     .select({
       total: sql<number>`SUM(${participations.contribution})`,

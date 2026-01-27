@@ -120,7 +120,7 @@ export async function createParticipation(data: InsertParticipation) {
   const result = await db.insert(participations).values(data);
   const participationId = result[0].insertId;
   
-  // challengesのcurrentValueを更新（参加者数 + 同伴者数）
+  // challengesのcurrentValueを更新（参加予定数 + 同伴者数）
   if (data.challengeId) {
     const contribution = (data.contribution || 1) + (data.companionCount || 0);
     await db.update(challenges)
@@ -228,7 +228,7 @@ export async function getTotalCompanionCountByEventId(eventId: number) {
   return result.reduce((sum, p) => sum + (p.contribution || 1), 0);
 }
 
-// 地域別の参加者数を取得
+// 地域別の参加予定数を取得
 export async function getParticipationsByPrefecture(challengeId: number) {
   const db = await getDb();
   if (!db) return {};

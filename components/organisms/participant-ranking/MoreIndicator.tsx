@@ -1,7 +1,7 @@
 /**
  * MoreIndicator - もっと見るインジケーター
  * 
- * 単一責任: 残り参加者数の表示のみ
+ * 単一責任: 残り参加予定数の表示のみ
  */
 
 import { View, Text, StyleSheet } from "react-native";

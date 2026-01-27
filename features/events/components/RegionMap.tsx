@@ -26,7 +26,7 @@ export interface RegionGroupVM {
 export function RegionMap({ participations, highlightPrefecture }: RegionMapProps) {
   const colors = useColors();
   
-  // 地域ごとの参加者数を集計
+  // 地域ごとの参加予定数を集計
   const regionCounts = countByRegion(participations);
   const maxCount = Math.max(...Object.values(regionCounts), 1);
 

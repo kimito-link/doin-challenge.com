@@ -26,8 +26,10 @@ export interface Challenge {
   venue: string | null;
   prefecture: string | null;
   status: string;
-  /** 直近24時間の新規参加者数（オプション） */
+  /** 直近24時間の新規参加予定数（オプション） */
   recentParticipants?: number;
+  /** 公開状態（管理画面用） */
+  isPublic?: boolean;
 }
 
 /** フィルタータイプ */

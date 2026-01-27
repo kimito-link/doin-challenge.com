@@ -22,6 +22,7 @@ import {
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { navigate } from "@/lib/navigation/app-routes";
+import type { Challenge } from "@/types/challenge";
 
 export default function ChallengesScreen() {
   const colors = useColors();
@@ -62,14 +63,14 @@ export default function ChallengesScreen() {
     refetch().finally(() => setRefreshing(false));
   }, [refetch]);
 
-  const handleTogglePublic = (challenge: any) => {
+  const handleTogglePublic = (challenge: Challenge) => {
     togglePublicMutation.mutate({
       id: challenge.id,
       isPublic: !challenge.isPublic,
     });
   };
 
-  const handleDelete = (challenge: any) => {
+  const handleDelete = (challenge: Challenge) => {
     const confirmDelete = () => {
       deleteMutation.mutate({ id: challenge.id });
     };
@@ -90,14 +91,14 @@ export default function ChallengesScreen() {
     }
   };
 
-  const filteredChallenges = challenges?.filter((c: any) => {
+  const filteredChallenges = challenges?.filter((c: Challenge) => {
     if (filter === "public") return c.isPublic;
     if (filter === "private") return !c.isPublic;
     return true;
   });
 
-  const formatDate = (dateStr: string) => {
-    const date = new Date(dateStr);
+  const formatDate = (dateStr: string | Date) => {
+    const date = typeof dateStr === 'string' ? new Date(dateStr) : dateStr;
     return date.toLocaleDateString("ja-JP", {
       year: "numeric",
       month: "short",
@@ -168,19 +169,19 @@ export default function ChallengesScreen() {
         <View className="flex-row gap-3 mb-6">
           <View className="flex-1 bg-surface p-4 rounded-lg border border-border">
             <Text className="text-2xl font-bold text-foreground">
-              {challenges?.filter((c: any) => c.isPublic).length || 0}
+              {challenges?.filter((c: Challenge) => c.isPublic).length || 0}
             </Text>
             <Text className="text-xs text-muted">公開中</Text>
           </View>
           <View className="flex-1 bg-surface p-4 rounded-lg border border-border">
             <Text className="text-2xl font-bold text-foreground">
-              {challenges?.filter((c: any) => !c.isPublic).length || 0}
+              {challenges?.filter((c: Challenge) => !c.isPublic).length || 0}
             </Text>
             <Text className="text-xs text-muted">非公開</Text>
           </View>
           <View className="flex-1 bg-surface p-4 rounded-lg border border-border">
             <Text className="text-2xl font-bold text-foreground">
-              {challenges?.filter((c: any) => new Date(c.eventDate) > new Date()).length || 0}
+              {challenges?.filter((c: Challenge) => new Date(c.eventDate) > new Date()).length || 0}
             </Text>
             <Text className="text-xs text-muted">開催予定</Text>
           </View>
@@ -189,7 +190,7 @@ export default function ChallengesScreen() {
         {/* チャレンジリスト */}
         {filteredChallenges && filteredChallenges.length > 0 ? (
           <View className="gap-3">
-            {filteredChallenges.map((challenge: any) => (
+            {filteredChallenges.map((challenge: Challenge) => (
               <View
                 key={challenge.id}
                 className="bg-surface rounded-xl border border-border overflow-hidden"

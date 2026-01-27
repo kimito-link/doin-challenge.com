@@ -10,7 +10,7 @@ export async function refreshChallengeSummary(challengeId: number) {
   if (!db) return;
 
   try {
-    // 1. 参加者数と地域分布を取得
+    // 1. 参加予定数と地域分布を取得
     const participationData = await db.select({
       prefecture: participations.prefecture,
       count: sql<number>`COUNT(*)`,

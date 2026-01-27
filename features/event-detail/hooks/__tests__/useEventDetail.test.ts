@@ -345,7 +345,7 @@ describe("useEventDetail", () => {
   });
 
   describe("都道府県別カウント", () => {
-    it("都道府県別参加者数を返す", () => {
+    it("都道府県別参加予定数を返す", () => {
       const { result } = renderHook(() => useEventDetail({ challengeId: 1 }));
       
       expect(result.current.prefectureCounts).toBeDefined();

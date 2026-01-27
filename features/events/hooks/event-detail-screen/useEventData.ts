@@ -127,7 +127,7 @@ export function useEventData(
     ];
   }, [participations, vm]);
   
-  // 地域グループ（参加者数付き）
+  // 地域グループ（参加予定数付き）
   const regions = useMemo((): RegionGroupVM[] => {
     const countsByPref = new Map<string, number>();
     for (const p of participations) {
