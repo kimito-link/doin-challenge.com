@@ -22,6 +22,7 @@ import * as Clipboard from "expo-clipboard";
 import * as Haptics from "expo-haptics";
 import { useColors } from "@/hooks/use-colors";
 import { navigate } from "@/lib/navigation";
+import { PARTICIPANT_LABELS } from "@/constants/labels";
 
 interface ChallengeCreatedModalProps {
   visible: boolean;
@@ -155,7 +156,7 @@ ${url}`;
     {
       id: "check_dashboard",
       label: "参加状況を確認",
-      description: "参加者数をリアルタイムでチェック",
+      description: `${PARTICIPANT_LABELS.COUNT}をリアルタイムでチェック`,
       icon: "chart-simple",
       action: () => {
         onClose();

@@ -11,9 +11,10 @@ import Animated, {
   withSequence,
 } from "react-native-reanimated";
 import { useEffect } from "react";
+import { PARTICIPANT_LABELS } from "@/constants/labels";
 
 export interface JapanMapDeformedProps {
-  /** 都道府県ごとの参加者数 */
+  /** 都道府県ごとの参加予定数 */
   prefectureCounts: Record<string, number>;
   /** 点灯させる都道府県（参加完了時） */
   highlightPrefecture?: string | null;

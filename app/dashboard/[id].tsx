@@ -14,6 +14,7 @@ import { ExportButton } from "@/components/molecules/export-button";
 import { RefreshingIndicator } from "@/components/molecules/refreshing-indicator";
 import type { ExportData } from "@/lib/export-stats";
 import type { Challenge } from "@/drizzle/schema";
+import { PARTICIPANT_LABELS, STATS_LABELS } from "@/constants/labels";
 import { ParticipantRanking } from "@/components/organisms/participant-ranking";
 
 const { width: screenWidth } = Dimensions.get("window");
@@ -46,7 +47,7 @@ type Participation = {
 
 // 時間帯別ヒートマップコンポーネント
 function TimeHeatmap({ participations }: { participations: Participation[] }) {
-  // 時間帯別の参加者数を集計（0-23時）
+  // 時間帯別の参加予定を集計（0-23時）
   const hourCounts = useMemo(() => {
     const counts: number[] = Array(24).fill(0);
     participations.forEach(p => {
@@ -102,7 +103,7 @@ function TimeHeatmap({ participations }: { participations: Participation[] }) {
 
 // 日別推移グラフコンポーネント
 function DailyTrendChart({ participations }: { participations: Participation[] }) {
-  // 日別の参加者数を集計
+  // 日別の参加予定を集計
   const dailyData = useMemo(() => {
     const dateMap: Record<string, number> = {};
     participations.forEach(p => {
@@ -133,7 +134,7 @@ function DailyTrendChart({ participations }: { participations: Participation[] }
     return (
       <View style={{ marginVertical: 16 }}>
         <Text style={{ color: color.textWhite, fontSize: 16, fontWeight: "bold", marginBottom: 12 }}>
-          📈 参加者数推移
+          📈 {PARTICIPANT_LABELS.TREND}
         </Text>
         <View style={{ backgroundColor: color.surface, borderRadius: 8, padding: 24, alignItems: "center" }}>
           <Text style={{ color: color.textSubtle }}>まだ参加者がいません</Text>
@@ -145,7 +146,7 @@ function DailyTrendChart({ participations }: { participations: Participation[] }
   return (
     <View style={{ marginVertical: 16 }}>
       <Text style={{ color: color.textWhite, fontSize: 16, fontWeight: "bold", marginBottom: 12 }}>
-        📈 参加者数推移
+        📈 {PARTICIPANT_LABELS.TREND}
       </Text>
       <View style={{ backgroundColor: color.surface, borderRadius: 8, padding: 16 }}>
         {/* グラフエリア */}
@@ -218,7 +219,7 @@ function DailyTrendChart({ participations }: { participations: Participation[] }
 
 // 地域分布円グラフコンポーネント
 function RegionPieChart({ participations }: { participations: Participation[] }) {
-  // 地域ごとの参加者数を集計
+  // 地域ごとの参加予定を集計
   const regionData = useMemo(() => {
     const counts: Record<string, number> = {};
     let total = 0;
