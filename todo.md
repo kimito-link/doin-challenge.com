@@ -189,5 +189,24 @@
 - [x] 「生誕祭」を「動員ちゃれんじ」に置換
   - app/edit-challenge/[id].tsx: 「例: 君斗りんくの動員ちゃれんじ2025」
   - app/event/edit/[id].tsx: 「例: 君斗りんくの動員ちゃれんじ2026」
-- [ ] チェックポイント保存（v6.92）
+- [x] チェックポイント保存（v6.92）
+- [x] GitHubへのpush（既に同期済み）
+
+### Phase 28: リアルタイム性の向上
+- [x] Polling機構を実装（10秒間隔、画面表示中のみ）
+  - [x] useIntervalフックを作成
+  - [x] イベント詳細画面でのみ有効
+  - [x] AppState監視でバックグラウンド時に停止
+- [x] 差分更新と進捗バーのアニメーション
+  - [x] Pollingによりrefetch()でデータ更新
+  - [x] 進捗バーはreact-native-reanimatedでアニメーション済み
+- [x] アプリ内バナー（「○○さんが参加表明！」）
+  - [x] ParticipationBannerコンポーネントを作成
+  - [x] 画面上部に表示
+  - [x] 3秒後に自動的に消える（react-native-reanimated）
+  - [x] 新しい参加者を検出するロジック
+- [x] 応援メッセージのリアルタイム追加
+  - [x] Pollingによりrefetch()でデータ更新
+  - [x] FlatListが自動的に新しいメッセージを表示
+- [ ] チェックポイント保存（v6.93）
 - [ ] GitHubへのpush

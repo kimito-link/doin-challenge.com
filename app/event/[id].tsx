@@ -23,9 +23,12 @@ import { RefreshingIndicator } from "@/components/molecules/refreshing-indicator
 import { LinkSpeech } from "@/components/organisms/link-speech";
 import { Toast } from "@/components/ui/toast";
 import { NotificationOnboardingModal } from "@/components/molecules/notification-onboarding-modal";
+import { ParticipationBanner } from "@/components/ui/participation-banner";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import * as Notifications from "expo-notifications";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
+import { AppState, type AppStateStatus } from "react-native";
+import { useInterval } from "@/hooks/use-interval";
 import { shareParticipation } from "@/lib/share";
 import {
   MessagesSection,
@@ -61,6 +64,15 @@ export default function ChallengeDetailScreen() {
   // 通知オンボーディングの状態
   const [showNotificationOnboarding, setShowNotificationOnboarding] = useState(false);
   
+  // Polling機構の状態
+  const [isPollingEnabled, setIsPollingEnabled] = useState(true);
+  const appState = useRef<AppStateStatus>(AppState.currentState);
+  
+  // 新しい参加者の状態
+  const [newParticipantName, setNewParticipantName] = useState<string | null>(null);
+  const [showParticipationBanner, setShowParticipationBanner] = useState(false);
+  const previousParticipationCount = useRef<number>(0);
+  
   const { id } = useLocalSearchParams<{ id: string }>();
   const challengeId = parseInt(id || "0", 10);
 
@@ -74,6 +86,63 @@ export default function ChallengeDetailScreen() {
     eventDetail.isInitialLoading,
     !eventDetail.hasData
   );
+  
+  // AppState監視（バックグラウンド時はPolling停止）
+  useEffect(() => {
+    const subscription = AppState.addEventListener("change", (nextAppState) => {
+      if (
+        appState.current.match(/inactive|background/) &&
+        nextAppState === "active"
+      ) {
+        // アプリがフォアグラウンドに戻ったときにPollingを再開
+        setIsPollingEnabled(true);
+        // 即座にデータを更新
+        eventDetail.refetch();
+      } else if (nextAppState.match(/inactive|background/)) {
+        // アプリがバックグラウンドに移動したときにPollingを停止
+        setIsPollingEnabled(false);
+      }
+      appState.current = nextAppState;
+    });
+
+    return () => {
+      subscription.remove();
+    };
+  }, [eventDetail.refetch]);
+  
+  // Polling機構（10秒間隔、画面表示中のみ）
+  useInterval(
+    () => {
+      if (isPollingEnabled && !eventDetail.isRefreshing) {
+        eventDetail.refetch();
+      }
+    },
+    isPollingEnabled ? 10000 : null // 10秒間隔
+  );
+  
+  // 新しい参加者を検出
+  useEffect(() => {
+    if (eventDetail.participations && eventDetail.participations.length > 0) {
+      const currentCount = eventDetail.participations.length;
+      
+      // 初回読み込み時はカウントを保存するだけ
+      if (previousParticipationCount.current === 0) {
+        previousParticipationCount.current = currentCount;
+        return;
+      }
+      
+      // 参加者が増えた場合
+      if (currentCount > previousParticipationCount.current) {
+        // 最新の参加者を取得（最初の要素が最新）
+        const latestParticipation = eventDetail.participations[0];
+        if (latestParticipation) {
+          setNewParticipantName(latestParticipation.displayName || "匿名");
+          setShowParticipationBanner(true);
+        }
+        previousParticipationCount.current = currentCount;
+      }
+    }
+  }, [eventDetail.participations]);
   
   // 初回訪問時に通知オンボーディングを表示
   useEffect(() => {
@@ -510,6 +579,18 @@ export default function ChallengeDetailScreen() {
         onClose={handleSkipNotifications}
         onEnable={handleEnableNotifications}
       />
+      
+      {/* 参加表明バナー */}
+      {newParticipantName && (
+        <ParticipationBanner
+          name={newParticipantName}
+          visible={showParticipationBanner}
+          onDismiss={() => {
+            setShowParticipationBanner(false);
+            setNewParticipantName(null);
+          }}
+        />
+      )}
     </ScreenContainer>
   );
 }
