@@ -341,5 +341,19 @@
   - [x] `lib/feature-flags.ts`を作成
   - [x] Feature Flag管理画面の作成（`app/admin/feature-flags.tsx`）
   - [x] `docs/feature-flags.md`を作成
-- [ ] チェックポイント保存（v6.101）
+- [x] チェックポイント保存（v6.101）
+- [x] GitHubへのpush
+
+### Phase 38: Gate 1-③（ロールバック手順）の明文化
+- [x] ロールバック手順の明文化
+  - [x] Vercel Promote手順
+  - [x] DBを触らずに戻す手順
+  - [x] 環境変数・Secretsの確認ポイント
+  - [x] `docs/rollback-procedure.md`を作成
+- [x] 緊急時の対応フローをドキュメント化
+  - [x] 緊急時の判断基準
+  - [x] 対応フロー（検知→判断→実行→確認）
+  - [x] 連絡先・エスカレーション手順
+  - [x] `docs/emergency-response.md`を作成
+- [ ] チェックポイント保存（v6.102）
 - [ ] GitHubへのpush
