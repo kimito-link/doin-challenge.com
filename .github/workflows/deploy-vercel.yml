@@ -1,0 +1,96 @@
+name: Deploy to Vercel
+
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+
+jobs:
+  deploy:
+    name: Deploy to Vercel
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 9
+
+      - name: Get pnpm store directory
+        id: pnpm-cache
+        shell: bash
+        run: |
+          echo "STORE_PATH=$(pnpm store path)" >> $GITHUB_OUTPUT
+
+      - name: Setup pnpm cache
+        uses: actions/cache@v4
+        with:
+          path: ${{ steps.pnpm-cache.outputs.STORE_PATH }}
+          key: ${{ runner.os }}-pnpm-store-${{ hashFiles('**/pnpm-lock.yaml') }}
+          restore-keys: |
+            ${{ runner.os }}-pnpm-store-
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Run TypeScript type check
+        run: pnpm check
+
+      - name: Run tests
+        run: pnpm test
+
+      - name: Deploy to Vercel
+        uses: amondnet/vercel-action@v25
+        with:
+          vercel-token: ${{ secrets.VERCEL_TOKEN }}
+          vercel-org-id: ${{ secrets.VERCEL_ORG_ID }}
+          vercel-project-id: ${{ secrets.VERCEL_PROJECT_ID }}
+          vercel-args: '--prod'
+          working-directory: ./
+        env:
+          COMMIT_SHA: ${{ github.sha }}
+
+      - name: Wait for deployment to be live
+        run: sleep 30
+
+      - name: Verify deployment (commitSha check)
+        run: |
+          set -e
+          EXPECTED_SHA="${{ github.sha }}"
+          echo "Expected commit SHA: $EXPECTED_SHA"
+          
+          # /api/health から現在のcommitShaを取得
+          DEPLOYED_SHA=$(curl -s https://doin-challenge.com/api/health | jq -r '.commitSha // empty')
+          echo "Deployed commit SHA: $DEPLOYED_SHA"
+          
+          if [ -z "$DEPLOYED_SHA" ]; then
+            echo "❌ Failed to get commitSha from /api/health"
+            exit 1
+          fi
+          
+          if [ "$DEPLOYED_SHA" != "$EXPECTED_SHA" ]; then
+            echo "❌ Deployment verification failed"
+            echo "   Expected: $EXPECTED_SHA"
+            echo "   Deployed: $DEPLOYED_SHA"
+            exit 1
+          fi
+          
+          echo "✅ Deployment verified successfully"
+
+      - name: Smoke check
+        run: |
+          set -e
+          URL="https://doin-challenge.com/api/readyz"
+          echo "Checking $URL"
+          status=$(curl -s -o /dev/null -w "%{http_code}" "$URL")
+          echo "status=$status"
+          test "$status" -eq 200

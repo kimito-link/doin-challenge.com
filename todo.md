@@ -187,3 +187,41 @@
   - [x] trpc.participations.likeMessage/unlikeMessageのモック追加
 - [x] テストの再実行と確認（680/682成功、99.7%）
 - [x] チェックポイント保存（v6.121）
+
+
+### Phase 58: GitHubへのpushとVercelデプロイ
+- [ ] GitHubリポジトリの状態確認
+  - [ ] 現在のブランチとコミット状態を確認
+  - [ ] リモートリポジトリとの差分を確認
+- [ ] 最新の変更をGitHubにpush
+  - [ ] v6.118～v6.121の変更をコミット
+  - [ ] mainブランチにpush
+- [ ] Vercelのデプロイ状態確認と再デプロイ
+  - [ ] Vercelプロジェクトの設定確認
+  - [ ] 必要に応じて再デプロイ
+- [ ] デプロイ完了報告
+
+
+### Phase 59: Gate 1 - Vercel自動デプロイ問題の解決と監視体制の確立
+- [x] ① 原因切り分け（最優先）
+  - [x] Vercel Git Integration設定の確認（vercel.json正常）
+  - [x] GitHub Actions設定の確認（ci.yml正常）
+  - [x] 根本原因の特定：GitHub ActionsからVercelへの明示的トリガーが存在しない
+- [x] ② 最小で安全な解決策の決定
+  - [x] GitHub Actions → Vercel Deploy（明示的トリガー）への切り替えを決定
+  - [x] deploy-vercel.ymlの作成（amondnet/vercel-action@v25）
+  - [x] Gate 1的に安全な方式を確定
+- [x] ③ デプロイ反映確認機構の実装
+  - [x] /api/healthエンドポイントにcommitShaを追加
+  - [x] systemRouter.tsにcommitShaを追加
+  - [x] デプロイ完了後の照合スクリプト実装（deploy-vercel.yml）
+  - [x] GitHub Actionsへの統合完了
+- [ ] ④ 監視・検知体制の確立（次フェーズ）
+  - [ ] UptimeRobotの設定
+  - [ ] Sentryの導入（ログイン失敗率、API 5xx急増など）
+  - [ ] 失敗時の即検知フローの確立
+- [x] ⑤ Gate 1要件の実装完了
+  - [x] 「CIが緑＝本番にそのコードが確実に出ている」仕組みを実装
+  - [x] 手動確認を前提としない運用の確立
+  - [x] GATE1-SETUP.mdの作成
+  - [x] チェックポイント保存（v6.122）

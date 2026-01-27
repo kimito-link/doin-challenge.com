@@ -114,6 +114,7 @@ async function startServer() {
       ok: true,
       timestamp: Date.now(),
       version: process.env.APP_VERSION || "unknown",
+      commitSha: process.env.COMMIT_SHA || process.env.GIT_SHA || "unknown",
       gitSha: process.env.GIT_SHA || "unknown",
       builtAt: process.env.BUILT_AT || "unknown",
       nodeEnv: process.env.NODE_ENV || "development",
