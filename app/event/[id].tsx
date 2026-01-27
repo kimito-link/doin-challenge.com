@@ -166,11 +166,13 @@ export default function ChallengeDetailScreen() {
             onShowHostProfile={() => modalState.setShowHostProfileModal(true)}
           />
 
-          {/* カウントダウン */}
-          <CountdownSection
-            eventDate={challenge.eventDate}
-            isDateUndecided={eventDetail.isDateUndecided}
-          />
+          {/* 基本情報（日時・場所） */}
+          <View style={{ paddingHorizontal: 16 }}>
+            <EventBasicInfo
+              formattedDate={eventDetail.formattedDate}
+              venue={challenge.venue}
+            />
+          </View>
 
           {/* 進捗セクション */}
           <ProgressSection
@@ -187,15 +189,66 @@ export default function ChallengeDetailScreen() {
             onRegionPress={(region) => modalState.setSelectedRegion(region)}
           />
 
-          {/* イベント情報 */}
+          {/* 参加表明フォーム / シェアボタン */}
           <View style={{ paddingHorizontal: 16 }}>
-            <EventInfoSection
-              formattedDate={eventDetail.formattedDate}
-              venue={challenge.venue}
-              description={challenge.description}
-            />
+            {participationForm.showForm ? (
+              <ParticipationFormSection
+                user={user}
+                login={eventDetail.login}
+                message={participationForm.message}
+                setMessage={participationForm.setMessage}
+                prefecture={participationForm.prefecture}
+                setPrefecture={participationForm.setPrefecture}
+                gender={participationForm.gender}
+                setGender={participationForm.setGender}
+                allowVideoUse={participationForm.allowVideoUse}
+                setAllowVideoUse={participationForm.setAllowVideoUse}
+                showPrefectureList={participationForm.showPrefectureList}
+                setShowPrefectureList={participationForm.setShowPrefectureList}
+                companions={participationForm.companions}
+                showAddCompanionForm={participationForm.showAddCompanionForm}
+                setShowAddCompanionForm={participationForm.setShowAddCompanionForm}
+                newCompanionName={participationForm.newCompanionName}
+                setNewCompanionName={participationForm.setNewCompanionName}
+                newCompanionTwitter={participationForm.newCompanionTwitter}
+                setNewCompanionTwitter={participationForm.setNewCompanionTwitter}
+                isLookingUpTwitter={participationForm.isLookingUpTwitter}
+                lookupError={participationForm.lookupError}
+                lookedUpProfile={participationForm.lookedUpProfile}
+                setLookedUpProfile={participationForm.setLookedUpProfile}
+                setLookupError={participationForm.setLookupError}
+                onSubmit={participationForm.handleSubmit}
+                onCancel={() => participationForm.setShowForm(false)}
+                onAddCompanion={participationForm.handleAddCompanion}
+                onRemoveCompanion={participationForm.handleRemoveCompanion}
+                onLookupTwitterProfile={participationForm.lookupTwitterProfile}
+                isSubmitting={participationForm.isSubmitting}
+              />
+            ) : (
+              <ShareSection
+                challengeId={challengeId}
+                challengeTitle={challenge.title}
+                eventDate={challenge.eventDate}
+                onShare={eventActions.handleShare}
+                onTwitterShare={eventActions.handleTwitterShare}
+                onShowForm={() => participationForm.setShowForm(true)}
+              />
+            )}
+          </View>
 
-            {/* チケット情報 */}
+          {/* カウントダウン */}
+          <CountdownSection
+            eventDate={challenge.eventDate}
+            isDateUndecided={eventDetail.isDateUndecided}
+          />
+
+          {/* 説明文 */}
+          <View style={{ paddingHorizontal: 16 }}>
+            <EventDescription description={challenge.description} />
+          </View>
+
+          {/* チケット情報 */}
+          <View style={{ paddingHorizontal: 16 }}>
             <TicketInfoSection
               ticketPresale={challenge.ticketPresale}
               ticketDoor={challenge.ticketDoor}
@@ -251,53 +304,6 @@ export default function ChallengeDetailScreen() {
               />
             </View>
           )}
-
-          {/* 参加表明フォーム / シェアボタン */}
-          <View style={{ paddingHorizontal: 16 }}>
-            {participationForm.showForm ? (
-              <ParticipationFormSection
-                user={user}
-                login={eventDetail.login}
-                message={participationForm.message}
-                setMessage={participationForm.setMessage}
-                prefecture={participationForm.prefecture}
-                setPrefecture={participationForm.setPrefecture}
-                gender={participationForm.gender}
-                setGender={participationForm.setGender}
-                allowVideoUse={participationForm.allowVideoUse}
-                setAllowVideoUse={participationForm.setAllowVideoUse}
-                showPrefectureList={participationForm.showPrefectureList}
-                setShowPrefectureList={participationForm.setShowPrefectureList}
-                companions={participationForm.companions}
-                showAddCompanionForm={participationForm.showAddCompanionForm}
-                setShowAddCompanionForm={participationForm.setShowAddCompanionForm}
-                newCompanionName={participationForm.newCompanionName}
-                setNewCompanionName={participationForm.setNewCompanionName}
-                newCompanionTwitter={participationForm.newCompanionTwitter}
-                setNewCompanionTwitter={participationForm.setNewCompanionTwitter}
-                isLookingUpTwitter={participationForm.isLookingUpTwitter}
-                lookupError={participationForm.lookupError}
-                lookedUpProfile={participationForm.lookedUpProfile}
-                setLookedUpProfile={participationForm.setLookedUpProfile}
-                setLookupError={participationForm.setLookupError}
-                onSubmit={participationForm.handleSubmit}
-                onCancel={() => participationForm.setShowForm(false)}
-                onAddCompanion={participationForm.handleAddCompanion}
-                onRemoveCompanion={participationForm.handleRemoveCompanion}
-                onLookupTwitterProfile={participationForm.lookupTwitterProfile}
-                isSubmitting={participationForm.isSubmitting}
-              />
-            ) : (
-              <ShareSection
-                challengeId={challengeId}
-                challengeTitle={challenge.title}
-                eventDate={challenge.eventDate}
-                onShare={eventActions.handleShare}
-                onTwitterShare={eventActions.handleTwitterShare}
-                onShowForm={() => participationForm.setShowForm(true)}
-              />
-            )}
-          </View>
 
           <View style={{ height: 100 }} />
         </ScrollView>
