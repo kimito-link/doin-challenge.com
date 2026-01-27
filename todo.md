@@ -325,5 +325,21 @@
   - [x] `.github/workflows/smoke-check.yml`を作成
   - [x] `docs/uptime-robot-setup.md`を作成
   - [x] `docs/sentry-setup.md`を作成
-- [ ] チェックポイント保存（v6.100）
+- [x] チェックポイント保存（v6.100）
+- [x] GitHubへのpush
+
+### Phase 37: Sentry環境変数の設定、UptimeRobot、Gate 1-②（Feature Flag）
+- [ ] Sentry環境変数の設定とクライアント側の初期化
+  - [ ] `.env.example`を作成してSENTRY_DSNとSENTRY_ENVIRONMENTを追加
+  - [ ] `app/_layout.tsx`にSentryの初期化コードを追加
+  - [ ] 認証フローにトラッキングを追加
+- [ ] UptimeRobotの設定確認とユーザーへの案内
+  - [ ] UptimeRobotの設定手順を確認
+  - [ ] ユーザーに手動設定を案内
+- [x] Gate 1-②（Feature Flag）の実装
+  - [x] Feature Flagの設計（環境変数ベース）
+  - [x] `lib/feature-flags.ts`を作成
+  - [x] Feature Flag管理画面の作成（`app/admin/feature-flags.tsx`）
+  - [x] `docs/feature-flags.md`を作成
+- [ ] チェックポイント保存（v6.101）
 - [ ] GitHubへのpush
