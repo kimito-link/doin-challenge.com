@@ -43,8 +43,8 @@ interface ErrorLog {
     endpoint?: string;
     method?: string;
     userId?: number;
-    requestBody?: any;
-    query?: any;
+    requestBody?: unknown;
+    query?: unknown;
   };
   resolved: boolean;
   aiAnalysis?: AiAnalysis;

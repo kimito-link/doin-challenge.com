@@ -137,6 +137,18 @@ vi.mock("@/lib/trpc", () => ({
           isLoading: false,
         }),
       },
+      likeMessage: {
+        useMutation: () => ({
+          mutate: vi.fn(),
+          isLoading: false,
+        }),
+      },
+      unlikeMessage: {
+        useMutation: () => ({
+          mutate: vi.fn(),
+          isLoading: false,
+        }),
+      },
     },
     companions: {
       forChallenge: {

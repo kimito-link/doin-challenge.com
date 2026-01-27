@@ -81,7 +81,7 @@ export default function ManageCommentsScreen() {
     );
   }
 
-  const pickedIds = new Set(pickedComments?.map((p: any) => p.participationId) || []);
+  const pickedIds = new Set(pickedComments?.map(p => p.participationId) || []);
   
   // コメントがあるものだけフィルタ
   const commentsWithMessage = participations?.filter(p => p.message && p.message.trim().length > 0) || [];
@@ -184,7 +184,7 @@ export default function ManageCommentsScreen() {
         <View style={{ paddingHorizontal: 16 }}>
           {selectedTab === "all" ? (
             commentsWithMessage.length > 0 ? (
-              commentsWithMessage.map((participation: any) => {
+              commentsWithMessage.map((participation) => {
                 const isPicked = pickedIds.has(participation.id);
                 const isPickingThis = pickingId === participation.id;
                 

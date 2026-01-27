@@ -172,3 +172,18 @@
   - [x] 656テスト成功、26テスト失敗（tRPCモック不足、既知の問題）
   - [x] 成功率: 96.2%（656/682）
 - [x] チェックポイント保存（v6.120）
+
+
+### Phase 57: 残りのTypeScript型安全性向上とテストモック追加
+- [x] 残りのany型を削減（app/ディレクトリ）
+  - [x] app/collaborators/[id].tsx（Collaborator型を作成）
+  - [x] app/edit-participation/[id].tsx（Participation型を使用）
+  - [x] app/profile/[userId].tsx（any型2箇所は型推論に任せる）
+  - [x] app/manage-comments/[id].tsx（any型を削除）
+  - [x] app/admin/data-integrity.tsx（ThemeColorPalette型を使用）
+  - [x] app/admin/errors.tsx（unknown型に置き換え）
+- [x] tRPCモックの追加（失敗テストの修正）
+  - [x] features/event-detail/hooks/__tests__/useEventDetail.test.ts
+  - [x] trpc.participations.likeMessage/unlikeMessageのモック追加
+- [x] テストの再実行と確認（680/682成功、99.7%）
+- [x] チェックポイント保存（v6.121）

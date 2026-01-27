@@ -9,6 +9,7 @@ import { View, Text, ScrollView, Pressable, StyleSheet, ActivityIndicator, Refre
 import { RefreshingIndicator } from "@/components/molecules/refreshing-indicator";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useColors } from "@/hooks/use-colors";
+import type { ThemeColorPalette } from "@/constants/theme";
 import { trpc } from "@/lib/trpc";
 import { useState, useCallback } from "react";
 import { Ionicons } from "@expo/vector-icons";
@@ -232,7 +233,7 @@ function ChallengeCard({
       totalCompanions: number;
     };
   };
-  colors: any;
+  colors: ThemeColorPalette;
 }) {
   const [expanded, setExpanded] = useState(false);
   
