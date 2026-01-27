@@ -442,5 +442,17 @@
   - [x] 変更内容のチェックリスト
   - [x] テスト項目
   - [x] レビュー観点
-- [ ] チェックポイント保存（v6.108）
+- [x] チェックポイント保存（v6.108）
+- [x] GitHubへのpush
+
+### Phase 45: GitHub Actionsの設定
+- [x] CIワークフローの作成（.github/workflows/ci.yml）
+  - [x] 型チェック（pnpm check）
+  - [x] ESLint（pnpm lint）
+  - [x] テスト（pnpm test）
+  - [x] ビルド（pnpm build）
+- [x] Dependabotの設定（.github/dependabot.yml）
+  - [x] npm依存関係の自動更新
+  - [x] GitHub Actionsの自動更新
+- [ ] チェックポイント保存（v6.109）
 - [ ] GitHubへのpush

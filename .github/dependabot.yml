@@ -41,9 +41,9 @@ updates:
     # Commit message format
     commit-message:
       prefix: "chore(deps)"
-    # Reviewers (optional - add your GitHub username)
-    # reviewers:
-    #   - "your-github-username"
+    # Reviewers
+    reviewers:
+      - "kimito-link"
 
   # GitHub Actions
   - package-ecosystem: "github-actions"
