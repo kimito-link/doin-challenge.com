@@ -1,6 +1,13 @@
 /**
  * チャレンジカードコンポーネント
  * ホーム画面のグリッドに表示されるチャレンジカード
+ * 
+ * ファーストビューの情報削減: 最大5要素に制限
+ * - タイトル
+ * - 日時（or 残り日数）
+ * - 参加予定（会場/配信）
+ * - 進捗バー
+ * - ジャンル（イベントタイプバッジ）
  */
 import { View, Text } from "react-native";
 import { LinearGradient } from "expo-linear-gradient";
@@ -45,7 +52,6 @@ export function ChallengeCard({
   const goalConfig = goalTypeConfig[challenge.goalType] || goalTypeConfig.custom;
   const typeBadge = eventTypeBadge[challenge.eventType] || eventTypeBadge.solo;
   const unit = challenge.goalUnit || goalConfig.unit;
-  const remaining = Math.max(challenge.goalValue - challenge.currentValue, 0);
 
   // 主催者の性別による色分け（左側に2pxの色付きボーダー）
   const getGenderBorderColor = () => {
@@ -65,14 +71,13 @@ export function ChallengeCard({
       style={{
         backgroundColor: homeUI.surface,
         borderRadius: 12,
-        // marginは0にしてgapで管理（FlatListのcolumnWrapperStyleで制御）
         overflow: "hidden",
         borderWidth: 1,
         borderColor: homeUI.border,
         borderLeftWidth: 2,
         borderLeftColor: getGenderBorderColor(),
         width: cardWidth as any,
-        marginBottom: 8, // 行間の余白
+        marginBottom: 8,
         shadowColor: "#000",
         shadowOffset: { width: 0, height: 2 },
         shadowOpacity: 0.1,
@@ -80,69 +85,73 @@ export function ChallengeCard({
         elevation: 3,
       }}
     >
+      {/* ジャンル（イベントタイプバッジ） */}
       <View style={{ position: "absolute", top: 8, left: 8, zIndex: 1 }}>
-        <View style={{ backgroundColor: typeBadge.color, paddingHorizontal: 8, paddingVertical: 2, borderRadius: 4 }}>
+        <View style={{ backgroundColor: typeBadge.color, paddingHorizontal: 8, paddingVertical: 4, borderRadius: 4 }}>
           <Text style={{ color: colors.foreground, fontSize: 10, fontWeight: "bold" }}>{typeBadge.label}</Text>
         </View>
       </View>
 
-      <LinearGradient
-        colors={homeGradient.pinkPurple}
-        start={{ x: 0, y: 0 }}
-        end={{ x: 1, y: 1 }}
-        style={{ height: 60, justifyContent: "flex-end", paddingHorizontal: 12, paddingBottom: 8 }}
-      >
-        <View style={{ position: "absolute", top: 8, right: 8 }}>
-          <MaterialIcons name={goalConfig.icon as any} size={16} color="rgba(255,255,255,0.7)" />
-        </View>
-        {challenge.venue && (
-          <View style={{ position: "absolute", top: 8, left: 8, right: 32 }}>
-            <Text style={{ color: "rgba(255,255,255,0.9)", fontSize: 11, fontWeight: "600" }} numberOfLines={1}>
+      {/* ヘッダー（アバター + 主催者名） */}
+      <View style={{ flexDirection: "row", alignItems: "center", padding: 12, paddingTop: 36 }}>
+        <LazyAvatar
+          source={challenge.hostProfileImage ? { uri: challenge.hostProfileImage } : undefined}
+          size={32}
+          fallbackColor={homeColor.fallback}
+          fallbackText={challenge.hostName?.charAt(0) || challenge.hostUsername?.charAt(0) || "?"}
+          lazy={true}
+        />
+        <Text style={{ color: homeText.muted, fontSize: 12, marginLeft: 8, flex: 1 }} numberOfLines={1}>
+          {challenge.hostName}
+        </Text>
+      </View>
+
+      {/* タイトル */}
+      <View style={{ paddingHorizontal: 12, paddingBottom: 8 }}>
+        <Text style={{ color: colors.foreground, fontSize: 14, fontWeight: "bold" }} numberOfLines={2}>
+          {challenge.title}
+        </Text>
+      </View>
+
+      {/* 参加予定（会場/配信） */}
+      {challenge.venue && (
+        <View style={{ paddingHorizontal: 12, paddingBottom: 8 }}>
+          <View style={{ flexDirection: "row", alignItems: "center" }}>
+            <MaterialIcons name="place" size={14} color={homeText.accent} />
+            <Text style={{ color: homeText.accent, fontSize: 12, marginLeft: 4, flex: 1 }} numberOfLines={1}>
               {challenge.venue}
             </Text>
           </View>
-        )}
-        <View style={{ position: "absolute", bottom: -16, left: 12 }}>
-          <LazyAvatar
-            source={challenge.hostProfileImage ? { uri: challenge.hostProfileImage } : undefined}
-            size={32}
-            fallbackColor={homeColor.fallback}
-            fallbackText={challenge.hostName?.charAt(0) || challenge.hostUsername?.charAt(0) || "?"}
-            lazy={true}
-          />
         </View>
-      </LinearGradient>
+      )}
 
-      <View style={{ padding: 16, paddingTop: 20 }}>
-        <Text style={{ color: colors.foreground, fontSize: 14, fontWeight: "bold", marginBottom: 4 }} numberOfLines={2}>
-          {challenge.title}
-        </Text>
-        <Text style={{ color: homeText.muted, fontSize: 12, marginBottom: 8 }} numberOfLines={1}>{challenge.hostName}</Text>
-        <View style={{ marginBottom: 8 }}>
-          <View style={{ flexDirection: "row", justifyContent: "space-between", marginBottom: 4 }}>
-            <Text style={{ color: colors.foreground, fontSize: 18, fontWeight: "bold" }}>
-              {challenge.currentValue}
-              <Text style={{ fontSize: 12, color: homeText.muted }}> / {challenge.goalValue}{unit}</Text>
-            </Text>
-          </View>
-          <View style={{ height: 6, backgroundColor: homeUI.progressBar, borderRadius: 3, overflow: "hidden" }}>
-            <LinearGradient
-              colors={homeGradient.pinkPurple}
-              start={{ x: 0, y: 0 }}
-              end={{ x: 1, y: 0 }}
-              style={{ height: "100%", width: `${progress}%`, borderRadius: 3 }}
-            />
-          </View>
-          <Text style={{ color: homeText.muted, fontSize: 10, marginTop: 4 }}>
-            あと{remaining}{unit}で目標達成！
+      {/* 進捗バー */}
+      <View style={{ paddingHorizontal: 12, paddingBottom: 8 }}>
+        <View style={{ flexDirection: "row", justifyContent: "space-between", marginBottom: 4 }}>
+          <Text style={{ color: colors.foreground, fontSize: 16, fontWeight: "bold" }}>
+            {challenge.currentValue}
+            <Text style={{ fontSize: 12, color: homeText.muted }}> / {challenge.goalValue}{unit}</Text>
+          </Text>
+          <Text style={{ color: homeText.accent, fontSize: 12, fontWeight: "600" }}>
+            {progress.toFixed(0)}%
           </Text>
         </View>
-        <View style={{ flexDirection: "row", alignItems: "center", justifyContent: "space-between" }}>
-          {!isDateUndecided && <Countdown targetDate={challenge.eventDate} compact />}
-          <View style={{ flexDirection: "row", alignItems: "center" }}>
-            <MaterialIcons name="event" size={12} color={homeText.accent} />
-            <Text style={{ color: homeText.accent, fontSize: 12, marginLeft: 2 }}>{formattedDate}</Text>
-          </View>
+        <View style={{ height: 6, backgroundColor: homeUI.progressBar, borderRadius: 3, overflow: "hidden" }}>
+          <LinearGradient
+            colors={homeGradient.pinkPurple}
+            start={{ x: 0, y: 0 }}
+            end={{ x: 1, y: 0 }}
+            style={{ height: "100%", width: `${progress}%`, borderRadius: 3 }}
+          />
+        </View>
+      </View>
+
+      {/* 日時（or 残り日数） */}
+      <View style={{ flexDirection: "row", alignItems: "center", justifyContent: "space-between", paddingHorizontal: 12, paddingBottom: 12 }}>
+        {!isDateUndecided && <Countdown targetDate={challenge.eventDate} compact />}
+        <View style={{ flexDirection: "row", alignItems: "center" }}>
+          <MaterialIcons name="event" size={12} color={homeText.accent} />
+          <Text style={{ color: homeText.accent, fontSize: 12, marginLeft: 2 }}>{formattedDate}</Text>
         </View>
       </View>
     </AnimatedCard>

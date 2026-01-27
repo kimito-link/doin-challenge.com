@@ -3,6 +3,7 @@
  * 参加者の応援メッセージを表示
  */
 import { View, Text, Pressable } from "react-native";
+import React from "react";
 import { navigate } from "@/lib/navigation";
 import MaterialIcons from "@expo/vector-icons/MaterialIcons";
 import { useColors } from "@/hooks/use-colors";
@@ -61,7 +62,7 @@ export interface MessageCardProps {
   isLoggedIn?: boolean;
 }
 
-export function MessageCard({
+export const MessageCard = React.memo(function MessageCard({
   participation,
   onCheer,
   cheerCount,
@@ -347,4 +348,4 @@ export function MessageCard({
       </View>
     </View>
   );
-}
+});

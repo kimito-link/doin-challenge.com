@@ -1,4 +1,5 @@
-import { View, Text, StyleSheet, ScrollView, FlatList } from "react-native";
+import { View, Text, StyleSheet, ScrollView, FlatList, Platform } from "react-native";
+import React, { useCallback } from "react";
 import { Button } from "@/components/ui/button";
 import MaterialIcons from "@expo/vector-icons/MaterialIcons";
 import { color } from "@/theme/tokens";
@@ -96,6 +97,43 @@ export function MessagesSection({
       (currentUserTwitterId && p.twitterId === currentUserTwitterId)
     );
   };
+
+  // FlatList最適化: keyExtractorをID固定
+  const keyExtractor = useCallback((item: Participation & { likesCount?: number }) => {
+    return item.id.toString();
+  }, []);
+
+  // FlatList最適化: renderItemをuseCallback
+  const renderItem = useCallback(({ item: p }: { item: Participation & { likesCount?: number } }) => {
+    const participantCompanions = challengeCompanions.filter(c => c.participationId === p.id);
+    const isOwn = isOwnPost(p);
+    
+    return (
+      <View style={isOwn && justSubmitted ? styles.ownPostHighlight : undefined}>
+        {isOwn && justSubmitted && (
+          <View style={styles.ownPostBadge}>
+            <MaterialIcons name="star" size={18} color={colors.foreground} />
+            <Text style={[styles.ownPostBadgeText, { color: colors.foreground }]}>
+              ✨ あなたの参加表明が反映されました！
+            </Text>
+          </View>
+        )}
+        <MessageCard
+          participation={p}
+          onCheer={() => onCheer(p.id, p.userId)}
+          onDM={(userId) => onDM(userId)}
+          challengeId={challengeId}
+          companions={participantCompanions}
+          isOwnPost={isOwn}
+          onEdit={() => onEdit(p.id)}
+          onDelete={() => onDelete(p)}
+          onLike={onLike ? () => onLike(p.id) : undefined}
+          hasLiked={likedParticipations?.has(p.id)}
+          isLoggedIn={isLoggedIn}
+        />
+      </View>
+    );
+  }, [challengeCompanions, justSubmitted, colors.foreground, challengeId, onCheer, onDM, onEdit, onDelete, onLike, likedParticipations, isLoggedIn, isOwnPost]);
 
   return (
     <View style={styles.container}>
@@ -313,37 +351,8 @@ export function MessagesSection({
       {/* メッセージ一覧 */}
       <FlatList
         data={filteredParticipations}
-        keyExtractor={(item) => item.id.toString()}
-        renderItem={({ item: p }) => {
-          const participantCompanions = challengeCompanions.filter(c => c.participationId === p.id);
-          const isOwn = isOwnPost(p);
-          
-          return (
-            <View style={isOwn && justSubmitted ? styles.ownPostHighlight : undefined}>
-              {isOwn && justSubmitted && (
-                <View style={styles.ownPostBadge}>
-                  <MaterialIcons name="star" size={18} color={colors.foreground} />
-                  <Text style={[styles.ownPostBadgeText, { color: colors.foreground }]}>
-                    ✨ あなたの参加表明が反映されました！
-                  </Text>
-                </View>
-              )}
-              <MessageCard
-                participation={p}
-                onCheer={() => onCheer(p.id, p.userId)}
-                onDM={(userId) => onDM(userId)}
-                challengeId={challengeId}
-                companions={participantCompanions}
-                isOwnPost={isOwn}
-                onEdit={() => onEdit(p.id)}
-                onDelete={() => onDelete(p)}
-                onLike={onLike ? () => onLike(p.id) : undefined}
-                hasLiked={likedParticipations?.has(p.id)}
-                isLoggedIn={isLoggedIn}
-              />
-            </View>
-          );
-        }}
+        keyExtractor={keyExtractor}
+        renderItem={renderItem}
         ListEmptyComponent={
           <View style={styles.emptyState}>
             <MaterialIcons name="search-off" size={48} color={color.textHint} />
@@ -355,7 +364,7 @@ export function MessagesSection({
             </Text>
           </View>
         }
-        removeClippedSubviews={true}
+        removeClippedSubviews={Platform.OS === "android"}
         maxToRenderPerBatch={10}
         updateCellsBatchingPeriod={50}
         initialNumToRender={20}

@@ -57,6 +57,7 @@ import {
   InviteButton,
   ParticipantsOverview,
   ParticipationFormSection,
+  FixedParticipationCTA,
 } from "@/features/event-detail";
 import { usePerformanceMonitor } from "@/lib/performance-monitor";
 
@@ -644,6 +645,12 @@ export default function ChallengeDetailScreen() {
           fadeOut={true}
         />
       )}
+      
+      {/* 固定参加表明CTA */}
+      <FixedParticipationCTA
+        onPress={() => participationForm.setShowForm(true)}
+        isVisible={!participationForm.showForm && !eventDetail.myParticipation}
+      />
     </ScreenContainer>
   );
 }

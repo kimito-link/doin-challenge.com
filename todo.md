@@ -236,3 +236,20 @@
 - [x] Haptic feedbackで達成感を強化（Haptics.notificationAsync）
 - [ ] チェックポイント保存（v6.95）
 - [ ] GitHubへのpush
+
+### Phase 31: UX改善の最優先ポイント
+- [x] ホームカードの情報整理（ファーストビューの情報削減）
+  - 情報を最大5要素に制限（タイトル・日時・参加予定・進捗バー・ジャンル）
+  - 説明文・補足は詳細画面へ移動
+  - カードの縦幅を削減
+- [x] 詳細画面の参加CTA固定（参加導線を常に表示）
+  - 「参加予定を表明」 CTAをスクロールしても常に見える位置に
+  - FixedParticipationCTAコンポーネントを作成
+- [x] FlatList標準最適化の統一（パフォーマンス改善）
+  - React.memo(MessageCard)
+  - renderItem を useCallback
+  - keyExtractor をID固定
+  - initialNumToRender / windowSize を明示
+  - Androidだけ removeClippedSubviews
+- [ ] チェックポイント保存（v6.96）
+- [ ] GitHubへのpush

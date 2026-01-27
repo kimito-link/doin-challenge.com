@@ -19,3 +19,4 @@ export { ParticipationFormSection } from "./ParticipationFormSection";
 export { FormInputSection } from "./FormInputSection";
 export { CompanionAddSection } from "./CompanionAddSection";
 export { FormButtonsSection } from "./FormButtonsSection";
+export { FixedParticipationCTA } from "./FixedParticipationCTA";
