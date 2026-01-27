@@ -307,3 +307,23 @@
   - __tests__/sample-data.test.ts
 - [ ] チェックポイント保存（v6.99）
 - [ ] GitHubへのpush
+
+### Phase 36: Gate 1-①（監視・検知）の実装
+- [x] 監視用エンドポイントを作成（healthzとreadyz）
+  - [x] `server/_core/index.ts`に`/api/healthz`を追加
+  - [x] `server/_core/index.ts`に`/api/readyz`を追加
+- [x] Sentry導入（Next.jsとtRPC）
+  - [x] `@sentry/react-native`と`@sentry/node`をインストール
+  - [x] `server/_core/sentry.ts`を作成
+  - [x] `server/_core/index.ts`でSentryを初期化
+  - [x] tRPCの`errorLoggingMiddleware`を追加
+- [x] ログイン失敗率のトラッキングを追加
+  - [x] `lib/telemetry/authEvents.ts`を作成
+  - [ ] 認証フローにトラッキングを追加（次のフェーズ）
+- [x] UptimeRobot設定とスモークテスト
+  - [ ] UptimeRobotで`/api/readyz`を監視（手動設定が必要）
+  - [x] `.github/workflows/smoke-check.yml`を作成
+  - [x] `docs/uptime-robot-setup.md`を作成
+  - [x] `docs/sentry-setup.md`を作成
+- [ ] チェックポイント保存（v6.100）
+- [ ] GitHubへのpush

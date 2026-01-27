@@ -3234,6 +3234,33 @@ var init_db2 = __esm({
 
 // server/_core/index.ts
 import "dotenv/config";
+
+// server/_core/sentry.ts
+import * as Sentry from "@sentry/node";
+function initSentry() {
+  if (!process.env.SENTRY_DSN) {
+    console.warn("[Sentry] SENTRY_DSN is not set. Sentry will not be initialized.");
+    return;
+  }
+  Sentry.init({
+    dsn: process.env.SENTRY_DSN,
+    environment: process.env.SENTRY_ENVIRONMENT ?? process.env.VERCEL_ENV ?? "development",
+    // まずは控えめに（コスト/ノイズを抑える）
+    tracesSampleRate: 0.05
+    // ログイン等の「体験の失敗」はmessageで拾うので、例外は自動で十分
+  });
+  console.log("[Sentry] Initialized for server");
+}
+function captureTrpcError(error, context) {
+  Sentry.captureException(error, {
+    tags: {
+      trpc_path: context.path ?? "unknown",
+      trpc_type: context.type ?? "unknown"
+    }
+  });
+}
+
+// server/_core/index.ts
 import express from "express";
 import { createServer } from "http";
 import net from "net";
@@ -4310,7 +4337,24 @@ var RESPONSE_REQUEST_ID_HEADER = "x-request-id";
 
 // server/_core/trpc.ts
 var t = initTRPC.context().create({
-  transformer: superjson
+  transformer: superjson,
+  errorFormatter({ shape }) {
+    return shape;
+  }
+});
+var errorLoggingMiddleware = t.middleware(async (opts) => {
+  const { next, path, type } = opts;
+  try {
+    return await next();
+  } catch (error) {
+    if (error instanceof TRPCError && (error.code === "UNAUTHORIZED" || error.code === "FORBIDDEN")) {
+      throw error;
+    }
+    if (error instanceof Error) {
+      captureTrpcError(error, { path, type });
+    }
+    throw error;
+  }
 });
 var router = t.router;
 var requestIdMiddleware = t.middleware(async (opts) => {
@@ -4327,7 +4371,7 @@ var requestIdMiddleware = t.middleware(async (opts) => {
     }
   });
 });
-var publicProcedure = t.procedure.use(requestIdMiddleware);
+var publicProcedure = t.procedure.use(requestIdMiddleware).use(errorLoggingMiddleware);
 var requireUser = t.middleware(async (opts) => {
   const { ctx, next } = opts;
   if (!ctx.user) {
@@ -4340,8 +4384,8 @@ var requireUser = t.middleware(async (opts) => {
     }
   });
 });
-var protectedProcedure = t.procedure.use(requestIdMiddleware).use(requireUser);
-var adminProcedure = t.procedure.use(requestIdMiddleware).use(
+var protectedProcedure = t.procedure.use(requestIdMiddleware).use(errorLoggingMiddleware).use(requireUser);
+var adminProcedure = t.procedure.use(requestIdMiddleware).use(errorLoggingMiddleware).use(
   t.middleware(async (opts) => {
     const { ctx, next } = opts;
     if (!ctx.user || ctx.user.role !== "admin") {
@@ -7188,6 +7232,7 @@ async function findAvailablePort(startPort = 3e3) {
   throw new Error(`No available port found starting from ${startPort}`);
 }
 async function startServer() {
+  initSentry();
   const app = express();
   const server = createServer(app);
   app.use((req, res, next) => {
@@ -7211,6 +7256,42 @@ async function startServer() {
   app.use(express.urlencoded({ limit: "50mb", extended: true }));
   registerOAuthRoutes(app);
   registerTwitterRoutes(app);
+  app.get("/api/healthz", (_req, res) => {
+    res.json({
+      ok: true,
+      ts: Date.now()
+    });
+    res.setHeader("cache-control", "no-store");
+  });
+  app.get("/api/readyz", async (_req, res) => {
+    try {
+      const { getDb: getDb2 } = await Promise.resolve().then(() => (init_db2(), db_exports));
+      const db = await getDb2();
+      if (db) {
+        await db.execute("SELECT 1 as ok");
+        res.json({
+          ok: true,
+          deps: { db: "ok" },
+          ts: Date.now()
+        });
+        res.setHeader("cache-control", "no-store");
+      } else {
+        res.status(503).json({
+          ok: false,
+          deps: { db: "ng" },
+          ts: Date.now()
+        });
+        res.setHeader("cache-control", "no-store");
+      }
+    } catch {
+      res.status(503).json({
+        ok: false,
+        deps: { db: "ng" },
+        ts: Date.now()
+      });
+      res.setHeader("cache-control", "no-store");
+    }
+  });
   app.get("/api/health", async (_req, res) => {
     const baseInfo = {
       ok: true,

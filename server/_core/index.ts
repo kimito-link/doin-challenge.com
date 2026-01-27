@@ -1,4 +1,5 @@
 import "dotenv/config";
+import { initSentry } from "./sentry";
 import express from "express";
 import { createServer } from "http";
 import net from "net";
@@ -34,6 +35,9 @@ async function findAvailablePort(startPort: number = 3000): Promise<number> {
 }
 
 async function startServer() {
+  // Sentryを初期化
+  initSentry();
+
   const app = express();
   const server = createServer(app);
 
@@ -63,6 +67,46 @@ async function startServer() {
 
   registerOAuthRoutes(app);
   registerTwitterRoutes(app);
+
+  // Healthz: 軽い（常に200を返す、プロセス生存確認）
+  app.get("/api/healthz", (_req, res) => {
+    res.json({
+      ok: true,
+      ts: Date.now(),
+    });
+    res.setHeader("cache-control", "no-store");
+  });
+
+  // Readyz: 重い（DB疎通・依存の確認。失敗時は503）
+  app.get("/api/readyz", async (_req, res) => {
+    try {
+      const { getDb } = await import("../db");
+      const db = await getDb();
+      if (db) {
+        await db.execute("SELECT 1 as ok");
+        res.json({
+          ok: true,
+          deps: { db: "ok" },
+          ts: Date.now(),
+        });
+        res.setHeader("cache-control", "no-store");
+      } else {
+        res.status(503).json({
+          ok: false,
+          deps: { db: "ng" },
+          ts: Date.now(),
+        });
+        res.setHeader("cache-control", "no-store");
+      }
+    } catch {
+      res.status(503).json({
+        ok: false,
+        deps: { db: "ng" },
+        ts: Date.now(),
+      });
+      res.setHeader("cache-control", "no-store");
+    }
+  });
 
   app.get("/api/health", async (_req, res) => {
     // 基本情報
