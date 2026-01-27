@@ -1,13 +1,11 @@
 import { useState, useEffect } from "react";
 import { Dimensions, Platform } from "react-native";
 
-// ブレークポイント定義
+// ブレークポイント定義（3ブレークポイントに固定）
 export const BREAKPOINTS = {
-  sm: 640,   // スマートフォン
-  md: 768,   // タブレット
-  lg: 1024,  // 小型デスクトップ
-  xl: 1280,  // デスクトップ
-  "2xl": 1536, // 大型デスクトップ
+  mobile: 375,   // Mobile（～375px）
+  tablet: 768,   // Tablet（～768px）
+  desktop: 1024, // Desktop/Web（1024px+）
 } as const;
 
 export type BreakpointKey = keyof typeof BREAKPOINTS;
@@ -18,7 +16,6 @@ interface ResponsiveState {
   isMobile: boolean;      // < 768px
   isTablet: boolean;      // 768px - 1023px
   isDesktop: boolean;     // >= 1024px
-  isLargeDesktop: boolean; // >= 1280px
   breakpoint: BreakpointKey;
 }
 
@@ -44,20 +41,17 @@ export function useResponsive(): ResponsiveState {
 
   // ブレークポイントの判定
   const getBreakpoint = (w: number): BreakpointKey => {
-    if (w >= BREAKPOINTS["2xl"]) return "2xl";
-    if (w >= BREAKPOINTS.xl) return "xl";
-    if (w >= BREAKPOINTS.lg) return "lg";
-    if (w >= BREAKPOINTS.md) return "md";
-    return "sm";
+    if (w >= BREAKPOINTS.desktop) return "desktop";
+    if (w >= BREAKPOINTS.tablet) return "tablet";
+    return "mobile";
   };
 
   return {
     width,
     height,
-    isMobile: width < BREAKPOINTS.md,
-    isTablet: width >= BREAKPOINTS.md && width < BREAKPOINTS.lg,
-    isDesktop: width >= BREAKPOINTS.lg,
-    isLargeDesktop: width >= BREAKPOINTS.xl,
+    isMobile: width < BREAKPOINTS.tablet,
+    isTablet: width >= BREAKPOINTS.tablet && width < BREAKPOINTS.desktop,
+    isDesktop: width >= BREAKPOINTS.desktop,
     breakpoint: getBreakpoint(width),
   };
 }
@@ -69,13 +63,9 @@ export function useGridColumns(defaultColumns: number = 1): number {
   const { breakpoint } = useResponsive();
   
   switch (breakpoint) {
-    case "2xl":
-      return Math.min(defaultColumns * 3, 4);
-    case "xl":
-      return Math.min(defaultColumns * 3, 3);
-    case "lg":
+    case "desktop":
       return Math.min(defaultColumns * 2, 3);
-    case "md":
+    case "tablet":
       return Math.min(defaultColumns * 2, 2);
     default:
       return defaultColumns;
@@ -86,11 +76,10 @@ export function useGridColumns(defaultColumns: number = 1): number {
  * コンテンツの最大幅を取得
  */
 export function useContentMaxWidth(): number | undefined {
-  const { isDesktop, isLargeDesktop } = useResponsive();
+  const { isDesktop } = useResponsive();
   
-  if (isLargeDesktop) return 1200;
-  if (isDesktop) return 1024;
-  return undefined; // モバイル・タブレットは全幅
+  if (isDesktop) return 1200; // Desktopは1200pxまで
+  return undefined; // Mobile/Tabletは全幅
 }
 
 /**
@@ -98,15 +87,13 @@ export function useContentMaxWidth(): number | undefined {
  */
 export function useResponsiveValue<T>(values: {
   base: T;
-  sm?: T;
-  md?: T;
-  lg?: T;
-  xl?: T;
-  "2xl"?: T;
+  mobile?: T;
+  tablet?: T;
+  desktop?: T;
 }): T {
   const { breakpoint } = useResponsive();
   
-  const breakpointOrder: BreakpointKey[] = ["sm", "md", "lg", "xl", "2xl"];
+  const breakpointOrder: BreakpointKey[] = ["mobile", "tablet", "desktop"];
   const currentIndex = breakpointOrder.indexOf(breakpoint);
   
   // 現在のブレークポイント以下で最も近い定義値を探す

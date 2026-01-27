@@ -8,7 +8,7 @@ import { optimizeImageUrl, IMAGE_SIZE_PRESETS } from "@/lib/image-format";
 interface OptimizedImageProps extends Omit<ImageProps, "onLoad" | "onError"> {
   fallbackColor?: string;
   showPlaceholder?: boolean;
-  placeholderType?: "shimmer" | "blur" | "solid";
+  placeholderType?: "shimmer" | "solid";
   /** WebP最適化を有効にする */
   optimizeFormat?: boolean;
   /** 画像サイズプリセット */
@@ -24,7 +24,7 @@ interface OptimizedImageProps extends Omit<ImageProps, "onLoad" | "onError"> {
 export function OptimizedImage({
   fallbackColor = color.border,
   showPlaceholder = true,
-  placeholderType = "shimmer",
+  placeholderType = "solid",
   optimizeFormat = true,
   sizePreset,
   style,
@@ -80,25 +80,16 @@ export function OptimizedImage({
 
   return (
     <View style={[styles.container, { width, height, borderRadius }]}>
-      {/* プレースホルダー */}
+      {/* プレースホルダー（軽量化） */}
       {showPlaceholder && isLoading && !hasError && (
         <View style={[styles.placeholder, { backgroundColor: fallbackColor, borderRadius }]}>
           {placeholderType === "shimmer" && (
-            <Animated.View
-              style={[
-                styles.shimmer,
-                {
-                  transform: [{ translateX }],
-                },
-              ]}
-            >
-              <LinearGradient
-                colors={["transparent", "rgba(255,255,255,0.1)", "transparent"]}
-                start={{ x: 0, y: 0 }}
-                end={{ x: 1, y: 0 }}
-                style={styles.gradient}
-              />
-            </Animated.View>
+            <LinearGradient
+              colors={[palette.gray800, palette.gray700, palette.gray800]}
+              start={{ x: 0, y: 0 }}
+              end={{ x: 1, y: 0 }}
+              style={styles.gradient}
+            />
           )}
         </View>
       )}

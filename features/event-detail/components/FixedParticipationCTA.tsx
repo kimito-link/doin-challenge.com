@@ -52,6 +52,9 @@ export function FixedParticipationCTA({ onPress, isVisible }: FixedParticipation
     >
       <Pressable
         onPress={handlePress}
+        accessibilityLabel="参加予定を表明"
+        accessibilityRole="button"
+        accessibilityHint="イベントへの参加予定を表明します"
         style={({ pressed }) => ({
           opacity: pressed ? 0.9 : 1,
           transform: [{ scale: pressed ? 0.98 : 1 }],

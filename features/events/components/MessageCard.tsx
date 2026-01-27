@@ -131,11 +131,16 @@ export const MessageCard = React.memo(function MessageCard({
             <Text style={{ color: colors.foreground, fontSize: 16, fontWeight: "600" }}>
               {participation.isAnonymous ? "匿名" : participation.displayName}
             </Text>
-            {/* 性別アイコン */}
+            {/* 性別アイコン（アクセシビリティ向上） */}
             {participation.gender && participation.gender !== "unspecified" && (
-              <Text style={{ marginLeft: 4, fontSize: 12, color: borderLeftColor }}>
-                {participation.gender === "male" ? "♂" : "♀"}
-              </Text>
+              <View style={{ marginLeft: 6, flexDirection: "row", alignItems: "center" }}>
+                <MaterialIcons 
+                  name={participation.gender === "male" ? "man" : "woman"} 
+                  size={16} 
+                  color={borderLeftColor}
+                  accessibilityLabel={participation.gender === "male" ? "男性" : "女性"}
+                />
+              </View>
             )}
           </View>
           <View style={{ flexDirection: "row", alignItems: "center", flexWrap: "wrap" }}>

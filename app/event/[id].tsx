@@ -7,11 +7,12 @@
  * - features/event-detail/components/ - UIコンポーネント
  */
 
-import { View, Text, ScrollView, KeyboardAvoidingView, Platform, RefreshControl } from "react-native";
+import { View, Text, ScrollView, KeyboardAvoidingView, Platform, RefreshControl, StyleSheet } from "react-native";
 import { useLocalSearchParams } from "expo-router";
 import { navigate } from "@/lib/navigation";
 import { ScreenContainer } from "@/components/organisms/screen-container";
 import { useColors } from "@/hooks/use-colors";
+import { useContentMaxWidth } from "@/hooks/use-responsive";
 import { AppHeader } from "@/components/organisms/app-header";
 import { EventDetailSkeleton } from "@/components/organisms/event-detail-skeleton";
 import { PrefectureParticipantsModal } from "@/components/molecules/prefecture-participants-modal";
@@ -63,6 +64,7 @@ import { usePerformanceMonitor } from "@/lib/performance-monitor";
 
 export default function ChallengeDetailScreen() {
   const colors = useColors();
+  const maxWidth = useContentMaxWidth();
   
   // 通知オンボーディングの状態
   const [showNotificationOnboarding, setShowNotificationOnboarding] = useState(false);
@@ -283,6 +285,10 @@ export default function ChallengeDetailScreen() {
         <ScrollView 
           ref={participationForm.scrollViewRef} 
           style={{ flex: 1, backgroundColor: colors.background }}
+          contentContainerStyle={[
+            styles.scrollContent,
+            { maxWidth, alignSelf: maxWidth ? "center" : undefined }
+          ]}
           showsHorizontalScrollIndicator={false}
           horizontal={false}
           directionalLockEnabled={true}
@@ -654,3 +660,9 @@ export default function ChallengeDetailScreen() {
     </ScreenContainer>
   );
 }
+
+const styles = StyleSheet.create({
+  scrollContent: {
+    width: "100%",
+  },
+});

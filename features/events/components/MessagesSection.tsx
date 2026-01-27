@@ -225,7 +225,7 @@ export function MessagesSection({
         </Text>
         
         <View style={styles.filters}>
-          {/* 性別フィルター */}
+          {/* 性別フィルター（アクセシビリティ向上） */}
           <View style={styles.genderFilterContainer}>
             <Button
               variant={selectedGenderFilter === "all" ? "primary" : "secondary"}
@@ -250,10 +250,13 @@ export function MessagesSection({
                 selectedGenderFilter === "male" && { backgroundColor: "#3B82F6" },
               ]}
             >
-              <Text style={[
-                styles.genderFilterText,
-                { color: selectedGenderFilter === "male" ? color.textWhite : color.textSecondary }
-              ]}>男性</Text>
+              <View style={{ flexDirection: "row", alignItems: "center", gap: 4 }}>
+                <MaterialIcons name="man" size={16} color={selectedGenderFilter === "male" ? color.textWhite : color.textSecondary} />
+                <Text style={[
+                  styles.genderFilterText,
+                  { color: selectedGenderFilter === "male" ? color.textWhite : color.textSecondary }
+                ]}>男性</Text>
+              </View>
             </Button>
             <Button
               variant={selectedGenderFilter === "female" ? "primary" : "secondary"}
@@ -264,10 +267,13 @@ export function MessagesSection({
                 selectedGenderFilter === "female" && { backgroundColor: eventUI.badge },
               ]}
             >
-              <Text style={[
-                styles.genderFilterText,
-                { color: selectedGenderFilter === "female" ? color.textWhite : color.textSecondary }
-              ]}>女性</Text>
+              <View style={{ flexDirection: "row", alignItems: "center", gap: 4 }}>
+                <MaterialIcons name="woman" size={16} color={selectedGenderFilter === "female" ? color.textWhite : color.textSecondary} />
+                <Text style={[
+                  styles.genderFilterText,
+                  { color: selectedGenderFilter === "female" ? color.textWhite : color.textSecondary }
+                ]}>女性</Text>
+              </View>
             </Button>
           </View>
 

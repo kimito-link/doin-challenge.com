@@ -251,5 +251,21 @@
   - keyExtractor をID固定
   - initialNumToRender / windowSize を明示
   - Androidだけ removeClippedSubviews
-- [ ] チェックポイント保存（v6.96）
+- [x] チェックポイント保存（v6.96）
+- [x] GitHubへのpush
+
+### Phase 32: レスポンシブデザイン、画像表示、アクセシビリティの最適化
+- [x] レスポンシブデザインの最適化（3ブレークポイントに固定）
+  - Mobile（～375px）、Tablet（～768px）、Desktop/Web（1024px+）
+  - 最大幅を設定（横に伸びすぎないように）
+  - イベント詳細画面にmaxWidthを追加
+- [x] 画像表示の最適化（expo-imageに統一）
+  - 既存のImageコンポーネントをexpo-imageに置き換え
+  - プレースホルダを軽量化（デフォルトをsolidに変更）
+  - 画像のチラつきを防止
+- [x] アクセシビリティの改善（タップ領域と視認性）
+  - タップ領域あ44px以上に統一（既に実装済み）
+  - 性別色分けにアイコン/ラベルを追加（MessageCard、MessagesSection）
+  - 主要ボタンにaccessibilityLabelを追加（FixedParticipationCTA）
+- [ ] チェックポイント保存（v6.97）
 - [ ] GitHubへのpush
