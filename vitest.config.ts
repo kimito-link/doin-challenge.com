@@ -3,8 +3,9 @@ import path from "path";
 
 export default defineConfig({
   test: {
-    globals: true,
+    globals: false,
     environment: "node",
+    setupFiles: ["./vitest.setup.ts"],
     include: ["**/*.test.ts", "**/*.test.tsx"],
     exclude: ["node_modules", "dist", ".expo"],
     testTimeout: 10000,
