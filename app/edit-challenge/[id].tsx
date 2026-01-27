@@ -195,7 +195,7 @@ export default function EditChallengeScreen() {
                 <TextInput
                   value={title}
                   onChangeText={setTitle}
-                  placeholder="例: 君斗りんく生誕祭2025"
+                  placeholder="例: 君斗りんくの動員ちゃれんじ2025"
                   placeholderTextColor={colors.muted}
                   style={{
                     backgroundColor: colors.surface,

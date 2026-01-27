@@ -238,7 +238,7 @@ export default function EditChallengeScreen() {
                 }}
                 value={title}
                 onChangeText={setTitle}
-                placeholder="例: 君斗りんく生誕祭2026"
+                placeholder="例: 君斗りんくの動員ちゃれんじ2026"
                 placeholderTextColor={colors.muted}
               />
             </View>
