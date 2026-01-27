@@ -9,7 +9,6 @@
  * これらは最低限の疎通確認であり、詳細なロジックテストではありません。
  */
 
-import { describe, it, expect } from "vitest";
 
 describe("tRPC Integration Tests", () => {
   const API_BASE = process.env.API_URL || "http://localhost:3000";

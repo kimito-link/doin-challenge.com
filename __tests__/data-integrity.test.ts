@@ -4,7 +4,6 @@
  * currentValue更新ロジックとデータ整合性確認機能のテスト
  */
 
-import { describe, it, expect, vi } from "vitest";
 
 // generateSlug関数のテスト
 describe("generateSlug", () => {

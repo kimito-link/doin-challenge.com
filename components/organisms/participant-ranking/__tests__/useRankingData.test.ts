@@ -9,7 +9,6 @@
  * - トップ3データの取得
  */
 
-import { describe, it, expect } from "vitest";
 import { renderHook } from "@testing-library/react";
 import { useRankingData, useTopThreeData } from "../useRankingData";
 import type { Participant } from "../types";

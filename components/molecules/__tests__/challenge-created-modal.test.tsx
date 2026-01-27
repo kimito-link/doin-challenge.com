@@ -7,7 +7,6 @@
  * - コピー機能
  */
 
-import { describe, it, expect, vi, beforeEach } from "vitest";
 
 // モックの設定
 vi.mock("expo-clipboard", () => ({

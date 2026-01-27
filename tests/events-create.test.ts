@@ -1,4 +1,3 @@
-import { describe, it, expect, vi } from 'vitest';
 
 describe('Events Create API', () => {
   it('should accept valid event creation input', () => {

@@ -1,4 +1,3 @@
-import { describe, it, expect } from "vitest";
 
 describe("Twitter OAuth 2.0 Configuration", () => {
   // These tests require environment variables that are only available in production

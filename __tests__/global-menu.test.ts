@@ -1,4 +1,3 @@
-import { describe, it, expect } from "vitest";
 
 describe("GlobalMenu Component", () => {
   describe("Menu Items", () => {

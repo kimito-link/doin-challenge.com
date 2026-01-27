@@ -10,7 +10,6 @@
  * - 参加者がいる都道府県の数
  */
 
-import { describe, it, expect } from "vitest";
 import { renderHook } from "@testing-library/react";
 import { useHeatmapData } from "../useHeatmapData";
 

@@ -4,7 +4,6 @@
  * デザインシステムの定数がApple Human Interface Guidelinesに準拠しているか検証
  */
 
-import { describe, it, expect } from "vitest";
 import { touchTarget, colors, typography, spacing } from "@/constants/design-system";
 import { MIN_TOUCH_TARGET_SIZE, MIN_FONT_SIZE, MIN_CONTRAST_RATIO } from "../utils/a11y-helpers";
 

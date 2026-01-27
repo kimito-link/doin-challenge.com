@@ -7,7 +7,6 @@
  * ここでは状態管理のロジックをテストします。
  */
 
-import { describe, it, expect, vi, beforeEach } from "vitest";
 
 // Share関数のモック
 vi.mock("react-native", () => ({

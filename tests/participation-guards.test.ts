@@ -6,7 +6,6 @@
  * 1. 他人のparticipationをupdate/deleteできないこと
  * 2. deletedAt済みparticipationをupdateできないこと
  */
-import { describe, it, expect, vi, beforeEach } from "vitest";
 
 // モック用のDB関数
 const mockGetActiveParticipationById = vi.fn();

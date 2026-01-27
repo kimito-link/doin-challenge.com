@@ -1,4 +1,3 @@
-import { describe, it, expect, vi } from "vitest";
 
 describe("Sample Data Generation", () => {
   describe("Sample Challenges Data", () => {

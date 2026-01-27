@@ -2,7 +2,6 @@
  * 設定ページのテスト
  */
 
-import { describe, it, expect, vi } from "vitest";
 
 // Mock modules
 vi.mock("expo-router", () => ({

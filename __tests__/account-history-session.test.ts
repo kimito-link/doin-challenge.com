@@ -1,7 +1,6 @@
 /**
  * アカウント切り替え履歴とセッション有効期限のテスト
  */
-import { describe, it, expect, vi, beforeEach, beforeAll } from "vitest";
 
 // __DEV__のモック
 beforeAll(() => {

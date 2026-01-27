@@ -7,7 +7,6 @@
  * 実際のブラウザテストはPlaywrightなどを使用して別途実装する必要があります。
  */
 
-import { describe, it, expect, beforeAll } from 'vitest';
 
 describe('E2E Smoke Tests', () => {
   describe('1. 新規ユーザー登録・ログイン', () => {

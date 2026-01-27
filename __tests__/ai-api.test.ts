@@ -1,4 +1,3 @@
-import { describe, it, expect, vi } from "vitest";
 
 // AI向けサマリー生成ロジックのテスト
 describe("AI Optimization API", () => {

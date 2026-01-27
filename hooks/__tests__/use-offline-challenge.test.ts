@@ -8,7 +8,6 @@
  * - コールバック関数の呼び出し
  */
 
-import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 import { renderHook, act, waitFor } from "@testing-library/react";
 import React from "react";
 

@@ -3,7 +3,7 @@ import path from "path";
 
 export default defineConfig({
   test: {
-    globals: false,
+    globals: true,
     environment: "node",
     setupFiles: ["./vitest.setup.ts"],
     include: ["**/*.test.ts", "**/*.test.tsx"],

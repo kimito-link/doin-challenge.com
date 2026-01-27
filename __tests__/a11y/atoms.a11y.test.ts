@@ -4,7 +4,6 @@
  * 基本UI要素がApple Human Interface Guidelinesに準拠しているか検証
  */
 
-import { describe, it, expect } from "vitest";
 import {
   MIN_TOUCH_TARGET_SIZE,
   MIN_FONT_SIZE,

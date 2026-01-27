@@ -7,12 +7,15 @@
  * ここでは状態管理のロジックをテストします。
  */
 
-import { describe, it, expect, vi, beforeEach } from "vitest";
 
 // React Nativeのモック
 vi.mock("react-native", () => ({
   Alert: {
     alert: vi.fn(),
+  },
+  Platform: {
+    OS: "ios",
+    select: vi.fn((obj) => obj.ios || obj.default),
   },
   ScrollView: {},
   View: {},

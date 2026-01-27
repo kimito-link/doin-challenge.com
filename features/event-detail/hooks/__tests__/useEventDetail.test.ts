@@ -7,7 +7,6 @@
  * ここでは計算ロジックとユーティリティ関数をテストします。
  */
 
-import { describe, it, expect, vi, beforeEach } from "vitest";
 
 // React Nativeのモック
 vi.mock("react-native", () => ({

@@ -7,7 +7,6 @@
  * - 復元機能
  * - 一括削除・復元
  */
-import { describe, it, expect, vi, beforeEach } from "vitest";
 
 // モック用の型定義
 type MockUser = {
