@@ -9,7 +9,7 @@
  */
 
 import { getDb, eq, desc, sql, isNull, and } from "./connection";
-import { participations, challenges, InsertParticipation } from "../../drizzle/schema";
+import { participations, challenges, InsertParticipation, messageLikes } from "../../drizzle/schema";
 import { invalidateEventsCache } from "./challenge-db";
 
 // =============================================================================
@@ -30,7 +30,31 @@ export async function getParticipationsByEventId(
   const db = await getDb();
   if (!db) return [];
   
-  let query = db.select().from(participations)
+  let query = db.select({
+    id: participations.id,
+    challengeId: participations.challengeId,
+    userId: participations.userId,
+    twitterId: participations.twitterId,
+    displayName: participations.displayName,
+    username: participations.username,
+    profileImage: participations.profileImage,
+    followersCount: participations.followersCount,
+    message: participations.message,
+    companionCount: participations.companionCount,
+    prefecture: participations.prefecture,
+    gender: participations.gender,
+    contribution: participations.contribution,
+    isAnonymous: participations.isAnonymous,
+    attendanceType: participations.attendanceType,
+    createdAt: participations.createdAt,
+    updatedAt: participations.updatedAt,
+    deletedAt: participations.deletedAt,
+    deletedBy: participations.deletedBy,
+    likesCount: sql<number>`(
+      SELECT COUNT(*) FROM ${messageLikes}
+      WHERE ${messageLikes.participationId} = ${participations.id}
+    )`,
+  }).from(participations)
     .where(and(
       eq(participations.challengeId, eventId),
       isNull(participations.deletedAt)
@@ -512,4 +536,77 @@ export async function bulkRestoreParticipations(
     restoredCount: targets.length,
     affectedChallengeIds: Object.keys(challengeContributions).map(Number),
   };
+}
+
+// =============================================================================
+// 応援メッセージの「いいね」機能
+// =============================================================================
+
+/**
+ * 応援メッセージに「いいね」をする
+ */
+export async function likeMessage(participationId: number, userId: number) {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+  
+  // 既に「いいね」済みかチェック
+  const existing = await db.select().from(messageLikes)
+    .where(and(
+      eq(messageLikes.participationId, participationId),
+      eq(messageLikes.userId, userId)
+    ));
+  
+  if (existing.length > 0) {
+    return; // 既に「いいね」済み
+  }
+  
+  // 「いいね」を追加
+  await db.insert(messageLikes).values({
+    participationId,
+    userId,
+  });
+}
+
+/**
+ * 応援メッセージの「いいね」を解除する
+ */
+export async function unlikeMessage(participationId: number, userId: number) {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+  
+  await db.delete(messageLikes)
+    .where(and(
+      eq(messageLikes.participationId, participationId),
+      eq(messageLikes.userId, userId)
+    ));
+}
+
+/**
+ * 参加表明の「いいね」数を取得
+ */
+export async function getMessageLikesCount(participationId: number): Promise<number> {
+  const db = await getDb();
+  if (!db) return 0;
+  
+  const result = await db.select({ count: sql<number>`COUNT(*)` })
+    .from(messageLikes)
+    .where(eq(messageLikes.participationId, participationId));
+  
+  return result[0]?.count || 0;
+}
+
+/**
+ * ユーザーが参加表明に「いいね」しているかチェック
+ */
+export async function hasUserLikedMessage(participationId: number, userId: number): Promise<boolean> {
+  const db = await getDb();
+  if (!db) return false;
+  
+  const result = await db.select().from(messageLikes)
+    .where(and(
+      eq(messageLikes.participationId, participationId),
+      eq(messageLikes.userId, userId)
+    ));
+  
+  return result.length > 0;
 }

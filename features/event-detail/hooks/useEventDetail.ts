@@ -71,6 +71,8 @@ interface UseEventDetailReturn {
   // Actions
   refetch: () => Promise<void>;
   onRefresh: () => Promise<void>;
+  likeMessage: (participationId: number) => Promise<void>;
+  unlikeMessage: (participationId: number) => Promise<void>;
 }
 
 export function useEventDetail({ challengeId }: UseEventDetailOptions): UseEventDetailReturn {
@@ -218,6 +220,20 @@ export function useEventDetail({ challengeId }: UseEventDetailOptions): UseEvent
     }
   }, [refetchParticipations]);
   
+  // 「いいね」機能
+  const likeMessageMutation = trpc.participations.likeMessage.useMutation();
+  const unlikeMessageMutation = trpc.participations.unlikeMessage.useMutation();
+  
+  const likeMessage = useCallback(async (participationId: number) => {
+    await likeMessageMutation.mutateAsync({ participationId });
+    await refetchParticipations();
+  }, [likeMessageMutation, refetchParticipations]);
+  
+  const unlikeMessage = useCallback(async (participationId: number) => {
+    await unlikeMessageMutation.mutateAsync({ participationId });
+    await refetchParticipations();
+  }, [unlikeMessageMutation, refetchParticipations]);
+  
   return {
     // Data
     challenge: challenge as EventDetailData | undefined,
@@ -265,5 +281,7 @@ export function useEventDetail({ challengeId }: UseEventDetailOptions): UseEvent
     // Actions
     refetch,
     onRefresh,
+    likeMessage,
+    unlikeMessage,
   };
 }

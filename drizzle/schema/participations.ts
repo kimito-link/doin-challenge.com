@@ -65,3 +65,20 @@ export const participationCompanions = mysqlTable("participation_companions", {
 
 export type ParticipationCompanion = typeof participationCompanions.$inferSelect;
 export type InsertParticipationCompanion = typeof participationCompanions.$inferInsert;
+
+// =============================================================================
+// Message Likes Table
+// =============================================================================
+
+/**
+ * 応援メッセージの「いいね」テーブル
+ */
+export const messageLikes = mysqlTable("message_likes", {
+  id: int("id").autoincrement().primaryKey(),
+  participationId: int("participationId").notNull(),
+  userId: int("userId").notNull(),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+});
+
+export type MessageLike = typeof messageLikes.$inferSelect;
+export type InsertMessageLike = typeof messageLikes.$inferInsert;

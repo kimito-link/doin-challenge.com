@@ -21,7 +21,7 @@ interface CompanionDisplay {
 }
 
 export type MessagesSectionProps = {
-  participations: Participation[];
+  participations: (Participation & { likesCount?: number })[];
   challengeCompanions?: CompanionDisplay[];
   selectedGenderFilter: GenderFilter;
   onGenderFilterChange: (filter: GenderFilter) => void;
@@ -37,6 +37,9 @@ export type MessagesSectionProps = {
   onDM: (userId: number) => void;
   onEdit: (participationId: number) => void;
   onDelete: (participation: Participation) => void;
+  onLike?: (participationId: number) => void;
+  likedParticipations?: Set<number>;
+  isLoggedIn?: boolean;
 };
 
 export function MessagesSection({
@@ -56,6 +59,9 @@ export function MessagesSection({
   onDM,
   onEdit,
   onDelete,
+  onLike,
+  likedParticipations,
+  isLoggedIn,
 }: MessagesSectionProps) {
   const colors = useColors();
 
@@ -331,6 +337,9 @@ export function MessagesSection({
                 isOwnPost={isOwn}
                 onEdit={() => onEdit(p.id)}
                 onDelete={() => onDelete(p)}
+                onLike={onLike ? () => onLike(p.id) : undefined}
+                hasLiked={likedParticipations?.has(p.id)}
+                isLoggedIn={isLoggedIn}
               />
             </View>
           );

@@ -208,5 +208,23 @@
 - [x] 応援メッセージのリアルタイム追加
   - [x] Pollingによりrefetch()でデータ更新
   - [x] FlatListが自動的に新しいメッセージを表示
-- [ ] チェックポイント保存（v6.93）
+- [x] チェックポイント保存（v6.93）
+- [x] GitHubへのpush（既に同期済み）
+
+### Phase 29: 応援メッセージに「いいね」機能を追加
+- [x] バックエンドに「いいね」機能を追加
+  - [x] message_likesテーブルを作成（drizzle/schema/participations.ts）
+  - [x] participations.likeMessage APIを追加
+  - [x] participations.unlikeMessage APIを追加
+  - [x] 「いいね」数を取得するロジックを追加（getParticipationsByEventId）
+  - [x] データベースマイグレーション実行
+- [x] フロントエンドに「いいね」ボタンを追加
+  - [x] MessageCardコンポーネントに「いいね」ボタンを追加
+  - [x] MessagesSectionコンポーネントで「いいね」機能を統合
+  - [x] イベント詳細画面で「いいね」機能を統合
+  - [x] useEventDetailフックにlikeMessage/unlikeMessageを追加
+  - [x] 「いいね」数を表示
+  - [x] ログインユーザーのみ「いいね」可能
+  - [x] リアルタイムで「いいね」数を更新（Pollingで自動更新）
+- [ ] チェックポイント保存（v6.94）
 - [ ] GitHubへのpush

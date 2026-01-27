@@ -36,7 +36,7 @@ export interface MessageVM {
 
 export interface MessageCardProps {
   /** 参加情報 */
-  participation: Participation;
+  participation: Participation & { likesCount?: number };
   /** エールボタンのコールバック */
   onCheer?: () => void;
   /** エール数 */
@@ -53,6 +53,12 @@ export interface MessageCardProps {
   onEdit?: () => void;
   /** 削除ボタンのコールバック */
   onDelete?: () => void;
+  /** 「いいね」ボタンのコールバック */
+  onLike?: () => void;
+  /** 「いいね」済みかどうか */
+  hasLiked?: boolean;
+  /** ログイン済みかどうか */
+  isLoggedIn?: boolean;
 }
 
 export function MessageCard({
@@ -65,6 +71,9 @@ export function MessageCard({
   isOwnPost,
   onEdit,
   onDelete,
+  onLike,
+  hasLiked,
+  isLoggedIn,
 }: MessageCardProps) {
   const colors = useColors();
   
@@ -243,6 +252,32 @@ export function MessageCard({
           >
             <MaterialIcons name="mail" size={14} color={eventUI.iconMuted} />
             <Text style={{ color: eventText.secondary, fontSize: eventFont.meta, marginLeft: 4 }}>DM</Text>
+          </Button>
+        )}
+
+        {/* 「いいね」ボタン */}
+        {onLike && isLoggedIn && (
+          <Button
+            variant="secondary"
+            size="sm"
+            onPress={onLike}
+            style={{
+              flexDirection: "row",
+              alignItems: "center",
+              backgroundColor: hasLiked ? "rgba(239, 68, 68, 0.15)" : "#2D3139",
+              paddingHorizontal: 12,
+              paddingVertical: 6,
+              borderRadius: 16,
+              borderWidth: hasLiked ? 1 : 0,
+              borderColor: hasLiked ? "#EF4444" : "transparent",
+            }}
+          >
+            <MaterialIcons name="favorite" size={14} color={hasLiked ? "#EF4444" : eventUI.iconMuted} />
+            {participation.likesCount !== undefined && participation.likesCount > 0 && (
+              <Text style={{ color: hasLiked ? "#EF4444" : eventText.secondary, fontSize: eventFont.meta, marginLeft: 4 }}>
+                {participation.likesCount}
+              </Text>
+            )}
           </Button>
         )}
 

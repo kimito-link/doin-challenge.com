@@ -412,6 +412,22 @@ export const participationsRouter = router({
       return { success: true, challengeId: result.challengeId, requestId: ctx.requestId };
     }),
 
+  // 応援メッセージに「いいね」をする
+  likeMessage: protectedProcedure
+    .input(z.object({ participationId: z.number() }))
+    .mutation(async ({ ctx, input }) => {
+      await db.likeMessage(input.participationId, ctx.user.id);
+      return { success: true };
+    }),
+
+  // 応援メッセージの「いいね」を解除する
+  unlikeMessage: protectedProcedure
+    .input(z.object({ participationId: z.number() }))
+    .mutation(async ({ ctx, input }) => {
+      await db.unlikeMessage(input.participationId, ctx.user.id);
+      return { success: true };
+    }),
+
   // 参加をキャンセル（チケット譲渡オプション付き）
   cancel: protectedProcedure
     .input(z.object({

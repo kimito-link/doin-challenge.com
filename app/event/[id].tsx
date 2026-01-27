@@ -26,7 +26,7 @@ import { NotificationOnboardingModal } from "@/components/molecules/notification
 import { ParticipationBanner } from "@/components/ui/participation-banner";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import * as Notifications from "expo-notifications";
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, useMemo } from "react";
 import { AppState, type AppStateStatus } from "react-native";
 import { useInterval } from "@/hooks/use-interval";
 import { shareParticipation } from "@/lib/share";
@@ -72,6 +72,9 @@ export default function ChallengeDetailScreen() {
   const [newParticipantName, setNewParticipantName] = useState<string | null>(null);
   const [showParticipationBanner, setShowParticipationBanner] = useState(false);
   const previousParticipationCount = useRef<number>(0);
+  
+  // 「いいね」の状態
+  const [likedParticipations, setLikedParticipations] = useState<Set<number>>(new Set());
   
   const { id } = useLocalSearchParams<{ id: string }>();
   const challengeId = parseInt(id || "0", 10);
@@ -429,6 +432,27 @@ export default function ChallengeDetailScreen() {
                   eventActions.setDeleteTargetParticipation(participation);
                   eventActions.setShowDeleteParticipationModal(true);
                 }}
+                onLike={async (participationId) => {
+                  if (!user) return;
+                  try {
+                    const hasLiked = likedParticipations.has(participationId);
+                    if (hasLiked) {
+                      await eventDetail.unlikeMessage(participationId);
+                      setLikedParticipations(prev => {
+                        const next = new Set(prev);
+                        next.delete(participationId);
+                        return next;
+                      });
+                    } else {
+                      await eventDetail.likeMessage(participationId);
+                      setLikedParticipations(prev => new Set(prev).add(participationId));
+                    }
+                  } catch (error) {
+                    console.error("「いいね」処理エラー:", error);
+                  }
+                }}
+                likedParticipations={likedParticipations}
+                isLoggedIn={!!user}
               />
             </View>
           )}

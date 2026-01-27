@@ -236,7 +236,7 @@ var init_challenges = __esm({
 
 // drizzle/schema/participations.ts
 import { mysqlTable as mysqlTable3, int as int3, varchar as varchar3, text as text3, timestamp as timestamp3, mysqlEnum as mysqlEnum3, boolean as boolean3 } from "drizzle-orm/mysql-core";
-var participations, participationCompanions;
+var participations, participationCompanions, messageLikes;
 var init_participations = __esm({
   "drizzle/schema/participations.ts"() {
     "use strict";
@@ -272,6 +272,12 @@ var init_participations = __esm({
       twitterId: varchar3("twitterId", { length: 64 }),
       profileImage: text3("profileImage"),
       invitedByUserId: int3("invitedByUserId"),
+      createdAt: timestamp3("createdAt").defaultNow().notNull()
+    });
+    messageLikes = mysqlTable3("message_likes", {
+      id: int3("id").autoincrement().primaryKey(),
+      participationId: int3("participationId").notNull(),
+      userId: int3("userId").notNull(),
       createdAt: timestamp3("createdAt").defaultNow().notNull()
     });
   }
@@ -680,6 +686,7 @@ __export(schema_exports, {
   follows: () => follows,
   invitationUses: () => invitationUses,
   invitations: () => invitations,
+  messageLikes: () => messageLikes,
   notificationSettings: () => notificationSettings,
   notifications: () => notifications,
   oauthPkceData: () => oauthPkceData,
@@ -992,7 +999,31 @@ var init_challenge_db = __esm({
 async function getParticipationsByEventId(eventId, limit, offset) {
   const db = await getDb();
   if (!db) return [];
-  let query = db.select().from(participations).where(and(
+  let query = db.select({
+    id: participations.id,
+    challengeId: participations.challengeId,
+    userId: participations.userId,
+    twitterId: participations.twitterId,
+    displayName: participations.displayName,
+    username: participations.username,
+    profileImage: participations.profileImage,
+    followersCount: participations.followersCount,
+    message: participations.message,
+    companionCount: participations.companionCount,
+    prefecture: participations.prefecture,
+    gender: participations.gender,
+    contribution: participations.contribution,
+    isAnonymous: participations.isAnonymous,
+    attendanceType: participations.attendanceType,
+    createdAt: participations.createdAt,
+    updatedAt: participations.updatedAt,
+    deletedAt: participations.deletedAt,
+    deletedBy: participations.deletedBy,
+    likesCount: sql`(
+      SELECT COUNT(*) FROM ${messageLikes}
+      WHERE ${messageLikes.participationId} = ${participations.id}
+    )`
+  }).from(participations).where(and(
     eq(participations.challengeId, eventId),
     isNull(participations.deletedAt)
   )).orderBy(desc(participations.createdAt));
@@ -1284,6 +1315,44 @@ async function bulkRestoreParticipations(filter) {
     restoredCount: targets.length,
     affectedChallengeIds: Object.keys(challengeContributions).map(Number)
   };
+}
+async function likeMessage(participationId, userId) {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+  const existing = await db.select().from(messageLikes).where(and(
+    eq(messageLikes.participationId, participationId),
+    eq(messageLikes.userId, userId)
+  ));
+  if (existing.length > 0) {
+    return;
+  }
+  await db.insert(messageLikes).values({
+    participationId,
+    userId
+  });
+}
+async function unlikeMessage(participationId, userId) {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+  await db.delete(messageLikes).where(and(
+    eq(messageLikes.participationId, participationId),
+    eq(messageLikes.userId, userId)
+  ));
+}
+async function getMessageLikesCount(participationId) {
+  const db = await getDb();
+  if (!db) return 0;
+  const result = await db.select({ count: sql`COUNT(*)` }).from(messageLikes).where(eq(messageLikes.participationId, participationId));
+  return result[0]?.count || 0;
+}
+async function hasUserLikedMessage(participationId, userId) {
+  const db = await getDb();
+  if (!db) return false;
+  const result = await db.select().from(messageLikes).where(and(
+    eq(messageLikes.participationId, participationId),
+    eq(messageLikes.userId, userId)
+  ));
+  return result.length > 0;
 }
 var init_participation_db = __esm({
   "server/db/participation-db.ts"() {
@@ -3061,6 +3130,7 @@ __export(db_exports, {
   getInvitationsForChallenge: () => getInvitationsForChallenge,
   getInvitationsForUser: () => getInvitationsForUser,
   getInvitedParticipants: () => getInvitedParticipants,
+  getMessageLikesCount: () => getMessageLikesCount,
   getNotificationSettings: () => getNotificationSettings,
   getNotificationsByUserId: () => getNotificationsByUserId,
   getOshikatsuStats: () => getOshikatsuStats,
@@ -3099,6 +3169,7 @@ __export(db_exports, {
   getUsersWithNotificationEnabled: () => getUsersWithNotificationEnabled,
   getWaitlistUsersForNotification: () => getWaitlistUsersForNotification,
   gte: () => gte,
+  hasUserLikedMessage: () => hasUserLikedMessage,
   inArray: () => inArray,
   incrementInvitationUseCount: () => incrementInvitationUseCount,
   incrementTemplateUseCount: () => incrementTemplateUseCount,
@@ -3108,6 +3179,7 @@ __export(db_exports, {
   isNull: () => isNull,
   isUserInWaitlist: () => isUserInWaitlist,
   like: () => like,
+  likeMessage: () => likeMessage,
   logAction: () => logAction,
   lte: () => lte,
   markAllMessagesAsRead: () => markAllMessagesAsRead,
@@ -3136,6 +3208,7 @@ __export(db_exports, {
   ticketTransfers: () => ticketTransfers,
   ticketWaitlist: () => ticketWaitlist,
   unfollowUser: () => unfollowUser,
+  unlikeMessage: () => unlikeMessage,
   unpickComment: () => unpickComment,
   updateAchievementPage: () => updateAchievementPage,
   updateCategory: () => updateCategory,
@@ -4781,6 +4854,16 @@ var participationsRouter = router({
       });
     }
     return { success: true, challengeId: result.challengeId, requestId: ctx.requestId };
+  }),
+  // 応援メッセージに「いいね」をする
+  likeMessage: protectedProcedure.input(z2.object({ participationId: z2.number() })).mutation(async ({ ctx, input }) => {
+    await likeMessage(input.participationId, ctx.user.id);
+    return { success: true };
+  }),
+  // 応援メッセージの「いいね」を解除する
+  unlikeMessage: protectedProcedure.input(z2.object({ participationId: z2.number() })).mutation(async ({ ctx, input }) => {
+    await unlikeMessage(input.participationId, ctx.user.id);
+    return { success: true };
   }),
   // 参加をキャンセル（チケット譲渡オプション付き）
   cancel: protectedProcedure.input(z2.object({
