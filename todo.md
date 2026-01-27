@@ -467,5 +467,22 @@
   - [x] バグレポート用テンプレート（.github/ISSUE_TEMPLATE/bug_report.yml）
   - [x] 機能リクエスト用テンプレート（.github/ISSUE_TEMPLATE/feature_request.yml）
   - [x] 質問用テンプレート（.github/ISSUE_TEMPLATE/question.yml）
-- [ ] チェックポイント保存（v6.110）
+- [x] チェックポイント保存（v6.110）
+- [x] GitHubへのpush
+
+### Phase 47: オープンソースドキュメントの整備
+- [x] LICENSE.mdの作成
+  - [x] MITライセンスの適用
+  - [x] 著作権表示
+  - [x] 利用条件の明記
+- [x] CODE_OF_CONDUCT.mdの作成
+  - [x] 行動規範の明文化
+  - [x] コミュニティガイドライン
+  - [x] 報告プロセス
+- [x] README.mdの強化
+  - [x] SECURITY.mdへのリンク追加
+  - [x] CONTRIBUTING.mdへのリンク追加
+  - [x] CODE_OF_CONDUCT.mdへのリンク追加
+  - [x] LICENSEへのリンク追加
+- [ ] チェックポイント保存（v6.111）
 - [ ] GitHubへのpush
