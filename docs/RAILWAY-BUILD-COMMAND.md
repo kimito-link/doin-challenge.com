@@ -1,6 +1,154 @@
 # Railway Custom Build Command
 
-## 最新版（v6.140 - GPT推奨）
+## 最新版（v6.141）: prebuildスクリプト方式
+
+### Custom Build Command
+
+```bash
+pnpm install && pnpm db:migrate && pnpm build
+```
+
+### 仕組み
+
+1. **`pnpm install`**: 依存関係をインストール
+2. **`pnpm db:migrate`**: データベースマイグレーションを実行
+3. **`pnpm build`**: アプリケーションをビルド
+   - **`prebuild`スクリプト**が自動実行され、`server/_core/build-info.json`を生成
+   - **`build`スクリプト**がesbuildでバンドルし、`dist/build-info.json`にコピー
+
+### prebuildスクリプト（scripts/generate-build-info.cjs）
+
+```javascript
+const fs = require('fs');
+const { execSync } = require('child_process');
+const path = require('path');
+
+const dir = path.join(__dirname, '..', 'server', '_core');
+fs.mkdirSync(dir, { recursive: true });
+
+let commitSha;
+try {
+  commitSha = execSync('git rev-parse HEAD', { encoding: 'utf-8' }).trim();
+} catch {
+  commitSha = `railway-${Date.now()}`;
+}
+
+const buildInfo = {
+  commitSha,
+  gitSha: commitSha,
+  version: commitSha,
+  builtAt: new Date().toISOString(),
+  buildTime: new Date().toISOString()
+};
+
+fs.writeFileSync(
+  path.join(dir, 'build-info.json'),
+  JSON.stringify(buildInfo, null, 2)
+);
+
+console.log('Generated build-info.json:', buildInfo);
+```
+
+### package.json
+
+```json
+{
+  "scripts": {
+    "prebuild": "node scripts/generate-build-info.cjs",
+    "build": "esbuild server/_core/index.ts --platform=node --packages=external --bundle --format=esm --outdir=dist && cp -v server/_core/build-info.json dist/build-info.json"
+  }
+}
+```
+
+### メリット
+
+- **シンプル**: Custom Build Commandが短く、読みやすい
+- **改行問題を回避**: Railwayの改行削除問題を完全に回避
+- **標準的**: npmの`prebuild`フックを使用（業界標準）
+- **デバッグが容易**: ビルドログで`prebuild`の実行結果が確認できる
+
+---
+
+## 設定手順
+
+1. **Railwayの「Settings」→「Build」を開く**
+2. **「Custom Build Command」フィールドに以下を入力：**
+   ```bash
+   pnpm install && pnpm db:migrate && pnpm build
+   ```
+3. **「Save」をクリック**
+4. **「Deployments」タブで「Redeploy」をクリック**
+
+---
+
+## トラブルシューティング
+
+### Build Logsで確認すべき出力
+
+```
+> app-template@1.0.0 prebuild /app
+> node scripts/generate-build-info.cjs
+
+Generated build-info.json: {
+  commitSha: 'abc123...',
+  gitSha: 'abc123...',
+  version: 'abc123...',
+  builtAt: '2026-01-28T10:44:30.942Z',
+  buildTime: '2026-01-28T10:44:30.942Z'
+}
+
+> app-template@1.0.0 build /app
+> esbuild server/_core/index.ts --platform=node --packages=external --bundle --format=esm --outdir=dist && cp -v server/_core/build-info.json dist/build-info.json
+
+  dist/index.js  283.6kb
+⚡ Done in 18ms
+'server/_core/build-info.json' -> 'dist/build-info.json'
+```
+
+### エラーが発生した場合
+
+1. **`prebuild`スクリプトが実行されていない**
+   - `package.json`に`"prebuild": "node scripts/generate-build-info.cjs"`があることを確認
+   - `scripts/generate-build-info.cjs`ファイルが存在することを確認
+
+2. **`cp: cannot stat 'server/_core/build-info.json'`エラー**
+   - `prebuild`スクリプトが失敗している可能性
+   - Build Logsで`Generated build-info.json:`が表示されているか確認
+
+3. **`/api/health`が`"version": "unknown"`を返す**
+   - Build Logsで`'server/_core/build-info.json' -> 'dist/build-info.json'`が表示されているか確認
+   - Deploy Logsで`[health] Failed to read build-info.json`エラーがないか確認
+
+---
+
+## 期待される結果
+
+デプロイ後、https://doin-challenge.com/api/health が以下を返す：
+
+```json
+{
+  "ok": true,
+  "timestamp": 1769596416200,
+  "version": "269e8805c8ad63ce3469f5bbf7f0e6f52fd0a501",
+  "commitSha": "269e8805c8ad63ce3469f5bbf7f0e6f52fd0a501",
+  "gitSha": "269e8805c8ad63ce3469f5bbf7f0e6f52fd0a501",
+  "builtAt": "2026-01-28T10:44:30.942Z",
+  "nodeEnv": "production",
+  "db": {
+    "connected": true,
+    "latency": 1533,
+    "error": ""
+  }
+}
+```
+
+`"version": "unknown"`ではなく、実際のGit commit SHAが表示される。
+
+---
+
+## 以前の方法（v6.140 - 非推奨）
+
+以前は長いCustom Build Commandを使用していましたが、Railwayの改行削除問題により正しく動作しませんでした。
 
 ```bash
 set -eux
@@ -23,68 +171,6 @@ ls -la dist
 cat dist/build-info.json
 ```
 
-## 重要な変更点（v6.137 → v6.140）
+**問題点**: Railwayが改行をスペースに置き換えてしまい、コマンドが正しく実行されない。
 
-### 1. `|| true`を削除
-- **問題**: エラーを握り潰していたため、`cp`が失敗しても気づかなかった
-- **解決**: すべての`|| true`を削除し、失敗したらビルドを停止
-
-### 2. `cat > server/_core/build-info.json <<EOF`を使用
-- **問題**: `echo "{...}" > file`は複雑なJSONで引用符エスケープが難しい
-- **解決**: ヒアドキュメントで安全に書き込み
-
-### 3. `pnpm build`に詳細ログを追加
-- **package.json**の`build`スクリプトに以下を追加：
-  - `mkdir -p dist`（保険）
-  - `cp -v`（コピーログを表示）
-  - `ls -la dist`（ファイル一覧を表示）
-  - `cat dist/build-info.json`（内容を確認）
-
-### 4. `set -euxo pipefail` → `set -eux`
-- **問題**: Railwayのビルド環境は`sh`を使用し、`pipefail`は`bash`固有
-- **解決**: `pipefail`を削除
-
-## 期待される出力
-
-```
-=== build-info (server/_core) ===
--rw-r--r-- 1 root root 230 Jan 28 10:00 build-info.json
-{"commitSha":"abc123...","gitSha":"abc123...","builtAt":"2026-01-28T10:00:00Z","version":"abc123...","buildTime":"2026-01-28T10:00:00Z"}
-
-[pnpm build実行]
-
-'server/_core/build-info.json' -> 'dist/build-info.json'
-total 300
--rw-r--r-- 1 root root    230 Jan 28 10:00 build-info.json
--rw-r--r-- 1 root root 290429 Jan 28 10:00 index.js
-
-=== build-info (dist) ==="
-total 300
--rw-r--r-- 1 root root    230 Jan 28 10:00 build-info.json
--rw-r--r-- 1 root root 290429 Jan 28 10:00 index.js
-{"commitSha":"abc123...","gitSha":"abc123...","builtAt":"2026-01-28T10:00:00Z","version":"abc123...","buildTime":"2026-01-28T10:00:00Z"}
-```
-
-## トラブルシューティング
-
-### `cp: cannot stat 'server/_core/build-info.json': No such file or directory`
-
-**原因**: `server/_core/build-info.json`が作成されていない
-
-**確認**:
-1. `echo "=== build-info (server/_core) ==="` の後のログを確認
-2. `cat server/_core/build-info.json`の出力があるか確認
-
-### `cat: dist/build-info.json: No such file or directory`
-
-**原因**: `cp`が失敗している、または`dist/`ディレクトリが別の場所に作成されている
-
-**確認**:
-1. `cp -v`の出力があるか確認（`'server/_core/build-info.json' -> 'dist/build-info.json'`）
-2. `ls -la dist`の出力で`build-info.json`があるか確認
-3. `PWD=$(pwd)`の出力で作業ディレクトリを確認
-
-## 参考
-
-- GPT分析: `pasted_content_8.txt`
-- 関連コミット: v6.140
+**解決策**: `prebuild`スクリプトを使用することで、Custom Build Commandをシンプルに保ち、改行問題を回避。
