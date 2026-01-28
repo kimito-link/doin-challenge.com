@@ -102,7 +102,7 @@ export function useHomeData({
     loadInitialCache();
   }, []);
 
-  // 無限スクロール対応のページネーションクエリ
+  // 無限スクロール対応のページネーションクエリ（検索対応）
   const {
     data: paginatedData,
     isLoading: isApiLoading,
@@ -112,7 +112,11 @@ export function useHomeData({
     isFetchingNextPage,
     refetch,
   } = trpc.events.listPaginated.useInfiniteQuery(
-    { limit: 20, filter: filter as "all" | "solo" | "group" },
+    { 
+      limit: 20, 
+      filter: filter as "all" | "solo" | "group",
+      search: searchQuery.length > 0 ? searchQuery : undefined,
+    },
     {
       enabled: !isOffline,
       getNextPageParam: (lastPage) => lastPage.nextCursor,

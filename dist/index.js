@@ -4225,13 +4225,24 @@ var eventsRouter = router({
   listPaginated: publicProcedure.input(z.object({
     cursor: z.number().optional(),
     limit: z.number().min(1).max(50).default(20),
-    filter: z.enum(["all", "solo", "group"]).optional()
+    filter: z.enum(["all", "solo", "group"]).optional(),
+    search: z.string().optional()
   })).query(async ({ input }) => {
-    const { cursor = 0, limit, filter } = input;
+    const { cursor = 0, limit, filter, search } = input;
     const allEvents = await getAllEvents();
     let filteredEvents = allEvents;
     if (filter && filter !== "all") {
-      filteredEvents = allEvents.filter((e) => e.eventType === filter);
+      filteredEvents = filteredEvents.filter((e) => e.eventType === filter);
+    }
+    if (search && search.trim()) {
+      const searchLower = search.toLowerCase();
+      filteredEvents = filteredEvents.filter((e) => {
+        const title = (e.title || "").toLowerCase();
+        const description = (e.description || "").toLowerCase();
+        const venue = (e.venue || "").toLowerCase();
+        const hostName = (e.hostName || "").toLowerCase();
+        return title.includes(searchLower) || description.includes(searchLower) || venue.includes(searchLower) || hostName.includes(searchLower);
+      });
     }
     const items = filteredEvents.slice(cursor, cursor + limit);
     const nextCursor = cursor + limit < filteredEvents.length ? cursor + limit : void 0;
@@ -5369,6 +5380,74 @@ var searchRouter = router({
   clearHistory: protectedProcedure.mutation(async ({ ctx }) => {
     await clearSearchHistoryForUser(ctx.user.id);
     return { success: true };
+  }),
+  // ユーザーを検索
+  users: publicProcedure.input(z13.object({ query: z13.string().min(1) })).query(async ({ input }) => {
+    const allUsers = await getAllUsers();
+    const queryLower = input.query.toLowerCase();
+    const results = allUsers.filter((user) => {
+      const name = (user.name || "").toLowerCase();
+      const username = (user.username || "").toLowerCase();
+      const description = (user.description || "").toLowerCase();
+      return name.includes(queryLower) || username.includes(queryLower) || description.includes(queryLower);
+    });
+    return results;
+  }),
+  // ページネーション対応のユーザー検索
+  usersPaginated: publicProcedure.input(z13.object({
+    query: z13.string().min(1),
+    cursor: z13.number().optional(),
+    limit: z13.number().min(1).max(50).default(20)
+  })).query(async ({ input }) => {
+    const { query, cursor = 0, limit } = input;
+    const allUsers = await getAllUsers();
+    const queryLower = query.toLowerCase();
+    const allResults = allUsers.filter((user) => {
+      const name = (user.name || "").toLowerCase();
+      const username = (user.username || "").toLowerCase();
+      const description = (user.description || "").toLowerCase();
+      return name.includes(queryLower) || username.includes(queryLower) || description.includes(queryLower);
+    });
+    const items = allResults.slice(cursor, cursor + limit);
+    const nextCursor = cursor + limit < allResults.length ? cursor + limit : void 0;
+    return {
+      items,
+      nextCursor,
+      totalCount: allResults.length
+    };
+  }),
+  // メッセージを検索
+  messages: protectedProcedure.input(z13.object({ query: z13.string().min(1) })).query(async ({ ctx, input }) => {
+    const allMessages = await getDirectMessagesForUser(ctx.user.id);
+    const queryLower = input.query.toLowerCase();
+    const results = allMessages.filter((msg) => {
+      const message = (msg.message || "").toLowerCase();
+      const fromUserName = (msg.fromUserName || "").toLowerCase();
+      return message.includes(queryLower) || fromUserName.includes(queryLower);
+    });
+    return results;
+  }),
+  // ページネーション対応のメッセージ検索
+  messagesPaginated: protectedProcedure.input(z13.object({
+    query: z13.string().min(1),
+    cursor: z13.number().optional(),
+    limit: z13.number().min(1).max(50).default(20)
+  })).query(async ({ ctx, input }) => {
+    const { query, cursor = 0, limit } = input;
+    const allMessages = await getDirectMessagesForUser(ctx.user.id);
+    const queryLower = query.toLowerCase();
+    const allResults = allMessages.filter((msg) => {
+      const message = (msg.message || "").toLowerCase();
+      const fromUserName = (msg.fromUserName || "").toLowerCase();
+      return message.includes(queryLower) || fromUserName.includes(queryLower);
+    });
+    const items = allResults.slice(cursor, cursor + limit);
+    const nextCursor = cursor + limit < allResults.length ? cursor + limit : void 0;
+    return {
+      items,
+      nextCursor,
+      totalCount: allResults.length
+    };
   })
 });
 

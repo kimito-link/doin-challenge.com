@@ -20,14 +20,33 @@ export const eventsRouter = router({
       cursor: z.number().optional(),
       limit: z.number().min(1).max(50).default(20),
       filter: z.enum(["all", "solo", "group"]).optional(),
+      search: z.string().optional(),
     }))
     .query(async ({ input }) => {
-      const { cursor = 0, limit, filter } = input;
+      const { cursor = 0, limit, filter, search } = input;
       const allEvents = await db.getAllEvents();
       
       let filteredEvents = allEvents;
+      
+      // フィルター適用
       if (filter && filter !== "all") {
-        filteredEvents = allEvents.filter((e: any) => e.eventType === filter);
+        filteredEvents = filteredEvents.filter((e: any) => e.eventType === filter);
+      }
+      
+      // 全文検索適用（タイトル、説明、会場、ホスト名）
+      if (search && search.trim()) {
+        const searchLower = search.toLowerCase();
+        filteredEvents = filteredEvents.filter((e: any) => {
+          const title = (e.title || "").toLowerCase();
+          const description = (e.description || "").toLowerCase();
+          const venue = (e.venue || "").toLowerCase();
+          const hostName = (e.hostName || "").toLowerCase();
+          
+          return title.includes(searchLower) ||
+                 description.includes(searchLower) ||
+                 venue.includes(searchLower) ||
+                 hostName.includes(searchLower);
+        });
       }
       
       const items = filteredEvents.slice(cursor, cursor + limit);
