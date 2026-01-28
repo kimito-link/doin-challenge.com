@@ -108,38 +108,51 @@ async function startServer() {
     }
   });
 
-  app.get("/api/health", async (_req, res) => {
-    // ビルド情報をbuild-info.jsonから読み込む
-    let buildInfo = {
-      version: "unknown",
-      commitSha: "unknown",
-      gitSha: "unknown",
-      builtAt: "unknown",
-    };
-    
-    try {
-      const fs = await import("fs/promises");
-      const path = await import("path");
-      const url = await import("url");
-      const __dirname = path.dirname(url.fileURLToPath(import.meta.url));
-      const buildInfoPath = path.join(__dirname, "build-info.json");
-      const buildInfoContent = await fs.readFile(buildInfoPath, "utf-8");
-      const parsedBuildInfo = JSON.parse(buildInfoContent);
-      buildInfo = {
-        version: parsedBuildInfo.version || "unknown",
-        commitSha: parsedBuildInfo.commitSha || "unknown",
-        gitSha: parsedBuildInfo.gitSha || "unknown",
-        builtAt: parsedBuildInfo.builtAt || "unknown",
-      };
-    } catch (err) {
-      // build-info.jsonが見つからない場合は環境変数から取得
-      buildInfo = {
-        version: process.env.APP_VERSION || "unknown",
-        commitSha: process.env.COMMIT_SHA || process.env.GIT_SHA || "unknown",
-        gitSha: process.env.GIT_SHA || "unknown",
-        builtAt: process.env.BUILT_AT || "unknown",
-      };
+  // Gate 1的に強固な複数パス対応のbuild-info.json読み込み
+  async function readBuildInfo() {
+    const fs = await import("fs/promises");
+    const path = await import("path");
+    const url = await import("url");
+    const __filename = url.fileURLToPath(import.meta.url);
+    const __dirname = path.dirname(__filename);
+
+    // 候補パスを順番に探す（どこに置いても読める）
+    const candidates = [
+      path.join(__dirname, "build-info.json"),                 // dist/_core/build-info.json 想定
+      path.join(process.cwd(), "dist/_core/build-info.json"),  // 念のため
+      path.join(process.cwd(), "dist/build-info.json"),        // 現状のコピー先
+      path.join(process.cwd(), "server/_core/build-info.json") // 念のため
+    ];
+
+    for (const p of candidates) {
+      try {
+        const txt = await fs.readFile(p, "utf-8");
+        const parsed = JSON.parse(txt);
+        return {
+          version: parsed.version || "unknown",
+          commitSha: parsed.commitSha || "unknown",
+          gitSha: parsed.gitSha || "unknown",
+          builtAt: parsed.builtAt || "unknown",
+          resolvedPath: p, // デバッグ用：どのパスから読めたか
+        };
+      } catch {
+        // 次の候補を試す
+      }
     }
+
+    // すべて失敗した場合は環境変数にフォールバック
+    return {
+      version: process.env.APP_VERSION || "unknown",
+      commitSha: process.env.COMMIT_SHA || process.env.GIT_SHA || "unknown",
+      gitSha: process.env.GIT_SHA || "unknown",
+      builtAt: process.env.BUILT_AT || "unknown",
+      resolvedPath: "env", // 環境変数から取得したことを示す
+    };
+  }
+
+  app.get("/api/health", async (_req, res) => {
+    // ビルド情報を複数パス対応で読み込む
+    const buildInfo = await readBuildInfo();
     
     // 基本情報
     const baseInfo = {
