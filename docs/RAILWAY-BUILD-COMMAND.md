@@ -1,45 +1,68 @@
 # Railway Custom Build Command
 
-## 最新版（v6.135）
+## 最新版（v6.136）
 
-**重要:** `dist/_core/build-info.json`にコピーすることで、サーバーが確実に読み込めるようになります。
+**重要:** Custom Build Commandの文字数制限を回避するため、`railway-build.sh`スクリプトを使用します。
+
+### Custom Build Command（Railwayに設定）
 
 ```bash
-set -euxo pipefail && echo "PWD=$(pwd)" && ls -la && rm -rf server/_core/build-info.json dist/build-info.json && pnpm install && pnpm db:migrate && mkdir -p server/_core && COMMIT_SHA=$(git rev-parse HEAD 2>/dev/null || echo "railway-$(date +%s)") && echo "{\"commitSha\":\"$COMMIT_SHA\",\"gitSha\":\"$COMMIT_SHA\",\"builtAt\":\"$(date -u +%Y-%m-%dT%H:%M:%SZ)\",\"version\":\"$COMMIT_SHA\",\"buildTime\":\"$(date -u +%Y-%m-%dT%H:%M:%SZ)\"}" > server/_core/build-info.json && echo "=== build-info (server/_core) ===" && ls -la server/_core || true && cat server/_core/build-info.json || true && pnpm build && mkdir -p dist/_core && cp server/_core/build-info.json dist/_core/build-info.json && echo "=== build-info (dist/_core) ===" && ls -la dist/_core || true && cat dist/_core/build-info.json || true
+bash railway-build.sh
 ```
 
-## 変更点（v6.134 → v6.135）
+### railway-build.sh（プロジェクトルートに配置）
 
-### 修正前（v6.134）
-```bash
-mkdir -p dist && cp server/_core/build-info.json dist/build-info.json
-```
-→ サーバーは`dist/_core/build-info.json`を探すが、実際には`dist/build-info.json`にしかない
+このスクリプトは既にプロジェクトに含まれています（`railway-build.sh`）。
 
-### 修正後（v6.135）
-```bash
-mkdir -p dist/_core && cp server/_core/build-info.json dist/_core/build-info.json
-```
-→ サーバーが探す場所（`dist/_core/`）に正しくコピー
+**スクリプトの内容:**
+- `dist/_core/build-info.json`にコピー
+- Git commit SHAを自動取得
+- ビルドログに詳細な出力
 
-## デバッグ用の追加機能
+## 変更点（v6.135 → v6.136）
 
-- `set -euxo pipefail`: すべてのコマンドをログに出力
-- `echo "PWD=$(pwd)"`: 現在のディレクトリを表示
-- `ls -la`: ファイル一覧を表示
-- `echo "=== build-info (server/_core) ==="`: セクション区切り
-- `ls -la server/_core || true`: server/_coreディレクトリの内容を表示
-- `cat server/_core/build-info.json || true`: 生成されたbuild-info.jsonを表示
-- `echo "=== build-info (dist/_core) ==="`: セクション区切り
-- `ls -la dist/_core || true`: dist/_coreディレクトリの内容を表示
-- `cat dist/_core/build-info.json || true`: コピー後のbuild-info.jsonを表示
+### 問題（v6.135）
+Custom Build Commandが長すぎてRailwayのフィールドに入りきらない（文字数制限）。
+
+### 解決策（v6.136）
+`railway-build.sh`スクリプトファイルを作成し、Custom Build Commandを`bash railway-build.sh`だけにする。
+
+**メリット:**
+- 文字数制限を回避
+- スクリプトの可読性向上
+- バージョン管理が容易
+- デバッグが簡単
+
+## railway-build.shの機能
+
+1. **依存関係のインストール**: `pnpm install`
+2. **データベースマイグレーション**: `pnpm db:migrate`
+3. **build-info.json生成**: Git commit SHAを自動取得
+4. **アプリケーションビルド**: `pnpm build`
+5. **build-info.jsonコピー**: `dist/_core/`に正しくコピー
+6. **詳細なログ出力**: 各ステップの状況を確認可能
 
 ## 設定手順
+
+### 1. GitHubにpush
+
+`railway-build.sh`ファイルがプロジェクトに含まれていることを確認してください。
+
+```bash
+git add railway-build.sh
+git commit -m "Add railway-build.sh for Railway deployment"
+git push
+```
+
+### 2. Railwayの設定
 
 1. Railwayのプロジェクトページを開く
 2. 「Settings」タブをクリック
 3. 「Build」セクションを探す
-4. 「Custom Build Command」に上記のコマンドを貼り付け
+4. 「Custom Build Command」に以下を入力：
+   ```bash
+   bash railway-build.sh
+   ```
 5. 「Save」をクリック
 6. 「Deployments」タブで「Redeploy」をクリック
 
