@@ -8,6 +8,15 @@
  */
 
 
+// window.locationのモック
+Object.defineProperty(window, "location", {
+  value: {
+    origin: "https://doin-challenge.com",
+    href: "https://doin-challenge.com/event/1",
+  },
+  writable: true,
+});
+
 // Share関数のモック
 vi.mock("react-native", () => ({
   Alert: {

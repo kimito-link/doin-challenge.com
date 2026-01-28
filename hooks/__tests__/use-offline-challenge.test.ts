@@ -11,6 +11,10 @@
 import { renderHook, act, waitFor } from "@testing-library/react";
 import React from "react";
 
+// Testing Libraryのコンテナ設定
+const container = document.createElement("div");
+document.body.appendChild(container);
+
 // モックの設定
 const mockMutate = vi.fn();
 const mockUseMutation = vi.fn();

@@ -8,6 +8,15 @@
  */
 
 
+// Expoのモック
+vi.mock("expo-modules-core", () => ({
+  EventEmitter: class MockEventEmitter {
+    addListener = vi.fn();
+    removeListener = vi.fn();
+    emit = vi.fn();
+  },
+}));
+
 // React Nativeのモック
 vi.mock("react-native", () => ({
   Alert: {
