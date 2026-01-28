@@ -1,3 +1,4 @@
+import { describe, it, expect } from "vitest";
 
 // 都道府県データのテスト
 describe("Prefecture data", () => {

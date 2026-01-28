@@ -1,3 +1,4 @@
+import { describe, it, expect, vi, beforeEach } from "vitest";
 
 // Mock AsyncStorage
 vi.mock("@react-native-async-storage/async-storage", () => ({

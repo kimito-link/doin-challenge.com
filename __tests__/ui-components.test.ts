@@ -1,3 +1,4 @@
+import { describe, it, expect } from "vitest";
 
 // Design System Tests
 describe("Design System", () => {

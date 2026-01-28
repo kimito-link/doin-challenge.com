@@ -2,14 +2,15 @@
  * useHeatmapData フックのユニットテスト
  * 
  * テスト対象:
- * - 都道府県ごとの参加予定数集計
- * - 最大参加予定数の計算
- * - 総参加予定数の計算
- * - 地域ごとの参加予定数集計
+ * - 都道府県ごとの参加者数集計
+ * - 最大参加者数の計算
+ * - 総参加者数の計算
+ * - 地域ごとの参加者数集計
  * - 最も参加者が多い都道府県の特定
  * - 参加者がいる都道府県の数
  */
 
+import { describe, it, expect } from "vitest";
 import { renderHook } from "@testing-library/react";
 import { useHeatmapData } from "../useHeatmapData";
 
@@ -26,8 +27,8 @@ describe("useHeatmapData", () => {
     });
   });
 
-  describe("総参加予定数の計算", () => {
-    it("複数の都道府県の参加予定数を正しく合計する", () => {
+  describe("総参加者数の計算", () => {
+    it("複数の都道府県の参加者数を正しく合計する", () => {
       const prefectureCounts = {
         "東京都": 100,
         "大阪府": 50,
@@ -48,7 +49,7 @@ describe("useHeatmapData", () => {
     });
   });
 
-  describe("最大参加予定数の計算", () => {
+  describe("最大参加者数の計算", () => {
     it("最も参加者が多い都道府県の数を返す", () => {
       const prefectureCounts = {
         "東京都": 100,
@@ -60,7 +61,7 @@ describe("useHeatmapData", () => {
       expect(result.current.maxPrefectureCount).toBe(100);
     });
 
-    it("全て同じ参加予定数の場合、その数を返す", () => {
+    it("全て同じ参加者数の場合、その数を返す", () => {
       const prefectureCounts = {
         "東京都": 25,
         "大阪府": 25,
@@ -118,8 +119,8 @@ describe("useHeatmapData", () => {
     });
   });
 
-  describe("地域ごとの参加予定数集計", () => {
-    it("関東地方の参加予定数を正しく集計する", () => {
+  describe("地域ごとの参加者数集計", () => {
+    it("関東地方の参加者数を正しく集計する", () => {
       const prefectureCounts = {
         "東京都": 100,
         "神奈川県": 50,
@@ -131,7 +132,7 @@ describe("useHeatmapData", () => {
       expect(result.current.regionCounts["関東"]).toBe(200);
     });
 
-    it("複数地域の参加予定数を正しく集計する", () => {
+    it("複数地域の参加者数を正しく集計する", () => {
       const prefectureCounts = {
         "東京都": 100,
         "大阪府": 50,

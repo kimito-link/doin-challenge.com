@@ -167,7 +167,7 @@ export default function AchievementPage() {
                   {achievementPage.totalParticipants}
                 </Text>
                 <Text style={{ color: color.textMuted, fontSize: 12 }}>
-                  参加予定数
+                  参加者数
                 </Text>
               </View>
               <View style={{ width: 1, backgroundColor: color.border }} />
@@ -176,7 +176,7 @@ export default function AchievementPage() {
                   {Math.round((achievementPage.finalValue / achievementPage.goalValue) * 100)}%
                 </Text>
                 <Text style={{ color: color.textMuted, fontSize: 12 }}>
-                  進捗
+                  達成率
                 </Text>
               </View>
             </View>

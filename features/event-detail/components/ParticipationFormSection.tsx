@@ -11,7 +11,6 @@
 import { View, Text } from "react-native";
 import { color } from "@/theme/tokens";
 import { useColors } from "@/hooks/use-colors";
-import type { Gender } from "@/components/ui/gender-selector";
 import type { Companion, LookedUpProfile } from "../types";
 import { FormInputSection } from "./FormInputSection";
 import { CompanionAddSection } from "./CompanionAddSection";
@@ -33,8 +32,8 @@ interface ParticipationFormSectionProps {
   setMessage: (value: string) => void;
   prefecture: string;
   setPrefecture: (value: string) => void;
-  gender: Gender;
-  setGender: (value: Gender) => void;
+  gender: "male" | "female" | "";
+  setGender: (value: "male" | "female" | "") => void;
   allowVideoUse: boolean;
   setAllowVideoUse: (value: boolean) => void;
   showPrefectureList: boolean;

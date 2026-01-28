@@ -6,8 +6,6 @@
 import { View, Text, Pressable } from "react-native";
 import { navigate } from "@/lib/navigation";
 import { LinearGradient } from "expo-linear-gradient";
-import Animated, { useSharedValue, useAnimatedStyle, withSpring } from "react-native-reanimated";
-import { useEffect } from "react";
 import { color } from "@/theme/tokens";
 import { useColors } from "@/hooks/use-colors";
 import { JapanRegionBlocks } from "@/components/organisms/japan-region-blocks";
@@ -45,22 +43,6 @@ export function ProgressSection({
   onRegionPress,
 }: ProgressSectionProps) {
   const colors = useColors();
-  
-  // 進捗バーのアニメーション
-  const progressWidth = useSharedValue(0);
-  
-  useEffect(() => {
-    progressWidth.value = withSpring(progress, {
-      damping: 15,
-      stiffness: 100,
-    });
-  }, [progress]);
-  
-  const animatedProgressStyle = useAnimatedStyle(() => {
-    return {
-      width: `${progressWidth.value}%`,
-    };
-  });
   
   
   // 成長軌跡データの生成
@@ -123,18 +105,16 @@ export function ProgressSection({
             marginBottom: 8,
           }}
         >
-          <Animated.View style={[animatedProgressStyle, { height: "100%" }]}>
-            <LinearGradient
-              colors={[color.accentPrimary, color.accentAlt]}
-              start={{ x: 0, y: 0 }}
-              end={{ x: 1, y: 0 }}
-              style={{
-                height: "100%",
-                width: "100%",
-                borderRadius: 6,
-              }}
-            />
-          </Animated.View>
+          <LinearGradient
+            colors={[color.accentPrimary, color.accentAlt]}
+            start={{ x: 0, y: 0 }}
+            end={{ x: 1, y: 0 }}
+            style={{
+              height: "100%",
+              width: `${progress}%`,
+              borderRadius: 6,
+            }}
+          />
         </View>
         
         {progress >= 100 ? (

@@ -3,6 +3,7 @@
  * v6.38: router.push移行後のテスト
  */
 
+import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 
 // expo-routerのモック
 vi.mock("expo-router", () => ({

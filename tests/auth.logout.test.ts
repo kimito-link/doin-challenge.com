@@ -1,3 +1,4 @@
+import { describe, expect, it } from "vitest";
 import { appRouter } from "../server/routers";
 import { COOKIE_NAME } from "../shared/const";
 import type { TrpcContext } from "../server/_core/context";
@@ -19,8 +20,6 @@ function createAuthContext(): { ctx: TrpcContext; clearedCookies: CookieCall[] }
     name: "Sample User",
     loginMethod: "manus",
     role: "user",
-    gender: null,
-    genre: null,
     createdAt: new Date(),
     updatedAt: new Date(),
     lastSignedIn: new Date(),

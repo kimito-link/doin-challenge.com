@@ -41,7 +41,7 @@ export interface MomentumData {
 }
 
 /**
- * 都道府県別参加予定数
+ * 都道府県別参加者数
  */
 export type PrefectureCounts = Record<string, number>;
 

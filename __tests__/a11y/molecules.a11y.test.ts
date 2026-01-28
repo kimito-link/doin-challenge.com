@@ -4,6 +4,7 @@
  * 複合コンポーネントがApple Human Interface Guidelinesに準拠しているか検証
  */
 
+import { describe, it, expect } from "vitest";
 import {
   checkTouchTargetSize,
   checkAccessibilityLabel,

@@ -23,7 +23,6 @@ export const challenges = mysqlTable("challenges", {
   hostProfileImage: text("hostProfileImage"),
   hostFollowersCount: int("hostFollowersCount").default(0),
   hostDescription: text("hostDescription"),
-  hostGender: mysqlEnum("hostGender", ["male", "female", "other"]),
   // チャレンジ情報
   title: varchar("title", { length: 255 }).notNull(),
   slug: varchar("slug", { length: 255 }),
@@ -37,8 +36,6 @@ export const challenges = mysqlTable("challenges", {
   eventType: mysqlEnum("eventType", ["solo", "group"]).default("solo").notNull(),
   // カテゴリ
   categoryId: int("categoryId"),
-  // 目的（現在はliveのみサポート）
-  purpose: mysqlEnum("purpose", ["live"]).default("live"),
   // 日時・場所
   eventDate: timestamp("eventDate").notNull(),
   venue: varchar("venue", { length: 255 }),
@@ -131,7 +128,7 @@ export type InsertChallengeTemplate = typeof challengeTemplates.$inferInsert;
 // =============================================================================
 
 /**
- * 統計データテーブル（参加予定数推移など）
+ * 統計データテーブル（参加者数推移など）
  */
 export const challengeStats = mysqlTable("challenge_stats", {
   id: int("id").autoincrement().primaryKey(),

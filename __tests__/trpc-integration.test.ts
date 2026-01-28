@@ -9,6 +9,7 @@
  * これらは最低限の疎通確認であり、詳細なロジックテストではありません。
  */
 
+import { describe, it, expect } from "vitest";
 
 describe("tRPC Integration Tests", () => {
   const API_BASE = process.env.API_URL || "http://localhost:3000";
@@ -27,13 +28,11 @@ describe("tRPC Integration Tests", () => {
 
   describe("rankings router", () => {
     it("rankings.hosts should not crash", async () => {
-      const input = { json: { limit: 1 } };
       const response = await fetch(
-        `${API_BASE}/api/trpc/rankings.hosts?input=${encodeURIComponent(JSON.stringify(input))}`
+        `${API_BASE}/api/trpc/rankings.hosts?input=${encodeURIComponent(JSON.stringify({ limit: 1 }))}`
       );
       
-      // 400エラーはテスト環境の問題であり、実際のアプリ動作には影響ない
-      expect([200, 400]).toContain(response.status);
+      expect(response.status).toBe(200);
       
       const data = await response.json();
       expect(data).toBeDefined();
@@ -41,13 +40,11 @@ describe("tRPC Integration Tests", () => {
     });
 
     it("rankings.contribution should not crash", async () => {
-      const input = { json: { period: "all", limit: 1 } };
       const response = await fetch(
-        `${API_BASE}/api/trpc/rankings.contribution?input=${encodeURIComponent(JSON.stringify(input))}`
+        `${API_BASE}/api/trpc/rankings.contribution?input=${encodeURIComponent(JSON.stringify({ period: "all", limit: 1 }))}`
       );
       
-      // 400エラーはテスト環境の問題であり、実際のアプリ動作には影響ない
-      expect([200, 400]).toContain(response.status);
+      expect(response.status).toBe(200);
       
       const data = await response.json();
       expect(data).toBeDefined();

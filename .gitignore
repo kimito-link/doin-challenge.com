@@ -60,26 +60,3 @@ Thumbs.db
 *.tgz
 *.tar.gz
 .cache/
-dist/
-build/
-
-# Temporary files
-*.tmp
-*.temp
-*.bak
-*.backup
-
-# Test coverage
-coverage/
-.nyc_output/
-
-# Editor directories and files
-.vscode/*
-!.vscode/extensions.json
-.idea
-*.suo
-*.ntvs*
-*.njsproj
-*.sln
-*.sw?
-server/_core/build-info.json

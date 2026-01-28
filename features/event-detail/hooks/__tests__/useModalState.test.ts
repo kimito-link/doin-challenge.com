@@ -3,6 +3,7 @@
  * モーダル状態管理フックのユニットテスト
  */
 
+import { describe, it, expect } from "vitest";
 import { renderHook, act } from "@testing-library/react";
 import { useModalState } from "../useModalState";
 

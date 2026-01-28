@@ -4,12 +4,12 @@
  */
 import { View, Text } from "react-native";
 import MaterialIcons from "@expo/vector-icons/MaterialIcons";
+import { LinearGradient } from "expo-linear-gradient";
 import { useColors } from "@/hooks/use-colors";
 import { useResponsive } from "@/hooks/use-responsive";
-import { palette } from "@/theme/tokens/palette";
 import { FollowStatusBadge } from "@/components/molecules/follow-gate";
 import { TwitterUserCard } from "@/components/molecules/twitter-user-card";
-import { mypageUI, mypageText, mypageAccent } from "../ui/theme/tokens";
+import { mypageUI, mypageText, mypageGradient, mypageAccent } from "../ui/theme/tokens";
 import { Button } from "@/components/ui/button";
 
 interface ProfileCardProps {
@@ -50,17 +50,23 @@ export function ProfileCard({
   return (
     <View
       style={{
-        backgroundColor: palette.gray800,
+        backgroundColor: mypageUI.cardBg,
         marginHorizontal: isDesktop ? "auto" : 16,
         marginVertical: 16,
-        borderRadius: 12,
+        borderRadius: 16,
         overflow: "hidden",
         borderWidth: 1,
-        borderColor: palette.gray700,
+        borderColor: mypageUI.cardBorder,
         maxWidth: isDesktop ? 800 : undefined,
         width: isDesktop ? "100%" : undefined,
       }}
     >
+      <LinearGradient
+        colors={[...mypageGradient.profileHeader]}
+        start={{ x: 0, y: 0 }}
+        end={{ x: 1, y: 0 }}
+        style={{ height: 4 }}
+      />
       <View style={{ padding: 16 }}>
         {/* Twitterユーザーカード */}
         <View style={{ flexDirection: "row", alignItems: "flex-start" }}>

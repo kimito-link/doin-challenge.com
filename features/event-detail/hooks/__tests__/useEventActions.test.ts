@@ -7,15 +7,7 @@
  * ここでは状態管理のロジックをテストします。
  */
 
-
-// window.locationのモック
-Object.defineProperty(window, "location", {
-  value: {
-    origin: "https://doin-challenge.com",
-    href: "https://doin-challenge.com/event/1",
-  },
-  writable: true,
-});
+import { describe, it, expect, vi, beforeEach } from "vitest";
 
 // Share関数のモック
 vi.mock("react-native", () => ({

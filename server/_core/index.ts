@@ -1,5 +1,4 @@
 import "dotenv/config";
-import { initSentry } from "./sentry";
 import express from "express";
 import { createServer } from "http";
 import net from "net";
@@ -35,9 +34,6 @@ async function findAvailablePort(startPort: number = 3000): Promise<number> {
 }
 
 async function startServer() {
-  // Sentryを初期化
-  initSentry();
-
   const app = express();
   const server = createServer(app);
 
@@ -68,87 +64,20 @@ async function startServer() {
   registerOAuthRoutes(app);
   registerTwitterRoutes(app);
 
-  // Healthz: 軽い（常に200を返す、プロセス生存確認）
-  app.get("/api/healthz", (_req, res) => {
-    res.json({
-      ok: true,
-      ts: Date.now(),
-    });
-    res.setHeader("cache-control", "no-store");
-  });
-
-  // Readyz: 重い（DB疎通・依存の確認。失敗時は503）
-  app.get("/api/readyz", async (_req, res) => {
-    try {
-      const { getDb } = await import("../db");
-      const db = await getDb();
-      if (db) {
-        await db.execute("SELECT 1 as ok");
-        res.json({
-          ok: true,
-          deps: { db: "ok" },
-          ts: Date.now(),
-        });
-        res.setHeader("cache-control", "no-store");
-      } else {
-        res.status(503).json({
-          ok: false,
-          deps: { db: "ng" },
-          ts: Date.now(),
-        });
-        res.setHeader("cache-control", "no-store");
-      }
-    } catch {
-      res.status(503).json({
-        ok: false,
-        deps: { db: "ng" },
-        ts: Date.now(),
-      });
-      res.setHeader("cache-control", "no-store");
-    }
-  });
-
   app.get("/api/health", async (_req, res) => {
-    // ビルド情報をbuild-info.jsonから読み込む
-    let buildInfo = {
-      version: "unknown",
-      commitSha: "unknown",
-      gitSha: "unknown",
-      builtAt: "unknown",
+    // バージョン情報を取得（優先順位: 環境変数 > build-info.json）
+    let versionInfo = {
+      version: process.env.RAILWAY_GIT_COMMIT_SHA || process.env.APP_VERSION || "unknown",
+      commitSha: process.env.RAILWAY_GIT_COMMIT_SHA || process.env.GIT_SHA || "unknown",
+      gitSha: process.env.RAILWAY_GIT_COMMIT_SHA || process.env.GIT_SHA || "unknown",
+      builtAt: process.env.BUILT_AT || new Date().toISOString(),
     };
-    
-    try {
-      const fs = await import("fs/promises");
-      const path = await import("path");
-      const url = await import("url");
-      const __dirname = path.dirname(url.fileURLToPath(import.meta.url));
-      const buildInfoPath = path.join(__dirname, "build-info.json");
-      const buildInfoContent = await fs.readFile(buildInfoPath, "utf-8");
-      const parsedBuildInfo = JSON.parse(buildInfoContent);
-      buildInfo = {
-        version: parsedBuildInfo.version || "unknown",
-        commitSha: parsedBuildInfo.commitSha || "unknown",
-        gitSha: parsedBuildInfo.gitSha || "unknown",
-        builtAt: parsedBuildInfo.builtAt || "unknown",
-      };
-    } catch (err) {
-      // build-info.jsonが見つからない場合は環境変数から取得
-      console.error("[health] Failed to read build-info.json:", err instanceof Error ? err.message : String(err));
-      console.error("[health] __dirname:", __dirname);
-      console.error("[health] buildInfoPath:", path.join(__dirname, "build-info.json"));
-      buildInfo = {
-        version: process.env.APP_VERSION || "unknown",
-        commitSha: process.env.COMMIT_SHA || process.env.GIT_SHA || "unknown",
-        gitSha: process.env.GIT_SHA || "unknown",
-        builtAt: process.env.BUILT_AT || "unknown",
-      };
-    }
-    
+
     // 基本情報
     const baseInfo = {
       ok: true,
       timestamp: Date.now(),
-      ...buildInfo,
+      ...versionInfo,
       nodeEnv: process.env.NODE_ENV || "development",
     };
 

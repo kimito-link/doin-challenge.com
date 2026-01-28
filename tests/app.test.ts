@@ -1,3 +1,4 @@
+import { describe, it, expect } from "vitest";
 
 describe("動員ちゃれんじ App Configuration", () => {
   it("should have correct app name", async () => {

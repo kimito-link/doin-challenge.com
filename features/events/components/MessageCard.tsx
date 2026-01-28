@@ -3,7 +3,6 @@
  * 参加者の応援メッセージを表示
  */
 import { View, Text, Pressable } from "react-native";
-import React from "react";
 import { navigate } from "@/lib/navigation";
 import MaterialIcons from "@expo/vector-icons/MaterialIcons";
 import { useColors } from "@/hooks/use-colors";
@@ -12,7 +11,6 @@ import { palette } from "@/theme/tokens/palette";
 import { OptimizedAvatar } from "@/components/molecules/optimized-image";
 import { Button } from "@/components/ui/button";
 import type { Participation, Companion } from "@/types/participation";
-import { getRelativeTime } from "@/lib/date-utils";
 
 /** 同伴者の表示用型 */
 interface CompanionDisplay {
@@ -37,7 +35,7 @@ export interface MessageVM {
 
 export interface MessageCardProps {
   /** 参加情報 */
-  participation: Participation & { likesCount?: number };
+  participation: Participation;
   /** エールボタンのコールバック */
   onCheer?: () => void;
   /** エール数 */
@@ -54,15 +52,9 @@ export interface MessageCardProps {
   onEdit?: () => void;
   /** 削除ボタンのコールバック */
   onDelete?: () => void;
-  /** 「いいね」ボタンのコールバック */
-  onLike?: () => void;
-  /** 「いいね」済みかどうか */
-  hasLiked?: boolean;
-  /** ログイン済みかどうか */
-  isLoggedIn?: boolean;
 }
 
-export const MessageCard = React.memo(function MessageCard({
+export function MessageCard({
   participation,
   onCheer,
   cheerCount,
@@ -72,9 +64,6 @@ export const MessageCard = React.memo(function MessageCard({
   isOwnPost,
   onEdit,
   onDelete,
-  onLike,
-  hasLiked,
-  isLoggedIn,
 }: MessageCardProps) {
   const colors = useColors();
   
@@ -131,16 +120,11 @@ export const MessageCard = React.memo(function MessageCard({
             <Text style={{ color: colors.foreground, fontSize: 16, fontWeight: "600" }}>
               {participation.isAnonymous ? "匿名" : participation.displayName}
             </Text>
-            {/* 性別アイコン（アクセシビリティ向上） */}
+            {/* 性別アイコン */}
             {participation.gender && participation.gender !== "unspecified" && (
-              <View style={{ marginLeft: 6, flexDirection: "row", alignItems: "center" }}>
-                <MaterialIcons 
-                  name={participation.gender === "male" ? "man" : "woman"} 
-                  size={16} 
-                  color={borderLeftColor}
-                  accessibilityLabel={participation.gender === "male" ? "男性" : "女性"}
-                />
-              </View>
+              <Text style={{ marginLeft: 4, fontSize: 12, color: borderLeftColor }}>
+                {participation.gender === "male" ? "♂" : "♀"}
+              </Text>
             )}
           </View>
           <View style={{ flexDirection: "row", alignItems: "center", flexWrap: "wrap" }}>
@@ -171,12 +155,6 @@ export const MessageCard = React.memo(function MessageCard({
           <Text style={{ color: eventText.accent, fontSize: eventFont.body, fontWeight: "bold" }}>
             +{participation.contribution || 1}人
           </Text>
-          {/* 日時表示 */}
-          {participation.createdAt && (
-            <Text style={{ color: eventText.hint, fontSize: eventFont.meta, marginTop: 2 }}>
-              {getRelativeTime(participation.createdAt)}
-            </Text>
-          )}
         </View>
       </View>
 
@@ -261,32 +239,6 @@ export const MessageCard = React.memo(function MessageCard({
           </Button>
         )}
 
-        {/* 「いいね」ボタン */}
-        {onLike && isLoggedIn && (
-          <Button
-            variant="secondary"
-            size="sm"
-            onPress={onLike}
-            style={{
-              flexDirection: "row",
-              alignItems: "center",
-              backgroundColor: hasLiked ? "rgba(239, 68, 68, 0.15)" : "#2D3139",
-              paddingHorizontal: 12,
-              paddingVertical: 6,
-              borderRadius: 16,
-              borderWidth: hasLiked ? 1 : 0,
-              borderColor: hasLiked ? "#EF4444" : "transparent",
-            }}
-          >
-            <MaterialIcons name="favorite" size={14} color={hasLiked ? "#EF4444" : eventUI.iconMuted} />
-            {participation.likesCount !== undefined && participation.likesCount > 0 && (
-              <Text style={{ color: hasLiked ? "#EF4444" : eventText.secondary, fontSize: eventFont.meta, marginLeft: 4 }}>
-                {participation.likesCount}
-              </Text>
-            )}
-          </Button>
-        )}
-
         {/* エールボタン */}
         {onCheer && (
           <Button
@@ -353,4 +305,4 @@ export const MessageCard = React.memo(function MessageCard({
       </View>
     </View>
   );
-});
+}

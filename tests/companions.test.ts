@@ -1,3 +1,4 @@
+import { describe, it, expect, vi } from "vitest";
 
 // 友人追加機能のテスト
 

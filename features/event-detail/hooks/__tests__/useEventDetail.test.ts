@@ -7,6 +7,7 @@
  * ここでは計算ロジックとユーティリティ関数をテストします。
  */
 
+import { describe, it, expect, vi, beforeEach } from "vitest";
 
 // React Nativeのモック
 vi.mock("react-native", () => ({
@@ -133,18 +134,6 @@ vi.mock("@/lib/trpc", () => ({
       getAttendanceTypeCounts: {
         useQuery: () => ({
           data: { venue: 30, streaming: 15, both: 5, total: 50 },
-          isLoading: false,
-        }),
-      },
-      likeMessage: {
-        useMutation: () => ({
-          mutate: vi.fn(),
-          isLoading: false,
-        }),
-      },
-      unlikeMessage: {
-        useMutation: () => ({
-          mutate: vi.fn(),
           isLoading: false,
         }),
       },
@@ -356,7 +345,7 @@ describe("useEventDetail", () => {
   });
 
   describe("都道府県別カウント", () => {
-    it("都道府県別参加予定数を返す", () => {
+    it("都道府県別参加者数を返す", () => {
       const { result } = renderHook(() => useEventDetail({ challengeId: 1 }));
       
       expect(result.current.prefectureCounts).toBeDefined();

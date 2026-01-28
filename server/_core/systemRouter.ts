@@ -3,9 +3,6 @@ import { notifyOwner } from "./notification";
 import { adminProcedure, publicProcedure, router } from "./trpc";
 import { APP_VERSION } from "../../shared/version";
 
-// 環境変数からcommitShaを取得（デプロイ時にGitHub Actionsから設定）
-const COMMIT_SHA = process.env.COMMIT_SHA || "unknown";
-
 export const systemRouter = router({
   // バージョン取得エンドポイント
   version: publicProcedure.query(() => ({
@@ -20,8 +17,6 @@ export const systemRouter = router({
     )
     .query(() => ({
       ok: true,
-      commitSha: COMMIT_SHA,
-      version: APP_VERSION,
     })),
 
   notifyOwner: adminProcedure

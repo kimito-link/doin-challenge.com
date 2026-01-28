@@ -1,1 +1,0 @@
-ALTER TABLE `challenges` ADD `purpose` enum('live') DEFAULT 'live';

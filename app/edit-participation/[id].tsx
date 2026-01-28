@@ -8,7 +8,6 @@ import { ScreenContainer } from "@/components/organisms/screen-container";
 import { ResponsiveContainer } from "@/components/molecules/responsive-container";
 import { trpc } from "@/lib/trpc";
 import { useAuth } from "@/hooks/use-auth";
-import type { Participation } from "@/types/participation";
 import { useColors } from "@/hooks/use-colors";
 import MaterialIcons from "@expo/vector-icons/MaterialIcons";
 import { LinearGradient } from "expo-linear-gradient";
@@ -54,7 +53,7 @@ export default function EditParticipationScreen() {
         ? user.openId.replace("twitter:", "") 
         : user.openId;
       const myParticipation = participationsData.find(
-        (p: Participation) => p.id === parseInt(id || "0") || p.userId?.toString() === userTwitterId
+        (p: any) => p.id === parseInt(id || "0") || p.userId?.toString() === userTwitterId
       );
       if (myParticipation) {
         setMessage(myParticipation.message || "");

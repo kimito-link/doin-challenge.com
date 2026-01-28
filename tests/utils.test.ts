@@ -1,3 +1,4 @@
+import { describe, it, expect } from "vitest";
 
 // cn関数のテスト（Tailwind CSSクラスのマージ）
 describe("cn utility function", () => {

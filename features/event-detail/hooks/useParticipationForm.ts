@@ -9,7 +9,6 @@ import * as Haptics from "expo-haptics";
 import { trpc } from "@/lib/trpc";
 import { lookupTwitterUser, getErrorMessage } from "@/lib/api";
 import { SHARE_PROMPT_DELAY, SCROLL_TO_MESSAGES_DELAY } from "../constants";
-import type { Gender } from "@/components/ui/gender-selector";
 import type { 
   Companion, 
   LookedUpProfile, 
@@ -39,8 +38,8 @@ interface UseParticipationFormReturn {
   setDisplayName: (value: string) => void;
   prefecture: string;
   setPrefecture: (value: string) => void;
-  gender: Gender;
-  setGender: (value: Gender) => void;
+  gender: "male" | "female" | "";
+  setGender: (value: "male" | "female" | "") => void;
   allowVideoUse: boolean;
   setAllowVideoUse: (value: boolean) => void;
   showForm: boolean;
@@ -76,12 +75,6 @@ interface UseParticipationFormReturn {
   setShowParticipantNumberSpeech: (value: boolean) => void;
   participantNumber: number | null;
   
-  // Toast notification
-  showToast: boolean;
-  setShowToast: (value: boolean) => void;
-  toastMessage: string;
-  toastType: "success" | "error";
-  
   // Refs
   scrollViewRef: React.RefObject<ScrollView | null>;
   messagesRef: React.RefObject<View | null>;
@@ -108,7 +101,7 @@ export function useParticipationForm({
   const [message, setMessage] = useState("");
   const [displayName, setDisplayName] = useState("");
   const [prefecture, setPrefecture] = useState("");
-  const [gender, setGender] = useState<Gender>("");
+  const [gender, setGender] = useState<"male" | "female" | "">("");
   const [allowVideoUse, setAllowVideoUse] = useState(true);
   const [showForm, setShowForm] = useState(false);
   const [showPrefectureList, setShowPrefectureList] = useState(false);
@@ -132,11 +125,6 @@ export function useParticipationForm({
   const [showParticipantNumberSpeech, setShowParticipantNumberSpeech] = useState(false);
   const [participantNumber, setParticipantNumber] = useState<number | null>(null);
   
-  // Toast notification state
-  const [showToast, setShowToast] = useState(false);
-  const [toastMessage, setToastMessage] = useState("");
-  const [toastType, setToastType] = useState<"success" | "error">("success");
-  
   // Refs
   const scrollViewRef = useRef<ScrollView>(null);
   const messagesRef = useRef<View>(null);
@@ -149,10 +137,12 @@ export function useParticipationForm({
         Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
       }
       
-      // Show success toast
-      setToastMessage("参加表明が完了しました！");
-      setToastType("success");
-      setShowToast(true);
+      // Show success message
+      Alert.alert(
+        "参加表明が完了しました！",
+        "ありがとうございます！",
+        [{ text: "OK", style: "default" }]
+      );
       
       setLastParticipation({
         name: user?.name || "",
@@ -208,11 +198,14 @@ export function useParticipationForm({
     onError: (error) => {
       console.error("Participation error:", error);
       const errorMessage = error.message || "参加表明の登録に失敗しました";
-      
-      // Show error toast
-      setToastMessage(errorMessage);
-      setToastType("error");
-      setShowToast(true);
+      Alert.alert(
+        "参加表明エラー",
+        errorMessage,
+        [
+          { text: "もう一度試す", onPress: () => {} },
+          { text: "閉じる", style: "cancel" },
+        ]
+      );
     },
   });
   
@@ -380,12 +373,6 @@ export function useParticipationForm({
     showParticipantNumberSpeech,
     setShowParticipantNumberSpeech,
     participantNumber,
-    
-    // Toast notification
-    showToast,
-    setShowToast,
-    toastMessage,
-    toastType,
     
     // Refs
     scrollViewRef,

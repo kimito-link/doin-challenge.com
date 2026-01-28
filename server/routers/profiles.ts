@@ -4,7 +4,7 @@
  * 公開プロフィール関連のルーター
  */
 import { z } from "zod";
-import { publicProcedure, protectedProcedure, router } from "../_core/trpc";
+import { publicProcedure, router } from "../_core/trpc";
 import * as db from "../db";
 
 export const profilesRouter = router({
@@ -41,23 +41,5 @@ export const profilesRouter = router({
     .query(async ({ ctx, input }) => {
       const userId = ctx.user?.id;
       return db.getRecommendedHosts(userId, input.categoryId, input.limit);
-    }),
-  
-  // ユーザーの性別を更新
-  updateGender: protectedProcedure
-    .input(z.object({ 
-      gender: z.enum(["male", "female", "other"]).nullable(),
-    }))
-    .mutation(async ({ ctx, input }) => {
-      return db.updateUserGender(ctx.user.id, input.gender);
-    }),
-  
-  // ユーザーのジャンルを更新
-  updateGenre: protectedProcedure
-    .input(z.object({ 
-      genre: z.enum(["idol", "artist", "vtuber", "streamer", "band", "dancer", "voice_actor", "other"]).nullable(),
-    }))
-    .mutation(async ({ ctx, input }) => {
-      return db.updateUserGenre(ctx.user.id, input.genre);
     }),
 });

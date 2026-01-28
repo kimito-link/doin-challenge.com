@@ -13,7 +13,6 @@ import { Image } from "expo-image";
 import MaterialIcons from "@expo/vector-icons/MaterialIcons";
 import * as Haptics from "expo-haptics";
 import { ScreenContainer } from "@/components/organisms/screen-container";
-import { PARTICIPANT_LABELS } from "@/constants/labels";
 import { useColors } from "@/hooks/use-colors";
 import { useTutorial } from "@/lib/tutorial-context";
 import Animated, { FadeInDown } from "react-native-reanimated";
@@ -33,7 +32,7 @@ const FAQ_ITEMS: FAQItem[] = [
   },
   {
     question: "参加表明すると何が起きる？",
-    answer: `主催者に${PARTICIPANT_LABELS.COUNT}が伝わり、会場選びの参考になります。また、参加履歴が記録されて常連バッジがもらえることも！`,
+    answer: "主催者に参加者数が伝わり、会場選びの参考になります。また、参加履歴が記録されて常連バッジがもらえることも！",
   },
   {
     question: "ログインしないと使えない？",
@@ -189,7 +188,7 @@ export default function HelpScreen() {
             <View style={styles.tipContent}>
               <Text style={styles.tipTitle}>主催者の方へ</Text>
               <Text style={styles.tipText}>
-                チャレンジを作成すると、{PARTICIPANT_LABELS.COUNT}や地域分布がリアルタイムでわかります。会場選びの参考にしてください！
+                チャレンジを作成すると、参加者数や地域分布がリアルタイムでわかります。会場選びの参考にしてください！
               </Text>
             </View>
           </View>

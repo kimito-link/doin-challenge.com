@@ -2,6 +2,7 @@
  * アカウント切り替え機能とログイン永続化のテスト
  */
 
+import { describe, it, expect, beforeEach, vi } from "vitest";
 
 // Mock AsyncStorage
 const mockStorage: Record<string, string> = {};

@@ -79,8 +79,13 @@ jobs:
       - name: Smoke check
         run: |
           set -e
-          URL="https://doin-challenge.com/api/readyz"
+          URL="https://doin-challenge.com/api/health"
           echo "Checking $URL"
-          status=$(curl -s -o /dev/null -w "%{http_code}" "$URL")
-          echo "status=$status"
-          test "$status" -eq 200
+          response=$(curl -s "$URL" )
+          echo "Response: $response"
+          status=$(echo "$response" | jq -r '.ok // false')
+          if [ "$status" != "true" ]; then
+            echo "❌ Health check failed"
+            exit 1
+          fi
+          echo "✅ Health check passed"

@@ -7,12 +7,11 @@
  * - features/event-detail/components/ - UIコンポーネント
  */
 
-import { View, Text, ScrollView, KeyboardAvoidingView, Platform, RefreshControl, StyleSheet } from "react-native";
+import { View, Text, ScrollView, KeyboardAvoidingView, Platform, RefreshControl } from "react-native";
 import { useLocalSearchParams } from "expo-router";
 import { navigate } from "@/lib/navigation";
 import { ScreenContainer } from "@/components/organisms/screen-container";
 import { useColors } from "@/hooks/use-colors";
-import { useContentMaxWidth } from "@/hooks/use-responsive";
 import { AppHeader } from "@/components/organisms/app-header";
 import { EventDetailSkeleton } from "@/components/organisms/event-detail-skeleton";
 import { PrefectureParticipantsModal } from "@/components/molecules/prefecture-participants-modal";
@@ -22,16 +21,6 @@ import { FanProfileModal } from "@/components/organisms/fan-profile-modal";
 import { SharePromptModal } from "@/components/molecules/share-prompt-modal";
 import { RefreshingIndicator } from "@/components/molecules/refreshing-indicator";
 import { LinkSpeech } from "@/components/organisms/link-speech";
-import { Toast } from "@/components/ui/toast";
-import { NotificationOnboardingModal } from "@/components/molecules/notification-onboarding-modal";
-import { ParticipationBanner } from "@/components/ui/participation-banner";
-import ConfettiCannon from "react-native-confetti-cannon";
-import * as Haptics from "expo-haptics";
-import AsyncStorage from "@react-native-async-storage/async-storage";
-import * as Notifications from "expo-notifications";
-import { useState, useEffect, useRef, useMemo } from "react";
-import { AppState, type AppStateStatus } from "react-native";
-import { useInterval } from "@/hooks/use-interval";
 import { shareParticipation } from "@/lib/share";
 import {
   MessagesSection,
@@ -50,40 +39,17 @@ import {
   CountdownSection,
   ProgressSection,
   EventInfoSection,
-  EventBasicInfo,
-  EventDescription,
   TicketInfoSection,
   HostManagementSection,
   ShareSection,
   InviteButton,
   ParticipantsOverview,
   ParticipationFormSection,
-  FixedParticipationCTA,
 } from "@/features/event-detail";
 import { usePerformanceMonitor } from "@/lib/performance-monitor";
 
 export default function ChallengeDetailScreen() {
   const colors = useColors();
-  const maxWidth = useContentMaxWidth();
-  
-  // 通知オンボーディングの状態
-  const [showNotificationOnboarding, setShowNotificationOnboarding] = useState(false);
-  
-  // Polling機構の状態
-  const [isPollingEnabled, setIsPollingEnabled] = useState(true);
-  const appState = useRef<AppStateStatus>(AppState.currentState);
-  
-  // 新しい参加者の状態
-  const [newParticipantName, setNewParticipantName] = useState<string | null>(null);
-  const [showParticipationBanner, setShowParticipationBanner] = useState(false);
-  const previousParticipationCount = useRef<number>(0);
-  
-  // 「いいね」の状態
-  const [likedParticipations, setLikedParticipations] = useState<Set<number>>(new Set());
-  
-  // 目標達成の状態
-  const [showConfetti, setShowConfetti] = useState(false);
-  const previousProgress = useRef<number>(0);
   
   const { id } = useLocalSearchParams<{ id: string }>();
   const challengeId = parseInt(id || "0", 10);
@@ -98,127 +64,6 @@ export default function ChallengeDetailScreen() {
     eventDetail.isInitialLoading,
     !eventDetail.hasData
   );
-  
-  // AppState監視（バックグラウンド時はPolling停止）
-  useEffect(() => {
-    const subscription = AppState.addEventListener("change", (nextAppState) => {
-      if (
-        appState.current.match(/inactive|background/) &&
-        nextAppState === "active"
-      ) {
-        // アプリがフォアグラウンドに戻ったときにPollingを再開
-        setIsPollingEnabled(true);
-        // 即座にデータを更新
-        eventDetail.refetch();
-      } else if (nextAppState.match(/inactive|background/)) {
-        // アプリがバックグラウンドに移動したときにPollingを停止
-        setIsPollingEnabled(false);
-      }
-      appState.current = nextAppState;
-    });
-
-    return () => {
-      subscription.remove();
-    };
-  }, [eventDetail.refetch]);
-  
-  // 目標達成検出（進捗が100%に到達したとき）
-  useEffect(() => {
-    if (eventDetail.progress >= 100 && previousProgress.current < 100) {
-      // 目標達成！
-      setShowConfetti(true);
-      // Haptic feedbackで達成感を強化
-      Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
-      // 3秒後に紙吹雪を停止
-      setTimeout(() => setShowConfetti(false), 3000);
-    }
-    previousProgress.current = eventDetail.progress;
-  }, [eventDetail.progress]);
-  
-  // Polling機構（10秒間隔、画面表示中のみ）
-  useInterval(
-    () => {
-      if (isPollingEnabled && !eventDetail.isRefreshing) {
-        eventDetail.refetch();
-      }
-    },
-    isPollingEnabled ? 10000 : null // 10秒間隔
-  );
-  
-  // 新しい参加者を検出
-  useEffect(() => {
-    if (eventDetail.participations && eventDetail.participations.length > 0) {
-      const currentCount = eventDetail.participations.length;
-      
-      // 初回読み込み時はカウントを保存するだけ
-      if (previousParticipationCount.current === 0) {
-        previousParticipationCount.current = currentCount;
-        return;
-      }
-      
-      // 参加者が増えた場合
-      if (currentCount > previousParticipationCount.current) {
-        // 最新の参加者を取得（最初の要素が最新）
-        const latestParticipation = eventDetail.participations[0];
-        if (latestParticipation) {
-          setNewParticipantName(latestParticipation.displayName || "匿名");
-          setShowParticipationBanner(true);
-        }
-        previousParticipationCount.current = currentCount;
-      }
-    }
-  }, [eventDetail.participations]);
-  
-  // 初回訪問時に通知オンボーディングを表示
-  useEffect(() => {
-    const checkFirstVisit = async () => {
-      if (Platform.OS === "web") return; // Webではプッシュ通知をサポートしない
-      
-      try {
-        const hasSeenOnboarding = await AsyncStorage.getItem("hasSeenNotificationOnboarding");
-        if (!hasSeenOnboarding) {
-          // 通知許可の状態を確認
-          const { status } = await Notifications.getPermissionsAsync();
-          if (status !== "granted") {
-            // データが読み込まれてから1.5秒後に表示
-            setTimeout(() => {
-              setShowNotificationOnboarding(true);
-            }, 1500);
-          }
-        }
-      } catch (error) {
-        console.error("Failed to check notification onboarding:", error);
-      }
-    };
-    
-    if (eventDetail.hasData) {
-      checkFirstVisit();
-    }
-  }, [eventDetail.hasData]);
-  
-  // 通知を有効にする
-  const handleEnableNotifications = async () => {
-    try {
-      const { status } = await Notifications.requestPermissionsAsync();
-      if (status === "granted") {
-        // 通知設定をデフォルトで有効化（バックエンドで自動的に設定される）
-        await AsyncStorage.setItem("hasSeenNotificationOnboarding", "true");
-        setShowNotificationOnboarding(false);
-      }
-    } catch (error) {
-      console.error("Failed to enable notifications:", error);
-    }
-  };
-  
-  // 通知オンボーディングをスキップ
-  const handleSkipNotifications = async () => {
-    try {
-      await AsyncStorage.setItem("hasSeenNotificationOnboarding", "true");
-      setShowNotificationOnboarding(false);
-    } catch (error) {
-      console.error("Failed to skip notification onboarding:", error);
-    }
-  };
   
   // Modal state hook
   const modalState = useModalState();
@@ -285,10 +130,6 @@ export default function ChallengeDetailScreen() {
         <ScrollView 
           ref={participationForm.scrollViewRef} 
           style={{ flex: 1, backgroundColor: colors.background }}
-          contentContainerStyle={[
-            styles.scrollContent,
-            { maxWidth, alignSelf: maxWidth ? "center" : undefined }
-          ]}
           showsHorizontalScrollIndicator={false}
           horizontal={false}
           directionalLockEnabled={true}
@@ -323,13 +164,11 @@ export default function ChallengeDetailScreen() {
             onShowHostProfile={() => modalState.setShowHostProfileModal(true)}
           />
 
-          {/* 基本情報（日時・場所） */}
-          <View style={{ paddingHorizontal: 16 }}>
-            <EventBasicInfo
-              formattedDate={eventDetail.formattedDate}
-              venue={challenge.venue}
-            />
-          </View>
+          {/* カウントダウン */}
+          <CountdownSection
+            eventDate={challenge.eventDate}
+            isDateUndecided={eventDetail.isDateUndecided}
+          />
 
           {/* 進捗セクション */}
           <ProgressSection
@@ -346,66 +185,15 @@ export default function ChallengeDetailScreen() {
             onRegionPress={(region) => modalState.setSelectedRegion(region)}
           />
 
-          {/* 参加表明フォーム / シェアボタン */}
+          {/* イベント情報 */}
           <View style={{ paddingHorizontal: 16 }}>
-            {participationForm.showForm ? (
-              <ParticipationFormSection
-                user={user}
-                login={eventDetail.login}
-                message={participationForm.message}
-                setMessage={participationForm.setMessage}
-                prefecture={participationForm.prefecture}
-                setPrefecture={participationForm.setPrefecture}
-                gender={participationForm.gender}
-                setGender={participationForm.setGender}
-                allowVideoUse={participationForm.allowVideoUse}
-                setAllowVideoUse={participationForm.setAllowVideoUse}
-                showPrefectureList={participationForm.showPrefectureList}
-                setShowPrefectureList={participationForm.setShowPrefectureList}
-                companions={participationForm.companions}
-                showAddCompanionForm={participationForm.showAddCompanionForm}
-                setShowAddCompanionForm={participationForm.setShowAddCompanionForm}
-                newCompanionName={participationForm.newCompanionName}
-                setNewCompanionName={participationForm.setNewCompanionName}
-                newCompanionTwitter={participationForm.newCompanionTwitter}
-                setNewCompanionTwitter={participationForm.setNewCompanionTwitter}
-                isLookingUpTwitter={participationForm.isLookingUpTwitter}
-                lookupError={participationForm.lookupError}
-                lookedUpProfile={participationForm.lookedUpProfile}
-                setLookedUpProfile={participationForm.setLookedUpProfile}
-                setLookupError={participationForm.setLookupError}
-                onSubmit={participationForm.handleSubmit}
-                onCancel={() => participationForm.setShowForm(false)}
-                onAddCompanion={participationForm.handleAddCompanion}
-                onRemoveCompanion={participationForm.handleRemoveCompanion}
-                onLookupTwitterProfile={participationForm.lookupTwitterProfile}
-                isSubmitting={participationForm.isSubmitting}
-              />
-            ) : (
-              <ShareSection
-                challengeId={challengeId}
-                challengeTitle={challenge.title}
-                eventDate={challenge.eventDate}
-                onShare={eventActions.handleShare}
-                onTwitterShare={eventActions.handleTwitterShare}
-                onShowForm={() => participationForm.setShowForm(true)}
-              />
-            )}
-          </View>
+            <EventInfoSection
+              formattedDate={eventDetail.formattedDate}
+              venue={challenge.venue}
+              description={challenge.description}
+            />
 
-          {/* カウントダウン */}
-          <CountdownSection
-            eventDate={challenge.eventDate}
-            isDateUndecided={eventDetail.isDateUndecided}
-          />
-
-          {/* 説明文 */}
-          <View style={{ paddingHorizontal: 16 }}>
-            <EventDescription description={challenge.description} />
-          </View>
-
-          {/* チケット情報 */}
-          <View style={{ paddingHorizontal: 16 }}>
+            {/* チケット情報 */}
             <TicketInfoSection
               ticketPresale={challenge.ticketPresale}
               ticketDoor={challenge.ticketDoor}
@@ -458,30 +246,56 @@ export default function ChallengeDetailScreen() {
                   eventActions.setDeleteTargetParticipation(participation);
                   eventActions.setShowDeleteParticipationModal(true);
                 }}
-                onLike={async (participationId) => {
-                  if (!user) return;
-                  try {
-                    const hasLiked = likedParticipations.has(participationId);
-                    if (hasLiked) {
-                      await eventDetail.unlikeMessage(participationId);
-                      setLikedParticipations(prev => {
-                        const next = new Set(prev);
-                        next.delete(participationId);
-                        return next;
-                      });
-                    } else {
-                      await eventDetail.likeMessage(participationId);
-                      setLikedParticipations(prev => new Set(prev).add(participationId));
-                    }
-                  } catch (error) {
-                    console.error("「いいね」処理エラー:", error);
-                  }
-                }}
-                likedParticipations={likedParticipations}
-                isLoggedIn={!!user}
               />
             </View>
           )}
+
+          {/* 参加表明フォーム / シェアボタン */}
+          <View style={{ paddingHorizontal: 16 }}>
+            {participationForm.showForm ? (
+              <ParticipationFormSection
+                user={user}
+                login={eventDetail.login}
+                message={participationForm.message}
+                setMessage={participationForm.setMessage}
+                prefecture={participationForm.prefecture}
+                setPrefecture={participationForm.setPrefecture}
+                gender={participationForm.gender}
+                setGender={participationForm.setGender}
+                allowVideoUse={participationForm.allowVideoUse}
+                setAllowVideoUse={participationForm.setAllowVideoUse}
+                showPrefectureList={participationForm.showPrefectureList}
+                setShowPrefectureList={participationForm.setShowPrefectureList}
+                companions={participationForm.companions}
+                showAddCompanionForm={participationForm.showAddCompanionForm}
+                setShowAddCompanionForm={participationForm.setShowAddCompanionForm}
+                newCompanionName={participationForm.newCompanionName}
+                setNewCompanionName={participationForm.setNewCompanionName}
+                newCompanionTwitter={participationForm.newCompanionTwitter}
+                setNewCompanionTwitter={participationForm.setNewCompanionTwitter}
+                isLookingUpTwitter={participationForm.isLookingUpTwitter}
+                lookupError={participationForm.lookupError}
+                lookedUpProfile={participationForm.lookedUpProfile}
+                setLookedUpProfile={participationForm.setLookedUpProfile}
+                setLookupError={participationForm.setLookupError}
+                onSubmit={participationForm.handleSubmit}
+                onCancel={() => participationForm.setShowForm(false)}
+                onAddCompanion={participationForm.handleAddCompanion}
+                onRemoveCompanion={participationForm.handleRemoveCompanion}
+                onLookupTwitterProfile={participationForm.lookupTwitterProfile}
+                isSubmitting={participationForm.isSubmitting}
+              />
+            ) : (
+              <ShareSection
+                challengeId={challengeId}
+                challengeTitle={challenge.title}
+                eventDate={challenge.eventDate}
+                onShare={eventActions.handleShare}
+                onTwitterShare={eventActions.handleTwitterShare}
+                onShowForm={() => participationForm.setShowForm(true)}
+              />
+            )}
+          </View>
 
           <View style={{ height: 100 }} />
         </ScrollView>
@@ -614,55 +428,6 @@ export default function ChallengeDetailScreen() {
         participation={eventActions.deleteTargetParticipation}
         isDeleting={eventActions.isDeleting}
       />
-
-      {/* トースト通知 */}
-      <Toast
-        visible={participationForm.showToast}
-        message={participationForm.toastMessage}
-        type={participationForm.toastType}
-        onHide={() => participationForm.setShowToast(false)}
-      />
-      
-      {/* 通知オンボーディングモーダル */}
-      <NotificationOnboardingModal
-        visible={showNotificationOnboarding}
-        onClose={handleSkipNotifications}
-        onEnable={handleEnableNotifications}
-      />
-      
-      {/* 参加表明バナー */}
-      {newParticipantName && (
-        <ParticipationBanner
-          name={newParticipantName}
-          visible={showParticipationBanner}
-          onDismiss={() => {
-            setShowParticipationBanner(false);
-            setNewParticipantName(null);
-          }}
-        />
-      )}
-      
-      {/* 目標達成時の紙吹雪 */}
-      {showConfetti && (
-        <ConfettiCannon
-          count={200}
-          origin={{ x: -10, y: 0 }}
-          autoStart={true}
-          fadeOut={true}
-        />
-      )}
-      
-      {/* 固定参加表明CTA */}
-      <FixedParticipationCTA
-        onPress={() => participationForm.setShowForm(true)}
-        isVisible={!participationForm.showForm && !eventDetail.myParticipation}
-      />
     </ScreenContainer>
   );
 }
-
-const styles = StyleSheet.create({
-  scrollContent: {
-    width: "100%",
-  },
-});

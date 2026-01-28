@@ -1,7 +1,7 @@
 /**
  * データ整合性ダッシュボード
  * 
- * チャレンジの数字（currentValue）と実際の参加予定数の
+ * チャレンジの数字（currentValue）と実際の参加者数の
  * 整合性を確認・修復できる管理者向け画面
  */
 
@@ -9,7 +9,6 @@ import { View, Text, ScrollView, Pressable, StyleSheet, ActivityIndicator, Refre
 import { RefreshingIndicator } from "@/components/molecules/refreshing-indicator";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useColors } from "@/hooks/use-colors";
-import type { ThemeColorPalette } from "@/constants/theme";
 import { trpc } from "@/lib/trpc";
 import { useState, useCallback } from "react";
 import { Ionicons } from "@expo/vector-icons";
@@ -233,7 +232,7 @@ function ChallengeCard({
       totalCompanions: number;
     };
   };
-  colors: ThemeColorPalette;
+  colors: any;
 }) {
   const [expanded, setExpanded] = useState(false);
   

@@ -3,6 +3,7 @@
  * ブラウザのセッションキャッシュを無視して別のアカウントでログインできるようにする
  */
 
+import { describe, it, expect, vi } from "vitest";
 
 // Mock modules
 vi.mock("expo-haptics", () => ({

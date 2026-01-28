@@ -1,4 +1,4 @@
-import { eq, desc, and, sql, isNull, isNotNull, or, gte, lte, lt, inArray, asc, ne, like, count } from "drizzle-orm";
+import { eq, desc, and, sql, isNull, or, gte, lte, lt, inArray, asc, ne, like, count } from "drizzle-orm";
 import { drizzle } from "drizzle-orm/mysql2";
 
 let _db: ReturnType<typeof drizzle> | null = null;
@@ -75,4 +75,4 @@ export function generateSlug(title: string): string {
 }
 
 // Re-export drizzle operators for convenience
-export { eq, desc, and, sql, isNull, isNotNull, or, gte, lte, lt, inArray, asc, ne, like, count };
+export { eq, desc, and, sql, isNull, or, gte, lte, lt, inArray, asc, ne, like, count };

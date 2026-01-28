@@ -2,6 +2,7 @@
  * PresetSelector コンポーネントのテスト
  */
 
+import { describe, it, expect } from "vitest";
 import { CHALLENGE_PRESETS, getPresetById, getPresetsByGoalType } from "@/constants/challenge-presets";
 
 describe("Challenge Presets", () => {

@@ -12,7 +12,6 @@ import { useColors } from "@/hooks/use-colors";
 import MaterialIcons from "@expo/vector-icons/MaterialIcons";
 import { LinearGradient } from "expo-linear-gradient";
 import { AppHeader } from "@/components/organisms/app-header";
-import type { Collaborator } from "@/types/collaborator";
 
 // 権限の日本語名（初心者向けに簡素化）
 const ROLE_NAMES: Record<string, string> = {
@@ -42,7 +41,7 @@ function CollaboratorCard({
   onRemove,
   onChangeRole,
 }: {
-  collaborator: Collaborator;
+  collaborator: any;
   isOwner: boolean;
   onRemove?: () => void;
   onChangeRole?: (role: string) => void;

@@ -238,7 +238,7 @@ export default function EditChallengeScreen() {
                 }}
                 value={title}
                 onChangeText={setTitle}
-                placeholder="例: 君斗りんくの動員ちゃれんじ2026"
+                placeholder="例: 君斗りんく生誕祭2026"
                 placeholderTextColor={colors.muted}
               />
             </View>
@@ -456,7 +456,6 @@ export default function EditChallengeScreen() {
                   placeholder="前売り価格（円）"
                   placeholderTextColor={colors.muted}
                   keyboardType="numeric"
-                  inputMode="numeric"
                 />
                 <TextInput
                   style={{
@@ -473,7 +472,6 @@ export default function EditChallengeScreen() {
                   placeholder="当日価格（円）"
                   placeholderTextColor={colors.muted}
                   keyboardType="numeric"
-                  inputMode="numeric"
                 />
                 <TextInput
                   style={{

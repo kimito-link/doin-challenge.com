@@ -53,7 +53,7 @@ export function getGoalTypeIcon(goalType: string | null | undefined): string {
 
 /** 目標タイプの選択肢（フォーム用） */
 export const goalTypeOptions = [
-  { id: "attendance", label: "動員", icon: "people", unit: "人", description: "ライブ・イベントの参加予定数" },
+  { id: "attendance", label: "動員", icon: "people", unit: "人", description: "ライブ・イベントの参加者数" },
   { id: "followers", label: "フォロワー", icon: "person-add", unit: "人", description: "SNSのフォロワー増加目標" },
   { id: "viewers", label: "同時視聴", icon: "visibility", unit: "人", description: "配信・プレミア公開の同接" },
   { id: "points", label: "ポイント", icon: "star", unit: "pt", description: "ミクチャ等のイベントポイント" },

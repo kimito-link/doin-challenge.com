@@ -1,1 +1,0 @@
-ALTER TABLE `users` ADD `genre` enum('idol','artist','vtuber','streamer','band','dancer','voice_actor','other');

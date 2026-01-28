@@ -39,7 +39,7 @@ export const UI_LABELS = {
   join: "参加する",
   participate: "参加表明",
   participants: "参加者",
-  participantCount: "参加予定数",
+  participantCount: "参加者数",
   
   // 統計・データ
   statistics: "データ",

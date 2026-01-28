@@ -26,9 +26,9 @@ export const calculateCellSize = (screenWidth: number): number => {
  * 勢い判定の閾値
  */
 export const MOMENTUM_THRESHOLDS = {
-  /** 24時間以内の参加予定数がこれ以上なら「ホット」 */
+  /** 24時間以内の参加者数がこれ以上なら「ホット」 */
   HOT_24H: 5,
-  /** 1時間以内の参加予定数がこれ以上なら「ホット」 */
+  /** 1時間以内の参加者数がこれ以上なら「ホット」 */
   HOT_1H: 2,
 } as const;
 

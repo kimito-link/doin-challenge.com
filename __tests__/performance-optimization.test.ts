@@ -1,3 +1,4 @@
+import { describe, it, expect, beforeEach } from "vitest";
 
 // FlatList最適化設定のテスト
 describe("FlatList Performance Optimization", () => {

@@ -81,12 +81,12 @@ export function JapanRegionBlocks({ prefectureCounts, onPrefecturePress, onRegio
     return totals;
   }, [prefectureCounts]);
   
-  // 地域ごとの最大参加予定数（ヒートマップ計算用）
+  // 地域ごとの最大参加者数（ヒートマップ計算用）
   const maxRegionCount = useMemo(() => {
     return Math.max(...Object.values(regionTotals), 0);
   }, [regionTotals]);
   
-  // 地域ランキング（参加予定数の多い順）
+  // 地域ランキング（参加者数の多い順）
   const regionRanking = useMemo(() => {
     return regions
       .map(region => ({
@@ -242,7 +242,7 @@ export function JapanRegionBlocks({ prefectureCounts, onPrefecturePress, onRegio
 
       {/* ヒートマップ凡例 */}
       <View style={styles.legendContainer}>
-        <Text style={styles.legendTitle}>色の濃さ = 参加予定数</Text>
+        <Text style={styles.legendTitle}>色の濃さ = 参加者数</Text>
         <View style={styles.legendBar}>
           <View style={[styles.legendSegment, { backgroundColor: color.mapInactive, opacity: 0.3 }]} />
           <View style={[styles.legendSegment, { backgroundColor: color.accentPrimary, opacity: 0.5 }]} />
@@ -357,9 +357,9 @@ export function JapanRegionBlocks({ prefectureCounts, onPrefecturePress, onRegio
                   </Text>
 
                   <ScrollView style={styles.prefectureList}>
-                    {/* 都道府県別ランキング（参加予定数順） */}
+                    {/* 都道府県別ランキング（参加者数順） */}
                     {(() => {
-                      // 参加予定数でソート
+                      // 参加者数でソート
                       const sortedPrefectures = [...selectedRegion.prefectures]
                         .map(pref => ({
                           ...pref,
@@ -367,7 +367,7 @@ export function JapanRegionBlocks({ prefectureCounts, onPrefecturePress, onRegio
                         }))
                         .sort((a, b) => b.count - a.count);
                       
-                      // 最大参加予定数（プログレスバー用）
+                      // 最大参加者数（プログレスバー用）
                       const maxPrefCount = Math.max(...sortedPrefectures.map(p => p.count), 1);
                       
                       return sortedPrefectures.map((pref, index) => {

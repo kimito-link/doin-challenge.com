@@ -2,6 +2,7 @@
  * CharacterLoadingIndicator コンポーネントのテスト
  */
 
+import { describe, it, expect } from "vitest";
 
 describe("CharacterLoadingIndicator", () => {
   describe("LOADING_MESSAGES", () => {

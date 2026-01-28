@@ -1,5 +1,4 @@
-import { View, Text, StyleSheet, ScrollView, FlatList, Platform } from "react-native";
-import React, { useCallback } from "react";
+import { View, Text, ScrollView, StyleSheet } from "react-native";
 import { Button } from "@/components/ui/button";
 import MaterialIcons from "@expo/vector-icons/MaterialIcons";
 import { color } from "@/theme/tokens";
@@ -22,7 +21,7 @@ interface CompanionDisplay {
 }
 
 export type MessagesSectionProps = {
-  participations: (Participation & { likesCount?: number })[];
+  participations: Participation[];
   challengeCompanions?: CompanionDisplay[];
   selectedGenderFilter: GenderFilter;
   onGenderFilterChange: (filter: GenderFilter) => void;
@@ -38,9 +37,6 @@ export type MessagesSectionProps = {
   onDM: (userId: number) => void;
   onEdit: (participationId: number) => void;
   onDelete: (participation: Participation) => void;
-  onLike?: (participationId: number) => void;
-  likedParticipations?: Set<number>;
-  isLoggedIn?: boolean;
 };
 
 export function MessagesSection({
@@ -60,9 +56,6 @@ export function MessagesSection({
   onDM,
   onEdit,
   onDelete,
-  onLike,
-  likedParticipations,
-  isLoggedIn,
 }: MessagesSectionProps) {
   const colors = useColors();
 
@@ -97,43 +90,6 @@ export function MessagesSection({
       (currentUserTwitterId && p.twitterId === currentUserTwitterId)
     );
   };
-
-  // FlatList最適化: keyExtractorをID固定
-  const keyExtractor = useCallback((item: Participation & { likesCount?: number }) => {
-    return item.id.toString();
-  }, []);
-
-  // FlatList最適化: renderItemをuseCallback
-  const renderItem = useCallback(({ item: p }: { item: Participation & { likesCount?: number } }) => {
-    const participantCompanions = challengeCompanions.filter(c => c.participationId === p.id);
-    const isOwn = isOwnPost(p);
-    
-    return (
-      <View style={isOwn && justSubmitted ? styles.ownPostHighlight : undefined}>
-        {isOwn && justSubmitted && (
-          <View style={styles.ownPostBadge}>
-            <MaterialIcons name="star" size={18} color={colors.foreground} />
-            <Text style={[styles.ownPostBadgeText, { color: colors.foreground }]}>
-              ✨ あなたの参加表明が反映されました！
-            </Text>
-          </View>
-        )}
-        <MessageCard
-          participation={p}
-          onCheer={() => onCheer(p.id, p.userId)}
-          onDM={(userId) => onDM(userId)}
-          challengeId={challengeId}
-          companions={participantCompanions}
-          isOwnPost={isOwn}
-          onEdit={() => onEdit(p.id)}
-          onDelete={() => onDelete(p)}
-          onLike={onLike ? () => onLike(p.id) : undefined}
-          hasLiked={likedParticipations?.has(p.id)}
-          isLoggedIn={isLoggedIn}
-        />
-      </View>
-    );
-  }, [challengeCompanions, justSubmitted, colors.foreground, challengeId, onCheer, onDM, onEdit, onDelete, onLike, likedParticipations, isLoggedIn, isOwnPost]);
 
   return (
     <View style={styles.container}>
@@ -225,7 +181,7 @@ export function MessagesSection({
         </Text>
         
         <View style={styles.filters}>
-          {/* 性別フィルター（アクセシビリティ向上） */}
+          {/* 性別フィルター */}
           <View style={styles.genderFilterContainer}>
             <Button
               variant={selectedGenderFilter === "all" ? "primary" : "secondary"}
@@ -250,13 +206,10 @@ export function MessagesSection({
                 selectedGenderFilter === "male" && { backgroundColor: "#3B82F6" },
               ]}
             >
-              <View style={{ flexDirection: "row", alignItems: "center", gap: 4 }}>
-                <MaterialIcons name="man" size={16} color={selectedGenderFilter === "male" ? color.textWhite : color.textSecondary} />
-                <Text style={[
-                  styles.genderFilterText,
-                  { color: selectedGenderFilter === "male" ? color.textWhite : color.textSecondary }
-                ]}>男性</Text>
-              </View>
+              <Text style={[
+                styles.genderFilterText,
+                { color: selectedGenderFilter === "male" ? color.textWhite : color.textSecondary }
+              ]}>男性</Text>
             </Button>
             <Button
               variant={selectedGenderFilter === "female" ? "primary" : "secondary"}
@@ -267,13 +220,10 @@ export function MessagesSection({
                 selectedGenderFilter === "female" && { backgroundColor: eventUI.badge },
               ]}
             >
-              <View style={{ flexDirection: "row", alignItems: "center", gap: 4 }}>
-                <MaterialIcons name="woman" size={16} color={selectedGenderFilter === "female" ? color.textWhite : color.textSecondary} />
-                <Text style={[
-                  styles.genderFilterText,
-                  { color: selectedGenderFilter === "female" ? color.textWhite : color.textSecondary }
-                ]}>女性</Text>
-              </View>
+              <Text style={[
+                styles.genderFilterText,
+                { color: selectedGenderFilter === "female" ? color.textWhite : color.textSecondary }
+              ]}>女性</Text>
             </Button>
           </View>
 
@@ -355,28 +305,46 @@ export function MessagesSection({
       )}
 
       {/* メッセージ一覧 */}
-      <FlatList
-        data={filteredParticipations}
-        keyExtractor={keyExtractor}
-        renderItem={renderItem}
-        ListEmptyComponent={
-          <View style={styles.emptyState}>
-            <MaterialIcons name="search-off" size={48} color={color.textHint} />
-            <Text style={styles.emptyStateText}>
-              該当する参加者がいません
-            </Text>
-            <Text style={styles.emptyStateSubtext}>
-              フィルターを変更してみてください
-            </Text>
+      {filteredParticipations.map((p) => {
+        const participantCompanions = challengeCompanions.filter(c => c.participationId === p.id);
+        const isOwn = isOwnPost(p);
+        
+        return (
+          <View key={p.id} style={isOwn && justSubmitted ? styles.ownPostHighlight : undefined}>
+            {isOwn && justSubmitted && (
+              <View style={styles.ownPostBadge}>
+                <MaterialIcons name="star" size={18} color={colors.foreground} />
+                <Text style={[styles.ownPostBadgeText, { color: colors.foreground }]}>
+                  ✨ あなたの参加表明が反映されました！
+                </Text>
+              </View>
+            )}
+            <MessageCard
+              participation={p}
+              onCheer={() => onCheer(p.id, p.userId)}
+              onDM={(userId) => onDM(userId)}
+              challengeId={challengeId}
+              companions={participantCompanions}
+              isOwnPost={isOwn}
+              onEdit={() => onEdit(p.id)}
+              onDelete={() => onDelete(p)}
+            />
           </View>
-        }
-        removeClippedSubviews={Platform.OS === "android"}
-        maxToRenderPerBatch={10}
-        updateCellsBatchingPeriod={50}
-        initialNumToRender={20}
-        windowSize={21}
-        scrollEnabled={false}
-      />
+        );
+      })}
+
+      {/* フィルター結果が0件の場合 */}
+      {filteredParticipations.length === 0 && (
+        <View style={styles.emptyState}>
+          <MaterialIcons name="search-off" size={48} color={color.textHint} />
+          <Text style={styles.emptyStateText}>
+            該当する参加者がいません
+          </Text>
+          <Text style={styles.emptyStateSubtext}>
+            フィルターを変更してみてください
+          </Text>
+        </View>
+      )}
     </View>
   );
 }

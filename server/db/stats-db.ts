@@ -108,7 +108,7 @@ export async function recalculateChallengeCurrentValues() {
   }> = [];
   
   for (const challenge of allChallenges) {
-    // participationsテーブルから実際の参加予定数を計算
+    // participationsテーブルから実際の参加者数を計算
     const participationList = await db.select({
       contribution: participations.contribution,
       companionCount: participations.companionCount,
@@ -182,7 +182,7 @@ export async function getDataIntegrityReport() {
   }> = [];
   
   for (const challenge of allChallenges) {
-    // participationsテーブルから実際の参加予定数を計算
+    // participationsテーブルから実際の参加者数を計算
     const participationList = await db.select({
       id: participations.id,
       contribution: participations.contribution,

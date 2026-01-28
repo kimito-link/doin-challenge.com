@@ -9,7 +9,7 @@ var __export = (target, all) => {
 };
 
 // server/db/connection.ts
-import { eq, desc, and, sql, isNull, isNotNull, or, gte, lte, lt, inArray, asc, ne, like, count } from "drizzle-orm";
+import { eq, desc, and, sql, isNull, or, gte, lte, lt, inArray, asc, ne, like, count } from "drizzle-orm";
 import { drizzle } from "drizzle-orm/mysql2";
 async function getDb() {
   if (!_db && process.env.DATABASE_URL) {
@@ -63,6 +63,7 @@ function generateSlug(title) {
 var _db;
 var init_connection = __esm({
   "server/db/connection.ts"() {
+    "use strict";
     _db = null;
   }
 });
@@ -72,6 +73,7 @@ import { mysqlTable, int, varchar, text, timestamp, mysqlEnum, boolean } from "d
 var users, twitterFollowStatus, oauthPkceData, twitterUserCache;
 var init_users = __esm({
   "drizzle/schema/users.ts"() {
+    "use strict";
     users = mysqlTable("users", {
       id: int("id").autoincrement().primaryKey(),
       openId: varchar("openId", { length: 64 }).notNull().unique(),
@@ -79,8 +81,6 @@ var init_users = __esm({
       email: varchar("email", { length: 320 }),
       loginMethod: varchar("loginMethod", { length: 64 }),
       role: mysqlEnum("role", ["user", "admin"]).default("user").notNull(),
-      gender: mysqlEnum("gender", ["male", "female", "other"]),
-      genre: mysqlEnum("genre", ["idol", "artist", "vtuber", "streamer", "band", "dancer", "voice_actor", "other"]),
       createdAt: timestamp("createdAt").defaultNow().notNull(),
       updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
       lastSignedIn: timestamp("lastSignedIn").defaultNow().notNull()
@@ -126,6 +126,7 @@ import { mysqlTable as mysqlTable2, int as int2, varchar as varchar2, text as te
 var challenges, events, categories, challengeTemplates, challengeStats, challengeMembers;
 var init_challenges = __esm({
   "drizzle/schema/challenges.ts"() {
+    "use strict";
     challenges = mysqlTable2("challenges", {
       id: int2("id").autoincrement().primaryKey(),
       // ホスト（主催者）の情報
@@ -136,7 +137,6 @@ var init_challenges = __esm({
       hostProfileImage: text2("hostProfileImage"),
       hostFollowersCount: int2("hostFollowersCount").default(0),
       hostDescription: text2("hostDescription"),
-      hostGender: mysqlEnum2("hostGender", ["male", "female", "other"]),
       // チャレンジ情報
       title: varchar2("title", { length: 255 }).notNull(),
       slug: varchar2("slug", { length: 255 }),
@@ -150,8 +150,6 @@ var init_challenges = __esm({
       eventType: mysqlEnum2("eventType", ["solo", "group"]).default("solo").notNull(),
       // カテゴリ
       categoryId: int2("categoryId"),
-      // 目的（現在はliveのみサポート）
-      purpose: mysqlEnum2("purpose", ["live"]).default("live"),
       // 日時・場所
       eventDate: timestamp2("eventDate").notNull(),
       venue: varchar2("venue", { length: 255 }),
@@ -233,9 +231,10 @@ var init_challenges = __esm({
 
 // drizzle/schema/participations.ts
 import { mysqlTable as mysqlTable3, int as int3, varchar as varchar3, text as text3, timestamp as timestamp3, mysqlEnum as mysqlEnum3, boolean as boolean3 } from "drizzle-orm/mysql-core";
-var participations, participationCompanions, messageLikes;
+var participations, participationCompanions;
 var init_participations = __esm({
   "drizzle/schema/participations.ts"() {
+    "use strict";
     participations = mysqlTable3("participations", {
       id: int3("id").autoincrement().primaryKey(),
       challengeId: int3("challengeId").notNull(),
@@ -270,12 +269,6 @@ var init_participations = __esm({
       invitedByUserId: int3("invitedByUserId"),
       createdAt: timestamp3("createdAt").defaultNow().notNull()
     });
-    messageLikes = mysqlTable3("message_likes", {
-      id: int3("id").autoincrement().primaryKey(),
-      participationId: int3("participationId").notNull(),
-      userId: int3("userId").notNull(),
-      createdAt: timestamp3("createdAt").defaultNow().notNull()
-    });
   }
 });
 
@@ -284,6 +277,7 @@ import { mysqlTable as mysqlTable4, int as int4, varchar as varchar4, text as te
 var notificationSettings, notifications, reminders;
 var init_notifications = __esm({
   "drizzle/schema/notifications.ts"() {
+    "use strict";
     notificationSettings = mysqlTable4("notification_settings", {
       id: int4("id").autoincrement().primaryKey(),
       userId: int4("userId").notNull(),
@@ -326,6 +320,7 @@ import { mysqlTable as mysqlTable5, int as int5, varchar as varchar5, text as te
 var cheers, follows, directMessages, searchHistory, favoriteArtists;
 var init_social = __esm({
   "drizzle/schema/social.ts"() {
+    "use strict";
     cheers = mysqlTable5("cheers", {
       id: int5("id").autoincrement().primaryKey(),
       fromUserId: int5("fromUserId").notNull(),
@@ -388,6 +383,7 @@ import { mysqlTable as mysqlTable6, int as int6, varchar as varchar6, text as te
 var badges, userBadges, achievements, userAchievements, achievementPages, pickedComments;
 var init_gamification = __esm({
   "drizzle/schema/gamification.ts"() {
+    "use strict";
     badges = mysqlTable6("badges", {
       id: int6("id").autoincrement().primaryKey(),
       name: varchar6("name", { length: 100 }).notNull(),
@@ -478,6 +474,7 @@ import { mysqlTable as mysqlTable7, int as int7, varchar as varchar7, text as te
 var invitations, invitationUses, collaborators, collaboratorInvitations;
 var init_invitations = __esm({
   "drizzle/schema/invitations.ts"() {
+    "use strict";
     invitations = mysqlTable7("invitations", {
       id: int7("id").autoincrement().primaryKey(),
       challengeId: int7("challengeId").notNull(),
@@ -542,6 +539,7 @@ import { mysqlTable as mysqlTable8, int as int8, varchar as varchar8, text as te
 var ticketTransfers, ticketWaitlist;
 var init_tickets = __esm({
   "drizzle/schema/tickets.ts"() {
+    "use strict";
     ticketTransfers = mysqlTable8("ticket_transfers", {
       id: int8("id").autoincrement().primaryKey(),
       challengeId: int8("challengeId").notNull(),
@@ -577,6 +575,7 @@ import { mysqlTable as mysqlTable9, int as int9, varchar as varchar9, text as te
 var auditLogs, AUDIT_ACTIONS, ENTITY_TYPES;
 var init_audit = __esm({
   "drizzle/schema/audit.ts"() {
+    "use strict";
     auditLogs = mysqlTable9("audit_logs", {
       id: int9("id").autoincrement().primaryKey(),
       // リクエスト追跡用ID（tRPC middlewareで生成）
@@ -640,6 +639,7 @@ var init_audit = __esm({
 // drizzle/schema/index.ts
 var init_schema = __esm({
   "drizzle/schema/index.ts"() {
+    "use strict";
     init_users();
     init_challenges();
     init_participations();
@@ -675,7 +675,6 @@ __export(schema_exports, {
   follows: () => follows,
   invitationUses: () => invitationUses,
   invitations: () => invitations,
-  messageLikes: () => messageLikes,
   notificationSettings: () => notificationSettings,
   notifications: () => notifications,
   oauthPkceData: () => oauthPkceData,
@@ -694,6 +693,7 @@ __export(schema_exports, {
 });
 var init_schema2 = __esm({
   "drizzle/schema.ts"() {
+    "use strict";
     init_schema();
   }
 });
@@ -702,6 +702,7 @@ var init_schema2 = __esm({
 var ENV;
 var init_env = __esm({
   "server/_core/env.ts"() {
+    "use strict";
     ENV = {
       appId: process.env.VITE_APP_ID ?? "",
       cookieSecret: process.env.JWT_SECRET ?? "",
@@ -790,18 +791,6 @@ async function updateUserRole(userId, role) {
   await db.update(users).set({ role }).where(eq(users.id, userId));
   return true;
 }
-async function updateUserGender(userId, gender) {
-  const db = await getDb();
-  if (!db) return false;
-  await db.update(users).set({ gender }).where(eq(users.id, userId));
-  return true;
-}
-async function updateUserGenre(userId, genre) {
-  const db = await getDb();
-  if (!db) return false;
-  await db.update(users).set({ genre }).where(eq(users.id, userId));
-  return true;
-}
 async function getUserByTwitterId(twitterId) {
   const db = await getDb();
   if (!db) return null;
@@ -820,6 +809,7 @@ async function getUserByTwitterId(twitterId) {
 }
 var init_user_db = __esm({
   "server/db/user-db.ts"() {
+    "use strict";
     init_connection();
     init_schema2();
     init_env();
@@ -827,7 +817,6 @@ var init_user_db = __esm({
 });
 
 // server/db/challenge-db.ts
-import { getTableColumns } from "drizzle-orm";
 async function getAllEvents() {
   const now = Date.now();
   if (eventsCache.data && now - eventsCache.timestamp < EVENTS_CACHE_TTL) {
@@ -835,11 +824,7 @@ async function getAllEvents() {
   }
   const db = await getDb();
   if (!db) return eventsCache.data ?? [];
-  const eventColumns = getTableColumns(events2);
-  const result = await db.select({
-    ...eventColumns,
-    hostGender: users.gender
-  }).from(events2).leftJoin(users, eq(events2.hostUserId, users.id)).where(eq(events2.isPublic, true)).orderBy(desc(events2.eventDate));
+  const result = await db.select().from(events2).where(eq(events2.isPublic, true)).orderBy(desc(events2.eventDate));
   eventsCache = { data: result, timestamp: now };
   return result;
 }
@@ -865,36 +850,25 @@ async function getEventsByHostTwitterId(hostTwitterId) {
 async function createEvent(data) {
   const db = await getDb();
   if (!db) throw new Error("Database not available");
-  let hostUserId = data.hostUserId;
-  let hostGender = data.hostGender;
-  if (data.hostTwitterId && !hostUserId) {
-    const userResult = await db.select().from(users).where(eq(users.openId, data.hostTwitterId));
-    if (userResult.length > 0) {
-      hostUserId = userResult[0].id;
-      hostGender = userResult[0].gender;
-    }
-  }
   const now = (/* @__PURE__ */ new Date()).toISOString().slice(0, 19).replace("T", " ");
   const eventDate = data.eventDate ? new Date(data.eventDate).toISOString().slice(0, 19).replace("T", " ") : now;
   const slug = data.slug || generateSlug(data.title);
   const ticketSaleStart = data.ticketSaleStart ? new Date(data.ticketSaleStart).toISOString().slice(0, 19).replace("T", " ") : null;
-  const purpose = "live";
   const result = await db.execute(sql`
     INSERT INTO challenges (
-      hostUserId, hostTwitterId, hostName, hostUsername, hostProfileImage, hostFollowersCount, hostDescription, hostGender,
+      hostUserId, hostTwitterId, hostName, hostUsername, hostProfileImage, hostFollowersCount, hostDescription,
       title, description, goalType, goalValue, goalUnit, currentValue,
-      eventType, categoryId, purpose, eventDate, venue, prefecture,
+      eventType, categoryId, eventDate, venue, prefecture,
       ticketPresale, ticketDoor, ticketSaleStart, ticketUrl, externalUrl,
       status, isPublic, createdAt, updatedAt
     ) VALUES (
-      ${hostUserId ?? null},
+      ${data.hostUserId ?? null},
       ${data.hostTwitterId ?? null},
       ${data.hostName},
       ${data.hostUsername ?? null},
       ${data.hostProfileImage ?? null},
       ${data.hostFollowersCount ?? 0},
       ${data.hostDescription ?? null},
-      ${hostGender ?? null},
       ${data.title},
       ${data.description ?? null},
       ${data.goalType ?? "attendance"},
@@ -903,7 +877,6 @@ async function createEvent(data) {
       ${data.currentValue ?? 0},
       ${data.eventType ?? "solo"},
       ${data.categoryId ?? null},
-      ${purpose},
       ${eventDate},
       ${data.venue ?? null},
       ${data.prefecture ?? null},
@@ -946,31 +919,10 @@ async function searchChallenges(query) {
     return title.includes(normalizedQuery) || hostName.includes(normalizedQuery) || description.includes(normalizedQuery) || venue.includes(normalizedQuery);
   });
 }
-async function syncChallengeHostGender() {
-  const db = await getDb();
-  if (!db) throw new Error("Database not available");
-  const challengesWithHostUserId = await db.select().from(challenges).where(isNotNull(challenges.hostUserId));
-  console.log(`[syncChallengeHostGender] Found ${challengesWithHostUserId.length} challenges with hostUserId`);
-  let updatedCount = 0;
-  for (const challenge of challengesWithHostUserId) {
-    if (!challenge.hostUserId) continue;
-    const userResult = await db.select().from(users).where(eq(users.id, challenge.hostUserId));
-    if (userResult.length > 0 && userResult[0].gender) {
-      await db.update(challenges).set({ hostGender: userResult[0].gender }).where(eq(challenges.id, challenge.id));
-      updatedCount++;
-      console.log(`[syncChallengeHostGender] Updated challenge ${challenge.id} with gender ${userResult[0].gender}`);
-    }
-  }
-  invalidateEventsCache();
-  console.log(`[syncChallengeHostGender] Completed: ${updatedCount}/${challengesWithHostUserId.length} challenges updated`);
-  return {
-    total: challengesWithHostUserId.length,
-    updated: updatedCount
-  };
-}
 var events2, eventsCache, EVENTS_CACHE_TTL;
 var init_challenge_db = __esm({
   "server/db/challenge-db.ts"() {
+    "use strict";
     init_connection();
     init_connection();
     init_schema2();
@@ -981,44 +933,13 @@ var init_challenge_db = __esm({
 });
 
 // server/db/participation-db.ts
-async function getParticipationsByEventId(eventId, limit, offset) {
+async function getParticipationsByEventId(eventId) {
   const db = await getDb();
   if (!db) return [];
-  let query = db.select({
-    id: participations.id,
-    challengeId: participations.challengeId,
-    userId: participations.userId,
-    twitterId: participations.twitterId,
-    displayName: participations.displayName,
-    username: participations.username,
-    profileImage: participations.profileImage,
-    followersCount: participations.followersCount,
-    message: participations.message,
-    companionCount: participations.companionCount,
-    prefecture: participations.prefecture,
-    gender: participations.gender,
-    contribution: participations.contribution,
-    isAnonymous: participations.isAnonymous,
-    attendanceType: participations.attendanceType,
-    createdAt: participations.createdAt,
-    updatedAt: participations.updatedAt,
-    deletedAt: participations.deletedAt,
-    deletedBy: participations.deletedBy,
-    likesCount: sql`(
-      SELECT COUNT(*) FROM ${messageLikes}
-      WHERE ${messageLikes.participationId} = ${participations.id}
-    )`
-  }).from(participations).where(and(
+  return db.select().from(participations).where(and(
     eq(participations.challengeId, eventId),
     isNull(participations.deletedAt)
   )).orderBy(desc(participations.createdAt));
-  if (limit !== void 0) {
-    query = query.limit(limit);
-    if (offset !== void 0 && offset > 0) {
-      query = query.offset(offset);
-    }
-  }
-  return query;
 }
 async function getParticipationsByUserId(userId) {
   const db = await getDb();
@@ -1301,46 +1222,9 @@ async function bulkRestoreParticipations(filter) {
     affectedChallengeIds: Object.keys(challengeContributions).map(Number)
   };
 }
-async function likeMessage(participationId, userId) {
-  const db = await getDb();
-  if (!db) throw new Error("Database not available");
-  const existing = await db.select().from(messageLikes).where(and(
-    eq(messageLikes.participationId, participationId),
-    eq(messageLikes.userId, userId)
-  ));
-  if (existing.length > 0) {
-    return;
-  }
-  await db.insert(messageLikes).values({
-    participationId,
-    userId
-  });
-}
-async function unlikeMessage(participationId, userId) {
-  const db = await getDb();
-  if (!db) throw new Error("Database not available");
-  await db.delete(messageLikes).where(and(
-    eq(messageLikes.participationId, participationId),
-    eq(messageLikes.userId, userId)
-  ));
-}
-async function getMessageLikesCount(participationId) {
-  const db = await getDb();
-  if (!db) return 0;
-  const result = await db.select({ count: sql`COUNT(*)` }).from(messageLikes).where(eq(messageLikes.participationId, participationId));
-  return result[0]?.count || 0;
-}
-async function hasUserLikedMessage(participationId, userId) {
-  const db = await getDb();
-  if (!db) return false;
-  const result = await db.select().from(messageLikes).where(and(
-    eq(messageLikes.participationId, participationId),
-    eq(messageLikes.userId, userId)
-  ));
-  return result.length > 0;
-}
 var init_participation_db = __esm({
   "server/db/participation-db.ts"() {
+    "use strict";
     init_connection();
     init_schema2();
     init_challenge_db();
@@ -1474,6 +1358,7 @@ function sendMessageToUser(userId, messageData) {
 var clients;
 var init_websocket = __esm({
   "server/websocket.ts"() {
+    "use strict";
     init_env();
     clients = /* @__PURE__ */ new Map();
   }
@@ -1493,21 +1378,7 @@ async function upsertNotificationSettings(userId, challengeId, data) {
   if (existing.length > 0) {
     await db.update(notificationSettings).set(data).where(and(eq(notificationSettings.userId, userId), eq(notificationSettings.challengeId, challengeId)));
   } else {
-    const defaultSettings = {
-      onGoalReached: true,
-      onMilestone25: true,
-      onMilestone50: true,
-      onMilestone75: true,
-      onNewParticipant: true
-      // 新規参加者の通知をデフォルトでオン
-    };
-    await db.insert(notificationSettings).values({
-      userId,
-      challengeId,
-      ...defaultSettings,
-      ...data
-      // 明示的に指定された値で上書き
-    });
+    await db.insert(notificationSettings).values({ userId, challengeId, ...data });
   }
 }
 async function getUsersWithNotificationEnabled(challengeId, notificationType) {
@@ -1555,6 +1426,7 @@ async function markAllNotificationsAsRead(userId) {
 }
 var init_notification_db = __esm({
   "server/db/notification-db.ts"() {
+    "use strict";
     init_connection();
     init_schema2();
   }
@@ -1652,6 +1524,7 @@ async function awardFollowerBadge(userId) {
 }
 var init_badge_db = __esm({
   "server/db/badge-db.ts"() {
+    "use strict";
     init_connection();
     init_schema2();
   }
@@ -1758,6 +1631,7 @@ async function getPublicAchievementPages() {
 }
 var init_social_db = __esm({
   "server/db/social-db.ts"() {
+    "use strict";
     init_connection();
     init_schema2();
   }
@@ -1906,6 +1780,7 @@ async function incrementTemplateUseCount(id) {
 }
 var init_messaging_db = __esm({
   "server/db/messaging-db.ts"() {
+    "use strict";
     init_connection();
     init_schema2();
   }
@@ -1991,6 +1866,7 @@ async function updateFollowNotification(followerId, followeeId, notify) {
 }
 var init_follow_db = __esm({
   "server/db/follow-db.ts"() {
+    "use strict";
     init_connection();
     init_schema2();
     init_badge_db();
@@ -2060,6 +1936,7 @@ async function getUserRankingPosition(userId, period = "all") {
 }
 var init_ranking_db = __esm({
   "server/db/ranking-db.ts"() {
+    "use strict";
     init_connection();
     init_schema2();
   }
@@ -2115,6 +1992,7 @@ async function deleteCategory(id) {
 var categoriesCache, CATEGORIES_CACHE_TTL;
 var init_category_db = __esm({
   "server/db/category-db.ts"() {
+    "use strict";
     init_connection();
     init_schema2();
     categoriesCache = { data: null, timestamp: 0 };
@@ -2225,6 +2103,7 @@ async function getInvitationStats(invitationId) {
 }
 var init_invitation_db = __esm({
   "server/db/invitation-db.ts"() {
+    "use strict";
     init_connection();
     init_schema2();
   }
@@ -2338,6 +2217,7 @@ async function getRecommendedHosts(userId, categoryId, limit = 5) {
 }
 var init_profile_db = __esm({
   "server/db/profile-db.ts"() {
+    "use strict";
     init_connection();
     init_schema2();
   }
@@ -2388,6 +2268,7 @@ async function getCompanionInviteStats(userId) {
 }
 var init_companion_db = __esm({
   "server/db/companion-db.ts"() {
+    "use strict";
     init_connection();
     init_schema2();
   }
@@ -2562,6 +2443,7 @@ async function refreshAllChallengeSummaries() {
 }
 var init_ai_db = __esm({
   "server/db/ai-db.ts"() {
+    "use strict";
     init_connection();
     init_schema2();
   }
@@ -2674,6 +2556,7 @@ async function cancelParticipation(participationId, userId) {
 }
 var init_ticket_db = __esm({
   "server/db/ticket-db.ts"() {
+    "use strict";
     init_connection();
     init_schema2();
   }
@@ -2892,6 +2775,7 @@ async function compareSchemas() {
 }
 var init_stats_db = __esm({
   "server/db/stats-db.ts"() {
+    "use strict";
     init_connection();
     init_schema2();
     init_challenge_db();
@@ -2977,6 +2861,7 @@ async function getUserAuditHistory(actorId, limit = 100) {
 }
 var init_audit_db = __esm({
   "server/db/audit-db.ts"() {
+    "use strict";
     init_connection();
     init_schema2();
   }
@@ -2985,6 +2870,7 @@ var init_audit_db = __esm({
 // server/db/index.ts
 var init_db = __esm({
   "server/db/index.ts"() {
+    "use strict";
     init_connection();
     init_user_db();
     init_challenge_db();
@@ -3098,7 +2984,6 @@ __export(db_exports, {
   getInvitationsForChallenge: () => getInvitationsForChallenge,
   getInvitationsForUser: () => getInvitationsForUser,
   getInvitedParticipants: () => getInvitedParticipants,
-  getMessageLikesCount: () => getMessageLikesCount,
   getNotificationSettings: () => getNotificationSettings,
   getNotificationsByUserId: () => getNotificationsByUserId,
   getOshikatsuStats: () => getOshikatsuStats,
@@ -3137,7 +3022,6 @@ __export(db_exports, {
   getUsersWithNotificationEnabled: () => getUsersWithNotificationEnabled,
   getWaitlistUsersForNotification: () => getWaitlistUsersForNotification,
   gte: () => gte,
-  hasUserLikedMessage: () => hasUserLikedMessage,
   inArray: () => inArray,
   incrementInvitationUseCount: () => incrementInvitationUseCount,
   incrementTemplateUseCount: () => incrementTemplateUseCount,
@@ -3147,7 +3031,6 @@ __export(db_exports, {
   isNull: () => isNull,
   isUserInWaitlist: () => isUserInWaitlist,
   like: () => like,
-  likeMessage: () => likeMessage,
   logAction: () => logAction,
   lte: () => lte,
   markAllMessagesAsRead: () => markAllMessagesAsRead,
@@ -3172,11 +3055,9 @@ __export(db_exports, {
   sendDirectMessage: () => sendDirectMessage,
   softDeleteParticipation: () => softDeleteParticipation,
   sql: () => sql,
-  syncChallengeHostGender: () => syncChallengeHostGender,
   ticketTransfers: () => ticketTransfers,
   ticketWaitlist: () => ticketWaitlist,
   unfollowUser: () => unfollowUser,
-  unlikeMessage: () => unlikeMessage,
   unpickComment: () => unpickComment,
   updateAchievementPage: () => updateAchievementPage,
   updateCategory: () => updateCategory,
@@ -3186,14 +3067,13 @@ __export(db_exports, {
   updateParticipation: () => updateParticipation,
   updateReminder: () => updateReminder,
   updateTicketTransferStatus: () => updateTicketTransferStatus,
-  updateUserGender: () => updateUserGender,
-  updateUserGenre: () => updateUserGenre,
   updateUserRole: () => updateUserRole,
   upsertNotificationSettings: () => upsertNotificationSettings,
   upsertUser: () => upsertUser
 });
 var init_db2 = __esm({
   "server/db.ts"() {
+    "use strict";
     init_db();
     init_schema2();
   }
@@ -3201,33 +3081,6 @@ var init_db2 = __esm({
 
 // server/_core/index.ts
 import "dotenv/config";
-
-// server/_core/sentry.ts
-import * as Sentry from "@sentry/node";
-function initSentry() {
-  if (!process.env.SENTRY_DSN) {
-    console.warn("[Sentry] SENTRY_DSN is not set. Sentry will not be initialized.");
-    return;
-  }
-  Sentry.init({
-    dsn: process.env.SENTRY_DSN,
-    environment: process.env.SENTRY_ENVIRONMENT ?? process.env.VERCEL_ENV ?? "development",
-    // まずは控えめに（コスト/ノイズを抑える）
-    tracesSampleRate: 0.05
-    // ログイン等の「体験の失敗」はmessageで拾うので、例外は自動で十分
-  });
-  console.log("[Sentry] Initialized for server");
-}
-function captureTrpcError(error, context) {
-  Sentry.captureException(error, {
-    tags: {
-      trpc_path: context.path ?? "unknown",
-      trpc_type: context.type ?? "unknown"
-    }
-  });
-}
-
-// server/_core/index.ts
 import express from "express";
 import { createServer } from "http";
 import net from "net";
@@ -4304,24 +4157,7 @@ var RESPONSE_REQUEST_ID_HEADER = "x-request-id";
 
 // server/_core/trpc.ts
 var t = initTRPC.context().create({
-  transformer: superjson,
-  errorFormatter({ shape }) {
-    return shape;
-  }
-});
-var errorLoggingMiddleware = t.middleware(async (opts) => {
-  const { next, path: path2, type } = opts;
-  try {
-    return await next();
-  } catch (error) {
-    if (error instanceof TRPCError && (error.code === "UNAUTHORIZED" || error.code === "FORBIDDEN")) {
-      throw error;
-    }
-    if (error instanceof Error) {
-      captureTrpcError(error, { path: path2, type });
-    }
-    throw error;
-  }
+  transformer: superjson
 });
 var router = t.router;
 var requestIdMiddleware = t.middleware(async (opts) => {
@@ -4338,7 +4174,7 @@ var requestIdMiddleware = t.middleware(async (opts) => {
     }
   });
 });
-var publicProcedure = t.procedure.use(requestIdMiddleware).use(errorLoggingMiddleware);
+var publicProcedure = t.procedure.use(requestIdMiddleware);
 var requireUser = t.middleware(async (opts) => {
   const { ctx, next } = opts;
   if (!ctx.user) {
@@ -4351,8 +4187,8 @@ var requireUser = t.middleware(async (opts) => {
     }
   });
 });
-var protectedProcedure = t.procedure.use(requestIdMiddleware).use(errorLoggingMiddleware).use(requireUser);
-var adminProcedure = t.procedure.use(requestIdMiddleware).use(errorLoggingMiddleware).use(
+var protectedProcedure = t.procedure.use(requestIdMiddleware).use(requireUser);
+var adminProcedure = t.procedure.use(requestIdMiddleware).use(
   t.middleware(async (opts) => {
     const { ctx, next } = opts;
     if (!ctx.user || ctx.user.role !== "admin") {
@@ -4530,11 +4366,6 @@ var eventsRouter = router({
     }
     await deleteEvent(input.id);
     return { success: true };
-  }),
-  // 既存チャレンジのhostGenderを同期（管理者専用）
-  syncHostGender: publicProcedure.mutation(async () => {
-    const result = await syncChallengeHostGender();
-    return result;
   })
 });
 
@@ -4544,12 +4375,8 @@ init_db2();
 init_schema2();
 var participationsRouter = router({
   // イベントの参加者一覧
-  listByEvent: publicProcedure.input(z2.object({
-    eventId: z2.number(),
-    limit: z2.number().optional(),
-    offset: z2.number().optional()
-  })).query(async ({ input }) => {
-    return getParticipationsByEventId(input.eventId, input.limit, input.offset);
+  listByEvent: publicProcedure.input(z2.object({ eventId: z2.number() })).query(async ({ input }) => {
+    return getParticipationsByEventId(input.eventId);
   }),
   // 参加方法別集計
   getAttendanceTypeCounts: publicProcedure.input(z2.object({ eventId: z2.number() })).query(async ({ input }) => {
@@ -4638,25 +4465,6 @@ var participationsRouter = router({
       }
       const participations2 = await getParticipationsByEventId(input.challengeId);
       const participantNumber = participations2.length;
-      try {
-        const challenge = await getEventById(input.challengeId);
-        if (challenge) {
-          const usersWithNotification = await getUsersWithNotificationEnabled(input.challengeId, "participant");
-          for (const setting of usersWithNotification) {
-            if (setting.userId === ctx.user?.id) continue;
-            await createNotification({
-              userId: setting.userId,
-              challengeId: input.challengeId,
-              type: "new_participant",
-              title: "\u{1F389} \u65B0\u3057\u3044\u53C2\u52A0\u8005\uFF01",
-              body: `${input.displayName}\u3055\u3093\u304C\u53C2\u52A0\u8868\u660E\u3057\u307E\u3057\u305F\uFF01\u73FE\u5728${participantNumber}\u4EBA`,
-              sentAt: /* @__PURE__ */ new Date()
-            });
-          }
-        }
-      } catch (notificationError) {
-        console.error("[Notification] Failed to send notification:", notificationError);
-      }
       return { id: participationId, requestId: ctx.requestId, participantNumber };
     } catch (error) {
       console.error("[Participation Create] Error:", error);
@@ -4866,16 +4674,6 @@ var participationsRouter = router({
     }
     return { success: true, challengeId: result.challengeId, requestId: ctx.requestId };
   }),
-  // 応援メッセージに「いいね」をする
-  likeMessage: protectedProcedure.input(z2.object({ participationId: z2.number() })).mutation(async ({ ctx, input }) => {
-    await likeMessage(input.participationId, ctx.user.id);
-    return { success: true };
-  }),
-  // 応援メッセージの「いいね」を解除する
-  unlikeMessage: protectedProcedure.input(z2.object({ participationId: z2.number() })).mutation(async ({ ctx, input }) => {
-    await unlikeMessage(input.participationId, ctx.user.id);
-    return { success: true };
-  }),
   // 参加をキャンセル（チケット譲渡オプション付き）
   cancel: protectedProcedure.input(z2.object({
     participationId: z2.number(),
@@ -4965,53 +4763,6 @@ var notificationsRouter = router({
   markAllAsRead: protectedProcedure.mutation(async ({ ctx }) => {
     await markAllNotificationsAsRead(ctx.user.id);
     return { success: true };
-  }),
-  // テスト通知を送信
-  sendTestNotification: protectedProcedure.input(z3.object({
-    challengeId: z3.number(),
-    type: z3.enum(["goal", "milestone", "participant"])
-  })).mutation(async ({ ctx, input }) => {
-    const event = await getEventById(input.challengeId);
-    if (!event) {
-      throw new Error("Event not found");
-    }
-    let notificationType;
-    if (input.type === "goal") {
-      notificationType = "goal";
-    } else if (input.type === "milestone") {
-      notificationType = "milestone";
-    } else {
-      notificationType = "participant";
-    }
-    const users2 = await getUsersWithNotificationEnabled(
-      input.challengeId,
-      notificationType
-    );
-    let title;
-    let body;
-    if (input.type === "goal") {
-      title = "\u{1F3C6} \u76EE\u6A19\u9054\u6210\uFF01";
-      body = `${event.title}\u304C\u76EE\u6A19\u3092\u9054\u6210\u3057\u307E\u3057\u305F\uFF01`;
-    } else if (input.type === "milestone") {
-      title = "\u{1F6A9} \u30DE\u30A4\u30EB\u30B9\u30C8\u30FC\u30F3\u9054\u6210\uFF01";
-      body = `${event.title}\u304C50%\u3092\u9054\u6210\u3057\u307E\u3057\u305F\uFF01`;
-    } else {
-      title = "\u{1F389} \u65B0\u3057\u3044\u53C2\u52A0\u8005\uFF01";
-      body = `\u30C6\u30B9\u30C8\u30E6\u30FC\u30B6\u30FC\u3055\u3093\u304C\u53C2\u52A0\u8868\u660E\u3057\u307E\u3057\u305F\uFF01`;
-    }
-    for (const user of users2) {
-      await createNotification({
-        userId: user.userId,
-        challengeId: input.challengeId,
-        type: input.type === "goal" ? "goal_reached" : input.type === "milestone" ? "milestone_50" : "new_participant",
-        title,
-        body
-      });
-    }
-    return {
-      success: true,
-      sentCount: users2.length
-    };
   })
 });
 
@@ -5857,18 +5608,6 @@ var profilesRouter = router({
   })).query(async ({ ctx, input }) => {
     const userId = ctx.user?.id;
     return getRecommendedHosts(userId, input.categoryId, input.limit);
-  }),
-  // ユーザーの性別を更新
-  updateGender: protectedProcedure.input(z18.object({
-    gender: z18.enum(["male", "female", "other"]).nullable()
-  })).mutation(async ({ ctx, input }) => {
-    return updateUserGender(ctx.user.id, input.gender);
-  }),
-  // ユーザーのジャンルを更新
-  updateGenre: protectedProcedure.input(z18.object({
-    genre: z18.enum(["idol", "artist", "vtuber", "streamer", "band", "dancer", "voice_actor", "other"]).nullable()
-  })).mutation(async ({ ctx, input }) => {
-    return updateUserGenre(ctx.user.id, input.genre);
   })
 });
 
@@ -7199,7 +6938,6 @@ async function findAvailablePort(startPort = 3e3) {
   throw new Error(`No available port found starting from ${startPort}`);
 }
 async function startServer() {
-  initSentry();
   const app = express();
   const server = createServer(app);
   app.use((req, res, next) => {
@@ -7223,78 +6961,17 @@ async function startServer() {
   app.use(express.urlencoded({ limit: "50mb", extended: true }));
   registerOAuthRoutes(app);
   registerTwitterRoutes(app);
-  app.get("/api/healthz", (_req, res) => {
-    res.json({
-      ok: true,
-      ts: Date.now()
-    });
-    res.setHeader("cache-control", "no-store");
-  });
-  app.get("/api/readyz", async (_req, res) => {
-    try {
-      const { getDb: getDb2 } = await Promise.resolve().then(() => (init_db2(), db_exports));
-      const db = await getDb2();
-      if (db) {
-        await db.execute("SELECT 1 as ok");
-        res.json({
-          ok: true,
-          deps: { db: "ok" },
-          ts: Date.now()
-        });
-        res.setHeader("cache-control", "no-store");
-      } else {
-        res.status(503).json({
-          ok: false,
-          deps: { db: "ng" },
-          ts: Date.now()
-        });
-        res.setHeader("cache-control", "no-store");
-      }
-    } catch {
-      res.status(503).json({
-        ok: false,
-        deps: { db: "ng" },
-        ts: Date.now()
-      });
-      res.setHeader("cache-control", "no-store");
-    }
-  });
   app.get("/api/health", async (_req, res) => {
-    let buildInfo = {
-      version: "unknown",
-      commitSha: "unknown",
-      gitSha: "unknown",
-      builtAt: "unknown"
+    let versionInfo = {
+      version: process.env.RAILWAY_GIT_COMMIT_SHA || process.env.APP_VERSION || "unknown",
+      commitSha: process.env.RAILWAY_GIT_COMMIT_SHA || process.env.GIT_SHA || "unknown",
+      gitSha: process.env.RAILWAY_GIT_COMMIT_SHA || process.env.GIT_SHA || "unknown",
+      builtAt: process.env.BUILT_AT || (/* @__PURE__ */ new Date()).toISOString()
     };
-    try {
-      const fs = await import("fs/promises");
-      const path2 = await import("path");
-      const url = await import("url");
-      const __dirname2 = path2.dirname(url.fileURLToPath(import.meta.url));
-      const buildInfoPath = path2.join(__dirname2, "build-info.json");
-      const buildInfoContent = await fs.readFile(buildInfoPath, "utf-8");
-      const parsedBuildInfo = JSON.parse(buildInfoContent);
-      buildInfo = {
-        version: parsedBuildInfo.version || "unknown",
-        commitSha: parsedBuildInfo.commitSha || "unknown",
-        gitSha: parsedBuildInfo.gitSha || "unknown",
-        builtAt: parsedBuildInfo.builtAt || "unknown"
-      };
-    } catch (err) {
-      console.error("[health] Failed to read build-info.json:", err instanceof Error ? err.message : String(err));
-      console.error("[health] __dirname:", __dirname);
-      console.error("[health] buildInfoPath:", path.join(__dirname, "build-info.json"));
-      buildInfo = {
-        version: process.env.APP_VERSION || "unknown",
-        commitSha: process.env.COMMIT_SHA || process.env.GIT_SHA || "unknown",
-        gitSha: process.env.GIT_SHA || "unknown",
-        builtAt: process.env.BUILT_AT || "unknown"
-      };
-    }
     const baseInfo = {
       ok: true,
       timestamp: Date.now(),
-      ...buildInfo,
+      ...versionInfo,
       nodeEnv: process.env.NODE_ENV || "development"
     };
     let dbStatus = { connected: false, latency: 0, error: "" };

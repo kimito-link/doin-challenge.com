@@ -5,6 +5,7 @@
  * FSMの状態遷移をテスト（idle → confirm → redirecting → waitingReturn）
  */
 
+import { describe, it, expect, vi, beforeEach } from "vitest";
 import { renderHook, act } from "@testing-library/react";
 import { useAuthUxMachine } from "../use-auth-ux-machine";
 

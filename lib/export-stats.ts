@@ -67,7 +67,7 @@ export function generateCSV(data: ExportData): string {
   const summary = [
     `## サマリー`,
     `総参加表明数,${total}`,
-    `ユニーク参加予定数,${uniqueParticipants}`,
+    `ユニーク参加者数,${uniqueParticipants}`,
     `目標達成率,${progressRate}%`,
     ``,
   ].join("\n");
@@ -85,7 +85,7 @@ export function generateCSV(data: ExportData): string {
 
   // 都道府県別集計
   const prefectureStats = getPrefectureStats(participations);
-  const prefectureHeader = `\n## 都道府県別集計\n都道府県,参加予定数,割合`;
+  const prefectureHeader = `\n## 都道府県別集計\n都道府県,参加者数,割合`;
   const prefectureRows = prefectureStats
     .sort((a, b) => b.count - a.count)
     .map(p => `${p.prefecture},${p.count},${p.percentage}%`)
@@ -93,7 +93,7 @@ export function generateCSV(data: ExportData): string {
 
   // 地域別集計
   const regionStats = getRegionStats(participations);
-  const regionHeader = `\n## 地域別集計\n地域,参加予定数,割合`;
+  const regionHeader = `\n## 地域別集計\n地域,参加者数,割合`;
   const regionRows = regionStats
     .sort((a, b) => b.count - a.count)
     .map(r => `${r.region},${r.count},${r.percentage}%`)
@@ -101,12 +101,12 @@ export function generateCSV(data: ExportData): string {
 
   // 日別集計
   const dailyStats = getDailyStats(participations);
-  const dailyHeader = `\n## 日別集計\n日付,参加予定数,累計`;
+  const dailyHeader = `\n## 日別集計\n日付,参加者数,累計`;
   const dailyRows = dailyStats.map(d => `${d.date},${d.count},${d.cumulative}`).join("\n");
 
   // 時間帯別集計
   const hourlyStats = getHourlyStats(participations);
-  const hourlyHeader = `\n## 時間帯別集計\n時間帯,参加予定数`;
+  const hourlyHeader = `\n## 時間帯別集計\n時間帯,参加者数`;
   const hourlyRows = hourlyStats.map(h => `${h.hour}時,${h.count}`).join("\n");
 
   return [
@@ -153,7 +153,7 @@ export function generateTextReport(data: ExportData): string {
     `━━━━━━━━━━━━━━━━━━━━`,
     `現在: ${total} / ${challenge.goalValue}${challenge.goalUnit}`,
     `達成率: ${progressRate}%`,
-    `参加予定数: ${uniqueParticipants}人`,
+    `参加者数: ${uniqueParticipants}人`,
     ``,
     `🏆 都道府県TOP5`,
     `━━━━━━━━━━━━━━━━━━━━`,

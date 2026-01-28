@@ -12,9 +12,9 @@ type RegionCount = {
 };
 
 type Props = {
-  /** 地域ごとの参加予定数 */
+  /** 地域ごとの参加者数 */
   regionCounts?: RegionCount[];
-  /** 合計参加予定数 */
+  /** 合計参加者数 */
   totalCount?: number;
   /** タップ時のコールバック */
   onPress?: () => void;
@@ -25,7 +25,7 @@ type Props = {
 export function SimpleRegionMap({ regionCounts = [], totalCount = 0, onPress, challengeId }: Props) {
   const colors = useColors();
 
-  // 地域ごとの参加予定数をマップに変換
+  // 地域ごとの参加者数をマップに変換
   const countMap = new Map(regionCounts.map(r => [r.regionId, r.count]));
   
   // 最大値を取得（色の濃さ計算用）

@@ -2,6 +2,7 @@
  * アカウント切り替え時のトースト通知テスト
  */
 
+import { describe, it, expect, vi } from "vitest";
 
 // Mock modules
 vi.mock("expo-haptics", () => ({

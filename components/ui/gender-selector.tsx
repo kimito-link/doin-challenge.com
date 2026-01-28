@@ -1,15 +1,13 @@
 /**
  * GenderSelector Component
  * 汎用性別選択ラジオボタン
- * v6.70: 黒ベースのカードデザインに統一（貢献度ランキング、応援メッセージと同じトンマナ）
  */
 
 import { View, Text, Pressable } from "react-native";
 import { color } from "@/theme/tokens";
-import { palette } from "@/theme/tokens/palette";
 import { useColors } from "@/hooks/use-colors";
 
-export type Gender = "male" | "female" | "unspecified" | "";
+export type Gender = "male" | "female" | "";
 
 export interface GenderSelectorProps {
   /** 選択された性別 */
@@ -67,7 +65,7 @@ export function GenderSelector({
           onPress={() => !disabled && onChange("male")}
           emoji="👨"
           label={maleLabel}
-          selectedColor={palette.genderMale}
+          selectedColor={color.info}
           showRequiredBorder={required && value === ""}
           disabled={disabled}
         />
@@ -78,7 +76,7 @@ export function GenderSelector({
           onPress={() => !disabled && onChange("female")}
           emoji="👩"
           label={femaleLabel}
-          selectedColor={palette.genderFemale}
+          selectedColor={color.accentPrimary}
           showRequiredBorder={required && value === ""}
           disabled={disabled}
         />
@@ -120,18 +118,18 @@ function GenderOption({
       disabled={disabled}
       style={{
         flex: 1,
-        backgroundColor: palette.gray800, // 黒ベースで統一（MessageCard、ContributionRankingと同じ）
+        backgroundColor: selected ? selectedColor : colors.background,
         borderRadius: 12,
         padding: 16,
         alignItems: "center",
         borderWidth: 2,
-        borderColor: selected ? selectedColor : showRequiredBorder ? color.accentPrimary : palette.gray700,
+        borderColor: selected ? selectedColor : showRequiredBorder ? color.accentPrimary : color.border,
         opacity: disabled ? 0.5 : 1,
       }}
     >
-      <Text style={{ fontSize: 32, marginBottom: 4 }}>{emoji}</Text>
+      <Text style={{ fontSize: 24, marginBottom: 4 }}>{emoji}</Text>
       <Text style={{ 
-        color: selected ? selectedColor : color.textSecondary, 
+        color: selected ? color.textWhite : color.textSecondary, 
         fontSize: 14, 
         fontWeight: "600" 
       }}>

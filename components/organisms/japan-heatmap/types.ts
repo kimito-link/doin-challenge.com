@@ -4,7 +4,7 @@
  * 単一責任: 型定義のみ
  */
 
-/** 都道府県ごとの参加予定数 */
+/** 都道府県ごとの参加者数 */
 export interface PrefectureCount {
   [prefecture: string]: number;
 }

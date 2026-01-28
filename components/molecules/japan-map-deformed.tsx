@@ -2,7 +2,7 @@
  * デフォルメ日本地図コンポーネント
  * 都道府県を四角形で配置し、モバイルで見やすく表示
  */
-import { View, Text, Pressable, useWindowDimensions } from "react-native";
+import { View, Text, Pressable } from "react-native";
 import { useColors } from "@/hooks/use-colors";
 import Animated, {
   useSharedValue,
@@ -11,10 +11,9 @@ import Animated, {
   withSequence,
 } from "react-native-reanimated";
 import { useEffect } from "react";
-import { PARTICIPANT_LABELS } from "@/constants/labels";
 
 export interface JapanMapDeformedProps {
-  /** 都道府県ごとの参加予定数 */
+  /** 都道府県ごとの参加者数 */
   prefectureCounts: Record<string, number>;
   /** 点灯させる都道府県（参加完了時） */
   highlightPrefecture?: string | null;
@@ -134,19 +133,15 @@ function PrefectureCell({
     ? prefecture.color
     : colors.surface;
 
-  // 親コンポーネントからセルサイズを受け取る
-  const cellWidth = (prefecture as any).cellWidth || 44;
-  const cellHeight = (prefecture as any).cellHeight || 28;
-
   return (
     <Animated.View
       style={[
         {
           position: "absolute",
-          top: prefecture.row * cellHeight,
-          left: prefecture.col * cellWidth,
-          width: cellWidth,
-          height: cellHeight,
+          top: prefecture.row * 32,
+          left: prefecture.col * 48,
+          width: 44,
+          height: 28,
           borderRadius: 4,
           backgroundColor,
           borderWidth: 1,
@@ -169,7 +164,7 @@ function PrefectureCell({
       >
         <Text
           style={{
-            fontSize: Math.max(8, cellWidth * 0.18),
+            fontSize: 8,
             fontWeight: "bold",
             color: hasParticipants ? "#000" : colors.muted,
             textAlign: "center",
@@ -181,7 +176,7 @@ function PrefectureCell({
         {hasParticipants && (
           <Text
             style={{
-              fontSize: Math.max(10, cellWidth * 0.23),
+              fontSize: 10,
               fontWeight: "bold",
               color: "#000",
             }}
@@ -200,20 +195,10 @@ export function JapanMapDeformed({
   onPrefecturePress,
 }: JapanMapDeformedProps) {
   const colors = useColors();
-  const { width: screenWidth } = useWindowDimensions();
 
-  // 地図の最大row/colを計算
+  // 地図の高さを計算（最大row + 余白）
   const maxRow = Math.max(...PREFECTURE_LAYOUT.map((p) => p.row));
-  const maxCol = Math.max(...PREFECTURE_LAYOUT.map((p) => p.col));
-
-  // 画面幅に応じてセルサイズを動的に計算（余白を考慮）
-  const horizontalPadding = 32; // 左右の余白
-  const availableWidth = screenWidth - horizontalPadding;
-  const cellWidth = Math.floor(availableWidth / (maxCol + 1));
-  const cellHeight = Math.floor(cellWidth * 0.64); // アスペクト比を維持
-
-  // 地図の高さを計算
-  const mapHeight = (maxRow + 2) * cellHeight;
+  const mapHeight = (maxRow + 2) * 32;
 
   return (
     <View style={{ marginVertical: 16, paddingHorizontal: 16 }}>
@@ -240,17 +225,10 @@ export function JapanMapDeformed({
           const count = prefectureCounts[prefecture.name] || 0;
           const isHighlighted = highlightPrefecture === prefecture.name;
 
-          // セルサイズを渡す
-          const prefectureWithSize = {
-            ...prefecture,
-            cellWidth,
-            cellHeight,
-          } as any;
-
           return (
             <PrefectureCell
               key={prefecture.name}
-              prefecture={prefectureWithSize}
+              prefecture={prefecture}
               count={count}
               isHighlighted={isHighlighted}
               onPress={() => onPrefecturePress?.(prefecture.name)}

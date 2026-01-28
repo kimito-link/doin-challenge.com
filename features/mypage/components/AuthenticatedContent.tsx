@@ -6,10 +6,6 @@
 import { View, ScrollView } from "react-native";
 import { color } from "@/theme/tokens";
 import { useColors } from "@/hooks/use-colors";
-import { trpc } from "@/lib/trpc";
-import { useToast } from "@/components/atoms/toast";
-import type { Gender } from "@/components/ui/gender-selector";
-import type { Genre } from "@/components/ui/genre-selector";
 import { FollowPromptBanner } from "@/components/molecules/follow-gate";
 import { TutorialResetButton } from "@/components/molecules/tutorial-reset-button";
 import { ProfileCard } from "./ProfileCard";
@@ -19,8 +15,6 @@ import { FavoriteSection } from "./sections/FavoriteSection";
 import { ParticipationSection } from "./sections/ParticipationSection";
 import { HostedChallengeSection } from "./sections/HostedChallengeSection";
 import { RoleSection } from "./sections/RoleSection";
-import { GenderSection } from "./sections/GenderSection";
-import { GenreSection } from "./sections/GenreSection";
 
 interface AuthenticatedContentProps {
   // User data
@@ -75,76 +69,6 @@ export function AuthenticatedContent({
   onNavigateToApiUsage,
 }: AuthenticatedContentProps) {
   const colors = useColors();
-  const utils = trpc.useUtils();
-  const toast = useToast();
-
-  // 性別更新のmutation
-  const updateGender = trpc.profiles.updateGender.useMutation({
-    // 楽観更新
-    onMutate: async ({ gender }) => {
-      await utils.auth.me.cancel();
-      const prev = utils.auth.me.getData();
-      utils.auth.me.setData(undefined, (old) => old ? { ...old, gender } : old);
-      return { prev };
-    },
-    // 失敗したら戻す
-    onError: (_err, _vars, ctx) => {
-      if (ctx?.prev) utils.auth.me.setData(undefined, ctx.prev);
-      toast.showError("性別の更新に失敗しました");
-    },
-    // 成功時
-    onSuccess: () => {
-      toast.showSuccess("性別を更新しました");
-    },
-    // 成功/失敗どちらでも最終的に整合
-    onSettled: async () => {
-      await utils.auth.me.invalidate();
-    },
-  });
-
-  // ジャンル更新のmutation
-  const updateGenre = trpc.profiles.updateGenre.useMutation({
-    // 楽観更新
-    onMutate: async ({ genre }) => {
-      await utils.auth.me.cancel();
-      const prev = utils.auth.me.getData();
-      utils.auth.me.setData(undefined, (old) => old ? { ...old, genre } : old);
-      return { prev };
-    },
-    // 失敗したら戻す
-    onError: (_err, _vars, ctx) => {
-      if (ctx?.prev) utils.auth.me.setData(undefined, ctx.prev);
-      toast.showError("ジャンルの更新に失敗しました");
-    },
-    // 成功時
-    onSuccess: () => {
-      toast.showSuccess("ジャンルを更新しました");
-    },
-    // 成功/失敗どちらでも最終的に整合
-    onSettled: async () => {
-      await utils.auth.me.invalidate();
-    },
-  });
-
-  // 性別変更ハンドラー
-  const handleGenderChange = (next: Gender) => {
-    // 二重送信防止
-    if (updateGender.isPending) return;
-    
-    // Gender型をAPIの期待する型に変換
-    const apiGender: "male" | "female" | "other" | null = 
-      next === "" || next === "unspecified" ? null : next;
-    
-    updateGender.mutate({ gender: apiGender });
-  };
-
-  // ジャンル変更ハンドラー
-  const handleGenreChange = (next: Genre | null) => {
-    // 二重送信防止
-    if (updateGenre.isPending) return;
-    
-    updateGenre.mutate({ genre: next });
-  };
 
   return (
     <ScrollView style={{ flex: 1, backgroundColor: colors.background }}>
@@ -166,20 +90,6 @@ export function AuthenticatedContent({
         totalContribution={totalContribution}
         challengesCount={challengesCount}
         isAdmin={user?.isAdmin ?? false}
-      />
-
-      {/* 性別設定セクション */}
-      <GenderSection
-        gender={user?.gender ?? null}
-        onGenderChange={handleGenderChange}
-        disabled={updateGender.isPending}
-      />
-
-      {/* ジャンル選択セクション */}
-      <GenreSection
-        genre={user?.genre ?? null}
-        onGenreChange={handleGenreChange}
-        disabled={updateGenre.isPending}
       />
 
       {/* フォロー促進バナー（未フォロー時のみ表示） */}

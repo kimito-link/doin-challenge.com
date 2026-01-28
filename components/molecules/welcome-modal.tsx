@@ -45,7 +45,7 @@ export function WelcomeModal({
   const hostedCount = hostedChallenges?.length ?? 0;
   const isHost = hostedCount > 0;
 
-  // 総参加予定数（主催チャレンジの合計）
+  // 総参加者数（主催チャレンジの合計）
   const totalParticipants = hostedChallenges?.reduce<number>(
     (sum, c) => sum + (c.currentValue ?? 0),
     0

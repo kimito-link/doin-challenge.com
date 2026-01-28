@@ -1,5 +1,4 @@
-import { View, Text, FlatList, Pressable, Platform } from "react-native";
-import { Image } from "expo-image";
+import { View, Text, FlatList, Pressable, Image, Platform } from "react-native";
 import { EmojiIcon } from "@/components/ui/emoji-icon";
 import * as Haptics from "expo-haptics";
 import { navigate, navigateBack } from "@/lib/navigation";

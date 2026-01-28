@@ -2,7 +2,6 @@ import { Text, View } from "react-native";
 import { color, palette } from "@/theme/tokens";
 import MaterialIcons from "@expo/vector-icons/MaterialIcons";
 import { useResponsive } from "@/hooks/use-responsive";
-import Constants from "expo-constants";
 
 interface Step {
   icon: keyof typeof MaterialIcons.glyphMap;
@@ -139,17 +138,6 @@ export function OnboardingSteps() {
           </View>
         ))}
       </View>
-      {/* バージョン表示 */}
-      <Text
-        style={{
-          color: color.textSubtle,
-          fontSize: 10,
-          textAlign: "center",
-          marginTop: 12,
-        }}
-      >
-        v{Constants.expoConfig?.version || "1.0.0"}
-      </Text>
     </View>
   );
 }

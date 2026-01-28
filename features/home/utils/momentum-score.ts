@@ -7,7 +7,7 @@ import type { Challenge } from "@/types/challenge";
 
 /**
  * 勢いスコアの計算式:
- * 勢いスコア = (参加予定数 × 進捗率) + (24時間以内の新規参加予定数 × 2)
+ * 勢いスコア = (参加者数 × 進捗率) + (24時間以内の新規参加者数 × 2)
  * 
  * この計算式により、以下のチャレンジが上位に表示される:
  * - 参加者が多く、目標達成に近いチャレンジ
@@ -19,7 +19,7 @@ export function calculateMomentumScore(challenge: Challenge): number {
   // 進捗率（0-1）
   const progressRate = goalValue > 0 ? Math.min(1, currentValue / goalValue) : 0;
   
-  // 基本スコア = 参加予定数 × 進捗率
+  // 基本スコア = 参加者数 × 進捗率
   const baseScore = currentValue * progressRate;
   
   // 直近の盛り上がりボーナス（24時間以内の新規参加者 × 2）

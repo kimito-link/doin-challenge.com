@@ -92,7 +92,7 @@ const prefectureData: { name: string; short: string; region: string; row: number
   { name: "沖縄県", short: "沖縄", region: "沖縄", row: 12, col: 0 },
 ];
 
-// 参加予定数に応じた動的アイコン
+// 参加者数に応じた動的アイコン
 function getParticipantIcon(count: number): string {
   if (count === 0) return "😢";
   if (count <= 5) return "😊";
@@ -100,7 +100,7 @@ function getParticipantIcon(count: number): string {
   return "🎉";
 }
 
-// 参加予定数に応じた色の濃さを計算
+// 参加者数に応じた色の濃さを計算
 // 参加者がいない場合は灰色、参加者が多いほど赤くなる
 function getHeatColor(count: number, maxCount: number, baseColor: { bg: string; text: string; border: string }) {
   if (count === 0) {
@@ -108,7 +108,7 @@ function getHeatColor(count: number, maxCount: number, baseColor: { bg: string; 
     return { bg: color.mapInactive, text: color.textMuted, border: color.border, hasParticipants: false };
   }
   
-  // 参加者がいる場合は赤系の色に（参加予定数に応じて濃くなる）
+  // 参加者がいる場合は赤系の色に（参加者数に応じて濃くなる）
   const intensity = Math.min(count / Math.max(maxCount, 1), 1);
   
   if (intensity >= 0.8) {
@@ -317,7 +317,7 @@ function JapanDeformedMapInner({ prefectureCounts, onPrefecturePress, onRegionPr
 
       {/* アイコン凡例 */}
       <View style={styles.iconLegend}>
-        <Text style={styles.legendTitle}>参加予定数アイコン</Text>
+        <Text style={styles.legendTitle}>参加者数アイコン</Text>
         <View style={styles.iconLegendItems}>
           <View style={styles.iconLegendItem}>
             <Text style={styles.iconLegendEmoji}>😢</Text>

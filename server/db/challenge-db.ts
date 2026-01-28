@@ -1,7 +1,6 @@
-import { getDb, eq, desc, sql, and, ne, or, isNull, isNotNull, asc, like } from "./connection";
+import { getDb, eq, desc, sql } from "./connection";
 import { generateSlug } from "./connection";
-import { challenges, InsertChallenge, users } from "../../drizzle/schema";
-import { getTableColumns } from "drizzle-orm";
+import { challenges, InsertChallenge } from "../../drizzle/schema";
 
 // 後方互換性のためのエイリアス
 const events = challenges;
@@ -22,22 +21,12 @@ export async function getAllEvents() {
   const db = await getDb();
   if (!db) return eventsCache.data ?? [];
   
-  // usersテーブルとLEFT JOINしてhostGenderを取得
-  const eventColumns = getTableColumns(events);
-  const result = await db
-    .select({
-      ...eventColumns,
-      hostGender: users.gender,
-    })
-    .from(events)
-    .leftJoin(users, eq(events.hostUserId, users.id))
-    .where(eq(events.isPublic, true))
-    .orderBy(desc(events.eventDate));
+  const result = await db.select().from(events).where(eq(events.isPublic, true)).orderBy(desc(events.eventDate));
   
   // キャッシュを更新
-  eventsCache = { data: result as any, timestamp: now };
+  eventsCache = { data: result, timestamp: now };
   
-  return result as any;
+  return result;
 }
 
 // キャッシュを無効化（イベント作成/更新/削除時に呼び出す）
@@ -68,18 +57,6 @@ export async function createEvent(data: InsertEvent) {
   const db = await getDb();
   if (!db) throw new Error("Database not available");
   
-  // hostTwitterIdからhostUserIdとhostGenderを取得
-  let hostUserId = data.hostUserId;
-  let hostGender = data.hostGender;
-  
-  if (data.hostTwitterId && !hostUserId) {
-    const userResult = await db.select().from(users).where(eq(users.openId, data.hostTwitterId));
-    if (userResult.length > 0) {
-      hostUserId = userResult[0].id;
-      hostGender = userResult[0].gender;
-    }
-  }
-  
   // TiDBのdefaultキーワード問題を回避するため、raw SQLを使用
   const now = new Date().toISOString().slice(0, 19).replace('T', ' ');
   const eventDate = data.eventDate ? new Date(data.eventDate).toISOString().slice(0, 19).replace('T', ' ') : now;
@@ -94,25 +71,21 @@ export async function createEvent(data: InsertEvent) {
   // 本番DBに存在しない可能性があるため、INSERTから除外
   // slugカラムも本番DBに存在しないため除外（2024年1月修正）
   // これらのカラムは後から追加する場合は、マイグレーションを実行してから使用する
-  // purposeをliveに正規化（legacy値が渡された場合もliveにフォールバック）
-  const purpose = 'live'; // 現在はliveのみサポート
-  
   const result = await db.execute(sql`
     INSERT INTO challenges (
-      hostUserId, hostTwitterId, hostName, hostUsername, hostProfileImage, hostFollowersCount, hostDescription, hostGender,
+      hostUserId, hostTwitterId, hostName, hostUsername, hostProfileImage, hostFollowersCount, hostDescription,
       title, description, goalType, goalValue, goalUnit, currentValue,
-      eventType, categoryId, purpose, eventDate, venue, prefecture,
+      eventType, categoryId, eventDate, venue, prefecture,
       ticketPresale, ticketDoor, ticketSaleStart, ticketUrl, externalUrl,
       status, isPublic, createdAt, updatedAt
     ) VALUES (
-      ${hostUserId ?? null},
+      ${data.hostUserId ?? null},
       ${data.hostTwitterId ?? null},
       ${data.hostName},
       ${data.hostUsername ?? null},
       ${data.hostProfileImage ?? null},
       ${data.hostFollowersCount ?? 0},
       ${data.hostDescription ?? null},
-      ${hostGender ?? null},
       ${data.title},
       ${data.description ?? null},
       ${data.goalType ?? 'attendance'},
@@ -121,7 +94,6 @@ export async function createEvent(data: InsertEvent) {
       ${data.currentValue ?? 0},
       ${data.eventType ?? 'solo'},
       ${data.categoryId ?? null},
-      ${purpose},
       ${eventDate},
       ${data.venue ?? null},
       ${data.prefecture ?? null},
@@ -181,49 +153,4 @@ export async function searchChallenges(query: string) {
            description.includes(normalizedQuery) ||
            venue.includes(normalizedQuery);
   });
-}
-
-/**
- * 既存チャレンジのhostGenderを同期
- * hostUserIdが設定されているチャレンジについて、usersテーブルからgenderを取得してhostGenderを更新
- */
-export async function syncChallengeHostGender() {
-  const db = await getDb();
-  if (!db) throw new Error("Database not available");
-  
-  // hostUserIdが設定されているチャレンジを取得
-  const challengesWithHostUserId = await db
-    .select()
-    .from(challenges)
-    .where(isNotNull(challenges.hostUserId));
-  
-  console.log(`[syncChallengeHostGender] Found ${challengesWithHostUserId.length} challenges with hostUserId`);
-  
-  let updatedCount = 0;
-  
-  for (const challenge of challengesWithHostUserId) {
-    if (!challenge.hostUserId) continue;
-    
-    // usersテーブルからgenderを取得
-    const userResult = await db.select().from(users).where(eq(users.id, challenge.hostUserId));
-    
-    if (userResult.length > 0 && userResult[0].gender) {
-      // hostGenderを更新
-      await db.update(challenges)
-        .set({ hostGender: userResult[0].gender })
-        .where(eq(challenges.id, challenge.id));
-      
-      updatedCount++;
-      console.log(`[syncChallengeHostGender] Updated challenge ${challenge.id} with gender ${userResult[0].gender}`);
-    }
-  }
-  
-  invalidateEventsCache(); // キャッシュを無効化
-  
-  console.log(`[syncChallengeHostGender] Completed: ${updatedCount}/${challengesWithHostUserId.length} challenges updated`);
-  
-  return {
-    total: challengesWithHostUserId.length,
-    updated: updatedCount,
-  };
 }

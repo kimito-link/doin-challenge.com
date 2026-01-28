@@ -8,6 +8,7 @@
  * - コールバック関数の呼び出し
  */
 
+import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 import { renderHook, act, waitFor } from "@testing-library/react";
 import React from "react";
 
@@ -117,12 +118,9 @@ describe("useOfflineChallenge", () => {
     });
 
     it("送信中はisSubmittingがtrue", async () => {
+      mockIsOnline.mockResolvedValue(true);
       // mutateが呼ばれても即座に完了しないようにする
-      let resolveMutate: () => void;
-      const mutatePromise = new Promise<void>((resolve) => {
-        resolveMutate = resolve;
-      });
-      mockMutate.mockImplementation(() => mutatePromise);
+      mockMutate.mockImplementation(() => {});
 
       const { useOfflineChallenge } = await import("../use-offline-challenge");
       const { result } = renderHook(() => useOfflineChallenge());
@@ -131,10 +129,12 @@ describe("useOfflineChallenge", () => {
         result.current.submit(mockChallengeData);
       });
 
-      // 少し待ってからisSubmittingを確認
-      await new Promise((resolve) => setTimeout(resolve, 10));
-      expect(result.current.isSubmitting).toBe(true);
+      // 非同期処理の開始を待つ
+      await waitFor(() => {
+        expect(result.current.isSubmitting).toBe(true);
+      });
     });
+
     it("成功時にonSuccessコールバックが呼ばれる", async () => {
       const onSuccess = vi.fn();
       

@@ -8,7 +8,6 @@
  * - 無限スクロールは別扱い（isLoadingMore）
  */
 
-import { describe, it, expect, vi, beforeEach } from "vitest";
 import { renderHook, waitFor } from "@testing-library/react-native";
 import { useHomeData } from "../useHomeData";
 import { trpc } from "@/lib/trpc";

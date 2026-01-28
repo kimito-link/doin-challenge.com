@@ -4,13 +4,14 @@
  * currentValue更新ロジックとデータ整合性確認機能のテスト
  */
 
+import { describe, it, expect, vi } from "vitest";
 
 // generateSlug関数のテスト
 describe("generateSlug", () => {
   // モック用のgenerateSlug関数（実際の実装をシミュレート）
   function generateSlug(title: string): string {
     const translations: Record<string, string> = {
-      '動員ちゃれんじ': 'mobilization-challenge',
+      '生誕祭': 'birthday',
       'ライブ': 'live',
       'ワンマン': 'oneman',
       '動員': 'attendance',
@@ -49,7 +50,7 @@ describe("generateSlug", () => {
 
   it("日本語タイトルを英語スラッグに変換する", () => {
     // 日本語が連続している場合はハイフンなしで結合される
-    expect(generateSlug("動員ちゃれんじライブ")).toBe("mobilization-challengelive");
+    expect(generateSlug("生誕祭ライブ")).toBe("birthdaylive");
     expect(generateSlug("ワンマンライブ動員100人チャレンジ")).toBe("onemanliveattendance-100-challenge");
   });
 

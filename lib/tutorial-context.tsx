@@ -162,7 +162,7 @@ export const HOST_TUTORIAL_STEPS: TutorialStep[] = [
     previewType: "none",
   },
   {
-    message: "事前に参加予定数がわかると安心",
+    message: "事前に参加者数がわかると安心",
     subMessage: "「今○人参加表明してる」ってリアルタイムで見える",
     character: "konta_smile",
     speech: "これなら会場選びも、心に余裕を持ってできるね",

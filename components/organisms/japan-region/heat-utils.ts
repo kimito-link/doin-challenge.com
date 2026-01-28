@@ -3,7 +3,7 @@
  */
 
 /**
- * 参加予定数に応じたアイコンを返す
+ * 参加者数に応じたアイコンを返す
  */
 export function getParticipantIcon(count: number): string {
   if (count === 0) return "";
@@ -13,12 +13,12 @@ export function getParticipantIcon(count: number): string {
 }
 
 /**
- * ヒートマップ色の段階（参加予定数に応じて色の濃淡を変化）
+ * ヒートマップ色の段階（参加者数に応じて色の濃淡を変化）
  */
 export type HeatLevel = 0 | 1 | 2 | 3 | 4 | 5;
 
 /**
- * 参加予定数と最大値からヒートレベルを計算
+ * 参加者数と最大値からヒートレベルを計算
  */
 export function getHeatLevel(count: number, maxCount: number): HeatLevel {
   if (count === 0) return 0;

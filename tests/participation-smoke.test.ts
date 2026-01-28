@@ -2,6 +2,7 @@
  * Participation Smoke Test
  * 表示→編集→削除→再表示の基本フローをテスト
  */
+import { describe, it, expect, vi, beforeEach } from "vitest";
 
 // Mock tRPC
 const mockInvalidate = vi.fn();

@@ -1,3 +1,4 @@
+import { describe, it, expect, vi } from "vitest";
 
 // AI向けサマリー生成ロジックのテスト
 describe("AI Optimization API", () => {
@@ -5,7 +6,7 @@ describe("AI Optimization API", () => {
     it("should generate natural language summary", () => {
       // サマリー生成ロジックのテスト
       const challenge = {
-        title: "りんく動員ちゃれんじ",
+        title: "りんく生誕祭",
         hostName: "りんく",
         eventType: "solo",
         goalValue: 100,
@@ -21,7 +22,7 @@ describe("AI Optimization API", () => {
       aiSummary += `目標${challenge.goalValue}${challenge.goalUnit}に対して現在${challenge.currentValue}${challenge.goalUnit}（達成率${progressPercent}%）。`;
       aiSummary += `開催まで残り${daysUntilEvent}日。`;
 
-      expect(aiSummary).toContain("りんく動員ちゃれんじ");
+      expect(aiSummary).toContain("りんく生誕祭");
       expect(aiSummary).toContain("りんく主催");
       expect(aiSummary).toContain("ソロイベント");
       expect(aiSummary).toContain("45%");
@@ -178,7 +179,7 @@ describe("AI Optimization API", () => {
       const aiChallengeResponse = {
         // 基本情報
         id: 1,
-        title: "りんく動員ちゃれんじ",
+        title: "りんく生誕祭",
         description: "みんなで応援しよう！",
         hostName: "りんく",
         hostUsername: "kimitolink",
@@ -196,7 +197,7 @@ describe("AI Optimization API", () => {
         progressPercent: 45,
         
         // AI向け非正規化データ（1ホップで取得可能）
-        aiSummary: "【りんく動員ちゃれんじ】りんく主催のソロイベント...",
+        aiSummary: "【りんく生誕祭】りんく主催のソロイベント...",
         intentTags: ["ソロ", "attendance", "応援募集中", "東京都"],
         regionSummary: { "東京都": 15, "大阪府": 10 },
         participantSummary: {

@@ -7,24 +7,12 @@
  * ここでは状態管理のロジックをテストします。
  */
 
-
-// Expoのモック
-vi.mock("expo-modules-core", () => ({
-  EventEmitter: class MockEventEmitter {
-    addListener = vi.fn();
-    removeListener = vi.fn();
-    emit = vi.fn();
-  },
-}));
+import { describe, it, expect, vi, beforeEach } from "vitest";
 
 // React Nativeのモック
 vi.mock("react-native", () => ({
   Alert: {
     alert: vi.fn(),
-  },
-  Platform: {
-    OS: "ios",
-    select: vi.fn((obj) => obj.ios || obj.default),
   },
   ScrollView: {},
   View: {},
