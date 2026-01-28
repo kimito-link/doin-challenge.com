@@ -7,6 +7,7 @@
 // Expoのモック
 vi.mock("expo", () => ({
   default: {},
+  requireOptionalNativeModule: vi.fn(() => null),
 }));
 
 vi.mock("expo-modules-core", () => ({

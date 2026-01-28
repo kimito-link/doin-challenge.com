@@ -8,7 +8,7 @@
  * - 無限スクロールは別扱い（isLoadingMore）
  */
 
-import { renderHook, waitFor } from "@testing-library/react-native";
+import { renderHook } from "@testing-library/react";
 import { useHomeData } from "../useHomeData";
 import { trpc } from "@/lib/trpc";
 
@@ -52,6 +52,40 @@ vi.mock("@react-native-community/netinfo", () => ({
   },
 }));
 
+// use-offline-cacheをモック
+vi.mock("@/hooks/use-offline-cache", () => ({
+  useNetworkStatus: vi.fn(() => ({ isOnline: true })),
+}));
+
+// use-prefetchをモック
+vi.mock("@/hooks/use-prefetch", () => ({
+  useTabPrefetch: vi.fn(() => ({ prefetchTab: vi.fn() })),
+}));
+
+// use-favoritesをモック
+vi.mock("@/hooks/use-favorites", () => ({
+  useFavorites: vi.fn(() => ({ favorites: [], toggleFavorite: vi.fn() })),
+}));
+
+// image-prefetchをモック
+vi.mock("@/lib/image-prefetch", () => ({
+  prefetchChallengeImages: vi.fn(),
+}));
+
+// offline-cacheをモック
+vi.mock("@/lib/offline-cache", () => ({
+  setCache: vi.fn(),
+  getCache: vi.fn(() => null),
+  CACHE_KEYS: { HOME_CHALLENGES: "home_challenges" },
+}));
+
+// data-prefetchをモック
+vi.mock("@/lib/data-prefetch", () => ({
+  setCachedData: vi.fn(),
+  getCachedData: vi.fn(() => null),
+  PREFETCH_KEYS: { HOME_CHALLENGES: "home_challenges" },
+}));
+
 describe("useHomeData - Loading States", () => {
   beforeEach(() => {
     vi.clearAllMocks();
@@ -61,7 +95,7 @@ describe("useHomeData - Loading States", () => {
    * Case 1: 初回ロード中（データなし）
    * 期待: isInitialLoading=true, スケルトン表示
    */
-  it("Case 1: 初回ロード中はisInitialLoading=trueでスケルトン表示", async () => {
+  it("Case 1: 初回ロード中はisInitialLoading=trueでスケルトン表示", () => {
     // モック設定: データなし、API取得中
     (trpc.events.listPaginated.useInfiniteQuery as any).mockReturnValue({
       data: undefined, // データなし
@@ -83,16 +117,14 @@ describe("useHomeData - Loading States", () => {
 
     const { result } = renderHook(() => useHomeData({ searchQuery: "", filter: "all", categoryFilter: null }));
 
-    await waitFor(() => {
-      // 初回ロード中の契約
-      expect(result.current.isInitialLoading).toBe(true);
-      expect(result.current.hasData).toBe(false);
-      expect(result.current.isRefreshing).toBe(false);
-      expect(result.current.isLoadingMore).toBe(false);
-      
-      // 後方互換性
-      expect(result.current.isLoading).toBe(true);
-      expect(result.current.isDataLoading).toBe(true);
-    });
+    // 初回ロード中の契約
+    expect(result.current.isInitialLoading).toBe(true);
+    expect(result.current.hasData).toBe(false);
+    expect(result.current.isRefreshing).toBe(false);
+    expect(result.current.isLoadingMore).toBe(false);
+    
+    // 後方互換性
+    expect(result.current.isLoading).toBe(true);
+    expect(result.current.isDataLoading).toBe(true);
   });
 });

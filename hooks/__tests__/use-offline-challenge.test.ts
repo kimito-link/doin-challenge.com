@@ -11,10 +11,6 @@
 import { renderHook, act, waitFor } from "@testing-library/react";
 import React from "react";
 
-// Testing Libraryのコンテナ設定
-const container = document.createElement("div");
-document.body.appendChild(container);
-
 // モックの設定
 const mockMutate = vi.fn();
 const mockUseMutation = vi.fn();
@@ -121,9 +117,12 @@ describe("useOfflineChallenge", () => {
     });
 
     it("送信中はisSubmittingがtrue", async () => {
-      mockIsOnline.mockResolvedValue(true);
       // mutateが呼ばれても即座に完了しないようにする
-      mockMutate.mockImplementation(() => {});
+      let resolveMutate: () => void;
+      const mutatePromise = new Promise<void>((resolve) => {
+        resolveMutate = resolve;
+      });
+      mockMutate.mockImplementation(() => mutatePromise);
 
       const { useOfflineChallenge } = await import("../use-offline-challenge");
       const { result } = renderHook(() => useOfflineChallenge());
@@ -132,12 +131,10 @@ describe("useOfflineChallenge", () => {
         result.current.submit(mockChallengeData);
       });
 
-      // 非同期処理の開始を待つ
-      await waitFor(() => {
-        expect(result.current.isSubmitting).toBe(true);
-      });
+      // 少し待ってからisSubmittingを確認
+      await new Promise((resolve) => setTimeout(resolve, 10));
+      expect(result.current.isSubmitting).toBe(true);
     });
-
     it("成功時にonSuccessコールバックが呼ばれる", async () => {
       const onSuccess = vi.fn();
       
