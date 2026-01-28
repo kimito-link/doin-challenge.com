@@ -54,6 +54,9 @@ jobs:
           EOF
           echo "Generated build-info.json:"
           cat server/_core/build-info.json
+          mkdir -p dist
+          cp server/_core/build-info.json dist/build-info.json
+          echo "Copied build-info.json to dist directory"
 
       - name: Deploy to Vercel
         uses: amondnet/vercel-action@v25
