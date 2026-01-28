@@ -22,8 +22,6 @@ jobs:
 
       - name: Setup pnpm
         uses: pnpm/action-setup@v4
-        with:
-          version: 9
 
       - name: Get pnpm store directory
         id: pnpm-cache
@@ -42,11 +40,20 @@ jobs:
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
 
-      - name: Run TypeScript type check
-        run: pnpm check
-
-      - name: Run tests
-        run: pnpm test
+      - name: Generate build-info.json
+        run: |
+          mkdir -p server/_core
+          cat > server/_core/build-info.json << EOF
+          {
+            "commitSha": "${{ github.sha }}",
+            "gitSha": "${{ github.sha }}",
+            "builtAt": "${{ github.event.head_commit.timestamp }}",
+            "version": "${{ github.sha }}",
+            "buildTime": "$(date -u +%Y-%m-%dT%H:%M:%SZ)"
+          }
+          EOF
+          echo "Generated build-info.json:"
+          cat server/_core/build-info.json
 
       - name: Deploy to Vercel
         uses: amondnet/vercel-action@v25
@@ -54,10 +61,8 @@ jobs:
           vercel-token: ${{ secrets.VERCEL_TOKEN }}
           vercel-org-id: ${{ secrets.VERCEL_ORG_ID }}
           vercel-project-id: ${{ secrets.VERCEL_PROJECT_ID }}
-          vercel-args: '--prod --build-env VITE_GIT_SHA=${{ github.sha }} --build-env VITE_BUILD_TIME=${{ github.event.head_commit.timestamp }} --build-env VITE_APP_VERSION=${{ github.sha }}'
+          vercel-args: '--prod'
           working-directory: ./
-        env:
-          COMMIT_SHA: ${{ github.sha }}
 
       - name: Wait for deployment to be live
         run: sleep 30

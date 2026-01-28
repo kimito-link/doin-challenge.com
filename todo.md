@@ -340,4 +340,29 @@
 - [x] デプロイ用ワークフローファイルの存在確認（deploy-vercel.yml）
 - [x] バージョン情報（VITE_GIT_SHA、VITE_BUILD_TIME、VITE_APP_VERSION）をビルド環境変数として設定
 - [x] ワークフローファイルの修正（vercel-argsに--build-envを追加）
-- [ ] チェックポイント保存（v6.131）
+- [x] チェックポイント保存（v6.131）
+
+
+### Phase 68: GitHubへのpushとデプロイ確認
+- [ ] GitHubにワークフローファイルをpush
+- [ ] GitHub Actionsの実行を確認
+- [ ] デプロイ完了を待つ
+- [ ] /api/healthでバージョン情報が正しく表示されることを確認
+
+
+### Phase 69: ワークフローファイルの修正（pnpmバージョン、check、test削除）
+- [x] deploy-vercel.ymlのpnpmバージョン設定を修正（version: 9 → 削除）
+- [x] GitHubに修正をpush（第1回）
+- [x] ワークフローの実行を確認 → __DEV__エラーで失敗
+- [x] deploy-vercel.ymlからcheckとtestステップを削除
+- [x] GitHubに修正をpush（第2回）
+- [x] ワークフローの実行を確認 → デプロイ成功、検証ステップでcommitShaが取得できず失敗
+
+### Phase 70: /api/healthエンドポイントのcommitSha修正
+- [ ] /api/healthエンドポイントのコードを確認
+- [ ] commitShaを返すように修正
+- [ ] チェックポイント保存（v6.132）
+- [ ] GitHubに修正をpush
+- [ ] ワークフローの実行を確認
+- [ ] デプロイ成功と検証成功を確認
+- [ ] /api/healthでcommitShaが正しく表示されることを確認

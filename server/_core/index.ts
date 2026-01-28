@@ -109,14 +109,43 @@ async function startServer() {
   });
 
   app.get("/api/health", async (_req, res) => {
+    // ビルド情報をbuild-info.jsonから読み込む
+    let buildInfo = {
+      version: "unknown",
+      commitSha: "unknown",
+      gitSha: "unknown",
+      builtAt: "unknown",
+    };
+    
+    try {
+      const fs = await import("fs/promises");
+      const path = await import("path");
+      const url = await import("url");
+      const __dirname = path.dirname(url.fileURLToPath(import.meta.url));
+      const buildInfoPath = path.join(__dirname, "build-info.json");
+      const buildInfoContent = await fs.readFile(buildInfoPath, "utf-8");
+      const parsedBuildInfo = JSON.parse(buildInfoContent);
+      buildInfo = {
+        version: parsedBuildInfo.version || "unknown",
+        commitSha: parsedBuildInfo.commitSha || "unknown",
+        gitSha: parsedBuildInfo.gitSha || "unknown",
+        builtAt: parsedBuildInfo.builtAt || "unknown",
+      };
+    } catch (err) {
+      // build-info.jsonが見つからない場合は環境変数から取得
+      buildInfo = {
+        version: process.env.APP_VERSION || "unknown",
+        commitSha: process.env.COMMIT_SHA || process.env.GIT_SHA || "unknown",
+        gitSha: process.env.GIT_SHA || "unknown",
+        builtAt: process.env.BUILT_AT || "unknown",
+      };
+    }
+    
     // 基本情報
     const baseInfo = {
       ok: true,
       timestamp: Date.now(),
-      version: process.env.APP_VERSION || "unknown",
-      commitSha: process.env.COMMIT_SHA || process.env.GIT_SHA || "unknown",
-      gitSha: process.env.GIT_SHA || "unknown",
-      builtAt: process.env.BUILT_AT || "unknown",
+      ...buildInfo,
       nodeEnv: process.env.NODE_ENV || "development",
     };
 
