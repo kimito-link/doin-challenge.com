@@ -11,7 +11,7 @@
     "dev": "concurrently -k \"pnpm dev:server\" \"pnpm dev:metro\"",
     "dev:server": "cross-env NODE_ENV=development node --import tsx server/_core/index.ts",
     "dev:metro": "cross-env EXPO_USE_METRO_WORKSPACE_ROOT=1 npx expo start --web --port ${EXPO_PORT:-8081}",
-    "build": "esbuild server/_core/index.ts --platform=node --packages=external --bundle --format=esm --outdir=dist && ls -la server/_core/build-info.json && cp server/_core/build-info.json dist/build-info.json && ls -la dist/build-info.json",
+    "build": "esbuild server/_core/index.ts --platform=node --packages=external --bundle --format=esm --outdir=dist && mkdir -p dist && cp -v server/_core/build-info.json dist/build-info.json && ls -la dist && cat dist/build-info.json",
     "start": "NODE_ENV=production node dist/index.js",
     "check": "echo 'TypeScript check disabled for performance'",
     "lint": "expo lint",
