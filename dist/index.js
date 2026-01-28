@@ -7041,6 +7041,16 @@ async function startServer() {
       ...schemaCheck && { schema: schemaCheck }
     });
   });
+  app.get("/api/debug/env", (_req, res) => {
+    res.json({
+      RAILWAY_GIT_COMMIT_SHA: process.env.RAILWAY_GIT_COMMIT_SHA,
+      APP_VERSION: process.env.APP_VERSION,
+      GIT_SHA: process.env.GIT_SHA,
+      NODE_ENV: process.env.NODE_ENV,
+      RAILWAY_ENVIRONMENT: process.env.RAILWAY_ENVIRONMENT,
+      RAILWAY_SERVICE_NAME: process.env.RAILWAY_SERVICE_NAME
+    });
+  });
   app.get("/api/openapi.json", (_req, res) => {
     res.json(getOpenApiSpec());
   });
