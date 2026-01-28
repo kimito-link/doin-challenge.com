@@ -4310,7 +4310,7 @@ var t = initTRPC.context().create({
   }
 });
 var errorLoggingMiddleware = t.middleware(async (opts) => {
-  const { next, path, type } = opts;
+  const { next, path: path2, type } = opts;
   try {
     return await next();
   } catch (error) {
@@ -4318,7 +4318,7 @@ var errorLoggingMiddleware = t.middleware(async (opts) => {
       throw error;
     }
     if (error instanceof Error) {
-      captureTrpcError(error, { path, type });
+      captureTrpcError(error, { path: path2, type });
     }
     throw error;
   }
@@ -7268,10 +7268,10 @@ async function startServer() {
     };
     try {
       const fs = await import("fs/promises");
-      const path = await import("path");
+      const path2 = await import("path");
       const url = await import("url");
-      const __dirname = path.dirname(url.fileURLToPath(import.meta.url));
-      const buildInfoPath = path.join(__dirname, "build-info.json");
+      const __dirname2 = path2.dirname(url.fileURLToPath(import.meta.url));
+      const buildInfoPath = path2.join(__dirname2, "build-info.json");
       const buildInfoContent = await fs.readFile(buildInfoPath, "utf-8");
       const parsedBuildInfo = JSON.parse(buildInfoContent);
       buildInfo = {
@@ -7281,6 +7281,9 @@ async function startServer() {
         builtAt: parsedBuildInfo.builtAt || "unknown"
       };
     } catch (err) {
+      console.error("[health] Failed to read build-info.json:", err instanceof Error ? err.message : String(err));
+      console.error("[health] __dirname:", __dirname);
+      console.error("[health] buildInfoPath:", path.join(__dirname, "build-info.json"));
       buildInfo = {
         version: process.env.APP_VERSION || "unknown",
         commitSha: process.env.COMMIT_SHA || process.env.GIT_SHA || "unknown",

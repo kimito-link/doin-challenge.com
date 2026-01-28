@@ -133,6 +133,9 @@ async function startServer() {
       };
     } catch (err) {
       // build-info.jsonが見つからない場合は環境変数から取得
+      console.error("[health] Failed to read build-info.json:", err instanceof Error ? err.message : String(err));
+      console.error("[health] __dirname:", __dirname);
+      console.error("[health] buildInfoPath:", path.join(__dirname, "build-info.json"));
       buildInfo = {
         version: process.env.APP_VERSION || "unknown",
         commitSha: process.env.COMMIT_SHA || process.env.GIT_SHA || "unknown",
