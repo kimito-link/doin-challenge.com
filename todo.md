@@ -48,3 +48,33 @@
 - [x] Gitワークフロー設定のコピー
 - [x] QUICK_START.mdの作成（適用手順）
 - [x] ZIPファイルの作成
+
+## Twitter Login Optimization (v6.148)
+
+### Twitterログインフローの最適化
+- [x] 現在のTwitterログインフローを調査
+- [x] ログイン前の説明画面やモーダルを確認
+- [ ] 必要に応じて説明画面やモーダルを追加・最適化
+- [ ] チェックポイント保存
+
+## Deploy Latest Version (v6.148)
+
+### 最新版のデプロイ
+- [x] デプロイ設定を確認（GitHub Actions、Vercel、Railway）
+- [x] GitHubにプッシュして自動デプロイをトリガー
+- [ ] デプロイ状況を確認
+
+## Fix Deployment and Twitter Login Issues (v6.149)
+
+### デプロイ問題の解決
+- [x] GitHub Actionsのワークフロー実行状況を確認
+- [x] Vercelのデプロイ状況を確認
+- [x] Railwayのデプロイ状況を確認
+- [x] デプロイ失敗の原因を特定（APP_VERSIONが古い）
+- [x] デプロイ設定を修正（APP_VERSIONを6.147に更新、キャラ画像修正）
+
+### Twitterログイン問題の解決
+- [ ] `/api/debug/env` エンドポイントの404エラーを調査
+- [ ] Twitter OAuth設定を確認
+- [ ] ログイン機能をテスト
+- [ ] 修正をデプロイ

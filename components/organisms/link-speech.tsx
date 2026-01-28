@@ -18,7 +18,7 @@ interface LinkSpeechProps {
 
 export function LinkSpeech({ 
   message, 
-  characterImage = require("@/assets/images/characters/rinku.png"),
+  characterImage = require("@/assets/images/characters/link/link-yukkuri-smile-mouth-open.png"),
   backgroundColor = "rgba(255, 255, 255, 0.95)",
   borderColor = "rgba(236, 72, 153, 0.8)",
 }: LinkSpeechProps) {
