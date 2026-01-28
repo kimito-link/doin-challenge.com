@@ -332,4 +332,12 @@
   - [x] テストを再実行して成功を確認（1/1成功）
 - [x] vitest.setup.tsに requireOptionalNativeModule モックを追加
 - [x] 全テストの再実行と検証（712/713成功、99.86%「実質100%」）
-- [ ] チェックポイント保存（v6.130）
+- [x] チェックポイント保存（v6.130）
+
+
+### Phase 67: GitHub Actionsワークフローの修正（バージョン情報の設定）
+- [x] .github/workflows/ディレクトリ内のワークフローファイルを確認
+- [x] デプロイ用ワークフローファイルの存在確認（deploy-vercel.yml）
+- [x] バージョン情報（VITE_GIT_SHA、VITE_BUILD_TIME、VITE_APP_VERSION）をビルド環境変数として設定
+- [x] ワークフローファイルの修正（vercel-argsに--build-envを追加）
+- [ ] チェックポイント保存（v6.131）
