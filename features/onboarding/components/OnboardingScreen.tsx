@@ -16,6 +16,8 @@ import { useOnboarding } from "../hooks/useOnboarding";
 import { ONBOARDING_SLIDES } from "../constants";
 import { OnboardingSlide } from "./OnboardingSlide";
 import { OnboardingNavigation } from "./OnboardingNavigation";
+import { APP_VERSION } from "@/constants/version";
+import { Text } from "react-native";
 
 interface OnboardingScreenProps {
   onComplete: () => void;
@@ -118,6 +120,11 @@ export function OnboardingScreen({ onComplete }: OnboardingScreenProps) {
         onComplete={handleComplete}
         onDotPress={goToSlide}
       />
+      
+      {/* バージョン表示 */}
+      <View style={styles.versionContainer}>
+        <Text style={styles.versionText}>v{APP_VERSION}</Text>
+      </View>
     </View>
   );
 }
@@ -128,5 +135,19 @@ const styles = StyleSheet.create({
   },
   slideContainer: {
     flex: 1,
+  },
+  versionContainer: {
+    position: "absolute",
+    top: Platform.OS === "ios" ? 50 : 20,
+    right: 20,
+    backgroundColor: "rgba(255, 255, 255, 0.1)",
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    borderRadius: 12,
+  },
+  versionText: {
+    color: "rgba(255, 255, 255, 0.6)",
+    fontSize: 12,
+    fontWeight: "600",
   },
 });
