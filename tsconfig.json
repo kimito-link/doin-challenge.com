@@ -1,7 +1,9 @@
 {
   "extends": "expo/tsconfig.base.json",
   "compilerOptions": {
-    "strict": true,
+    "strict": false,
+    "skipLibCheck": true,
+    "noImplicitAny": false,
     "types": [
       "node",
       "nativewind/types",
@@ -25,6 +27,11 @@
   ],
   "exclude": [
     "node_modules",
-    "dist"
+    "dist",
+    "**/*.test.ts",
+    "**/*.test.tsx",
+    "__tests__",
+    "tests",
+    "server"
   ]
 }

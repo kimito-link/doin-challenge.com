@@ -56,9 +56,6 @@ export function initSentry() {
       
       return event;
     },
-    
-    // ユーザー情報の自動収集を無効化（プライバシー保護）
-    autoSessionTracking: false,
   });
   
   console.log("[Sentry] Initialized with environment:", SENTRY_ENVIRONMENT);

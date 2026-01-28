@@ -63,7 +63,6 @@ function generateSlug(title) {
 var _db;
 var init_connection = __esm({
   "server/db/connection.ts"() {
-    "use strict";
     _db = null;
   }
 });
@@ -73,7 +72,6 @@ import { mysqlTable, int, varchar, text, timestamp, mysqlEnum, boolean } from "d
 var users, twitterFollowStatus, oauthPkceData, twitterUserCache;
 var init_users = __esm({
   "drizzle/schema/users.ts"() {
-    "use strict";
     users = mysqlTable("users", {
       id: int("id").autoincrement().primaryKey(),
       openId: varchar("openId", { length: 64 }).notNull().unique(),
@@ -128,7 +126,6 @@ import { mysqlTable as mysqlTable2, int as int2, varchar as varchar2, text as te
 var challenges, events, categories, challengeTemplates, challengeStats, challengeMembers;
 var init_challenges = __esm({
   "drizzle/schema/challenges.ts"() {
-    "use strict";
     challenges = mysqlTable2("challenges", {
       id: int2("id").autoincrement().primaryKey(),
       // ホスト（主催者）の情報
@@ -239,7 +236,6 @@ import { mysqlTable as mysqlTable3, int as int3, varchar as varchar3, text as te
 var participations, participationCompanions, messageLikes;
 var init_participations = __esm({
   "drizzle/schema/participations.ts"() {
-    "use strict";
     participations = mysqlTable3("participations", {
       id: int3("id").autoincrement().primaryKey(),
       challengeId: int3("challengeId").notNull(),
@@ -288,7 +284,6 @@ import { mysqlTable as mysqlTable4, int as int4, varchar as varchar4, text as te
 var notificationSettings, notifications, reminders;
 var init_notifications = __esm({
   "drizzle/schema/notifications.ts"() {
-    "use strict";
     notificationSettings = mysqlTable4("notification_settings", {
       id: int4("id").autoincrement().primaryKey(),
       userId: int4("userId").notNull(),
@@ -331,7 +326,6 @@ import { mysqlTable as mysqlTable5, int as int5, varchar as varchar5, text as te
 var cheers, follows, directMessages, searchHistory, favoriteArtists;
 var init_social = __esm({
   "drizzle/schema/social.ts"() {
-    "use strict";
     cheers = mysqlTable5("cheers", {
       id: int5("id").autoincrement().primaryKey(),
       fromUserId: int5("fromUserId").notNull(),
@@ -394,7 +388,6 @@ import { mysqlTable as mysqlTable6, int as int6, varchar as varchar6, text as te
 var badges, userBadges, achievements, userAchievements, achievementPages, pickedComments;
 var init_gamification = __esm({
   "drizzle/schema/gamification.ts"() {
-    "use strict";
     badges = mysqlTable6("badges", {
       id: int6("id").autoincrement().primaryKey(),
       name: varchar6("name", { length: 100 }).notNull(),
@@ -485,7 +478,6 @@ import { mysqlTable as mysqlTable7, int as int7, varchar as varchar7, text as te
 var invitations, invitationUses, collaborators, collaboratorInvitations;
 var init_invitations = __esm({
   "drizzle/schema/invitations.ts"() {
-    "use strict";
     invitations = mysqlTable7("invitations", {
       id: int7("id").autoincrement().primaryKey(),
       challengeId: int7("challengeId").notNull(),
@@ -550,7 +542,6 @@ import { mysqlTable as mysqlTable8, int as int8, varchar as varchar8, text as te
 var ticketTransfers, ticketWaitlist;
 var init_tickets = __esm({
   "drizzle/schema/tickets.ts"() {
-    "use strict";
     ticketTransfers = mysqlTable8("ticket_transfers", {
       id: int8("id").autoincrement().primaryKey(),
       challengeId: int8("challengeId").notNull(),
@@ -586,7 +577,6 @@ import { mysqlTable as mysqlTable9, int as int9, varchar as varchar9, text as te
 var auditLogs, AUDIT_ACTIONS, ENTITY_TYPES;
 var init_audit = __esm({
   "drizzle/schema/audit.ts"() {
-    "use strict";
     auditLogs = mysqlTable9("audit_logs", {
       id: int9("id").autoincrement().primaryKey(),
       // リクエスト追跡用ID（tRPC middlewareで生成）
@@ -650,7 +640,6 @@ var init_audit = __esm({
 // drizzle/schema/index.ts
 var init_schema = __esm({
   "drizzle/schema/index.ts"() {
-    "use strict";
     init_users();
     init_challenges();
     init_participations();
@@ -705,7 +694,6 @@ __export(schema_exports, {
 });
 var init_schema2 = __esm({
   "drizzle/schema.ts"() {
-    "use strict";
     init_schema();
   }
 });
@@ -714,7 +702,6 @@ var init_schema2 = __esm({
 var ENV;
 var init_env = __esm({
   "server/_core/env.ts"() {
-    "use strict";
     ENV = {
       appId: process.env.VITE_APP_ID ?? "",
       cookieSecret: process.env.JWT_SECRET ?? "",
@@ -833,7 +820,6 @@ async function getUserByTwitterId(twitterId) {
 }
 var init_user_db = __esm({
   "server/db/user-db.ts"() {
-    "use strict";
     init_connection();
     init_schema2();
     init_env();
@@ -985,7 +971,6 @@ async function syncChallengeHostGender() {
 var events2, eventsCache, EVENTS_CACHE_TTL;
 var init_challenge_db = __esm({
   "server/db/challenge-db.ts"() {
-    "use strict";
     init_connection();
     init_connection();
     init_schema2();
@@ -1356,7 +1341,6 @@ async function hasUserLikedMessage(participationId, userId) {
 }
 var init_participation_db = __esm({
   "server/db/participation-db.ts"() {
-    "use strict";
     init_connection();
     init_schema2();
     init_challenge_db();
@@ -1490,7 +1474,6 @@ function sendMessageToUser(userId, messageData) {
 var clients;
 var init_websocket = __esm({
   "server/websocket.ts"() {
-    "use strict";
     init_env();
     clients = /* @__PURE__ */ new Map();
   }
@@ -1572,7 +1555,6 @@ async function markAllNotificationsAsRead(userId) {
 }
 var init_notification_db = __esm({
   "server/db/notification-db.ts"() {
-    "use strict";
     init_connection();
     init_schema2();
   }
@@ -1670,7 +1652,6 @@ async function awardFollowerBadge(userId) {
 }
 var init_badge_db = __esm({
   "server/db/badge-db.ts"() {
-    "use strict";
     init_connection();
     init_schema2();
   }
@@ -1777,7 +1758,6 @@ async function getPublicAchievementPages() {
 }
 var init_social_db = __esm({
   "server/db/social-db.ts"() {
-    "use strict";
     init_connection();
     init_schema2();
   }
@@ -1926,7 +1906,6 @@ async function incrementTemplateUseCount(id) {
 }
 var init_messaging_db = __esm({
   "server/db/messaging-db.ts"() {
-    "use strict";
     init_connection();
     init_schema2();
   }
@@ -2012,7 +1991,6 @@ async function updateFollowNotification(followerId, followeeId, notify) {
 }
 var init_follow_db = __esm({
   "server/db/follow-db.ts"() {
-    "use strict";
     init_connection();
     init_schema2();
     init_badge_db();
@@ -2082,7 +2060,6 @@ async function getUserRankingPosition(userId, period = "all") {
 }
 var init_ranking_db = __esm({
   "server/db/ranking-db.ts"() {
-    "use strict";
     init_connection();
     init_schema2();
   }
@@ -2138,7 +2115,6 @@ async function deleteCategory(id) {
 var categoriesCache, CATEGORIES_CACHE_TTL;
 var init_category_db = __esm({
   "server/db/category-db.ts"() {
-    "use strict";
     init_connection();
     init_schema2();
     categoriesCache = { data: null, timestamp: 0 };
@@ -2249,7 +2225,6 @@ async function getInvitationStats(invitationId) {
 }
 var init_invitation_db = __esm({
   "server/db/invitation-db.ts"() {
-    "use strict";
     init_connection();
     init_schema2();
   }
@@ -2363,7 +2338,6 @@ async function getRecommendedHosts(userId, categoryId, limit = 5) {
 }
 var init_profile_db = __esm({
   "server/db/profile-db.ts"() {
-    "use strict";
     init_connection();
     init_schema2();
   }
@@ -2414,7 +2388,6 @@ async function getCompanionInviteStats(userId) {
 }
 var init_companion_db = __esm({
   "server/db/companion-db.ts"() {
-    "use strict";
     init_connection();
     init_schema2();
   }
@@ -2589,7 +2562,6 @@ async function refreshAllChallengeSummaries() {
 }
 var init_ai_db = __esm({
   "server/db/ai-db.ts"() {
-    "use strict";
     init_connection();
     init_schema2();
   }
@@ -2702,7 +2674,6 @@ async function cancelParticipation(participationId, userId) {
 }
 var init_ticket_db = __esm({
   "server/db/ticket-db.ts"() {
-    "use strict";
     init_connection();
     init_schema2();
   }
@@ -2921,7 +2892,6 @@ async function compareSchemas() {
 }
 var init_stats_db = __esm({
   "server/db/stats-db.ts"() {
-    "use strict";
     init_connection();
     init_schema2();
     init_challenge_db();
@@ -3007,7 +2977,6 @@ async function getUserAuditHistory(actorId, limit = 100) {
 }
 var init_audit_db = __esm({
   "server/db/audit-db.ts"() {
-    "use strict";
     init_connection();
     init_schema2();
   }
@@ -3016,7 +2985,6 @@ var init_audit_db = __esm({
 // server/db/index.ts
 var init_db = __esm({
   "server/db/index.ts"() {
-    "use strict";
     init_connection();
     init_user_db();
     init_challenge_db();
@@ -3226,7 +3194,6 @@ __export(db_exports, {
 });
 var init_db2 = __esm({
   "server/db.ts"() {
-    "use strict";
     init_db();
     init_schema2();
   }
