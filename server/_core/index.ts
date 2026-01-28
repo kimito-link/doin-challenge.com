@@ -166,6 +166,18 @@ async function startServer() {
     });
   });
 
+  // デバッグエンドポイント: 環境変数の確認
+  app.get("/api/debug/env", (_req, res) => {
+    res.json({
+      RAILWAY_GIT_COMMIT_SHA: process.env.RAILWAY_GIT_COMMIT_SHA,
+      APP_VERSION: process.env.APP_VERSION,
+      GIT_SHA: process.env.GIT_SHA,
+      NODE_ENV: process.env.NODE_ENV,
+      RAILWAY_ENVIRONMENT: process.env.RAILWAY_ENVIRONMENT,
+      RAILWAY_SERVICE_NAME: process.env.RAILWAY_SERVICE_NAME,
+    });
+  });
+
   // API使用量ダッシュボード用エンドポイント
   // OpenAPI仕様書エンドポイント
   app.get("/api/openapi.json", (_req, res) => {
