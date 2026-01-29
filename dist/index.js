@@ -3414,7 +3414,12 @@ function registerOAuthRoutes(app) {
       const host = req.get("host") || "";
       const protocol = req.get("x-forwarded-proto") || req.protocol;
       const forceHttps = protocol === "https" || host.includes("manus.computer") || host.includes("manus.im");
-      const frontendHost = host.replace(/^3000-/, "8081-");
+      let frontendHost;
+      if (host.includes("doin-challenge.com") || host.includes("railway.app")) {
+        frontendHost = host;
+      } else {
+        frontendHost = host.replace(/^3000-/, "8081-");
+      }
       const frontendUrl = process.env.EXPO_WEB_PREVIEW_URL || process.env.EXPO_PACKAGER_PROXY_URL || (host ? `${forceHttps ? "https" : protocol}://${frontendHost}` : "http://localhost:8081");
       res.redirect(302, frontendUrl);
     } catch (error) {

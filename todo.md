@@ -94,4 +94,15 @@
 - [x] Vercelのビルドログを確認
 - [x] ビルド設定を修正（vercel.jsonのキャッシュ設定を短縮）
 - [x] オンボーディング画面にバージョン表示を追加
-- [ ] 再デプロイ
+- [x] 再デプロイ
+
+## Fix Vercel Deployment and Google Login Issues (v6.152)
+
+### Vercelのデプロイ問題とGoogleログインの白い画面問題を修正
+- [x] Vercelのデプロイ状況を確認（なぜ古いコミットが表示されているか）
+- [x] Googleログインの白い画面問題を調査
+- [x] OAuth設定を確認
+- [x] リダイレクトURIを確認
+- [x] 修正を実装（server/_core/oauth.tsのリダイレクトURLロジックを修正）
+- [ ] チェックポイント保存
+- [ ] デプロイして動作確認
