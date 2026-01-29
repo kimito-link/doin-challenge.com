@@ -25,6 +25,7 @@ export const characterDetails: Record<string, CharacterInfo> = {
   link: {
     id: "link",
     name: "君斗りんく",
+    gender: "female",
     image: characterImages.linkYukkuri,
     description: "動員ちゃれんじのメインキャラクター。みんなの応援を集めて、推しの夢を叶えるお手伝いをしています。",
     personality: "明るく元気で、いつもポジティブ。みんなを笑顔にするのが大好き。困っている人を見ると放っておけない性格。",
@@ -35,6 +36,7 @@ export const characterDetails: Record<string, CharacterInfo> = {
   konta: {
     id: "konta",
     name: "こん太",
+    gender: "male",
     image: characterImages.kontaYukkuri,
     description: "りんくの相棒のキツネ。友達を誘って盛り上げるのが得意。一人の参加が大きな波になることを知っている。",
     personality: "ちょっとイタズラ好きだけど、根は優しい。仲間思いで、みんなを繋げる架け橋になりたいと思っている。",
@@ -44,7 +46,8 @@ export const characterDetails: Record<string, CharacterInfo> = {
   },
   tanune: {
     id: "tanune",
-    name: "たぬね",
+    name: "たぬ姉",
+    gender: "female",
     image: characterImages.tanuneYukkuri,
     description: "りんくの仲間のタヌキ。チャレンジを作って目標達成を目指すのが好き。計画を立てるのが得意。",
     personality: "のんびり屋さんに見えて、実は計画的。目標を立てて達成するのが大好き。みんなの頑張りを応援している。",

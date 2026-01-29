@@ -36,9 +36,12 @@ export function useOnboarding(): UseOnboardingReturn {
     const checkOnboardingStatus = async () => {
       try {
         const completed = await AsyncStorage.getItem(ONBOARDING_STORAGE_KEY);
+        console.log("[Onboarding] Stored value:", completed);
+        // 明示的に"true"が保存されている場合のみ完了とみなす
         setHasCompletedOnboarding(completed === "true");
       } catch (error) {
         console.error("Failed to check onboarding status:", error);
+        // エラー時はオンボーディングを表示
         setHasCompletedOnboarding(false);
       }
     };

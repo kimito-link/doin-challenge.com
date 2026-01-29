@@ -14,6 +14,8 @@ export interface CharacterInfo {
   id: string;
   /** キャラクター名 */
   name: string;
+  /** キャラクターの性別 */
+  gender?: "male" | "female";
   /** キャラクター画像 */
   image: ImageSourcePropType;
   /** キャラクターの説明 */
@@ -95,6 +97,24 @@ export function CharacterDetailModal({
               contentFit="cover"
             />
           </View>
+          {/* 性別表示 */}
+          {character.gender && (
+            <View style={{
+              marginTop: 8,
+              paddingHorizontal: 12,
+              paddingVertical: 4,
+              borderRadius: 12,
+              backgroundColor: character.gender === "male" ? "#3B82F6" : "#EC4899",
+            }}>
+              <Text style={{
+                color: "#FFFFFF",
+                fontSize: 12,
+                fontWeight: "600",
+              }}>
+                {character.gender === "male" ? "♂ 男性" : "♀ 女性"}
+              </Text>
+            </View>
+          )}
         </View>
 
         {/* キャッチフレーズ */}

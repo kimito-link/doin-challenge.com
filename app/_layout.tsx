@@ -6,7 +6,7 @@ import { StatusBar } from "expo-status-bar";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
 import "react-native-reanimated";
-import { Platform } from "react-native";
+import { Platform, View, ActivityIndicator } from "react-native";
 import "@/lib/_core/nativewind-pressable";
 import { ThemeProvider } from "@/lib/theme-provider";
 import { LoginSuccessProvider } from "@/lib/login-success-context";
@@ -92,9 +92,13 @@ function TutorialUI() {
 function OnboardingWrapper({ children }: { children: React.ReactNode }) {
   const { hasCompletedOnboarding, completeOnboarding } = useOnboarding();
   
-  // オンボーディング状態が確認中の場合は何も表示しない
+  // オンボーディング状態が確認中の場合はローディング画面を表示
   if (hasCompletedOnboarding === null) {
-    return null;
+    return (
+      <View style={{ flex: 1, backgroundColor: "#0a1628", justifyContent: "center", alignItems: "center" }}>
+        <ActivityIndicator size="large" color="#ffffff" />
+      </View>
+    );
   }
   
   // オンボーディング未完了の場合はオンボーディング画面を表示
