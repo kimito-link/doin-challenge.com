@@ -39,6 +39,7 @@ import { NetworkToast } from "@/components/organisms/network-toast";
 import { ExperienceProvider } from "@/lib/experience-context";
 import { ExperienceOverlay } from "@/components/organisms/experience-overlay";
 import { OnboardingScreen, useOnboarding } from "@/features/onboarding";
+import { initSentry } from "@/lib/sentry";
 
 const DEFAULT_WEB_INSETS: EdgeInsets = { top: 0, right: 0, bottom: 0, left: 0 };
 const DEFAULT_WEB_FRAME: Rect = { x: 0, y: 0, width: 0, height: 0 };
@@ -114,6 +115,8 @@ export default function RootLayout() {
 
   // Initialize Manus runtime for cookie injection from parent container
   useEffect(() => {
+    // Initialize Sentry for error tracking
+    initSentry();
     initManusRuntime();
     // 重要な画像をプリロード（キャラクター等）
     preloadCriticalImages();

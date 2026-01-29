@@ -7004,6 +7004,34 @@ function getOpenApiSpec() {
 // server/_core/index.ts
 init_websocket();
 import swaggerUi from "swagger-ui-express";
+
+// server/_core/sentry.ts
+import * as Sentry from "@sentry/node";
+var SENTRY_DSN = process.env.SENTRY_DSN;
+function initSentry() {
+  if (!SENTRY_DSN) {
+    console.warn("Sentry DSN not configured. Error tracking is disabled.");
+    return;
+  }
+  Sentry.init({
+    dsn: SENTRY_DSN,
+    environment: process.env.NODE_ENV || "development",
+    // Set tracesSampleRate to 1.0 to capture 100% of transactions for performance monitoring.
+    // We recommend adjusting this value in production.
+    tracesSampleRate: process.env.NODE_ENV === "production" ? 0.1 : 1,
+    // Set profilesSampleRate to 1.0 to profile every transaction.
+    profilesSampleRate: process.env.NODE_ENV === "production" ? 0.1 : 1,
+    beforeSend(event) {
+      if (process.env.NODE_ENV === "development") {
+        console.log("Sentry event (dev mode):", event);
+      }
+      return event;
+    }
+  });
+  console.log("Sentry initialized for backend");
+}
+
+// server/_core/index.ts
 function isPortAvailable(port) {
   return new Promise((resolve) => {
     const server = net.createServer();
@@ -7022,6 +7050,7 @@ async function findAvailablePort(startPort = 3e3) {
   throw new Error(`No available port found starting from ${startPort}`);
 }
 async function startServer() {
+  initSentry();
   const app = express();
   const server = createServer(app);
   app.use((req, res, next) => {
@@ -7242,6 +7271,9 @@ async function startServer() {
       createContext
     })
   );
+  if (process.env.SENTRY_DSN) {
+    app.use(Sentry.expressErrorHandler());
+  }
   const preferredPort = parseInt(process.env.PORT || "3000");
   const port = await findAvailablePort(preferredPort);
   if (port !== preferredPort) {

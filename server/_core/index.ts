@@ -13,6 +13,7 @@ import { checkSchemaIntegrity, notifySchemaIssue, type SchemaCheckResult } from 
 import { getOpenApiSpec } from "../openapi";
 import swaggerUi from "swagger-ui-express";
 import { initWebSocketServer } from "../websocket";
+import { initSentry, Sentry } from "./sentry";
 
 function isPortAvailable(port: number): Promise<boolean> {
   return new Promise((resolve) => {
@@ -34,8 +35,14 @@ async function findAvailablePort(startPort: number = 3000): Promise<number> {
 }
 
 async function startServer() {
+  // Initialize Sentry for error tracking
+  initSentry();
+  
   const app = express();
   const server = createServer(app);
+  
+  // Sentry request handler must be the first middleware (no-op for now)
+  // Error handler will be added at the end
 
   // Enable CORS for all routes - reflect the request origin to support credentials
   app.use((req, res, next) => {
@@ -317,6 +324,11 @@ async function startServer() {
       createContext,
     }),
   );
+
+  // Sentry error handler must be after all controllers and before other error middleware
+  if (process.env.SENTRY_DSN) {
+    app.use(Sentry.expressErrorHandler());
+  }
 
   const preferredPort = parseInt(process.env.PORT || "3000");
   const port = await findAvailablePort(preferredPort);
