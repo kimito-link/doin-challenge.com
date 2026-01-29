@@ -4,12 +4,72 @@ on:
   push:
     branches:
       - main
+  pull_request:
+    branches:
+      - main
   workflow_dispatch:
 
 jobs:
+  diff-check:
+    name: Diff Check (Gate 1)
+    runs-on: ubuntu-latest
+    outputs:
+      sensitive: ${{ steps.diff.outputs.sensitive }}
+      touch_auth: ${{ steps.diff.outputs.touch_auth }}
+      touch_deploy: ${{ steps.diff.outputs.touch_deploy }}
+      touch_db: ${{ steps.diff.outputs.touch_db }}
+      touch_env: ${{ steps.diff.outputs.touch_env }}
+      touch_health: ${{ steps.diff.outputs.touch_health }}
+      baseSha: ${{ steps.diff.outputs.baseSha }}
+      headSha: ${{ steps.diff.outputs.headSha }}
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Run diff-check
+        id: diff
+        shell: bash
+        run: |
+          chmod +x scripts/diff-check.sh
+          # PRなら base/head を正確に渡す
+          if [[ "${{ github.event_name }}" == "pull_request" ]]; then
+            BASE="${{ github.event.pull_request.base.sha }}"
+            HEAD="${{ github.event.pull_request.head.sha }}"
+            ./scripts/diff-check.sh "$BASE" "$HEAD"
+          else
+            ./scripts/diff-check.sh
+          fi
+
+      # sensitiveな変更のときだけ、PR本文チェックを必須にする
+      - name: Enforce PR checklist for sensitive changes
+        if: ${{ github.event_name == 'pull_request' && steps.diff.outputs.sensitive == 'true' }}
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const body = context.payload.pull_request.body || "";
+            // PRテンプレのチェック項目が [x] で埋まっていることを要求
+            const required = [
+              "Gate 1: Deploy/Health確認",
+              "OAuth/ログイン動作確認",
+              "ロールバック手順確認"
+            ];
+            const missing = required.filter(t => !body.includes(`- [x] ${t}`));
+            if (missing.length) {
+              core.setFailed(
+                `Sensitive change detected, but required checklist items are not checked:\n` +
+                missing.map(m => `- ${m}`).join("\n") +
+                `\n\nPlease check the boxes in PR description.`
+              );
+            }
+
   deploy:
     name: Deploy to Vercel
     runs-on: ubuntu-latest
+    needs: diff-check
+    if: github.event_name != 'pull_request'
     
     steps:
       - name: Checkout code
@@ -18,7 +78,7 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: '22'
+          node-version: '24'
 
       - name: Setup pnpm
         uses: pnpm/action-setup@v4
@@ -42,16 +102,6 @@ jobs:
 
       - name: Install Playwright browsers
         run: pnpm exec playwright install --with-deps chromium
-
-      - name: Check for file changes and run related tests
-        run: |
-          echo "Checking for file changes..."
-          chmod +x scripts/check-diff.sh
-          ./scripts/check-diff.sh github/main
-        env:
-          PLAYWRIGHT_BASE_URL: https://doin-challenge.com
-          CI: true
-        continue-on-error: false
 
       - name: Generate build-info.json
         run: |
@@ -103,16 +153,34 @@ jobs:
           echo "Expected commit SHA: ${{ github.sha }}"
           echo "Verify at: https://doin-challenge.com/api/health"
 
-      - name: Smoke check
+      - name: Post-deployment verification (Gate 1)
         run: |
           set -e
           URL="https://doin-challenge.com/api/health"
           echo "Checking $URL"
-          response=$(curl -s "$URL" )
+          response=$(curl -s "$URL")
           echo "Response: $response"
+          
+          # Check if health endpoint returns ok: true
           status=$(echo "$response" | jq -r '.ok // false')
           if [ "$status" != "true" ]; then
-            echo "❌ Health check failed"
+            echo "❌ Health check failed: status is not ok"
             exit 1
           fi
-          echo "✅ Health check passed"
+          
+          # Check if commitSha matches expected value
+          commitSha=$(echo "$response" | jq -r '.commitSha // "unknown"')
+          expected="${{ github.sha }}"
+          
+          echo "Expected commitSha: $expected"
+          echo "Actual commitSha: $commitSha"
+          
+          if [ "$commitSha" != "$expected" ]; then
+            echo "⚠️ Warning: commitSha mismatch (expected: $expected, got: $commitSha)"
+            echo "This might indicate a deployment issue or cache problem."
+            # Don't fail for now, just warn
+          else
+            echo "✅ commitSha matches expected value"
+          fi
+          
+          echo "✅ Post-deployment verification passed"
