@@ -2306,9 +2306,9 @@ async function refreshChallengeSummary(challengeId) {
     )).orderBy(desc(participations.createdAt)).limit(5);
     let hotRegion;
     let maxCount = 0;
-    Object.entries(regionSummary).forEach(([region, count2]) => {
-      if (count2 > maxCount) {
-        maxCount = count2;
+    Object.entries(regionSummary).forEach(([region, count3]) => {
+      if (count3 > maxCount) {
+        maxCount = count3;
         hotRegion = region;
       }
     });
@@ -5855,8 +5855,8 @@ var devRouter = router({
       }
     ];
     const createdIds = [];
-    const count2 = Math.min(input.count, sampleChallenges.length);
-    for (let i = 0; i < count2; i++) {
+    const count3 = Math.min(input.count, sampleChallenges.length);
+    for (let i = 0; i < count3; i++) {
       const sample = sampleChallenges[i];
       const id = await createEvent({
         ...sample,
@@ -6161,6 +6161,132 @@ var adminRouter = router({
   participations: adminParticipationsRouter
 });
 
+// server/routers/stats.ts
+init_connection();
+init_schema2();
+import { eq as eq4, and as and3, gte as gte2, desc as desc3, sql as sql2, count as count2 } from "drizzle-orm";
+var statsRouter = router({
+  /**
+   * ユーザー統計を取得
+   */
+  getUserStats: protectedProcedure.query(async ({ ctx }) => {
+    const db = await getDb();
+    if (!db) throw new Error("\u30C7\u30FC\u30BF\u30D9\u30FC\u30B9\u306B\u63A5\u7D9A\u3067\u304D\u307E\u305B\u3093");
+    const userId = ctx.user.id;
+    const totalParticipations = await db.select({ count: count2() }).from(participations).where(eq4(participations.userId, userId));
+    const completedParticipations = await db.select({ count: count2() }).from(participations).where(eq4(participations.userId, userId));
+    const total = totalParticipations[0]?.count || 0;
+    const completed = completedParticipations[0]?.count || 0;
+    const completionRate = total > 0 ? completed / total * 100 : 0;
+    const recentActivity = await db.select({
+      id: participations.id,
+      challengeId: participations.challengeId,
+      createdAt: participations.createdAt,
+      updatedAt: participations.updatedAt,
+      eventTitle: challenges.title
+    }).from(participations).leftJoin(challenges, eq4(participations.challengeId, challenges.id)).where(eq4(participations.userId, userId)).orderBy(desc3(participations.createdAt)).limit(10);
+    const sixMonthsAgo = /* @__PURE__ */ new Date();
+    sixMonthsAgo.setMonth(sixMonthsAgo.getMonth() - 6);
+    const monthlyStats = await db.select({
+      month: sql2`DATE_FORMAT(${participations.createdAt}, '%Y-%m')`,
+      count: count2()
+    }).from(participations).where(
+      and3(
+        eq4(participations.userId, userId),
+        gte2(participations.createdAt, sixMonthsAgo)
+      )
+    ).groupBy(sql2`DATE_FORMAT(${participations.createdAt}, '%Y-%m')`).orderBy(sql2`DATE_FORMAT(${participations.createdAt}, '%Y-%m')`);
+    const fourWeeksAgo = /* @__PURE__ */ new Date();
+    fourWeeksAgo.setDate(fourWeeksAgo.getDate() - 28);
+    const weeklyActivity = await db.select({
+      week: sql2`DATE_FORMAT(${participations.createdAt}, '%Y-W%u')`,
+      count: count2()
+    }).from(participations).where(
+      and3(
+        eq4(participations.userId, userId),
+        gte2(participations.createdAt, fourWeeksAgo)
+      )
+    ).groupBy(sql2`DATE_FORMAT(${participations.createdAt}, '%Y-W%u')`).orderBy(sql2`DATE_FORMAT(${participations.createdAt}, '%Y-W%u')`);
+    return {
+      summary: {
+        totalChallenges: total,
+        completedChallenges: completed,
+        completionRate: Math.round(completionRate * 100) / 100
+      },
+      recentActivity: recentActivity.map((activity) => ({
+        id: activity.id,
+        eventTitle: activity.eventTitle || "\u4E0D\u660E\u306A\u30A4\u30D9\u30F3\u30C8",
+        createdAt: activity.createdAt,
+        updatedAt: activity.updatedAt
+      })),
+      monthlyStats: monthlyStats.map((stat) => ({
+        month: stat.month,
+        count: stat.count
+      })),
+      weeklyActivity: weeklyActivity.map((activity) => ({
+        week: activity.week,
+        count: activity.count
+      }))
+    };
+  }),
+  /**
+   * 管理者統計を取得
+   */
+  getAdminStats: protectedProcedure.query(async () => {
+    const db = await getDb();
+    if (!db) throw new Error("\u30C7\u30FC\u30BF\u30D9\u30FC\u30B9\u306B\u63A5\u7D9A\u3067\u304D\u307E\u305B\u3093");
+    const totalUsers = await db.select({ count: count2() }).from(users);
+    const totalParticipations = await db.select({ count: count2() }).from(participations);
+    const completedParticipations = await db.select({ count: count2() }).from(participations);
+    const total = totalParticipations[0]?.count || 0;
+    const completed = completedParticipations[0]?.count || 0;
+    const averageCompletionRate = total > 0 ? completed / total * 100 : 0;
+    const topUsers = await db.select({
+      userId: participations.userId,
+      userName: users.name,
+      completedChallenges: count2()
+    }).from(participations).leftJoin(users, eq4(participations.userId, users.id)).groupBy(participations.userId, users.name).orderBy(desc3(count2())).limit(10);
+    const eventStats = await db.select({
+      challengeId: participations.challengeId,
+      eventTitle: challenges.title,
+      totalAttempts: count2(),
+      completedAttempts: count2()
+      // 全ての参加を達成とみなす
+    }).from(participations).leftJoin(challenges, eq4(participations.challengeId, challenges.id)).groupBy(participations.challengeId, challenges.title).orderBy(desc3(count2()));
+    const thirtyDaysAgo = /* @__PURE__ */ new Date();
+    thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
+    const dailyActivity = await db.select({
+      date: sql2`DATE(${participations.createdAt})`,
+      count: count2()
+    }).from(participations).where(gte2(participations.createdAt, thirtyDaysAgo)).groupBy(sql2`DATE(${participations.createdAt})`).orderBy(sql2`DATE(${participations.createdAt})`);
+    return {
+      summary: {
+        totalUsers: totalUsers[0]?.count || 0,
+        totalChallenges: total,
+        averageCompletionRate: Math.round(averageCompletionRate * 100) / 100
+      },
+      topUsers: topUsers.map((u) => ({
+        userId: u.userId,
+        name: u.userName || "\u4E0D\u660E\u306A\u30E6\u30FC\u30B6\u30FC",
+        completedChallenges: u.completedChallenges
+      })),
+      eventStats: eventStats.map((s) => ({
+        challengeId: s.challengeId,
+        eventTitle: s.eventTitle || "\u4E0D\u660E\u306A\u30A4\u30D9\u30F3\u30C8",
+        totalAttempts: s.totalAttempts,
+        completedAttempts: s.completedAttempts,
+        completionRate: s.totalAttempts > 0 ? Math.round(
+          s.completedAttempts / s.totalAttempts * 1e4
+        ) / 100 : 0
+      })),
+      dailyActivity: dailyActivity.map((a) => ({
+        date: a.date,
+        count: a.count
+      }))
+    };
+  })
+});
+
 // server/routers/index.ts
 var appRouter = router({
   auth: authRouter,
@@ -6187,7 +6313,8 @@ var appRouter = router({
   dev: devRouter,
   ticketTransfer: ticketTransferRouter,
   ticketWaitlist: ticketWaitlistRouter,
-  admin: adminRouter
+  admin: adminRouter,
+  stats: statsRouter
 });
 
 // server/_core/context.ts
@@ -6217,8 +6344,8 @@ var stats = {
 function getApiUsageStats() {
   return { ...stats };
 }
-function getRecentUsageHistory(count2 = 100) {
-  return usageHistory.slice(-count2);
+function getRecentUsageHistory(count3 = 100) {
+  return usageHistory.slice(-count3);
 }
 function getRateLimitWarningLevel(endpoint) {
   const endpointStats = stats.endpoints[endpoint];
@@ -6284,14 +6411,14 @@ function resolveError(errorId) {
   return false;
 }
 function resolveAllErrors() {
-  const count2 = errorLogs.filter((l) => !l.resolved).length;
+  const count3 = errorLogs.filter((l) => !l.resolved).length;
   errorLogs.forEach((log) => log.resolved = true);
-  return count2;
+  return count3;
 }
 function clearErrorLogs() {
-  const count2 = errorLogs.length;
+  const count3 = errorLogs.length;
   errorLogs = [];
-  return count2;
+  return count3;
 }
 function getErrorStats() {
   const oneHourAgo = new Date(Date.now() - 60 * 60 * 1e3);
@@ -7257,12 +7384,12 @@ async function startServer() {
     res.json({ success });
   });
   app.post("/api/admin/errors/resolve-all", (_req, res) => {
-    const count2 = resolveAllErrors();
-    res.json({ success: true, count: count2 });
+    const count3 = resolveAllErrors();
+    res.json({ success: true, count: count3 });
   });
   app.delete("/api/admin/errors", (_req, res) => {
-    const count2 = clearErrorLogs();
-    res.json({ success: true, count: count2 });
+    const count3 = clearErrorLogs();
+    res.json({ success: true, count: count3 });
   });
   app.use(
     "/api/trpc",

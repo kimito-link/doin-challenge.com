@@ -25,6 +25,7 @@ const MAPPING: Record<string, MaterialIconName> = {
   "magnifyingglass": "search",
   "person.crop.circle": "account-circle",
   "gearshape.fill": "settings",
+  "chart.bar.fill": "bar-chart",
 };
 
 type IconSymbolName = keyof typeof MAPPING;
