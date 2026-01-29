@@ -144,3 +144,15 @@
 - [x] すべてのE2Eテストを実行して動作確認（ファイルウォッチャー上限のため、GitHub Actionsで実行）
 - [ ] チェックポイント保存
 - [ ] GitHubにプッシュ
+
+## Fix Railway × esbuild Issue (v6.158)
+
+### Railway × esbuild問題を解決し、/api/healthでcommitShaを正しく返す
+- [x] build-info.json方式をENV方式に変更（既に実装済み）
+- [x] /api/healthをENV優先に修正（既に実装済み）
+- [x] GitHub ActionsでcommitShaをENVに設定
+- [x] Vercel環境変数設定方法を文書化（docs/vercel-env-setup.md）
+- [ ] Vercelで環境変数を設定（手動）
+- [ ] 再デプロイして/api/healthを確認
+- [ ] チェックポイント保存
+- [ ] GitHubにプッシュ

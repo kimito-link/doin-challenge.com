@@ -88,6 +88,11 @@ jobs:
           vercel-project-id: ${{ secrets.VERCEL_PROJECT_ID }}
           vercel-args: '--prod'
           working-directory: ./
+        env:
+          RAILWAY_GIT_COMMIT_SHA: ${{ github.sha }}
+          APP_VERSION: ${{ github.sha }}
+          GIT_SHA: ${{ github.sha }}
+          BUILT_AT: ${{ github.event.head_commit.timestamp }}
 
       - name: Wait for deployment to be live
         run: sleep 60
