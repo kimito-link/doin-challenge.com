@@ -43,6 +43,16 @@ jobs:
       - name: Install Playwright browsers
         run: pnpm exec playwright install --with-deps chromium
 
+      - name: Check for file changes and run related tests
+        run: |
+          echo "Checking for file changes..."
+          chmod +x scripts/check-diff.sh
+          ./scripts/check-diff.sh github/main
+        env:
+          PLAYWRIGHT_BASE_URL: https://doin-challenge.com
+          CI: true
+        continue-on-error: false
+
       - name: Generate build-info.json
         run: |
           mkdir -p server/_core
