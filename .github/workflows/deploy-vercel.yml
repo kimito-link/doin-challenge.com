@@ -40,6 +40,9 @@ jobs:
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
 
+      - name: Install Playwright browsers
+        run: pnpm exec playwright install --with-deps chromium
+
       - name: Generate build-info.json
         run: |
           mkdir -p server/_core
@@ -57,6 +60,15 @@ jobs:
           mkdir -p dist
           cp server/_core/build-info.json dist/build-info.json
           echo "Copied build-info.json to dist directory"
+
+      - name: Run E2E smoke tests (pre-deployment)
+        run: |
+          echo "Running E2E smoke tests before deployment..."
+          pnpm exec playwright test tests/e2e/public.smoke.spec.ts --reporter=list
+        env:
+          PLAYWRIGHT_BASE_URL: https://doin-challenge.com
+          CI: true
+        continue-on-error: false
 
       - name: Deploy to Vercel
         uses: amondnet/vercel-action@v25
