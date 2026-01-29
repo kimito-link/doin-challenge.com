@@ -36,7 +36,7 @@ export function UserInfoSection({ user }: UserInfoSectionProps) {
           description: user.description ?? undefined,
         }}
         showFollowers={true}
-        showDescription={false}
+        showDescription={true}
       />
     </View>
   );
