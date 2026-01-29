@@ -80,6 +80,21 @@ async function startServer() {
       builtAt: process.env.BUILT_AT || new Date().toISOString(),
     };
 
+    // Gate 1: "unknown version"検知（Sentry通知対象）
+    if (versionInfo.version === "unknown" || versionInfo.commitSha === "unknown") {
+      const error = new Error("unknown version detected in /api/health");
+      if (Sentry) {
+        Sentry.captureException(error, {
+          extra: {
+            version: versionInfo.version,
+            commitSha: versionInfo.commitSha,
+            env: process.env.NODE_ENV,
+          },
+        });
+      }
+      console.error("[CRITICAL] unknown version detected:", versionInfo);
+    }
+
     // 基本情報
     const baseInfo = {
       ok: true,

@@ -62,3 +62,29 @@
 ### Documentation
 - [x] md監査結果の作成（docs/md-audit-results.md）
 - [x] 本番環境の問題調査完了
+
+
+---
+
+## 🔧 md全体監視システム (2026-01-29)
+
+### 汎用的なmd監視スクリプト
+- [ ] check-all-md.sh の実装（すべてのmdファイルをスキャン）
+- [ ] 未実装項目の自動検出
+- [ ] GitHub Actionsワークフローへの統合
+- [ ] デプロイ前の自動チェック
+
+
+---
+
+## 🎯 md実装タスク (2026-01-29)
+
+### 実装対象（優先度順）
+- [ ] UptimeRobotで `/api/health` を監視（30分）
+- [x] Sentry導入（通知は最小3種類だけ）（1時間）
+- [x] visibility-issues.md: コントラスト比確認（15分）（すべてAA以上、2つはAAA達成）
+- [ ] visibility-issues.md: 実機確認（15分）
+
+### テスト対象（本番環境デプロイ後）
+- [ ] workflow-diff-check.md: デプロイ前差分チェック（30分）
+- [ ] critical-features-checklist.md: 本番環境機能テスト（2-3時間）

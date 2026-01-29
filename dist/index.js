@@ -7208,6 +7208,19 @@ async function startServer() {
       gitSha: process.env.RAILWAY_GIT_COMMIT_SHA || process.env.GIT_SHA || "unknown",
       builtAt: process.env.BUILT_AT || (/* @__PURE__ */ new Date()).toISOString()
     };
+    if (versionInfo.version === "unknown" || versionInfo.commitSha === "unknown") {
+      const error = new Error("unknown version detected in /api/health");
+      if (Sentry) {
+        Sentry.captureException(error, {
+          extra: {
+            version: versionInfo.version,
+            commitSha: versionInfo.commitSha,
+            env: process.env.NODE_ENV
+          }
+        });
+      }
+      console.error("[CRITICAL] unknown version detected:", versionInfo);
+    }
     const baseInfo = {
       ok: true,
       timestamp: Date.now(),
