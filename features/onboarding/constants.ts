@@ -3,7 +3,8 @@
  * v6.31: 宇宙テーマとキャラクター対応
  */
 
-export const ONBOARDING_STORAGE_KEY = "@onboarding_completed";
+// v6.164: ストレージキーを変更して、既存ユーザーにもオンボーディングを再表示
+export const ONBOARDING_STORAGE_KEY = "@onboarding_completed_v2";
 
 export interface OnboardingSlide {
   id: string;

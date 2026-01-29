@@ -94,3 +94,8 @@
 ### テスト対象（本番環境デプロイ後）
 - [ ] workflow-diff-check.md: デプロイ前差分チェック（30分）
 - [ ] critical-features-checklist.md: 本番環境機能テスト（2-3時間）
+
+### Onboarding Screen Not Showing (2026-01-29 追加)
+- [x] オンボード画面が本番環境で表示されない（v6.164デプロイ済みだが機能していない） - ストレージキーを`@onboarding_completed_v2`に変更
+- [x] useOnboardingフックのAsyncStorageロジックをデバッグ - 旧キーが`true`に設定されていたため、新キーに変更
+- [x] 代替のオンボード検出方法を実装（例：URLパラメータ、セッションストレージ） - ストレージキーのバージョン管理で対応
