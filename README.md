@@ -1,12 +1,44 @@
-# 動員チャレンジ（Doin Challenge）
+# 動員チャレンジ（D# 君斗りんくの動員ちゃれんじ
 
 **プロジェクト名**: 動員チャレンジ（Doin Challenge）  
 **ドメイン**: [doin-challenge.com](https://doin-challenge.com)  
-**バージョン**: 6.144  
+**バージョン**: 6.162  
 **最終更新**: 2026年1月29日
 
 ---
 
+## ⚠️ AIへの重要な指示（セッション開始時に必ず読むこと）
+
+### 🚀 デプロイ方法
+
+- **Manusから**: `./scripts/deploy-to-production.sh "コミットメッセージ"`
+- **スマホ・PCから**: GitHubアプリ → Actions → "Manual Deploy" → "Run workflow"
+- **詳細**: `docs/DEPLOY_WORKFLOW.md` を参照
+
+### 📋 作業開始時のチェックリスト
+
+1. ✅ 最新の `docs/chatlog-YYYYMMDD.md` を読む（過去の作業内容を確認）
+2. ✅ `todo.md` で未完了タスクを確認
+3. ✅ mdファイルに書かれていることを忠実に実行（勝手に仕様を拡大しない）
+4. ✅ ユーザーが「何度も言った」と言ったら、chatlogを確認する
+
+### 🔴 絶対に忘れてはいけないこと
+
+- **デプロイ**: `./scripts/deploy-to-production.sh` で実行（手動git pushは不要）
+- **GitHubアプリ**: スマホにもインストール済み（Workflow Dispatchが使える）
+- **本番環境**: doin-challenge.com（デプロイ後5-10分で反映）
+- **リポジトリ**: kimito-link/doin-challenge.com
+
+### 📚 重要なドキュメント
+
+| ファイル | 内容 |
+|---------|------|
+| `docs/chatlog-YYYYMMDD.md` | 過去の作業ログ（必ず読む） |
+| `docs/DEPLOY_WORKFLOW.md` | デプロイ手順の詳細 |
+| `docs/gate1.md` | 本番環境の品質基準 |
+| `todo.md` | 未完了タスク一覧 |
+
+---
 ## プロジェクト概要
 
 **動員チャレンジ**は、アイドル・ホスト・キャバ嬢などのエンターテイナーの生誕祭やイベントを応援するためのWebアプリケーションです。ファンがTwitterログインでフォロワー数を表示し、応援メッセージを投稿・閲覧できる機能を提供します。
