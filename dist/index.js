@@ -3687,7 +3687,7 @@ async function refreshAccessToken(refreshToken) {
 }
 async function storePKCEData(state, codeVerifier, callbackUrl) {
   pkceMemoryStore.set(state, { codeVerifier, callbackUrl });
-  setTimeout(() => pkceMemoryStore.delete(state), 10 * 60 * 1e3);
+  setTimeout(() => pkceMemoryStore.delete(state), 30 * 60 * 1e3);
   console.log("[PKCE] Stored PKCE data in memory for state:", state.substring(0, 8) + "...");
   setImmediate(async () => {
     try {
@@ -3696,7 +3696,7 @@ async function storePKCEData(state, codeVerifier, callbackUrl) {
         console.log("[PKCE] Database not available, memory-only mode");
         return;
       }
-      const expiresAt = new Date(Date.now() + 10 * 60 * 1e3);
+      const expiresAt = new Date(Date.now() + 30 * 60 * 1e3);
       await db.delete(oauthPkceData).where(lt3(oauthPkceData.expiresAt, /* @__PURE__ */ new Date())).catch(() => {
       });
       await db.insert(oauthPkceData).values({

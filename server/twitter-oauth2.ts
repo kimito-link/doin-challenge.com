@@ -174,7 +174,7 @@ export async function refreshAccessToken(refreshToken: string): Promise<{
 export async function storePKCEData(state: string, codeVerifier: string, callbackUrl: string): Promise<void> {
   // メモリに即座に保存（高速）
   pkceMemoryStore.set(state, { codeVerifier, callbackUrl });
-  setTimeout(() => pkceMemoryStore.delete(state), 10 * 60 * 1000);
+  setTimeout(() => pkceMemoryStore.delete(state), 30 * 60 * 1000);
   console.log("[PKCE] Stored PKCE data in memory for state:", state.substring(0, 8) + "...");
   
   // バックグラウンドでデータベースにも保存（失敗してもメモリがあるのでOK）
@@ -186,8 +186,8 @@ export async function storePKCEData(state: string, codeVerifier: string, callbac
         return;
       }
       
-      // Set expiration to 10 minutes from now
-      const expiresAt = new Date(Date.now() + 10 * 60 * 1000);
+      // Set expiration to 30 minutes from now
+      const expiresAt = new Date(Date.now() + 30 * 60 * 1000);
       
       // Clean up expired entries first (non-blocking)
       await db.delete(oauthPkceData).where(lt(oauthPkceData.expiresAt, new Date())).catch(() => {});

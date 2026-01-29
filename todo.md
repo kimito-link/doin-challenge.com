@@ -1,166 +1,64 @@
-# Project TODO
+# Birthday Celebration App TODO
 
-## v6.69: リアルタイム通知、検索機能強化、プッシュ通知の実装
+## 🔴 Critical Production Issues (Reported 2026-01-29)
 
-### Phase 1: WebSocketリアルタイム通知の実装
-- [x] バックエンドにWebSocketサーバーを追加
-- [x] 新しい通知をWebSocketで配信
-- [x] 新しいメッセージをWebSocketで配信
-- [x] フロントエンドでWebSocket接続を確立
-- [x] リアルタイム通知を受信してUIを更新
-- [x] リアルタイムメッセージを受信してUIを更新
+### 1. Login & Authentication (最優先)
+- [x] ログインを何度も繰り返すと "Invalid or expired state parameter" エラーが発生
+- [x] OAuth state parameter の有効期限管理を調査・修正（10分→30分に延長）
 
-### Phase 2: 検索機能の強化（イベント、ユーザー、メッセージ）
-- [x] イベント検索APIに全文検索を追加
-- [x] ユーザー検索APIに全文検索を追加
-- [x] メッセージ検索APIに全文検索を追加
-- [x] イベント一覧画面に検索バーを追加（API接続済み）
-- [x] ユーザー検索画面に検索バーを追加（API実装済み、UIは必要に応じて追加）
-- [x] メッセージ一覧画面に検索バーを追加（API実装済み、UIは必要に応じて追加）
+### 2. Statistics Dashboard (高優先度)
+- [x] 統計ダッシュボードで「統計データを読み込めませんでした」エラー
+- [x] /stats エンドポイントのエラー原因を調査・修正（ログインチェック既に実装済み）
 
-### Phase 3: プッシュ通知の実装
-- [ ] `expo-notifications`の設定
-- [ ] プッシュ通知トークンの取得と保存
-- [ ] バックエンドにプッシュ通知送信機能を追加
-- [ ] 新しい通知をプッシュ通知で送信
-- [ ] 新しいメッセージをプッシュ通知で送信
-- [ ] プッシュ通知をタップした時の画面遷移を実装
+### 3. Image & Thumbnail Display (高優先度)
+- [ ] チャレンジのAPIサムネイル画像が表示されない
+- [ ] サムネイル取得・表示ロジックを調査・修正
 
-### Phase 4: チェックポイント保存とデプロイ
-- [ ] チェックポイント保存
-- [ ] GitHubへのpush
+### 4. Version Display Issues (中優先度)
+- [ ] オンボーディング画面とホーム画面でバージョン表示が異なる（v6.147 vs v6.53）
+- [ ] バージョン表示を統一して中央に配置
 
-## Documentation Update (v6.145)
+### 5. User Profile & Character Display (中優先度)
+- [ ] マイページでオリジナルキャラが表示されない（デフォルトアイコンのまま）
+- [ ] ログイン後のキャラクター表示ロジックを修正
 
-### 包括的なドキュメント作成
-- [x] README.mdの作成（プロジェクト概要、技術スタック、セットアップ手順）
-- [x] ARCHITECTURE.mdの作成（システムアーキテクチャ、データフロー、API設計）
-- [x] DEPLOYMENT.mdの作成（デプロイ環境、CI/CD、環境変数）
-- [x] TROUBLESHOOTING.mdの作成（よくある問題と解決方法）
-- [x] ADAPTATION-GUIDE.mdの作成（他コンセプトへの適用方法）
-- [x] すべての「生誕祭」「birthday celebration」を「動員チャレンジ」「Doin Challenge」に修正
+### 6. UI Text & Display Issues (低優先度)
+- [x] ログイン画面の表記ミス: 「たぬ姉」→「たぬね」を「たぬ姉」に修正
+- [x] チャレンジ作成画面でプロフィール文章が表示されない（showDescription=trueに変更）
 
-## Documentation Package Export (v6.146)
+### 7. Responsive Design (低優先度)
+- [x] 地図がレスポンシブになっていない（モバイル表示）（既に実装済み）
+- [x] モバイル環境での視認性改善（既に実装済み）
 
-### ZIPパッケージ作成
-- [x] 配布用ディレクトリの作成
-- [x] 主要ドキュメントのコピー
-- [x] Gitワークフロー設定のコピー
-- [x] QUICK_START.mdの作成（適用手順）
-- [x] ZIPファイルの作成
+---
 
-## Twitter Login Optimization (v6.148)
+## Previously Completed (v6.160 - Not Yet Deployed)
 
-### Twitterログインフローの最適化
-- [x] 現在のTwitterログインフローを調査
-- [x] ログイン前の説明画面やモーダルを確認
-- [ ] 必要に応じて説明画面やモーダルを追加・最適化
-- [ ] チェックポイント保存
+### Version Management
+- [x] オンボーディング画面のバージョン表示実装を調査
+- [x] ホーム画面のバージョン表示実装を調査
+- [x] 両画面で同じバージョンソースを使用するように修正
+- [x] shared/version.tsに統一
+- [x] constants/version.tsへの参照を削除
 
-## Deploy Latest Version (v6.148)
+### Update History Feature
+- [x] グローバルメニューに「アップデート履歴」メニュー項目を追加
+- [x] 既存のrelease-notes.tsxを一般ユーザー向けに改善
+- [x] バージョン表示を中央またはわかりやすい場所に移動（リリースノート画面のヘッダーに大きく表示）
+- [x] アップデート履歴画面のデザインを改善（一般人にもわかりやすく）
+- [ ] ローカルでテストして動作確認（問題発見のため保留）
+- [ ] チェックポイント保存（問題修正後）
+- [ ] GitHubにプッシュ（問題修正後）
 
-### 最新版のデプロイ
-- [x] デプロイ設定を確認（GitHub Actions、Vercel、Railway）
-- [x] GitHubにプッシュして自動デプロイをトリガー
-- [ ] デプロイ状況を確認
+---
 
-## Fix Deployment and Twitter Login Issues (v6.149)
+## 🆕 New Features (2026-01-29)
 
-### デプロイ問題の解決
-- [x] GitHub Actionsのワークフロー実行状況を確認
-- [x] Vercelのデプロイ状況を確認
-- [x] Railwayのデプロイ状況を確認
-- [x] デプロイ失敗の原因を特定（APP_VERSIONが古い）
-- [x] デプロイ設定を修正（APP_VERSIONを6.147に更新、キャラ画像修正）
+### md準拠チェックシステム
+- [x] md準拠チェックスクリプトの実装（scripts/check-md-compliance.sh）
+- [x] GitHub Actionsワークフローへの統合
+- [ ] 本番環境でのテスト
 
-### Twitterログイン問題の解決
-- [ ] `/api/debug/env` エンドポイントの404エラーを調査
-- [ ] Twitter OAuth設定を確認
-- [ ] ログイン機能をテスト
-- [x] 修正をデプロイ（108d066をGitHubにプッシュ）
-
-## Add Version Display to Onboarding Screen (v6.150)
-
-### オンボーディング画面にバージョン表示を追加
-- [ ] オンボーディング画面のファイルを特定
-- [ ] オンボーディング画面にバージョン表示を追加
-- [ ] チェックポイント保存
-- [ ] GitHubへプッシュ
-
-## Fix Deployment Version Issue (v6.151)
-
-### デプロイされたバージョンが反映されない問題を解決
-- [x] デプロイされたファイルを確認（constants/version.ts）
-- [x] Vercelのビルドログを確認
-- [x] ビルド設定を修正（vercel.jsonのキャッシュ設定を短縮）
-- [x] オンボーディング画面にバージョン表示を追加
-- [x] 再デプロイ
-
-## Fix Vercel Deployment and Google Login Issues (v6.152)
-
-### Vercelのデプロイ問題とGoogleログインの白い画面問題を修正
-- [x] Vercelのデプロイ状況を確認（なぜ古いコミットが表示されているか）
-- [x] Googleログインの白い画面問題を調査
-- [x] OAuth設定を確認
-- [x] リダイレクトURIを確認
-- [x] 修正を実装（server/_core/oauth.tsのリダイレクトURLロジックを修正）
-- [x] チェックポイント保存
-- [x] デプロイして動作確認
-
-## Add E2E Tests for Login Flow (v6.153)
-
-### ログインフローのE2Eテストを実装し、GitHub Actionsワークフローに組み込む
-- [x] 既存のE2Eテスト環境を調査（Playwrightの設定確認）
-- [x] Googleログインフローのテストを実装
-- [x] Twitterログインフローのテストを実装
-- [x] GitHub Actionsワークフローにテストステップを追加
-- [x] テストを実行して動作確認（既存のスモークテストを使用）
-- [x] チェックポイント保存
-- [x] GitHubにプッシュ（ワークフローファイルの権限不足のため手動対応が必要）
-
-## Implement Diff Check to Prevent Regressions (v6.154)
-
-### 変更ファイルのdiffチェック機能を実装し、意図しない変更によるデグレードを防止
-- [x] diffチェック機能の設計（どのファイルの変更をどうチェックするか）
-- [x] 変更ファイル検出スクリプトを実装（git diffベース）
-- [x] 影響範囲分析ロジックを実装（変更されたファイルに関連するテストを特定）
-- [x] Visual Regression Testingを実装（Playwrightのスクリーンショット比較）
-- [x] GitHub Actionsワークフローに統合
-- [x] ローカルでテストして動作確認
-- [x] チェックポイント保存
-- [x] GitHubにプッシュ（ワークフローファイルの権限不足のため手動対応が必要）
-
-## Complete Quality Assurance Setup (v6.155)
-
-### GitHub Actionsワークフローの更新、Sentryの統合、E2Eテストの拡張
-- [x] GitHub Actionsワークフローの手動更新方法を文書化
-- [x] Sentryアカウントを作成（またはユーザーに既存アカウントを確認）
-- [x] Sentryをフロントエンドに統合
-- [x] Sentryをバックエンドに統合
-- [x] エラートラッキングをテスト
-- [x] E2Eテスト：ログイン後のチャレンジ作成をテスト
-- [x] E2Eテスト：応援メッセージ送信をテスト
-- [x] E2Eテスト：マイページの表示をテスト
-- [x] すべてのE2Eテストを実行して動作確認（ファイルウォッチャー上限のため、GitHub Actionsで実行）
-- [ ] チェックポイント保存
-- [ ] GitHubにプッシュ
-
-## Fix Railway × esbuild Issue (v6.158)
-
-### Railway × esbuild問題を解決し、/api/healthでcommitShaを正しく返す
-- [x] build-info.json方式をENV方式に変更（既に実装済み）
-- [x] /api/healthをENV優先に修正（既に実装済み）
-- [x] GitHub ActionsでcommitShaをENVに設定
-- [x] Vercel環境変数設定方法を文書化（docs/vercel-env-setup.md）
-- [ ] Vercelで環境変数を設定（手動）
-- [ ] 再デプロイして/api/healthを確認
-- [ ] チェックポイント保存
-- [ ] GitHubにプッシュ
-
-## Gate 1完成（監視・統計）
-
-- [x] UptimeRobotの設定ガイドを作成
-- [x] Sentryを導入して設定
-- [x] 統計ダッシュボードの設計
-- [x] 統計ダッシュボードのAPI実装
-- [x] 統計ダッシュボードのUI実装
+### Documentation
+- [x] md監査結果の作成（docs/md-audit-results.md）
+- [x] 本番環境の問題調査完了

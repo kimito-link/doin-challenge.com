@@ -16,7 +16,7 @@ import { useOnboarding } from "../hooks/useOnboarding";
 import { ONBOARDING_SLIDES } from "../constants";
 import { OnboardingSlide } from "./OnboardingSlide";
 import { OnboardingNavigation } from "./OnboardingNavigation";
-import { APP_VERSION } from "@/constants/version";
+import { APP_VERSION } from "@/shared/version";
 import { Text } from "react-native";
 
 interface OnboardingScreenProps {

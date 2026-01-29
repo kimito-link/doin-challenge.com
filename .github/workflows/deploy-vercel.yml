@@ -43,6 +43,12 @@ jobs:
             ./scripts/diff-check.sh
           fi
 
+      - name: Run md-compliance check
+        shell: bash
+        run: |
+          chmod +x scripts/check-md-compliance.sh
+          ./scripts/check-md-compliance.sh
+
       # sensitiveな変更のときだけ、PR本文チェックを必須にする
       - name: Enforce PR checklist for sensitive changes
         if: ${{ github.event_name == 'pull_request' && steps.diff.outputs.sensitive == 'true' }}

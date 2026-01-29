@@ -43,7 +43,7 @@ const defaultLoginIcons: CharacterIconWithId[] = [
     size: 56,
     borderWidth: 2,
     borderColor: mypageAccent.tanuneGreen,
-    name: "たぬね",
+    name: "たぬ姉",
   },
 ];
 
