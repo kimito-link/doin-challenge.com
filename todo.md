@@ -127,5 +127,5 @@
 - [x] Visual Regression Testingを実装（Playwrightのスクリーンショット比較）
 - [x] GitHub Actionsワークフローに統合
 - [x] ローカルでテストして動作確認
-- [ ] チェックポイント保存
+- [x] チェックポイント保存
 - [ ] GitHubにプッシュ
