@@ -10,6 +10,7 @@ import { AnimatedCard } from "@/components/molecules/animated-pressable";
 import { LazyAvatar } from "@/components/molecules/lazy-image";
 import { Countdown } from "@/components/atoms/countdown";
 import { goalTypeConfig } from "@/constants/goal-types";
+import { GenderStats } from "@/components/molecules/gender-stats";
 
 interface Challenge {
   id: number;
@@ -29,6 +30,11 @@ interface Challenge {
   venue: string | null;
   prefecture: string | null;
   status: string;
+  genderStats?: {
+    male: number;
+    female: number;
+    unspecified: number;
+  };
 }
 
 interface ColorfulChallengeCardProps {
@@ -260,6 +266,18 @@ export function ColorfulChallengeCard({
                 />
               </View>
             </View>
+
+            {/* 性別統計 */}
+            {challenge.genderStats && (
+              <View style={{ marginTop: 8 }}>
+                <GenderStats
+                  maleCount={challenge.genderStats.male}
+                  femaleCount={challenge.genderStats.female}
+                  unspecifiedCount={challenge.genderStats.unspecified}
+                  size="small"
+                />
+              </View>
+            )}
 
             {/* 日付（右下） */}
             <View style={styles.dateContainer}>

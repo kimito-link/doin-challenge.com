@@ -266,3 +266,42 @@
 - [x] マイページの実装を確認
 - [x] ログイン後はユーザーのTwitterプロフィール画像が表示されるのが正しい動作
 - [x] オリジナルキャラクターはログイン前の画面でのみ表示される
+
+
+---
+
+## 🎨 v6.172: 性別表示機能の実装 (2026-01-30)
+
+### 背景
+ユーザーから「ホーム画面のチャレンジカードで参加者が男性か女性か判別できるようにしたい」という要件が何度も伝えられているが、まだ実装されていない。
+
+### タスク
+
+#### 1. コンポーネント作成
+- [x] `GenderIndicator`コンポーネント作成（`components/atoms/gender-indicator.tsx`）
+- [x] `GenderStats`コンポーネント作成（`components/molecules/gender-stats.tsx`）
+
+#### 2. API拡張
+- [x] チャレンジ一覧APIに性別統計を追加（`server/routers/events.ts`）
+- [x] データベースクエリで性別集計を実装（`server/db/challenge-db.ts`）
+
+#### 3. ホーム画面への統合
+- [x] `ColorfulChallengeCard`に性別統計を表示
+- [x] カードの下部、進捗情報の下に配置
+
+#### 4. マイページへの統合（次回以降）
+- [ ] 参加中のチャレンジ一覧に性別統計を表示
+- [ ] `ParticipationSection`コンポーネントを修正
+- [ ] マイページAPIを拡張して性別統計を含める
+
+#### 5. 参加表明画面への統合（次回以降）
+- [ ] 参加者一覧コンポーネント作成（`features/events/components/ParticipantsList.tsx`）
+- [ ] 各参加者に`GenderIndicator`を表示
+
+#### 6. テスト
+- [ ] 視覚的確認（ホーム画面）
+- [ ] APIの動作確認
+- [ ] データベースクエリの動作確認
+
+### 設計書
+- `docs/gender-display-design.md`: 詳細な設計書
