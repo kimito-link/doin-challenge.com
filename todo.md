@@ -221,5 +221,26 @@
 - [x] docs/status.mdを作成（プロジェクトの現在の状態を一元管理）
 - [x] docs/checklist.mdを作成（すべてのチェック項目を統合）
 - [x] docs/README.mdを作成（ドキュメントの目次）
-- [ ] v6.169のチェックポイント作成
-- [ ] GitHubにプッシュ
+- [x] v6.169のチェックポイント作成
+- [x] GitHubにプッシュ
+
+---
+
+## 📋 次のステップ (2026-01-30)
+
+### 1. データベースでhostProfileImageを確認
+- [x] docs/database-check-instructions.mdを作成（確認手順を記載）
+- [ ] 管理画面（Database → Challenges）でhostProfileImageカラムに値が入っているか確認 → ユーザーに確認を依頼
+- [ ] 値が入っていない場合、修正方法を検討 → docs/database-check-instructions.mdに記載済み
+
+### 2. 本番環境でログインボタンをテスト
+- [x] docs/login-button-test-instructions.mdを作成（テスト手順を記載）
+- [ ] デプロイ後、ホーム画面のログインボタンをクリック → ユーザーにテストを依頼
+- [ ] カスタムログイン画面（モーダル）が表示されることを確認 → ユーザーに確認を依頼
+
+### 3. docs/status.mdの更新手順をドキュメント化
+- [x] docs/status-update-guide.mdを作成（更新手順を記載）
+
+### 4. 他のプロジェクトでも適用できる汎用的なマークダウンファイルを作成
+- [x] docs/TEMPLATE-project-management-system.mdを作成
+- [x] 他のプロジェクトでも使えるように、プロジェクト固有の情報を削除
