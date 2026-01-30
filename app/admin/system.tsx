@@ -18,7 +18,7 @@ import {
   RefreshControl,
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
-import { APP_VERSION, getVersionInfo } from "@/constants/version";
+import { APP_VERSION, getVersionInfo } from "@/shared/version";
 
 interface HealthResponse {
   ok: boolean;
