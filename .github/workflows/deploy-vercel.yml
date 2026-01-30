@@ -1,0 +1,60 @@
+name: Deploy to Vercel
+
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      
+      - name: Install pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 9
+      
+      - name: Install dependencies
+        run: pnpm install
+      
+      - name: Build
+        run: pnpm build
+      
+      - name: Deploy to Vercel
+        uses: amondnet/vercel-action@v25
+        with:
+          vercel-token: ${{ secrets.VERCEL_TOKEN }}
+          vercel-org-id: ${{ secrets.VERCEL_ORG_ID }}
+          vercel-project-id: ${{ secrets.VERCEL_PROJECT_ID }}
+          vercel-args: '--prod'
+      
+      - name: Post-deployment verification
+        run: |
+          echo "Waiting for deployment to propagate..."
+          sleep 30
+          
+          echo "Checking production health..."
+          RESPONSE=$(curl -s https://doin-challenge.com/api/health)
+          echo "Health check response: $RESPONSE"
+          
+          VERSION=$(echo $RESPONSE | jq -r '.version')
+          COMMIT_SHA=$(git rev-parse HEAD)
+          
+          echo "Deployed version: $VERSION"
+          echo "Expected commit: $COMMIT_SHA"
+          
+          if [[ "$VERSION" == "$COMMIT_SHA"* ]]; then
+            echo "✅ Deployment verified successfully"
+          else
+            echo "⚠️ Version mismatch detected, but deployment may still be propagating"
+          fi
