@@ -9,6 +9,11 @@ import { GlobalMenu } from "@/components/organisms/global-menu";
 import { TalkingCharacter } from "@/components/molecules/talking-character";
 import * as Haptics from "expo-haptics";
 import { APP_VERSION } from "@/shared/version";
+import { LoginConfirmModal, RedirectingScreen, WaitingReturnScreen } from "@/components/auth-ux";
+import { SuccessScreen } from "@/components/molecules/auth-ux/SuccessScreen";
+import { CancelScreen } from "@/components/molecules/auth-ux/CancelScreen";
+import { ErrorScreen } from "@/components/molecules/auth-ux/ErrorScreen";
+import { useAuthUxMachine } from "@/hooks/use-auth-ux-machine";
 
 // ロゴ画像
 const logoImage = require("@/assets/images/logo/logo-color.jpg");
@@ -29,6 +34,7 @@ interface AppHeaderProps {
   rightElement?: React.ReactNode;
   showLoginStatus?: boolean;
   showMenu?: boolean;
+  showLoginButton?: boolean;
 }
 
 const triggerHaptic = () => {
@@ -46,10 +52,12 @@ export function AppHeader({
   rightElement,
   showLoginStatus = true,
   showMenu = true,
+  showLoginButton = false,
 }: AppHeaderProps) {
   
   const { user } = useAuth();
   const [menuVisible, setMenuVisible] = useState(false);
+  const { state, tapLogin, confirmYes, confirmNo, retry, backWithoutLogin } = useAuthUxMachine();
   
   const handleTitlePress = () => {
     triggerHaptic();
@@ -59,6 +67,11 @@ export function AppHeader({
   const handleMenuPress = () => {
     triggerHaptic();
     setMenuVisible(true);
+  };
+
+  const handleLoginPress = () => {
+    triggerHaptic();
+    tapLogin();
   };
   
   return (
@@ -177,6 +190,29 @@ export function AppHeader({
             {subtitle}
           </Text>
         )}
+        
+        {/* ログインボタン（未ログイン時のみ表示） */}
+        {showLoginButton && !user && (
+          <Pressable
+            onPress={handleLoginPress}
+            style={({ pressed }) => [{
+              flexDirection: "row",
+              alignItems: "center",
+              justifyContent: "center",
+              backgroundColor: color.twitter,
+              paddingHorizontal: 16,
+              paddingVertical: 10,
+              borderRadius: 24,
+              marginTop: 12,
+              alignSelf: "flex-start",
+            }, pressed && { opacity: 0.7, transform: [{ scale: 0.97 }] }]}
+          >
+            <MaterialIcons name="login" size={18} color={color.textWhite} style={{ marginRight: 6 }} />
+            <Text style={{ color: color.textWhite, fontSize: 14, fontWeight: "600" }}>
+              Xでログイン
+            </Text>
+          </Pressable>
+        )}
       </View>
 
       {/* グローバルメニュー */}
@@ -184,6 +220,43 @@ export function AppHeader({
         isVisible={menuVisible} 
         onClose={() => setMenuVisible(false)} 
       />
+      
+      {/* 認証UXモーダル */}
+      <LoginConfirmModal
+        open={state.name === "confirm"}
+        speech={{
+          title: "Xでログインしますか？",
+          message: "このあとXの公式画面に移動します。\n戻ってきたらログイン完了です。",
+        }}
+        confirmLabel="Xでログイン"
+        cancelLabel="やめておく"
+        onConfirm={confirmYes}
+        onCancel={confirmNo}
+      />
+      <RedirectingScreen visible={state.name === "redirecting"} />
+      <WaitingReturnScreen 
+        visible={state.name === "waitingReturn"} 
+        remainingMs={state.name === "waitingReturn" ? state.timeoutMs - (Date.now() - state.startedAt) : undefined}
+      />
+      {state.name === "success" && (
+        <SuccessScreen
+          onClose={backWithoutLogin}
+        />
+      )}
+      {state.name === "cancel" && (
+        <CancelScreen
+          kind={state.kind}
+          onRetry={retry}
+          onBack={backWithoutLogin}
+        />
+      )}
+      {state.name === "error" && (
+        <ErrorScreen
+          message={state.message}
+          onRetry={retry}
+          onBack={backWithoutLogin}
+        />
+      )}
     </>
   );
 }

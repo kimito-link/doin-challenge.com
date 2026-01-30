@@ -126,6 +126,7 @@ export default function HomeScreen() {
         showCharacters={true}
         isDesktop={isDesktop}
         showMenu={true}
+        showLoginButton={true}
       />
 
       {/* チャレンジリスト */}
