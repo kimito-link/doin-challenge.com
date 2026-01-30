@@ -99,3 +99,21 @@
 - [x] オンボード画面が本番環境で表示されない（v6.164デプロイ済みだが機能していない） - ストレージキーを`@onboarding_completed_v2`に変更
 - [x] useOnboardingフックのAsyncStorageロジックをデバッグ - 旧キーが`true`に設定されていたため、新キーに変更
 - [x] 代替のオンボード検出方法を実装（例：URLパラメータ、セッションストレージ） - ストレージキーのバージョン管理で対応
+
+### Deployment Pipeline Issues (2026-01-29 追加)
+- [ ] webdev_save_checkpointがGitHubに同期されない根本原因を調査
+- [ ] Vercel直接デプロイの実装（GitHub経由ではなく）
+- [ ] 自動デプロイパイプラインのテスト
+- [ ] v6.165の本番環境デプロイ確認
+
+---
+
+## 📚 Documentation Reorganization (2026-01-30)
+
+### ドキュメント整理
+- [x] README.mdを整理し、デプロイ方法を最優先で表示
+- [x] docs/development-guide.mdを作成（開発環境のセットアップ）
+- [x] docs/architecture.mdを作成（アーキテクチャの説明）
+- [x] chatlog-20260130.mdを作成（今回のセッションの作業ログ）
+- [ ] v6.166のチェックポイント作成
+- [ ] GitHubにプッシュ
