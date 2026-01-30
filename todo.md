@@ -145,6 +145,8 @@
 
 ### 調査結果のサマリー
 - [x] docs/investigation-summary-20260130.mdを作成
+- [x] v6.168のチェックポイント作成
+- [x] GitHubにプッシュ
 
 ### サムネイル画像の表示
 - [ ] チャレンジのAPIサムネイル画像が表示されない問題を調査
@@ -191,3 +193,33 @@
   - バッジセクション
   - 参加チャレンジ・主催チャレンジ
   - ログアウトボタン
+
+---
+
+## 🔍 md全体監査結果 (2026-01-30)
+
+### 監査対象
+- [x] すべてのmdファイル（96ファイル）を確認
+- [x] critical-features-checklist.mdの要件を照合
+- [x] 実装の抜け漏れを調査
+
+### 結論
+- [x] critical-features-checklist.mdの要件は、**すべて実装済み**
+- [x] docs/md-full-audit-20260130-v2.mdに詳細を記録
+
+### 残りの課題（環境変数の設定が必要）
+- [ ] サムネイル画像の表示問題: データベースのchallengesテーブルでhostProfileImageカラムに値が入っているか確認
+- [ ] Sentryの有効化: 環境変数`SENTRY_DSN`と`NEXT_PUBLIC_SENTRY_DSN`を設定（docs/sentry-setup.md参照）
+- [ ] UptimeRobotで `/api/health` を監視（5分間隔）（docs/gate1.md参照）
+
+---
+
+## ✅ 改善策の実装 (2026-01-30)
+
+### 作業の重複と崩壊を防ぐ仕組みの構築
+
+- [x] docs/status.mdを作成（プロジェクトの現在の状態を一元管理）
+- [x] docs/checklist.mdを作成（すべてのチェック項目を統合）
+- [x] docs/README.mdを作成（ドキュメントの目次）
+- [ ] v6.169のチェックポイント作成
+- [ ] GitHubにプッシュ
