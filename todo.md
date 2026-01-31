@@ -500,13 +500,14 @@ Gate 1 + こまめなバージョン管理のワークフローに従って、�
 - [x] checkpoint
 - [x] diff-check実行（⚠️ Healthに変更あり）
 
-#### v6.176: API層（events.ts統合）
-- [ ] `listPaginated`プロシージャを`getAllEventsWithGenderStats()`に変更
-- [ ] フロントエンドからAPIを呼び出して結果を確認
-- [ ] commit
-- [ ] バージョン番号を更新
-- [ ] checkpoint
-- [ ] diff-check実行
+#### v6.176: UI層（GenderStatsコンポーネント）
+- [x] Challenge型に性別統計フィールドを追加
+- [x] GenderStatsコンポーネントを作成
+- [x] ChallengeCardにGenderStatsを統合
+- [x] commit
+- [x] バージョン番号を更新
+- [x] checkpoint
+- [x] diff-check実行（⚠️ Healthに変更あり）
 
 #### v6.177: UI層（GenderStatsコンポーネント統合）
 - [ ] `ColorfulChallengeCard`に性別統計を表示
@@ -538,3 +539,67 @@ Gate 1 + こまめなバージョン管理のワークフローに従って、�
 - [ ] パフォーマンステストの範囲を定義
 - [ ] Gate 2の実装計画を作成
 - [ ] docs/gate2-design.mdを作成
+
+---
+
+## 🎯 v6.177〜v6.178: 統合テストとGate 2設計
+
+#### v6.177: 統合テスト（ブラウザ確認）
+- [ ] ブラウザでホーム画面を開き、性別統計が正しく表示されることを確認
+- [ ] サムネイル画像が正しく表示されることを確認
+- [ ] ログイン機能が正しく動作することを確認
+- [ ] commit
+- [ ] バージョン番号を更新
+- [ ] checkpoint
+- [ ] diff-check実行
+
+#### v6.178: 統合テスト完了とドキュメント更新
+- [ ] すべての機能が正しく動作することを確認
+- [ ] Gate 1 + こまめなバージョン管理のワークフローが成功したことを記録
+- [ ] commit
+- [ ] バージョン番号を更新
+- [ ] checkpoint
+- [ ] diff-check実行
+
+#### Gate 2の設計
+- [ ] E2Eテスト戦略を設計（Detox vs Appium vs Jest）
+- [ ] Visual Regression Testの検討
+- [ ] パフォーマンステストの検討
+- [ ] Gate 2のドキュメントを作成
+
+---
+
+## 🎯 v6.177〜v6.178: 統合テストとテストツール評価
+
+### Phase 1: チュートリアルモーダルの問題を修正
+- [ ] チュートリアルモーダルのコードを確認
+- [ ] スキップ機能が正しく動作するように修正
+- [ ] commit + バージョン番号更新 + checkpoint + diff-check
+
+### Phase 2: 開発者ツールでAPIレスポンスを確認
+- [ ] ブラウザの開発者ツールでNetwork tabを開く
+- [ ] `/api/trpc/events.listPaginated`のレスポンスを確認
+- [ ] 性別統計データ（maleCount, femaleCount, unspecifiedCount）が正しく返されているか確認
+
+### Phase 3: vitestでユニットテストを作成
+- [x] `server/db/challenge-db.test.ts`を作成
+- [x] `getAllEventsWithGenderStats()`のテストを作成
+- [x] テストを実行して成功することを確認
+- [x] 性別統計データ（maleCount, femaleCount, unspecifiedCount）が正しく返されることを確認
+
+### Phase 4: テストツールの評価と採用
+- [x] 各ツールの評価（速度、安定性、保守性）
+- [x] Gate 2に採用するツールを決定（vitest + Jest + React Native Testing Library + Detox）
+- [x] テスト戦略（3層構造）を設計
+- [ ] Jest + React Native Testing Libraryのセットアップ（後で実施）
+- [ ] Detoxのセットアップ（後で実施）
+
+### Phase 5: v6.177〜v6.178の完了とGate 2の設計
+- [ ] すべての機能が正しく動作することを確認
+- [ ] Gate 1 + こまめなバージョン管理のワークフローが成功したことを記録
+- [ ] Gate 2の設計ドキュメントを作成
+- [ ] checkpoint
+
+### Phase 6: ユーザーへの報告
+- [ ] 最終レポートを作成
+- [ ] すべてのドキュメントをユーザーに提供
