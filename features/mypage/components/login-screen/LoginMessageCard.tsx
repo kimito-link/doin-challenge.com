@@ -5,13 +5,16 @@
 
 import { View, Text } from "react-native";
 import { LinearGradient } from "expo-linear-gradient";
+import { Button } from "@/components/ui/button";
 import type { LoginPattern } from "./constants";
 
 interface LoginMessageCardProps {
   pattern: LoginPattern;
+  isLoggingIn: boolean;
+  onLogin: () => void;
 }
 
-export function LoginMessageCard({ pattern }: LoginMessageCardProps) {
+export function LoginMessageCard({ pattern, isLoggingIn, onLogin }: LoginMessageCardProps) {
   return (
     <LinearGradient
       colors={[...pattern.gradientColors]}
@@ -47,6 +50,7 @@ export function LoginMessageCard({ pattern }: LoginMessageCardProps) {
         backgroundColor: "rgba(255,255,255,0.2)", 
         borderRadius: 8, 
         padding: 12,
+        marginBottom: 16,
       }}>
         <Text style={{ 
           color: "#fff", 
@@ -57,6 +61,18 @@ export function LoginMessageCard({ pattern }: LoginMessageCardProps) {
           {pattern.highlight}
         </Text>
       </View>
+      <Button
+        onPress={onLogin}
+        disabled={isLoggingIn}
+        loading={isLoggingIn}
+        icon="login"
+        style={{
+          backgroundColor: "#1DA1F2",
+          width: "100%",
+        }}
+      >
+        {isLoggingIn ? "ログイン中..." : "Xでログインする"}
+      </Button>
     </LinearGradient>
   );
 }

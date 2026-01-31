@@ -63,10 +63,13 @@ export function LoginScreen({
         <LoginHeader />
 
         {/* メインメッセージカード */}
-        <LoginMessageCard pattern={loginPattern} />
+        <LoginMessageCard 
+          pattern={loginPattern} 
+          isLoggingIn={isLoggingIn} 
+          onLogin={onLogin} 
+        />
 
-        {/* ログインボタン */}
-        <LoginButton isLoggingIn={isLoggingIn} onLogin={onLogin} />
+        {/* ログインボタンは削除し、メインメッセージカード内のボタンを使用 */}
 
         {/* キャラクターの吹き出しメッセージ */}
         <CharacterBubble pattern={loginPattern} />

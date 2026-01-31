@@ -9,7 +9,7 @@ import { useResponsive } from "@/hooks/use-responsive";
 import { useColors } from "@/hooks/use-colors";
 import { AppHeader } from "@/components/organisms/app-header";
 import { LogoutConfirmModal } from "@/components/molecules/logout-confirm-modal";
-import { LoginConfirmModal } from "@/components/organisms/login-confirm-modal";
+import { LoginModal } from "@/components/common/LoginModal";
 import { MypageSkeleton } from "@/components/organisms/mypage-skeleton";
 import { AccountSwitcher } from "@/components/organisms/account-switcher";
 import { 
@@ -98,7 +98,7 @@ export default function MyPageScreen() {
       )}
 
       {/* ログイン確認モーダル */}
-      <LoginConfirmModal
+      <LoginModal
         visible={mypageActions.showLoginConfirmModal}
         onConfirm={mypageActions.handleLoginConfirm}
         onCancel={mypageActions.handleLoginCancel}
