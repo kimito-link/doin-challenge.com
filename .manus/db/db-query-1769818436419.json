@@ -1,0 +1,52 @@
+{
+  "query": "SELECT \n  c.id,\n  c.title,\n  COUNT(CASE WHEN p.gender = 'male' THEN 1 END) as male_count,\n  COUNT(CASE WHEN p.gender = 'female' THEN 1 END) as female_count,\n  COUNT(CASE WHEN p.gender = 'unspecified' THEN 1 END) as unspecified_count\nFROM challenges c\nLEFT JOIN participations p ON c.id = p.challengeId\nGROUP BY c.id, c.title\nORDER BY c.id;",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway02.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 3YCTtbVp6bbE1oz.aaf91d266729 --database 4EfvvuNg9KRk4UPdFprmBJ --execute SELECT \n  c.id,\n  c.title,\n  COUNT(CASE WHEN p.gender = 'male' THEN 1 END) as male_count,\n  COUNT(CASE WHEN p.gender = 'female' THEN 1 END) as female_count,\n  COUNT(CASE WHEN p.gender = 'unspecified' THEN 1 END) as unspecified_count\nFROM challenges c\nLEFT JOIN participations p ON c.id = p.challengeId\nGROUP BY c.id, c.title\nORDER BY c.id;",
+  "rows": [
+    {
+      "id": "1",
+      "title": "生誕祭ライブ 動員100人達成チャレンジ",
+      "male_count": "0",
+      "female_count": "0",
+      "unspecified_count": "0"
+    },
+    {
+      "id": "2",
+      "title": "グループライブ フォロワー1万人チャレンジ",
+      "male_count": "0",
+      "female_count": "0",
+      "unspecified_count": "1"
+    },
+    {
+      "id": "3",
+      "title": "ソロライブ 50人動員チャレンジ",
+      "male_count": "0",
+      "female_count": "0",
+      "unspecified_count": "0"
+    },
+    {
+      "id": "4",
+      "title": "配信ライブ 同時視聴500人チャレンジ",
+      "male_count": "0",
+      "female_count": "0",
+      "unspecified_count": "0"
+    },
+    {
+      "id": "5",
+      "title": "ワンマンライブ 200人動員チャレンジ",
+      "male_count": "0",
+      "female_count": "0",
+      "unspecified_count": "0"
+    },
+    {
+      "id": "6",
+      "title": "グループライブ 300人動員チャレンジ",
+      "male_count": "0",
+      "female_count": "0",
+      "unspecified_count": "2"
+    }
+  ],
+  "messages": [],
+  "stdout": "id\ttitle\tmale_count\tfemale_count\tunspecified_count\n1\t生誕祭ライブ 動員100人達成チャレンジ\t0\t0\t0\n2\tグループライブ フォロワー1万人チャレンジ\t0\t0\t1\n3\tソロライブ 50人動員チャレンジ\t0\t0\t0\n4\t配信ライブ 同時視聴500人チャレンジ\t0\t0\t0\n5\tワンマンライブ 200人動員チャレンジ\t0\t0\t0\n6\tグループライブ 300人動員チャレンジ\t0\t0\t2\n",
+  "stderr": "",
+  "execution_time_ms": 1700
+}

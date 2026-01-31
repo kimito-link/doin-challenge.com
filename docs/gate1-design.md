@@ -22,7 +22,7 @@
 ### 目的
 危険な変更を自動検知し、影響範囲を明示する。
 
-### 検知対象（必須5項目）
+### 検知対象（必須7項目）
 
 #### 1-1. OAuth関連
 ```bash
@@ -96,6 +96,7 @@ server/db/*.ts
 # 検知対象ファイル
 server/routers/health.ts
 app/api/health/route.ts
+build-info.json
 
 # 影響範囲
 - ヘルスチェックエンドポイント
@@ -105,6 +106,54 @@ app/api/health/route.ts
 # 必須アクション
 - Deploy後ヘルス照合（commit SHA比較）
 - UptimeRobotの監視確認
+```
+
+#### 1-6. Routing / Redirect / Proxy関連（GPTの追加提案）
+```bash
+# 検知対象ファイル
+middleware.ts
+server/routers/*.ts
+vercel.json (redirects, rewrites)
+app/**/layout.tsx
+
+# 影響範囲
+- ルーティング
+- リダイレクト
+- プロキシ
+- URL構造
+
+# 必須アクション
+- ルーティングのテスト
+- リダイレクトの動作確認
+- 404エラーが発生していないか確認
+```
+
+#### 1-7. Build / Bundler / Toolchain関連（GPTの追加提案 - build-info問題対策）
+```bash
+# 検知対象ファイル
+esbuild.config.js
+webpack.config.js
+vite.config.js
+next.config.js
+next.config.mjs
+tsconfig.json
+package.json
+pnpm-lock.yaml
+yarn.lock
+package-lock.json
+
+# 影響範囲
+- ビルドプロセス
+- バンドラ設定
+- 依存関係
+- TypeScript設定
+- 「見えない破壊」の原因
+
+# 必須アクション
+- ビルドが成功することを確認
+- build-info.jsonが正しく生成されることを確認
+- Deploy後ヘルス照合（commit SHA比較）
+- フロントエンドが正しく表示されることを確認
 ```
 
 ### diff-check.sh の実装例
@@ -307,6 +356,8 @@ jobs:
 - [ ] 環境変数関連ファイルを変更していない（または、環境変数の設定確認を実施済み）
 - [ ] データベース関連ファイルを変更していない（または、マイグレーション実行確認を実施済み）
 - [ ] ヘルスチェック関連ファイルを変更していない（または、Deploy後ヘルス照合を実施済み）
+- [ ] Routing / Redirect / Proxy関連ファイルを変更していない（または、ルーティングのテストを実施済み）
+- [ ] Build / Bundler / Toolchain関連ファイルを変更していない（または、ビルド確認とDeploy後ヘルス照合を実施済み）
 
 ### Done条件
 
@@ -433,7 +484,7 @@ echo "✅ OAuth endpoint is working (302 redirect)"
 
 ### Phase 1: diff-check.shの実装（最優先）
 1. scripts/diff-check.shを作成
-2. 5つの検知対象を実装（OAuth, Deploy, Env, DB, Health）
+2. 7つの検知対象を実装（OAuth, Deploy, Env, DB, Health, Routing, Build）
 3. ローカルで実行し、動作確認
 
 ### Phase 2: GitHub Actions CI
