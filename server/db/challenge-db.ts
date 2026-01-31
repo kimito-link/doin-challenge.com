@@ -154,3 +154,46 @@ export async function searchChallenges(query: string) {
            venue.includes(normalizedQuery);
   });
 }
+
+/**
+ * v6.174: 性別統計付きで全イベントを取得
+ * 
+ * Gate 1 + こまめなバージョン管理のワークフローに従って実装
+ * 
+ * このバージョンでは、データベース層のみを実装：
+ * - 性別統計を集計するSQLクエリ
+ * - キャッシュ機能は既存のgetAllEvents()と同じ仕組みを使用
+ * 
+ * 次のバージョン（v6.175）で、API層（events.ts）に統合予定
+ */
+export async function getAllEventsWithGenderStats() {
+  const now = Date.now();
+  
+  // キャッシュが有効なら即座に返す
+  if (eventsCache.data && (now - eventsCache.timestamp) < EVENTS_CACHE_TTL) {
+    return eventsCache.data;
+  }
+  
+  const db = await getDb();
+  if (!db) return eventsCache.data ?? [];
+  
+  // 性別統計を集計するSQLクエリ
+  const result = await db.execute(sql`
+    SELECT 
+      c.*,
+      COUNT(CASE WHEN p.gender = 'male' THEN 1 END) as maleCount,
+      COUNT(CASE WHEN p.gender = 'female' THEN 1 END) as femaleCount,
+      COUNT(CASE WHEN p.gender = 'unspecified' THEN 1 END) as unspecifiedCount,
+      COUNT(p.id) as totalParticipants
+    FROM challenges c
+    LEFT JOIN participations p ON c.id = p.challengeId AND p.deletedAt IS NULL
+    WHERE c.isPublic = true
+    GROUP BY c.id
+    ORDER BY c.eventDate DESC
+  `);
+  
+  // キャッシュを更新
+  eventsCache = { data: result[0] as any[], timestamp: now };
+  
+  return result[0] as any[];
+}
