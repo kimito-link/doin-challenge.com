@@ -38,7 +38,7 @@ export function useMypageData(): UseMypageDataReturn {
     enabled: isAuthenticated,
   });
 
-  const { data: invitationStats } = trpc.invitations.myStats.useQuery(undefined, {
+  const { data: invitationStats } = (trpc.invitations as any).myStats.useQuery(undefined, {
     enabled: isAuthenticated,
   });
 

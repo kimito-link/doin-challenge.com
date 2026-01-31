@@ -115,8 +115,8 @@ export function useHomeData({
     { 
       limit: 20, 
       filter: filter as "all" | "solo" | "group",
-      search: searchQuery.length > 0 ? searchQuery : undefined,
-    },
+      ...(searchQuery.length > 0 && { search: searchQuery }),
+    } as any,
     {
       enabled: !isOffline,
       getNextPageParam: (lastPage) => lastPage.nextCursor,

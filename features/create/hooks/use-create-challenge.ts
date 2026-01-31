@@ -263,18 +263,17 @@ export function useCreateChallenge() {
       hostName: user!.name || state.hostName.trim(),
       hostUsername: user!.username || undefined,
       hostProfileImage: user!.profileImage || undefined,
-      hostFollowersCount: user!.followersCount || undefined,
       hostDescription: user!.description || undefined,
-      goalType: state.goalType as "attendance" | "followers" | "viewers" | "points" | "custom",
-      goalValue: state.goalValue || 100,
-      goalUnit: state.goalUnit || "人",
-      eventType: state.eventType as "solo" | "group",
-      categoryId: state.categoryId || undefined,
-      externalUrl: state.externalUrl.trim() || undefined,
-      ticketPresale: state.ticketPresale && state.ticketPresale !== "-1" ? parseInt(state.ticketPresale) : undefined,
-      ticketDoor: state.ticketDoor && state.ticketDoor !== "-1" ? parseInt(state.ticketDoor) : undefined,
-      ticketUrl: state.ticketUrl.trim() || undefined,
-    });
+      ...(state.goalType && { goalType: state.goalType as "attendance" | "followers" | "viewers" | "points" | "custom" }),
+      ...(state.goalValue && { goalValue: state.goalValue }),
+      ...(state.goalUnit && { goalUnit: state.goalUnit }),
+      ...(state.eventType && { eventType: state.eventType as "solo" | "group" }),
+      ...(state.categoryId && { categoryId: state.categoryId }),
+      ...(state.externalUrl.trim() && { externalUrl: state.externalUrl.trim() }),
+      ...(state.ticketPresale && state.ticketPresale !== "-1" && { ticketPresale: parseInt(state.ticketPresale) }),
+      ...(state.ticketDoor && state.ticketDoor !== "-1" && { ticketDoor: parseInt(state.ticketDoor) }),
+      ...(state.ticketUrl.trim() && { ticketUrl: state.ticketUrl.trim() }),
+    } as any);
   }, [state, validationErrors, user, createTemplateMutation, createChallengeMutation]);
   
   // 作成完了モーダルを閉じる

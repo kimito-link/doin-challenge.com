@@ -34,7 +34,7 @@ export default function SharedProfileScreen() {
   const twitterId = id ? extractIdFromSlug(id) : null;
   
   // twitterIdからユーザー情報を取得
-  const { data: user, isLoading, error } = trpc.profiles.getByTwitterId.useQuery(
+  const { data: user, isLoading, error } = (trpc.profiles as any).getByTwitterId.useQuery(
     { twitterId: twitterId || "" },
     { enabled: !!twitterId }
   );

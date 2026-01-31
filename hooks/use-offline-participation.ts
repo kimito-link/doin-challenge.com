@@ -84,7 +84,6 @@ export function useOfflineParticipation(options: UseOfflineParticipationOptions 
             displayName: data.displayName,
             username: data.username,
             profileImage: data.profileImage,
-            followersCount: data.followersCount,
             message: data.message,
             companionCount: data.companionCount,
             prefecture: data.prefecture,

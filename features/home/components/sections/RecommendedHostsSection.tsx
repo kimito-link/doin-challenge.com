@@ -23,8 +23,8 @@ export function RecommendedHostsSection() {
     return () => clearTimeout(timer);
   }, []);
   
-  const { data: hosts, isLoading } = trpc.profiles.recommendedHosts.useQuery(
-    { limit: 5 },
+  const { data: hosts, isLoading } = (trpc.profiles as any).recommendedHosts.useQuery(
+    { limit: 5 } as any,
     { enabled: shouldLoad } // 遅延読み込み
   );
 
@@ -44,7 +44,7 @@ export function RecommendedHostsSection() {
         </Text>
         <ScrollView horizontal showsHorizontalScrollIndicator={false}>
           <View style={{ flexDirection: "row", gap: 16 }}>
-            {hosts.map((host) => (
+            {hosts.map((host: any) => (
               <Button
                 key={host.userId}
                 variant="ghost"

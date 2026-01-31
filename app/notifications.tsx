@@ -48,14 +48,14 @@ export default function NotificationsScreen() {
     { limit: 20 },
     {
       enabled: isAuthenticated,
-      getNextPageParam: (lastPage) => lastPage.nextCursor,
+      getNextPageParam: (lastPage: any) => lastPage.nextCursor,
       staleTime: 5 * 60 * 1000, // 5分間キャッシュを保持
       gcTime: 30 * 60 * 1000, // 30分間キャッシュを保持
     }
   );
 
   // ページをフラット化
-  const notificationList = data?.pages.flatMap(page => page.items) ?? [];
+  const notificationList = data?.pages.flatMap((page: any) => page.items) ?? [];
 
   // ローディング状態を分離
   const hasData = notificationList.length > 0;

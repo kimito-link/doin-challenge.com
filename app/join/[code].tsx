@@ -39,7 +39,7 @@ export default function JoinScreen() {
   );
 
   // v6.10: OGPメタ情報を取得
-  const { data: ogpMeta } = trpc.ogp.getInviteOgpMeta.useQuery(
+  const { data: ogpMeta } = (trpc.ogp as any).getInviteOgpMeta.useQuery(
     { code: code || "" },
     { enabled: !!code }
   );

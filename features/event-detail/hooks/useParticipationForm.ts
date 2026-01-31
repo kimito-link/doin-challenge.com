@@ -163,8 +163,8 @@ export function useParticipationForm({
       await refetch();
       
       // Set participant number (from mutation response)
-      if (data?.participantNumber) {
-        setParticipantNumber(data.participantNumber);
+      if ((data as any)?.participantNumber) {
+        setParticipantNumber((data as any).participantNumber);
       }
       
       // Scroll to messages
@@ -317,14 +317,13 @@ export function useParticipationForm({
           message,
           companionCount: companions.length,
           prefecture,
-          gender: gender || "unspecified",
+          ...(gender && { gender: gender as "male" | "female" | "unspecified" }),
           twitterId,
           displayName: user.name || "ゲスト",
           username: user.username ?? undefined,
           profileImage: user.profileImage ?? undefined,
-          followersCount: user.followersCount ?? undefined,
           companions: companionData,
-        });
+        } as any);
       }, 100);
     }
   };

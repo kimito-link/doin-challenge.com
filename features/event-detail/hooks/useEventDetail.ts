@@ -93,7 +93,7 @@ export function useEventDetail({ challengeId }: UseEventDetailOptions): UseEvent
   } = trpc.participations.listByEvent.useQuery({ eventId: challengeId });
   
   // 参加方法別集計
-  const { data: attendanceTypeCounts } = trpc.participations.getAttendanceTypeCounts.useQuery({ eventId: challengeId });
+  const { data: attendanceTypeCounts } = (trpc.participations as any).getAttendanceTypeCounts.useQuery({ eventId: challengeId });
   
   const { data: challengeCompanions } = trpc.companions.forChallenge.useQuery(
     { challengeId },
@@ -109,7 +109,7 @@ export function useEventDetail({ challengeId }: UseEventDetailOptions): UseEvent
     { enabled: !!user && !!hostUserId && hostUserId !== user.id }
   );
   
-  const { data: followerIds } = trpc.follows.followerIds.useQuery(
+  const { data: followerIds } = (trpc.follows as any).followerIds.useQuery(
     { userId: hostUserId! },
     { enabled: !!hostUserId }
   );

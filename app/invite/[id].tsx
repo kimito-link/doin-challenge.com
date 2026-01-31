@@ -50,7 +50,7 @@ export default function InviteScreen() {
   console.log("[InviteScreen] id:", id, "challengeId:", challengeId, "isValidId:", isValidId, "challenge:", challenge?.id);
 
   const createInviteMutation = trpc.invitations.create.useMutation({
-    onSuccess: (data) => {
+    onSuccess: (data: any) => {
       setInviteCode(data.code);
       setIsCreatingInvite(false);
       // OGP画像をリセット
@@ -63,7 +63,7 @@ export default function InviteScreen() {
 
   // v6.10: OGP画像生成ミューテーション
   const generateOgpMutation = trpc.ogp.generateInviteOgp.useMutation({
-    onSuccess: (data) => {
+    onSuccess: (data: any) => {
       setOgpImageUrl(data.url || null);
       setIsGeneratingOgp(false);
     },
@@ -85,9 +85,9 @@ export default function InviteScreen() {
     setIsCreatingInvite(true);
     createInviteMutation.mutate({
       challengeId: parseInt(id),
-      customMessage: customMessage.trim() || undefined,
-      customTitle: customTitle.trim() || undefined,
-    });
+      ...(customMessage.trim() && { customMessage: customMessage.trim() }),
+      ...(customTitle.trim() && { customTitle: customTitle.trim() }),
+    } as any);
   };
 
   // 初回は自動で招待リンクを作成（カスタムメッセージなし）

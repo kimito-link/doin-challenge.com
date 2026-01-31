@@ -62,7 +62,7 @@ export function FanProfileModal({
   const [error, setError] = useState<string | null>(null);
 
   // 推し活状況を取得
-  const { data: oshikatsuData, isLoading: oshikatsuLoading } = trpc.profiles.getOshikatsuStats.useQuery(
+  const { data: oshikatsuData, isLoading: oshikatsuLoading } = (trpc.profiles as any).getOshikatsuStats.useQuery(
     { userId: userId!, twitterId: twitterId },
     { enabled: visible && (!!userId || !!twitterId) }
   );

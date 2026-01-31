@@ -60,15 +60,13 @@ export function useMypageActions({
     targetDisplayName, 
     updateFollowStatus, 
     refreshFromServer, 
-    refreshing, 
-    checkFollowStatusFromServer, 
-    checkingFollowStatus 
+    refreshing
   } = useFollowStatus();
 
   // フォロー状態を再確認（再認証なし）
   const handleRefreshFollowStatus = async () => {
     console.log("[MyPage] Refreshing follow status without re-auth...");
-    await checkFollowStatusFromServer();
+    await refreshFromServer();
   };
   
   const [isLoggingIn, setIsLoggingIn] = useState(false);
@@ -87,15 +85,15 @@ export function useMypageActions({
   // ログイン後に非同期でフォローステータスを確認
   const hasCheckedFollowStatus = useRef(false);
   useEffect(() => {
-    if (hasCheckedFollowStatus.current || checkingFollowStatus) {
+    if (hasCheckedFollowStatus.current) {
       return;
     }
     if (isAuthenticated && user && user.isFollowingTarget === undefined) {
       console.log("[MyPage] Checking follow status in background (once)...");
       hasCheckedFollowStatus.current = true;
-      checkFollowStatusFromServer();
+      refreshFromServer();
     }
-  }, [isAuthenticated, user, checkingFollowStatus, checkFollowStatusFromServer]);
+  }, [isAuthenticated, user, refreshFromServer]);
 
   const handleLoginButtonPress = () => {
     setShowLoginConfirmModal(true);

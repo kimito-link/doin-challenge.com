@@ -19,50 +19,50 @@ export function TicketTransferSection({ challengeId, challengeTitle }: TicketTra
   const [showWaitlistModal, setShowWaitlistModal] = useState(false);
   
   // 譲渡投稿一覧
-  const { data: transfers, refetch: refetchTransfers } = trpc.ticketTransfer.listByChallenge.useQuery(
+  const { data: transfers, refetch: refetchTransfers } = (trpc as any).ticketTransfer.listByChallenge.useQuery(
     { challengeId },
     { enabled: challengeId > 0 }
   );
   
   // 待機リスト
-  const { data: waitlist, refetch: refetchWaitlist } = trpc.ticketWaitlist.listByChallenge.useQuery(
+  const { data: waitlist, refetch: refetchWaitlist } = (trpc as any).ticketWaitlist.listByChallenge.useQuery(
     { challengeId },
     { enabled: challengeId > 0 }
   );
   
   // 自分が待機リストに登録しているか
-  const { data: isInWaitlist, refetch: refetchIsInWaitlist } = trpc.ticketWaitlist.isInWaitlist.useQuery(
+  const { data: isInWaitlist, refetch: refetchIsInWaitlist } = (trpc as any).ticketWaitlist.isInWaitlist.useQuery(
     { challengeId },
     { enabled: !!user && challengeId > 0 }
   );
   
   // 譲渡投稿作成
-  const createTransferMutation = trpc.ticketTransfer.create.useMutation({
+  const createTransferMutation = (trpc as any).ticketTransfer.create.useMutation({
     onSuccess: () => {
       Alert.alert("投稿完了", "チケット譲渡の投稿が完了しました");
       setShowCreateModal(false);
       refetchTransfers();
     },
-    onError: (error) => {
+    onError: (error: any) => {
       Alert.alert("エラー", error.message || "投稿に失敗しました");
     },
   });
   
   // 待機リスト登録
-  const addToWaitlistMutation = trpc.ticketWaitlist.add.useMutation({
+  const addToWaitlistMutation = (trpc as any).ticketWaitlist.add.useMutation({
     onSuccess: () => {
       Alert.alert("登録完了", "待機リストに登録しました。新しい譲渡投稿があれば通知します。");
       setShowWaitlistModal(false);
       refetchWaitlist();
       refetchIsInWaitlist();
     },
-    onError: (error) => {
+    onError: (error: any) => {
       Alert.alert("エラー", error.message || "登録に失敗しました");
     },
   });
   
   // 待機リスト解除
-  const removeFromWaitlistMutation = trpc.ticketWaitlist.remove.useMutation({
+  const removeFromWaitlistMutation = (trpc as any).ticketWaitlist.remove.useMutation({
     onSuccess: () => {
       Alert.alert("解除完了", "待機リストから解除しました");
       refetchWaitlist();
@@ -71,7 +71,7 @@ export function TicketTransferSection({ challengeId, challengeTitle }: TicketTra
   });
   
   // 譲渡投稿キャンセル
-  const cancelTransferMutation = trpc.ticketTransfer.cancel.useMutation({
+  const cancelTransferMutation = (trpc as any).ticketTransfer.cancel.useMutation({
     onSuccess: () => {
       Alert.alert("キャンセル完了", "譲渡投稿をキャンセルしました");
       refetchTransfers();

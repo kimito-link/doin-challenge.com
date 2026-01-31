@@ -136,7 +136,7 @@ export function useEventDetailScreen(challengeId: number): UseEventDetailScreenR
     { enabled: !!user && !!hostUserId && hostUserId !== user.id }
   );
   
-  const { data: followerIdsData } = trpc.follows.followerIds.useQuery(
+  const { data: followerIdsData } = (trpc.follows as any).followerIds.useQuery(
     { userId: hostUserId! },
     { enabled: !!hostUserId }
   );
@@ -183,7 +183,7 @@ export function useEventDetailScreen(challengeId: number): UseEventDetailScreenR
       setDeleteTargetParticipation(null);
       await refetchParticipations();
     },
-    onError: (error) => {
+    onError: (error: any) => {
       Alert.alert("エラー", error.message || "削除に失敗しました");
     },
   });
@@ -217,7 +217,7 @@ export function useEventDetailScreen(challengeId: number): UseEventDetailScreenR
         setShowSharePrompt(true);
       }, 2000);
     },
-    onError: (error) => {
+    onError: (error: any) => {
       Alert.alert("参加表明エラー", error.message || "参加表明の登録に失敗しました");
     },
   });
@@ -230,7 +230,7 @@ export function useEventDetailScreen(challengeId: number): UseEventDetailScreenR
     },
   });
   
-  const updateParticipationMutation = trpc.participations.update.useMutation({
+  const updateParticipationMutation = (trpc.participations as any).update.useMutation({
     onSuccess: async () => {
       resetForm();
       setIsEditMode(false);
@@ -238,7 +238,7 @@ export function useEventDetailScreen(challengeId: number): UseEventDetailScreenR
       await refetchParticipations();
       Alert.alert("更新完了", "参加表明を更新しました");
     },
-    onError: (error) => {
+    onError: (error: any) => {
       Alert.alert("更新に失敗しました", error.message || "もう一度お試しください");
     },
   });
@@ -247,7 +247,7 @@ export function useEventDetailScreen(challengeId: number): UseEventDetailScreenR
     onSuccess: () => {
       Alert.alert("👏", "エールを送りました！");
     },
-    onError: (error) => {
+    onError: (error: any) => {
       Alert.alert("エラー", error.message || "エールの送信に失敗しました");
     },
   });
@@ -356,18 +356,17 @@ export function useEventDetailScreen(challengeId: number): UseEventDetailScreenR
       twitterId: twitterId || undefined,
       username: user.username || undefined,
       profileImage: user.profileImage || undefined,
-      followersCount: user.followersCount || undefined,
       message: message.trim() || undefined,
       companionCount: companions.length,
       prefecture: prefecture || undefined,
-      gender: gender || undefined,
+      ...(gender && { gender }),
       companions: companions.map(c => ({
         displayName: c.displayName,
         twitterUsername: c.twitterUsername || undefined,
         twitterId: c.twitterId,
         profileImage: c.profileImage,
       })),
-    });
+    } as any);
   }, [user, challengeId, message, companions, prefecture, gender, createParticipationMutation]);
   
   const submitAnonymousParticipation = useCallback(() => {

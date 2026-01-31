@@ -33,7 +33,6 @@ export function initSyncHandlers(): void {
         displayName: payload.displayName as string,
         username: payload.username as string | undefined,
         profileImage: payload.profileImage as string | undefined,
-        followersCount: payload.followersCount as number | undefined,
         message: payload.message as string | undefined,
         companionCount: payload.companionCount as number | undefined,
         prefecture: payload.prefecture as string | undefined,
