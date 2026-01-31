@@ -27,6 +27,11 @@ export interface Challenge {
   status: string;
   /** 直近24時間の新規参加者数（オプション） */
   recentParticipants?: number;
+  /** v6.176: 性別統計（オプション） */
+  maleCount?: number;
+  femaleCount?: number;
+  unspecifiedCount?: number;
+  totalParticipants?: number;
 }
 
 /** フィルタータイプ */
