@@ -449,7 +449,7 @@ GPTから「設計は完璧」との評価を受け、1点だけ追加推奨が�
 - [x] docs/gpt-consultation-version-management.mdにBuild/Toolchainパターンを追加
 
 #### 3. チェックポイント作成
-- [ ] v6.XXXのチェックポイントを作成
+- [x] v6.XXXのチェックポイントを作成
 - [ ] GitHubにプッシュ
 
 ### GPTの評価
@@ -461,3 +461,81 @@ GPTから「設計は完璧」との評価を受け、1点だけ追加推奨が�
 1. **diff-check を"1回わざと鳴らすPR"を作る**（OAuth or build config に軽く触る）
 2. それが通れば、Gate 1は"完成"
 3. 次は Gate 2（主要フロー保証）に進んでOK
+
+---
+
+## 🎯 Gate 1完成と性別統計表示機能の再実装 (2026-01-31)
+
+### Phase 1: diff-checkをわざと鳴らすPRを作成
+
+#### 目的
+Gate 1が正しく動作することを確認する。
+
+#### タスク
+- [x] OAuth関連ファイルにコメントを追加（server/routers/auth.ts）
+- [x] diff-checkを実行して警告が表示されることを確認
+- [x] 警告メッセージが正しく表示されることを確認
+- [x] Gate 1は正しく動作していることを確認
+
+---
+
+### Phase 2: 性別統計表示機能の再実装（v6.174～v6.178）
+
+#### 背景
+v6.172で性別統計表示機能を実装した際、サムネイル画像とログイン機能が壊れた。
+Gate 1 + こまめなバージョン管理のワークフローに従って、段階的に再実装する。
+
+#### v6.174: データベース層
+- [ ] 性別統計を集計するSQLクエリを実装
+- [ ] SQLクエリをテスト実行して結果を確認
+- [ ] commit
+- [ ] バージョン番号を更新（shared/version.ts）
+- [ ] checkpoint
+- [ ] diff-check実行
+
+#### v6.175: API層（challenge-db.ts）
+- [ ] `getAllEventsWithGenderStats()`関数を実装
+- [ ] APIレスポンスをテスト（curl or Postman）
+- [ ] commit
+- [ ] バージョン番号を更新
+- [ ] checkpoint
+- [ ] diff-check実行
+
+#### v6.176: API層（events.ts統合）
+- [ ] `listPaginated`プロシージャを`getAllEventsWithGenderStats()`に変更
+- [ ] フロントエンドからAPIを呼び出して結果を確認
+- [ ] commit
+- [ ] バージョン番号を更新
+- [ ] checkpoint
+- [ ] diff-check実行
+
+#### v6.177: UI層（GenderStatsコンポーネント統合）
+- [ ] `ColorfulChallengeCard`に性別統計を表示
+- [ ] サムネイル画像が正しく表示されることを確認
+- [ ] commit
+- [ ] バージョン番号を更新
+- [ ] checkpoint
+- [ ] diff-check実行
+
+#### v6.178: 統合テスト完了
+- [ ] ホーム画面でサムネイル・性別統計が両方表示されることを確認
+- [ ] ログイン機能が正しく動作することを確認
+- [ ] commit
+- [ ] バージョン番号を更新
+- [ ] checkpoint
+- [ ] diff-check実行
+
+---
+
+### Phase 3: Gate 2の設計
+
+#### 目的
+主要フロー保証（E2Eテスト）、Visual Regression Test、パフォーマンステストなど、次のレベルの品質保証を検討する。
+
+#### タスク
+- [ ] Gate 2の目的を定義
+- [ ] E2Eテストの範囲を定義
+- [ ] Visual Regression Testの範囲を定義
+- [ ] パフォーマンステストの範囲を定義
+- [ ] Gate 2の実装計画を作成
+- [ ] docs/gate2-design.mdを作成
