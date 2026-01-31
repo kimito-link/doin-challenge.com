@@ -94,7 +94,7 @@ export function ChallengeCard({
         )}
         <View style={{ position: "absolute", bottom: -16, left: 12 }}>
           <LazyAvatar
-            source={challenge.hostProfileImage ? { uri: challenge.hostProfileImage } : undefined}
+            source={challenge.hostProfileImage && challenge.hostProfileImage.trim() !== "" ? { uri: challenge.hostProfileImage } : undefined}
             size={32}
             fallbackColor={homeColor.fallback}
             fallbackText={challenge.hostName?.charAt(0) || challenge.hostUsername?.charAt(0) || "?"}
