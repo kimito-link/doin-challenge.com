@@ -106,6 +106,7 @@ export function EventHeaderSection({
         showDescription
         onPress={onShowHostProfile}
         className="mb-4"
+        onGradient
       />
       
       {/* フォローボタン */}
@@ -131,7 +132,7 @@ export function EventHeaderSection({
         )}
       </View>
 
-      <Text style={{ color: colors.foreground, fontSize: 22, fontWeight: "bold" }}>
+      <Text style={{ color: color.textWhite, fontSize: 22, fontWeight: "bold" }}>
         {challenge.title}
       </Text>
     </LinearGradient>

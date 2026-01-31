@@ -32,6 +32,8 @@ export interface TwitterUserCardProps {
   onPress?: () => void;
   /** 追加のスタイル */
   className?: string;
+  /** グラデーション背景上で使用するか（テキスト色を白色に変更） */
+  onGradient?: boolean;
 }
 
 /**
@@ -49,6 +51,7 @@ export function TwitterUserCard({
   showFollowers = true,
   onPress,
   className,
+  onGradient = false,
 }: TwitterUserCardProps) {
   // サイズに応じた設定
   const sizeConfig = {
@@ -117,7 +120,7 @@ export function TwitterUserCard({
           style={{ 
             fontSize: config.nameSize, 
             lineHeight: config.nameSize * 1.3,
-            color: color.textPrimary,
+            color: onGradient ? color.textWhite : color.textPrimary,
           }}
           numberOfLines={1}
         >
@@ -188,7 +191,7 @@ export function TwitterUserCard({
             style={{ 
               fontSize: config.descriptionSize, 
               lineHeight: config.descriptionSize * 1.5, 
-              color: color.textMuted, 
+              color: onGradient ? color.textWhite : color.textMuted, 
               marginTop: 4,
               flexWrap: 'wrap',
             }}
