@@ -8,6 +8,8 @@ import { Image } from "expo-image";
 import MaterialIcons from "@expo/vector-icons/MaterialIcons";
 import { color } from "@/theme/tokens";
 import { useColors } from "@/hooks/use-colors";
+import { LoginModal } from "@/components/common/LoginModal";
+import { useState } from "react";
 
 interface UserInfoSectionProps {
   user: {
@@ -82,33 +84,55 @@ function UserInfoDisplay({
 // ログイン促進
 function LoginPrompt({ login }: { login: () => void }) {
   const colors = useColors();
+  const [showLoginModal, setShowLoginModal] = useState(false);
+  
+  const handleLoginClick = () => {
+    setShowLoginModal(true);
+  };
+  
+  const handleConfirmLogin = () => {
+    setShowLoginModal(false);
+    login();
+  };
+  
+  const handleCancelLogin = () => {
+    setShowLoginModal(false);
+  };
   
   return (
-    <View style={{ marginBottom: 16, backgroundColor: "rgba(236, 72, 153, 0.1)", borderRadius: 12, padding: 16, borderWidth: 1, borderColor: color.accentPrimary }}>
-      <Text style={{ color: color.accentPrimary, fontSize: 14, fontWeight: "600", marginBottom: 8 }}>
-        ログインが必要です
-      </Text>
-      <Text style={{ color: color.textSecondary, fontSize: 13, marginBottom: 12 }}>
-        参加表明にはTwitterログインが必要です。
-      </Text>
-      <Pressable
-        onPress={() => login()}
-        style={{
-          backgroundColor: color.twitter,
-          borderRadius: 8,
-          paddingVertical: 12,
-          paddingHorizontal: 16,
-          flexDirection: "row",
-          alignItems: "center",
-          justifyContent: "center",
-          gap: 8,
-        }}
-      >
-        <MaterialIcons name="login" size={20} color={colors.foreground} />
-        <Text style={{ color: colors.foreground, fontSize: 14, fontWeight: "600" }}>
-          X（Twitter）でログイン
+    <>
+      <View style={{ marginBottom: 16, backgroundColor: "rgba(236, 72, 153, 0.1)", borderRadius: 12, padding: 16, borderWidth: 1, borderColor: color.accentPrimary }}>
+        <Text style={{ color: color.accentPrimary, fontSize: 14, fontWeight: "600", marginBottom: 8 }}>
+          ログインが必要です
         </Text>
-      </Pressable>
-    </View>
+        <Text style={{ color: color.textSecondary, fontSize: 13, marginBottom: 12 }}>
+          参加表明にはTwitterログインが必要です。
+        </Text>
+        <Pressable
+          onPress={handleLoginClick}
+          style={{
+            backgroundColor: color.twitter,
+            borderRadius: 8,
+            paddingVertical: 12,
+            paddingHorizontal: 16,
+            flexDirection: "row",
+            alignItems: "center",
+            justifyContent: "center",
+            gap: 8,
+          }}
+        >
+          <MaterialIcons name="login" size={20} color={colors.foreground} />
+          <Text style={{ color: colors.foreground, fontSize: 14, fontWeight: "600" }}>
+            X（Twitter）でログイン
+          </Text>
+        </Pressable>
+      </View>
+      
+      <LoginModal
+        visible={showLoginModal}
+        onConfirm={handleConfirmLogin}
+        onCancel={handleCancelLogin}
+      />
+    </>
   );
 }

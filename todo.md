@@ -463,16 +463,16 @@
 - [x] use-offline-participation.tsのfollowersCountエラーを修正
 - [x] sync-handlers.tsのfollowersCountエラーを修正
 - [x] useHomeData.tsのsearchエラーを修正
-- [ ] その他のTypeScriptエラーを修正（60件残り）
+- [x] その他のTypeScriptエラーを修正（60件→0件）
 
 ### ログインUI統一
-- [ ] ホーム画面のログインボタンをLoginModalに統一
-- [ ] チャレンジ画面のログインボタンをLoginModalに統一
+- [x] ホーム画面のログインボタンをLoginModalに統一
+- [x] チャレンジ画面のログインボタンをLoginModalに統一
 - [ ] 既存のログインUIを削除
 
 ### 動作確認
-- [ ] TypeScriptエラーがゼロになったことを確認
-- [ ] ホーム画面のログインボタンが正常に動作することを確認
+- [x] TypeScriptエラーがゼロになったことを確認
+- [x] ホーム画面のログインボタンが正常に動作することを確認
 - [ ] チャレンジ画面のログインボタンが正常に動作することを確認
 
 ### チェックポイント
