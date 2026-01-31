@@ -1,18 +1,13 @@
-import { View, Text, ScrollView, Pressable, StyleSheet, Platform, Share } from "react-native";
-import * as Haptics from "expo-haptics";
-import { color } from "@/theme/tokens";
+import { ScrollView, Text, View, TouchableOpacity, Share, Alert } from "react-native";
 import { Image } from "expo-image";
-import { useLocalSearchParams } from "expo-router";
-import { navigateBack } from "@/lib/navigation/app-routes";
-import { ScreenContainer } from "@/components/organisms/screen-container";
+import { useLocalSearchParams, useRouter } from "expo-router";
+import { ScreenContainer } from "@/components/screen-container";
 import { trpc } from "@/lib/trpc";
 import { useAuth } from "@/hooks/use-auth";
-import { useColors } from "@/hooks/use-colors";
 import MaterialIcons from "@expo/vector-icons/MaterialIcons";
-import { EmojiIcon } from "@/components/ui/emoji-icon";
 import { LinearGradient } from "expo-linear-gradient";
 import { useState } from "react";
-import { AppHeader } from "@/components/organisms/app-header";
+import { AppHeader } from "@/components/app-header";
 
 type Participation = {
   id: number;
@@ -28,8 +23,7 @@ type Participation = {
 };
 
 export default function AchievementPage() {
-  const colors = useColors();
-
+  const router = useRouter();
   const { id } = useLocalSearchParams<{ id: string }>();
   const { user } = useAuth();
   const challengeId = parseInt(id || "0", 10);
@@ -54,9 +48,9 @@ export default function AchievementPage() {
 
   if (challengeLoading || achievementLoading || participationsLoading) {
     return (
-      <ScreenContainer containerClassName="bg-background">
-        <View style={{ flex: 1, alignItems: "center", justifyContent: "center", backgroundColor: colors.background }}>
-          <Text style={{ color: color.textMuted }}>読み込み中...</Text>
+      <ScreenContainer containerClassName="bg-[#0D1117]">
+        <View style={{ flex: 1, alignItems: "center", justifyContent: "center", backgroundColor: "#0D1117" }}>
+          <Text style={{ color: "#9CA3AF" }}>読み込み中...</Text>
         </View>
       </ScreenContainer>
     );
@@ -64,9 +58,9 @@ export default function AchievementPage() {
 
   if (!challenge) {
     return (
-      <ScreenContainer containerClassName="bg-background">
-        <View style={{ flex: 1, alignItems: "center", justifyContent: "center", backgroundColor: colors.background }}>
-          <Text style={{ color: color.textMuted }}>チャレンジが見つかりません</Text>
+      <ScreenContainer containerClassName="bg-[#0D1117]">
+        <View style={{ flex: 1, alignItems: "center", justifyContent: "center", backgroundColor: "#0D1117" }}>
+          <Text style={{ color: "#9CA3AF" }}>チャレンジが見つかりません</Text>
         </View>
       </ScreenContainer>
     );
@@ -74,18 +68,15 @@ export default function AchievementPage() {
 
   if (!achievementPage) {
     return (
-      <ScreenContainer containerClassName="bg-background">
-        <View style={{ flex: 1, alignItems: "center", justifyContent: "center", backgroundColor: colors.background }}>
-          <Text style={{ color: color.textMuted }}>達成記念ページはまだ作成されていません</Text>
-          <Pressable
-            onPress={() => {
-              if (Platform.OS !== "web") Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-              navigateBack();
-            }}
-            style={({ pressed }) => [{ marginTop: 16, paddingHorizontal: 24, paddingVertical: 12, backgroundColor: color.accentPrimary, borderRadius: 24 }, pressed && { opacity: 0.8, transform: [{ scale: 0.97 }] }]}
+      <ScreenContainer containerClassName="bg-[#0D1117]">
+        <View style={{ flex: 1, alignItems: "center", justifyContent: "center", backgroundColor: "#0D1117" }}>
+          <Text style={{ color: "#9CA3AF" }}>達成記念ページはまだ作成されていません</Text>
+          <TouchableOpacity
+            onPress={() => router.back()}
+            style={{ marginTop: 16, paddingHorizontal: 24, paddingVertical: 12, backgroundColor: "#EC4899", borderRadius: 24 }}
           >
-            <Text style={{ color: colors.foreground, fontWeight: "bold" }}>戻る</Text>
-          </Pressable>
+            <Text style={{ color: "#fff", fontWeight: "bold" }}>戻る</Text>
+          </TouchableOpacity>
         </View>
       </ScreenContainer>
     );
@@ -96,44 +87,42 @@ export default function AchievementPage() {
   const displayedParticipants = showAllParticipants ? participations : participations?.slice(0, 20);
 
   return (
-    <ScreenContainer containerClassName="bg-background">
-      <ScrollView style={{ flex: 1, backgroundColor: colors.background }}>
+    <ScreenContainer containerClassName="bg-[#0D1117]">
+      <ScrollView style={{ flex: 1, backgroundColor: "#0D1117" }}>
         {/* ヘッダー */}
         <AppHeader 
-          title="君斗りんくの動員ちゃれんじ" 
+          title="動員ちゃれんじ" 
           showCharacters={false}
           rightElement={
             <View style={{ flexDirection: "row", alignItems: "center", gap: 16 }}>
-              <Pressable onPress={() => { if (Platform.OS !== "web") Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light); handleShare(); }} style={({ pressed }) => [pressed && { opacity: 0.7, transform: [{ scale: 0.97 }] }]}>
-                <MaterialIcons name="share" size={24} color={colors.foreground} />
-              </Pressable>
-              <Pressable
-                onPress={() => { if (Platform.OS !== "web") Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light); navigateBack(); }}
-                style={({ pressed }) => [{ flexDirection: "row", alignItems: "center" }, pressed && { opacity: 0.7, transform: [{ scale: 0.97 }] }]}
+              <TouchableOpacity onPress={handleShare}>
+                <MaterialIcons name="share" size={24} color="#fff" />
+              </TouchableOpacity>
+              <TouchableOpacity
+                onPress={() => router.back()}
+                style={{ flexDirection: "row", alignItems: "center" }}
               >
-                <MaterialIcons name="arrow-back" size={24} color={colors.foreground} />
-                <Text style={{ color: colors.foreground, marginLeft: 8 }}>戻る</Text>
-              </Pressable>
+                <MaterialIcons name="arrow-back" size={24} color="#fff" />
+                <Text style={{ color: "#fff", marginLeft: 8 }}>戻る</Text>
+              </TouchableOpacity>
             </View>
           }
         />
         <View style={{ paddingHorizontal: 16, paddingBottom: 8 }}>
-          <Text style={{ color: colors.foreground, fontSize: 18, fontWeight: "bold" }}>
+          <Text style={{ color: "#fff", fontSize: 18, fontWeight: "bold" }}>
             達成記念ページ
           </Text>
         </View>
 
         {/* 達成バナー */}
         <LinearGradient
-          colors={[color.accentPrimary, color.accentAlt, "#6366F1"]}
+          colors={["#EC4899", "#8B5CF6", "#6366F1"]}
           start={{ x: 0, y: 0 }}
           end={{ x: 1, y: 1 }}
           style={{ marginHorizontal: 16, borderRadius: 24, padding: 24, alignItems: "center" }}
         >
-          <View style={{ marginBottom: 8 }}>
-            <EmojiIcon emoji="🎉" size={64} />
-          </View>
-          <Text style={{ color: colors.foreground, fontSize: 28, fontWeight: "bold", textAlign: "center", marginBottom: 8 }}>
+          <Text style={{ fontSize: 64, marginBottom: 8 }}>🎉</Text>
+          <Text style={{ color: "#fff", fontSize: 28, fontWeight: "bold", textAlign: "center", marginBottom: 8 }}>
             目標達成！
           </Text>
           <Text style={{ color: "rgba(255,255,255,0.9)", fontSize: 18, textAlign: "center" }}>
@@ -145,53 +134,53 @@ export default function AchievementPage() {
         <View style={{ padding: 16 }}>
           <View
             style={{
-              backgroundColor: color.surface,
+              backgroundColor: "#1A1D21",
               borderRadius: 16,
               padding: 20,
               borderWidth: 1,
-              borderColor: color.border,
+              borderColor: "#2D3139",
             }}
           >
             <View style={{ flexDirection: "row", justifyContent: "space-around", marginBottom: 20 }}>
               <View style={{ alignItems: "center" }}>
-                <Text style={{ color: color.accentPrimary, fontSize: 36, fontWeight: "bold" }}>
+                <Text style={{ color: "#EC4899", fontSize: 36, fontWeight: "bold" }}>
                   {achievementPage.finalValue}
                 </Text>
-                <Text style={{ color: color.textMuted, fontSize: 12 }}>
+                <Text style={{ color: "#9CA3AF", fontSize: 12 }}>
                   達成{challenge.goalUnit || "人"}数
                 </Text>
               </View>
-              <View style={{ width: 1, backgroundColor: color.border }} />
+              <View style={{ width: 1, backgroundColor: "#2D3139" }} />
               <View style={{ alignItems: "center" }}>
-                <Text style={{ color: color.accentAlt, fontSize: 36, fontWeight: "bold" }}>
+                <Text style={{ color: "#8B5CF6", fontSize: 36, fontWeight: "bold" }}>
                   {achievementPage.totalParticipants}
                 </Text>
-                <Text style={{ color: color.textMuted, fontSize: 12 }}>
+                <Text style={{ color: "#9CA3AF", fontSize: 12 }}>
                   参加者数
                 </Text>
               </View>
-              <View style={{ width: 1, backgroundColor: color.border }} />
+              <View style={{ width: 1, backgroundColor: "#2D3139" }} />
               <View style={{ alignItems: "center" }}>
                 <Text style={{ color: "#6366F1", fontSize: 36, fontWeight: "bold" }}>
                   {Math.round((achievementPage.finalValue / achievementPage.goalValue) * 100)}%
                 </Text>
-                <Text style={{ color: color.textMuted, fontSize: 12 }}>
+                <Text style={{ color: "#9CA3AF", fontSize: 12 }}>
                   達成率
                 </Text>
               </View>
             </View>
 
-            <View style={{ borderTopWidth: 1, borderTopColor: color.border, paddingTop: 16 }}>
+            <View style={{ borderTopWidth: 1, borderTopColor: "#2D3139", paddingTop: 16 }}>
               <View style={{ flexDirection: "row", alignItems: "center", marginBottom: 8 }}>
-                <MaterialIcons name="event" size={16} color={color.hostAccentLegacy} />
-                <Text style={{ color: color.textMuted, fontSize: 14, marginLeft: 8 }}>
+                <MaterialIcons name="event" size={16} color="#DD6500" />
+                <Text style={{ color: "#9CA3AF", fontSize: 14, marginLeft: 8 }}>
                   達成日: {formattedDate}
                 </Text>
               </View>
               {challenge.venue && (
                 <View style={{ flexDirection: "row", alignItems: "center" }}>
-                  <MaterialIcons name="place" size={16} color={color.textMuted} />
-                  <Text style={{ color: color.textMuted, fontSize: 14, marginLeft: 8 }}>
+                  <MaterialIcons name="place" size={16} color="#9CA3AF" />
+                  <Text style={{ color: "#9CA3AF", fontSize: 14, marginLeft: 8 }}>
                     {challenge.venue}
                   </Text>
                 </View>
@@ -205,14 +194,14 @@ export default function AchievementPage() {
           <View style={{ paddingHorizontal: 16, marginBottom: 16 }}>
             <View
               style={{
-                backgroundColor: color.surface,
+                backgroundColor: "#1A1D21",
                 borderRadius: 16,
                 padding: 20,
                 borderWidth: 1,
-                borderColor: color.border,
+                borderColor: "#2D3139",
               }}
             >
-              <Text style={{ color: colors.foreground, fontSize: 16, lineHeight: 24 }}>
+              <Text style={{ color: "#fff", fontSize: 16, lineHeight: 24 }}>
                 {achievementPage.message}
               </Text>
             </View>
@@ -223,20 +212,20 @@ export default function AchievementPage() {
         <View style={{ padding: 16 }}>
           <View
             style={{
-              backgroundColor: color.surface,
+              backgroundColor: "#1A1D21",
               borderRadius: 16,
               padding: 20,
               borderWidth: 1,
-              borderColor: color.border,
+              borderColor: "#2D3139",
             }}
           >
             <View style={{ flexDirection: "row", alignItems: "center", marginBottom: 16 }}>
-              <MaterialIcons name="people" size={24} color={color.accentPrimary} />
-              <Text style={{ color: colors.foreground, fontSize: 18, fontWeight: "bold", marginLeft: 8 }}>
+              <MaterialIcons name="people" size={24} color="#EC4899" />
+              <Text style={{ color: "#fff", fontSize: 18, fontWeight: "bold", marginLeft: 8 }}>
                 参加者の皆さん
               </Text>
               <View style={{ flex: 1 }} />
-              <Text style={{ color: color.textMuted, fontSize: 14 }}>
+              <Text style={{ color: "#9CA3AF", fontSize: 14 }}>
                 {participations?.length || 0}人
               </Text>
             </View>
@@ -263,25 +252,25 @@ export default function AchievementPage() {
                         width: 48,
                         height: 48,
                         borderRadius: 24,
-                        backgroundColor: color.accentPrimary,
+                        backgroundColor: "#EC4899",
                         alignItems: "center",
                         justifyContent: "center",
                         marginBottom: 4,
                       }}
                     >
-                      <Text style={{ color: colors.foreground, fontSize: 18, fontWeight: "bold" }}>
+                      <Text style={{ color: "#fff", fontSize: 18, fontWeight: "bold" }}>
                         {(p.isAnonymous ? "匿" : p.displayName.charAt(0))}
                       </Text>
                     </View>
                   )}
                   <Text
-                    style={{ color: color.textMuted, fontSize: 10, textAlign: "center" }}
+                    style={{ color: "#9CA3AF", fontSize: 10, textAlign: "center" }}
                     numberOfLines={1}
                   >
                     {p.isAnonymous ? "匿名" : p.displayName}
                   </Text>
                   {p.contribution > 1 && (
-                    <Text style={{ color: color.accentPrimary, fontSize: 10 }}>
+                    <Text style={{ color: "#EC4899", fontSize: 10 }}>
                       +{p.contribution}
                     </Text>
                   )}
@@ -291,20 +280,20 @@ export default function AchievementPage() {
 
             {/* もっと見るボタン */}
             {participations && participations.length > 20 && !showAllParticipants && (
-              <Pressable
-                onPress={() => { if (Platform.OS !== "web") Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light); setShowAllParticipants(true); }}
-                style={({ pressed }) => [{
+              <TouchableOpacity
+                onPress={() => setShowAllParticipants(true)}
+                style={{
                   marginTop: 16,
                   paddingVertical: 12,
-                  backgroundColor: color.border,
+                  backgroundColor: "#2D3139",
                   borderRadius: 12,
                   alignItems: "center",
-                }, pressed && { opacity: 0.7, transform: [{ scale: 0.97 }] }]}
+                }}
               >
-                <Text style={{ color: color.accentPrimary, fontWeight: "bold" }}>
+                <Text style={{ color: "#EC4899", fontWeight: "bold" }}>
                   すべての参加者を見る ({participations.length - 20}人)
                 </Text>
-              </Pressable>
+              </TouchableOpacity>
             )}
           </View>
         </View>
@@ -318,10 +307,10 @@ export default function AchievementPage() {
             style={{ borderRadius: 16, padding: 24, alignItems: "center" }}
           >
             <Text style={{ fontSize: 32, marginBottom: 8 }}>💖</Text>
-            <Text style={{ color: colors.foreground, fontSize: 18, fontWeight: "bold", textAlign: "center", marginBottom: 8 }}>
+            <Text style={{ color: "#fff", fontSize: 18, fontWeight: "bold", textAlign: "center", marginBottom: 8 }}>
               ありがとうございました！
             </Text>
-            <Text style={{ color: color.textMuted, fontSize: 14, textAlign: "center", lineHeight: 22 }}>
+            <Text style={{ color: "#9CA3AF", fontSize: 14, textAlign: "center", lineHeight: 22 }}>
               皆さんの応援のおかげで目標を達成することができました。{"\n"}
               これからも一緒に応援していきましょう！
             </Text>
@@ -330,22 +319,22 @@ export default function AchievementPage() {
 
         {/* シェアボタン */}
         <View style={{ padding: 16, paddingBottom: 48 }}>
-          <Pressable
-            onPress={() => { if (Platform.OS !== "web") Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light); handleShare(); }}
-            style={({ pressed }) => [{
+          <TouchableOpacity
+            onPress={handleShare}
+            style={{
               flexDirection: "row",
               alignItems: "center",
               justifyContent: "center",
-              backgroundColor: color.twitter,
+              backgroundColor: "#1DA1F2",
               paddingVertical: 16,
               borderRadius: 24,
-            }, pressed && { opacity: 0.8, transform: [{ scale: 0.97 }] }]}
+            }}
           >
-            <MaterialIcons name="share" size={20} color={colors.foreground} />
-            <Text style={{ color: colors.foreground, fontSize: 16, fontWeight: "bold", marginLeft: 8 }}>
+            <MaterialIcons name="share" size={20} color="#fff" />
+            <Text style={{ color: "#fff", fontSize: 16, fontWeight: "bold", marginLeft: 8 }}>
               達成をシェアする
             </Text>
-          </Pressable>
+          </TouchableOpacity>
         </View>
       </ScrollView>
     </ScreenContainer>

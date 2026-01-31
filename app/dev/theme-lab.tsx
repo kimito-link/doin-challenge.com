@@ -1,10 +1,9 @@
 import { useMemo, useState } from "react";
-import { Pressable, ScrollView, StyleSheet, Text, View , Platform} from "react-native";
-import * as Haptics from "expo-haptics";
+import { Pressable, ScrollView, StyleSheet, Text, TouchableOpacity, View } from "react-native";
 
-import { ScreenContainer } from "@/components/organisms/screen-container";
-import { ThemedView } from "@/components/atoms/themed-view";
-import { IconSymbol } from "@/components/atoms/icon-symbol";
+import { ScreenContainer } from "@/components/screen-container";
+import { ThemedView } from "@/components/themed-view";
+import { IconSymbol } from "@/components/ui/icon-symbol";
 import { SchemeColors, type ColorScheme } from "@/constants/theme";
 import { useColors } from "@/hooks/use-colors";
 import { useThemeContext } from "@/lib/theme-provider";
@@ -120,7 +119,7 @@ export default function ThemeLabScreen() {
             </Text>
 
             <View className="mt-4 flex-row flex-wrap gap-2">
-              <Pressable
+              <TouchableOpacity
                 className="rounded-full px-4 py-2"
                 style={{ backgroundColor: SchemeColors[colorScheme].primary }}
                 onPress={() => {
@@ -129,8 +128,8 @@ export default function ThemeLabScreen() {
                 }}
               >
                 <Text className="text-sm font-semibold text-background">Primary</Text>
-              </Pressable>
-              <Pressable
+              </TouchableOpacity>
+              <TouchableOpacity
                 className="rounded-full px-4 py-2 border border-border"
                 style={{ backgroundColor: SchemeColors[colorScheme].surface }}
                 onPress={() => {
@@ -141,8 +140,8 @@ export default function ThemeLabScreen() {
                 <Text className="text-sm font-semibold text-foreground">
                   Surface
                 </Text>
-              </Pressable>
-              <Pressable
+              </TouchableOpacity>
+              <TouchableOpacity
                 className="rounded-full px-4 py-2"
                 style={{ backgroundColor: SchemeColors[colorScheme].success }}
                 onPress={() => {
@@ -153,8 +152,8 @@ export default function ThemeLabScreen() {
                 <Text className="text-sm font-semibold text-background">
                   Success
                 </Text>
-              </Pressable>
-              <Pressable
+              </TouchableOpacity>
+              <TouchableOpacity
                 className="rounded-full px-4 py-2"
                 style={{ backgroundColor: SchemeColors[colorScheme].warning }}
                 onPress={() => {
@@ -165,8 +164,8 @@ export default function ThemeLabScreen() {
                 <Text className="text-sm font-semibold text-background">
                   Warning
                 </Text>
-              </Pressable>
-              <Pressable
+              </TouchableOpacity>
+              <TouchableOpacity
                 className="rounded-full px-4 py-2"
                 style={{ backgroundColor: SchemeColors[colorScheme].error }}
                 onPress={() => {
@@ -177,7 +176,7 @@ export default function ThemeLabScreen() {
                 <Text className="text-sm font-semibold text-background">
                   Error
                 </Text>
-              </Pressable>
+              </TouchableOpacity>
             </View>
 
             <View className="mt-4 rounded-xl bg-background p-4 border border-border">

@@ -1,1 +1,0 @@
-ALTER TABLE `participations` ADD `followersCount` int DEFAULT 0;

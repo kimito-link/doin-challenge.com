@@ -1,11 +1,7 @@
 import { describe, it, expect } from "vitest";
 
 describe("Twitter OAuth 2.0 Configuration", () => {
-  // These tests require environment variables that are only available in production
-  // Skip in CI environment where secrets are not available
-  const hasTwitterCredentials = !!process.env.TWITTER_CLIENT_ID && !!process.env.TWITTER_CLIENT_SECRET;
-
-  it.skipIf(!hasTwitterCredentials)("should have TWITTER_CLIENT_ID configured", () => {
+  it("should have TWITTER_CLIENT_ID configured", () => {
     const clientId = process.env.TWITTER_CLIENT_ID;
     expect(clientId).toBeDefined();
     expect(clientId).not.toBe("");
@@ -13,7 +9,7 @@ describe("Twitter OAuth 2.0 Configuration", () => {
     console.log("TWITTER_CLIENT_ID is configured:", clientId?.substring(0, 10) + "...");
   });
 
-  it.skipIf(!hasTwitterCredentials)("should have TWITTER_CLIENT_SECRET configured", () => {
+  it("should have TWITTER_CLIENT_SECRET configured", () => {
     const clientSecret = process.env.TWITTER_CLIENT_SECRET;
     expect(clientSecret).toBeDefined();
     expect(clientSecret).not.toBe("");
@@ -40,7 +36,7 @@ describe("Twitter OAuth 2.0 Configuration", () => {
     console.log("PKCE parameters generated successfully");
   });
 
-  it.skipIf(!hasTwitterCredentials)("should build valid authorization URL", async () => {
+  it("should build valid authorization URL", async () => {
     const { generatePKCE, generateState, buildAuthorizationUrl } = await import("../server/twitter-oauth2");
     
     const { codeChallenge } = generatePKCE();

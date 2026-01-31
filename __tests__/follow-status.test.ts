@@ -10,22 +10,11 @@ describe("Twitter Follow Status", () => {
   });
 
   describe("checkFollowStatus function", () => {
-    // モックレスポンスのヘッダーを作成
-    const createMockHeaders = () => ({
-      get: (name: string) => {
-        if (name === "x-rate-limit-limit") return "15";
-        if (name === "x-rate-limit-remaining") return "10";
-        if (name === "x-rate-limit-reset") return String(Math.floor(Date.now() / 1000) + 900);
-        return null;
-      },
-    });
-
     it("should return isFollowing true when user follows target", async () => {
       // Mock user lookup response
       mockFetch
         .mockResolvedValueOnce({
           ok: true,
-          headers: createMockHeaders(),
           json: () => Promise.resolve({
             data: {
               id: "123456789",
@@ -37,7 +26,6 @@ describe("Twitter Follow Status", () => {
         // Mock following list response
         .mockResolvedValueOnce({
           ok: true,
-          headers: createMockHeaders(),
           json: () => Promise.resolve({
             data: [
               { id: "123456789", name: "君斗りんく", username: "idolfunch" },
@@ -59,7 +47,6 @@ describe("Twitter Follow Status", () => {
       mockFetch
         .mockResolvedValueOnce({
           ok: true,
-          headers: createMockHeaders(),
           json: () => Promise.resolve({
             data: {
               id: "123456789",
@@ -71,7 +58,6 @@ describe("Twitter Follow Status", () => {
         // Mock following list response (target not in list)
         .mockResolvedValueOnce({
           ok: true,
-          headers: createMockHeaders(),
           json: () => Promise.resolve({
             data: [
               { id: "987654321", name: "Other User", username: "other" },
@@ -89,9 +75,6 @@ describe("Twitter Follow Status", () => {
     it("should handle API errors gracefully", async () => {
       mockFetch.mockResolvedValueOnce({
         ok: false,
-        status: 500,
-        headers: createMockHeaders(),
-        json: () => Promise.resolve({ error: "API Error" }),
         text: () => Promise.resolve("API Error"),
       });
 
@@ -132,7 +115,7 @@ describe("Follow Status Hook", () => {
 
 describe("Premium Features", () => {
   it("should define premium features correctly", async () => {
-    const { PREMIUM_FEATURES, isPremiumFeature } = await import("../lib/premium-features");
+    const { PREMIUM_FEATURES, isPremiumFeature } = await import("../hooks/use-follow-status");
 
     expect(PREMIUM_FEATURES.length).toBeGreaterThan(0);
     expect(isPremiumFeature("create_challenge")).toBe(true);

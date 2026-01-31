@@ -1,1 +1,0 @@
-ALTER TABLE `participations` ADD `attendanceType` enum('venue','streaming','both') DEFAULT 'venue' NOT NULL;

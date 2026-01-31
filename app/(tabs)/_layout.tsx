@@ -1,54 +1,32 @@
 import { Tabs } from "expo-router";
-import { color, palette } from "@/theme/tokens";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
-import { HapticTab } from "@/components/atoms/haptic-tab";
-import { IconSymbol } from "@/components/atoms/icon-symbol";
+import { HapticTab } from "@/components/haptic-tab";
+import { IconSymbol } from "@/components/ui/icon-symbol";
 import { Platform } from "react-native";
-import { useColors } from "@/hooks/use-colors";
-import { useTutorial } from "@/lib/tutorial-context";
-import { FanTutorialCreateTabButton, HostTutorialCreateTabButton } from "@/components/atoms/tutorial-tab-button";
 
 export default function TabLayout() {
   const insets = useSafeAreaInsets();
-  const colors = useColors();
-  const tutorial = useTutorial();
   const bottomPadding = Platform.OS === "web" ? 12 : Math.max(insets.bottom, 8);
   const tabBarHeight = 56 + bottomPadding;
 
-  // チュートリアル中は適切なタブボタンを使用
-  const getCreateTabButton = () => {
-    if (!tutorial.isActive) return HapticTab;
-    
-    if (tutorial.userType === "fan" && tutorial.currentStepIndex === 2) {
-      // ファン向けステップ3
-      return FanTutorialCreateTabButton;
-    }
-    if (tutorial.userType === "host" && tutorial.currentStepIndex === 0) {
-      // 主催者向けステップ1
-      return HostTutorialCreateTabButton;
-    }
-    
-    return HapticTab;
-  };
+  // ダークテーマ固定
+  const backgroundColor = "#0D1117";
+  const borderColor = "#2D3139";
 
   return (
     <Tabs
       screenOptions={{
-        tabBarActiveTintColor: color.hostAccentLegacy,
-        tabBarInactiveTintColor: colors.muted,
+        tabBarActiveTintColor: "#DD6500",
+        tabBarInactiveTintColor: "#6B7280",
         headerShown: false,
         tabBarButton: HapticTab,
-        // v5.36: タブ切り替え時の白い画面を防止
-        sceneStyle: {
-          backgroundColor: colors.background,
-        },
         tabBarStyle: {
           paddingTop: 8,
           paddingBottom: bottomPadding,
           height: tabBarHeight,
-          backgroundColor: colors.background,
-          borderTopColor: colors.border,
+          backgroundColor: backgroundColor,
+          borderTopColor: borderColor,
           borderTopWidth: 0.5,
         },
       }}
@@ -65,14 +43,6 @@ export default function TabLayout() {
         options={{
           title: "チャレンジ作成",
           tabBarIcon: ({ color }) => <IconSymbol size={28} name="plus.circle.fill" color={color} />,
-          tabBarButton: getCreateTabButton(),
-        }}
-      />
-      <Tabs.Screen
-        name="stats"
-        options={{
-          title: "統計",
-          tabBarIcon: ({ color }) => <IconSymbol size={28} name="chart.bar.fill" color={color} />,
         }}
       />
       <Tabs.Screen

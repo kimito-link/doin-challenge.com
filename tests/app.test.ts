@@ -18,16 +18,16 @@ describe("動員ちゃれんじ App Configuration", () => {
 });
 
 describe("Theme Configuration", () => {
-  it("should have KimitoLink brand colors (dark mode only)", () => {
-    const { themeColors } = require("../theme.config.cjs");
+  it("should have KimitoLink brand colors", () => {
+    const { themeColors } = require("../theme.config");
     
-    // Primary color should be KimitoLink blue (dark mode only - same for both)
-    expect(themeColors.primary.light).toBe("#4A90D9");
-    expect(themeColors.primary.dark).toBe("#4A90D9");
+    // Primary color should be KimitoLink blue
+    expect(themeColors.primary.light).toBe("#00427B");
+    expect(themeColors.primary.dark).toBe("#4A90D9"); // Lighter blue for dark mode
     
-    // Accent color should be KimitoLink orange (dark mode only - same for both)
-    expect(themeColors.accent.light).toBe("#FF8C33");
-    expect(themeColors.accent.dark).toBe("#FF8C33");
+    // Accent color should be KimitoLink orange
+    expect(themeColors.accent.light).toBe("#DD6500");
+    expect(themeColors.accent.dark).toBe("#FF8C33"); // Lighter orange for dark mode
   });
 });
 

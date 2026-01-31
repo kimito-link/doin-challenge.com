@@ -1,1 +1,0 @@
-ALTER TABLE `participations` ADD `gender` enum('male','female','unspecified') DEFAULT 'unspecified' NOT NULL;

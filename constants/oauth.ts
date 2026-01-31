@@ -35,19 +35,10 @@ export function getApiBaseUrl(): string {
     return API_BASE_URL.replace(/\/$/, "");
   }
 
-  // On web, derive from current hostname
-  // Note: Use global `location` directly instead of `window.location` for Expo Web compatibility
-  // window.location.hostname returns undefined in Expo Web, but location.hostname works
-  if (ReactNative.Platform.OS === "web" && typeof location !== "undefined") {
-    const protocol = location.protocol;
-    const hostname = location.hostname;
-    
-    // Production: doin-challenge.com -> Railway backend
-    if (hostname.includes("doin-challenge.com") || hostname.includes("doin-challengecom.vercel.app")) {
-      return "https://doin-challengecom-production.up.railway.app";
-    }
-    
-    // Development: Pattern: 8081-sandboxid.region.domain -> 3000-sandboxid.region.domain
+  // On web, derive from current hostname by replacing port 8081 with 3000
+  if (ReactNative.Platform.OS === "web" && typeof window !== "undefined" && window.location) {
+    const { protocol, hostname } = window.location;
+    // Pattern: 8081-sandboxid.region.domain -> 3000-sandboxid.region.domain
     const apiHostname = hostname.replace(/^8081-/, "3000-");
     if (apiHostname !== hostname) {
       return `${protocol}//${apiHostname}`;
@@ -60,8 +51,6 @@ export function getApiBaseUrl(): string {
 
 export const SESSION_TOKEN_KEY = "app_session_token";
 export const USER_INFO_KEY = "manus-runtime-user-info";
-export const REFRESH_TOKEN_KEY = "twitter_refresh_token";
-export const TOKEN_EXPIRES_AT_KEY = "twitter_token_expires_at";
 
 const encodeState = (value: string) => {
   if (typeof globalThis.btoa === "function") {

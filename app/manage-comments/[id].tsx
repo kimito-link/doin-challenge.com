@@ -1,20 +1,15 @@
-import { Text, View, Pressable, ScrollView, ActivityIndicator, Alert, TextInput , Platform} from "react-native";
-import * as Haptics from "expo-haptics";
-import { color, palette } from "@/theme/tokens";
-import { useLocalSearchParams } from "expo-router";
-import { navigateBack } from "@/lib/navigation/app-routes";
+import { Text, View, TouchableOpacity, ScrollView, ActivityIndicator, Alert, TextInput } from "react-native";
+import { useRouter, useLocalSearchParams } from "expo-router";
 import { useState } from "react";
-import { ScreenContainer } from "@/components/organisms/screen-container";
+import { ScreenContainer } from "@/components/screen-container";
 import { trpc } from "@/lib/trpc";
 import { useAuth } from "@/hooks/use-auth";
-import { useColors } from "@/hooks/use-colors";
 import MaterialIcons from "@expo/vector-icons/MaterialIcons";
 import { Image } from "expo-image";
-import { AppHeader } from "@/components/organisms/app-header";
+import { AppHeader } from "@/components/app-header";
 
 export default function ManageCommentsScreen() {
-  const colors = useColors();
-
+  const router = useRouter();
   const { id } = useLocalSearchParams<{ id: string }>();
   const challengeId = parseInt(id || "0", 10);
   const { user, isAuthenticated } = useAuth();
@@ -70,10 +65,10 @@ export default function ManageCommentsScreen() {
 
   if (!isAuthenticated || !canManage) {
     return (
-      <ScreenContainer edges={["top", "left", "right"]} containerClassName="bg-background">
+      <ScreenContainer edges={["top", "left", "right"]} containerClassName="bg-[#0D1117]">
         <View style={{ flex: 1, alignItems: "center", justifyContent: "center", padding: 24 }}>
-          <MaterialIcons name="lock" size={64} color={color.textSubtle} />
-          <Text style={{ color: color.textMuted, fontSize: 16, marginTop: 16, textAlign: "center" }}>
+          <MaterialIcons name="lock" size={64} color="#6B7280" />
+          <Text style={{ color: "#9CA3AF", fontSize: 16, marginTop: 16, textAlign: "center" }}>
             この機能はチャレンジの主催者または管理者のみ利用できます
           </Text>
         </View>
@@ -121,62 +116,62 @@ export default function ManageCommentsScreen() {
   };
 
   return (
-    <ScreenContainer edges={["top", "left", "right"]} containerClassName="bg-background">
-      <ScrollView style={{ flex: 1, backgroundColor: colors.background }}>
+    <ScreenContainer edges={["top", "left", "right"]} containerClassName="bg-[#0D1117]">
+      <ScrollView style={{ flex: 1, backgroundColor: "#0D1117" }}>
         {/* ヘッダー */}
         <AppHeader 
-          title="君斗りんくの動員ちゃれんじ" 
+          title="動員ちゃれんじ" 
           showCharacters={false}
           rightElement={
-            <Pressable
-              onPress={() => navigateBack()}
+            <TouchableOpacity
+              onPress={() => router.back()}
               style={{ flexDirection: "row", alignItems: "center" }}
             >
-              <MaterialIcons name="arrow-back" size={24} color={colors.foreground} />
-              <Text style={{ color: colors.foreground, marginLeft: 8 }}>戻る</Text>
-            </Pressable>
+              <MaterialIcons name="arrow-back" size={24} color="#fff" />
+              <Text style={{ color: "#fff", marginLeft: 8 }}>戻る</Text>
+            </TouchableOpacity>
           }
         />
         <View style={{ paddingHorizontal: 16, paddingTop: 8 }}>
           <View style={{ marginBottom: 16 }}>
-            <Text style={{ color: colors.foreground, fontSize: 18, fontWeight: "bold" }}>
+            <Text style={{ color: "#fff", fontSize: 18, fontWeight: "bold" }}>
               コメント管理
             </Text>
-            <Text style={{ color: color.textMuted, fontSize: 12 }} numberOfLines={1}>
+            <Text style={{ color: "#9CA3AF", fontSize: 12 }} numberOfLines={1}>
               {challenge?.title}
             </Text>
           </View>
 
           {/* タブ */}
           <View style={{ flexDirection: "row", marginBottom: 16, gap: 8 }}>
-            <Pressable
+            <TouchableOpacity
               onPress={() => setSelectedTab("all")}
               style={{
                 flex: 1,
                 paddingVertical: 12,
                 borderRadius: 8,
-                backgroundColor: selectedTab === "all" ? color.accentPrimary : color.surface,
+                backgroundColor: selectedTab === "all" ? "#EC4899" : "#1A1D21",
                 alignItems: "center",
               }}
             >
-              <Text style={{ color: colors.foreground, fontWeight: "bold" }}>
+              <Text style={{ color: "#fff", fontWeight: "bold" }}>
                 すべて ({commentsWithMessage.length})
               </Text>
-            </Pressable>
-            <Pressable
+            </TouchableOpacity>
+            <TouchableOpacity
               onPress={() => setSelectedTab("picked")}
               style={{
                 flex: 1,
                 paddingVertical: 12,
                 borderRadius: 8,
-                backgroundColor: selectedTab === "picked" ? color.accentPrimary : color.surface,
+                backgroundColor: selectedTab === "picked" ? "#EC4899" : "#1A1D21",
                 alignItems: "center",
               }}
             >
-              <Text style={{ color: colors.foreground, fontWeight: "bold" }}>
+              <Text style={{ color: "#fff", fontWeight: "bold" }}>
                 ピックアップ ({pickedComments?.length || 0})
               </Text>
-            </Pressable>
+            </TouchableOpacity>
           </View>
         </View>
 
@@ -192,12 +187,12 @@ export default function ManageCommentsScreen() {
                   <View
                     key={participation.id}
                     style={{
-                      backgroundColor: isPicked ? "#1E2530" : color.surface,
+                      backgroundColor: isPicked ? "#1E2530" : "#1A1D21",
                       borderRadius: 12,
                       padding: 16,
                       marginBottom: 12,
                       borderWidth: isPicked ? 2 : 1,
-                      borderColor: isPicked ? color.accentPrimary : color.border,
+                      borderColor: isPicked ? "#EC4899" : "#2D3139",
                     }}
                   >
                     {/* ユーザー情報 */}
@@ -213,22 +208,22 @@ export default function ManageCommentsScreen() {
                             width: 40,
                             height: 40,
                             borderRadius: 20,
-                            backgroundColor: color.accentPrimary,
+                            backgroundColor: "#EC4899",
                             alignItems: "center",
                             justifyContent: "center",
                           }}
                         >
-                          <Text style={{ color: colors.foreground, fontWeight: "bold" }}>
+                          <Text style={{ color: "#fff", fontWeight: "bold" }}>
                             {participation.displayName?.charAt(0) || "?"}
                           </Text>
                         </View>
                       )}
                       <View style={{ flex: 1, marginLeft: 12 }}>
-                        <Text style={{ color: colors.foreground, fontWeight: "bold" }}>
+                        <Text style={{ color: "#fff", fontWeight: "bold" }}>
                           {participation.isAnonymous ? "匿名" : participation.displayName}
                         </Text>
                         {participation.prefecture && (
-                          <Text style={{ color: color.textMuted, fontSize: 12 }}>
+                          <Text style={{ color: "#9CA3AF", fontSize: 12 }}>
                             {participation.prefecture}
                           </Text>
                         )}
@@ -236,13 +231,13 @@ export default function ManageCommentsScreen() {
                       {isPicked && (
                         <View
                           style={{
-                            backgroundColor: color.accentPrimary,
+                            backgroundColor: "#EC4899",
                             borderRadius: 4,
                             paddingHorizontal: 8,
                             paddingVertical: 4,
                           }}
                         >
-                          <Text style={{ color: colors.foreground, fontSize: 10, fontWeight: "bold" }}>
+                          <Text style={{ color: "#fff", fontSize: 10, fontWeight: "bold" }}>
                             ピックアップ済
                           </Text>
                         </View>
@@ -250,7 +245,7 @@ export default function ManageCommentsScreen() {
                     </View>
 
                     {/* コメント */}
-                    <Text style={{ color: color.textPrimary, fontSize: 14, lineHeight: 20, marginBottom: 12 }}>
+                    <Text style={{ color: "#E5E7EB", fontSize: 14, lineHeight: 20, marginBottom: 12 }}>
                       {participation.message}
                     </Text>
 
@@ -261,14 +256,14 @@ export default function ManageCommentsScreen() {
                           value={pickReason}
                           onChangeText={setPickReason}
                           placeholder="ピックアップ理由（任意）"
-                          placeholderTextColor={color.textSubtle}
+                          placeholderTextColor="#6B7280"
                           style={{
-                            backgroundColor: colors.background,
+                            backgroundColor: "#0D1117",
                             borderRadius: 8,
                             padding: 12,
-                            color: colors.foreground,
+                            color: "#fff",
                             borderWidth: 1,
-                            borderColor: color.accentPrimary,
+                            borderColor: "#EC4899",
                           }}
                           multiline
                         />
@@ -278,51 +273,51 @@ export default function ManageCommentsScreen() {
                     {/* アクションボタン */}
                     <View style={{ flexDirection: "row", gap: 8 }}>
                       {isPicked ? (
-                        <Pressable
+                        <TouchableOpacity
                           onPress={() => handleUnpick(participation.id)}
                           style={{
                             flex: 1,
-                            backgroundColor: color.borderAlt,
+                            backgroundColor: "#374151",
                             borderRadius: 8,
                             paddingVertical: 10,
                             alignItems: "center",
                           }}
                         >
-                          <Text style={{ color: colors.foreground, fontWeight: "bold" }}>
+                          <Text style={{ color: "#fff", fontWeight: "bold" }}>
                             ピックアップ解除
                           </Text>
-                        </Pressable>
+                        </TouchableOpacity>
                       ) : (
                         <>
                           {isPickingThis && (
-                            <Pressable
+                            <TouchableOpacity
                               onPress={() => setPickingId(null)}
                               style={{
                                 flex: 1,
-                                backgroundColor: color.borderAlt,
+                                backgroundColor: "#374151",
                                 borderRadius: 8,
                                 paddingVertical: 10,
                                 alignItems: "center",
                               }}
                             >
-                              <Text style={{ color: colors.foreground }}>キャンセル</Text>
-                            </Pressable>
+                              <Text style={{ color: "#fff" }}>キャンセル</Text>
+                            </TouchableOpacity>
                           )}
-                          <Pressable
+                          <TouchableOpacity
                             onPress={() => handlePick(participation.id)}
                             disabled={pickMutation.isPending}
                             style={{
                               flex: 1,
-                              backgroundColor: color.accentPrimary,
+                              backgroundColor: "#EC4899",
                               borderRadius: 8,
                               paddingVertical: 10,
                               alignItems: "center",
                             }}
                           >
-                            <Text style={{ color: colors.foreground, fontWeight: "bold" }}>
+                            <Text style={{ color: "#fff", fontWeight: "bold" }}>
                               {isPickingThis ? "確定" : "ピックアップ"}
                             </Text>
-                          </Pressable>
+                          </TouchableOpacity>
                         </>
                       )}
                     </View>
@@ -331,8 +326,8 @@ export default function ManageCommentsScreen() {
               })
             ) : (
               <View style={{ alignItems: "center", paddingVertical: 40 }}>
-                <MaterialIcons name="chat-bubble-outline" size={64} color={color.textSubtle} />
-                <Text style={{ color: color.textMuted, fontSize: 16, marginTop: 16 }}>
+                <MaterialIcons name="chat-bubble-outline" size={64} color="#6B7280" />
+                <Text style={{ color: "#9CA3AF", fontSize: 16, marginTop: 16 }}>
                   コメントがありません
                 </Text>
               </View>
@@ -349,7 +344,7 @@ export default function ManageCommentsScreen() {
                     padding: 16,
                     marginBottom: 12,
                     borderWidth: 2,
-                    borderColor: picked.isUsedInVideo ? color.successLight : color.accentPrimary,
+                    borderColor: picked.isUsedInVideo ? "#4ADE80" : "#EC4899",
                   }}
                 >
                   {/* ユーザー情報 */}
@@ -365,22 +360,22 @@ export default function ManageCommentsScreen() {
                           width: 40,
                           height: 40,
                           borderRadius: 20,
-                          backgroundColor: color.accentPrimary,
+                          backgroundColor: "#EC4899",
                           alignItems: "center",
                           justifyContent: "center",
                         }}
                       >
-                        <Text style={{ color: colors.foreground, fontWeight: "bold" }}>
+                        <Text style={{ color: "#fff", fontWeight: "bold" }}>
                           {picked.participation?.displayName?.charAt(0) || "?"}
                         </Text>
                       </View>
                     )}
                     <View style={{ flex: 1, marginLeft: 12 }}>
-                      <Text style={{ color: colors.foreground, fontWeight: "bold" }}>
+                      <Text style={{ color: "#fff", fontWeight: "bold" }}>
                         {picked.participation?.isAnonymous ? "匿名" : picked.participation?.displayName}
                       </Text>
                       {picked.reason && (
-                        <Text style={{ color: color.accentPrimary, fontSize: 12 }}>
+                        <Text style={{ color: "#EC4899", fontSize: 12 }}>
                           理由: {picked.reason}
                         </Text>
                       )}
@@ -388,7 +383,7 @@ export default function ManageCommentsScreen() {
                     {picked.isUsedInVideo && (
                       <View
                         style={{
-                          backgroundColor: color.successLight,
+                          backgroundColor: "#4ADE80",
                           borderRadius: 4,
                           paddingHorizontal: 8,
                           paddingVertical: 4,
@@ -402,30 +397,30 @@ export default function ManageCommentsScreen() {
                   </View>
 
                   {/* コメント */}
-                  <Text style={{ color: color.textPrimary, fontSize: 14, lineHeight: 20, marginBottom: 12 }}>
+                  <Text style={{ color: "#E5E7EB", fontSize: 14, lineHeight: 20, marginBottom: 12 }}>
                     {picked.participation?.message}
                   </Text>
 
                   {/* アクションボタン */}
                   <View style={{ flexDirection: "row", gap: 8 }}>
-                    <Pressable
+                    <TouchableOpacity
                       onPress={() => handleUnpick(picked.participationId)}
                       style={{
                         flex: 1,
-                        backgroundColor: color.borderAlt,
+                        backgroundColor: "#374151",
                         borderRadius: 8,
                         paddingVertical: 10,
                         alignItems: "center",
                       }}
                     >
-                      <Text style={{ color: colors.foreground }}>解除</Text>
-                    </Pressable>
+                      <Text style={{ color: "#fff" }}>解除</Text>
+                    </TouchableOpacity>
                     {!picked.isUsedInVideo && (
-                      <Pressable
+                      <TouchableOpacity
                         onPress={() => handleMarkAsUsed(picked.id)}
                         style={{
                           flex: 1,
-                          backgroundColor: color.successLight,
+                          backgroundColor: "#4ADE80",
                           borderRadius: 8,
                           paddingVertical: 10,
                           alignItems: "center",
@@ -434,15 +429,15 @@ export default function ManageCommentsScreen() {
                         <Text style={{ color: "#000", fontWeight: "bold" }}>
                           動画使用済みにする
                         </Text>
-                      </Pressable>
+                      </TouchableOpacity>
                     )}
                   </View>
                 </View>
               ))
             ) : (
               <View style={{ alignItems: "center", paddingVertical: 40 }}>
-                <MaterialIcons name="star-outline" size={64} color={color.textSubtle} />
-                <Text style={{ color: color.textMuted, fontSize: 16, marginTop: 16 }}>
+                <MaterialIcons name="star-outline" size={64} color="#6B7280" />
+                <Text style={{ color: "#9CA3AF", fontSize: 16, marginTop: 16 }}>
                   ピックアップしたコメントはありません
                 </Text>
               </View>
