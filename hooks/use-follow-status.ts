@@ -1,5 +1,7 @@
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useRef } from "react";
 import AsyncStorage from "@react-native-async-storage/async-storage";
+import { AppState, type AppStateStatus } from "react-native";
+import * as Auth from "@/lib/_core/auth";
 
 const FOLLOW_STATUS_KEY = "twitter_follow_status";
 const TARGET_USERNAME = "idolfunch";
@@ -23,6 +25,8 @@ export function useFollowStatus() {
     targetDisplayName: TARGET_DISPLAY_NAME,
   });
   const [loading, setLoading] = useState(true);
+  const [refreshing, setRefreshing] = useState(false);
+  const appState = useRef(AppState.currentState);
 
   // ローカルストレージからフォロー状態を読み込む
   const loadFollowStatus = useCallback(async () => {
@@ -31,9 +35,12 @@ export function useFollowStatus() {
       if (stored) {
         const data = JSON.parse(stored) as FollowStatusData;
         setFollowStatus(data);
+        return data;
       }
+      return null;
     } catch (error) {
       console.error("[useFollowStatus] Failed to load follow status:", error);
+      return null;
     } finally {
       setLoading(false);
     }
@@ -60,9 +67,55 @@ export function useFollowStatus() {
         lastCheckedAt: new Date().toISOString(),
       };
       await saveFollowStatus(data);
+      
+      // ユーザー情報も更新
+      const userInfo = await Auth.getUserInfo();
+      if (userInfo) {
+        await Auth.setUserInfo({
+          ...userInfo,
+          isFollowingTarget: isFollowing,
+          targetAccount: targetUser,
+        });
+      }
     },
     [saveFollowStatus]
   );
+
+  // サーバーからフォロー状態を再確認する（再ログインを促す）
+  const refreshFollowStatusFromServer = useCallback(async () => {
+    setRefreshing(true);
+    try {
+      console.log("[useFollowStatus] Refreshing follow status from server...");
+      
+      // ユーザー情報を取得
+      const userInfo = await Auth.getUserInfo();
+      if (!userInfo) {
+        console.log("[useFollowStatus] No user info, cannot refresh");
+        return false;
+      }
+
+      // ユーザー情報にisFollowingTargetがあればそれを使用
+      if (userInfo.isFollowingTarget !== undefined) {
+        const data: FollowStatusData = {
+          isFollowing: userInfo.isFollowingTarget,
+          targetUsername: userInfo.targetAccount?.username || TARGET_USERNAME,
+          targetDisplayName: userInfo.targetAccount?.name || TARGET_DISPLAY_NAME,
+          targetTwitterId: userInfo.targetAccount?.id,
+          lastCheckedAt: new Date().toISOString(),
+        };
+        await saveFollowStatus(data);
+        console.log("[useFollowStatus] Follow status refreshed:", data.isFollowing);
+        return data.isFollowing;
+      }
+      
+      return false;
+    } catch (error) {
+      console.error("[useFollowStatus] Failed to refresh follow status:", error);
+      return false;
+    } finally {
+      setRefreshing(false);
+    }
+  }, [saveFollowStatus]);
 
   // フォロー状態をクリアする（ログアウト時）
   const clearFollowStatus = useCallback(async () => {
@@ -78,6 +131,25 @@ export function useFollowStatus() {
     }
   }, []);
 
+  // アプリがフォアグラウンドに戻ったときにフォロー状態を再確認
+  useEffect(() => {
+    const subscription = AppState.addEventListener("change", async (nextAppState: AppStateStatus) => {
+      if (
+        appState.current.match(/inactive|background/) &&
+        nextAppState === "active"
+      ) {
+        console.log("[useFollowStatus] App came to foreground, checking follow status...");
+        // フォアグラウンドに戻ったときに再確認
+        await refreshFollowStatusFromServer();
+      }
+      appState.current = nextAppState;
+    });
+
+    return () => {
+      subscription.remove();
+    };
+  }, [refreshFollowStatusFromServer]);
+
   // 初期読み込み
   useEffect(() => {
     loadFollowStatus();
@@ -86,57 +158,13 @@ export function useFollowStatus() {
   return {
     ...followStatus,
     loading,
+    refreshing,
     updateFollowStatus,
     clearFollowStatus,
     refresh: loadFollowStatus,
+    refreshFromServer: refreshFollowStatusFromServer,
   };
 }
 
-/**
- * プレミアム機能のリスト
- */
-export const PREMIUM_FEATURES = [
-  {
-    id: "create_challenge",
-    name: "チャレンジ作成",
-    description: "新しいチャレンジを作成できます",
-    icon: "add-circle",
-    isPremium: true,
-  },
-  {
-    id: "statistics",
-    name: "統計ダッシュボード",
-    description: "詳細な統計情報を閲覧できます",
-    icon: "analytics",
-    isPremium: true,
-  },
-  {
-    id: "collaboration",
-    name: "コラボ機能",
-    description: "他のホストと共同でチャレンジを開催できます",
-    icon: "people",
-    isPremium: true,
-  },
-  {
-    id: "export",
-    name: "データエクスポート",
-    description: "参加者データをエクスポートできます",
-    icon: "download",
-    isPremium: true,
-  },
-  {
-    id: "templates",
-    name: "テンプレート保存",
-    description: "チャレンジ設定をテンプレートとして保存できます",
-    icon: "bookmark",
-    isPremium: true,
-  },
-] as const;
-
-/**
- * 機能がプレミアム限定かどうかをチェック
- */
-export function isPremiumFeature(featureId: string): boolean {
-  const feature = PREMIUM_FEATURES.find((f) => f.id === featureId);
-  return feature?.isPremium ?? false;
-}
+// Re-export premium features for backward compatibility
+export { PREMIUM_FEATURES, isPremiumFeature } from "@/lib/premium-features";

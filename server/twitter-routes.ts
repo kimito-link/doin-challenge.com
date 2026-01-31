@@ -145,9 +145,35 @@ export function registerTwitterRoutes(app: Express) {
       console.log("[Twitter OAuth 2.0] Redirecting to:", redirectUrl.substring(0, 100) + "...");
       
       res.redirect(redirectUrl);
-    } catch (error) {
+    } catch (error: unknown) {
       console.error("Twitter callback error:", error);
-      res.status(500).json({ error: "Failed to complete Twitter authentication" });
+      
+      // エラーメッセージを抽出
+      let errorMessage = "Failed to complete Twitter authentication";
+      let errorDetails = "";
+      
+      if (error instanceof Error) {
+        errorMessage = error.message;
+        errorDetails = error.stack || "";
+      } else if (typeof error === "string") {
+        errorMessage = error;
+      }
+      
+      // エラーページにリダイレクト（ユーザーフレンドリーなエラー表示）
+      const host = req.get("host") || "";
+      const expoHost = host.replace("3000-", "8081-");
+      const protocol = req.get("x-forwarded-proto") || req.protocol;
+      const forceHttps = protocol === "https" || host.includes("manus.computer");
+      const baseUrl = `${forceHttps ? "https" : protocol}://${expoHost}`;
+      
+      // エラー情報をエンコードしてリダイレクト
+      const errorData = encodeURIComponent(JSON.stringify({
+        error: true,
+        message: errorMessage,
+        details: errorDetails.substring(0, 200), // 長すぎる場合は切り詰め
+      }));
+      
+      res.redirect(`${baseUrl}/oauth/twitter-callback?error=${errorData}`);
     }
   });
 
@@ -254,6 +280,35 @@ export function registerTwitterRoutes(app: Express) {
     } catch (error) {
       console.error("Twitter user lookup error:", error);
       res.status(500).json({ error: "Failed to lookup Twitter user" });
+    }
+  });
+
+  // API endpoint to refresh follow status (re-login required to get new token)
+  // This endpoint triggers a re-authentication flow to check follow status
+  app.get("/api/twitter/refresh-follow-status", async (req: Request, res: Response) => {
+    try {
+      // Build callback URL - force https for production environments
+      const protocol = req.get("x-forwarded-proto") || req.protocol;
+      const forceHttps = protocol === "https" || req.get("host")?.includes("manus.computer");
+      const callbackUrl = `${forceHttps ? "https" : protocol}://${req.get("host")}/api/twitter/callback`;
+      
+      // Generate PKCE parameters
+      const { codeVerifier, codeChallenge } = generatePKCE();
+      const state = generateState();
+      
+      // Store PKCE data for callback
+      await storePKCEData(state, codeVerifier, callbackUrl);
+      
+      // Build authorization URL
+      const authUrl = buildAuthorizationUrl(callbackUrl, state, codeChallenge);
+      
+      console.log("[Twitter OAuth 2.0] Refresh follow status - Redirecting to:", authUrl);
+      
+      // Redirect to Twitter authorization page
+      res.redirect(authUrl);
+    } catch (error) {
+      console.error("Twitter refresh follow status error:", error);
+      res.status(500).json({ error: "Failed to initiate follow status refresh" });
     }
   });
 

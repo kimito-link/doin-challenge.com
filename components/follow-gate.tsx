@@ -14,6 +14,8 @@ interface FollowGateProps {
   targetUsername: string;
   targetDisplayName: string;
   onRefreshStatus?: () => void;
+  onRelogin?: () => void;
+  refreshing?: boolean;
   children: React.ReactNode;
 }
 
@@ -27,6 +29,8 @@ export function FollowGate({
   targetUsername,
   targetDisplayName,
   onRefreshStatus,
+  onRelogin,
+  refreshing,
   children,
 }: FollowGateProps) {
   const [showModal, setShowModal] = useState(false);
@@ -193,6 +197,35 @@ export function FollowGate({
               </Text>
             </TouchableOpacity>
 
+            {/* 再ログインボタン */}
+            {onRelogin && (
+              <TouchableOpacity
+                onPress={onRelogin}
+                disabled={refreshing}
+                style={{
+                  backgroundColor: "#374151",
+                  borderRadius: 12,
+                  paddingVertical: 12,
+                  paddingHorizontal: 24,
+                  marginTop: 12,
+                  flexDirection: "row",
+                  alignItems: "center",
+                  opacity: refreshing ? 0.6 : 1,
+                }}
+              >
+                <MaterialIcons name="refresh" size={18} color="#fff" />
+                <Text
+                  style={{
+                    color: "#fff",
+                    fontSize: 14,
+                    marginLeft: 8,
+                  }}
+                >
+                  {refreshing ? "確認中..." : "フォロー状態を再確認"}
+                </Text>
+              </TouchableOpacity>
+            )}
+
             <TouchableOpacity
               onPress={handleRefresh}
               style={{
@@ -233,11 +266,15 @@ export function FollowPromptBanner({
   targetUsername,
   targetDisplayName,
   onFollowPress,
+  onRelogin,
+  refreshing,
 }: {
   isFollowing: boolean;
   targetUsername: string;
   targetDisplayName: string;
   onFollowPress?: () => void;
+  onRelogin?: () => void;
+  refreshing?: boolean;
 }) {
   if (isFollowing) {
     return null;
@@ -253,9 +290,7 @@ export function FollowPromptBanner({
   };
 
   return (
-    <TouchableOpacity
-      onPress={handlePress}
-      activeOpacity={0.8}
+    <View
       style={{
         backgroundColor: "#1A1D21",
         borderRadius: 12,
@@ -266,30 +301,60 @@ export function FollowPromptBanner({
         borderColor: "#EC4899",
       }}
     >
-      <View style={{ flexDirection: "row", alignItems: "center" }}>
-        <View
+      <TouchableOpacity
+        onPress={handlePress}
+        activeOpacity={0.8}
+      >
+        <View style={{ flexDirection: "row", alignItems: "center" }}>
+          <View
+            style={{
+              width: 40,
+              height: 40,
+              borderRadius: 20,
+              backgroundColor: "#EC4899",
+              alignItems: "center",
+              justifyContent: "center",
+            }}
+          >
+            <MaterialIcons name="star" size={24} color="#fff" />
+          </View>
+          <View style={{ flex: 1, marginLeft: 12 }}>
+            <Text style={{ color: "#fff", fontSize: 14, fontWeight: "bold" }}>
+              プレミアム機能を解放しよう！
+            </Text>
+            <Text style={{ color: "#9CA3AF", fontSize: 12, marginTop: 2 }}>
+              @{targetUsername}をフォローすると全機能が使えます
+            </Text>
+          </View>
+          <MaterialIcons name="chevron-right" size={24} color="#EC4899" />
+        </View>
+      </TouchableOpacity>
+      
+      {/* フォロー済みの場合の再確認ボタン */}
+      {onRelogin && (
+        <TouchableOpacity
+          onPress={onRelogin}
+          disabled={refreshing}
+          activeOpacity={0.7}
           style={{
-            width: 40,
-            height: 40,
-            borderRadius: 20,
-            backgroundColor: "#EC4899",
+            marginTop: 12,
+            paddingVertical: 10,
+            paddingHorizontal: 16,
+            backgroundColor: "#374151",
+            borderRadius: 8,
+            flexDirection: "row",
             alignItems: "center",
             justifyContent: "center",
+            opacity: refreshing ? 0.6 : 1,
           }}
         >
-          <MaterialIcons name="star" size={24} color="#fff" />
-        </View>
-        <View style={{ flex: 1, marginLeft: 12 }}>
-          <Text style={{ color: "#fff", fontSize: 14, fontWeight: "bold" }}>
-            プレミアム機能を解放しよう！
+          <MaterialIcons name="refresh" size={16} color="#fff" />
+          <Text style={{ color: "#fff", fontSize: 13, marginLeft: 6 }}>
+            {refreshing ? "確認中..." : "フォロー済みの方はタップして再確認"}
           </Text>
-          <Text style={{ color: "#9CA3AF", fontSize: 12, marginTop: 2 }}>
-            @{targetUsername}をフォローすると全機能が使えます
-          </Text>
-        </View>
-        <MaterialIcons name="chevron-right" size={24} color="#EC4899" />
-      </View>
-    </TouchableOpacity>
+        </TouchableOpacity>
+      )}
+    </View>
   );
 }
 

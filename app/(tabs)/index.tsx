@@ -1,7 +1,7 @@
 import { FlatList, Text, View, TouchableOpacity, RefreshControl, ScrollView, TextInput, Platform } from "react-native";
 import { Image } from "expo-image";
 import { useRouter } from "expo-router";
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 import { ScreenContainer } from "@/components/screen-container";
 import { ResponsiveContainer } from "@/components/responsive-container";
 import { OnboardingSteps } from "@/components/onboarding-steps";
@@ -13,6 +13,14 @@ import MaterialIcons from "@expo/vector-icons/MaterialIcons";
 import { Countdown } from "@/components/countdown";
 import { PressableCard } from "@/components/pressable-card";
 import { AppHeader } from "@/components/app-header";
+import { CachedDataIndicator } from "@/components/offline-banner";
+import { useNetworkStatus } from "@/hooks/use-offline-cache";
+import { setCache, getCache, CACHE_KEYS } from "@/lib/offline-cache";
+import { ChallengeCardSkeleton, Skeleton } from "@/components/skeleton-loader";
+import { OptimizedAvatar } from "@/components/optimized-image";
+import { LazyAvatar } from "@/components/lazy-image";
+import { prefetchChallengeImages } from "@/lib/image-prefetch";
+import { SimpleRefreshControl } from "@/components/enhanced-refresh-control";
 
 // キャラクター画像
 const characterImages = {
@@ -496,9 +504,20 @@ function ChallengeCard({ challenge, onPress, numColumns = 2 }: { challenge: Chal
         <View style={{ position: "absolute", top: 8, right: 8 }}>
           <MaterialIcons name={goalConfig.icon as any} size={16} color="rgba(255,255,255,0.7)" />
         </View>
+        {/* ホストプロフィール画像（遅延読み込み） */}
+        {challenge.hostProfileImage && (
+          <View style={{ position: "absolute", bottom: -16, left: 12 }}>
+            <LazyAvatar
+              source={{ uri: challenge.hostProfileImage }}
+              size={32}
+              fallbackColor="#EC4899"
+              lazy={true}
+            />
+          </View>
+        )}
       </LinearGradient>
 
-      <View style={{ padding: 16 }}>
+      <View style={{ padding: 16, paddingTop: challenge.hostProfileImage ? 20 : 16 }}>
         {/* タイトル */}
         <Text
           style={{ color: "#fff", fontSize: 14, fontWeight: "bold", marginBottom: 4 }}
@@ -685,12 +704,83 @@ export default function HomeScreen() {
   const [isSearching, setIsSearching] = useState(false);
   const [categoryFilter, setCategoryFilter] = useState<number | null>(null);
   
-  const { data: challenges, isLoading, refetch } = trpc.events.list.useQuery();
-  const { data: searchResults, refetch: refetchSearch } = trpc.search.challenges.useQuery(
-    { query: searchQuery },
-    { enabled: searchQuery.length > 0 }
+  const { isOffline } = useNetworkStatus();
+  const [cachedChallenges, setCachedChallenges] = useState<Challenge[] | null>(null);
+  const [isStaleData, setIsStaleData] = useState(false);
+
+  // 無限スクロール対応のページネーションクエリ
+  const {
+    data: paginatedData,
+    isLoading,
+    fetchNextPage,
+    hasNextPage,
+    isFetchingNextPage,
+    refetch,
+  } = trpc.events.listPaginated.useInfiniteQuery(
+    { limit: 20, filter: filter as "all" | "solo" | "group" },
+    {
+      enabled: !isOffline,
+      getNextPageParam: (lastPage) => lastPage.nextCursor,
+      initialCursor: 0,
+    }
   );
-  const { data: categoriesData } = trpc.categories.list.useQuery();
+
+  // ページネーションデータをフラットな配列に変換
+  const challenges = paginatedData?.pages.flatMap((page) => page.items) ?? [];
+  // 検索結果の無限スクロール対応
+  const {
+    data: searchPaginatedData,
+    fetchNextPage: fetchNextSearchPage,
+    hasNextPage: hasNextSearchPage,
+    isFetchingNextPage: isFetchingNextSearchPage,
+    refetch: refetchSearch,
+  } = trpc.search.challengesPaginated.useInfiniteQuery(
+    { query: searchQuery, limit: 20 },
+    {
+      enabled: searchQuery.length > 0 && !isOffline,
+      getNextPageParam: (lastPage) => lastPage.nextCursor,
+      initialCursor: 0,
+    }
+  );
+
+  // 検索結果をフラットな配列に変換
+  const searchResults = searchPaginatedData?.pages.flatMap((page) => page.items) ?? [];
+  const { data: categoriesData } = trpc.categories.list.useQuery(undefined, {
+    enabled: !isOffline,
+  });
+
+  // チャレンジデータをキャッシュに保存
+  useEffect(() => {
+    if (challenges && challenges.length > 0) {
+      setCache(CACHE_KEYS.challenges, challenges);
+      setIsStaleData(false);
+    }
+  }, [challenges]);
+
+  // チャレンジの画像をプリフェッチ（事前読み込み）
+  useEffect(() => {
+    if (challenges && challenges.length > 0) {
+      // 最初の10件の画像をプリフェッチ
+      prefetchChallengeImages(challenges.slice(0, 10));
+    }
+  }, [challenges]);
+
+  // オフライン時はキャッシュから読み込み
+  useEffect(() => {
+    if (isOffline) {
+      getCache<Challenge[]>(CACHE_KEYS.challenges).then((cached) => {
+        if (cached) {
+          setCachedChallenges(cached.data);
+          setIsStaleData(cached.isStale);
+        }
+      });
+    } else {
+      setCachedChallenges(null);
+    }
+  }, [isOffline]);
+
+  // オンライン時はAPIデータ、オフライン時はキャッシュデータを使用
+  const effectiveChallenges = isOffline ? cachedChallenges : challenges;
 
   const onRefresh = async () => {
     setRefreshing(true);
@@ -712,7 +802,7 @@ export default function HomeScreen() {
         if (categoryFilter && c.categoryId !== categoryFilter) return false;
         return true;
       })
-    : (challenges?.filter((c: Challenge & { categoryId?: number | null }) => {
+    : (effectiveChallenges?.filter((c: Challenge & { categoryId?: number | null }) => {
         if (filter !== "all" && c.eventType !== filter) return false;
         if (categoryFilter && c.categoryId !== categoryFilter) return false;
         return true;
@@ -720,8 +810,8 @@ export default function HomeScreen() {
 
   // 注目のチャレンジ（最も進捗が高いもの、または最も参加者が多いもの）
   const featuredChallenge = useMemo(() => {
-    if (!challenges || challenges.length === 0) return null;
-    return challenges.reduce((best, current) => {
+    if (!effectiveChallenges || effectiveChallenges.length === 0) return null;
+    return effectiveChallenges.reduce((best, current) => {
       const bestProgress = best.currentValue / best.goalValue;
       const currentProgress = current.currentValue / current.goalValue;
       // 進捗率が高い、または参加者が多いものを選択
@@ -750,9 +840,16 @@ export default function HomeScreen() {
         />
       )}
 
+      {/* オフラインキャッシュインジケーター */}
+      {isOffline && isStaleData && (
+        <View style={{ marginHorizontal: 16, marginTop: 8 }}>
+          <CachedDataIndicator isStale={isStaleData} />
+        </View>
+      )}
+
       {/* 盛り上がりセクション */}
-      {challenges && challenges.length > 0 && !isSearching && (
-        <EngagementSection challenges={challenges as Challenge[]} />
+      {effectiveChallenges && effectiveChallenges.length > 0 && !isSearching && (
+        <EngagementSection challenges={effectiveChallenges as Challenge[]} />
       )}
 
       {/* LP風キャッチコピー */}
@@ -864,9 +961,27 @@ export default function HomeScreen() {
       />
 
       {isLoading ? (
-        <View style={{ flex: 1, alignItems: "center", justifyContent: "center", backgroundColor: "#0D1117" }}>
-          <Text style={{ color: "#9CA3AF" }}>読み込み中...</Text>
-        </View>
+        <ScrollView style={{ flex: 1, backgroundColor: "#0D1117" }} contentContainerStyle={{ padding: 16 }}>
+          {/* スケルトンローダー */}
+          <View style={{ marginBottom: 24 }}>
+            <Skeleton width="40%" height={24} borderRadius={8} style={{ marginBottom: 16 }} />
+            <Skeleton width="100%" height={180} borderRadius={16} style={{ marginBottom: 16 }} />
+          </View>
+          <View style={{ marginBottom: 24 }}>
+            <Skeleton width="50%" height={20} borderRadius={6} style={{ marginBottom: 12 }} />
+            <View style={{ flexDirection: "row", justifyContent: "space-between", marginBottom: 16 }}>
+              <Skeleton width="30%" height={60} borderRadius={12} />
+              <Skeleton width="30%" height={60} borderRadius={12} />
+              <Skeleton width="30%" height={60} borderRadius={12} />
+            </View>
+          </View>
+          <View>
+            <Skeleton width="45%" height={20} borderRadius={6} style={{ marginBottom: 12 }} />
+            <ChallengeCardSkeleton />
+            <ChallengeCardSkeleton />
+            <ChallengeCardSkeleton />
+          </View>
+        </ScrollView>
       ) : displayChallenges.length > 0 ? (
         <FlatList
           key={`grid-${numColumns}`}
@@ -878,7 +993,33 @@ export default function HomeScreen() {
             <ChallengeCard challenge={item as Challenge} onPress={() => handleChallengePress(item.id)} numColumns={numColumns} />
           )}
           refreshControl={
-            <RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor="#DD6500" />
+            <SimpleRefreshControl refreshing={refreshing} onRefresh={onRefresh} />
+          }
+          // 無限スクロール設定
+          onEndReached={() => {
+            if (isSearching) {
+              // 検索中は検索結果のページネーション
+              if (hasNextSearchPage && !isFetchingNextSearchPage) {
+                fetchNextSearchPage();
+              }
+            } else {
+              // 通常一覧のページネーション
+              if (hasNextPage && !isFetchingNextPage) {
+                fetchNextPage();
+              }
+            }
+          }}
+          onEndReachedThreshold={0.5}
+          ListFooterComponent={
+            (isSearching ? isFetchingNextSearchPage : isFetchingNextPage) ? (
+              <View style={{ padding: 20, alignItems: "center" }}>
+                <Text style={{ color: "#9CA3AF" }}>読み込み中...</Text>
+              </View>
+            ) : (isSearching ? hasNextSearchPage : hasNextPage) ? (
+              <View style={{ padding: 20, alignItems: "center" }}>
+                <Text style={{ color: "#6B7280" }}>スクロールしてもっと見る</Text>
+              </View>
+            ) : null
           }
           contentContainerStyle={{ 
             paddingHorizontal: isDesktop ? 24 : 8, 

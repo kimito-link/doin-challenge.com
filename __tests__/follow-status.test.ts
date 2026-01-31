@@ -115,7 +115,7 @@ describe("Follow Status Hook", () => {
 
 describe("Premium Features", () => {
   it("should define premium features correctly", async () => {
-    const { PREMIUM_FEATURES, isPremiumFeature } = await import("../hooks/use-follow-status");
+    const { PREMIUM_FEATURES, isPremiumFeature } = await import("../lib/premium-features");
 
     expect(PREMIUM_FEATURES.length).toBeGreaterThan(0);
     expect(isPremiumFeature("create_challenge")).toBe(true);

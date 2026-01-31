@@ -1,4 +1,4 @@
-import { FlatList, Text, View, TouchableOpacity, Alert, ScrollView, Linking } from "react-native";
+import { FlatList, Text, View, TouchableOpacity, ScrollView, Linking } from "react-native";
 import { useState, useEffect } from "react";
 import { Image } from "expo-image";
 import { useRouter } from "expo-router";
@@ -12,6 +12,7 @@ import { FollowStatusBadge, FollowPromptBanner } from "@/components/follow-gate"
 import MaterialIcons from "@expo/vector-icons/MaterialIcons";
 import { LinearGradient } from "expo-linear-gradient";
 import { AppHeader } from "@/components/app-header";
+import { ConfirmModal } from "@/components/confirm-modal";
 
 // キャラクター画像
 const characterImages = {
@@ -96,10 +97,11 @@ const getRandomPattern = () => {
 export default function MyPageScreen() {
   const router = useRouter();
   const { user, loading, login, logout, isAuthenticated } = useAuth();
-  const { isFollowing, targetUsername, targetDisplayName, updateFollowStatus } = useFollowStatus();
+  const { isFollowing, targetUsername, targetDisplayName, updateFollowStatus, refreshFromServer, refreshing } = useFollowStatus();
   const { isDesktop, isTablet } = useResponsive();
   const [isLoggingIn, setIsLoggingIn] = useState(false);
   const [loginPattern, setLoginPattern] = useState(() => getRandomPattern());
+  const [showLogoutModal, setShowLogoutModal] = useState(false);
 
   // ログイン時にフォロー状態を更新
   useEffect(() => {
@@ -132,14 +134,12 @@ export default function MyPageScreen() {
   });
 
   const handleLogout = () => {
-    Alert.alert(
-      "ログアウト",
-      "ログアウトしますか？",
-      [
-        { text: "キャンセル", style: "cancel" },
-        { text: "ログアウト", style: "destructive", onPress: () => router.push("/logout") },
-      ]
-    );
+    setShowLogoutModal(true);
+  };
+
+  const confirmLogout = () => {
+    setShowLogoutModal(false);
+    router.push("/logout");
   };
 
   const handleChallengePress = (challengeId: number) => {
@@ -699,6 +699,8 @@ export default function MyPageScreen() {
               isFollowing={isFollowing}
               targetUsername={targetUsername}
               targetDisplayName={targetDisplayName}
+              onRelogin={login}
+              refreshing={refreshing}
             />
           )}
 
@@ -958,6 +960,20 @@ export default function MyPageScreen() {
           </View>
         </ScrollView>
       )}
+
+      {/* ログアウト確認モーダル */}
+      <ConfirmModal
+        visible={showLogoutModal}
+        title="ログアウト"
+        message="ログアウトしますか？"
+        confirmText="ログアウト"
+        cancelText="キャンセル"
+        confirmStyle="destructive"
+        onConfirm={confirmLogout}
+        onCancel={() => setShowLogoutModal(false)}
+        icon="logout"
+        iconColor="#EF4444"
+      />
     </ScreenContainer>
   );
 }

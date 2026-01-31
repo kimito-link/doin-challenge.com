@@ -9,6 +9,10 @@ import MaterialIcons from "@expo/vector-icons/MaterialIcons";
 import { LinearGradient } from "expo-linear-gradient";
 import { Countdown } from "@/components/countdown";
 import { AppHeader } from "@/components/app-header";
+import { shareToTwitter, shareParticipation } from "@/lib/share";
+import { SharePromptModal } from "@/components/share-prompt-modal";
+import { ReminderButton } from "@/components/reminder-button";
+import { OptimizedAvatar } from "@/components/optimized-image";
 
 const { width: screenWidth } = Dimensions.get("window");
 
@@ -178,28 +182,14 @@ function ContributionRanking({ participations }: { participations: Participation
               {index + 1}
             </Text>
           </View>
-          {p.profileImage && !p.isAnonymous ? (
-            <Image
-              source={{ uri: p.profileImage }}
-              style={{ width: 36, height: 36, borderRadius: 18, marginRight: 12 }}
+          <View style={{ marginRight: 12 }}>
+            <OptimizedAvatar
+              source={p.profileImage && !p.isAnonymous ? { uri: p.profileImage } : undefined}
+              size={36}
+              fallbackColor="#EC4899"
+              fallbackText={p.displayName.charAt(0)}
             />
-          ) : (
-            <View
-              style={{
-                width: 36,
-                height: 36,
-                borderRadius: 18,
-                backgroundColor: "#EC4899",
-                alignItems: "center",
-                justifyContent: "center",
-                marginRight: 12,
-              }}
-            >
-              <Text style={{ color: "#fff", fontSize: 14, fontWeight: "bold" }}>
-                {p.displayName.charAt(0)}
-              </Text>
-            </View>
-          )}
+          </View>
           <View style={{ flex: 1 }}>
             <Text style={{ color: "#fff", fontSize: 14, fontWeight: "600" }}>
               {p.isAnonymous ? "匿名" : p.displayName}
@@ -243,27 +233,12 @@ function MessageCard({ participation, onCheer, cheerCount, onDM, challengeId, co
       }}
     >
       <View style={{ flexDirection: "row", alignItems: "center", marginBottom: 8 }}>
-        {participation.profileImage && !participation.isAnonymous ? (
-          <Image
-            source={{ uri: participation.profileImage }}
-            style={{ width: 40, height: 40, borderRadius: 20 }}
-          />
-        ) : (
-          <View
-            style={{
-              width: 40,
-              height: 40,
-              borderRadius: 20,
-              backgroundColor: "#EC4899",
-              alignItems: "center",
-              justifyContent: "center",
-            }}
-          >
-            <Text style={{ color: "#fff", fontSize: 16, fontWeight: "bold" }}>
-              {participation.displayName.charAt(0)}
-            </Text>
-          </View>
-        )}
+        <OptimizedAvatar
+          source={participation.profileImage && !participation.isAnonymous ? { uri: participation.profileImage } : undefined}
+          size={40}
+          fallbackColor="#EC4899"
+          fallbackText={participation.displayName.charAt(0)}
+        />
         <View style={{ marginLeft: 12, flex: 1 }}>
           <Text style={{ color: "#fff", fontSize: 16, fontWeight: "600" }}>
             {participation.isAnonymous ? "匿名" : participation.displayName}
@@ -318,28 +293,14 @@ function MessageCard({ participation, onCheer, cheerCount, onDM, challengeId, co
                   borderColor: "#2D3139",
                 }}
               >
-                {companion.profileImage ? (
-                  <Image
-                    source={{ uri: companion.profileImage }}
-                    style={{ width: 20, height: 20, borderRadius: 10, marginRight: 6 }}
+                <View style={{ marginRight: 6 }}>
+                  <OptimizedAvatar
+                    source={companion.profileImage ? { uri: companion.profileImage } : undefined}
+                    size={20}
+                    fallbackColor="#8B5CF6"
+                    fallbackText={companion.displayName.charAt(0)}
                   />
-                ) : (
-                  <View
-                    style={{
-                      width: 20,
-                      height: 20,
-                      borderRadius: 10,
-                      backgroundColor: "#8B5CF6",
-                      alignItems: "center",
-                      justifyContent: "center",
-                      marginRight: 6,
-                    }}
-                  >
-                    <Text style={{ color: "#fff", fontSize: 10, fontWeight: "bold" }}>
-                      {companion.displayName.charAt(0)}
-                    </Text>
-                  </View>
-                )}
+                </View>
                 <Text style={{ color: "#fff", fontSize: 12 }}>
                   {companion.displayName}
                 </Text>
@@ -470,6 +431,10 @@ export default function ChallengeDetailScreen() {
     }
   };
   
+  const [showSharePrompt, setShowSharePrompt] = useState(false);
+  const [isGeneratingOgp, setIsGeneratingOgp] = useState(false);
+  const generateOgpMutation = trpc.ogp.generateChallengeOgp.useMutation();
+
   const createParticipationMutation = trpc.participations.create.useMutation({
     onSuccess: () => {
       setMessage("");
@@ -478,6 +443,8 @@ export default function ChallengeDetailScreen() {
       setCompanions([]);
       setShowForm(false);
       refetch();
+      // シェア促進モーダルを表示
+      setShowSharePrompt(true);
     },
   });
   
@@ -490,6 +457,8 @@ export default function ChallengeDetailScreen() {
       setCompanions([]);
       setShowForm(false);
       refetch();
+      // シェア促進モーダルを表示
+      setShowSharePrompt(true);
     },
   });
 
@@ -614,18 +583,9 @@ export default function ChallengeDetailScreen() {
         companions: companionData,
       });
     } else {
-      if (!displayName.trim()) {
-        Alert.alert("エラー", "お名前を入力してください");
-        return;
-      }
-      createAnonymousMutation.mutate({
-        challengeId,
-        displayName: displayName.trim(),
-        message,
-        companionCount: companions.length,
-        prefecture,
-        companions: companionData,
-      });
+      // 未ログインの場合はログインを促す
+      Alert.alert("ログインが必要です", "参加表明にはTwitterログインが必要です。マイページからログインしてください。");
+      return;
     }
   };
 
@@ -659,9 +619,6 @@ export default function ChallengeDetailScreen() {
   const progress = Math.min((currentValue / goalValue) * 100, 100);
   const remaining = Math.max(goalValue - currentValue, 0);
 
-  const [isGeneratingOgp, setIsGeneratingOgp] = useState(false);
-  const generateOgpMutation = trpc.ogp.generateChallengeOgp.useMutation();
-
   const handleShare = async () => {
     try {
       const shareMessage = `🎯 ${challenge.title}\n\n📊 現在 ${currentValue}/${goalValue}${unit}（${Math.round(progress)}%）\nあと${remaining}${unit}で目標達成！\n\n一緒に応援しよう！\n\n#KimitoLink #動員ちゃれんじ`;
@@ -670,6 +627,11 @@ export default function ChallengeDetailScreen() {
     } catch (error) {
       Alert.alert("エラー", "シェアに失敗しました");
     }
+  };
+
+  const handleTwitterShare = async () => {
+    const text = `🎯 ${challenge.title}\n\n📊 現在 ${currentValue}/${goalValue}${unit}（${Math.round(progress)}%）\nあと${remaining}${unit}で目標達成！\n\n一緒に応援しよう！`;
+    await shareToTwitter(text, undefined, ["動員ちゃれんじ", "KimitoLink"]);
   };
 
   const handleShareWithOgp = async () => {
@@ -1229,25 +1191,27 @@ export default function ChallengeDetailScreen() {
                   参加表明
                 </Text>
 
-                {!user && (
-                  <View style={{ marginBottom: 16 }}>
-                    <Text style={{ color: "#9CA3AF", fontSize: 14, marginBottom: 8 }}>
-                      お名前 *
+                {/* ログインユーザーの場合はTwitterアカウント名を表示 */}
+                {user && (
+                  <View style={{ marginBottom: 16, backgroundColor: "#1A1D21", borderRadius: 8, padding: 12, borderWidth: 1, borderColor: "#2D3139" }}>
+                    <Text style={{ color: "#9CA3AF", fontSize: 12, marginBottom: 4 }}>
+                      参加者名
                     </Text>
-                    <TextInput
-                      value={displayName}
-                      onChangeText={setDisplayName}
-                      placeholder="ニックネーム"
-                      placeholderTextColor="#6B7280"
-                      style={{
-                        backgroundColor: "#0D1117",
-                        borderRadius: 8,
-                        padding: 12,
-                        color: "#fff",
-                        borderWidth: 1,
-                        borderColor: "#2D3139",
-                      }}
-                    />
+                    <Text style={{ color: "#fff", fontSize: 16, fontWeight: "600" }}>
+                      {user.name || user.username || "ゲスト"}
+                    </Text>
+                  </View>
+                )}
+
+                {/* 未ログインの場合はログインを促す */}
+                {!user && (
+                  <View style={{ marginBottom: 16, backgroundColor: "rgba(236, 72, 153, 0.1)", borderRadius: 12, padding: 16, borderWidth: 1, borderColor: "#EC4899" }}>
+                    <Text style={{ color: "#EC4899", fontSize: 14, fontWeight: "600", marginBottom: 8 }}>
+                      ログインが必要です
+                    </Text>
+                    <Text style={{ color: "#9CA3AF", fontSize: 13, marginBottom: 12 }}>
+                      参加表明にはTwitterログインが必要です。マイページからログインしてください。
+                    </Text>
                   </View>
                 )}
 
@@ -1775,8 +1739,8 @@ export default function ChallengeDetailScreen() {
               </View>
             ) : (
               <View style={{ gap: 12, marginTop: 16 }}>
-                {/* シェアボタン */}
-                <View style={{ flexDirection: "row", gap: 12 }}>
+                {/* シェア・リマインダーボタン */}
+                <View style={{ flexDirection: "row", gap: 12, alignItems: "center" }}>
                   <TouchableOpacity
                     onPress={handleShare}
                     style={{
@@ -1795,11 +1759,10 @@ export default function ChallengeDetailScreen() {
                     <Text style={{ color: "#fff", fontSize: 14, marginLeft: 6 }}>シェア</Text>
                   </TouchableOpacity>
                   <TouchableOpacity
-                    onPress={handleShareWithOgp}
-                    disabled={isGeneratingOgp}
+                    onPress={handleTwitterShare}
                     style={{
                       flex: 1,
-                      backgroundColor: isGeneratingOgp ? "#2D3139" : "#1DA1F2",
+                      backgroundColor: "#000",
                       borderRadius: 12,
                       padding: 14,
                       alignItems: "center",
@@ -1807,12 +1770,20 @@ export default function ChallengeDetailScreen() {
                       justifyContent: "center",
                     }}
                   >
-                    <MaterialIcons name="image" size={18} color="#fff" />
-                    <Text style={{ color: "#fff", fontSize: 14, marginLeft: 6 }}>
-                      {isGeneratingOgp ? "生成中..." : "画像付き"}
-                    </Text>
+                    <Text style={{ color: "#fff", fontSize: 16, fontWeight: "bold" }}>𝕏</Text>
+                    <Text style={{ color: "#fff", fontSize: 14, marginLeft: 6 }}>Xでシェア</Text>
                   </TouchableOpacity>
                 </View>
+                {/* リマインダーボタン */}
+                {challenge.eventDate && (
+                  <View style={{ flexDirection: "row", justifyContent: "flex-end" }}>
+                    <ReminderButton
+                      challengeId={challengeId}
+                      challengeTitle={challenge.title}
+                      eventDate={new Date(challenge.eventDate)}
+                    />
+                  </View>
+                )}
                 <TouchableOpacity
                   onPress={() => setShowForm(true)}
                   style={{
@@ -1846,6 +1817,15 @@ export default function ChallengeDetailScreen() {
           </View>
         </ScrollView>
       </KeyboardAvoidingView>
+
+      {/* シェア促進モーダル */}
+      <SharePromptModal
+        visible={showSharePrompt}
+        onClose={() => setShowSharePrompt(false)}
+        challengeTitle={challenge.title}
+        hostName={challenge.hostName}
+        challengeId={challengeId}
+      />
     </ScreenContainer>
   );
 }

@@ -24,6 +24,34 @@ export const appRouter = router({
       return db.getAllEvents();
     }),
 
+    // ページネーション対応のイベント一覧取得
+    listPaginated: publicProcedure
+      .input(z.object({
+        cursor: z.number().optional(), // 次のページの開始位置
+        limit: z.number().min(1).max(50).default(20),
+        filter: z.enum(["all", "solo", "group"]).optional(),
+      }))
+      .query(async ({ input }) => {
+        const { cursor = 0, limit, filter } = input;
+        const allEvents = await db.getAllEvents();
+        
+        // フィルター適用
+        let filteredEvents = allEvents;
+        if (filter && filter !== "all") {
+          filteredEvents = allEvents.filter((e: any) => e.eventType === filter);
+        }
+        
+        // ページネーション
+        const items = filteredEvents.slice(cursor, cursor + limit);
+        const nextCursor = cursor + limit < filteredEvents.length ? cursor + limit : undefined;
+        
+        return {
+          items,
+          nextCursor,
+          totalCount: filteredEvents.length,
+        };
+      }),
+
     // イベント詳細取得
     getById: publicProcedure
       .input(z.object({ id: z.number() }))
@@ -756,6 +784,28 @@ Design requirements:
       .input(z.object({ query: z.string().min(1) }))
       .query(async ({ input }) => {
         return db.searchChallenges(input.query);
+      }),
+
+    // ページネーション対応の検索
+    challengesPaginated: publicProcedure
+      .input(z.object({
+        query: z.string().min(1),
+        cursor: z.number().optional(),
+        limit: z.number().min(1).max(50).default(20),
+      }))
+      .query(async ({ input }) => {
+        const { query, cursor = 0, limit } = input;
+        const allResults = await db.searchChallenges(query);
+        
+        // ページネーション
+        const items = allResults.slice(cursor, cursor + limit);
+        const nextCursor = cursor + limit < allResults.length ? cursor + limit : undefined;
+        
+        return {
+          items,
+          nextCursor,
+          totalCount: allResults.length,
+        };
       }),
 
     // 検索履歴を保存

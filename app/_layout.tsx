@@ -10,6 +10,7 @@ import "@/lib/_core/nativewind-pressable";
 import { ThemeProvider } from "@/lib/theme-provider";
 import { LoginSuccessProvider } from "@/lib/login-success-context";
 import { LoginSuccessModalWrapper } from "@/components/login-success-modal-wrapper";
+import { OfflineBanner } from "@/components/offline-banner";
 import {
   SafeAreaFrameContext,
   SafeAreaInsetsContext,
@@ -93,6 +94,7 @@ export default function RootLayout() {
             </Stack>
             <StatusBar style="auto" />
             <LoginSuccessModalWrapper />
+            <OfflineBanner />
           </LoginSuccessProvider>
         </QueryClientProvider>
       </trpc.Provider>
