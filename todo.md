@@ -486,12 +486,12 @@ v6.172で性別統計表示機能を実装した際、サムネイル画像と�
 Gate 1 + こまめなバージョン管理のワークフローに従って、段階的に再実装する。
 
 #### v6.174: データベース層
-- [ ] 性別統計を集計するSQLクエリを実装
-- [ ] SQLクエリをテスト実行して結果を確認
-- [ ] commit
-- [ ] バージョン番号を更新（shared/version.ts）
-- [ ] checkpoint
-- [ ] diff-check実行
+- [x] 性別統計を集計するSQLクエリを実装
+- [x] SQLクエリをテスト実行して結果を確認
+- [x] commit
+- [x] バージョン番号を更新（shared/version.ts）
+- [x] checkpoint
+- [x] diff-check実行（⚠️ DBとHealthに変更あり）
 
 #### v6.175: API層（challenge-db.ts）
 - [ ] `getAllEventsWithGenderStats()`関数を実装

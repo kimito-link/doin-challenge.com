@@ -4252,6 +4252,7 @@ var eventsRouter = router({
     return getAllEvents();
   }),
   // ページネーション対応のイベント一覧取得
+  // v6.175: 性別統計付きで取得
   listPaginated: publicProcedure.input(z.object({
     cursor: z.number().optional(),
     limit: z.number().min(1).max(50).default(20),
@@ -4259,7 +4260,7 @@ var eventsRouter = router({
     search: z.string().optional()
   })).query(async ({ input }) => {
     const { cursor = 0, limit, filter, search } = input;
-    const allEvents = await getAllEvents();
+    const allEvents = await getAllEventsWithGenderStats();
     let filteredEvents = allEvents;
     if (filter && filter !== "all") {
       filteredEvents = filteredEvents.filter((e) => e.eventType === filter);
