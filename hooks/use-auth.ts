@@ -8,6 +8,7 @@ import {
 } from "@/lib/token-manager";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { Platform, Linking } from "react-native";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 import Constants from "expo-constants";
 import { USER_INFO_KEY } from "@/constants/oauth";
 
@@ -235,7 +236,12 @@ export function useAuth(options?: UseAuthOptions) {
         console.log("[Auth] Web login URL:", loginUrl, "forceSwitch:", forceSwitch);
         window.location.href = loginUrl;
       } else {
-        // On native, use configured API URL
+        // On native, save return URL to AsyncStorage
+        if (returnUrl) {
+          await AsyncStorage.setItem("auth_return_url", returnUrl);
+          console.log("[Auth] Saved return URL (native):", returnUrl);
+        }
+        
         const switchParam = forceSwitch ? "?switch=true" : "";
         const loginUrl = `${apiBaseUrl}/api/twitter/auth${switchParam}`;
         console.log("[Auth] Native login URL:", loginUrl, "forceSwitch:", forceSwitch);
