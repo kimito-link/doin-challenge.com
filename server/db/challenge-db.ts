@@ -193,7 +193,8 @@ export async function getAllEventsWithGenderStats() {
   `);
   
   // キャッシュを更新
-  eventsCache = { data: result[0] as any[], timestamp: now };
+  const rows = (result as any)[0] as any[];
+  eventsCache = { data: rows, timestamp: now };
   
-  return result[0] as any[];
+  return rows;
 }
