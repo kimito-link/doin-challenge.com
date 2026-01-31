@@ -14,6 +14,7 @@ import { getOpenApiSpec } from "../openapi";
 import swaggerUi from "swagger-ui-express";
 import { initWebSocketServer } from "../websocket";
 import { initSentry, Sentry } from "./sentry";
+import { rateLimiterMiddleware } from "./rate-limiter";
 
 function isPortAvailable(port: number): Promise<boolean> {
   return new Promise((resolve) => {
@@ -67,6 +68,9 @@ async function startServer() {
 
   app.use(express.json({ limit: "50mb" }));
   app.use(express.urlencoded({ limit: "50mb", extended: true }));
+
+  // Rate Limiter Middleware（不正アクセスを自動ブロック）
+  app.use(rateLimiterMiddleware);
 
   registerOAuthRoutes(app);
   registerTwitterRoutes(app);

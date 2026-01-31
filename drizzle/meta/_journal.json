@@ -176,6 +176,20 @@
       "when": 1769401940469,
       "tag": "0024_strange_outlaw_kid",
       "breakpoints": true
+    },
+    {
+      "idx": 25,
+      "version": "5",
+      "when": 1769847123570,
+      "tag": "0025_spooky_lorna_dane",
+      "breakpoints": true
+    },
+    {
+      "idx": 26,
+      "version": "5",
+      "when": 1769847318035,
+      "tag": "0026_lovely_pixie",
+      "breakpoints": true
     }
   ]
 }

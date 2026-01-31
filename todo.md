@@ -266,3 +266,41 @@
 - [x] マイページの実装を確認
 - [x] ログイン後はユーザーのTwitterプロフィール画像が表示されるのが正しい動作
 - [x] オリジナルキャラクターはログイン前の画面でのみ表示される
+
+
+---
+
+## 🤖 AI × E2Eテスト・監視システム導入 (2026-01-31)
+
+### フェーズ1: 即座に導入（完了）
+- [x] GitHub Dependabot設定（既に存在）
+- [x] GitHub CodeQL設定を作成
+- [x] E2E継続監視ワークフローを作成（6時間ごと自動実行）
+- [x] Rate Limiterミドルウェアを実装
+- [x] Rate Limiterをserver/_core/index.tsに統合
+
+### フェーズ2: 短期導入（次のステップ）
+- [ ] Sentry AI Autofixを有効化
+  - GitHub MarketplaceでSentry Copilot Extensionをインストール
+  - Sentryダッシュボードで設定
+- [ ] Cloudflareアカウント作成・設定
+  - Rate Limiting Rules設定
+  - DDoS Protection有効化
+- [ ] Slack通知統合
+  - SLACK_WEBHOOK_URLをシークレットに追加
+  - E2Eテスト失敗時の通知設定
+
+### フェーズ3: 中期導入（1ヶ月以内）
+- [ ] Autify または mabl 無料トライアル申し込み
+- [ ] 主要ユーザーフローのテストシナリオ作成
+- [ ] 継続的モニタリング設定（1時間ごと）
+
+### フェーズ4: 統合・最適化
+- [ ] ダッシュボード構築（Grafana等）
+- [ ] メトリクス可視化
+- [ ] アラート最適化
+
+### ドキュメント
+- [x] AI E2Eテストサービス調査レポート（docs/ai-e2e-testing-research.md）
+- [x] AI監視システム導入計画（docs/ai-monitoring-implementation-plan.md）
+

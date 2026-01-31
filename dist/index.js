@@ -7158,6 +7158,91 @@ function initSentry() {
   console.log("Sentry initialized for backend");
 }
 
+// server/_core/rate-limiter.ts
+var rateLimitStore = /* @__PURE__ */ new Map();
+setInterval(() => {
+  const now = Date.now();
+  for (const [key, entry] of rateLimitStore.entries()) {
+    if (entry.resetTime < now) {
+      rateLimitStore.delete(key);
+    }
+  }
+}, 60 * 1e3);
+var DEFAULT_CONFIG = {
+  windowMs: 60 * 1e3,
+  // 1分
+  maxRequests: 100
+  // 100リクエスト
+};
+var PATH_CONFIGS = {
+  "/api/auth": {
+    windowMs: 60 * 1e3,
+    // 1分
+    maxRequests: 5
+    // 5リクエスト（ログイン保護）
+  },
+  "/api/trpc": {
+    windowMs: 10 * 1e3,
+    // 10秒
+    maxRequests: 10
+    // 10リクエスト
+  }
+};
+function checkRateLimit(ip, path) {
+  let config = DEFAULT_CONFIG;
+  for (const [pathPrefix, pathConfig] of Object.entries(PATH_CONFIGS)) {
+    if (path.startsWith(pathPrefix)) {
+      config = pathConfig;
+      break;
+    }
+  }
+  const key = `${ip}:${path}`;
+  const now = Date.now();
+  const entry = rateLimitStore.get(key);
+  if (!entry || entry.resetTime < now) {
+    const newEntry = {
+      count: 1,
+      resetTime: now + config.windowMs
+    };
+    rateLimitStore.set(key, newEntry);
+    return {
+      allowed: true,
+      remaining: config.maxRequests - 1,
+      resetTime: newEntry.resetTime
+    };
+  }
+  entry.count++;
+  if (entry.count > config.maxRequests) {
+    return {
+      allowed: false,
+      remaining: 0,
+      resetTime: entry.resetTime
+    };
+  }
+  return {
+    allowed: true,
+    remaining: config.maxRequests - entry.count,
+    resetTime: entry.resetTime
+  };
+}
+function rateLimiterMiddleware(req, res, next) {
+  const ip = req.ip || req.headers["x-forwarded-for"] || req.connection.remoteAddress || "unknown";
+  const path = req.path || req.url;
+  const result = checkRateLimit(ip, path);
+  res.setHeader("X-RateLimit-Limit", result.remaining + (result.allowed ? 1 : 0));
+  res.setHeader("X-RateLimit-Remaining", result.remaining);
+  res.setHeader("X-RateLimit-Reset", new Date(result.resetTime).toISOString());
+  if (!result.allowed) {
+    console.warn(`[RateLimit] Blocked request from ${ip} to ${path}`);
+    return res.status(429).json({
+      error: "Too many requests",
+      message: "\u30EA\u30AF\u30A8\u30B9\u30C8\u304C\u591A\u3059\u304E\u307E\u3059\u3002\u3057\u3070\u3089\u304F\u5F85\u3063\u3066\u304B\u3089\u518D\u8A66\u884C\u3057\u3066\u304F\u3060\u3055\u3044\u3002",
+      retryAfter: Math.ceil((result.resetTime - Date.now()) / 1e3)
+    });
+  }
+  next();
+}
+
 // server/_core/index.ts
 function isPortAvailable(port) {
   return new Promise((resolve) => {
@@ -7199,6 +7284,7 @@ async function startServer() {
   });
   app.use(express.json({ limit: "50mb" }));
   app.use(express.urlencoded({ limit: "50mb", extended: true }));
+  app.use(rateLimiterMiddleware);
   registerOAuthRoutes(app);
   registerTwitterRoutes(app);
   app.get("/api/health", async (_req, res) => {
