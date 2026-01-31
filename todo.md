@@ -493,13 +493,12 @@ Gate 1 + こまめなバージョン管理のワークフローに従って、�
 - [x] checkpoint
 - [x] diff-check実行（⚠️ DBとHealthに変更あり）
 
-#### v6.175: API層（challenge-db.ts）
-- [ ] `getAllEventsWithGenderStats()`関数を実装
-- [ ] APIレスポンスをテスト（curl or Postman）
-- [ ] commit
-- [ ] バージョン番号を更新
-- [ ] checkpoint
-- [ ] diff-check実行
+#### v6.175: API層（events.ts）
+- [x] `listPaginated`を`getAllEventsWithGenderStats()`に変更
+- [x] commit
+- [x] バージョン番号を更新
+- [x] checkpoint
+- [x] diff-check実行（⚠️ Healthに変更あり）
 
 #### v6.176: API層（events.ts統合）
 - [ ] `listPaginated`プロシージャを`getAllEventsWithGenderStats()`に変更
