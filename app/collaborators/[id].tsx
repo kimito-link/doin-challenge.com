@@ -1,26 +1,30 @@
-import { Text, View, TouchableOpacity, ScrollView, TextInput, Alert } from "react-native";
+import { Text, View, Pressable, ScrollView, TextInput, Alert , Platform} from "react-native";
+import * as Haptics from "expo-haptics";
+import { color, palette } from "@/theme/tokens";
 import { Image } from "expo-image";
-import { useLocalSearchParams, useRouter } from "expo-router";
+import { useLocalSearchParams } from "expo-router";
+import { navigateBack } from "@/lib/navigation/app-routes";
 import { useState } from "react";
-import { ScreenContainer } from "@/components/screen-container";
+import { ScreenContainer } from "@/components/organisms/screen-container";
 import { trpc } from "@/lib/trpc";
 import { useAuth } from "@/hooks/use-auth";
+import { useColors } from "@/hooks/use-colors";
 import MaterialIcons from "@expo/vector-icons/MaterialIcons";
 import { LinearGradient } from "expo-linear-gradient";
-import { AppHeader } from "@/components/app-header";
+import { AppHeader } from "@/components/organisms/app-header";
 
-// 権限の日本語名
+// 権限の日本語名（初心者向けに簡素化）
 const ROLE_NAMES: Record<string, string> = {
-  owner: "オーナー",
+  owner: "主催者",
   "co-host": "共同主催者",
-  moderator: "モデレーター",
+  moderator: "スタッフ",
 };
 
 // 権限の色
 const ROLE_COLORS: Record<string, string> = {
-  owner: "#FFD700",
-  "co-host": "#EC4899",
-  moderator: "#8B5CF6",
+  owner: color.rankGold,
+  "co-host": color.accentPrimary,
+  moderator: color.accentAlt,
 };
 
 // ステータスの日本語名
@@ -42,15 +46,16 @@ function CollaboratorCard({
   onRemove?: () => void;
   onChangeRole?: (role: string) => void;
 }) {
+  const colors = useColors();
   return (
     <View
       style={{
-        backgroundColor: "#1A1D21",
+        backgroundColor: color.surface,
         borderRadius: 12,
         padding: 16,
         marginBottom: 12,
         borderWidth: 1,
-        borderColor: collaborator.role === "owner" ? "#FFD700" : "#2D3139",
+        borderColor: collaborator.role === "owner" ? color.rankGold : color.border,
       }}
     >
       <View style={{ flexDirection: "row", alignItems: "center" }}>
@@ -65,36 +70,36 @@ function CollaboratorCard({
               width: 48,
               height: 48,
               borderRadius: 24,
-              backgroundColor: ROLE_COLORS[collaborator.role] || "#EC4899",
+              backgroundColor: ROLE_COLORS[collaborator.role] || color.accentPrimary,
               alignItems: "center",
               justifyContent: "center",
             }}
           >
-            <Text style={{ color: "#fff", fontSize: 18, fontWeight: "bold" }}>
+            <Text style={{ color: colors.foreground, fontSize: 18, fontWeight: "bold" }}>
               {collaborator.userName?.charAt(0) || "?"}
             </Text>
           </View>
         )}
         <View style={{ flex: 1, marginLeft: 12 }}>
           <View style={{ flexDirection: "row", alignItems: "center" }}>
-            <Text style={{ color: "#fff", fontSize: 16, fontWeight: "bold" }}>
+            <Text style={{ color: colors.foreground, fontSize: 16, fontWeight: "bold" }}>
               {collaborator.userName}
             </Text>
             <View
               style={{
-                backgroundColor: ROLE_COLORS[collaborator.role] || "#6B7280",
+                backgroundColor: ROLE_COLORS[collaborator.role] || color.textSubtle,
                 borderRadius: 4,
                 paddingHorizontal: 6,
                 paddingVertical: 2,
                 marginLeft: 8,
               }}
             >
-              <Text style={{ color: "#fff", fontSize: 10, fontWeight: "bold" }}>
+              <Text style={{ color: colors.foreground, fontSize: 10, fontWeight: "bold" }}>
                 {ROLE_NAMES[collaborator.role] || collaborator.role}
               </Text>
             </View>
           </View>
-          <Text style={{ color: "#9CA3AF", fontSize: 12, marginTop: 2 }}>
+          <Text style={{ color: color.textMuted, fontSize: 12, marginTop: 2 }}>
             {STATUS_NAMES[collaborator.status] || collaborator.status}
           </Text>
         </View>
@@ -102,20 +107,20 @@ function CollaboratorCard({
         <View style={{ alignItems: "flex-end" }}>
           {collaborator.canEdit && (
             <View style={{ flexDirection: "row", alignItems: "center", marginBottom: 2 }}>
-              <MaterialIcons name="edit" size={12} color="#10B981" />
-              <Text style={{ color: "#10B981", fontSize: 10, marginLeft: 2 }}>編集可</Text>
+              <MaterialIcons name="edit" size={12} color={color.successDark} />
+              <Text style={{ color: color.successDark, fontSize: 10, marginLeft: 2 }}>編集可</Text>
             </View>
           )}
           {collaborator.canManageParticipants && (
             <View style={{ flexDirection: "row", alignItems: "center", marginBottom: 2 }}>
-              <MaterialIcons name="people" size={12} color="#3B82F6" />
-              <Text style={{ color: "#3B82F6", fontSize: 10, marginLeft: 2 }}>参加者管理</Text>
+              <MaterialIcons name="people" size={12} color={color.info} />
+              <Text style={{ color: color.info, fontSize: 10, marginLeft: 2 }}>参加者管理</Text>
             </View>
           )}
           {collaborator.canInvite && (
             <View style={{ flexDirection: "row", alignItems: "center" }}>
-              <MaterialIcons name="person-add" size={12} color="#F59E0B" />
-              <Text style={{ color: "#F59E0B", fontSize: 10, marginLeft: 2 }}>招待可</Text>
+              <MaterialIcons name="person-add" size={12} color={color.warning} />
+              <Text style={{ color: color.warning, fontSize: 10, marginLeft: 2 }}>招待可</Text>
             </View>
           )}
         </View>
@@ -124,31 +129,31 @@ function CollaboratorCard({
       {/* オーナー以外は削除可能 */}
       {isOwner && collaborator.role !== "owner" && (
         <View style={{ flexDirection: "row", marginTop: 12, gap: 8 }}>
-          <TouchableOpacity
+          <Pressable
             onPress={() => onChangeRole?.(collaborator.role === "co-host" ? "moderator" : "co-host")}
             style={{
               flex: 1,
-              backgroundColor: "#2D3139",
+              backgroundColor: color.border,
               borderRadius: 8,
               padding: 8,
               alignItems: "center",
             }}
           >
-            <Text style={{ color: "#fff", fontSize: 12 }}>
+            <Text style={{ color: colors.foreground, fontSize: 12 }}>
               {collaborator.role === "co-host" ? "モデレーターに変更" : "共同主催者に変更"}
             </Text>
-          </TouchableOpacity>
-          <TouchableOpacity
+          </Pressable>
+          <Pressable
             onPress={onRemove}
             style={{
-              backgroundColor: "#EF4444",
+              backgroundColor: color.danger,
               borderRadius: 8,
               padding: 8,
               paddingHorizontal: 16,
             }}
           >
-            <MaterialIcons name="close" size={16} color="#fff" />
-          </TouchableOpacity>
+            <MaterialIcons name="close" size={16} color={colors.foreground} />
+          </Pressable>
         </View>
       )}
     </View>
@@ -163,6 +168,7 @@ function InviteForm({
   onInvite: (twitterId: string, role: string) => void;
   isLoading: boolean;
 }) {
+  const colors = useColors();
   const [twitterId, setTwitterId] = useState("");
   const [role, setRole] = useState<"co-host" | "moderator">("co-host");
 
@@ -178,35 +184,35 @@ function InviteForm({
   return (
     <View
       style={{
-        backgroundColor: "#1A1D21",
+        backgroundColor: color.surface,
         borderRadius: 12,
         padding: 16,
         marginBottom: 24,
         borderWidth: 1,
-        borderColor: "#2D3139",
+        borderColor: color.border,
       }}
     >
-      <Text style={{ color: "#fff", fontSize: 16, fontWeight: "bold", marginBottom: 12 }}>
+      <Text style={{ color: colors.foreground, fontSize: 16, fontWeight: "bold", marginBottom: 12 }}>
         共同主催者を招待
       </Text>
       
       <View style={{ marginBottom: 12 }}>
-        <Text style={{ color: "#9CA3AF", fontSize: 12, marginBottom: 4 }}>
+        <Text style={{ color: color.textMuted, fontSize: 12, marginBottom: 4 }}>
           Twitter ID（@なし）
         </Text>
         <TextInput
           value={twitterId}
           onChangeText={setTwitterId}
           placeholder="例: idolfunch"
-          placeholderTextColor="#6B7280"
+          placeholderTextColor={color.textSubtle}
           style={{
-            backgroundColor: "#0D1117",
+            backgroundColor: colors.background,
             borderRadius: 8,
             padding: 12,
-            color: "#fff",
+            color: colors.foreground,
             fontSize: 16,
             borderWidth: 1,
-            borderColor: "#2D3139",
+            borderColor: color.border,
           }}
           autoCapitalize="none"
           autoCorrect={false}
@@ -214,52 +220,52 @@ function InviteForm({
       </View>
 
       <View style={{ marginBottom: 16 }}>
-        <Text style={{ color: "#9CA3AF", fontSize: 12, marginBottom: 8 }}>
+        <Text style={{ color: color.textMuted, fontSize: 12, marginBottom: 8 }}>
           権限
         </Text>
         <View style={{ flexDirection: "row", gap: 8 }}>
-          <TouchableOpacity
+          <Pressable
             onPress={() => setRole("co-host")}
             style={{
               flex: 1,
-              backgroundColor: role === "co-host" ? "#EC4899" : "#2D3139",
+              backgroundColor: role === "co-host" ? color.accentPrimary : color.border,
               borderRadius: 8,
               padding: 12,
               alignItems: "center",
             }}
           >
-            <Text style={{ color: "#fff", fontSize: 14, fontWeight: role === "co-host" ? "bold" : "normal" }}>
+            <Text style={{ color: colors.foreground, fontSize: 14, fontWeight: role === "co-host" ? "bold" : "normal" }}>
               共同主催者
             </Text>
-            <Text style={{ color: role === "co-host" ? "rgba(255,255,255,0.8)" : "#6B7280", fontSize: 10, marginTop: 2 }}>
+            <Text style={{ color: role === "co-host" ? "rgba(255,255,255,0.8)" : color.textSubtle, fontSize: 10, marginTop: 2 }}>
               編集・参加者管理・招待
             </Text>
-          </TouchableOpacity>
-          <TouchableOpacity
+          </Pressable>
+          <Pressable
             onPress={() => setRole("moderator")}
             style={{
               flex: 1,
-              backgroundColor: role === "moderator" ? "#8B5CF6" : "#2D3139",
+              backgroundColor: role === "moderator" ? color.accentAlt : color.border,
               borderRadius: 8,
               padding: 12,
               alignItems: "center",
             }}
           >
-            <Text style={{ color: "#fff", fontSize: 14, fontWeight: role === "moderator" ? "bold" : "normal" }}>
+            <Text style={{ color: colors.foreground, fontSize: 14, fontWeight: role === "moderator" ? "bold" : "normal" }}>
               モデレーター
             </Text>
-            <Text style={{ color: role === "moderator" ? "rgba(255,255,255,0.8)" : "#6B7280", fontSize: 10, marginTop: 2 }}>
+            <Text style={{ color: role === "moderator" ? "rgba(255,255,255,0.8)" : color.textSubtle, fontSize: 10, marginTop: 2 }}>
               参加者管理のみ
             </Text>
-          </TouchableOpacity>
+          </Pressable>
         </View>
       </View>
 
-      <TouchableOpacity
+      <Pressable
         onPress={handleSubmit}
         disabled={isLoading || !twitterId.trim()}
         style={{
-          backgroundColor: isLoading || !twitterId.trim() ? "#6B7280" : "#10B981",
+          backgroundColor: isLoading || !twitterId.trim() ? color.textSubtle : color.successDark,
           borderRadius: 8,
           padding: 14,
           alignItems: "center",
@@ -267,18 +273,19 @@ function InviteForm({
           justifyContent: "center",
         }}
       >
-        <MaterialIcons name="person-add" size={20} color="#fff" />
-        <Text style={{ color: "#fff", fontSize: 16, fontWeight: "bold", marginLeft: 8 }}>
+        <MaterialIcons name="person-add" size={20} color={colors.foreground} />
+        <Text style={{ color: colors.foreground, fontSize: 16, fontWeight: "bold", marginLeft: 8 }}>
           {isLoading ? "招待中..." : "招待を送信"}
         </Text>
-      </TouchableOpacity>
+      </Pressable>
     </View>
   );
 }
 
 export default function CollaboratorsScreen() {
+  const colors = useColors();
   const { id } = useLocalSearchParams<{ id: string }>();
-  const router = useRouter();
+
   const { user } = useAuth();
   const utils = trpc.useUtils();
 
@@ -370,7 +377,7 @@ export default function CollaboratorsScreen() {
     return (
       <ScreenContainer className="p-4">
         <View style={{ flex: 1, alignItems: "center", justifyContent: "center" }}>
-          <Text style={{ color: "#9CA3AF" }}>読み込み中...</Text>
+          <Text style={{ color: color.textMuted }}>読み込み中...</Text>
         </View>
       </ScreenContainer>
     );
@@ -380,13 +387,13 @@ export default function CollaboratorsScreen() {
     return (
       <ScreenContainer className="p-4">
         <View style={{ flex: 1, alignItems: "center", justifyContent: "center" }}>
-          <Text style={{ color: "#9CA3AF" }}>チャレンジが見つかりません</Text>
-          <TouchableOpacity
-            onPress={() => router.back()}
+          <Text style={{ color: color.textMuted }}>チャレンジが見つかりません</Text>
+          <Pressable
+            onPress={() => navigateBack()}
             style={{ marginTop: 16, padding: 12 }}
           >
-            <Text style={{ color: "#EC4899" }}>戻る</Text>
-          </TouchableOpacity>
+            <Text style={{ color: color.accentPrimary }}>戻る</Text>
+          </Pressable>
         </View>
       </ScreenContainer>
     );
@@ -396,16 +403,16 @@ export default function CollaboratorsScreen() {
     return (
       <ScreenContainer className="p-4">
         <View style={{ flex: 1, alignItems: "center", justifyContent: "center" }}>
-          <MaterialIcons name="lock" size={48} color="#6B7280" />
-          <Text style={{ color: "#9CA3AF", fontSize: 16, marginTop: 12 }}>
+          <MaterialIcons name="lock" size={48} color={color.textSubtle} />
+          <Text style={{ color: color.textMuted, fontSize: 16, marginTop: 12 }}>
             この機能は主催者のみ利用できます
           </Text>
-          <TouchableOpacity
-            onPress={() => router.back()}
+          <Pressable
+            onPress={() => navigateBack()}
             style={{ marginTop: 16, padding: 12 }}
           >
-            <Text style={{ color: "#EC4899" }}>戻る</Text>
-          </TouchableOpacity>
+            <Text style={{ color: color.accentPrimary }}>戻る</Text>
+          </Pressable>
         </View>
       </ScreenContainer>
     );
@@ -416,23 +423,23 @@ export default function CollaboratorsScreen() {
       <ScrollView style={{ flex: 1 }} contentContainerStyle={{ padding: 16 }}>
         {/* ヘッダー */}
         <AppHeader 
-          title="動員ちゃれんじ" 
+          title="君斗りんくの動員ちゃれんじ" 
           showCharacters={false}
           rightElement={
-            <TouchableOpacity
-              onPress={() => router.back()}
+            <Pressable
+              onPress={() => navigateBack()}
               style={{ flexDirection: "row", alignItems: "center" }}
             >
-              <MaterialIcons name="arrow-back" size={24} color="#fff" />
-              <Text style={{ color: "#fff", marginLeft: 8 }}>戻る</Text>
-            </TouchableOpacity>
+              <MaterialIcons name="arrow-back" size={24} color={colors.foreground} />
+              <Text style={{ color: colors.foreground, marginLeft: 8 }}>戻る</Text>
+            </Pressable>
           }
         />
         <View style={{ marginBottom: 16 }}>
-          <Text style={{ color: "#fff", fontSize: 18, fontWeight: "bold" }}>
+          <Text style={{ color: colors.foreground, fontSize: 18, fontWeight: "bold" }}>
             共同主催者管理
           </Text>
-          <Text style={{ color: "#9CA3AF", fontSize: 14 }} numberOfLines={1}>
+          <Text style={{ color: color.textMuted, fontSize: 14 }} numberOfLines={1}>
             {challenge.title}
           </Text>
         </View>
@@ -440,24 +447,24 @@ export default function CollaboratorsScreen() {
         {/* 説明 */}
         <View
           style={{
-            backgroundColor: "#1A1D21",
+            backgroundColor: color.surface,
             borderRadius: 12,
             padding: 16,
             marginBottom: 24,
             borderWidth: 1,
-            borderColor: "#2D3139",
+            borderColor: color.border,
           }}
         >
           <View style={{ flexDirection: "row", alignItems: "center", marginBottom: 8 }}>
-            <MaterialIcons name="info" size={20} color="#3B82F6" />
-            <Text style={{ color: "#fff", fontSize: 14, fontWeight: "bold", marginLeft: 8 }}>
-              コラボ機能について
+            <MaterialIcons name="info" size={20} color={color.info} />
+            <Text style={{ color: colors.foreground, fontSize: 14, fontWeight: "bold", marginLeft: 8 }}>
+              一緒に運営するメンバー
             </Text>
           </View>
-          <Text style={{ color: "#9CA3AF", fontSize: 13, lineHeight: 20 }}>
-            共同主催者を招待して、チャレンジを一緒に管理できます。{"\n"}
-            • 共同主催者：編集・参加者管理・招待が可能{"\n"}
-            • モデレーター：参加者管理のみ可能
+          <Text style={{ color: color.textMuted, fontSize: 13, lineHeight: 20 }}>
+            信頼できる人を招待して、チャレンジを一緒に管理できます。{"\n"}
+            • 共同主催者：全ての操作が可能{"\n"}
+            • スタッフ：参加者の管理のみ
           </Text>
         </View>
 
@@ -465,7 +472,7 @@ export default function CollaboratorsScreen() {
         <InviteForm onInvite={handleInvite} isLoading={isInviting} />
 
         {/* コラボレーター一覧 */}
-        <Text style={{ color: "#fff", fontSize: 18, fontWeight: "bold", marginBottom: 12 }}>
+        <Text style={{ color: colors.foreground, fontSize: 18, fontWeight: "bold", marginBottom: 12 }}>
           メンバー ({allCollaborators.length}人)
         </Text>
         

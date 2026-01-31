@@ -1,15 +1,24 @@
-import { ThemedView } from "@/components/themed-view";
+import { ThemedView } from "@/components/atoms/themed-view";
+import { LoginLoadingScreen } from "@/components/organisms/login-loading-screen";
 import * as Api from "@/lib/_core/api";
 import * as Auth from "@/lib/_core/auth";
 import * as Linking from "expo-linking";
-import { useLocalSearchParams, useRouter } from "expo-router";
+import { useLocalSearchParams } from "expo-router";
+import { navigateReplace } from "@/lib/navigation/app-routes";
 import { useEffect, useState } from "react";
-import { ActivityIndicator, Text } from "react-native";
+import { Text, View, StyleSheet } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { saveLoginSuccessPending } from "@/lib/login-success-context";
+import { Image } from "expo-image";
+import { useColors } from "@/hooks/use-colors";
+import { BlinkingLink } from "@/components/atoms/blinking-character";
+
+type AuthStatus = "processing" | "success" | "error";
+type AuthStep = 1 | 2 | 3; // 1: Twitter認証中, 2: ユーザー情報取得中, 3: 完了
 
 export default function OAuthCallback() {
-  const router = useRouter();
+
+  const colors = useColors();
   const params = useLocalSearchParams<{
     code?: string;
     state?: string;
@@ -17,7 +26,8 @@ export default function OAuthCallback() {
     sessionToken?: string;
     user?: string;
   }>();
-  const [status, setStatus] = useState<"processing" | "success" | "error">("processing");
+  const [status, setStatus] = useState<AuthStatus>("processing");
+  const [step, setStep] = useState<AuthStep>(1);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
   useEffect(() => {
@@ -31,9 +41,15 @@ export default function OAuthCallback() {
         user: params.user ? "present" : "missing",
       });
       try {
+        // ステップ1: Twitter認証中
+        setStep(1);
+
         // Check for sessionToken in params first (web OAuth callback from server redirect)
         if (params.sessionToken) {
           console.log("[OAuth] Session token found in params (web callback)");
+          
+          // ステップ2: ユーザー情報取得中
+          setStep(2);
           await Auth.setSessionToken(params.sessionToken);
 
           // Decode and store user info if available
@@ -62,11 +78,13 @@ export default function OAuthCallback() {
             }
           }
 
+          // ステップ3: 完了
+          setStep(3);
           setStatus("success");
           console.log("[OAuth] Web authentication successful, redirecting to home...");
           setTimeout(() => {
-            router.replace("/(tabs)");
-          }, 1000);
+            navigateReplace.toHome();
+          }, 1500);
           return;
         }
 
@@ -155,15 +173,17 @@ export default function OAuthCallback() {
         // If we have sessionToken directly from URL, use it
         if (sessionToken) {
           console.log("[OAuth] Session token found in URL, storing...");
+          setStep(2);
           await Auth.setSessionToken(sessionToken);
           console.log("[OAuth] Session token stored successfully");
           // User info is already in the OAuth callback response
           // No need to fetch from API
+          setStep(3);
           setStatus("success");
           console.log("[OAuth] Redirecting to home...");
           setTimeout(() => {
-            router.replace("/(tabs)");
-          }, 1000);
+            navigateReplace.toHome();
+          }, 1500);
           return;
         }
 
@@ -177,6 +197,9 @@ export default function OAuthCallback() {
           setErrorMessage("Missing code or state parameter");
           return;
         }
+
+        // ステップ2: ユーザー情報取得中
+        setStep(2);
 
         // Exchange code for session token
         console.log("[OAuth] Exchanging code for session token...", {
@@ -214,14 +237,16 @@ export default function OAuthCallback() {
             console.log("[OAuth] No user data in result");
           }
 
+          // ステップ3: 完了
+          setStep(3);
           setStatus("success");
           console.log("[OAuth] Authentication successful, redirecting to home...");
 
           // Redirect to home after a short delay
           setTimeout(() => {
             console.log("[OAuth] Executing redirect...");
-            router.replace("/(tabs)");
-          }, 1000);
+            navigateReplace.toHome();
+          }, 1500);
         } else {
           console.error("[OAuth] No session token in result:", result);
           setStatus("error");
@@ -237,40 +262,83 @@ export default function OAuthCallback() {
     };
 
     handleCallback();
-  }, [params.code, params.state, params.error, params.sessionToken, params.user, router]);
+  }, [params.code, params.state, params.error, params.sessionToken, params.user]);
 
+  // エラー画面
+  if (status === "error") {
+    return (
+      <SafeAreaView style={{ flex: 1, backgroundColor: colors.background }} edges={["top", "bottom", "left", "right"]}>
+        <View style={styles.errorContainer}>
+          {/* ロゴ */}
+          <Image
+            source={require("@/assets/images/icon.png")}
+            style={styles.logo}
+            contentFit="contain"
+          />
+          
+          {/* キャラクター（困った表情） */}
+          <BlinkingLink
+            variant="halfClosed"
+            size={150}
+            blinkInterval={3000}
+          />
+          
+          {/* エラーメッセージ */}
+          <Text style={[styles.errorTitle, { color: colors.error }]}>
+            ログインできませんでした
+          </Text>
+          <Text style={[styles.errorMessage, { color: colors.muted }]}>
+            {errorMessage === "access_denied" 
+              ? "認証がキャンセルされました"
+              : errorMessage || "認証に失敗しました"}
+          </Text>
+          
+          {/* ヒント */}
+          <Text style={[styles.hint, { color: colors.muted }]}>
+            もう一度お試しください
+          </Text>
+        </View>
+      </SafeAreaView>
+    );
+  }
+
+  // ローディング画面（進捗インジケーター付き）
   return (
-    <SafeAreaView className="flex-1" edges={["top", "bottom", "left", "right"]}>
-      <ThemedView className="flex-1 items-center justify-center gap-4 p-5">
-        {status === "processing" && (
-          <>
-            <ActivityIndicator size="large" />
-            <Text className="mt-4 text-base leading-6 text-center text-foreground">
-              Completing authentication...
-            </Text>
-          </>
-        )}
-        {status === "success" && (
-          <>
-            <Text className="text-base leading-6 text-center text-foreground">
-              Authentication successful!
-            </Text>
-            <Text className="text-base leading-6 text-center text-foreground">
-              Redirecting...
-            </Text>
-          </>
-        )}
-        {status === "error" && (
-          <>
-            <Text className="mb-2 text-xl font-bold leading-7 text-error">
-              Authentication failed
-            </Text>
-            <Text className="text-base leading-6 text-center text-foreground">
-              {errorMessage}
-            </Text>
-          </>
-        )}
-      </ThemedView>
+    <SafeAreaView style={{ flex: 1 }} edges={["top", "bottom", "left", "right"]}>
+      <LoginLoadingScreen currentStep={step} />
     </SafeAreaView>
   );
 }
+
+const styles = StyleSheet.create({
+  errorContainer: {
+    flex: 1,
+    alignItems: "center",
+    justifyContent: "center",
+    padding: 24,
+  },
+  logo: {
+    width: 64,
+    height: 64,
+    marginBottom: 16,
+  },
+  errorTitle: {
+    fontSize: 20,
+    fontWeight: "bold",
+    marginTop: 24,
+    marginBottom: 8,
+  },
+  errorMessage: {
+    fontSize: 14,
+    textAlign: "center",
+    marginBottom: 16,
+  },
+  hint: {
+    fontSize: 12,
+    textAlign: "center",
+    position: "absolute",
+    bottom: 40,
+    left: 24,
+    right: 24,
+  },
+});

@@ -1,15 +1,17 @@
 import { useState, useEffect, useRef } from "react";
-import { View, Text, FlatList, TextInput, TouchableOpacity, KeyboardAvoidingView, Platform } from "react-native";
-import { useLocalSearchParams, useRouter } from "expo-router";
-import { ScreenContainer } from "@/components/screen-container";
+import { color, palette } from "@/theme/tokens";
+import { View, Text, FlatList, TextInput, Pressable, KeyboardAvoidingView, Platform } from "react-native";
+import { useLocalSearchParams } from "expo-router";
+import { navigateBack } from "@/lib/navigation/app-routes";
+import { ScreenContainer } from "@/components/organisms/screen-container";
 import { trpc } from "@/lib/trpc";
 import { useAuth } from "@/hooks/use-auth";
 import * as Haptics from "expo-haptics";
-import { AppHeader } from "@/components/app-header";
+import { AppHeader } from "@/components/organisms/app-header";
 
 export default function ConversationScreen() {
   const { partnerId, challengeId } = useLocalSearchParams<{ partnerId: string; challengeId: string }>();
-  const router = useRouter();
+
   const { user } = useAuth();
   const [message, setMessage] = useState("");
   const flatListRef = useRef<FlatList>(null);
@@ -113,12 +115,12 @@ export default function ConversationScreen() {
       >
         {/* ヘッダー */}
         <AppHeader 
-          title="動員ちゃれんじ" 
+          title="君斗りんくの動員ちゃれんじ" 
           showCharacters={false}
           rightElement={
-            <TouchableOpacity onPress={() => router.back()} className="flex-row items-center">
+            <Pressable onPress={() => navigateBack()} className="flex-row items-center">
               <Text className="text-foreground">← 戻る</Text>
-            </TouchableOpacity>
+            </Pressable>
           }
         />
         <View className="p-4 border-b border-border">
@@ -140,6 +142,13 @@ export default function ConversationScreen() {
               <Text className="text-muted">メッセージを送ってみましょう</Text>
             </View>
           }
+          // パフォーマンス最適化
+          windowSize={10}
+          maxToRenderPerBatch={15}
+          initialNumToRender={20}
+          removeClippedSubviews={Platform.OS !== "web"}
+          updateCellsBatchingPeriod={50}
+          inverted={false}
         />
 
         {/* 入力エリア */}
@@ -148,14 +157,14 @@ export default function ConversationScreen() {
             value={message}
             onChangeText={setMessage}
             placeholder="メッセージを入力..."
-            placeholderTextColor="#9BA1A6"
+            placeholderTextColor={color.textSecondary}
             multiline
             maxLength={1000}
             className="flex-1 bg-surface rounded-2xl px-4 py-3 text-foreground mr-3 max-h-24"
             returnKeyType="send"
             onSubmitEditing={handleSend}
           />
-          <TouchableOpacity
+          <Pressable
             onPress={handleSend}
             disabled={!message.trim() || sendMessage.isPending}
             className={`w-12 h-12 rounded-full items-center justify-center ${
@@ -165,7 +174,7 @@ export default function ConversationScreen() {
             <Text className={`text-xl ${message.trim() ? "text-background" : "text-muted"}`}>
               ↑
             </Text>
-          </TouchableOpacity>
+          </Pressable>
         </View>
       </KeyboardAvoidingView>
     </ScreenContainer>

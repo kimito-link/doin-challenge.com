@@ -92,6 +92,90 @@
       "when": 1767786779712,
       "tag": "0012_clean_trish_tilby",
       "breakpoints": true
+    },
+    {
+      "idx": 13,
+      "version": "5",
+      "when": 1768375486748,
+      "tag": "0013_thick_riptide",
+      "breakpoints": true
+    },
+    {
+      "idx": 14,
+      "version": "5",
+      "when": 1768376956657,
+      "tag": "0014_tranquil_king_cobra",
+      "breakpoints": true
+    },
+    {
+      "idx": 15,
+      "version": "5",
+      "when": 1768534670213,
+      "tag": "0015_normal_johnny_storm",
+      "breakpoints": true
+    },
+    {
+      "idx": 16,
+      "version": "5",
+      "when": 1768535172294,
+      "tag": "0016_famous_saracen",
+      "breakpoints": true
+    },
+    {
+      "idx": 17,
+      "version": "5",
+      "when": 1768536235885,
+      "tag": "0017_cuddly_screwball",
+      "breakpoints": true
+    },
+    {
+      "idx": 18,
+      "version": "5",
+      "when": 1768786315945,
+      "tag": "0018_military_black_bird",
+      "breakpoints": true
+    },
+    {
+      "idx": 19,
+      "version": "5",
+      "when": 1768791878572,
+      "tag": "0019_watery_tempest",
+      "breakpoints": true
+    },
+    {
+      "idx": 20,
+      "version": "5",
+      "when": 1768918532230,
+      "tag": "0020_uneven_ultragirl",
+      "breakpoints": true
+    },
+    {
+      "idx": 21,
+      "version": "5",
+      "when": 1768919090150,
+      "tag": "0021_violet_boomer",
+      "breakpoints": true
+    },
+    {
+      "idx": 22,
+      "version": "5",
+      "when": 1768994176825,
+      "tag": "0022_wakeful_ironclad",
+      "breakpoints": true
+    },
+    {
+      "idx": 23,
+      "version": "5",
+      "when": 1768994726252,
+      "tag": "0023_burly_tenebrous",
+      "breakpoints": true
+    },
+    {
+      "idx": 24,
+      "version": "5",
+      "when": 1769401940469,
+      "tag": "0024_strange_outlaw_kid",
+      "breakpoints": true
     }
   ]
 }

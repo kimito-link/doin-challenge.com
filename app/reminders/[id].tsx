@@ -1,18 +1,20 @@
 import { useState, useEffect } from "react";
-import { View, Text, ScrollView, TouchableOpacity, Switch, Alert } from "react-native";
-import { useLocalSearchParams, useRouter } from "expo-router";
-import { ScreenContainer } from "@/components/screen-container";
+import { color, palette } from "@/theme/tokens";
+import { View, Text, ScrollView, Pressable, Switch, Alert } from "react-native";
+import { useLocalSearchParams } from "expo-router";
+import { navigate, navigateBack } from "@/lib/navigation";
+import { ScreenContainer } from "@/components/organisms/screen-container";
 import { trpc } from "@/lib/trpc";
 import { useAuth } from "@/hooks/use-auth";
 import * as Haptics from "expo-haptics";
 import { Platform } from "react-native";
-import { AppHeader } from "@/components/app-header";
+import { AppHeader } from "@/components/organisms/app-header";
 
 type ReminderType = "day_before" | "day_of" | "hour_before" | "custom";
 
 export default function ReminderSettingsScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
-  const router = useRouter();
+  
   const { user } = useAuth();
   const challengeId = parseInt(id || "0", 10);
 
@@ -81,12 +83,12 @@ export default function ReminderSettingsScreen() {
           <Text className="text-lg text-muted text-center">
             リマインダーを設定するにはログインが必要です
           </Text>
-          <TouchableOpacity
-            onPress={() => router.push("/oauth" as never)}
+          <Pressable
+            onPress={() => navigate.toOAuth()}
             className="mt-4 bg-primary px-6 py-3 rounded-full"
           >
             <Text className="text-background font-bold">ログイン</Text>
-          </TouchableOpacity>
+          </Pressable>
         </View>
       </ScreenContainer>
     );
@@ -97,15 +99,15 @@ export default function ReminderSettingsScreen() {
       <ScrollView showsVerticalScrollIndicator={false}>
         {/* ヘッダー */}
         <AppHeader 
-          title="動員ちゃれんじ" 
+          title="君斗りんくの動員ちゃれんじ" 
           showCharacters={false}
           rightElement={
-            <TouchableOpacity
-              onPress={() => router.back()}
+            <Pressable
+              onPress={() => navigateBack()}
               className="flex-row items-center"
             >
               <Text className="text-foreground">← 戻る</Text>
-            </TouchableOpacity>
+            </Pressable>
           }
         />
         <View className="mb-6">
@@ -160,8 +162,8 @@ export default function ReminderSettingsScreen() {
             <Switch
               value={dayBefore}
               onValueChange={(value) => handleToggle("day_before", value)}
-              trackColor={{ false: "#334155", true: "#f472b6" }}
-              thumbColor={dayBefore ? "#ec4899" : "#94a3b8"}
+              trackColor={{ false: color.borderAlt, true: color.pink400 }}
+              thumbColor={dayBefore ? color.accentPrimary : "#94a3b8"}
             />
           </View>
 
@@ -178,8 +180,8 @@ export default function ReminderSettingsScreen() {
             <Switch
               value={dayOf}
               onValueChange={(value) => handleToggle("day_of", value)}
-              trackColor={{ false: "#334155", true: "#f472b6" }}
-              thumbColor={dayOf ? "#ec4899" : "#94a3b8"}
+              trackColor={{ false: color.borderAlt, true: color.pink400 }}
+              thumbColor={dayOf ? color.accentPrimary : "#94a3b8"}
             />
           </View>
 
@@ -196,8 +198,8 @@ export default function ReminderSettingsScreen() {
             <Switch
               value={hourBefore}
               onValueChange={(value) => handleToggle("hour_before", value)}
-              trackColor={{ false: "#334155", true: "#f472b6" }}
-              thumbColor={hourBefore ? "#ec4899" : "#94a3b8"}
+              trackColor={{ false: color.borderAlt, true: color.pink400 }}
+              thumbColor={hourBefore ? color.accentPrimary : "#94a3b8"}
             />
           </View>
         </View>

@@ -1,17 +1,55 @@
-import { View, Text, FlatList, TouchableOpacity, Image } from "react-native";
-import { useRouter } from "expo-router";
-import { ScreenContainer } from "@/components/screen-container";
+import { View, Text, FlatList, Pressable, Image, Platform } from "react-native";
+import { EmojiIcon } from "@/components/ui/emoji-icon";
+import * as Haptics from "expo-haptics";
+import { navigate, navigateBack } from "@/lib/navigation";
+import { ScreenContainer } from "@/components/organisms/screen-container";
 import { trpc } from "@/lib/trpc";
 import { useAuth } from "@/hooks/use-auth";
-import { AppHeader } from "@/components/app-header";
+import { AppHeader } from "@/components/organisms/app-header";
+import { RefreshingIndicator } from "@/components/molecules/refreshing-indicator";
+import { useWebSocket } from "@/lib/websocket-client";
+import { useQueryClient } from "@tanstack/react-query";
 
 export default function MessagesScreen() {
-  const router = useRouter();
+  const queryClient = useQueryClient();
   const { user } = useAuth();
-
-  const { data: conversations, isLoading } = trpc.dm.conversations.useQuery(undefined, {
+  
+  // WebSocket接続を確立
+  const { status: wsStatus } = useWebSocket({
+    onMessage: (message) => {
+      console.log("[Messages] New message received:", message);
+      // メッセージ一覧を再取得
+      queryClient.invalidateQueries({ queryKey: [["dm", "conversations"]] });
+      queryClient.invalidateQueries({ queryKey: [["dm", "unreadCount"]] });
+    },
     enabled: !!user,
   });
+
+  // 会話一覧を取得（無限スクロール対応）
+  const { 
+    data, 
+    isLoading, 
+    isFetching, 
+    fetchNextPage, 
+    hasNextPage, 
+    isFetchingNextPage 
+  } = trpc.dm.conversations.useInfiniteQuery(
+    { limit: 20 },
+    {
+      enabled: !!user,
+      getNextPageParam: (lastPage) => lastPage.nextCursor,
+      staleTime: 5 * 60 * 1000, // 5分間キャッシュを保持
+      gcTime: 30 * 60 * 1000, // 30分間キャッシュを保持
+    }
+  );
+
+  // ページをフラット化
+  const conversations = data?.pages.flatMap(page => page.items) ?? [];
+
+  // ローディング状態を分離
+  const hasData = conversations.length > 0;
+  const isInitialLoading = isLoading && !hasData;
+  const isRefreshing = isFetching && hasData && !isFetchingNextPage;
   const { data: unreadCount } = trpc.dm.unreadCount.useQuery(undefined, {
     enabled: !!user,
   });
@@ -20,16 +58,18 @@ export default function MessagesScreen() {
     return (
       <ScreenContainer className="p-6">
         <View className="flex-1 items-center justify-center">
-          <Text className="text-6xl mb-4">💬</Text>
+          <View className="mb-4">
+            <EmojiIcon emoji="💬" size={48} />
+          </View>
           <Text className="text-lg text-muted text-center">
             メッセージを見るにはログインが必要です
           </Text>
-          <TouchableOpacity
-            onPress={() => router.push("/oauth" as never)}
+          <Pressable
+            onPress={() => navigate.toOAuth()}
             className="mt-4 bg-primary px-6 py-3 rounded-full"
           >
             <Text className="text-background font-bold">ログイン</Text>
-          </TouchableOpacity>
+          </Pressable>
         </View>
       </ScreenContainer>
     );
@@ -41,10 +81,10 @@ export default function MessagesScreen() {
     const isUnread = item.toUserId === user.id && !item.isRead;
 
     return (
-      <TouchableOpacity
-        onPress={() => router.push(`/messages/${partnerId}?challengeId=${item.challengeId}` as never)}
+      <Pressable
+        onPress={() => navigate.toMessages(partnerId, item.challengeId)}
         className={`flex-row items-center p-4 border-b border-border ${isUnread ? "bg-primary/10" : ""}`}
-        activeOpacity={0.7}
+        
       >
         {/* アバター */}
         <View className="w-12 h-12 rounded-full bg-surface items-center justify-center mr-3">
@@ -54,7 +94,7 @@ export default function MessagesScreen() {
               className="w-12 h-12 rounded-full"
             />
           ) : (
-            <Text className="text-xl">👤</Text>
+            <EmojiIcon emoji="👤" size={24} />
           )}
         </View>
 
@@ -83,7 +123,7 @@ export default function MessagesScreen() {
         {isUnread && (
           <View className="w-3 h-3 rounded-full bg-primary ml-2" />
         )}
-      </TouchableOpacity>
+      </Pressable>
     );
   };
 
@@ -91,7 +131,7 @@ export default function MessagesScreen() {
     <ScreenContainer>
       {/* ヘッダー */}
       <AppHeader 
-        title="動員ちゃれんじ" 
+        title="君斗りんくの動員ちゃれんじ" 
         showCharacters={false}
         rightElement={
           <View className="flex-row items-center gap-4">
@@ -102,9 +142,9 @@ export default function MessagesScreen() {
                 </Text>
               </View>
             )}
-            <TouchableOpacity onPress={() => router.back()} className="flex-row items-center">
+            <Pressable onPress={() => navigateBack()} className="flex-row items-center">
               <Text className="text-foreground">← 戻る</Text>
-            </TouchableOpacity>
+            </Pressable>
           </View>
         }
       />
@@ -113,7 +153,8 @@ export default function MessagesScreen() {
       </View>
 
       {/* 会話一覧 */}
-      {isLoading ? (
+      {isRefreshing && <RefreshingIndicator isRefreshing={isRefreshing} />}
+      {isInitialLoading ? (
         <View className="flex-1 items-center justify-center">
           <Text className="text-muted">読み込み中...</Text>
         </View>
@@ -123,10 +164,32 @@ export default function MessagesScreen() {
           renderItem={renderConversation}
           keyExtractor={(item) => `${item.id}`}
           showsVerticalScrollIndicator={false}
+          // 無限スクロール
+          onEndReached={() => {
+            if (hasNextPage && !isFetchingNextPage) {
+              fetchNextPage();
+            }
+          }}
+          onEndReachedThreshold={0.5}
+          ListFooterComponent={() => 
+            isFetchingNextPage ? (
+              <View className="p-4 items-center">
+                <Text className="text-muted">読み込み中...</Text>
+              </View>
+            ) : null
+          }
+          // パフォーマンス最適化
+          windowSize={5}
+          maxToRenderPerBatch={10}
+          initialNumToRender={10}
+          removeClippedSubviews={Platform.OS !== "web"}
+          updateCellsBatchingPeriod={50}
         />
       ) : (
         <View className="flex-1 items-center justify-center p-6">
-          <Text className="text-6xl mb-4">💬</Text>
+          <View className="mb-4">
+            <EmojiIcon emoji="💬" size={48} />
+          </View>
           <Text className="text-lg font-bold text-foreground mb-2">
             まだメッセージがありません
           </Text>

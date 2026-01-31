@@ -10,6 +10,11 @@ const bundleId = "space.manus.birthday.celebration.t20251224092509";
 const timestamp = bundleId.split(".").pop()?.replace(/^t/, "") ?? "";
 const schemeFromBundleId = `manus${timestamp}`;
 
+// アプリバージョン（デプロイ確認用）
+// 本番デプロイ時にこの値を更新し、/api/healthと照合することで
+// 正しいバージョンがデプロイされているか確認できる
+const APP_VERSION = "6.53";
+
 const env = {
   // App branding - update these values directly (do not use env vars)
   appName: "君斗りんくの動員ちゃれんじ",
@@ -20,12 +25,14 @@ const env = {
   scheme: schemeFromBundleId,
   iosBundleId: bundleId,
   androidPackage: bundleId,
+  // デプロイ確認用バージョン
+  appVersion: APP_VERSION,
 };
 
 const config: ExpoConfig = {
   name: env.appName,
   slug: env.appSlug,
-  version: "1.0.0",
+  version: "6.53",
   orientation: "portrait",
   icon: "./assets/images/icon.png",
   scheme: env.scheme,
@@ -66,7 +73,16 @@ const config: ExpoConfig = {
     favicon: "./assets/images/favicon.png",
   },
   plugins: [
-    "expo-router",
+    [
+      "expo-router",
+      {
+        origin: "https://doin-challenge.com",
+        asyncRoutes: {
+          web: true,
+          default: "development"
+        }
+      }
+    ],
     [
       "expo-audio",
       {

@@ -11,12 +11,16 @@ import {
   checkFollowStatus,
   getTargetAccountInfo,
   getUserProfileByUsername,
+  refreshAccessToken,
 } from "./twitter-oauth2";
 
 export function registerTwitterRoutes(app: Express) {
   // Step 1: Initiate Twitter OAuth 2.0
   app.get("/api/twitter/auth", async (req: Request, res: Response) => {
     try {
+      // 別のアカウントでログインするかどうかのフラグ
+      const forceLogin = req.query.force === "true" || req.query.switch === "true";
+      
       // Build callback URL - force https for production environments
       const protocol = req.get("x-forwarded-proto") || req.protocol;
       const forceHttps = protocol === "https" || req.get("host")?.includes("manus.computer");
@@ -29,8 +33,8 @@ export function registerTwitterRoutes(app: Express) {
       // Store PKCE data for callback
       await storePKCEData(state, codeVerifier, callbackUrl);
       
-      // Build authorization URL
-      const authUrl = buildAuthorizationUrl(callbackUrl, state, codeChallenge);
+      // Build authorization URL (forceLoginで別アカウントでログイン可能)
+      const authUrl = buildAuthorizationUrl(callbackUrl, state, codeChallenge, forceLogin);
       
       console.log("[Twitter OAuth 2.0] Redirecting to:", authUrl);
       
@@ -52,13 +56,36 @@ export function registerTwitterRoutes(app: Express) {
         error_description?: string;
       };
 
-      // Handle OAuth errors
+      // Handle OAuth errors (e.g., user cancelled authorization)
       if (oauthError) {
         console.error("Twitter OAuth error:", oauthError, error_description);
-        res.status(400).json({ 
-          error: oauthError, 
-          description: error_description 
-        });
+        
+        // Build redirect URL to frontend app with error info
+        const host = req.get("host") || "";
+        const protocol = req.get("x-forwarded-proto") || req.protocol;
+        const forceHttps = protocol === "https" || host.includes("manus.computer") || host.includes("railway.app");
+        
+        // Production: redirect to doin-challenge.com
+        // Development: redirect to Expo app (port 8081)
+        let baseUrl: string;
+        if (host.includes("railway.app")) {
+          baseUrl = "https://doin-challenge.com";
+        } else {
+          const expoHost = host.replace("3000-", "8081-");
+          baseUrl = `${forceHttps ? "https" : protocol}://${expoHost}`;
+        }
+        
+        // Encode error data for redirect
+        const errorData = encodeURIComponent(JSON.stringify({
+          error: true,
+          code: oauthError,
+          message: oauthError === "access_denied" 
+            ? "認証がキャンセルされました" 
+            : error_description || "Twitter認証中にエラーが発生しました",
+        }));
+        
+        // Redirect to Expo app with error
+        res.redirect(`${baseUrl}/oauth/twitter-callback?error=${errorData}`);
         return;
       }
 
@@ -81,38 +108,19 @@ export function registerTwitterRoutes(app: Express) {
       
       console.log("[Twitter OAuth 2.0] Token exchange successful");
 
-      // Clean up stored PKCE data
-      await deletePKCEData(state);
+      // Clean up stored PKCE data (background, don't wait)
+      setImmediate(() => deletePKCEData(state).catch(() => {}));
 
       // Get user profile using access token
       const userProfile = await getUserProfile(tokens.access_token);
       
       console.log("[Twitter OAuth 2.0] User profile retrieved:", userProfile.username);
 
-      // Check follow status for premium features
-      let isFollowingTarget = false;
-      let targetAccount = null;
-      
-      try {
-        // Check if user follows @idolfunch
-        const followStatus = await checkFollowStatus(tokens.access_token, userProfile.id, "idolfunch");
-        isFollowingTarget = followStatus.isFollowing;
-        targetAccount = followStatus.targetUser;
-        console.log("[Twitter OAuth 2.0] Follow status for @idolfunch:", isFollowingTarget);
-        
-        // If not following @idolfunch, also check @streamerfunch
-        if (!isFollowingTarget) {
-          const followStatus2 = await checkFollowStatus(tokens.access_token, userProfile.id, "streamerfunch");
-          isFollowingTarget = followStatus2.isFollowing;
-          if (isFollowingTarget) {
-            targetAccount = followStatus2.targetUser;
-          }
-          console.log("[Twitter OAuth 2.0] Follow status for @streamerfunch:", followStatus2.isFollowing);
-        }
-      } catch (followError) {
-        console.error("[Twitter OAuth 2.0] Follow check error (non-fatal):", followError);
-        // Continue without follow status - user can still login
-      }
+      // フォローチェックはログイン後に非同期で行うため、ここではスキップ
+      // フロントエンドから /api/twitter/follow-status を呼び出して確認する
+      const isFollowingTarget = false; // 後で確認
+      const targetAccount = null; // 後で確認
+      console.log("[Twitter OAuth 2.0] Skipping follow check for faster login");
       
       // Build user data object
       const userData = {
@@ -132,13 +140,20 @@ export function registerTwitterRoutes(app: Express) {
       // Encode user data for redirect
       const encodedData = encodeURIComponent(JSON.stringify(userData));
       
-      // Build redirect URL - redirect to Expo app (port 8081)
+      // Build redirect URL - redirect to frontend app
       const host = req.get("host") || "";
-      // Replace port 3000 with 8081 for Expo app
-      const expoHost = host.replace("3000-", "8081-");
       const protocol = req.get("x-forwarded-proto") || req.protocol;
-      const forceHttps = protocol === "https" || host.includes("manus.computer");
-      const baseUrl = `${forceHttps ? "https" : protocol}://${expoHost}`;
+      const forceHttps = protocol === "https" || host.includes("manus.computer") || host.includes("railway.app");
+      
+      // Production: redirect to doin-challenge.com
+      // Development: redirect to Expo app (port 8081)
+      let baseUrl: string;
+      if (host.includes("railway.app")) {
+        baseUrl = "https://doin-challenge.com";
+      } else {
+        const expoHost = host.replace("3000-", "8081-");
+        baseUrl = `${forceHttps ? "https" : protocol}://${expoHost}`;
+      }
       
       // Redirect to Expo app callback page with user data
       const redirectUrl = `${baseUrl}/oauth/twitter-callback?data=${encodedData}`;
@@ -161,10 +176,18 @@ export function registerTwitterRoutes(app: Express) {
       
       // エラーページにリダイレクト（ユーザーフレンドリーなエラー表示）
       const host = req.get("host") || "";
-      const expoHost = host.replace("3000-", "8081-");
       const protocol = req.get("x-forwarded-proto") || req.protocol;
-      const forceHttps = protocol === "https" || host.includes("manus.computer");
-      const baseUrl = `${forceHttps ? "https" : protocol}://${expoHost}`;
+      const forceHttps = protocol === "https" || host.includes("manus.computer") || host.includes("railway.app");
+      
+      // Production: redirect to doin-challenge.com
+      // Development: redirect to Expo app (port 8081)
+      let baseUrl: string;
+      if (host.includes("railway.app")) {
+        baseUrl = "https://doin-challenge.com";
+      } else {
+        const expoHost = host.replace("3000-", "8081-");
+        baseUrl = `${forceHttps ? "https" : protocol}://${expoHost}`;
+      }
       
       // エラー情報をエンコードしてリダイレクト
       const errorData = encodeURIComponent(JSON.stringify({
@@ -309,6 +332,35 @@ export function registerTwitterRoutes(app: Express) {
     } catch (error) {
       console.error("Twitter refresh follow status error:", error);
       res.status(500).json({ error: "Failed to initiate follow status refresh" });
+    }
+  });
+
+  // Token refresh endpoint
+  app.post("/api/twitter/refresh", async (req: Request, res: Response) => {
+    try {
+      const { refreshToken } = req.body as { refreshToken?: string };
+      
+      if (!refreshToken) {
+        res.status(400).json({ error: "Refresh token is required" });
+        return;
+      }
+      
+      console.log("[Twitter OAuth 2.0] Refreshing access token...");
+      
+      const tokens = await refreshAccessToken(refreshToken);
+      
+      console.log("[Twitter OAuth 2.0] Token refresh successful");
+      
+      res.json({
+        access_token: tokens.access_token,
+        refresh_token: tokens.refresh_token,
+        expires_in: tokens.expires_in,
+        token_type: tokens.token_type,
+        scope: tokens.scope,
+      });
+    } catch (error) {
+      console.error("Twitter token refresh error:", error);
+      res.status(401).json({ error: "Failed to refresh token" });
     }
   });
 

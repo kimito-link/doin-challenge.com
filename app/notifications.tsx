@@ -1,27 +1,66 @@
-import { Text, View, TouchableOpacity, ScrollView, Switch, ActivityIndicator } from "react-native";
-import { useRouter } from "expo-router";
+import { Text, View, Pressable, ScrollView, ActivityIndicator, FlatList } from "react-native";
+import * as Haptics from "expo-haptics";
+import { color, palette } from "@/theme/tokens";
+import { navigate, navigateBack } from "@/lib/navigation";
 import { useState, useEffect } from "react";
-import { ScreenContainer } from "@/components/screen-container";
+import { ScreenContainer } from "@/components/organisms/screen-container";
 import { trpc } from "@/lib/trpc";
 import { useAuth } from "@/hooks/use-auth";
+import { useColors } from "@/hooks/use-colors";
 import MaterialIcons from "@expo/vector-icons/MaterialIcons";
 import { LinearGradient } from "expo-linear-gradient";
 import * as Notifications from "expo-notifications";
 import { Platform } from "react-native";
-import { AppHeader } from "@/components/app-header";
+import { AppHeader } from "@/components/organisms/app-header";
+import { RefreshingIndicator } from "@/components/molecules/refreshing-indicator";
+import { useWebSocket } from "@/lib/websocket-client";
+import { useQueryClient } from "@tanstack/react-query";
 
 export default function NotificationsScreen() {
-  const router = useRouter();
+  const colors = useColors();
+  const queryClient = useQueryClient();
+  
   const { user, isAuthenticated } = useAuth();
+  
+  // WebSocket接続を確立
+  const { status: wsStatus } = useWebSocket({
+    onNotification: (notification) => {
+      console.log("[Notifications] New notification received:", notification);
+      // 通知一覧を再取得
+      queryClient.invalidateQueries({ queryKey: [["notifications", "list"]] });
+    },
+    enabled: isAuthenticated,
+  });
   
   const [expoPushToken, setExpoPushToken] = useState<string | null>(null);
   const [notificationPermission, setNotificationPermission] = useState(false);
   
-  // 通知履歴を取得
-  const { data: notificationList, isLoading, refetch } = trpc.notifications.list.useQuery(
-    undefined,
-    { enabled: isAuthenticated }
+  // 通知履歴を取得（無限スクロール対応）
+  const { 
+    data, 
+    isLoading, 
+    isFetching, 
+    fetchNextPage, 
+    hasNextPage, 
+    isFetchingNextPage,
+    refetch 
+  } = trpc.notifications.list.useInfiniteQuery(
+    { limit: 20 },
+    {
+      enabled: isAuthenticated,
+      getNextPageParam: (lastPage) => lastPage.nextCursor,
+      staleTime: 5 * 60 * 1000, // 5分間キャッシュを保持
+      gcTime: 30 * 60 * 1000, // 30分間キャッシュを保持
+    }
   );
+
+  // ページをフラット化
+  const notificationList = data?.pages.flatMap(page => page.items) ?? [];
+
+  // ローディング状態を分離
+  const hasData = notificationList.length > 0;
+  const isInitialLoading = isLoading && !hasData;
+  const isRefreshing = isFetching && hasData && !isFetchingNextPage;
   
   const markAsReadMutation = trpc.notifications.markAsRead.useMutation({
     onSuccess: () => refetch(),
@@ -81,26 +120,26 @@ export default function NotificationsScreen() {
   const getNotificationColor = (type: string) => {
     switch (type) {
       case "goal_reached":
-        return "#FFD700";
+        return color.rankGold;
       case "milestone_25":
-        return "#4ADE80";
+        return color.successLight;
       case "milestone_50":
-        return "#60A5FA";
+        return color.blue400;
       case "milestone_75":
-        return "#A78BFA";
+        return color.purple400;
       case "new_participant":
-        return "#EC4899";
+        return color.accentPrimary;
       default:
-        return "#9CA3AF";
+        return color.textMuted;
     }
   };
 
   if (!isAuthenticated) {
     return (
-      <ScreenContainer edges={["top", "left", "right"]} containerClassName="bg-[#0D1117]">
+      <ScreenContainer edges={["top", "left", "right"]} containerClassName="bg-background">
         <View style={{ flex: 1, alignItems: "center", justifyContent: "center", padding: 24 }}>
-          <MaterialIcons name="notifications-off" size={64} color="#6B7280" />
-          <Text style={{ color: "#9CA3AF", fontSize: 16, marginTop: 16, textAlign: "center" }}>
+          <MaterialIcons name="notifications-off" size={64} color={color.textSubtle} />
+          <Text style={{ color: color.textMuted, fontSize: 16, marginTop: 16, textAlign: "center" }}>
             通知を受け取るにはログインが必要です
           </Text>
         </View>
@@ -109,55 +148,56 @@ export default function NotificationsScreen() {
   }
 
   return (
-    <ScreenContainer edges={["top", "left", "right"]} containerClassName="bg-[#0D1117]">
-      <ScrollView style={{ flex: 1, backgroundColor: "#0D1117" }}>
+    <ScreenContainer edges={["top", "left", "right"]} containerClassName="bg-background">
+      {isRefreshing && <RefreshingIndicator isRefreshing={isRefreshing} />}
+
         {/* ヘッダー */}
         <AppHeader 
-          title="動員ちゃれんじ" 
+          title="君斗りんくの動員ちゃれんじ" 
           showCharacters={false}
           rightElement={
-            <TouchableOpacity
-              onPress={() => router.back()}
+            <Pressable
+              onPress={() => navigateBack()}
               style={{ flexDirection: "row", alignItems: "center" }}
             >
-              <MaterialIcons name="arrow-back" size={24} color="#fff" />
-              <Text style={{ color: "#fff", marginLeft: 8 }}>戻る</Text>
-            </TouchableOpacity>
+              <MaterialIcons name="arrow-back" size={24} color={colors.foreground} />
+              <Text style={{ color: colors.foreground, marginLeft: 8 }}>戻る</Text>
+            </Pressable>
           }
         />
         <View style={{ paddingHorizontal: 16, paddingBottom: 8 }}>
           <View style={{ flexDirection: "row", alignItems: "center" }}>
-            <Text style={{ color: "#fff", fontSize: 20, fontWeight: "bold" }}>
+            <Text style={{ color: colors.foreground, fontSize: 20, fontWeight: "bold" }}>
               通知
             </Text>
             {unreadCount > 0 && (
               <View
                 style={{
-                  backgroundColor: "#EC4899",
+                  backgroundColor: color.accentPrimary,
                   borderRadius: 12,
                   paddingHorizontal: 8,
                   paddingVertical: 2,
                   marginLeft: 8,
                 }}
               >
-                <Text style={{ color: "#fff", fontSize: 12, fontWeight: "bold" }}>
+                <Text style={{ color: colors.foreground, fontSize: 12, fontWeight: "bold" }}>
                   {unreadCount}
                 </Text>
               </View>
             )}
             <View style={{ flex: 1 }} />
             {unreadCount > 0 && (
-              <TouchableOpacity
+              <Pressable
                 onPress={() => markAllAsReadMutation.mutate()}
                 style={{
-                  backgroundColor: "#1A1D21",
+                  backgroundColor: color.surface,
                   borderRadius: 8,
                   paddingHorizontal: 12,
                   paddingVertical: 8,
                 }}
               >
-                <Text style={{ color: "#EC4899", fontSize: 12 }}>すべて既読</Text>
-              </TouchableOpacity>
+                <Text style={{ color: color.accentPrimary, fontSize: 12 }}>すべて既読</Text>
+              </Pressable>
             )}
           </View>
         </View>
@@ -166,22 +206,22 @@ export default function NotificationsScreen() {
         {Platform.OS !== "web" && !notificationPermission && (
           <View
             style={{
-              backgroundColor: "#1A1D21",
+              backgroundColor: color.surface,
               borderRadius: 12,
               padding: 16,
               marginHorizontal: 16,
               marginBottom: 16,
               borderWidth: 1,
-              borderColor: "#F59E0B",
+              borderColor: color.warning,
             }}
           >
             <View style={{ flexDirection: "row", alignItems: "center" }}>
-              <MaterialIcons name="warning" size={24} color="#F59E0B" />
+              <MaterialIcons name="warning" size={24} color={color.warning} />
               <View style={{ flex: 1, marginLeft: 12 }}>
-                <Text style={{ color: "#fff", fontSize: 14, fontWeight: "bold" }}>
+                <Text style={{ color: colors.foreground, fontSize: 14, fontWeight: "bold" }}>
                   プッシュ通知が無効です
                 </Text>
-                <Text style={{ color: "#9CA3AF", fontSize: 12, marginTop: 4 }}>
+                <Text style={{ color: color.textMuted, fontSize: 12, marginTop: 4 }}>
                   設定からプッシュ通知を有効にしてください
                 </Text>
               </View>
@@ -190,28 +230,31 @@ export default function NotificationsScreen() {
         )}
 
         {/* 通知リスト */}
-        <View style={{ paddingHorizontal: 16 }}>
-          {isLoading ? (
-            <View style={{ alignItems: "center", paddingVertical: 40 }}>
-              <ActivityIndicator size="large" color="#EC4899" />
-            </View>
-          ) : notificationList && notificationList.length > 0 ? (
-            notificationList.map((notification) => (
-              <TouchableOpacity
+        {isInitialLoading ? (
+          <View style={{ alignItems: "center", paddingVertical: 40 }}>
+            <ActivityIndicator size="large" color={color.accentPrimary} />
+          </View>
+        ) : (
+          <FlatList
+            data={notificationList}
+            keyExtractor={(item) => item.id.toString()}
+            contentContainerStyle={{ paddingHorizontal: 16 }}
+            renderItem={({ item: notification }) => (
+              <Pressable
                 key={notification.id}
                 onPress={() => {
                   if (!notification.isRead) {
                     markAsReadMutation.mutate({ id: notification.id });
                   }
-                  router.push(`/event/${notification.challengeId}`);
+                  navigate.toEventDetail(notification.challengeId);
                 }}
                 style={{
-                  backgroundColor: notification.isRead ? "#1A1D21" : "#1E2530",
+                  backgroundColor: notification.isRead ? color.surface : "#1E2530",
                   borderRadius: 12,
                   padding: 16,
                   marginBottom: 12,
                   borderWidth: 1,
-                  borderColor: notification.isRead ? "#2D3139" : "#EC4899",
+                  borderColor: notification.isRead ? color.border : color.accentPrimary,
                 }}
               >
                 <View style={{ flexDirection: "row", alignItems: "flex-start" }}>
@@ -232,13 +275,13 @@ export default function NotificationsScreen() {
                     />
                   </View>
                   <View style={{ flex: 1, marginLeft: 12 }}>
-                    <Text style={{ color: "#fff", fontSize: 14, fontWeight: "bold" }}>
+                    <Text style={{ color: colors.foreground, fontSize: 14, fontWeight: "bold" }}>
                       {notification.title}
                     </Text>
-                    <Text style={{ color: "#9CA3AF", fontSize: 13, marginTop: 4, lineHeight: 18 }}>
+                    <Text style={{ color: color.textMuted, fontSize: 13, marginTop: 4, lineHeight: 18 }}>
                       {notification.body}
                     </Text>
-                    <Text style={{ color: "#6B7280", fontSize: 11, marginTop: 8 }}>
+                    <Text style={{ color: color.textSubtle, fontSize: 11, marginTop: 8 }}>
                       {new Date(notification.sentAt).toLocaleString("ja-JP")}
                     </Text>
                   </View>
@@ -248,25 +291,37 @@ export default function NotificationsScreen() {
                         width: 8,
                         height: 8,
                         borderRadius: 4,
-                        backgroundColor: "#EC4899",
+                        backgroundColor: color.accentPrimary,
                       }}
                     />
                   )}
                 </View>
-              </TouchableOpacity>
-            ))
-          ) : (
-            <View style={{ alignItems: "center", paddingVertical: 40 }}>
-              <MaterialIcons name="notifications-none" size={64} color="#6B7280" />
-              <Text style={{ color: "#9CA3AF", fontSize: 16, marginTop: 16 }}>
-                通知はありません
-              </Text>
-            </View>
-          )}
-        </View>
-
-        <View style={{ height: 100 }} />
-      </ScrollView>
+              </Pressable>
+            )}
+            onEndReached={() => {
+              if (hasNextPage && !isFetchingNextPage) {
+                fetchNextPage();
+              }
+            }}
+            onEndReachedThreshold={0.5}
+            removeClippedSubviews={Platform.OS === "android"}
+            ListFooterComponent={() => 
+              isFetchingNextPage ? (
+                <View style={{ padding: 16, alignItems: "center" }}>
+                  <ActivityIndicator color={color.accentPrimary} />
+                </View>
+              ) : null
+            }
+            ListEmptyComponent={() => (
+              <View style={{ alignItems: "center", paddingVertical: 40 }}>
+                <MaterialIcons name="notifications-none" size={64} color={color.textSubtle} />
+                <Text style={{ color: color.textMuted, fontSize: 16, marginTop: 16 }}>
+                  通知はありません
+                </Text>
+              </View>
+            )}
+          />
+        )}
     </ScreenContainer>
   );
 }

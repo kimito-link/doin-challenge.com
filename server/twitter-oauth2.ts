@@ -2,6 +2,7 @@ import crypto from "crypto";
 import { getDb } from "./db";
 import { oauthPkceData } from "../drizzle/schema";
 import { eq, lt } from "drizzle-orm";
+import { twitterApiFetch, waitIfRateLimited } from "./rate-limit-handler";
 
 // Twitter OAuth 2.0 with PKCE implementation
 const TWITTER_CLIENT_ID = process.env.TWITTER_CLIENT_ID || "";
@@ -30,17 +31,28 @@ export function generateState(): string {
 export function buildAuthorizationUrl(
   callbackUrl: string,
   state: string,
-  codeChallenge: string
+  codeChallenge: string,
+  forceLogin: boolean = false
 ): string {
   const params = new URLSearchParams({
     response_type: "code",
     client_id: TWITTER_CLIENT_ID,
     redirect_uri: callbackUrl,
-    scope: "users.read tweet.read",
+    scope: "users.read tweet.read follows.read offline.access",
     state: state,
     code_challenge: codeChallenge,
     code_challenge_method: "S256",
   });
+  
+  // force_loginパラメータを追加して別のアカウントでログインできるようにする
+  // Twitter OAuth 2.0では prompt=login で強制的にログイン画面を表示
+  // これによりブラウザにキャッシュされたセッションを無視して別のアカウントを選択可能
+  if (forceLogin) {
+    // prompt=login: 強制的にログイン画面を表示（セッションがあっても再認証を要求）
+    params.set("prompt", "login");
+    // タイムスタンプも追加してキャッシュを確実に無効化
+    params.set("t", Date.now().toString());
+  }
   
   return `https://twitter.com/i/oauth2/authorize?${params.toString()}`;
 }
@@ -157,37 +169,42 @@ export async function refreshAccessToken(refreshToken: string): Promise<{
   return response.json();
 }
 
-// Store PKCE data in database
+// Store PKCE data - メモリ優先で高速化
+// メモリに即座に保存し、バックグラウンドでデータベースにも保存
 export async function storePKCEData(state: string, codeVerifier: string, callbackUrl: string): Promise<void> {
-  const db = await getDb();
-  if (!db) {
-    console.warn("[PKCE] Database not available, using memory fallback");
-    pkceMemoryStore.set(state, { codeVerifier, callbackUrl });
-    setTimeout(() => pkceMemoryStore.delete(state), 10 * 60 * 1000);
-    return;
-  }
+  // メモリに即座に保存（高速）
+  pkceMemoryStore.set(state, { codeVerifier, callbackUrl });
+  setTimeout(() => pkceMemoryStore.delete(state), 30 * 60 * 1000);
+  console.log("[PKCE] Stored PKCE data in memory for state:", state.substring(0, 8) + "...");
   
-  // Set expiration to 10 minutes from now
-  const expiresAt = new Date(Date.now() + 10 * 60 * 1000);
-  
-  try {
-    // Clean up expired entries first
-    await db.delete(oauthPkceData).where(lt(oauthPkceData.expiresAt, new Date()));
-    
-    // Insert new PKCE data
-    await db.insert(oauthPkceData).values({
-      state,
-      codeVerifier,
-      callbackUrl,
-      expiresAt,
-    });
-    
-    console.log("[PKCE] Stored PKCE data for state:", state.substring(0, 8) + "...");
-  } catch (error) {
-    console.error("[PKCE] Failed to store in database, using memory fallback:", error);
-    pkceMemoryStore.set(state, { codeVerifier, callbackUrl });
-    setTimeout(() => pkceMemoryStore.delete(state), 10 * 60 * 1000);
-  }
+  // バックグラウンドでデータベースにも保存（失敗してもメモリがあるのでOK）
+  setImmediate(async () => {
+    try {
+      const db = await getDb();
+      if (!db) {
+        console.log("[PKCE] Database not available, memory-only mode");
+        return;
+      }
+      
+      // Set expiration to 30 minutes from now
+      const expiresAt = new Date(Date.now() + 30 * 60 * 1000);
+      
+      // Clean up expired entries first (non-blocking)
+      await db.delete(oauthPkceData).where(lt(oauthPkceData.expiresAt, new Date())).catch(() => {});
+      
+      // Insert new PKCE data
+      await db.insert(oauthPkceData).values({
+        state,
+        codeVerifier,
+        callbackUrl,
+        expiresAt,
+      });
+      
+      console.log("[PKCE] Also stored PKCE data in database for state:", state.substring(0, 8) + "...");
+    } catch (error) {
+      console.log("[PKCE] Database storage failed (memory fallback active):", error instanceof Error ? error.message : error);
+    }
+  });
 }
 
 // Get PKCE data from database
@@ -259,6 +276,8 @@ const pkceMemoryStore = new Map<string, { codeVerifier: string; callbackUrl: str
 const TARGET_TWITTER_USERNAME = "idolfunch";
 
 // Check if user follows a specific account
+// 指数バックオフとレート制限対応を適用
+// レート制限時はスキップして認証を継続
 export async function checkFollowStatus(
   accessToken: string,
   sourceUserId: string,
@@ -270,25 +289,30 @@ export async function checkFollowStatus(
     name: string;
     username: string;
   } | null;
+  skipped?: boolean;
 }> {
   try {
     // First, get the target user's ID by username
     const userLookupUrl = `https://api.twitter.com/2/users/by/username/${targetUsername}`;
     
-    const userResponse = await fetch(userLookupUrl, {
-      method: "GET",
-      headers: {
-        "Authorization": `Bearer ${accessToken}`,
+    // レート制限時はタイムアウトを短くしてスキップ
+    const { data: userData, rateLimitInfo: userRateLimitInfo } = await twitterApiFetch<{ data?: { id: string; name: string; username: string } }>(
+      userLookupUrl,
+      {
+        method: "GET",
+        headers: {
+          "Authorization": `Bearer ${accessToken}`,
+        },
       },
-    });
+      { maxRetries: 2, initialDelayMs: 500, maxDelayMs: 5000 } // リトライを減らして高速化
+    );
     
-    if (!userResponse.ok) {
-      const text = await userResponse.text();
-      console.error("User lookup error:", text);
-      return { isFollowing: false, targetUser: null };
+    // レート制限に近づいている場合はスキップ（待機しない）
+    if (userRateLimitInfo && userRateLimitInfo.remaining <= 0) {
+      console.log("[Twitter API] Rate limit reached, skipping follow check");
+      return { isFollowing: false, targetUser: null, skipped: true };
     }
     
-    const userData = await userResponse.json();
     const targetUser = userData.data;
     
     if (!targetUser) {
@@ -304,28 +328,24 @@ export async function checkFollowStatus(
       "max_results": "1000",
     });
     
-    const followResponse = await fetch(`${followCheckUrl}?${params}`, {
-      method: "GET",
-      headers: {
-        "Authorization": `Bearer ${accessToken}`,
+    const { data: followData, rateLimitInfo: followRateLimitInfo } = await twitterApiFetch<{ data?: Array<{ id: string; name: string; username: string }> }>(
+      `${followCheckUrl}?${params}`,
+      {
+        method: "GET",
+        headers: {
+          "Authorization": `Bearer ${accessToken}`,
+        },
       },
-    });
+      { maxRetries: 2, initialDelayMs: 500, maxDelayMs: 5000 } // リトライを減らして高速化
+    );
     
-    if (!followResponse.ok) {
-      const text = await followResponse.text();
-      console.error("Follow check error:", text);
-      // If we can't check, assume not following
-      return { 
-        isFollowing: false, 
-        targetUser: {
-          id: targetUser.id,
-          name: targetUser.name,
-          username: targetUser.username,
-        }
-      };
+    // レート制限情報をログ
+    if (followRateLimitInfo) {
+      console.log(
+        `[Twitter API] Follow check rate limit: ${followRateLimitInfo.remaining}/${followRateLimitInfo.limit} remaining`
+      );
     }
     
-    const followData = await followResponse.json();
     const following = followData.data || [];
     
     // Check if target user is in the following list
@@ -340,6 +360,12 @@ export async function checkFollowStatus(
       },
     };
   } catch (error) {
+    // レート制限エラーの場合はスキップして認証を継続
+    const errorMessage = error instanceof Error ? error.message : String(error);
+    if (errorMessage.includes("429") || errorMessage.includes("rate limit")) {
+      console.log("[Twitter API] Rate limit error, skipping follow check");
+      return { isFollowing: false, targetUser: null, skipped: true };
+    }
     console.error("Follow status check error:", error);
     return { isFollowing: false, targetUser: null };
   }

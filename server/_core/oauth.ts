@@ -89,7 +89,16 @@ export function registerOAuthRoutes(app: Express) {
       const host = req.get("host") || "";
       const protocol = req.get("x-forwarded-proto") || req.protocol;
       const forceHttps = protocol === "https" || host.includes("manus.computer") || host.includes("manus.im");
-      const frontendHost = host.replace(/^3000-/, "8081-");
+      
+      // For production domains (doin-challenge.com, railway.app), use the same domain
+      // For development (3000-xxx.manus.computer), replace 3000 with 8081
+      let frontendHost: string;
+      if (host.includes("doin-challenge.com") || host.includes("railway.app")) {
+        frontendHost = host; // Use the same domain for production
+      } else {
+        frontendHost = host.replace(/^3000-/, "8081-"); // Development: replace port
+      }
+      
       const frontendUrl =
         process.env.EXPO_WEB_PREVIEW_URL ||
         process.env.EXPO_PACKAGER_PROXY_URL ||

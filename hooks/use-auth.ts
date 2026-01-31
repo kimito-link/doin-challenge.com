@@ -1,17 +1,114 @@
 import * as Api from "@/lib/_core/api";
 import * as Auth from "@/lib/_core/auth";
+import {
+  getRefreshToken,
+  getValidAccessToken,
+  isAccessTokenExpired,
+  clearAllTokenData,
+} from "@/lib/token-manager";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { Platform, Linking } from "react-native";
 import Constants from "expo-constants";
+import { USER_INFO_KEY } from "@/constants/oauth";
 
 type UseAuthOptions = {
   autoFetch?: boolean;
 };
 
+// Get API base URL from environment variable or derive from hostname
+// Railway APIのベースURL（ハードコード）
+const RAILWAY_API_URL = "https://doin-challengecom-production.up.railway.app";
+
+function getApiBaseUrl(): string {
+  // Check for environment variable first (production)
+  const envApiUrl = process.env.EXPO_PUBLIC_API_BASE_URL;
+  if (envApiUrl) {
+    console.log("[getApiBaseUrl] Using env var:", envApiUrl);
+    return envApiUrl;
+  }
+  
+  // On web, derive from current hostname
+  if (Platform.OS === "web") {
+    // Try multiple ways to get hostname
+    let hostname = "";
+    let protocol = "https:";
+    
+    // Try window.location first
+    if (typeof window !== "undefined" && window.location) {
+      hostname = window.location.hostname || "";
+      protocol = window.location.protocol || "https:";
+    }
+    // Fallback to global location
+    else if (typeof location !== "undefined") {
+      hostname = location.hostname || "";
+      protocol = location.protocol || "https:";
+    }
+    
+    console.log("[getApiBaseUrl] Web hostname:", hostname, "protocol:", protocol);
+    
+    // Production: doin-challenge.com -> Railway backend
+    if (hostname.includes("doin-challenge.com") || hostname.includes("doin-challengecom.vercel.app")) {
+      console.log("[getApiBaseUrl] Production detected, using Railway API");
+      return RAILWAY_API_URL;
+    }
+    
+    // If hostname is empty or localhost, use Railway API for production
+    if (!hostname || hostname === "localhost" || hostname === "127.0.0.1") {
+      console.log("[getApiBaseUrl] No hostname or localhost, using Railway API");
+      return RAILWAY_API_URL;
+    }
+    
+    // Development: Pattern: 8081-sandboxid.region.domain -> 3000-sandboxid.region.domain
+    const apiHostname = hostname.replace(/^8081-/, "3000-");
+    const url = `${protocol}//${apiHostname}`;
+    console.log("[getApiBaseUrl] Development URL:", url);
+    return url;
+  }
+  
+  // Native fallback
+  const nativeUrl = Constants.expoConfig?.extra?.apiUrl || RAILWAY_API_URL;
+  console.log("[getApiBaseUrl] Native URL:", nativeUrl);
+  return nativeUrl;
+}
+
+// 認証状態のキャッシュ（メモリ内）
+let cachedAuthState: { user: Auth.User | null; timestamp: number } | null = null;
+const AUTH_CACHE_TTL = 5 * 60 * 1000; // 5分
+
+// Webの場合、初期化時にlocalStorageから同期的にユーザー情報を読み込む
+function getInitialUserFromLocalStorage(): Auth.User | null {
+  if (Platform.OS === "web" && typeof window !== "undefined") {
+    try {
+      const info = window.localStorage.getItem(USER_INFO_KEY);
+      if (info) {
+        const user = JSON.parse(info);
+        console.log("[useAuth] Initial user loaded from localStorage:", user?.name);
+        return user;
+      }
+    } catch (e) {
+      console.error("[useAuth] Failed to parse localStorage user:", e);
+    }
+  }
+  return null;
+}
+
+// モジュール初期化時にlocalStorageからキャッシュを設定
+if (!cachedAuthState) {
+  const initialUser = getInitialUserFromLocalStorage();
+  if (initialUser) {
+    cachedAuthState = { user: initialUser, timestamp: Date.now() };
+    console.log("[useAuth] Cache initialized from localStorage");
+  }
+}
+
 export function useAuth(options?: UseAuthOptions) {
   const { autoFetch = true } = options ?? {};
-  const [user, setUser] = useState<Auth.User | null>(null);
-  const [loading, setLoading] = useState(true);
+  
+  // キャッシュが有効な場合は即座に表示（loading=false）
+  const hasCachedAuth = cachedAuthState !== null && (Date.now() - cachedAuthState.timestamp) < AUTH_CACHE_TTL;
+  const [user, setUser] = useState<Auth.User | null>(hasCachedAuth && cachedAuthState ? cachedAuthState.user : null);
+  // キャッシュがあればloading=falseで開始（スケルトン表示をスキップ）
+  const [loading, setLoading] = useState(!hasCachedAuth);
   const [error, setError] = useState<Error | null>(null);
 
   const fetchUser = useCallback(async () => {
@@ -29,6 +126,7 @@ export function useAuth(options?: UseAuthOptions) {
         if (cachedUser) {
           console.log("[useAuth] Web: Found cached user in localStorage:", cachedUser);
           setUser(cachedUser);
+          cachedAuthState = { user: cachedUser, timestamp: Date.now() };
           return;
         }
         
@@ -48,16 +146,19 @@ export function useAuth(options?: UseAuthOptions) {
               lastSignedIn: new Date(apiUser.lastSignedIn),
             };
             setUser(userInfo);
+            cachedAuthState = { user: userInfo, timestamp: Date.now() };
             // Cache user info in localStorage for faster subsequent loads
             await Auth.setUserInfo(userInfo);
             console.log("[useAuth] Web user set from API:", userInfo);
           } else {
             console.log("[useAuth] Web: No authenticated user from API");
             setUser(null);
+            cachedAuthState = { user: null, timestamp: Date.now() };
           }
         } catch (apiError) {
           console.log("[useAuth] Web: API call failed, no user authenticated");
           setUser(null);
+          cachedAuthState = { user: null, timestamp: Date.now() };
         }
         return;
       }
@@ -72,6 +173,7 @@ export function useAuth(options?: UseAuthOptions) {
       if (!sessionToken) {
         console.log("[useAuth] No session token, setting user to null");
         setUser(null);
+        cachedAuthState = { user: null, timestamp: Date.now() };
         return;
       }
 
@@ -81,15 +183,19 @@ export function useAuth(options?: UseAuthOptions) {
       if (cachedUser) {
         console.log("[useAuth] Using cached user info");
         setUser(cachedUser);
+        cachedAuthState = { user: cachedUser, timestamp: Date.now() };
       } else {
         console.log("[useAuth] No cached user, setting user to null");
         setUser(null);
+        cachedAuthState = { user: null, timestamp: Date.now() };
       }
     } catch (err) {
       const error = err instanceof Error ? err : new Error("Failed to fetch user");
       console.error("[useAuth] fetchUser error:", error);
       setError(error);
       setUser(null);
+      // エラー時もキャッシュを更新（未認証状態をキャッシュ）
+      cachedAuthState = { user: null, timestamp: Date.now() };
     } finally {
       setLoading(false);
       console.log("[useAuth] fetchUser completed, loading:", false);
@@ -105,28 +211,34 @@ export function useAuth(options?: UseAuthOptions) {
     } finally {
       await Auth.removeSessionToken();
       await Auth.clearUserInfo();
+      // Clear all token data including refresh token
+      await clearAllTokenData();
       setUser(null);
       setError(null);
     }
   }, []);
 
-  const login = useCallback(async () => {
+  // login関数: forceSwitch=trueで別のアカウントでログイン可能
+  const login = useCallback(async (returnUrl?: string, forceSwitch: boolean = false) => {
     try {
-      let loginUrl: string;
+      const apiBaseUrl = getApiBaseUrl();
       
       if (Platform.OS === "web" && typeof window !== "undefined") {
-        // On web, derive API URL from current hostname
-        // Pattern: 8081-sandboxid.region.domain -> 3000-sandboxid.region.domain
-        const { protocol, hostname } = window.location;
-        const apiHostname = hostname.replace(/^8081-/, "3000-");
-        loginUrl = `${protocol}//${apiHostname}/api/twitter/auth`;
-        console.log("[Auth] Web login URL:", loginUrl);
+        // ログイン後のリダイレクト先を保存（指定がなければ現在のページ）
+        const redirectPath = returnUrl || window.location.pathname;
+        localStorage.setItem("auth_return_url", redirectPath);
+        console.log("[Auth] Saved return URL:", redirectPath);
+        
+        // forceSwitchがtrueの場合は別のアカウントでログインできるようにする
+        const switchParam = forceSwitch ? "?switch=true" : "";
+        const loginUrl = `${apiBaseUrl}/api/twitter/auth${switchParam}`;
+        console.log("[Auth] Web login URL:", loginUrl, "forceSwitch:", forceSwitch);
         window.location.href = loginUrl;
       } else {
-        // On native, use localhost (for development) or configured API URL
-        const apiUrl = Constants.expoConfig?.extra?.apiUrl || "http://localhost:3000";
-        loginUrl = `${apiUrl}/api/twitter/auth`;
-        console.log("[Auth] Native login URL:", loginUrl);
+        // On native, use configured API URL
+        const switchParam = forceSwitch ? "?switch=true" : "";
+        const loginUrl = `${apiBaseUrl}/api/twitter/auth${switchParam}`;
+        console.log("[Auth] Native login URL:", loginUrl, "forceSwitch:", forceSwitch);
         await Linking.openURL(loginUrl);
       }
     } catch (err) {
