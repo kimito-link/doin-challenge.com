@@ -2,8 +2,6 @@
  * server/routers/auth.ts
  * 
  * 認証関連のルーター
- * 
- * Gate 1 Test: OAuth関連ファイルの変更をテスト
  */
 import { COOKIE_NAME } from "../../shared/const.js";
 import { getSessionCookieOptions } from "../_core/cookies";

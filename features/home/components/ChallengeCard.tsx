@@ -14,7 +14,6 @@ import { Countdown } from "@/components/atoms/countdown";
 import { goalTypeConfig } from "@/constants/goal-types";
 import type { Challenge } from "@/types/challenge";
 import { eventTypeBadge } from "@/types/challenge";
-import { GenderStats } from "./GenderStats";
 
 interface ChallengeCardProps {
   challenge: Challenge;
@@ -128,14 +127,7 @@ export function ChallengeCard({
             あと{remaining}{unit}で目標達成！
           </Text>
         </View>
-        {/* v6.176: 性別統計 */}
-        <GenderStats
-          maleCount={challenge.maleCount}
-          femaleCount={challenge.femaleCount}
-          unspecifiedCount={challenge.unspecifiedCount}
-          totalParticipants={challenge.totalParticipants}
-        />
-        <View style={{ flexDirection: "row", alignItems: "center", justifyContent: "space-between", marginTop: 8 }}>
+        <View style={{ flexDirection: "row", alignItems: "center", justifyContent: "space-between" }}>
           {!isDateUndecided && <Countdown targetDate={challenge.eventDate} compact />}
           <View style={{ flexDirection: "row", alignItems: "center" }}>
             <MaterialIcons name="event" size={12} color={homeText.accent} />

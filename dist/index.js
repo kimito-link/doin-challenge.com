@@ -919,30 +919,6 @@ async function searchChallenges(query) {
     return title.includes(normalizedQuery) || hostName.includes(normalizedQuery) || description.includes(normalizedQuery) || venue.includes(normalizedQuery);
   });
 }
-async function getAllEventsWithGenderStats() {
-  const now = Date.now();
-  if (eventsCache.data && now - eventsCache.timestamp < EVENTS_CACHE_TTL) {
-    return eventsCache.data;
-  }
-  const db = await getDb();
-  if (!db) return eventsCache.data ?? [];
-  const result = await db.execute(sql`
-    SELECT 
-      c.*,
-      COUNT(CASE WHEN p.gender = 'male' THEN 1 END) as maleCount,
-      COUNT(CASE WHEN p.gender = 'female' THEN 1 END) as femaleCount,
-      COUNT(CASE WHEN p.gender = 'unspecified' THEN 1 END) as unspecifiedCount,
-      COUNT(p.id) as totalParticipants
-    FROM challenges c
-    LEFT JOIN participations p ON c.id = p.challengeId AND p.deletedAt IS NULL
-    WHERE c.isPublic = true
-    GROUP BY c.id
-    ORDER BY c.eventDate DESC
-  `);
-  const rows = result[0];
-  eventsCache = { data: rows, timestamp: now };
-  return rows;
-}
 var events2, eventsCache, EVENTS_CACHE_TTL;
 var init_challenge_db = __esm({
   "server/db/challenge-db.ts"() {
@@ -2963,7 +2939,6 @@ __export(db_exports, {
   getAllBadges: () => getAllBadges,
   getAllCategories: () => getAllCategories,
   getAllEvents: () => getAllEvents,
-  getAllEventsWithGenderStats: () => getAllEventsWithGenderStats,
   getAllUsers: () => getAllUsers,
   getAttendanceTypeCounts: () => getAttendanceTypeCounts,
   getAuditLogs: () => getAuditLogs,
@@ -4252,7 +4227,6 @@ var eventsRouter = router({
     return getAllEvents();
   }),
   // ページネーション対応のイベント一覧取得
-  // v6.175: 性別統計付きで取得
   listPaginated: publicProcedure.input(z.object({
     cursor: z.number().optional(),
     limit: z.number().min(1).max(50).default(20),
@@ -4260,7 +4234,7 @@ var eventsRouter = router({
     search: z.string().optional()
   })).query(async ({ input }) => {
     const { cursor = 0, limit, filter, search } = input;
-    const allEvents = await getAllEventsWithGenderStats();
+    const allEvents = await getAllEvents();
     let filteredEvents = allEvents;
     if (filter && filter !== "all") {
       filteredEvents = filteredEvents.filter((e) => e.eventType === filter);
