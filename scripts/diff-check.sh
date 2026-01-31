@@ -50,6 +50,7 @@ touch_deploy=false
 touch_env=false
 touch_health=false
 touch_workflow=false
+touch_routing=false
 
 while IFS= read -r f; do
   [[ -z "${f}" ]] && continue
@@ -94,12 +95,17 @@ while IFS= read -r f; do
     touch_workflow=true
   fi
 
+  # routing / redirect / proxy（GPTの追加提案）
+  if [[ "${f}" =~ middleware ]] || [[ "${f}" =~ router ]] || [[ "${f}" == "vercel.json" ]] || [[ "${f}" =~ app/.*/layout.tsx ]]; then
+    touch_routing=true
+  fi
+
 done <<< "${CHANGED_FILES}"
 
 # "Gate1的に危険"（ここだけは必ず手当てしたい）
-# auth / deploy / env / db / health は事故りやすい
+# auth / deploy / env / db / health / routing は事故りやすい
 sensitive=false
-if [[ "${touch_auth}" == true || "${touch_deploy}" == true || "${touch_env}" == true || "${touch_db}" == true || "${touch_health}" == true ]]; then
+if [[ "${touch_auth}" == true || "${touch_deploy}" == true || "${touch_env}" == true || "${touch_db}" == true || "${touch_health}" == true || "${touch_routing}" == true ]]; then
   sensitive=true
 fi
 
@@ -115,5 +121,25 @@ fi
   echo "touch_env=${touch_env}"
   echo "touch_health=${touch_health}"
   echo "touch_workflow=${touch_workflow}"
+  echo "touch_routing=${touch_routing}"
   echo "sensitive=${sensitive}"
 } | tee -a "${GITHUB_OUTPUT:-/dev/null}"
+
+# Gate 1: 危険な変更が検知された場合は警告を表示
+if [[ "${sensitive}" == true ]]; then
+  echo ""
+  echo "🚨 Gate 1: 危険な変更が検知されました"
+  echo ""
+  [[ "${touch_auth}" == true ]] && echo "⚠️  OAuth / 認証 に変更があります"
+  [[ "${touch_deploy}" == true ]] && echo "⚠️  Deploy / CI に変更があります"
+  [[ "${touch_env}" == true ]] && echo "⚠️  Env に変更があります"
+  [[ "${touch_db}" == true ]] && echo "⚠️  DB に変更があります"
+  [[ "${touch_health}" == true ]] && echo "⚠️  Health に変更があります"
+  [[ "${touch_routing}" == true ]] && echo "⚠️  Routing / Redirect / Proxy に変更があります"
+  echo ""
+  echo "📋 次のステップ:"
+  echo "1. PRテンプレートのチェックリストを全て確認"
+  echo "2. 影響範囲を理解し、必須確認項目を実施"
+  echo "3. Deploy後、本番環境で動作確認"
+  echo ""
+fi

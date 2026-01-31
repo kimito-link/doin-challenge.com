@@ -1,0 +1,124 @@
+name: Gate 1
+
+on:
+  pull_request:
+    branches: [main]
+  push:
+    branches: [main]
+
+jobs:
+  diff-check:
+    name: Diff Check
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      
+      - name: Run diff-check.sh
+        id: diff_check
+        run: |
+          chmod +x scripts/diff-check.sh
+          bash scripts/diff-check.sh "${{ github.event.pull_request.base.sha || 'HEAD~1' }}" "${{ github.sha }}"
+      
+      - name: Comment on PR (if sensitive changes detected)
+        if: steps.diff_check.outputs.sensitive == 'true' && github.event_name == 'pull_request'
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const output = `
+            ## 🚨 Gate 1: 危険な変更が検知されました
+            
+            以下の領域に変更があります：
+            
+            ${ process.env.TOUCH_AUTH === 'true' ? '⚠️ **OAuth / 認証**\n' : '' }
+            ${ process.env.TOUCH_DEPLOY === 'true' ? '⚠️ **Deploy / CI**\n' : '' }
+            ${ process.env.TOUCH_ENV === 'true' ? '⚠️ **Env**\n' : '' }
+            ${ process.env.TOUCH_DB === 'true' ? '⚠️ **DB**\n' : '' }
+            ${ process.env.TOUCH_HEALTH === 'true' ? '⚠️ **Health**\n' : '' }
+            ${ process.env.TOUCH_ROUTING === 'true' ? '⚠️ **Routing / Redirect / Proxy**\n' : '' }
+            
+            ### 📋 次のステップ
+            
+            1. PRテンプレートのチェックリストを全て確認
+            2. 影響範囲を理解し、必須確認項目を実施
+            3. Deploy後、本番環境で動作確認
+            
+            🔒 このPRをマージする前に、上記を完了してください。
+            `;
+            
+            github.rest.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: output
+            });
+        env:
+          TOUCH_AUTH: ${{ steps.diff_check.outputs.touch_auth }}
+          TOUCH_DEPLOY: ${{ steps.diff_check.outputs.touch_deploy }}
+          TOUCH_ENV: ${{ steps.diff_check.outputs.touch_env }}
+          TOUCH_DB: ${{ steps.diff_check.outputs.touch_db }}
+          TOUCH_HEALTH: ${{ steps.diff_check.outputs.touch_health }}
+          TOUCH_ROUTING: ${{ steps.diff_check.outputs.touch_routing }}
+
+  deploy-health-check:
+    name: Deploy Health Check
+    runs-on: ubuntu-latest
+    needs: [diff-check]
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    
+    steps:
+      - name: Wait for Vercel deployment
+        run: sleep 60
+      
+      - name: Check deployment health
+        run: |
+          HEALTH_URL="https://doin-challenge.com/api/health"
+          RESPONSE=$(curl -s "$HEALTH_URL")
+          
+          echo "Health check response: $RESPONSE"
+          
+          # commit SHAを確認
+          DEPLOYED_SHA=$(echo "$RESPONSE" | jq -r '.commit // empty')
+          EXPECTED_SHA="${{ github.sha }}"
+          
+          if [ -z "$DEPLOYED_SHA" ]; then
+            echo "❌ Health check failed: No commit SHA in response"
+            exit 1
+          fi
+          
+          if [ "$DEPLOYED_SHA" != "$EXPECTED_SHA" ]; then
+            echo "❌ Deploy verification failed"
+            echo "Expected SHA: $EXPECTED_SHA"
+            echo "Deployed SHA: $DEPLOYED_SHA"
+            exit 1
+          fi
+          
+          echo "✅ Deploy verification passed"
+          echo "Deployed SHA: $DEPLOYED_SHA"
+
+  oauth-smoke-test:
+    name: OAuth Smoke Test
+    runs-on: ubuntu-latest
+    needs: [deploy-health-check]
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    
+    steps:
+      - name: Test OAuth entry point
+        run: |
+          OAUTH_URL="https://doin-challenge.com/api/auth/twitter"
+          RESPONSE_CODE=$(curl -s -o /dev/null -w "%{http_code}" -L "$OAUTH_URL")
+          
+          echo "OAuth entry point response code: $RESPONSE_CODE"
+          
+          # 302 (リダイレクト) または 200 を期待
+          if [ "$RESPONSE_CODE" != "302" ] && [ "$RESPONSE_CODE" != "200" ]; then
+            echo "❌ OAuth smoke test failed"
+            echo "Expected: 302 or 200"
+            echo "Got: $RESPONSE_CODE"
+            exit 1
+          fi
+          
+          echo "✅ OAuth smoke test passed"
