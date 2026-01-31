@@ -383,4 +383,20 @@
 ### 修正方針
 - [x] DESIGN_PRINCIPLES.mdを読んで、既存のコンポーネントを再利用
 - [x] WCAG 2.1 AA基準（コントラスト比4.5:1以上）を満たすように修正
-- [ ] すべての画面で一貫したデザインを維持
+- [x] すべての画面で一貫したデザインを維持
+
+
+---
+
+## 📋 プロジェクト専用ミス防止ファイルの作成 (2026-01-31)
+
+### 1セット目: プロジェクト専用
+- [x] `docs/COMMON_MISTAKES.md`を作成（AIが起こしがちなミス集）
+- [x] `docs/AI_INSTRUCTIONS.md`を更新（曖昧な指示への対応とチェックポイント）
+
+### 2セット目: 汎用テンプレート
+- [x] `docs/templates/COMMON_MISTAKES_TEMPLATE.md`を作成
+- [x] `docs/templates/AI_INSTRUCTIONS_TEMPLATE.md`を更新
+
+### チェックポイント
+- [ ] チェックポイント作成
