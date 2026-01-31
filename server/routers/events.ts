@@ -15,6 +15,7 @@ export const eventsRouter = router({
   }),
 
   // ページネーション対応のイベント一覧取得
+  // v6.175: 性別統計付きで取得
   listPaginated: publicProcedure
     .input(z.object({
       cursor: z.number().optional(),
@@ -24,7 +25,7 @@ export const eventsRouter = router({
     }))
     .query(async ({ input }) => {
       const { cursor = 0, limit, filter, search } = input;
-      const allEvents = await db.getAllEvents();
+      const allEvents = await db.getAllEventsWithGenderStats();
       
       let filteredEvents = allEvents;
       
