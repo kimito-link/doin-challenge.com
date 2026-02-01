@@ -9,9 +9,9 @@ var __export = (target, all) => {
 };
 
 // server/db/connection.ts
-import { eq, desc, and, sql as sql2, isNull, or, gte, lte, lt, inArray, asc, ne, like, count } from "drizzle-orm";
+import { eq as eq2, desc as desc2, and, sql, isNull, or, gte, lte, lt, inArray, asc, ne, like, count } from "drizzle-orm";
 import { drizzle } from "drizzle-orm/mysql2";
-async function getDb() {
+async function getDb2() {
   if (!_db && process.env.DATABASE_URL) {
     try {
       let connectionUrl = process.env.DATABASE_URL;
@@ -743,7 +743,7 @@ async function upsertUser(user) {
   if (!user.openId) {
     throw new Error("User openId is required for upsert");
   }
-  const db = await getDb();
+  const db = await getDb2();
   if (!db) {
     console.warn("[Database] Cannot upsert user: database not available");
     return;
@@ -788,40 +788,40 @@ async function upsertUser(user) {
   }
 }
 async function getUserByOpenId(openId) {
-  const db = await getDb();
+  const db = await getDb2();
   if (!db) {
     console.warn("[Database] Cannot get user: database not available");
     return void 0;
   }
-  const result = await db.select().from(users).where(eq(users.openId, openId)).limit(1);
+  const result = await db.select().from(users).where(eq2(users.openId, openId)).limit(1);
   return result.length > 0 ? result[0] : void 0;
 }
 async function getAllUsers() {
-  const db = await getDb();
+  const db = await getDb2();
   if (!db) return [];
-  return db.select().from(users).orderBy(desc(users.lastSignedIn));
+  return db.select().from(users).orderBy(desc2(users.lastSignedIn));
 }
 async function getUserById(id) {
-  const db = await getDb();
+  const db = await getDb2();
   if (!db) return null;
-  const result = await db.select().from(users).where(eq(users.id, id)).limit(1);
+  const result = await db.select().from(users).where(eq2(users.id, id)).limit(1);
   return result.length > 0 ? result[0] : null;
 }
 async function updateUserRole(userId, role) {
-  const db = await getDb();
+  const db = await getDb2();
   if (!db) return false;
-  await db.update(users).set({ role }).where(eq(users.id, userId));
+  await db.update(users).set({ role }).where(eq2(users.id, userId));
   return true;
 }
 async function getUserByTwitterId(twitterId) {
-  const db = await getDb();
+  const db = await getDb2();
   if (!db) return null;
   const openId = `twitter:${twitterId}`;
-  const result = await db.select().from(users).where(eq(users.openId, openId)).limit(1);
+  const result = await db.select().from(users).where(eq2(users.openId, openId)).limit(1);
   if (result.length === 0) return null;
   const user = result[0];
   const { twitterFollowStatus: twitterFollowStatus2 } = await Promise.resolve().then(() => (init_schema2(), schema_exports));
-  const followStatus = await db.select({ twitterUsername: twitterFollowStatus2.twitterUsername }).from(twitterFollowStatus2).where(eq(twitterFollowStatus2.userId, user.id)).limit(1);
+  const followStatus = await db.select({ twitterUsername: twitterFollowStatus2.twitterUsername }).from(twitterFollowStatus2).where(eq2(twitterFollowStatus2.userId, user.id)).limit(1);
   return {
     id: user.id,
     name: user.name,
@@ -840,6 +840,7 @@ var init_user_db = __esm({
 });
 
 // server/db/challenge-db.ts
+import { sql as sql2 } from "drizzle-orm";
 async function getAllEvents() {
   const now = Date.now();
   if (eventsCache.data && now - eventsCache.timestamp < EVENTS_CACHE_TTL) {
@@ -904,7 +905,7 @@ async function createEvent(data) {
   const eventDate = data.eventDate ? new Date(data.eventDate).toISOString().slice(0, 19).replace("T", " ") : now;
   const slug = data.slug || generateSlug(data.title);
   const ticketSaleStart = data.ticketSaleStart ? new Date(data.ticketSaleStart).toISOString().slice(0, 19).replace("T", " ") : null;
-  const result = await db.execute(sql`
+  const result = await db.execute(sql2`
     INSERT INTO challenges (
       hostUserId, hostTwitterId, hostName, hostUsername, hostProfileImage, hostFollowersCount, hostDescription,
       title, description, goalType, goalValue, goalUnit, currentValue,
@@ -974,7 +975,6 @@ var init_challenge_db = __esm({
   "server/db/challenge-db.ts"() {
     "use strict";
     init_connection();
-    init_connection();
     init_schema2();
     events2 = challenges;
     eventsCache = { data: null, timestamp: 0 };
@@ -984,57 +984,57 @@ var init_challenge_db = __esm({
 
 // server/db/participation-db.ts
 async function getParticipationsByEventId(eventId) {
-  const db = await getDb();
+  const db = await getDb2();
   if (!db) return [];
   return db.select().from(participations).where(and(
-    eq(participations.challengeId, eventId),
+    eq2(participations.challengeId, eventId),
     isNull(participations.deletedAt)
-  )).orderBy(desc(participations.createdAt));
+  )).orderBy(desc2(participations.createdAt));
 }
 async function getParticipationsByUserId(userId) {
-  const db = await getDb();
+  const db = await getDb2();
   if (!db) return [];
   return db.select().from(participations).where(and(
-    eq(participations.userId, userId),
+    eq2(participations.userId, userId),
     isNull(participations.deletedAt)
-  )).orderBy(desc(participations.createdAt));
+  )).orderBy(desc2(participations.createdAt));
 }
 async function getParticipationById(id) {
-  const db = await getDb();
+  const db = await getDb2();
   if (!db) return null;
-  const result = await db.select().from(participations).where(eq(participations.id, id));
+  const result = await db.select().from(participations).where(eq2(participations.id, id));
   return result[0] || null;
 }
 async function getActiveParticipationById(id) {
-  const db = await getDb();
+  const db = await getDb2();
   if (!db) return null;
   const result = await db.select().from(participations).where(and(
-    eq(participations.id, id),
+    eq2(participations.id, id),
     isNull(participations.deletedAt)
   ));
   return result[0] || null;
 }
 async function createParticipation(data) {
-  const db = await getDb();
+  const db = await getDb2();
   if (!db) throw new Error("Database not available");
   const result = await db.insert(participations).values(data);
   const participationId = result[0].insertId;
   if (data.challengeId) {
     const contribution = (data.contribution || 1) + (data.companionCount || 0);
-    await db.update(challenges).set({ currentValue: sql2`${challenges.currentValue} + ${contribution}` }).where(eq(challenges.id, data.challengeId));
+    await db.update(challenges).set({ currentValue: sql`${challenges.currentValue} + ${contribution}` }).where(eq2(challenges.id, data.challengeId));
     invalidateEventsCache();
   }
   return participationId;
 }
 async function updateParticipation(id, data) {
-  const db = await getDb();
+  const db = await getDb2();
   if (!db) throw new Error("Database not available");
-  await db.update(participations).set(data).where(eq(participations.id, id));
+  await db.update(participations).set(data).where(eq2(participations.id, id));
 }
 async function softDeleteParticipation(id, deletedByUserId) {
-  const db = await getDb();
+  const db = await getDb2();
   if (!db) throw new Error("Database not available");
-  const participation = await db.select().from(participations).where(eq(participations.id, id));
+  const participation = await db.select().from(participations).where(eq2(participations.id, id));
   const p = participation[0];
   if (!p) {
     throw new Error("Participation not found");
@@ -1042,49 +1042,49 @@ async function softDeleteParticipation(id, deletedByUserId) {
   await db.update(participations).set({
     deletedAt: /* @__PURE__ */ new Date(),
     deletedBy: deletedByUserId
-  }).where(eq(participations.id, id));
+  }).where(eq2(participations.id, id));
   if (p.challengeId) {
     const contribution = (p.contribution || 1) + (p.companionCount || 0);
-    await db.update(challenges).set({ currentValue: sql2`GREATEST(${challenges.currentValue} - ${contribution}, 0)` }).where(eq(challenges.id, p.challengeId));
+    await db.update(challenges).set({ currentValue: sql`GREATEST(${challenges.currentValue} - ${contribution}, 0)` }).where(eq2(challenges.id, p.challengeId));
     invalidateEventsCache();
   }
   return { success: true, challengeId: p.challengeId };
 }
 async function deleteParticipation(id) {
-  const db = await getDb();
+  const db = await getDb2();
   if (!db) throw new Error("Database not available");
-  const participation = await db.select().from(participations).where(eq(participations.id, id));
+  const participation = await db.select().from(participations).where(eq2(participations.id, id));
   const p = participation[0];
-  await db.delete(participations).where(eq(participations.id, id));
+  await db.delete(participations).where(eq2(participations.id, id));
   if (p && p.challengeId && !p.deletedAt) {
     const contribution = (p.contribution || 1) + (p.companionCount || 0);
-    await db.update(challenges).set({ currentValue: sql2`GREATEST(${challenges.currentValue} - ${contribution}, 0)` }).where(eq(challenges.id, p.challengeId));
+    await db.update(challenges).set({ currentValue: sql`GREATEST(${challenges.currentValue} - ${contribution}, 0)` }).where(eq2(challenges.id, p.challengeId));
     invalidateEventsCache();
   }
 }
 async function getParticipationCountByEventId(eventId) {
-  const db = await getDb();
+  const db = await getDb2();
   if (!db) return 0;
   const result = await db.select().from(participations).where(and(
-    eq(participations.challengeId, eventId),
+    eq2(participations.challengeId, eventId),
     isNull(participations.deletedAt)
   ));
   return result.length;
 }
 async function getTotalCompanionCountByEventId(eventId) {
-  const db = await getDb();
+  const db = await getDb2();
   if (!db) return 0;
   const result = await db.select().from(participations).where(and(
-    eq(participations.challengeId, eventId),
+    eq2(participations.challengeId, eventId),
     isNull(participations.deletedAt)
   ));
   return result.reduce((sum, p) => sum + (p.contribution || 1), 0);
 }
 async function getParticipationsByPrefecture(challengeId) {
-  const db = await getDb();
+  const db = await getDb2();
   if (!db) return {};
   const result = await db.select().from(participations).where(and(
-    eq(participations.challengeId, challengeId),
+    eq2(participations.challengeId, challengeId),
     isNull(participations.deletedAt)
   ));
   const prefectureMap = {};
@@ -1095,12 +1095,12 @@ async function getParticipationsByPrefecture(challengeId) {
   return prefectureMap;
 }
 async function getContributionRanking(challengeId, limit = 10) {
-  const db = await getDb();
+  const db = await getDb2();
   if (!db) return [];
   const result = await db.select().from(participations).where(and(
-    eq(participations.challengeId, challengeId),
+    eq2(participations.challengeId, challengeId),
     isNull(participations.deletedAt)
-  )).orderBy(desc(participations.contribution));
+  )).orderBy(desc2(participations.contribution));
   return result.slice(0, limit).map((p, index) => ({
     rank: index + 1,
     userId: p.userId,
@@ -1113,15 +1113,15 @@ async function getContributionRanking(challengeId, limit = 10) {
   }));
 }
 async function getParticipationsByPrefectureFilter(challengeId, prefecture) {
-  const db = await getDb();
+  const db = await getDb2();
   if (!db) return [];
-  return db.select().from(participations).where(sql2`${participations.challengeId} = ${challengeId} AND ${participations.prefecture} = ${prefecture} AND ${participations.deletedAt} IS NULL`).orderBy(desc(participations.createdAt));
+  return db.select().from(participations).where(sql`${participations.challengeId} = ${challengeId} AND ${participations.prefecture} = ${prefecture} AND ${participations.deletedAt} IS NULL`).orderBy(desc2(participations.createdAt));
 }
 async function getAttendanceTypeCounts(challengeId) {
-  const db = await getDb();
+  const db = await getDb2();
   if (!db) return { venue: 0, streaming: 0, both: 0, total: 0 };
   const result = await db.select().from(participations).where(and(
-    eq(participations.challengeId, challengeId),
+    eq2(participations.challengeId, challengeId),
     isNull(participations.deletedAt)
   ));
   const counts = {
@@ -1139,10 +1139,10 @@ async function getAttendanceTypeCounts(challengeId) {
   return counts;
 }
 async function getPrefectureRanking(challengeId) {
-  const db = await getDb();
+  const db = await getDb2();
   if (!db) return [];
   const result = await db.select().from(participations).where(and(
-    eq(participations.challengeId, challengeId),
+    eq2(participations.challengeId, challengeId),
     isNull(participations.deletedAt)
   ));
   const prefectureMap = {};
@@ -1161,9 +1161,9 @@ async function getPrefectureRanking(challengeId) {
   })).sort((a, b) => b.contribution - a.contribution);
 }
 async function getDeletedParticipations(filters) {
-  const db = await getDb();
+  const db = await getDb2();
   if (!db) return [];
-  let query = db.select().from(participations).where(sql2`${participations.deletedAt} IS NOT NULL`);
+  let query = db.select().from(participations).where(sql`${participations.deletedAt} IS NOT NULL`);
   const conditions = [`${participations.deletedAt} IS NOT NULL`];
   if (filters?.challengeId) {
     conditions.push(`${participations.challengeId} = ${filters.challengeId}`);
@@ -1171,13 +1171,13 @@ async function getDeletedParticipations(filters) {
   if (filters?.userId) {
     conditions.push(`${participations.userId} = ${filters.userId}`);
   }
-  const result = await db.select().from(participations).where(sql2.raw(conditions.join(" AND "))).orderBy(desc(participations.deletedAt)).limit(filters?.limit || 100);
+  const result = await db.select().from(participations).where(sql.raw(conditions.join(" AND "))).orderBy(desc2(participations.deletedAt)).limit(filters?.limit || 100);
   return result;
 }
 async function restoreParticipation(id) {
-  const db = await getDb();
+  const db = await getDb2();
   if (!db) throw new Error("Database not available");
-  const participation = await db.select().from(participations).where(eq(participations.id, id));
+  const participation = await db.select().from(participations).where(eq2(participations.id, id));
   const p = participation[0];
   if (!p) {
     throw new Error("Participation not found");
@@ -1188,16 +1188,16 @@ async function restoreParticipation(id) {
   await db.update(participations).set({
     deletedAt: null,
     deletedBy: null
-  }).where(eq(participations.id, id));
+  }).where(eq2(participations.id, id));
   if (p.challengeId) {
     const contribution = (p.contribution || 1) + (p.companionCount || 0);
-    await db.update(challenges).set({ currentValue: sql2`${challenges.currentValue} + ${contribution}` }).where(eq(challenges.id, p.challengeId));
+    await db.update(challenges).set({ currentValue: sql`${challenges.currentValue} + ${contribution}` }).where(eq2(challenges.id, p.challengeId));
     invalidateEventsCache();
   }
   return { success: true, challengeId: p.challengeId };
 }
 async function bulkSoftDeleteParticipations(filter, deletedByUserId) {
-  const db = await getDb();
+  const db = await getDb2();
   if (!db) throw new Error("Database not available");
   if (!filter.challengeId && !filter.userId) {
     throw new Error("Either challengeId or userId must be specified");
@@ -1209,7 +1209,7 @@ async function bulkSoftDeleteParticipations(filter, deletedByUserId) {
   if (filter.userId) {
     conditions.push(`${participations.userId} = ${filter.userId}`);
   }
-  const targets = await db.select().from(participations).where(sql2.raw(conditions.join(" AND ")));
+  const targets = await db.select().from(participations).where(sql.raw(conditions.join(" AND ")));
   if (targets.length === 0) {
     return { deletedCount: 0, affectedChallengeIds: [] };
   }
@@ -1217,7 +1217,7 @@ async function bulkSoftDeleteParticipations(filter, deletedByUserId) {
   await db.update(participations).set({
     deletedAt: /* @__PURE__ */ new Date(),
     deletedBy: deletedByUserId
-  }).where(sql2`${participations.id} IN (${sql2.raw(targetIds.join(","))})`);
+  }).where(sql`${participations.id} IN (${sql.raw(targetIds.join(","))})`);
   const challengeContributions = {};
   targets.forEach((p) => {
     if (p.challengeId) {
@@ -1226,7 +1226,7 @@ async function bulkSoftDeleteParticipations(filter, deletedByUserId) {
     }
   });
   for (const [challengeId, contribution] of Object.entries(challengeContributions)) {
-    await db.update(challenges).set({ currentValue: sql2`GREATEST(${challenges.currentValue} - ${contribution}, 0)` }).where(eq(challenges.id, Number(challengeId)));
+    await db.update(challenges).set({ currentValue: sql`GREATEST(${challenges.currentValue} - ${contribution}, 0)` }).where(eq2(challenges.id, Number(challengeId)));
   }
   invalidateEventsCache();
   return {
@@ -1235,7 +1235,7 @@ async function bulkSoftDeleteParticipations(filter, deletedByUserId) {
   };
 }
 async function bulkRestoreParticipations(filter) {
-  const db = await getDb();
+  const db = await getDb2();
   if (!db) throw new Error("Database not available");
   if (!filter.challengeId && !filter.userId) {
     throw new Error("Either challengeId or userId must be specified");
@@ -1247,7 +1247,7 @@ async function bulkRestoreParticipations(filter) {
   if (filter.userId) {
     conditions.push(`${participations.userId} = ${filter.userId}`);
   }
-  const targets = await db.select().from(participations).where(sql2.raw(conditions.join(" AND ")));
+  const targets = await db.select().from(participations).where(sql.raw(conditions.join(" AND ")));
   if (targets.length === 0) {
     return { restoredCount: 0, affectedChallengeIds: [] };
   }
@@ -1255,7 +1255,7 @@ async function bulkRestoreParticipations(filter) {
   await db.update(participations).set({
     deletedAt: null,
     deletedBy: null
-  }).where(sql2`${participations.id} IN (${sql2.raw(targetIds.join(","))})`);
+  }).where(sql`${participations.id} IN (${sql.raw(targetIds.join(","))})`);
   const challengeContributions = {};
   targets.forEach((p) => {
     if (p.challengeId) {
@@ -1264,7 +1264,7 @@ async function bulkRestoreParticipations(filter) {
     }
   });
   for (const [challengeId, contribution] of Object.entries(challengeContributions)) {
-    await db.update(challenges).set({ currentValue: sql2`${challenges.currentValue} + ${contribution}` }).where(eq(challenges.id, Number(challengeId)));
+    await db.update(challenges).set({ currentValue: sql`${challenges.currentValue} + ${contribution}` }).where(eq2(challenges.id, Number(challengeId)));
   }
   invalidateEventsCache();
   return {
@@ -1416,25 +1416,25 @@ var init_websocket = __esm({
 
 // server/db/notification-db.ts
 async function getNotificationSettings(userId) {
-  const db = await getDb();
+  const db = await getDb2();
   if (!db) return null;
-  const result = await db.select().from(notificationSettings).where(eq(notificationSettings.userId, userId));
+  const result = await db.select().from(notificationSettings).where(eq2(notificationSettings.userId, userId));
   return result[0] || null;
 }
 async function upsertNotificationSettings(userId, challengeId, data) {
-  const db = await getDb();
+  const db = await getDb2();
   if (!db) throw new Error("Database not available");
-  const existing = await db.select().from(notificationSettings).where(and(eq(notificationSettings.userId, userId), eq(notificationSettings.challengeId, challengeId)));
+  const existing = await db.select().from(notificationSettings).where(and(eq2(notificationSettings.userId, userId), eq2(notificationSettings.challengeId, challengeId)));
   if (existing.length > 0) {
-    await db.update(notificationSettings).set(data).where(and(eq(notificationSettings.userId, userId), eq(notificationSettings.challengeId, challengeId)));
+    await db.update(notificationSettings).set(data).where(and(eq2(notificationSettings.userId, userId), eq2(notificationSettings.challengeId, challengeId)));
   } else {
     await db.insert(notificationSettings).values({ userId, challengeId, ...data });
   }
 }
 async function getUsersWithNotificationEnabled(challengeId, notificationType) {
-  const db = await getDb();
+  const db = await getDb2();
   if (!db) return [];
-  const settingsList = await db.select().from(notificationSettings).where(eq(notificationSettings.challengeId, challengeId));
+  const settingsList = await db.select().from(notificationSettings).where(eq2(notificationSettings.challengeId, challengeId));
   return settingsList.filter((s) => {
     if (notificationType === "goal") return s.onGoalReached;
     if (notificationType === "milestone") return s.onMilestone25 || s.onMilestone50 || s.onMilestone75;
@@ -1443,7 +1443,7 @@ async function getUsersWithNotificationEnabled(challengeId, notificationType) {
   });
 }
 async function createNotification(data) {
-  const db = await getDb();
+  const db = await getDb2();
   if (!db) throw new Error("Database not available");
   const result = await db.insert(notifications).values(data);
   const notificationId = result[0].insertId;
@@ -1459,20 +1459,20 @@ async function createNotification(data) {
   return notificationId;
 }
 async function getNotificationsByUserId(userId, limit = 20, cursor) {
-  const db = await getDb();
+  const db = await getDb2();
   if (!db) return [];
-  const conditions = cursor ? and(eq(notifications.userId, userId), lt(notifications.id, cursor)) : eq(notifications.userId, userId);
-  return db.select().from(notifications).where(conditions).orderBy(desc(notifications.createdAt)).limit(limit);
+  const conditions = cursor ? and(eq2(notifications.userId, userId), lt(notifications.id, cursor)) : eq2(notifications.userId, userId);
+  return db.select().from(notifications).where(conditions).orderBy(desc2(notifications.createdAt)).limit(limit);
 }
 async function markNotificationAsRead(id) {
-  const db = await getDb();
+  const db = await getDb2();
   if (!db) throw new Error("Database not available");
-  await db.update(notifications).set({ isRead: true }).where(eq(notifications.id, id));
+  await db.update(notifications).set({ isRead: true }).where(eq2(notifications.id, id));
 }
 async function markAllNotificationsAsRead(userId) {
-  const db = await getDb();
+  const db = await getDb2();
   if (!db) throw new Error("Database not available");
-  await db.update(notifications).set({ isRead: true }).where(eq(notifications.userId, userId));
+  await db.update(notifications).set({ isRead: true }).where(eq2(notifications.userId, userId));
 }
 var init_notification_db = __esm({
   "server/db/notification-db.ts"() {
@@ -1484,31 +1484,31 @@ var init_notification_db = __esm({
 
 // server/db/badge-db.ts
 async function getAllBadges() {
-  const db = await getDb();
+  const db = await getDb2();
   if (!db) return [];
   return db.select().from(badges);
 }
 async function getBadgeById(id) {
-  const db = await getDb();
+  const db = await getDb2();
   if (!db) return null;
-  const result = await db.select().from(badges).where(eq(badges.id, id));
+  const result = await db.select().from(badges).where(eq2(badges.id, id));
   return result[0] || null;
 }
 async function createBadge(data) {
-  const db = await getDb();
+  const db = await getDb2();
   if (!db) throw new Error("Database not available");
   const result = await db.insert(badges).values(data);
   return result[0].insertId;
 }
 async function getUserBadges(userId) {
-  const db = await getDb();
+  const db = await getDb2();
   if (!db) return [];
-  return db.select().from(userBadges).where(eq(userBadges.userId, userId)).orderBy(desc(userBadges.earnedAt));
+  return db.select().from(userBadges).where(eq2(userBadges.userId, userId)).orderBy(desc2(userBadges.earnedAt));
 }
 async function getUserBadgesWithDetails(userId) {
-  const db = await getDb();
+  const db = await getDb2();
   if (!db) return [];
-  const userBadgeList = await db.select().from(userBadges).where(eq(userBadges.userId, userId));
+  const userBadgeList = await db.select().from(userBadges).where(eq2(userBadges.userId, userId));
   const badgeList = await db.select().from(badges);
   return userBadgeList.map((ub) => ({
     ...ub,
@@ -1516,9 +1516,9 @@ async function getUserBadgesWithDetails(userId) {
   }));
 }
 async function awardBadge(userId, badgeId, challengeId) {
-  const db = await getDb();
+  const db = await getDb2();
   if (!db) throw new Error("Database not available");
-  const existing = await db.select().from(userBadges).where(and(eq(userBadges.userId, userId), eq(userBadges.badgeId, badgeId)));
+  const existing = await db.select().from(userBadges).where(and(eq2(userBadges.userId, userId), eq2(userBadges.badgeId, badgeId)));
   if (existing.length > 0) return null;
   const result = await db.insert(userBadges).values({
     userId,
@@ -1528,11 +1528,11 @@ async function awardBadge(userId, badgeId, challengeId) {
   return result[0].insertId;
 }
 async function checkAndAwardBadges(userId, challengeId, contribution) {
-  const db = await getDb();
+  const db = await getDb2();
   if (!db) return [];
   const badgeList = await db.select().from(badges);
   const awardedBadges = [];
-  const participationCount = await db.select().from(participations).where(eq(participations.userId, userId));
+  const participationCount = await db.select().from(participations).where(eq2(participations.userId, userId));
   for (const badge of badgeList) {
     let shouldAward = false;
     switch (badge.conditionType) {
@@ -1557,9 +1557,9 @@ async function checkAndAwardBadges(userId, challengeId, contribution) {
   return awardedBadges;
 }
 async function awardFollowerBadge(userId) {
-  const db = await getDb();
+  const db = await getDb2();
   if (!db) return null;
-  let followerBadge = await db.select().from(badges).where(eq(badges.conditionType, "follower_badge"));
+  let followerBadge = await db.select().from(badges).where(eq2(badges.conditionType, "follower_badge"));
   if (followerBadge.length === 0) {
     const result = await db.insert(badges).values({
       name: "\u{1F49C} \u516C\u5F0F\u30D5\u30A9\u30ED\u30EF\u30FC",
@@ -1567,7 +1567,7 @@ async function awardFollowerBadge(userId) {
       type: "special",
       conditionType: "follower_badge"
     });
-    followerBadge = await db.select().from(badges).where(eq(badges.id, result[0].insertId));
+    followerBadge = await db.select().from(badges).where(eq2(badges.id, result[0].insertId));
   }
   if (followerBadge.length === 0) return null;
   return awardBadge(userId, followerBadge[0].id);
@@ -1582,24 +1582,24 @@ var init_badge_db = __esm({
 
 // server/db/social-db.ts
 async function getPickedCommentsByChallengeId(challengeId) {
-  const db = await getDb();
+  const db = await getDb2();
   if (!db) return [];
-  return db.select().from(pickedComments).where(eq(pickedComments.challengeId, challengeId)).orderBy(desc(pickedComments.pickedAt));
+  return db.select().from(pickedComments).where(eq2(pickedComments.challengeId, challengeId)).orderBy(desc2(pickedComments.pickedAt));
 }
 async function getPickedCommentsWithParticipation(challengeId) {
-  const db = await getDb();
+  const db = await getDb2();
   if (!db) return [];
-  const picked = await db.select().from(pickedComments).where(eq(pickedComments.challengeId, challengeId));
-  const participationList = await db.select().from(participations).where(eq(participations.challengeId, challengeId));
+  const picked = await db.select().from(pickedComments).where(eq2(pickedComments.challengeId, challengeId));
+  const participationList = await db.select().from(participations).where(eq2(participations.challengeId, challengeId));
   return picked.map((p) => ({
     ...p,
     participation: participationList.find((part) => part.id === p.participationId)
   }));
 }
 async function pickComment(participationId, challengeId, pickedBy, reason) {
-  const db = await getDb();
+  const db = await getDb2();
   if (!db) throw new Error("Database not available");
-  const existing = await db.select().from(pickedComments).where(eq(pickedComments.participationId, participationId));
+  const existing = await db.select().from(pickedComments).where(eq2(pickedComments.participationId, participationId));
   if (existing.length > 0) return null;
   const result = await db.insert(pickedComments).values({
     participationId,
@@ -1610,74 +1610,74 @@ async function pickComment(participationId, challengeId, pickedBy, reason) {
   return result[0].insertId;
 }
 async function unpickComment(participationId) {
-  const db = await getDb();
+  const db = await getDb2();
   if (!db) throw new Error("Database not available");
-  await db.delete(pickedComments).where(eq(pickedComments.participationId, participationId));
+  await db.delete(pickedComments).where(eq2(pickedComments.participationId, participationId));
 }
 async function markCommentAsUsedInVideo(id) {
-  const db = await getDb();
+  const db = await getDb2();
   if (!db) throw new Error("Database not available");
-  await db.update(pickedComments).set({ isUsedInVideo: true }).where(eq(pickedComments.id, id));
+  await db.update(pickedComments).set({ isUsedInVideo: true }).where(eq2(pickedComments.id, id));
 }
 async function isCommentPicked(participationId) {
-  const db = await getDb();
+  const db = await getDb2();
   if (!db) return false;
-  const result = await db.select().from(pickedComments).where(eq(pickedComments.participationId, participationId));
+  const result = await db.select().from(pickedComments).where(eq2(pickedComments.participationId, participationId));
   return result.length > 0;
 }
 async function sendCheer(cheer) {
-  const db = await getDb();
+  const db = await getDb2();
   if (!db) return null;
   const result = await db.insert(cheers).values(cheer);
   return result[0].insertId;
 }
 async function getCheersForParticipation(participationId) {
-  const db = await getDb();
+  const db = await getDb2();
   if (!db) return [];
-  return db.select().from(cheers).where(eq(cheers.toParticipationId, participationId)).orderBy(desc(cheers.createdAt));
+  return db.select().from(cheers).where(eq2(cheers.toParticipationId, participationId)).orderBy(desc2(cheers.createdAt));
 }
 async function getCheersForChallenge(challengeId) {
-  const db = await getDb();
+  const db = await getDb2();
   if (!db) return [];
-  return db.select().from(cheers).where(eq(cheers.challengeId, challengeId)).orderBy(desc(cheers.createdAt));
+  return db.select().from(cheers).where(eq2(cheers.challengeId, challengeId)).orderBy(desc2(cheers.createdAt));
 }
 async function getCheerCountForParticipation(participationId) {
-  const db = await getDb();
+  const db = await getDb2();
   if (!db) return 0;
-  const result = await db.select({ count: sql2`count(*)` }).from(cheers).where(eq(cheers.toParticipationId, participationId));
+  const result = await db.select({ count: sql`count(*)` }).from(cheers).where(eq2(cheers.toParticipationId, participationId));
   return result[0]?.count || 0;
 }
 async function getCheersReceivedByUser(userId) {
-  const db = await getDb();
+  const db = await getDb2();
   if (!db) return [];
-  return db.select().from(cheers).where(eq(cheers.toUserId, userId)).orderBy(desc(cheers.createdAt));
+  return db.select().from(cheers).where(eq2(cheers.toUserId, userId)).orderBy(desc2(cheers.createdAt));
 }
 async function getCheersSentByUser(userId) {
-  const db = await getDb();
+  const db = await getDb2();
   if (!db) return [];
-  return db.select().from(cheers).where(eq(cheers.fromUserId, userId)).orderBy(desc(cheers.createdAt));
+  return db.select().from(cheers).where(eq2(cheers.fromUserId, userId)).orderBy(desc2(cheers.createdAt));
 }
 async function createAchievementPage(page) {
-  const db = await getDb();
+  const db = await getDb2();
   if (!db) return null;
   const result = await db.insert(achievementPages).values(page);
   return result[0].insertId;
 }
 async function getAchievementPage(challengeId) {
-  const db = await getDb();
+  const db = await getDb2();
   if (!db) return null;
-  const result = await db.select().from(achievementPages).where(eq(achievementPages.challengeId, challengeId));
+  const result = await db.select().from(achievementPages).where(eq2(achievementPages.challengeId, challengeId));
   return result[0] || null;
 }
 async function updateAchievementPage(challengeId, updates) {
-  const db = await getDb();
+  const db = await getDb2();
   if (!db) return;
-  await db.update(achievementPages).set(updates).where(eq(achievementPages.challengeId, challengeId));
+  await db.update(achievementPages).set(updates).where(eq2(achievementPages.challengeId, challengeId));
 }
 async function getPublicAchievementPages() {
-  const db = await getDb();
+  const db = await getDb2();
   if (!db) return [];
-  return db.select().from(achievementPages).where(eq(achievementPages.isPublic, true)).orderBy(desc(achievementPages.achievedAt));
+  return db.select().from(achievementPages).where(eq2(achievementPages.isPublic, true)).orderBy(desc2(achievementPages.achievedAt));
 }
 var init_social_db = __esm({
   "server/db/social-db.ts"() {
@@ -1689,49 +1689,49 @@ var init_social_db = __esm({
 
 // server/db/messaging-db.ts
 async function createReminder(reminder) {
-  const db = await getDb();
+  const db = await getDb2();
   if (!db) return null;
   const result = await db.insert(reminders).values(reminder);
   return result[0].insertId;
 }
 async function getRemindersForUser(userId) {
-  const db = await getDb();
+  const db = await getDb2();
   if (!db) return [];
-  return db.select().from(reminders).where(eq(reminders.userId, userId)).orderBy(desc(reminders.createdAt));
+  return db.select().from(reminders).where(eq2(reminders.userId, userId)).orderBy(desc2(reminders.createdAt));
 }
 async function getRemindersForChallenge(challengeId) {
-  const db = await getDb();
+  const db = await getDb2();
   if (!db) return [];
-  return db.select().from(reminders).where(eq(reminders.challengeId, challengeId)).orderBy(desc(reminders.createdAt));
+  return db.select().from(reminders).where(eq2(reminders.challengeId, challengeId)).orderBy(desc2(reminders.createdAt));
 }
 async function getUserReminderForChallenge(userId, challengeId) {
-  const db = await getDb();
+  const db = await getDb2();
   if (!db) return null;
-  const result = await db.select().from(reminders).where(and(eq(reminders.userId, userId), eq(reminders.challengeId, challengeId)));
+  const result = await db.select().from(reminders).where(and(eq2(reminders.userId, userId), eq2(reminders.challengeId, challengeId)));
   return result[0] || null;
 }
 async function updateReminder(id, updates) {
-  const db = await getDb();
+  const db = await getDb2();
   if (!db) return;
-  await db.update(reminders).set(updates).where(eq(reminders.id, id));
+  await db.update(reminders).set(updates).where(eq2(reminders.id, id));
 }
 async function deleteReminder(id) {
-  const db = await getDb();
+  const db = await getDb2();
   if (!db) return;
-  await db.delete(reminders).where(eq(reminders.id, id));
+  await db.delete(reminders).where(eq2(reminders.id, id));
 }
 async function getPendingReminders() {
-  const db = await getDb();
+  const db = await getDb2();
   if (!db) return [];
-  return db.select().from(reminders).where(eq(reminders.isSent, false));
+  return db.select().from(reminders).where(eq2(reminders.isSent, false));
 }
 async function markReminderAsSent(id) {
-  const db = await getDb();
+  const db = await getDb2();
   if (!db) return;
-  await db.update(reminders).set({ isSent: true, sentAt: /* @__PURE__ */ new Date() }).where(eq(reminders.id, id));
+  await db.update(reminders).set({ isSent: true, sentAt: /* @__PURE__ */ new Date() }).where(eq2(reminders.id, id));
 }
 async function sendDirectMessage(dm) {
-  const db = await getDb();
+  const db = await getDb2();
   if (!db) return null;
   const result = await db.insert(directMessages).values(dm);
   const messageId = result[0].insertId;
@@ -1747,39 +1747,39 @@ async function sendDirectMessage(dm) {
   return messageId;
 }
 async function getDirectMessagesForUser(userId) {
-  const db = await getDb();
+  const db = await getDb2();
   if (!db) return [];
-  return db.select().from(directMessages).where(sql2`${directMessages.fromUserId} = ${userId} OR ${directMessages.toUserId} = ${userId}`).orderBy(desc(directMessages.createdAt));
+  return db.select().from(directMessages).where(sql`${directMessages.fromUserId} = ${userId} OR ${directMessages.toUserId} = ${userId}`).orderBy(desc2(directMessages.createdAt));
 }
 async function getConversation(userId1, userId2, challengeId) {
-  const db = await getDb();
+  const db = await getDb2();
   if (!db) return [];
   return db.select().from(directMessages).where(and(
-    eq(directMessages.challengeId, challengeId),
-    sql2`((${directMessages.fromUserId} = ${userId1} AND ${directMessages.toUserId} = ${userId2}) OR (${directMessages.fromUserId} = ${userId2} AND ${directMessages.toUserId} = ${userId1}))`
+    eq2(directMessages.challengeId, challengeId),
+    sql`((${directMessages.fromUserId} = ${userId1} AND ${directMessages.toUserId} = ${userId2}) OR (${directMessages.fromUserId} = ${userId2} AND ${directMessages.toUserId} = ${userId1}))`
   )).orderBy(directMessages.createdAt);
 }
 async function getUnreadMessageCount(userId) {
-  const db = await getDb();
+  const db = await getDb2();
   if (!db) return 0;
-  const result = await db.select({ count: sql2`count(*)` }).from(directMessages).where(and(eq(directMessages.toUserId, userId), eq(directMessages.isRead, false)));
+  const result = await db.select({ count: sql`count(*)` }).from(directMessages).where(and(eq2(directMessages.toUserId, userId), eq2(directMessages.isRead, false)));
   return result[0]?.count || 0;
 }
 async function markMessageAsRead(id) {
-  const db = await getDb();
+  const db = await getDb2();
   if (!db) return;
-  await db.update(directMessages).set({ isRead: true, readAt: /* @__PURE__ */ new Date() }).where(eq(directMessages.id, id));
+  await db.update(directMessages).set({ isRead: true, readAt: /* @__PURE__ */ new Date() }).where(eq2(directMessages.id, id));
 }
 async function markAllMessagesAsRead(userId, fromUserId) {
-  const db = await getDb();
+  const db = await getDb2();
   if (!db) return;
-  await db.update(directMessages).set({ isRead: true, readAt: /* @__PURE__ */ new Date() }).where(and(eq(directMessages.toUserId, userId), eq(directMessages.fromUserId, fromUserId)));
+  await db.update(directMessages).set({ isRead: true, readAt: /* @__PURE__ */ new Date() }).where(and(eq2(directMessages.toUserId, userId), eq2(directMessages.fromUserId, fromUserId)));
 }
 async function getConversationList(userId, limit = 20, cursor) {
-  const db = await getDb();
+  const db = await getDb2();
   if (!db) return [];
-  const conditions = cursor ? sql2`(${directMessages.fromUserId} = ${userId} OR ${directMessages.toUserId} = ${userId}) AND ${directMessages.id} < ${cursor}` : sql2`${directMessages.fromUserId} = ${userId} OR ${directMessages.toUserId} = ${userId}`;
-  const messages = await db.select().from(directMessages).where(conditions).orderBy(desc(directMessages.createdAt)).limit(limit * 3);
+  const conditions = cursor ? sql`(${directMessages.fromUserId} = ${userId} OR ${directMessages.toUserId} = ${userId}) AND ${directMessages.id} < ${cursor}` : sql`${directMessages.fromUserId} = ${userId} OR ${directMessages.toUserId} = ${userId}`;
+  const messages = await db.select().from(directMessages).where(conditions).orderBy(desc2(directMessages.createdAt)).limit(limit * 3);
   const conversationMap = /* @__PURE__ */ new Map();
   for (const msg of messages) {
     if (conversationMap.size >= limit) break;
@@ -1792,41 +1792,41 @@ async function getConversationList(userId, limit = 20, cursor) {
   return Array.from(conversationMap.values());
 }
 async function createChallengeTemplate(template) {
-  const db = await getDb();
+  const db = await getDb2();
   if (!db) return null;
   const result = await db.insert(challengeTemplates).values(template);
   return result[0].insertId;
 }
 async function getChallengeTemplatesForUser(userId) {
-  const db = await getDb();
+  const db = await getDb2();
   if (!db) return [];
-  return db.select().from(challengeTemplates).where(eq(challengeTemplates.userId, userId)).orderBy(desc(challengeTemplates.createdAt));
+  return db.select().from(challengeTemplates).where(eq2(challengeTemplates.userId, userId)).orderBy(desc2(challengeTemplates.createdAt));
 }
 async function getPublicChallengeTemplates() {
-  const db = await getDb();
+  const db = await getDb2();
   if (!db) return [];
-  return db.select().from(challengeTemplates).where(eq(challengeTemplates.isPublic, true)).orderBy(desc(challengeTemplates.useCount));
+  return db.select().from(challengeTemplates).where(eq2(challengeTemplates.isPublic, true)).orderBy(desc2(challengeTemplates.useCount));
 }
 async function getChallengeTemplateById(id) {
-  const db = await getDb();
+  const db = await getDb2();
   if (!db) return null;
-  const result = await db.select().from(challengeTemplates).where(eq(challengeTemplates.id, id));
+  const result = await db.select().from(challengeTemplates).where(eq2(challengeTemplates.id, id));
   return result[0] || null;
 }
 async function updateChallengeTemplate(id, updates) {
-  const db = await getDb();
+  const db = await getDb2();
   if (!db) return;
-  await db.update(challengeTemplates).set(updates).where(eq(challengeTemplates.id, id));
+  await db.update(challengeTemplates).set(updates).where(eq2(challengeTemplates.id, id));
 }
 async function deleteChallengeTemplate(id) {
-  const db = await getDb();
+  const db = await getDb2();
   if (!db) return;
-  await db.delete(challengeTemplates).where(eq(challengeTemplates.id, id));
+  await db.delete(challengeTemplates).where(eq2(challengeTemplates.id, id));
 }
 async function incrementTemplateUseCount(id) {
-  const db = await getDb();
+  const db = await getDb2();
   if (!db) return;
-  await db.update(challengeTemplates).set({ useCount: sql2`${challengeTemplates.useCount} + 1` }).where(eq(challengeTemplates.id, id));
+  await db.update(challengeTemplates).set({ useCount: sql`${challengeTemplates.useCount} + 1` }).where(eq2(challengeTemplates.id, id));
 }
 var init_messaging_db = __esm({
   "server/db/messaging-db.ts"() {
@@ -1838,41 +1838,41 @@ var init_messaging_db = __esm({
 
 // server/db/follow-db.ts
 async function saveSearchHistory(history) {
-  const db = await getDb();
+  const db = await getDb2();
   if (!db) return null;
   const result = await db.insert(searchHistory).values(history);
   return result[0].insertId;
 }
 async function getSearchHistoryForUser(userId, limit = 10) {
-  const db = await getDb();
+  const db = await getDb2();
   if (!db) return [];
-  return db.select().from(searchHistory).where(eq(searchHistory.userId, userId)).orderBy(desc(searchHistory.createdAt)).limit(limit);
+  return db.select().from(searchHistory).where(eq2(searchHistory.userId, userId)).orderBy(desc2(searchHistory.createdAt)).limit(limit);
 }
 async function clearSearchHistoryForUser(userId) {
-  const db = await getDb();
+  const db = await getDb2();
   if (!db) return;
-  await db.delete(searchHistory).where(eq(searchHistory.userId, userId));
+  await db.delete(searchHistory).where(eq2(searchHistory.userId, userId));
 }
 async function followUser(follow) {
-  const db = await getDb();
+  const db = await getDb2();
   if (!db) return null;
-  const existing = await db.select().from(follows).where(and(eq(follows.followerId, follow.followerId), eq(follows.followeeId, follow.followeeId)));
+  const existing = await db.select().from(follows).where(and(eq2(follows.followerId, follow.followerId), eq2(follows.followeeId, follow.followeeId)));
   if (existing.length > 0) return null;
   const result = await db.insert(follows).values(follow);
   await awardFollowerBadge(follow.followerId);
   return result[0].insertId;
 }
 async function unfollowUser(followerId, followeeId) {
-  const db = await getDb();
+  const db = await getDb2();
   if (!db) return;
-  await db.delete(follows).where(and(eq(follows.followerId, followerId), eq(follows.followeeId, followeeId)));
+  await db.delete(follows).where(and(eq2(follows.followerId, followerId), eq2(follows.followeeId, followeeId)));
 }
 async function getFollowersForUser(userId) {
-  const db = await getDb();
+  const db = await getDb2();
   if (!db) return [];
-  const result = await db.select().from(follows).where(eq(follows.followeeId, userId)).orderBy(desc(follows.createdAt));
+  const result = await db.select().from(follows).where(eq2(follows.followeeId, userId)).orderBy(desc2(follows.createdAt));
   const followersWithImages = await Promise.all(result.map(async (f) => {
-    const latestParticipation = await db.select({ profileImage: participations.profileImage }).from(participations).where(eq(participations.userId, f.followerId)).orderBy(desc(participations.createdAt)).limit(1);
+    const latestParticipation = await db.select({ profileImage: participations.profileImage }).from(participations).where(eq2(participations.userId, f.followerId)).orderBy(desc2(participations.createdAt)).limit(1);
     return {
       ...f,
       followerImage: latestParticipation[0]?.profileImage || null
@@ -1881,38 +1881,38 @@ async function getFollowersForUser(userId) {
   return followersWithImages;
 }
 async function getFollowingForUser(userId) {
-  const db = await getDb();
+  const db = await getDb2();
   if (!db) return [];
-  return db.select().from(follows).where(eq(follows.followerId, userId)).orderBy(desc(follows.createdAt));
+  return db.select().from(follows).where(eq2(follows.followerId, userId)).orderBy(desc2(follows.createdAt));
 }
 async function isFollowing(followerId, followeeId) {
-  const db = await getDb();
+  const db = await getDb2();
   if (!db) return false;
-  const result = await db.select().from(follows).where(and(eq(follows.followerId, followerId), eq(follows.followeeId, followeeId)));
+  const result = await db.select().from(follows).where(and(eq2(follows.followerId, followerId), eq2(follows.followeeId, followeeId)));
   return result.length > 0;
 }
 async function getFollowerCount(userId) {
-  const db = await getDb();
+  const db = await getDb2();
   if (!db) return 0;
-  const result = await db.select({ count: sql2`count(*)` }).from(follows).where(eq(follows.followeeId, userId));
+  const result = await db.select({ count: sql`count(*)` }).from(follows).where(eq2(follows.followeeId, userId));
   return result[0]?.count || 0;
 }
 async function getFollowingCount(userId) {
-  const db = await getDb();
+  const db = await getDb2();
   if (!db) return 0;
-  const result = await db.select({ count: sql2`count(*)` }).from(follows).where(eq(follows.followerId, userId));
+  const result = await db.select({ count: sql`count(*)` }).from(follows).where(eq2(follows.followerId, userId));
   return result[0]?.count || 0;
 }
 async function getFollowerIdsForUser(userId) {
-  const db = await getDb();
+  const db = await getDb2();
   if (!db) return [];
-  const result = await db.select({ followerId: follows.followerId }).from(follows).where(eq(follows.followeeId, userId));
+  const result = await db.select({ followerId: follows.followerId }).from(follows).where(eq2(follows.followeeId, userId));
   return result.map((r) => r.followerId);
 }
 async function updateFollowNotification(followerId, followeeId, notify) {
-  const db = await getDb();
+  const db = await getDb2();
   if (!db) return;
-  await db.update(follows).set({ notifyNewChallenge: notify }).where(and(eq(follows.followerId, followerId), eq(follows.followeeId, followeeId)));
+  await db.update(follows).set({ notifyNewChallenge: notify }).where(and(eq2(follows.followerId, followerId), eq2(follows.followeeId, followeeId)));
 }
 var init_follow_db = __esm({
   "server/db/follow-db.ts"() {
@@ -1925,28 +1925,28 @@ var init_follow_db = __esm({
 
 // server/db/ranking-db.ts
 async function getGlobalContributionRanking(period = "all", limit = 50) {
-  const db = await getDb();
+  const db = await getDb2();
   if (!db) return [];
-  let dateFilter = sql2`1=1`;
+  let dateFilter = sql`1=1`;
   const now = /* @__PURE__ */ new Date();
   if (period === "weekly") {
     const weekAgo = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1e3);
-    dateFilter = sql2`${participations.createdAt} >= ${weekAgo}`;
+    dateFilter = sql`${participations.createdAt} >= ${weekAgo}`;
   } else if (period === "monthly") {
     const monthAgo = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1e3);
-    dateFilter = sql2`${participations.createdAt} >= ${monthAgo}`;
+    dateFilter = sql`${participations.createdAt} >= ${monthAgo}`;
   }
   const result = await db.select({
     userId: participations.userId,
     userName: participations.username,
     userImage: participations.profileImage,
-    totalContribution: sql2`SUM(${participations.contribution})`,
-    participationCount: sql2`COUNT(*)`
-  }).from(participations).where(dateFilter).groupBy(participations.userId, participations.username, participations.profileImage).orderBy(sql2`SUM(${participations.contribution}) DESC`).limit(limit);
+    totalContribution: sql`SUM(${participations.contribution})`,
+    participationCount: sql`COUNT(*)`
+  }).from(participations).where(dateFilter).groupBy(participations.userId, participations.username, participations.profileImage).orderBy(sql`SUM(${participations.contribution}) DESC`).limit(limit);
   return result;
 }
 async function getChallengeAchievementRanking(limit = 50) {
-  const db = await getDb();
+  const db = await getDb2();
   if (!db) return [];
   const result = await db.select({
     id: challenges.id,
@@ -1954,26 +1954,26 @@ async function getChallengeAchievementRanking(limit = 50) {
     hostName: challenges.hostName,
     goalValue: challenges.goalValue,
     currentValue: challenges.currentValue,
-    achievementRate: sql2`(${challenges.currentValue} / ${challenges.goalValue}) * 100`,
+    achievementRate: sql`(${challenges.currentValue} / ${challenges.goalValue}) * 100`,
     eventDate: challenges.eventDate
-  }).from(challenges).where(sql2`${challenges.goalValue} > 0`).orderBy(sql2`(${challenges.currentValue} / ${challenges.goalValue}) DESC`).limit(limit);
+  }).from(challenges).where(sql`${challenges.goalValue} > 0`).orderBy(sql`(${challenges.currentValue} / ${challenges.goalValue}) DESC`).limit(limit);
   return result;
 }
 async function getHostRanking(limit = 50) {
-  const db = await getDb();
+  const db = await getDb2();
   if (!db) return [];
   const result = await db.select({
     hostUserId: challenges.hostUserId,
     hostName: challenges.hostName,
     hostProfileImage: challenges.hostProfileImage,
-    challengeCount: sql2`COUNT(*)`,
-    totalParticipants: sql2`SUM(${challenges.currentValue})`,
-    avgAchievementRate: sql2`AVG((${challenges.currentValue} / ${challenges.goalValue}) * 100)`
-  }).from(challenges).where(sql2`${challenges.goalValue} > 0`).groupBy(challenges.hostUserId, challenges.hostName, challenges.hostProfileImage).orderBy(sql2`AVG((${challenges.currentValue} / ${challenges.goalValue}) * 100) DESC`).limit(limit);
+    challengeCount: sql`COUNT(*)`,
+    totalParticipants: sql`SUM(${challenges.currentValue})`,
+    avgAchievementRate: sql`AVG((${challenges.currentValue} / ${challenges.goalValue}) * 100)`
+  }).from(challenges).where(sql`${challenges.goalValue} > 0`).groupBy(challenges.hostUserId, challenges.hostName, challenges.hostProfileImage).orderBy(sql`AVG((${challenges.currentValue} / ${challenges.goalValue}) * 100) DESC`).limit(limit);
   return result;
 }
 async function getUserRankingPosition(userId, period = "all") {
-  const db = await getDb();
+  const db = await getDb2();
   if (!db) return null;
   const ranking = await getGlobalContributionRanking(period, 1e3);
   const position = ranking.findIndex((r) => r.userId === userId);
@@ -1998,45 +1998,45 @@ async function getAllCategories() {
   if (categoriesCache.data && now - categoriesCache.timestamp < CATEGORIES_CACHE_TTL) {
     return categoriesCache.data;
   }
-  const db = await getDb();
+  const db = await getDb2();
   if (!db) return categoriesCache.data ?? [];
-  const result = await db.select().from(categories).where(eq(categories.isActive, true)).orderBy(categories.sortOrder);
+  const result = await db.select().from(categories).where(eq2(categories.isActive, true)).orderBy(categories.sortOrder);
   categoriesCache = { data: result, timestamp: now };
   return result;
 }
 async function getCategoryById(id) {
-  const db = await getDb();
+  const db = await getDb2();
   if (!db) return null;
-  const result = await db.select().from(categories).where(eq(categories.id, id));
+  const result = await db.select().from(categories).where(eq2(categories.id, id));
   return result[0] || null;
 }
 async function getCategoryBySlug(slug) {
-  const db = await getDb();
+  const db = await getDb2();
   if (!db) return null;
-  const result = await db.select().from(categories).where(eq(categories.slug, slug));
+  const result = await db.select().from(categories).where(eq2(categories.slug, slug));
   return result[0] || null;
 }
 async function createCategory(category) {
-  const db = await getDb();
+  const db = await getDb2();
   if (!db) return null;
   const result = await db.insert(categories).values(category);
   return result[0].insertId;
 }
 async function getChallengesByCategory(categoryId) {
-  const db = await getDb();
+  const db = await getDb2();
   if (!db) return [];
-  return db.select().from(challenges).where(eq(challenges.categoryId, categoryId)).orderBy(desc(challenges.eventDate));
+  return db.select().from(challenges).where(eq2(challenges.categoryId, categoryId)).orderBy(desc2(challenges.eventDate));
 }
 async function updateCategory(id, data) {
-  const db = await getDb();
+  const db = await getDb2();
   if (!db) return null;
-  await db.update(categories).set(data).where(eq(categories.id, id));
+  await db.update(categories).set(data).where(eq2(categories.id, id));
   return getCategoryById(id);
 }
 async function deleteCategory(id) {
-  const db = await getDb();
+  const db = await getDb2();
   if (!db) return false;
-  await db.delete(categories).where(eq(categories.id, id));
+  await db.delete(categories).where(eq2(categories.id, id));
   return true;
 }
 var categoriesCache, CATEGORIES_CACHE_TTL;
@@ -2052,66 +2052,66 @@ var init_category_db = __esm({
 
 // server/db/invitation-db.ts
 async function createInvitation(invitation) {
-  const db = await getDb();
+  const db = await getDb2();
   if (!db) return null;
   const result = await db.insert(invitations).values(invitation);
   return result[0].insertId;
 }
 async function getInvitationByCode(code) {
-  const db = await getDb();
+  const db = await getDb2();
   if (!db) return null;
-  const result = await db.select().from(invitations).where(eq(invitations.code, code));
+  const result = await db.select().from(invitations).where(eq2(invitations.code, code));
   return result[0] || null;
 }
 async function getInvitationsForChallenge(challengeId) {
-  const db = await getDb();
+  const db = await getDb2();
   if (!db) return [];
-  return db.select().from(invitations).where(eq(invitations.challengeId, challengeId)).orderBy(desc(invitations.createdAt));
+  return db.select().from(invitations).where(eq2(invitations.challengeId, challengeId)).orderBy(desc2(invitations.createdAt));
 }
 async function getInvitationsForUser(userId) {
-  const db = await getDb();
+  const db = await getDb2();
   if (!db) return [];
-  return db.select().from(invitations).where(eq(invitations.inviterId, userId)).orderBy(desc(invitations.createdAt));
+  return db.select().from(invitations).where(eq2(invitations.inviterId, userId)).orderBy(desc2(invitations.createdAt));
 }
 async function incrementInvitationUseCount(code) {
-  const db = await getDb();
+  const db = await getDb2();
   if (!db) return;
-  await db.update(invitations).set({ useCount: sql2`${invitations.useCount} + 1` }).where(eq(invitations.code, code));
+  await db.update(invitations).set({ useCount: sql`${invitations.useCount} + 1` }).where(eq2(invitations.code, code));
 }
 async function deactivateInvitation(id) {
-  const db = await getDb();
+  const db = await getDb2();
   if (!db) return;
-  await db.update(invitations).set({ isActive: false }).where(eq(invitations.id, id));
+  await db.update(invitations).set({ isActive: false }).where(eq2(invitations.id, id));
 }
 async function recordInvitationUse(use) {
-  const db = await getDb();
+  const db = await getDb2();
   if (!db) return null;
   const result = await db.insert(invitationUses).values(use);
   return result[0].insertId;
 }
 async function confirmInvitationUse(invitationId, userId, participationId) {
-  const db = await getDb();
+  const db = await getDb2();
   if (!db) return false;
   await db.update(invitationUses).set({
     isConfirmed: true,
     confirmedAt: /* @__PURE__ */ new Date(),
     participationId
   }).where(and(
-    eq(invitationUses.invitationId, invitationId),
-    eq(invitationUses.userId, userId)
+    eq2(invitationUses.invitationId, invitationId),
+    eq2(invitationUses.userId, userId)
   ));
   return true;
 }
 async function getUserInvitationStats(userId) {
-  const db = await getDb();
+  const db = await getDb2();
   if (!db) return { totalInvited: 0, confirmedCount: 0 };
-  const invitationsList = await db.select({ id: invitations.id }).from(invitations).where(eq(invitations.inviterId, userId));
+  const invitationsList = await db.select({ id: invitations.id }).from(invitations).where(eq2(invitations.inviterId, userId));
   if (invitationsList.length === 0) return { totalInvited: 0, confirmedCount: 0 };
   const invitationIds = invitationsList.map((i) => i.id);
-  const totalResult = await db.select({ count: sql2`count(*)` }).from(invitationUses).where(sql2`${invitationUses.invitationId} IN (${sql2.join(invitationIds.map((id) => sql2`${id}`), sql2`, `)})`);
-  const confirmedResult = await db.select({ count: sql2`count(*)` }).from(invitationUses).where(and(
-    sql2`${invitationUses.invitationId} IN (${sql2.join(invitationIds.map((id) => sql2`${id}`), sql2`, `)})`,
-    eq(invitationUses.isConfirmed, true)
+  const totalResult = await db.select({ count: sql`count(*)` }).from(invitationUses).where(sql`${invitationUses.invitationId} IN (${sql.join(invitationIds.map((id) => sql`${id}`), sql`, `)})`);
+  const confirmedResult = await db.select({ count: sql`count(*)` }).from(invitationUses).where(and(
+    sql`${invitationUses.invitationId} IN (${sql.join(invitationIds.map((id) => sql`${id}`), sql`, `)})`,
+    eq2(invitationUses.isConfirmed, true)
   ));
   return {
     totalInvited: totalResult[0]?.count || 0,
@@ -2119,11 +2119,11 @@ async function getUserInvitationStats(userId) {
   };
 }
 async function getInvitedParticipants(challengeId, inviterId) {
-  const db = await getDb();
+  const db = await getDb2();
   if (!db) return [];
   const invitationsList = await db.select({ id: invitations.id }).from(invitations).where(and(
-    eq(invitations.challengeId, challengeId),
-    eq(invitations.inviterId, inviterId)
+    eq2(invitations.challengeId, challengeId),
+    eq2(invitations.inviterId, inviterId)
   ));
   if (invitationsList.length === 0) return [];
   const invitationIds = invitationsList.map((i) => i.id);
@@ -2134,18 +2134,18 @@ async function getInvitedParticipants(challengeId, inviterId) {
     isConfirmed: invitationUses.isConfirmed,
     confirmedAt: invitationUses.confirmedAt,
     createdAt: invitationUses.createdAt
-  }).from(invitationUses).where(sql2`${invitationUses.invitationId} IN (${sql2.join(invitationIds.map((id) => sql2`${id}`), sql2`, `)})`).orderBy(desc(invitationUses.createdAt));
+  }).from(invitationUses).where(sql`${invitationUses.invitationId} IN (${sql.join(invitationIds.map((id) => sql`${id}`), sql`, `)})`).orderBy(desc2(invitationUses.createdAt));
 }
 async function getInvitationUses(invitationId) {
-  const db = await getDb();
+  const db = await getDb2();
   if (!db) return [];
-  return db.select().from(invitationUses).where(eq(invitationUses.invitationId, invitationId)).orderBy(desc(invitationUses.createdAt));
+  return db.select().from(invitationUses).where(eq2(invitationUses.invitationId, invitationId)).orderBy(desc2(invitationUses.createdAt));
 }
 async function getInvitationStats(invitationId) {
-  const db = await getDb();
+  const db = await getDb2();
   if (!db) return { useCount: 0, participationCount: 0 };
-  const uses = await db.select({ count: sql2`count(*)` }).from(invitationUses).where(eq(invitationUses.invitationId, invitationId));
-  const participations_count = await db.select({ count: sql2`count(*)` }).from(invitationUses).where(and(eq(invitationUses.invitationId, invitationId), sql2`${invitationUses.participationId} IS NOT NULL`));
+  const uses = await db.select({ count: sql`count(*)` }).from(invitationUses).where(eq2(invitationUses.invitationId, invitationId));
+  const participations_count = await db.select({ count: sql`count(*)` }).from(invitationUses).where(and(eq2(invitationUses.invitationId, invitationId), sql`${invitationUses.participationId} IS NOT NULL`));
   return {
     useCount: uses[0]?.count || 0,
     participationCount: participations_count[0]?.count || 0
@@ -2161,9 +2161,9 @@ var init_invitation_db = __esm({
 
 // server/db/profile-db.ts
 async function getUserPublicProfile(userId) {
-  const db = await getDb();
+  const db = await getDb2();
   if (!db) return null;
-  const userResult = await db.select().from(users).where(eq(users.id, userId));
+  const userResult = await db.select().from(users).where(eq2(users.id, userId));
   if (userResult.length === 0) return null;
   const user = userResult[0];
   const participationList = await db.select({
@@ -2184,10 +2184,10 @@ async function getUserPublicProfile(userId) {
     challengeHostName: challenges.hostName,
     challengeHostUsername: challenges.hostUsername,
     challengeCategoryId: challenges.categoryId
-  }).from(participations).innerJoin(challenges, eq(participations.challengeId, challenges.id)).where(eq(participations.userId, userId)).orderBy(desc(participations.createdAt));
-  const badgeList = await db.select().from(userBadges).where(eq(userBadges.userId, userId)).orderBy(desc(userBadges.earnedAt));
+  }).from(participations).innerJoin(challenges, eq2(participations.challengeId, challenges.id)).where(eq2(participations.userId, userId)).orderBy(desc2(participations.createdAt));
+  const badgeList = await db.select().from(userBadges).where(eq2(userBadges.userId, userId)).orderBy(desc2(userBadges.earnedAt));
   const badgeIds = badgeList.map((b) => b.badgeId);
-  const badgeDetails = badgeIds.length > 0 ? await db.select().from(badges).where(sql2`${badges.id} IN (${badgeIds.join(",")})`) : [];
+  const badgeDetails = badgeIds.length > 0 ? await db.select().from(badges).where(sql`${badges.id} IN (${badgeIds.join(",")})`) : [];
   const totalContribution = participationList.reduce((sum, p) => sum + (p.contribution || 1), 0);
   const challengeIds = [...new Set(participationList.map((p) => p.challengeId))];
   const categoryStats = {};
@@ -2195,11 +2195,11 @@ async function getUserPublicProfile(userId) {
     const categoryId = p.challengeCategoryId || 0;
     categoryStats[categoryId] = (categoryStats[categoryId] || 0) + 1;
   });
-  const hostedChallenges = await db.select({ count: sql2`count(*)` }).from(challenges).where(eq(challenges.hostUserId, userId));
+  const hostedChallenges = await db.select({ count: sql`count(*)` }).from(challenges).where(eq2(challenges.hostUserId, userId));
   const latestParticipation = participationList[0];
   let twitterData = null;
   if (latestParticipation?.username) {
-    const twitterCache = await db.select().from(twitterUserCache).where(eq(twitterUserCache.twitterUsername, latestParticipation.username));
+    const twitterCache = await db.select().from(twitterUserCache).where(eq2(twitterUserCache.twitterUsername, latestParticipation.username));
     if (twitterCache.length > 0) {
       twitterData = twitterCache[0];
     }
@@ -2230,7 +2230,7 @@ async function getUserPublicProfile(userId) {
   };
 }
 async function getRecommendedHosts(userId, categoryId, limit = 5) {
-  const db = await getDb();
+  const db = await getDb2();
   if (!db) return [];
   const allChallenges = await db.select({
     hostUserId: challenges.hostUserId,
@@ -2238,7 +2238,7 @@ async function getRecommendedHosts(userId, categoryId, limit = 5) {
     hostUsername: challenges.hostUsername,
     hostProfileImage: challenges.hostProfileImage,
     categoryId: challenges.categoryId
-  }).from(challenges).where(challenges.hostUserId ? ne(challenges.hostUserId, userId || 0) : void 0).orderBy(desc(challenges.eventDate));
+  }).from(challenges).where(challenges.hostUserId ? ne(challenges.hostUserId, userId || 0) : void 0).orderBy(desc2(challenges.eventDate));
   const hostMap = /* @__PURE__ */ new Map();
   for (const c of allChallenges) {
     if (!c.hostUserId) continue;
@@ -2287,42 +2287,42 @@ var init_profile_db = __esm({
 
 // server/db/companion-db.ts
 async function createCompanion(companion) {
-  const db = await getDb();
+  const db = await getDb2();
   if (!db) return null;
   const result = await db.insert(participationCompanions).values(companion);
   return result[0].insertId;
 }
 async function createCompanions(companions) {
-  const db = await getDb();
+  const db = await getDb2();
   if (!db) return [];
   if (companions.length === 0) return [];
   const result = await db.insert(participationCompanions).values(companions);
   return result;
 }
 async function getCompanionsForParticipation(participationId) {
-  const db = await getDb();
+  const db = await getDb2();
   if (!db) return [];
-  return db.select().from(participationCompanions).where(eq(participationCompanions.participationId, participationId)).orderBy(participationCompanions.createdAt);
+  return db.select().from(participationCompanions).where(eq2(participationCompanions.participationId, participationId)).orderBy(participationCompanions.createdAt);
 }
 async function getCompanionsForChallenge(challengeId) {
-  const db = await getDb();
+  const db = await getDb2();
   if (!db) return [];
-  return db.select().from(participationCompanions).where(eq(participationCompanions.challengeId, challengeId)).orderBy(desc(participationCompanions.createdAt));
+  return db.select().from(participationCompanions).where(eq2(participationCompanions.challengeId, challengeId)).orderBy(desc2(participationCompanions.createdAt));
 }
 async function deleteCompanion(id) {
-  const db = await getDb();
+  const db = await getDb2();
   if (!db) return;
-  await db.delete(participationCompanions).where(eq(participationCompanions.id, id));
+  await db.delete(participationCompanions).where(eq2(participationCompanions.id, id));
 }
 async function deleteCompanionsForParticipation(participationId) {
-  const db = await getDb();
+  const db = await getDb2();
   if (!db) return;
-  await db.delete(participationCompanions).where(eq(participationCompanions.participationId, participationId));
+  await db.delete(participationCompanions).where(eq2(participationCompanions.participationId, participationId));
 }
 async function getCompanionInviteStats(userId) {
-  const db = await getDb();
+  const db = await getDb2();
   if (!db) return { totalInvited: 0, companions: [] };
-  const companions = await db.select().from(participationCompanions).where(eq(participationCompanions.invitedByUserId, userId)).orderBy(desc(participationCompanions.createdAt));
+  const companions = await db.select().from(participationCompanions).where(eq2(participationCompanions.invitedByUserId, userId)).orderBy(desc2(participationCompanions.createdAt));
   return {
     totalInvited: companions.length,
     companions
@@ -2338,13 +2338,13 @@ var init_companion_db = __esm({
 
 // server/db/ai-db.ts
 async function refreshChallengeSummary(challengeId) {
-  const db = await getDb();
+  const db = await getDb2();
   if (!db) return;
   try {
     const participationData = await db.select({
       prefecture: participations.prefecture,
-      count: sql2`COUNT(*)`
-    }).from(participations).where(eq(participations.challengeId, challengeId)).groupBy(participations.prefecture);
+      count: sql`COUNT(*)`
+    }).from(participations).where(eq2(participations.challengeId, challengeId)).groupBy(participations.prefecture);
     const regionSummary = {};
     let totalCount = 0;
     participationData.forEach((row) => {
@@ -2357,15 +2357,15 @@ async function refreshChallengeSummary(challengeId) {
       name: participations.displayName,
       contribution: participations.contribution,
       message: participations.message
-    }).from(participations).where(eq(participations.challengeId, challengeId)).orderBy(desc(participations.contribution)).limit(5);
+    }).from(participations).where(eq2(participations.challengeId, challengeId)).orderBy(desc2(participations.contribution)).limit(5);
     const recentMessages = await db.select({
       name: participations.displayName,
       message: participations.message,
       createdAt: participations.createdAt
     }).from(participations).where(and(
-      eq(participations.challengeId, challengeId),
-      sql2`${participations.message} IS NOT NULL AND ${participations.message} != ''`
-    )).orderBy(desc(participations.createdAt)).limit(5);
+      eq2(participations.challengeId, challengeId),
+      sql`${participations.message} IS NOT NULL AND ${participations.message} != ''`
+    )).orderBy(desc2(participations.createdAt)).limit(5);
     let hotRegion;
     let maxCount = 0;
     Object.entries(regionSummary).forEach(([region, count3]) => {
@@ -2388,7 +2388,7 @@ async function refreshChallengeSummary(challengeId) {
       })),
       hotRegion
     };
-    const challenge = await db.select().from(challenges).where(eq(challenges.id, challengeId)).limit(1);
+    const challenge = await db.select().from(challenges).where(eq2(challenges.id, challengeId)).limit(1);
     if (!challenge[0]) return;
     const c = challenge[0];
     const progressPercent = c.goalValue > 0 ? Math.round(c.currentValue / c.goalValue * 100) : 0;
@@ -2427,15 +2427,15 @@ async function refreshChallengeSummary(challengeId) {
       regionSummary,
       participantSummary,
       aiSummaryUpdatedAt: /* @__PURE__ */ new Date()
-    }).where(eq(challenges.id, challengeId));
+    }).where(eq2(challenges.id, challengeId));
   } catch (error) {
     console.error("[AI Summary] Failed to refresh challenge summary:", error);
   }
 }
 async function getChallengeForAI(challengeId) {
-  const db = await getDb();
+  const db = await getDb2();
   if (!db) return null;
-  const result = await db.select().from(challenges).where(eq(challenges.id, challengeId)).limit(1);
+  const result = await db.select().from(challenges).where(eq2(challenges.id, challengeId)).limit(1);
   if (!result[0]) return null;
   const c = result[0];
   const summaryAge = c.aiSummaryUpdatedAt ? Date.now() - new Date(c.aiSummaryUpdatedAt).getTime() : Infinity;
@@ -2469,9 +2469,9 @@ async function getChallengeForAI(challengeId) {
   };
 }
 async function searchChallengesForAI(tags, limit = 20) {
-  const db = await getDb();
+  const db = await getDb2();
   if (!db) return [];
-  const allChallenges = await db.select().from(challenges).where(eq(challenges.isPublic, true)).limit(100);
+  const allChallenges = await db.select().from(challenges).where(eq2(challenges.isPublic, true)).limit(100);
   const scored = allChallenges.map((c) => {
     const challengeTags = c.intentTags || [];
     const matchCount = tags.filter((t2) => challengeTags.includes(t2)).length;
@@ -2489,7 +2489,7 @@ async function searchChallengesForAI(tags, limit = 20) {
   }));
 }
 async function refreshAllChallengeSummaries() {
-  const db = await getDb();
+  const db = await getDb2();
   if (!db) return { updated: 0 };
   const allChallenges = await db.select({ id: challenges.id }).from(challenges);
   let updated = 0;
@@ -2513,42 +2513,42 @@ var init_ai_db = __esm({
 
 // server/db/ticket-db.ts
 async function createTicketTransfer(transfer) {
-  const db = await getDb();
+  const db = await getDb2();
   if (!db) return null;
   const result = await db.insert(ticketTransfers).values(transfer);
   return result[0].insertId;
 }
 async function getTicketTransfersForChallenge(challengeId) {
-  const db = await getDb();
+  const db = await getDb2();
   if (!db) return [];
   return db.select().from(ticketTransfers).where(and(
-    eq(ticketTransfers.challengeId, challengeId),
-    eq(ticketTransfers.status, "available")
-  )).orderBy(desc(ticketTransfers.createdAt));
+    eq2(ticketTransfers.challengeId, challengeId),
+    eq2(ticketTransfers.status, "available")
+  )).orderBy(desc2(ticketTransfers.createdAt));
 }
 async function getTicketTransfersForUser(userId) {
-  const db = await getDb();
+  const db = await getDb2();
   if (!db) return [];
-  return db.select().from(ticketTransfers).where(eq(ticketTransfers.userId, userId)).orderBy(desc(ticketTransfers.createdAt));
+  return db.select().from(ticketTransfers).where(eq2(ticketTransfers.userId, userId)).orderBy(desc2(ticketTransfers.createdAt));
 }
 async function updateTicketTransferStatus(id, status) {
-  const db = await getDb();
+  const db = await getDb2();
   if (!db) return;
-  await db.update(ticketTransfers).set({ status }).where(eq(ticketTransfers.id, id));
+  await db.update(ticketTransfers).set({ status }).where(eq2(ticketTransfers.id, id));
 }
 async function cancelTicketTransfer(id, userId) {
-  const db = await getDb();
+  const db = await getDb2();
   if (!db) return false;
-  const result = await db.update(ticketTransfers).set({ status: "cancelled" }).where(and(eq(ticketTransfers.id, id), eq(ticketTransfers.userId, userId)));
+  const result = await db.update(ticketTransfers).set({ status: "cancelled" }).where(and(eq2(ticketTransfers.id, id), eq2(ticketTransfers.userId, userId)));
   return true;
 }
 async function addToTicketWaitlist(waitlist) {
-  const db = await getDb();
+  const db = await getDb2();
   if (!db) return null;
   const existing = await db.select().from(ticketWaitlist).where(and(
-    eq(ticketWaitlist.challengeId, waitlist.challengeId),
-    eq(ticketWaitlist.userId, waitlist.userId),
-    eq(ticketWaitlist.isActive, true)
+    eq2(ticketWaitlist.challengeId, waitlist.challengeId),
+    eq2(ticketWaitlist.userId, waitlist.userId),
+    eq2(ticketWaitlist.isActive, true)
   )).limit(1);
   if (existing.length > 0) {
     return existing[0].id;
@@ -2557,63 +2557,63 @@ async function addToTicketWaitlist(waitlist) {
   return result[0].insertId;
 }
 async function removeFromTicketWaitlist(challengeId, userId) {
-  const db = await getDb();
+  const db = await getDb2();
   if (!db) return false;
   await db.update(ticketWaitlist).set({ isActive: false }).where(and(
-    eq(ticketWaitlist.challengeId, challengeId),
-    eq(ticketWaitlist.userId, userId)
+    eq2(ticketWaitlist.challengeId, challengeId),
+    eq2(ticketWaitlist.userId, userId)
   ));
   return true;
 }
 async function getTicketWaitlistForChallenge(challengeId) {
-  const db = await getDb();
+  const db = await getDb2();
   if (!db) return [];
   return db.select().from(ticketWaitlist).where(and(
-    eq(ticketWaitlist.challengeId, challengeId),
-    eq(ticketWaitlist.isActive, true)
+    eq2(ticketWaitlist.challengeId, challengeId),
+    eq2(ticketWaitlist.isActive, true)
   )).orderBy(ticketWaitlist.createdAt);
 }
 async function getTicketWaitlistForUser(userId) {
-  const db = await getDb();
+  const db = await getDb2();
   if (!db) return [];
   return db.select().from(ticketWaitlist).where(and(
-    eq(ticketWaitlist.userId, userId),
-    eq(ticketWaitlist.isActive, true)
-  )).orderBy(desc(ticketWaitlist.createdAt));
+    eq2(ticketWaitlist.userId, userId),
+    eq2(ticketWaitlist.isActive, true)
+  )).orderBy(desc2(ticketWaitlist.createdAt));
 }
 async function isUserInWaitlist(challengeId, userId) {
-  const db = await getDb();
+  const db = await getDb2();
   if (!db) return false;
   const result = await db.select().from(ticketWaitlist).where(and(
-    eq(ticketWaitlist.challengeId, challengeId),
-    eq(ticketWaitlist.userId, userId),
-    eq(ticketWaitlist.isActive, true)
+    eq2(ticketWaitlist.challengeId, challengeId),
+    eq2(ticketWaitlist.userId, userId),
+    eq2(ticketWaitlist.isActive, true)
   )).limit(1);
   return result.length > 0;
 }
 async function getWaitlistUsersForNotification(challengeId) {
-  const db = await getDb();
+  const db = await getDb2();
   if (!db) return [];
   return db.select().from(ticketWaitlist).where(and(
-    eq(ticketWaitlist.challengeId, challengeId),
-    eq(ticketWaitlist.isActive, true),
-    eq(ticketWaitlist.notifyOnNew, true)
+    eq2(ticketWaitlist.challengeId, challengeId),
+    eq2(ticketWaitlist.isActive, true),
+    eq2(ticketWaitlist.notifyOnNew, true)
   ));
 }
 async function cancelParticipation(participationId, userId) {
-  const db = await getDb();
+  const db = await getDb2();
   if (!db) return { success: false, error: "Database not available" };
   const participation = await db.select().from(participations).where(and(
-    eq(participations.id, participationId),
-    eq(participations.userId, userId)
+    eq2(participations.id, participationId),
+    eq2(participations.userId, userId)
   )).limit(1);
   if (participation.length === 0) {
     return { success: false, error: "Participation not found" };
   }
   const p = participation[0];
-  await db.delete(participations).where(eq(participations.id, participationId));
-  await db.delete(participationCompanions).where(eq(participationCompanions.participationId, participationId));
-  await db.update(challenges).set({ currentValue: sql2`${challenges.currentValue} - ${p.contribution}` }).where(eq(challenges.id, p.challengeId));
+  await db.delete(participations).where(eq2(participations.id, participationId));
+  await db.delete(participationCompanions).where(eq2(participationCompanions.participationId, participationId));
+  await db.update(challenges).set({ currentValue: sql`${challenges.currentValue} - ${p.contribution}` }).where(eq2(challenges.id, p.challengeId));
   return { success: true, challengeId: p.challengeId, contribution: p.contribution };
 }
 var init_ticket_db = __esm({
@@ -2626,7 +2626,7 @@ var init_ticket_db = __esm({
 
 // server/db/stats-db.ts
 async function getOshikatsuStats(userId, twitterId) {
-  const db = await getDb();
+  const db = await getDb2();
   if (!db) return null;
   if (!userId && !twitterId) return null;
   let participationList;
@@ -2636,14 +2636,14 @@ async function getOshikatsuStats(userId, twitterId) {
       challengeId: participations.challengeId,
       contribution: participations.contribution,
       createdAt: participations.createdAt
-    }).from(participations).where(eq(participations.userId, userId)).orderBy(desc(participations.createdAt)).limit(20);
+    }).from(participations).where(eq2(participations.userId, userId)).orderBy(desc2(participations.createdAt)).limit(20);
   } else if (twitterId) {
     participationList = await db.select({
       id: participations.id,
       challengeId: participations.challengeId,
       contribution: participations.contribution,
       createdAt: participations.createdAt
-    }).from(participations).where(eq(participations.twitterId, twitterId)).orderBy(desc(participations.createdAt)).limit(20);
+    }).from(participations).where(eq2(participations.twitterId, twitterId)).orderBy(desc2(participations.createdAt)).limit(20);
   } else {
     return null;
   }
@@ -2661,7 +2661,7 @@ async function getOshikatsuStats(userId, twitterId) {
     id: challenges.id,
     title: challenges.title,
     hostName: challenges.hostName
-  }).from(challenges).where(sql2`${challenges.id} IN (${sql2.join(challengeIds.map((id) => sql2`${id}`), sql2`, `)})`);
+  }).from(challenges).where(sql`${challenges.id} IN (${sql.join(challengeIds.map((id) => sql`${id}`), sql`, `)})`);
   const challengeMap = new Map(challengeList.map((c) => [c.id, c]));
   const recentChallenges = participationList.slice(0, 5).map((p) => {
     const challenge = challengeMap.get(p.challengeId);
@@ -2679,7 +2679,7 @@ async function getOshikatsuStats(userId, twitterId) {
   };
 }
 async function recalculateChallengeCurrentValues() {
-  const db = await getDb();
+  const db = await getDb2();
   if (!db) throw new Error("Database not available");
   const allChallenges = await db.select({
     id: challenges.id,
@@ -2692,14 +2692,14 @@ async function recalculateChallengeCurrentValues() {
     const participationList = await db.select({
       contribution: participations.contribution,
       companionCount: participations.companionCount
-    }).from(participations).where(eq(participations.challengeId, challenge.id));
+    }).from(participations).where(eq2(participations.challengeId, challenge.id));
     const actualValue = participationList.reduce((sum, p) => {
       return sum + (p.contribution || 1) + (p.companionCount || 0);
     }, 0);
     const oldValue = challenge.currentValue || 0;
     const diff = actualValue - oldValue;
     if (diff !== 0) {
-      await db.update(challenges).set({ currentValue: actualValue }).where(eq(challenges.id, challenge.id));
+      await db.update(challenges).set({ currentValue: actualValue }).where(eq2(challenges.id, challenge.id));
       results.push({
         id: challenge.id,
         title: challenge.title,
@@ -2713,7 +2713,7 @@ async function recalculateChallengeCurrentValues() {
   return results;
 }
 async function getDataIntegrityReport() {
-  const db = await getDb();
+  const db = await getDb2();
   if (!db) throw new Error("Database not available");
   const allChallenges = await db.select({
     id: challenges.id,
@@ -2724,14 +2724,14 @@ async function getDataIntegrityReport() {
     goalValue: challenges.goalValue,
     status: challenges.status,
     eventDate: challenges.eventDate
-  }).from(challenges).orderBy(desc(challenges.id));
+  }).from(challenges).orderBy(desc2(challenges.id));
   const report = [];
   for (const challenge of allChallenges) {
     const participationList = await db.select({
       id: participations.id,
       contribution: participations.contribution,
       companionCount: participations.companionCount
-    }).from(participations).where(eq(participations.challengeId, challenge.id));
+    }).from(participations).where(eq2(participations.challengeId, challenge.id));
     const totalParticipations = participationList.length;
     const totalContribution = participationList.reduce((sum, p) => sum + (p.contribution || 1), 0);
     const totalCompanions = participationList.reduce((sum, p) => sum + (p.companionCount || 0), 0);
@@ -2765,10 +2765,10 @@ async function getDataIntegrityReport() {
   };
 }
 async function getDbSchema() {
-  const db = await getDb();
+  const db = await getDb2();
   if (!db) return { tables: [], error: "Database not available" };
   try {
-    const result = await db.execute(sql2`
+    const result = await db.execute(sql`
       SELECT TABLE_NAME, COLUMN_NAME, DATA_TYPE, IS_NULLABLE, COLUMN_DEFAULT
       FROM INFORMATION_SCHEMA.COLUMNS
       WHERE TABLE_SCHEMA = DATABASE()
@@ -2780,10 +2780,10 @@ async function getDbSchema() {
   }
 }
 async function compareSchemas() {
-  const db = await getDb();
+  const db = await getDb2();
   if (!db) return { match: false, error: "Database not available" };
   try {
-    const result = await db.execute(sql2`
+    const result = await db.execute(sql`
       SELECT TABLE_NAME
       FROM INFORMATION_SCHEMA.TABLES
       WHERE TABLE_SCHEMA = DATABASE()
@@ -2846,7 +2846,7 @@ var init_stats_db = __esm({
 
 // server/db/audit-db.ts
 async function createAuditLog(data) {
-  const db = await getDb();
+  const db = await getDb2();
   if (!db) {
     console.warn("[AuditLog] Database not available, skipping audit log");
     return null;
@@ -2876,20 +2876,20 @@ async function logAction(params) {
   });
 }
 async function getAuditLogs(options) {
-  const db = await getDb();
+  const db = await getDb2();
   if (!db) return [];
   const limit = options?.limit || 100;
   const offset = options?.offset || 0;
   let query = db.select().from(auditLogs);
   const conditions = [];
   if (options?.entityType) {
-    conditions.push(eq(auditLogs.entityType, options.entityType));
+    conditions.push(eq2(auditLogs.entityType, options.entityType));
   }
   if (options?.targetId) {
-    conditions.push(eq(auditLogs.targetId, options.targetId));
+    conditions.push(eq2(auditLogs.targetId, options.targetId));
   }
   if (options?.actorId) {
-    conditions.push(eq(auditLogs.actorId, options.actorId));
+    conditions.push(eq2(auditLogs.actorId, options.actorId));
   }
   if (options?.startDate) {
     conditions.push(gte(auditLogs.createdAt, options.startDate));
@@ -2900,26 +2900,26 @@ async function getAuditLogs(options) {
   if (conditions.length > 0) {
     query = query.where(and(...conditions));
   }
-  const result = await query.orderBy(desc(auditLogs.createdAt)).limit(limit).offset(offset);
+  const result = await query.orderBy(desc2(auditLogs.createdAt)).limit(limit).offset(offset);
   return result;
 }
 async function getAuditLogsByRequestId(requestId) {
-  const db = await getDb();
+  const db = await getDb2();
   if (!db) return [];
-  return db.select().from(auditLogs).where(eq(auditLogs.requestId, requestId)).orderBy(desc(auditLogs.createdAt));
+  return db.select().from(auditLogs).where(eq2(auditLogs.requestId, requestId)).orderBy(desc2(auditLogs.createdAt));
 }
 async function getEntityAuditHistory(entityType, targetId) {
-  const db = await getDb();
+  const db = await getDb2();
   if (!db) return [];
   return db.select().from(auditLogs).where(and(
-    eq(auditLogs.entityType, entityType),
-    eq(auditLogs.targetId, targetId)
-  )).orderBy(desc(auditLogs.createdAt));
+    eq2(auditLogs.entityType, entityType),
+    eq2(auditLogs.targetId, targetId)
+  )).orderBy(desc2(auditLogs.createdAt));
 }
 async function getUserAuditHistory(actorId, limit = 100) {
-  const db = await getDb();
+  const db = await getDb2();
   if (!db) return [];
-  return db.select().from(auditLogs).where(eq(auditLogs.actorId, actorId)).orderBy(desc(auditLogs.createdAt)).limit(limit);
+  return db.select().from(auditLogs).where(eq2(auditLogs.actorId, actorId)).orderBy(desc2(auditLogs.createdAt)).limit(limit);
 }
 var init_audit_db = __esm({
   "server/db/audit-db.ts"() {
@@ -2992,8 +2992,8 @@ __export(db_exports, {
   deleteEvent: () => deleteEvent,
   deleteParticipation: () => deleteParticipation,
   deleteReminder: () => deleteReminder,
-  desc: () => desc,
-  eq: () => eq,
+  desc: () => desc2,
+  eq: () => eq2,
   followUser: () => followUser,
   generateSlug: () => generateSlug,
   getAchievementPage: () => getAchievementPage,
@@ -3025,7 +3025,7 @@ __export(db_exports, {
   getConversation: () => getConversation,
   getConversationList: () => getConversationList,
   getDataIntegrityReport: () => getDataIntegrityReport,
-  getDb: () => getDb,
+  getDb: () => getDb2,
   getDbSchema: () => getDbSchema,
   getDeletedParticipations: () => getDeletedParticipations,
   getDirectMessagesForUser: () => getDirectMessagesForUser,
@@ -3116,7 +3116,7 @@ __export(db_exports, {
   sendCheer: () => sendCheer,
   sendDirectMessage: () => sendDirectMessage,
   softDeleteParticipation: () => softDeleteParticipation,
-  sql: () => sql2,
+  sql: () => sql,
   ticketTransfers: () => ticketTransfers,
   ticketWaitlist: () => ticketWaitlist,
   unfollowUser: () => unfollowUser,
@@ -3552,7 +3552,7 @@ function registerOAuthRoutes(app) {
 init_db2();
 init_schema2();
 import crypto from "crypto";
-import { eq as eq3, lt as lt3 } from "drizzle-orm";
+import { eq as eq4, lt as lt3 } from "drizzle-orm";
 
 // server/rate-limit-handler.ts
 var DEFAULT_OPTIONS = {
@@ -3753,7 +3753,7 @@ async function storePKCEData(state, codeVerifier, callbackUrl) {
   console.log("[PKCE] Stored PKCE data in memory for state:", state.substring(0, 8) + "...");
   setImmediate(async () => {
     try {
-      const db = await getDb();
+      const db = await getDb2();
       if (!db) {
         console.log("[PKCE] Database not available, memory-only mode");
         return;
@@ -3779,13 +3779,13 @@ async function getPKCEData(state) {
     console.log("[PKCE] Retrieved PKCE data from memory for state:", state.substring(0, 8) + "...");
     return memoryData;
   }
-  const db = await getDb();
+  const db = await getDb2();
   if (!db) {
     console.warn("[PKCE] Database not available");
     return void 0;
   }
   try {
-    const result = await db.select().from(oauthPkceData).where(eq3(oauthPkceData.state, state)).limit(1);
+    const result = await db.select().from(oauthPkceData).where(eq4(oauthPkceData.state, state)).limit(1);
     if (result.length === 0) {
       console.log("[PKCE] No PKCE data found for state:", state.substring(0, 8) + "...");
       return void 0;
@@ -3808,13 +3808,13 @@ async function getPKCEData(state) {
 }
 async function deletePKCEData(state) {
   pkceMemoryStore.delete(state);
-  const db = await getDb();
+  const db = await getDb2();
   if (!db) {
     console.warn("[PKCE] Database not available for delete");
     return;
   }
   try {
-    await db.delete(oauthPkceData).where(eq3(oauthPkceData.state, state));
+    await db.delete(oauthPkceData).where(eq4(oauthPkceData.state, state));
     console.log("[PKCE] Deleted PKCE data for state:", state.substring(0, 8) + "...");
   } catch (error) {
     console.error("[PKCE] Failed to delete from database:", error);
@@ -6232,17 +6232,17 @@ var adminRouter = router({
 // server/routers/stats.ts
 init_connection();
 init_schema2();
-import { eq as eq4, and as and3, gte as gte2, desc as desc3, sql as sql3, count as count2 } from "drizzle-orm";
+import { eq as eq5, and as and3, gte as gte2, desc as desc4, sql as sql3, count as count2 } from "drizzle-orm";
 var statsRouter = router({
   /**
    * ユーザー統計を取得
    */
   getUserStats: protectedProcedure.query(async ({ ctx }) => {
-    const db = await getDb();
+    const db = await getDb2();
     if (!db) throw new Error("\u30C7\u30FC\u30BF\u30D9\u30FC\u30B9\u306B\u63A5\u7D9A\u3067\u304D\u307E\u305B\u3093");
     const userId = ctx.user.id;
-    const totalParticipations = await db.select({ count: count2() }).from(participations).where(eq4(participations.userId, userId));
-    const completedParticipations = await db.select({ count: count2() }).from(participations).where(eq4(participations.userId, userId));
+    const totalParticipations = await db.select({ count: count2() }).from(participations).where(eq5(participations.userId, userId));
+    const completedParticipations = await db.select({ count: count2() }).from(participations).where(eq5(participations.userId, userId));
     const total = totalParticipations[0]?.count || 0;
     const completed = completedParticipations[0]?.count || 0;
     const completionRate = total > 0 ? completed / total * 100 : 0;
@@ -6252,7 +6252,7 @@ var statsRouter = router({
       createdAt: participations.createdAt,
       updatedAt: participations.updatedAt,
       eventTitle: challenges.title
-    }).from(participations).leftJoin(challenges, eq4(participations.challengeId, challenges.id)).where(eq4(participations.userId, userId)).orderBy(desc3(participations.createdAt)).limit(10);
+    }).from(participations).leftJoin(challenges, eq5(participations.challengeId, challenges.id)).where(eq5(participations.userId, userId)).orderBy(desc4(participations.createdAt)).limit(10);
     const sixMonthsAgo = /* @__PURE__ */ new Date();
     sixMonthsAgo.setMonth(sixMonthsAgo.getMonth() - 6);
     const monthlyStats = await db.select({
@@ -6260,7 +6260,7 @@ var statsRouter = router({
       count: count2()
     }).from(participations).where(
       and3(
-        eq4(participations.userId, userId),
+        eq5(participations.userId, userId),
         gte2(participations.createdAt, sixMonthsAgo)
       )
     ).groupBy(sql3`DATE_FORMAT(${participations.createdAt}, '%Y-%m')`).orderBy(sql3`DATE_FORMAT(${participations.createdAt}, '%Y-%m')`);
@@ -6271,7 +6271,7 @@ var statsRouter = router({
       count: count2()
     }).from(participations).where(
       and3(
-        eq4(participations.userId, userId),
+        eq5(participations.userId, userId),
         gte2(participations.createdAt, fourWeeksAgo)
       )
     ).groupBy(sql3`DATE_FORMAT(${participations.createdAt}, '%Y-W%u')`).orderBy(sql3`DATE_FORMAT(${participations.createdAt}, '%Y-W%u')`);
@@ -6301,7 +6301,7 @@ var statsRouter = router({
    * 管理者統計を取得
    */
   getAdminStats: protectedProcedure.query(async () => {
-    const db = await getDb();
+    const db = await getDb2();
     if (!db) throw new Error("\u30C7\u30FC\u30BF\u30D9\u30FC\u30B9\u306B\u63A5\u7D9A\u3067\u304D\u307E\u305B\u3093");
     const totalUsers = await db.select({ count: count2() }).from(users);
     const totalParticipations = await db.select({ count: count2() }).from(participations);
@@ -6313,14 +6313,14 @@ var statsRouter = router({
       userId: participations.userId,
       userName: users.name,
       completedChallenges: count2()
-    }).from(participations).leftJoin(users, eq4(participations.userId, users.id)).groupBy(participations.userId, users.name).orderBy(desc3(count2())).limit(10);
+    }).from(participations).leftJoin(users, eq5(participations.userId, users.id)).groupBy(participations.userId, users.name).orderBy(desc4(count2())).limit(10);
     const eventStats = await db.select({
       challengeId: participations.challengeId,
       eventTitle: challenges.title,
       totalAttempts: count2(),
       completedAttempts: count2()
       // 全ての参加を達成とみなす
-    }).from(participations).leftJoin(challenges, eq4(participations.challengeId, challenges.id)).groupBy(participations.challengeId, challenges.title).orderBy(desc3(count2()));
+    }).from(participations).leftJoin(challenges, eq5(participations.challengeId, challenges.id)).groupBy(participations.challengeId, challenges.title).orderBy(desc4(count2()));
     const thirtyDaysAgo = /* @__PURE__ */ new Date();
     thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
     const dailyActivity = await db.select({
@@ -6362,15 +6362,15 @@ init_schema2();
 var releaseNotesRouter = router({
   // すべてのリリースノートを取得
   getAll: publicProcedure.query(async () => {
-    const db = await getDb();
+    const db = await getDb2();
     if (!db) return [];
-    return db.select().from(releaseNotes).orderBy(desc(releaseNotes.date));
+    return db.select().from(releaseNotes).orderBy(desc2(releaseNotes.date));
   }),
   // 最新のリリースノートを取得
   getLatest: publicProcedure.input(z26.object({ limit: z26.number().min(1).max(10).default(5) })).query(async ({ input }) => {
-    const db = await getDb();
+    const db = await getDb2();
     if (!db) return [];
-    return db.select().from(releaseNotes).orderBy(desc(releaseNotes.date)).limit(input.limit);
+    return db.select().from(releaseNotes).orderBy(desc2(releaseNotes.date)).limit(input.limit);
   })
 });
 
@@ -6607,7 +6607,7 @@ async function checkSchemaIntegrity() {
     checkedAt: (/* @__PURE__ */ new Date()).toISOString()
   };
   try {
-    const db = await getDb();
+    const db = await getDb2();
     if (!db) {
       result.status = "error";
       result.errors.push("Database connection not available");
@@ -6616,7 +6616,7 @@ async function checkSchemaIntegrity() {
     for (const [tableName, tableSpec] of Object.entries(EXPECTED_SCHEMA.tables)) {
       try {
         const columnsResult = await db.execute(
-          sql2`SELECT COLUMN_NAME FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = ${tableName}`
+          sql`SELECT COLUMN_NAME FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = ${tableName}`
         );
         const rows = Array.isArray(columnsResult) ? columnsResult[0] : columnsResult;
         const existingColumns = new Set(
@@ -7403,9 +7403,9 @@ async function startServer() {
     };
     let dbStatus = { connected: false, latency: 0, error: "" };
     try {
-      const { getDb: getDb2 } = await Promise.resolve().then(() => (init_db2(), db_exports));
+      const { getDb: getDb3 } = await Promise.resolve().then(() => (init_db2(), db_exports));
       const startTime = Date.now();
-      const db = await getDb2();
+      const db = await getDb3();
       if (db) {
         await db.execute("SELECT 1");
         dbStatus = {
@@ -7487,11 +7487,11 @@ async function startServer() {
   }));
   app.get("/api/admin/system-status", async (_req, res) => {
     try {
-      const { getDb: getDb2 } = await Promise.resolve().then(() => (init_db2(), db_exports));
+      const { getDb: getDb3 } = await Promise.resolve().then(() => (init_db2(), db_exports));
       let dbStatus = { connected: false, latency: 0, error: "" };
       try {
         const startTime = Date.now();
-        const db = await getDb2();
+        const db = await getDb3();
         if (db) {
           await db.execute("SELECT 1");
           dbStatus = {

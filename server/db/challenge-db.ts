@@ -1,7 +1,7 @@
-import { getDb, eq, desc } from "./connection";
+import { db } from "./connection";
 import { generateSlug } from "./connection";
 import { challenges, InsertChallenge, users } from "../../drizzle/schema";
-
+import { sql } from "drizzle-orm";
 // 後方互換性のためのエイリアス
 const events = challenges;
 type InsertEvent = InsertChallenge;

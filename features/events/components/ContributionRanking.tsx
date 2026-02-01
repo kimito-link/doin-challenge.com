@@ -8,7 +8,8 @@ import { useColors } from "@/hooks/use-colors";
 import { eventText, eventFont, eventUI } from "@/features/events/ui/theme/tokens";
 import { OptimizedAvatar } from "@/components/molecules/optimized-image";
 import { Button } from "@/components/ui/button";
-import type { Participation } from "@/types/participation";
+import type { Participation, Gender } from "@/types/participation";
+import { getGenderIcon } from "@/types/participation";
 
 export interface ContributionRankingProps {
   /** 参加者リスト */
@@ -28,6 +29,13 @@ export interface RankingItemVM {
   username?: string;
   profileImage?: string;
   valueText: string;
+}
+
+// v6.176: 性別に応じた色を取得
+function getGenderColor(gender: Gender | null | undefined): string {
+  if (gender === "male") return "#3B82F6"; // 男性: 青
+  if (gender === "female") return "#EC4899"; // 女性: ピンク
+  return "#64748B"; // 未指定: グレー
 }
 
 export function ContributionRanking({
@@ -98,25 +106,39 @@ export function ContributionRanking({
               {index + 1}
             </Text>
           </View>
-          <View style={{ marginRight: 12 }}>
+          <View style={{ marginRight: 12, position: "relative" }}>
             <OptimizedAvatar
               source={p.profileImage && !p.isAnonymous ? { uri: p.profileImage } : undefined}
               size={36}
-              fallbackColor={eventUI.fallback}
+              fallbackColor={getGenderColor(p.gender)}
               fallbackText={p.displayName.charAt(0)}
             />
+            {/* v6.176: 性別アイコンバッジ */}
+            <View
+              style={{
+                position: "absolute",
+                bottom: -2,
+                right: -2,
+                backgroundColor: getGenderColor(p.gender),
+                borderRadius: 8,
+                width: 16,
+                height: 16,
+                alignItems: "center",
+                justifyContent: "center",
+                borderWidth: 1.5,
+                borderColor: "#fff",
+              }}
+            >
+              <Text style={{ color: "#fff", fontSize: 10, fontWeight: "bold" }}>
+                {getGenderIcon(p.gender)}
+              </Text>
+            </View>
           </View>
           <View style={{ flex: 1 }}>
             <View style={{ flexDirection: "row", alignItems: "center" }}>
               <Text style={{ color: colors.foreground, fontSize: 14, fontWeight: "600" }}>
                 {p.isAnonymous ? "匿名" : p.displayName}
               </Text>
-              {/* 性別アイコン */}
-              {p.gender && p.gender !== "unspecified" && (
-                <Text style={{ marginLeft: 4, fontSize: 12 }}>
-                  {p.gender === "male" ? "👨" : "👩"}
-                </Text>
-              )}
               {p.userId && followerSet.has(p.userId) && (
                 <View
                   style={{

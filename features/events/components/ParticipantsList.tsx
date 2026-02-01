@@ -9,7 +9,8 @@ import { useColors } from "@/hooks/use-colors";
 import { Button } from "@/components/ui/button";
 import { eventText, eventFont, eventUI } from "@/features/events/ui/theme/tokens";
 import { OptimizedAvatar } from "@/components/molecules/optimized-image";
-import type { Participation, FanProfile } from "@/types/participation";
+import type { Participation, FanProfile, Gender } from "@/types/participation";
+import { getGenderIcon } from "@/types/participation";
 
 interface ParticipantsListProps {
   /** 参加者リスト */
@@ -18,6 +19,13 @@ interface ParticipantsListProps {
   onFanPress?: (fan: FanProfile) => void;
   /** 表示する最大人数（デフォルト: 10） */
   maxDisplay?: number;
+}
+
+// v6.176: 性別に応じた色を取得
+function getGenderColor(gender: Gender | null | undefined): string {
+  if (gender === "male") return "#3B82F6"; // 男性: 青
+  if (gender === "female") return "#EC4899"; // 女性: ピンク
+  return "#64748B"; // 未指定: グレー
 }
 
 export function ParticipantsList({
@@ -66,20 +74,28 @@ export function ParticipantsList({
                 <OptimizedAvatar
                   source={p.profileImage ? { uri: p.profileImage } : undefined}
                   size={50}
-                  fallbackColor={eventUI.fallback}
+                  fallbackColor={getGenderColor(p.gender)}
                   fallbackText={p.displayName.charAt(0)}
                 />
+                {/* v6.176: 性別アイコンバッジ */}
                 <View
                   style={{
                     position: "absolute",
                     bottom: -2,
                     right: -2,
-                    backgroundColor: eventUI.badge,
-                    borderRadius: 8,
-                    padding: 2,
+                    backgroundColor: getGenderColor(p.gender),
+                    borderRadius: 10,
+                    width: 20,
+                    height: 20,
+                    alignItems: "center",
+                    justifyContent: "center",
+                    borderWidth: 2,
+                    borderColor: "#fff",
                   }}
                 >
-                  <MaterialIcons name="info" size={10} color="#fff" />
+                  <Text style={{ color: "#fff", fontSize: 12, fontWeight: "bold" }}>
+                    {getGenderIcon(p.gender)}
+                  </Text>
                 </View>
               </View>
               <Text
