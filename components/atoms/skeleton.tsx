@@ -1,6 +1,7 @@
 import { useEffect, useRef } from "react";
 import { View, Animated, StyleSheet, ViewStyle } from "react-native";
 import { color } from "@/theme/tokens";
+import { SKELETON_CONFIG } from "@/constants/skeleton-config";
 
 interface SkeletonProps {
   width?: number | `${number}%`;
@@ -30,12 +31,12 @@ export function Skeleton({
       Animated.sequence([
         Animated.timing(shimmerAnim, {
           toValue: 1,
-          duration: 1000,
+          duration: SKELETON_CONFIG.animationDuration,
           useNativeDriver: true,
         }),
         Animated.timing(shimmerAnim, {
           toValue: 0,
-          duration: 1000,
+          duration: SKELETON_CONFIG.animationDuration,
           useNativeDriver: true,
         }),
       ])
@@ -46,7 +47,7 @@ export function Skeleton({
 
   const opacity = shimmerAnim.interpolate({
     inputRange: [0, 1],
-    outputRange: [0.3, 0.6],
+    outputRange: [SKELETON_CONFIG.backgroundOpacity, SKELETON_CONFIG.highlightOpacity],
   });
 
   return (

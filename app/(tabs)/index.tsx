@@ -203,11 +203,11 @@ export default function HomeScreen() {
           }}
           style={{ backgroundColor: color.bg }}
           columnWrapperStyle={isSearching && numColumns > 1 ? { justifyContent: "flex-start", gap: grid.gap } : undefined}
-          windowSize={5}
-          maxToRenderPerBatch={6}
-          initialNumToRender={6}
+          windowSize={3}
+          maxToRenderPerBatch={4}
+          initialNumToRender={4}
           removeClippedSubviews={Platform.OS !== "web"}
-          updateCellsBatchingPeriod={50}
+          updateCellsBatchingPeriod={100}
         />
       ) : (
         <HomeEmptyState onGenerateSamples={homeData.refetch} />
