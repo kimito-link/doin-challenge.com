@@ -21,8 +21,8 @@ import { color } from "@/theme/tokens";
 export interface UserProfileHeaderProps {
   /** ユーザーデータ */
   user: TwitterUserData & {
-    /** 性別（male: 男性、female: 女性） */
-    gender?: "male" | "female";
+    /** 性別（male: 男性、female: 女性、unspecified: 未指定） */
+    gender?: "male" | "female" | "unspecified";
   };
   /** フォローボタンを表示するか */
   showFollowButton?: boolean;
@@ -40,6 +40,9 @@ export interface UserProfileHeaderProps {
  * v6.172: 男女別色分け対応
  * - 男性: 青系グラデーション（#1E40AF → #3B82F6 → #60A5FA）
  * - 女性: ピンク系グラデーション（#BE185D → #EC4899 → #F472B6）
+ * 
+ * v6.175: 性別未指定対応
+ * - 未指定: グレー系グラデーション（#475569 → #64748B → #94A3B8）
  */
 export function UserProfileHeader({
   user,
@@ -49,9 +52,12 @@ export function UserProfileHeader({
   isFollowPending = false,
 }: UserProfileHeaderProps) {
   // 性別に応じたグラデーション色
-  const gradientColors: readonly [string, string, ...string[]] = user.gender === "male"
-    ? ["#1E40AF", "#3B82F6", "#60A5FA"] // 男性: 青系
-    : ["#BE185D", "#EC4899", "#F472B6"]; // 女性: ピンク系（デフォルト）
+  const gradientColors: readonly [string, string, ...string[]] = 
+    user.gender === "male"
+      ? ["#1E40AF", "#3B82F6", "#60A5FA"] // 男性: 青系
+      : user.gender === "female"
+      ? ["#BE185D", "#EC4899", "#F472B6"] // 女性: ピンク系
+      : ["#475569", "#64748B", "#94A3B8"]; // 未指定: グレー系
 
   return (
     <LinearGradient

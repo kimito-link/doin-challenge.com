@@ -9,7 +9,7 @@ var __export = (target, all) => {
 };
 
 // server/db/connection.ts
-import { eq, desc, and, sql, isNull, or, gte, lte, lt, inArray, asc, ne, like, count } from "drizzle-orm";
+import { eq, desc, and, sql as sql2, isNull, or, gte, lte, lt, inArray, asc, ne, like, count } from "drizzle-orm";
 import { drizzle } from "drizzle-orm/mysql2";
 async function getDb() {
   if (!_db && process.env.DATABASE_URL) {
@@ -847,7 +847,34 @@ async function getAllEvents() {
   }
   const db = await getDb();
   if (!db) return eventsCache.data ?? [];
-  const result = await db.select().from(events2).where(eq(events2.isPublic, true)).orderBy(desc(events2.eventDate));
+  const result = await db.select({
+    id: events2.id,
+    hostUserId: events2.hostUserId,
+    hostTwitterId: events2.hostTwitterId,
+    hostName: events2.hostName,
+    hostUsername: events2.hostUsername,
+    hostProfileImage: events2.hostProfileImage,
+    hostFollowersCount: events2.hostFollowersCount,
+    hostDescription: events2.hostDescription,
+    hostGender: users.gender,
+    // 主催者の性別
+    title: events2.title,
+    slug: events2.slug,
+    description: events2.description,
+    goalType: events2.goalType,
+    goalValue: events2.goalValue,
+    goalUnit: events2.goalUnit,
+    currentValue: events2.currentValue,
+    eventType: events2.eventType,
+    categoryId: events2.categoryId,
+    eventDate: events2.eventDate,
+    venue: events2.venue,
+    prefecture: events2.prefecture,
+    status: events2.status,
+    isPublic: events2.isPublic,
+    createdAt: events2.createdAt,
+    updatedAt: events2.updatedAt
+  }).from(events2).leftJoin(users, eq(events2.hostUserId, users.id)).where(eq(events2.isPublic, true)).orderBy(desc(events2.eventDate));
   eventsCache = { data: result, timestamp: now };
   return result;
 }
@@ -994,7 +1021,7 @@ async function createParticipation(data) {
   const participationId = result[0].insertId;
   if (data.challengeId) {
     const contribution = (data.contribution || 1) + (data.companionCount || 0);
-    await db.update(challenges).set({ currentValue: sql`${challenges.currentValue} + ${contribution}` }).where(eq(challenges.id, data.challengeId));
+    await db.update(challenges).set({ currentValue: sql2`${challenges.currentValue} + ${contribution}` }).where(eq(challenges.id, data.challengeId));
     invalidateEventsCache();
   }
   return participationId;
@@ -1018,7 +1045,7 @@ async function softDeleteParticipation(id, deletedByUserId) {
   }).where(eq(participations.id, id));
   if (p.challengeId) {
     const contribution = (p.contribution || 1) + (p.companionCount || 0);
-    await db.update(challenges).set({ currentValue: sql`GREATEST(${challenges.currentValue} - ${contribution}, 0)` }).where(eq(challenges.id, p.challengeId));
+    await db.update(challenges).set({ currentValue: sql2`GREATEST(${challenges.currentValue} - ${contribution}, 0)` }).where(eq(challenges.id, p.challengeId));
     invalidateEventsCache();
   }
   return { success: true, challengeId: p.challengeId };
@@ -1031,7 +1058,7 @@ async function deleteParticipation(id) {
   await db.delete(participations).where(eq(participations.id, id));
   if (p && p.challengeId && !p.deletedAt) {
     const contribution = (p.contribution || 1) + (p.companionCount || 0);
-    await db.update(challenges).set({ currentValue: sql`GREATEST(${challenges.currentValue} - ${contribution}, 0)` }).where(eq(challenges.id, p.challengeId));
+    await db.update(challenges).set({ currentValue: sql2`GREATEST(${challenges.currentValue} - ${contribution}, 0)` }).where(eq(challenges.id, p.challengeId));
     invalidateEventsCache();
   }
 }
@@ -1088,7 +1115,7 @@ async function getContributionRanking(challengeId, limit = 10) {
 async function getParticipationsByPrefectureFilter(challengeId, prefecture) {
   const db = await getDb();
   if (!db) return [];
-  return db.select().from(participations).where(sql`${participations.challengeId} = ${challengeId} AND ${participations.prefecture} = ${prefecture} AND ${participations.deletedAt} IS NULL`).orderBy(desc(participations.createdAt));
+  return db.select().from(participations).where(sql2`${participations.challengeId} = ${challengeId} AND ${participations.prefecture} = ${prefecture} AND ${participations.deletedAt} IS NULL`).orderBy(desc(participations.createdAt));
 }
 async function getAttendanceTypeCounts(challengeId) {
   const db = await getDb();
@@ -1136,7 +1163,7 @@ async function getPrefectureRanking(challengeId) {
 async function getDeletedParticipations(filters) {
   const db = await getDb();
   if (!db) return [];
-  let query = db.select().from(participations).where(sql`${participations.deletedAt} IS NOT NULL`);
+  let query = db.select().from(participations).where(sql2`${participations.deletedAt} IS NOT NULL`);
   const conditions = [`${participations.deletedAt} IS NOT NULL`];
   if (filters?.challengeId) {
     conditions.push(`${participations.challengeId} = ${filters.challengeId}`);
@@ -1144,7 +1171,7 @@ async function getDeletedParticipations(filters) {
   if (filters?.userId) {
     conditions.push(`${participations.userId} = ${filters.userId}`);
   }
-  const result = await db.select().from(participations).where(sql.raw(conditions.join(" AND "))).orderBy(desc(participations.deletedAt)).limit(filters?.limit || 100);
+  const result = await db.select().from(participations).where(sql2.raw(conditions.join(" AND "))).orderBy(desc(participations.deletedAt)).limit(filters?.limit || 100);
   return result;
 }
 async function restoreParticipation(id) {
@@ -1164,7 +1191,7 @@ async function restoreParticipation(id) {
   }).where(eq(participations.id, id));
   if (p.challengeId) {
     const contribution = (p.contribution || 1) + (p.companionCount || 0);
-    await db.update(challenges).set({ currentValue: sql`${challenges.currentValue} + ${contribution}` }).where(eq(challenges.id, p.challengeId));
+    await db.update(challenges).set({ currentValue: sql2`${challenges.currentValue} + ${contribution}` }).where(eq(challenges.id, p.challengeId));
     invalidateEventsCache();
   }
   return { success: true, challengeId: p.challengeId };
@@ -1182,7 +1209,7 @@ async function bulkSoftDeleteParticipations(filter, deletedByUserId) {
   if (filter.userId) {
     conditions.push(`${participations.userId} = ${filter.userId}`);
   }
-  const targets = await db.select().from(participations).where(sql.raw(conditions.join(" AND ")));
+  const targets = await db.select().from(participations).where(sql2.raw(conditions.join(" AND ")));
   if (targets.length === 0) {
     return { deletedCount: 0, affectedChallengeIds: [] };
   }
@@ -1190,7 +1217,7 @@ async function bulkSoftDeleteParticipations(filter, deletedByUserId) {
   await db.update(participations).set({
     deletedAt: /* @__PURE__ */ new Date(),
     deletedBy: deletedByUserId
-  }).where(sql`${participations.id} IN (${sql.raw(targetIds.join(","))})`);
+  }).where(sql2`${participations.id} IN (${sql2.raw(targetIds.join(","))})`);
   const challengeContributions = {};
   targets.forEach((p) => {
     if (p.challengeId) {
@@ -1199,7 +1226,7 @@ async function bulkSoftDeleteParticipations(filter, deletedByUserId) {
     }
   });
   for (const [challengeId, contribution] of Object.entries(challengeContributions)) {
-    await db.update(challenges).set({ currentValue: sql`GREATEST(${challenges.currentValue} - ${contribution}, 0)` }).where(eq(challenges.id, Number(challengeId)));
+    await db.update(challenges).set({ currentValue: sql2`GREATEST(${challenges.currentValue} - ${contribution}, 0)` }).where(eq(challenges.id, Number(challengeId)));
   }
   invalidateEventsCache();
   return {
@@ -1220,7 +1247,7 @@ async function bulkRestoreParticipations(filter) {
   if (filter.userId) {
     conditions.push(`${participations.userId} = ${filter.userId}`);
   }
-  const targets = await db.select().from(participations).where(sql.raw(conditions.join(" AND ")));
+  const targets = await db.select().from(participations).where(sql2.raw(conditions.join(" AND ")));
   if (targets.length === 0) {
     return { restoredCount: 0, affectedChallengeIds: [] };
   }
@@ -1228,7 +1255,7 @@ async function bulkRestoreParticipations(filter) {
   await db.update(participations).set({
     deletedAt: null,
     deletedBy: null
-  }).where(sql`${participations.id} IN (${sql.raw(targetIds.join(","))})`);
+  }).where(sql2`${participations.id} IN (${sql2.raw(targetIds.join(","))})`);
   const challengeContributions = {};
   targets.forEach((p) => {
     if (p.challengeId) {
@@ -1237,7 +1264,7 @@ async function bulkRestoreParticipations(filter) {
     }
   });
   for (const [challengeId, contribution] of Object.entries(challengeContributions)) {
-    await db.update(challenges).set({ currentValue: sql`${challenges.currentValue} + ${contribution}` }).where(eq(challenges.id, Number(challengeId)));
+    await db.update(challenges).set({ currentValue: sql2`${challenges.currentValue} + ${contribution}` }).where(eq(challenges.id, Number(challengeId)));
   }
   invalidateEventsCache();
   return {
@@ -1617,7 +1644,7 @@ async function getCheersForChallenge(challengeId) {
 async function getCheerCountForParticipation(participationId) {
   const db = await getDb();
   if (!db) return 0;
-  const result = await db.select({ count: sql`count(*)` }).from(cheers).where(eq(cheers.toParticipationId, participationId));
+  const result = await db.select({ count: sql2`count(*)` }).from(cheers).where(eq(cheers.toParticipationId, participationId));
   return result[0]?.count || 0;
 }
 async function getCheersReceivedByUser(userId) {
@@ -1722,20 +1749,20 @@ async function sendDirectMessage(dm) {
 async function getDirectMessagesForUser(userId) {
   const db = await getDb();
   if (!db) return [];
-  return db.select().from(directMessages).where(sql`${directMessages.fromUserId} = ${userId} OR ${directMessages.toUserId} = ${userId}`).orderBy(desc(directMessages.createdAt));
+  return db.select().from(directMessages).where(sql2`${directMessages.fromUserId} = ${userId} OR ${directMessages.toUserId} = ${userId}`).orderBy(desc(directMessages.createdAt));
 }
 async function getConversation(userId1, userId2, challengeId) {
   const db = await getDb();
   if (!db) return [];
   return db.select().from(directMessages).where(and(
     eq(directMessages.challengeId, challengeId),
-    sql`((${directMessages.fromUserId} = ${userId1} AND ${directMessages.toUserId} = ${userId2}) OR (${directMessages.fromUserId} = ${userId2} AND ${directMessages.toUserId} = ${userId1}))`
+    sql2`((${directMessages.fromUserId} = ${userId1} AND ${directMessages.toUserId} = ${userId2}) OR (${directMessages.fromUserId} = ${userId2} AND ${directMessages.toUserId} = ${userId1}))`
   )).orderBy(directMessages.createdAt);
 }
 async function getUnreadMessageCount(userId) {
   const db = await getDb();
   if (!db) return 0;
-  const result = await db.select({ count: sql`count(*)` }).from(directMessages).where(and(eq(directMessages.toUserId, userId), eq(directMessages.isRead, false)));
+  const result = await db.select({ count: sql2`count(*)` }).from(directMessages).where(and(eq(directMessages.toUserId, userId), eq(directMessages.isRead, false)));
   return result[0]?.count || 0;
 }
 async function markMessageAsRead(id) {
@@ -1751,7 +1778,7 @@ async function markAllMessagesAsRead(userId, fromUserId) {
 async function getConversationList(userId, limit = 20, cursor) {
   const db = await getDb();
   if (!db) return [];
-  const conditions = cursor ? sql`(${directMessages.fromUserId} = ${userId} OR ${directMessages.toUserId} = ${userId}) AND ${directMessages.id} < ${cursor}` : sql`${directMessages.fromUserId} = ${userId} OR ${directMessages.toUserId} = ${userId}`;
+  const conditions = cursor ? sql2`(${directMessages.fromUserId} = ${userId} OR ${directMessages.toUserId} = ${userId}) AND ${directMessages.id} < ${cursor}` : sql2`${directMessages.fromUserId} = ${userId} OR ${directMessages.toUserId} = ${userId}`;
   const messages = await db.select().from(directMessages).where(conditions).orderBy(desc(directMessages.createdAt)).limit(limit * 3);
   const conversationMap = /* @__PURE__ */ new Map();
   for (const msg of messages) {
@@ -1799,7 +1826,7 @@ async function deleteChallengeTemplate(id) {
 async function incrementTemplateUseCount(id) {
   const db = await getDb();
   if (!db) return;
-  await db.update(challengeTemplates).set({ useCount: sql`${challengeTemplates.useCount} + 1` }).where(eq(challengeTemplates.id, id));
+  await db.update(challengeTemplates).set({ useCount: sql2`${challengeTemplates.useCount} + 1` }).where(eq(challengeTemplates.id, id));
 }
 var init_messaging_db = __esm({
   "server/db/messaging-db.ts"() {
@@ -1867,13 +1894,13 @@ async function isFollowing(followerId, followeeId) {
 async function getFollowerCount(userId) {
   const db = await getDb();
   if (!db) return 0;
-  const result = await db.select({ count: sql`count(*)` }).from(follows).where(eq(follows.followeeId, userId));
+  const result = await db.select({ count: sql2`count(*)` }).from(follows).where(eq(follows.followeeId, userId));
   return result[0]?.count || 0;
 }
 async function getFollowingCount(userId) {
   const db = await getDb();
   if (!db) return 0;
-  const result = await db.select({ count: sql`count(*)` }).from(follows).where(eq(follows.followerId, userId));
+  const result = await db.select({ count: sql2`count(*)` }).from(follows).where(eq(follows.followerId, userId));
   return result[0]?.count || 0;
 }
 async function getFollowerIdsForUser(userId) {
@@ -1900,22 +1927,22 @@ var init_follow_db = __esm({
 async function getGlobalContributionRanking(period = "all", limit = 50) {
   const db = await getDb();
   if (!db) return [];
-  let dateFilter = sql`1=1`;
+  let dateFilter = sql2`1=1`;
   const now = /* @__PURE__ */ new Date();
   if (period === "weekly") {
     const weekAgo = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1e3);
-    dateFilter = sql`${participations.createdAt} >= ${weekAgo}`;
+    dateFilter = sql2`${participations.createdAt} >= ${weekAgo}`;
   } else if (period === "monthly") {
     const monthAgo = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1e3);
-    dateFilter = sql`${participations.createdAt} >= ${monthAgo}`;
+    dateFilter = sql2`${participations.createdAt} >= ${monthAgo}`;
   }
   const result = await db.select({
     userId: participations.userId,
     userName: participations.username,
     userImage: participations.profileImage,
-    totalContribution: sql`SUM(${participations.contribution})`,
-    participationCount: sql`COUNT(*)`
-  }).from(participations).where(dateFilter).groupBy(participations.userId, participations.username, participations.profileImage).orderBy(sql`SUM(${participations.contribution}) DESC`).limit(limit);
+    totalContribution: sql2`SUM(${participations.contribution})`,
+    participationCount: sql2`COUNT(*)`
+  }).from(participations).where(dateFilter).groupBy(participations.userId, participations.username, participations.profileImage).orderBy(sql2`SUM(${participations.contribution}) DESC`).limit(limit);
   return result;
 }
 async function getChallengeAchievementRanking(limit = 50) {
@@ -1927,9 +1954,9 @@ async function getChallengeAchievementRanking(limit = 50) {
     hostName: challenges.hostName,
     goalValue: challenges.goalValue,
     currentValue: challenges.currentValue,
-    achievementRate: sql`(${challenges.currentValue} / ${challenges.goalValue}) * 100`,
+    achievementRate: sql2`(${challenges.currentValue} / ${challenges.goalValue}) * 100`,
     eventDate: challenges.eventDate
-  }).from(challenges).where(sql`${challenges.goalValue} > 0`).orderBy(sql`(${challenges.currentValue} / ${challenges.goalValue}) DESC`).limit(limit);
+  }).from(challenges).where(sql2`${challenges.goalValue} > 0`).orderBy(sql2`(${challenges.currentValue} / ${challenges.goalValue}) DESC`).limit(limit);
   return result;
 }
 async function getHostRanking(limit = 50) {
@@ -1939,10 +1966,10 @@ async function getHostRanking(limit = 50) {
     hostUserId: challenges.hostUserId,
     hostName: challenges.hostName,
     hostProfileImage: challenges.hostProfileImage,
-    challengeCount: sql`COUNT(*)`,
-    totalParticipants: sql`SUM(${challenges.currentValue})`,
-    avgAchievementRate: sql`AVG((${challenges.currentValue} / ${challenges.goalValue}) * 100)`
-  }).from(challenges).where(sql`${challenges.goalValue} > 0`).groupBy(challenges.hostUserId, challenges.hostName, challenges.hostProfileImage).orderBy(sql`AVG((${challenges.currentValue} / ${challenges.goalValue}) * 100) DESC`).limit(limit);
+    challengeCount: sql2`COUNT(*)`,
+    totalParticipants: sql2`SUM(${challenges.currentValue})`,
+    avgAchievementRate: sql2`AVG((${challenges.currentValue} / ${challenges.goalValue}) * 100)`
+  }).from(challenges).where(sql2`${challenges.goalValue} > 0`).groupBy(challenges.hostUserId, challenges.hostName, challenges.hostProfileImage).orderBy(sql2`AVG((${challenges.currentValue} / ${challenges.goalValue}) * 100) DESC`).limit(limit);
   return result;
 }
 async function getUserRankingPosition(userId, period = "all") {
@@ -2049,7 +2076,7 @@ async function getInvitationsForUser(userId) {
 async function incrementInvitationUseCount(code) {
   const db = await getDb();
   if (!db) return;
-  await db.update(invitations).set({ useCount: sql`${invitations.useCount} + 1` }).where(eq(invitations.code, code));
+  await db.update(invitations).set({ useCount: sql2`${invitations.useCount} + 1` }).where(eq(invitations.code, code));
 }
 async function deactivateInvitation(id) {
   const db = await getDb();
@@ -2081,9 +2108,9 @@ async function getUserInvitationStats(userId) {
   const invitationsList = await db.select({ id: invitations.id }).from(invitations).where(eq(invitations.inviterId, userId));
   if (invitationsList.length === 0) return { totalInvited: 0, confirmedCount: 0 };
   const invitationIds = invitationsList.map((i) => i.id);
-  const totalResult = await db.select({ count: sql`count(*)` }).from(invitationUses).where(sql`${invitationUses.invitationId} IN (${sql.join(invitationIds.map((id) => sql`${id}`), sql`, `)})`);
-  const confirmedResult = await db.select({ count: sql`count(*)` }).from(invitationUses).where(and(
-    sql`${invitationUses.invitationId} IN (${sql.join(invitationIds.map((id) => sql`${id}`), sql`, `)})`,
+  const totalResult = await db.select({ count: sql2`count(*)` }).from(invitationUses).where(sql2`${invitationUses.invitationId} IN (${sql2.join(invitationIds.map((id) => sql2`${id}`), sql2`, `)})`);
+  const confirmedResult = await db.select({ count: sql2`count(*)` }).from(invitationUses).where(and(
+    sql2`${invitationUses.invitationId} IN (${sql2.join(invitationIds.map((id) => sql2`${id}`), sql2`, `)})`,
     eq(invitationUses.isConfirmed, true)
   ));
   return {
@@ -2107,7 +2134,7 @@ async function getInvitedParticipants(challengeId, inviterId) {
     isConfirmed: invitationUses.isConfirmed,
     confirmedAt: invitationUses.confirmedAt,
     createdAt: invitationUses.createdAt
-  }).from(invitationUses).where(sql`${invitationUses.invitationId} IN (${sql.join(invitationIds.map((id) => sql`${id}`), sql`, `)})`).orderBy(desc(invitationUses.createdAt));
+  }).from(invitationUses).where(sql2`${invitationUses.invitationId} IN (${sql2.join(invitationIds.map((id) => sql2`${id}`), sql2`, `)})`).orderBy(desc(invitationUses.createdAt));
 }
 async function getInvitationUses(invitationId) {
   const db = await getDb();
@@ -2117,8 +2144,8 @@ async function getInvitationUses(invitationId) {
 async function getInvitationStats(invitationId) {
   const db = await getDb();
   if (!db) return { useCount: 0, participationCount: 0 };
-  const uses = await db.select({ count: sql`count(*)` }).from(invitationUses).where(eq(invitationUses.invitationId, invitationId));
-  const participations_count = await db.select({ count: sql`count(*)` }).from(invitationUses).where(and(eq(invitationUses.invitationId, invitationId), sql`${invitationUses.participationId} IS NOT NULL`));
+  const uses = await db.select({ count: sql2`count(*)` }).from(invitationUses).where(eq(invitationUses.invitationId, invitationId));
+  const participations_count = await db.select({ count: sql2`count(*)` }).from(invitationUses).where(and(eq(invitationUses.invitationId, invitationId), sql2`${invitationUses.participationId} IS NOT NULL`));
   return {
     useCount: uses[0]?.count || 0,
     participationCount: participations_count[0]?.count || 0
@@ -2160,7 +2187,7 @@ async function getUserPublicProfile(userId) {
   }).from(participations).innerJoin(challenges, eq(participations.challengeId, challenges.id)).where(eq(participations.userId, userId)).orderBy(desc(participations.createdAt));
   const badgeList = await db.select().from(userBadges).where(eq(userBadges.userId, userId)).orderBy(desc(userBadges.earnedAt));
   const badgeIds = badgeList.map((b) => b.badgeId);
-  const badgeDetails = badgeIds.length > 0 ? await db.select().from(badges).where(sql`${badges.id} IN (${badgeIds.join(",")})`) : [];
+  const badgeDetails = badgeIds.length > 0 ? await db.select().from(badges).where(sql2`${badges.id} IN (${badgeIds.join(",")})`) : [];
   const totalContribution = participationList.reduce((sum, p) => sum + (p.contribution || 1), 0);
   const challengeIds = [...new Set(participationList.map((p) => p.challengeId))];
   const categoryStats = {};
@@ -2168,7 +2195,7 @@ async function getUserPublicProfile(userId) {
     const categoryId = p.challengeCategoryId || 0;
     categoryStats[categoryId] = (categoryStats[categoryId] || 0) + 1;
   });
-  const hostedChallenges = await db.select({ count: sql`count(*)` }).from(challenges).where(eq(challenges.hostUserId, userId));
+  const hostedChallenges = await db.select({ count: sql2`count(*)` }).from(challenges).where(eq(challenges.hostUserId, userId));
   const latestParticipation = participationList[0];
   let twitterData = null;
   if (latestParticipation?.username) {
@@ -2316,7 +2343,7 @@ async function refreshChallengeSummary(challengeId) {
   try {
     const participationData = await db.select({
       prefecture: participations.prefecture,
-      count: sql`COUNT(*)`
+      count: sql2`COUNT(*)`
     }).from(participations).where(eq(participations.challengeId, challengeId)).groupBy(participations.prefecture);
     const regionSummary = {};
     let totalCount = 0;
@@ -2337,7 +2364,7 @@ async function refreshChallengeSummary(challengeId) {
       createdAt: participations.createdAt
     }).from(participations).where(and(
       eq(participations.challengeId, challengeId),
-      sql`${participations.message} IS NOT NULL AND ${participations.message} != ''`
+      sql2`${participations.message} IS NOT NULL AND ${participations.message} != ''`
     )).orderBy(desc(participations.createdAt)).limit(5);
     let hotRegion;
     let maxCount = 0;
@@ -2586,7 +2613,7 @@ async function cancelParticipation(participationId, userId) {
   const p = participation[0];
   await db.delete(participations).where(eq(participations.id, participationId));
   await db.delete(participationCompanions).where(eq(participationCompanions.participationId, participationId));
-  await db.update(challenges).set({ currentValue: sql`${challenges.currentValue} - ${p.contribution}` }).where(eq(challenges.id, p.challengeId));
+  await db.update(challenges).set({ currentValue: sql2`${challenges.currentValue} - ${p.contribution}` }).where(eq(challenges.id, p.challengeId));
   return { success: true, challengeId: p.challengeId, contribution: p.contribution };
 }
 var init_ticket_db = __esm({
@@ -2634,7 +2661,7 @@ async function getOshikatsuStats(userId, twitterId) {
     id: challenges.id,
     title: challenges.title,
     hostName: challenges.hostName
-  }).from(challenges).where(sql`${challenges.id} IN (${sql.join(challengeIds.map((id) => sql`${id}`), sql`, `)})`);
+  }).from(challenges).where(sql2`${challenges.id} IN (${sql2.join(challengeIds.map((id) => sql2`${id}`), sql2`, `)})`);
   const challengeMap = new Map(challengeList.map((c) => [c.id, c]));
   const recentChallenges = participationList.slice(0, 5).map((p) => {
     const challenge = challengeMap.get(p.challengeId);
@@ -2741,7 +2768,7 @@ async function getDbSchema() {
   const db = await getDb();
   if (!db) return { tables: [], error: "Database not available" };
   try {
-    const result = await db.execute(sql`
+    const result = await db.execute(sql2`
       SELECT TABLE_NAME, COLUMN_NAME, DATA_TYPE, IS_NULLABLE, COLUMN_DEFAULT
       FROM INFORMATION_SCHEMA.COLUMNS
       WHERE TABLE_SCHEMA = DATABASE()
@@ -2756,7 +2783,7 @@ async function compareSchemas() {
   const db = await getDb();
   if (!db) return { match: false, error: "Database not available" };
   try {
-    const result = await db.execute(sql`
+    const result = await db.execute(sql2`
       SELECT TABLE_NAME
       FROM INFORMATION_SCHEMA.TABLES
       WHERE TABLE_SCHEMA = DATABASE()
@@ -3089,7 +3116,7 @@ __export(db_exports, {
   sendCheer: () => sendCheer,
   sendDirectMessage: () => sendDirectMessage,
   softDeleteParticipation: () => softDeleteParticipation,
-  sql: () => sql,
+  sql: () => sql2,
   ticketTransfers: () => ticketTransfers,
   ticketWaitlist: () => ticketWaitlist,
   unfollowUser: () => unfollowUser,
@@ -6205,7 +6232,7 @@ var adminRouter = router({
 // server/routers/stats.ts
 init_connection();
 init_schema2();
-import { eq as eq4, and as and3, gte as gte2, desc as desc3, sql as sql2, count as count2 } from "drizzle-orm";
+import { eq as eq4, and as and3, gte as gte2, desc as desc3, sql as sql3, count as count2 } from "drizzle-orm";
 var statsRouter = router({
   /**
    * ユーザー統計を取得
@@ -6229,25 +6256,25 @@ var statsRouter = router({
     const sixMonthsAgo = /* @__PURE__ */ new Date();
     sixMonthsAgo.setMonth(sixMonthsAgo.getMonth() - 6);
     const monthlyStats = await db.select({
-      month: sql2`DATE_FORMAT(${participations.createdAt}, '%Y-%m')`,
+      month: sql3`DATE_FORMAT(${participations.createdAt}, '%Y-%m')`,
       count: count2()
     }).from(participations).where(
       and3(
         eq4(participations.userId, userId),
         gte2(participations.createdAt, sixMonthsAgo)
       )
-    ).groupBy(sql2`DATE_FORMAT(${participations.createdAt}, '%Y-%m')`).orderBy(sql2`DATE_FORMAT(${participations.createdAt}, '%Y-%m')`);
+    ).groupBy(sql3`DATE_FORMAT(${participations.createdAt}, '%Y-%m')`).orderBy(sql3`DATE_FORMAT(${participations.createdAt}, '%Y-%m')`);
     const fourWeeksAgo = /* @__PURE__ */ new Date();
     fourWeeksAgo.setDate(fourWeeksAgo.getDate() - 28);
     const weeklyActivity = await db.select({
-      week: sql2`DATE_FORMAT(${participations.createdAt}, '%Y-W%u')`,
+      week: sql3`DATE_FORMAT(${participations.createdAt}, '%Y-W%u')`,
       count: count2()
     }).from(participations).where(
       and3(
         eq4(participations.userId, userId),
         gte2(participations.createdAt, fourWeeksAgo)
       )
-    ).groupBy(sql2`DATE_FORMAT(${participations.createdAt}, '%Y-W%u')`).orderBy(sql2`DATE_FORMAT(${participations.createdAt}, '%Y-W%u')`);
+    ).groupBy(sql3`DATE_FORMAT(${participations.createdAt}, '%Y-W%u')`).orderBy(sql3`DATE_FORMAT(${participations.createdAt}, '%Y-W%u')`);
     return {
       summary: {
         totalChallenges: total,
@@ -6297,9 +6324,9 @@ var statsRouter = router({
     const thirtyDaysAgo = /* @__PURE__ */ new Date();
     thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
     const dailyActivity = await db.select({
-      date: sql2`DATE(${participations.createdAt})`,
+      date: sql3`DATE(${participations.createdAt})`,
       count: count2()
-    }).from(participations).where(gte2(participations.createdAt, thirtyDaysAgo)).groupBy(sql2`DATE(${participations.createdAt})`).orderBy(sql2`DATE(${participations.createdAt})`);
+    }).from(participations).where(gte2(participations.createdAt, thirtyDaysAgo)).groupBy(sql3`DATE(${participations.createdAt})`).orderBy(sql3`DATE(${participations.createdAt})`);
     return {
       summary: {
         totalUsers: totalUsers[0]?.count || 0,
@@ -6589,7 +6616,7 @@ async function checkSchemaIntegrity() {
     for (const [tableName, tableSpec] of Object.entries(EXPECTED_SCHEMA.tables)) {
       try {
         const columnsResult = await db.execute(
-          sql`SELECT COLUMN_NAME FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = ${tableName}`
+          sql2`SELECT COLUMN_NAME FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = ${tableName}`
         );
         const rows = Array.isArray(columnsResult) ? columnsResult[0] : columnsResult;
         const existingColumns = new Set(

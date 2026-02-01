@@ -18,6 +18,7 @@ interface Challenge {
   hostProfileImage: string | null;
   hostFollowersCount: number | null;
   hostTwitterId?: string | null;
+  hostGender?: "male" | "female" | "unspecified"; // v6.175: 主催者の性別
   title: string;
   description: string | null;
   goalType: string;
@@ -98,10 +99,24 @@ export function ColorfulChallengeCard({
   const fallbackCardWidth = numColumns === 3 ? "31%" : numColumns === 2 ? "47%" : "100%";
   const cardWidth = width ?? fallbackCardWidth;
   
-  // カードの色を決定（IDベースで一貫性を保つ）
-  const safeId = challenge?.id ?? 0;
-  const cardColorIdx = colorIndex !== undefined ? colorIndex : safeId % CARD_COLORS.length;
-  const cardColor = CARD_COLORS[cardColorIdx] ?? CARD_COLORS[0];
+  // v6.175: 性別に応じたグラデーション色を優先、なければ従来のカラフルカラー
+  let cardColor: { bg: string; gradient: string[] };
+  
+  if (challenge.hostGender === "male") {
+    // 男性: 青系グラデーション
+    cardColor = { bg: "#1E40AF", gradient: ["#1E40AF", "#3B82F6", "#60A5FA"] };
+  } else if (challenge.hostGender === "female") {
+    // 女性: ピンク系グラデーション
+    cardColor = { bg: "#BE185D", gradient: ["#BE185D", "#EC4899", "#F472B6"] };
+  } else if (challenge.hostGender === "unspecified") {
+    // 未指定: グレー系グラデーション
+    cardColor = { bg: "#475569", gradient: ["#475569", "#64748B", "#94A3B8"] };
+  } else {
+    // 性別情報がない場合は従来のカラフルカラーを使用
+    const safeId = challenge?.id ?? 0;
+    const cardColorIdx = colorIndex !== undefined ? colorIndex : safeId % CARD_COLORS.length;
+    cardColor = CARD_COLORS[cardColorIdx] ?? CARD_COLORS[0];
+  }
 
   // 運営者（作成者）かどうかを判定
   const isOwner = currentUserTwitterId && challenge.hostTwitterId === currentUserTwitterId;
