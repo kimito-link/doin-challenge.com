@@ -10,9 +10,9 @@ import { trpc } from "@/lib/trpc";
 import { useAuth } from "@/hooks/use-auth";
 import { useColors } from "@/hooks/use-colors";
 import MaterialIcons from "@expo/vector-icons/MaterialIcons";
-import { LinearGradient } from "expo-linear-gradient";
 import { AppHeader } from "@/components/organisms/app-header";
 import { RefreshingIndicator } from "@/components/molecules/refreshing-indicator";
+import { UserProfileHeader } from "@/components/organisms/user-profile-header";
 
 // バッジアイコンマッピング
 const badgeIcons: Record<string, string> = {
@@ -165,88 +165,21 @@ export default function ProfileScreen() {
             </Pressable>
           }
         />
-        <LinearGradient
-          colors={[color.hostAccentLegacy, color.accentPrimary, color.accentAlt]}
-          start={{ x: 0, y: 0 }}
-          end={{ x: 1, y: 1 }}
-          style={{ padding: 20, paddingTop: 16 }}
-        >
-
-          <View style={{ alignItems: "center" }}>
-            {(profile.user as any)?.profileImage ? (
-              <Image
-                source={{ uri: (profile.user as any).profileImage }}
-                style={{ width: 100, height: 100, borderRadius: 50, borderWidth: 3, borderColor: color.textWhite }}
-              />
-            ) : (
-              <View
-                style={{
-                  width: 100,
-                  height: 100,
-                  borderRadius: 50,
-                  backgroundColor: "#1E293B",
-                  alignItems: "center",
-                  justifyContent: "center",
-                  borderWidth: 3,
-                  borderColor: color.textWhite,
-                }}
-              >
-                <Text style={{ color: colors.foreground, fontSize: 40, fontWeight: "bold" }}>
-                  {profile.user?.name?.charAt(0) || "?"}
-                </Text>
-              </View>
-            )}
-
-            <Text style={{ color: colors.foreground, fontSize: 24, fontWeight: "bold", marginTop: 12 }}>
-              {profile.user?.name || "名前未設定"}
-            </Text>
-            {(profile.user as any)?.username && (
-              <Text style={{ color: "rgba(255,255,255,0.8)", fontSize: 14, marginTop: 4 }}>
-                @{(profile.user as any).username}
-              </Text>
-            )}
-
-            {/* フォローボタン（自分以外のプロフィールの場合） */}
-            {!isOwnProfile && user && (
-              <Pressable
-                onPress={handleFollowToggle}
-                disabled={followMutation.isPending || unfollowMutation.isPending}
-                style={{
-                  marginTop: 16,
-                  minHeight: 48,
-                  minWidth: 140,
-                  paddingHorizontal: 28,
-                  paddingVertical: 14,
-                  borderRadius: 24,
-                  backgroundColor: isFollowing ? "rgba(255,255,255,0.2)" : color.textWhite,
-                  flexDirection: "row",
-                  alignItems: "center",
-                  justifyContent: "center",
-                  opacity: followMutation.isPending || unfollowMutation.isPending ? 0.6 : 1,
-                  shadowColor: "#000",
-                  shadowOffset: { width: 0, height: 2 },
-                  shadowOpacity: 0.2,
-                  shadowRadius: 4,
-                  elevation: 3,
-                }}
-              >
-                <MaterialIcons 
-                  name={isFollowing ? "check" : "person-add"} 
-                  size={20} 
-                  color={isFollowing ? color.textWhite : color.hostAccentLegacy} 
-                />
-                <Text style={{ 
-                  color: isFollowing ? color.textWhite : color.hostAccentLegacy, 
-                  fontSize: 15, 
-                  fontWeight: "bold",
-                  marginLeft: 8,
-                }}>
-                  {isFollowing ? "フォロー中" : "フォローする"}
-                </Text>
-              </Pressable>
-            )}
-          </View>
-        </LinearGradient>
+        <UserProfileHeader
+          user={{
+            twitterId: (profile.user as any)?.twitterId,
+            name: profile.user?.name || "名前未設定",
+            username: (profile.user as any)?.username,
+            profileImage: (profile.user as any)?.profileImage,
+            followersCount: (profile.user as any)?.followersCount,
+            description: (profile.user as any)?.description,
+            gender: (profile.user as any)?.gender,
+          }}
+          showFollowButton={!isOwnProfile && !!user}
+          isFollowing={isFollowing}
+          onFollowToggle={handleFollowToggle}
+          isFollowPending={followMutation.isPending || unfollowMutation.isPending}
+        />
 
         {/* フォロー数・フォロワー数 */}
         <View style={{ 

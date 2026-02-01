@@ -122,5 +122,6 @@ export async function getUserByTwitterId(twitterId: string) {
     name: user.name,
     twitterId: twitterId,
     twitterUsername: followStatus.length > 0 ? followStatus[0].twitterUsername : null,
+    gender: user.gender,
   };
 }

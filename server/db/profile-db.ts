@@ -64,6 +64,7 @@ export async function getUserPublicProfile(userId: number) {
       name: user.name || latestParticipation?.displayName || "ユーザー",
       username: latestParticipation?.username || null,
       profileImage: latestParticipation?.profileImage || null,
+      gender: user.gender,
       createdAt: user.createdAt,
     },
     stats: {

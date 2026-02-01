@@ -32,6 +32,7 @@ import { ticketTransferRouter } from "./ticket-transfer";
 import { ticketWaitlistRouter } from "./ticket-waitlist";
 import { adminRouter } from "./admin";
 import { statsRouter } from "./stats";
+import { releaseNotesRouter } from "./release-notes";
 
 // 統合ルーター
 export const appRouter = router({
@@ -61,6 +62,7 @@ export const appRouter = router({
   ticketWaitlist: ticketWaitlistRouter,
   admin: adminRouter,
   stats: statsRouter,
+  releaseNotes: releaseNotesRouter,
 });
 
 export type AppRouter = typeof appRouter;
