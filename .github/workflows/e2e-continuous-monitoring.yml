@@ -1,0 +1,94 @@
+name: "E2E Continuous Monitoring"
+
+# 四六時中AIがサービスをテストし、バグを自動検知
+on:
+  # 6時間ごとに自動実行
+  schedule:
+    - cron: '0 */6 * * *'  # 0:00, 6:00, 12:00, 18:00 (UTC)
+  
+  # 手動実行も可能
+  workflow_dispatch:
+  
+  # PRとpush時も実行
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  e2e-test:
+    name: E2E Test (Continuous Monitoring)
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+      
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 9
+      
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+      
+      - name: Install Playwright browsers
+        run: npx playwright install --with-deps chromium
+      
+      - name: Run E2E tests
+        env:
+          # 本番環境をテスト
+          PLAYWRIGHT_BASE_URL: <LaTex>${{ secrets.PRODUCTION_URL || 'https://doin-challenge.com' }}
+          VERCEL_AUTOMATION_BYPASS_SECRET: $</LaTex>{{ secrets.VERCEL_AUTOMATION_BYPASS_SECRET }}
+        run: pnpm exec playwright test
+        continue-on-error: true
+      
+      - name: Upload test results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: playwright-report-${{ github.run_number }}
+          path: |
+            playwright-report/
+            test-results/
+          retention-days: 30
+      
+      - name: Notify Slack on failure
+        if: failure() && github.event_name == 'schedule'
+        uses: slackapi/slack-github-action@v1
+        with:
+          payload: |
+            {
+              "text": "🚨 E2Eテスト失敗",
+              "blocks": [
+                {
+                  "type": "section",
+                  "text": {
+                    "type": "mrkdwn",
+                    "text": "*E2Eテストが失敗しました*\n\n*ワークフロー:* ${{ github.workflow }}\n*実行番号:* ${{ github.run_number }}\n*時刻:* ${{ github.event.head_commit.timestamp }}"
+                  }
+                },
+                {
+                  "type": "actions",
+                  "elements": [
+                    {
+                      "type": "button",
+                      "text": {
+                        "type": "plain_text",
+                        "text": "詳細を見る"
+                      },
+                      "url": "<LaTex>${{ github.server_url }}/$</LaTex>{{ github.repository }}/actions/runs/<LaTex>${{ github.run_id }}"
+                    }
+                  ]
+                }
+              ]
+            }
+        env:
+          SLACK_WEBHOOK_URL: $</LaTex>{{ secrets.SLACK_WEBHOOK_URL }}
+          SLACK_WEBHOOK_TYPE: INCOMING_WEBHOOK
