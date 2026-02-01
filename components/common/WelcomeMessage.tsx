@@ -100,7 +100,7 @@ export function WelcomeMessage({ visible, onHide, userName }: WelcomeMessageProp
         >
           {/* キャラクター */}
           <Animated.Image
-            source={message.characterImage}
+            source={require(`@/assets/images/characters/${message.character}.png`)}
             style={[
               { width: 80, height: 80, marginBottom: 20 },
               characterAnimatedStyle,

@@ -662,3 +662,17 @@
 - [x] e2e-continuous-monitoring.ymlのpnpmバージョンを9.12.0に統一（package.jsonと合わせる）
 - [ ] チェックポイント保存とGitHubへのpush
 - [ ] 本番環境のデプロイ成功を確認
+
+---
+
+## 🚨 Vercelデプロイエラー修正 (2026-02-01 14:34)
+
+### 問題
+- [x] constants/login-messages.tsでSyntaxErrorが発生
+- [ ] Vercelデプロイが失敗（Build Failed）
+
+### 修正
+- [x] login-messages.tsのSyntaxErrorを特定（require()の動的読み込みが原因）
+- [x] エラーを修正（characterImagePathに変更、使用箇所をrequire()に変更）
+- [ ] チェックポイント保存とデプロイ
+- [ ] 本番環境のデプロイ成功を確認

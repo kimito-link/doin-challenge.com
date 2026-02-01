@@ -155,7 +155,7 @@ export function LoginModal({
             }}
           >
             <Animated.Image
-              source={currentMessage.characterImage}
+              source={require(`@/assets/images/characters/${currentMessage.character}.png`)}
               style={[
                 { width: 64, height: 64, marginRight: 12 },
                 characterAnimatedStyle,
