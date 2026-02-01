@@ -13,6 +13,7 @@ import {
   getUserProfileByUsername,
   refreshAccessToken,
 } from "./twitter-oauth2";
+import * as db from "./db";
 
 export function registerTwitterRoutes(app: Express) {
   // Step 1: Initiate Twitter OAuth 2.0
@@ -136,6 +137,27 @@ export function registerTwitterRoutes(app: Express) {
         isFollowingTarget,
         targetAccount,
       };
+      
+      // Save user profile to database
+      try {
+        await db.upsertUser({
+          openId: `twitter:${userProfile.id}`,
+          name: userProfile.name,
+          email: null,
+          loginMethod: "twitter",
+          lastSignedIn: new Date(),
+          // Twitter specific fields
+          username: userProfile.username,
+          profileImage: userProfile.profile_image_url?.replace("_normal", "_400x400"),
+          followersCount: userProfile.public_metrics?.followers_count || 0,
+          description: userProfile.description || "",
+          twitterId: userProfile.id,
+          twitterAccessToken: tokens.access_token,
+        });
+        console.log("[Twitter OAuth 2.0] User profile saved to database");
+      } catch (error) {
+        console.error("[Twitter OAuth 2.0] Failed to save user profile:", error);
+      }
 
       // Encode user data for redirect
       const encodedData = encodeURIComponent(JSON.stringify(userData));
