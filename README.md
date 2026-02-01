@@ -9,11 +9,33 @@
 
 ## 🚨 最重要：デプロイ方法（AI・人間共通）
 
+### GitHubパーソナルアクセストークン
+
+**トークン**: `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`
+
+**使用方法**:
+```bash
+cd /tmp
+git clone https://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@github.com/kimito-link/doin-challenge.com.git doin-deploy
+cd doin-deploy
+# Manusの変更をコピー
+cp -r /home/ubuntu/birthday-celebration/app .
+cp -r /home/ubuntu/birthday-celebration/components .
+cp -r /home/ubuntu/birthday-celebration/server .
+cp -r /home/ubuntu/birthday-celebration/shared .
+cp -r /home/ubuntu/birthday-celebration/drizzle .
+cp /home/ubuntu/birthday-celebration/todo.md .
+# コミットしてpush
+git add -A
+git commit -m "v6.xxx: 変更内容の説明"
+git push origin main
+```
+
 ### デプロイの3つの方法
 
 | 方法 | コマンド/手順 | 所要時間 |
 |------|--------------|---------|
-| **1. Manusから** | `./scripts/deploy-to-production.sh "コミットメッセージ"` | 5-10分 |
+| **1. Manusから** | 上記のGitHubトークンを使用した手動デプロイ | 5-10分 |
 | **2. スマホから** | GitHubアプリ → Actions → "Manual Deploy" → "Run workflow" | 5-10分 |
 | **3. PCから** | GitHubウェブ → Actions → "Manual Deploy" → "Run workflow" | 5-10分 |
 

@@ -1,0 +1,20 @@
+{
+  "query": "SELECT id, name, gender FROM users LIMIT 10;",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway02.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 3YCTtbVp6bbE1oz.aaf91d266729 --database 4EfvvuNg9KRk4UPdFprmBJ --execute SELECT id, name, gender FROM users LIMIT 10;",
+  "rows": [
+    {
+      "id": "1",
+      "name": "テストユーザー",
+      "gender": "NULL"
+    },
+    {
+      "id": "30001",
+      "name": "tkjp",
+      "gender": "NULL"
+    }
+  ],
+  "messages": [],
+  "stdout": "id\tname\tgender\n1\tテストユーザー\tNULL\n30001\ttkjp\tNULL\n",
+  "stderr": "",
+  "execution_time_ms": 3129
+}

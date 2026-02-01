@@ -2170,6 +2170,13 @@ async function getUserPublicProfile(userId) {
   });
   const hostedChallenges = await db.select({ count: sql`count(*)` }).from(challenges).where(eq(challenges.hostUserId, userId));
   const latestParticipation = participationList[0];
+  let twitterData = null;
+  if (latestParticipation?.username) {
+    const twitterCache = await db.select().from(twitterUserCache).where(eq(twitterUserCache.twitterUsername, latestParticipation.username));
+    if (twitterCache.length > 0) {
+      twitterData = twitterCache[0];
+    }
+  }
   return {
     user: {
       id: user.id,
@@ -2177,7 +2184,11 @@ async function getUserPublicProfile(userId) {
       username: latestParticipation?.username || null,
       profileImage: latestParticipation?.profileImage || null,
       gender: user.gender,
-      createdAt: user.createdAt
+      createdAt: user.createdAt,
+      // TwitterUserCardに必要なフィールド
+      twitterId: twitterData?.twitterId || null,
+      followersCount: twitterData?.followersCount || 0,
+      description: twitterData?.description || null
     },
     stats: {
       totalContribution,

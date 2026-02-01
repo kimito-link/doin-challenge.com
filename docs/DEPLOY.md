@@ -19,6 +19,35 @@
 
 ---
 
+## GitHubパーソナルアクセストークン
+
+**トークン**: `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`
+
+**有効期限**: 2026年2月1日発行
+
+**使用方法**:
+```bash
+# 1. GitHubリポジトリをクローン
+cd /tmp
+git clone https://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@github.com/kimito-link/doin-challenge.com.git doin-deploy
+
+# 2. Manusの変更をコピー
+cd doin-deploy
+cp -r /home/ubuntu/birthday-celebration/app .
+cp -r /home/ubuntu/birthday-celebration/components .
+cp -r /home/ubuntu/birthday-celebration/server .
+cp -r /home/ubuntu/birthday-celebration/shared .
+cp -r /home/ubuntu/birthday-celebration/drizzle .
+cp /home/ubuntu/birthday-celebration/todo.md .
+
+# 3. コミットしてpush
+git add -A
+git commit -m "v6.xxx: 変更内容の説明"
+git push origin main
+```
+
+---
+
 ## 概要
 
 本プロジェクトは、フロントエンドとバックエンドを分離したアーキテクチャを採用しており、それぞれ異なるホスティングサービスにデプロイされています。
