@@ -911,3 +911,27 @@
 - [ ] hostProfileImageフィールドが空の場合は、有効なTwitterプロフィール画像URLを設定
 - [ ] チェックポイント保存
 - [ ] デプロイ
+
+
+---
+
+## 🚀 TDD駆動開発ワークフローの適用（2026-02-01）
+
+### フェーズ1: ドキュメント作成
+- [ ] docs/REQUIREMENTS.mdを作成（要件定義）
+- [ ] docs/DESIGN.mdを作成（設計書・タスク・テストケース）
+- [ ] docs/PROGRESS.mdを作成（作業履歴）
+
+### フェーズ2: Twitter OAuthのprofileImage保存機能
+- [ ] テストケースを作成（__tests__/twitter-oauth-profile-image.test.ts）
+- [ ] テストを実行して動作確認
+- [ ] テストに通らない場合は修正
+
+### フェーズ3: 作業履歴の記録とコミット
+- [ ] PROGRESS.mdに作業内容を記録
+- [ ] git add . && git commit -m "作業内容の要約"
+
+### フェーズ4: チェックポイント保存とデプロイ
+- [ ] チェックポイント保存
+- [ ] デプロイ
+- [ ] 本番環境でテスト
