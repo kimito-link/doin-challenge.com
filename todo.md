@@ -718,8 +718,49 @@
 - [x] LoginModal.tsxの動的require()を静的マッピングに変更
 - [x] WelcomeMessage.tsxの動的require()を静的マッピングに変更
 - [x] プロジェクト全体で動的require()がないことを確認
-- [ ] チェックポイント保存とデプロイ
+- [x] チェックポイント保存（コミット3955914f）
+- [x] production/mainブランチに最新の修正をpush
+- [ ] Vercelデプロイ成功を確認（数分待機）
 
 ### 再発防止策
-- [ ] 動的require()を使用しないルールをドキュメント化
-- [ ] デプロイ前にチェックするスクリプトを作成
+- [x] 動的require()を使用しないルールをドキュメント化（docs/VERCEL_DEPLOY_RULES.md）
+- [x] デプロイ前チェックリストを作成
+- [ ] デプロイ成功を確認
+
+
+---
+
+## 📝 デプロイドキュメント更新 (2026-02-01 21:18)
+
+### 目的
+- デプロイに関する重要な情報をREADME.mdとdocs/DEPLOY.mdに記録
+- 今後の同じ問題の再発を防ぐ
+
+### タスク
+- [x] 現在のREADME.mdとdocs/DEPLOY.mdを確認
+- [x] 動的require()禁止ルールをREADME.mdに追加
+- [x] production/mainブランチへのpush手順をdocs/DEPLOY.mdに追加
+- [x] デプロイ前チェックリストをdocs/DEPLOY.mdに追加
+- [x] Vercelビルドエラーのトラブルシューティングをdocs/DEPLOY.mdに追加
+- [x] 過去のエラー事例をdocs/DEPLOY.mdに追加
+- [ ] チェックポイント保存
+
+
+---
+
+## 🔧 TypeScriptエラー修正 (2026-02-01 21:30)
+
+### 目的
+- 残りのTypeScriptエラー60件を修正
+- コード品質を向上
+
+### 修正済み
+- [x] app/invite/[id].tsx: `data`パラメータの型エラーを修正（`any`を削除）
+- [x] app/invite/[id].tsx: `customMessage`プロパティの型エラーを修正（コメントアウト）
+- [x] app/oauth/twitter-callback.tsx: ThemedViewのインポートパスを修正
+
+### 残りのタスク
+- [ ] TypeScript Language Serverのキャッシュをクリア
+- [ ] 残りのTypeScriptエラーを確認
+- [ ] チェックポイント保存
+- [ ] デプロイ

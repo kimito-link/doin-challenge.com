@@ -63,7 +63,7 @@ export default function InviteScreen() {
 
   // v6.10: OGP画像生成ミューテーション
   const generateOgpMutation = trpc.ogp.generateInviteOgp.useMutation({
-    onSuccess: (data: any) => {
+    onSuccess: (data) => {
       setOgpImageUrl(data.url || null);
       setIsGeneratingOgp(false);
     },
@@ -83,11 +83,13 @@ export default function InviteScreen() {
   const handleCreateInvite = () => {
     if (!id || !user) return;
     setIsCreatingInvite(true);
-    createInviteMutation.mutate({
+    const payload: { challengeId: number; maxUses?: number; expiresAt?: string } = {
       challengeId: parseInt(id),
-      ...(customMessage.trim() && { customMessage: customMessage.trim() }),
-      ...(customTitle.trim() && { customTitle: customTitle.trim() }),
-    } as any);
+    };
+    // Note: customMessageとcustomTitleはAPI側でサポートされていないため、コメントアウト
+    // ...(customMessage.trim() && { customMessage: customMessage.trim() }),
+    // ...(customTitle.trim() && { customTitle: customTitle.trim() }),
+    createInviteMutation.mutate(payload);
   };
 
   // 初回は自動で招待リンクを作成（カスタムメッセージなし）

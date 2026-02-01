@@ -30,11 +30,29 @@
 3. **Health Check API**: https://doin-challenge.com/api/health
    - `commitSha`が最新のコミットハッシュと一致しているか確認
 
+### デプロイ前チェックリスト
+
+**必ず実行してください**（特にVercelデプロイエラーを防ぐため）：
+
+```bash
+# 1. 動的require()の検索（Vercelビルドエラーの主な原因）
+grep -rn 'require(`' --include="*.ts" --include="*.tsx" app/ components/ hooks/ lib/ features/
+
+# 2. TypeScriptエラーの確認
+pnpm check
+
+# 3. ローカルビルドの成功確認
+pnpm build
+```
+
+詳細は `docs/VERCEL_DEPLOY_RULES.md` を参照してください。
+
 ### トラブルシューティング
 
-- **ワークフローが失敗した場合**: `docs/deployment-guide.md` を参照
+- **ワークフローが失敗した場合**: `docs/DEPLOY.md` を参照
 - **バージョンが更新されない場合**: GitHub Actionsのログを確認
-- **詳細な手順**: `docs/deployment-guide.md` を参照
+- **Vercelビルドエラー**: `docs/VERCEL_DEPLOY_RULES.md` を参照
+- **詳細な手順**: `docs/DEPLOY.md` を参照
 
 ---
 
@@ -59,7 +77,8 @@
 | ファイル | 内容 | 優先度 |
 |---------|------|--------|
 | `docs/chatlog-YYYYMMDD.md` | 過去の作業ログ（必ず読む） | 🔴 最高 |
-| `docs/deployment-guide.md` | デプロイ手順の詳細 | 🔴 最高 |
+| `docs/DEPLOY.md` | デプロイ手順の詳細 | 🔴 最高 |
+| `docs/VERCEL_DEPLOY_RULES.md` | Vercelデプロイ前チェックリスト | 🔴 最高 |
 | `docs/development-guide.md` | 開発環境のセットアップ | 🟡 高 |
 | `docs/architecture.md` | アーキテクチャの説明 | 🟢 中 |
 | `docs/gate1.md` | 本番環境の品質基準 | 🔴 最高 |

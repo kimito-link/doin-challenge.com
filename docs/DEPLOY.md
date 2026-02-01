@@ -127,18 +127,36 @@ Railwayの環境変数は、Railway管理画面の「Variables」タブで設定
 
 ## デプロイフロー（現在）
 
+### デプロイ前チェックリスト
+
+**必ず実行してください**（特にVercelデプロイエラーを防ぐため）：
+
+```bash
+# 1. 動的require()の検索（Vercelビルドエラーの主な原因）
+grep -rn 'require(`' --include="*.ts" --include="*.tsx" app/ components/ hooks/ lib/ features/
+
+# 2. TypeScriptエラーの確認
+pnpm check
+
+# 3. ローカルビルドの成功確認
+pnpm build
+```
+
+詳細は **[VERCEL_DEPLOY_RULES.md](./VERCEL_DEPLOY_RULES.md)** を参照してください。
+
 ### 通常のデプロイ手順
 
 1. **Manusでコード変更を完了**
-2. **Manusで「チェックポイント保存」を実行**（webdev_save_checkpoint）
-3. **GitHubにpush**
+2. **デプロイ前チェックリストを実行**（上記参照）
+3. **Manusで「チェックポイント保存」を実行**（webdev_save_checkpoint）
+4. **GitHubにpush**
    ```bash
    git push origin main
    git push production main:main  # ← これがデプロイトリガー
    ```
-4. **GitHub Actionsが自動実行**
+5. **GitHub Actionsが自動実行**
    - CI → Backend(Railway) → Migrate → Health Check → Frontend(Vercel) → E2E
-5. **本番サイトで動作確認**
+6. **本番サイトで動作確認**
 
 詳細は **[DEPLOY_WORKFLOW.md](./DEPLOY_WORKFLOW.md)** を参照。
 
@@ -155,6 +173,58 @@ Railwayの環境変数は、Railway管理画面の「Variables」タブで設定
 
 ## トラブルシューティング
 
+### Vercelビルドエラー（SyntaxError）
+
+**最も頻繁に発生する問題**：動的require()の使用
+
+#### 症状
+
+- Vercelデプロイが「Build Failed」で失敗
+- Build Logsに「SyntaxError: Invalid or unexpected token」が表示
+- 特定のファイル（例：LoginModal.tsx、WelcomeMessage.tsx）でエラー
+
+#### 原因
+
+Vercelのビルド環境では、動的なrequire()（テンプレートリテラルを使用）が使えません。
+
+```tsx
+// ❌ NG: 動的require()
+ const image = require(`@/assets/images/${filename}.png`);
+```
+
+#### 解決方法
+
+1. **動的require()を検索**：
+   ```bash
+   grep -rn 'require(`' --include="*.ts" --include="*.tsx" app/ components/ hooks/ lib/ features/
+   ```
+
+2. **静的マッピングに変更**：
+   ```tsx
+   // ✅ OK: 静的マッピング
+   const IMAGES = {
+     image1: require("@/assets/images/image1.png"),
+     image2: require("@/assets/images/image2.png"),
+   };
+   const image = IMAGES[filename];
+   ```
+
+3. **production/mainブランチにpush**：
+   ```bash
+   git push production main:main
+   ```
+
+詳細は **[VERCEL_DEPLOY_RULES.md](./VERCEL_DEPLOY_RULES.md)** を参照してください。
+
+#### 過去のエラー事例
+
+| 日付 | ファイル | 原因 | 解決コミット |
+|------|--------|------|-------------|
+| 2026-02-01 | LoginModal.tsx, WelcomeMessage.tsx | 動的require()でキャラクター画像を読み込み | 3955914f |
+| 2026-02-01 | login-messages.ts | 動的require()でcharacterImageを読み込み | 8bcf7eb2 |
+
+---
+
 ### ブラウザで古いバージョンが表示される
 
 1. **ブラウザキャッシュをクリア**: Ctrl+Shift+R（Mac: Cmd+Shift+R）
@@ -163,8 +233,8 @@ Railwayの環境変数は、Railway管理画面の「Variables」タブで設定
 
 ### Vercelにデプロイされない
 
-1. **GitHubリポジトリを確認**: 最新コミットがプッシュされているか
-2. **Vercelの接続を確認**: Settings → Git で正しいリポジトリが接続されているか
+1. **production/mainブランチを確認**: `git log production/main --oneline -10` で最新コミットが含まれているか
+2. **GitHub Actionsを確認**: https://github.com/kimito-link/doin-challenge.com/actions
 3. **手動でRedeploy**: Vercelダッシュボードで最新デプロイの「...」→「Redeploy」
 
 ### Railwayにデプロイされない
