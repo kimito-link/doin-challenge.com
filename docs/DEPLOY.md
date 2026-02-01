@@ -2,7 +2,7 @@
 
 **プロジェクト**: 君斗りんくの動員ちゃれんじ  
 **ドメイン**: doin-challenge.com  
-**最終更新**: 2026年1月22日  
+**最終更新**: 2026年2月1日  
 **作成者**: Manus AI
 
 ---
@@ -13,7 +13,7 @@
 |------|----------------|----------------|
 | フロントエンド | Vercel自動デプロイ | **GitHub Actions経由** |
 | バックエンド | Manus Publish → Railway | **GitHub Actions経由** |
-| トリガー | 手動コピー＆push | **`git push production main`** |
+| トリガー | 手動コピー＆push | **`git push origin main`** |
 
 **現在の手順は [DEPLOY_WORKFLOW.md](./DEPLOY_WORKFLOW.md) を参照してください。**
 
@@ -45,7 +45,7 @@
 
 ### デプロイトリガー（現在）
 
-GitHub Actionsのパイプラインがデプロイを制御します。`production/main`ブランチへのpushでパイプラインが起動し、CIが成功した後にVercelへデプロイされます。
+GitHub Actionsのパイプラインがデプロイを制御します。`main`ブランチへのpushでパイプラインが起動し、CIが成功した後にVercelへデプロイされます。
 
 ---
 
@@ -97,7 +97,7 @@ git push origin main
 
 ### デプロイトリガー（現在）
 
-GitHub Actionsのパイプラインがデプロイを制御します。`production/main`ブランチへのpushでパイプラインが起動し、CIが成功した後にRailwayへデプロイされます。
+GitHub Actionsのパイプラインがデプロイを制御します。`main`ブランチへのpushでパイプラインが起動し、CIが成功した後にRailwayへデプロイされます。
 
 ---
 
@@ -151,8 +151,7 @@ pnpm build
 3. **Manusで「チェックポイント保存」を実行**（webdev_save_checkpoint）
 4. **GitHubにpush**
    ```bash
-   git push origin main
-   git push production main:main  # ← これがデプロイトリガー
+   git push origin main  # ← これがデプロイトリガー
    ```
 5. **GitHub Actionsが自動実行**
    - CI → Backend(Railway) → Migrate → Health Check → Frontend(Vercel) → E2E

@@ -30,3 +30,6 @@ export * from "./tickets";
 
 // Audit Logs
 export * from "./audit";
+
+// Release Notes
+export * from "./release-notes";

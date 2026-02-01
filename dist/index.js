@@ -81,6 +81,7 @@ var init_users = __esm({
       email: varchar("email", { length: 320 }),
       loginMethod: varchar("loginMethod", { length: 64 }),
       role: mysqlEnum("role", ["user", "admin"]).default("user").notNull(),
+      gender: mysqlEnum("gender", ["male", "female", "unspecified"]).default("unspecified").notNull(),
       createdAt: timestamp("createdAt").defaultNow().notNull(),
       updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
       lastSignedIn: timestamp("lastSignedIn").defaultNow().notNull()
@@ -636,6 +637,25 @@ var init_audit = __esm({
   }
 });
 
+// drizzle/schema/release-notes.ts
+import { mysqlTable as mysqlTable10, int as int10, varchar as varchar10, text as text10, timestamp as timestamp10, json as json4 } from "drizzle-orm/mysql-core";
+var releaseNotes;
+var init_release_notes = __esm({
+  "drizzle/schema/release-notes.ts"() {
+    "use strict";
+    releaseNotes = mysqlTable10("release_notes", {
+      id: int10("id").autoincrement().primaryKey(),
+      version: varchar10("version", { length: 32 }).notNull(),
+      date: varchar10("date", { length: 32 }).notNull(),
+      title: text10("title").notNull(),
+      changes: json4("changes").notNull(),
+      // { type: "new" | "improve" | "fix" | "change", text: string }[]
+      createdAt: timestamp10("createdAt").defaultNow().notNull(),
+      updatedAt: timestamp10("updatedAt").defaultNow().onUpdateNow().notNull()
+    });
+  }
+});
+
 // drizzle/schema/index.ts
 var init_schema = __esm({
   "drizzle/schema/index.ts"() {
@@ -649,6 +669,7 @@ var init_schema = __esm({
     init_invitations();
     init_tickets();
     init_audit();
+    init_release_notes();
   }
 });
 
@@ -681,6 +702,7 @@ __export(schema_exports, {
   participationCompanions: () => participationCompanions,
   participations: () => participations,
   pickedComments: () => pickedComments,
+  releaseNotes: () => releaseNotes,
   reminders: () => reminders,
   searchHistory: () => searchHistory,
   ticketTransfers: () => ticketTransfers,
@@ -804,7 +826,8 @@ async function getUserByTwitterId(twitterId) {
     id: user.id,
     name: user.name,
     twitterId,
-    twitterUsername: followStatus.length > 0 ? followStatus[0].twitterUsername : null
+    twitterUsername: followStatus.length > 0 ? followStatus[0].twitterUsername : null,
+    gender: user.gender
   };
 }
 var init_user_db = __esm({
@@ -2153,6 +2176,7 @@ async function getUserPublicProfile(userId) {
       name: user.name || latestParticipation?.displayName || "\u30E6\u30FC\u30B6\u30FC",
       username: latestParticipation?.username || null,
       profileImage: latestParticipation?.profileImage || null,
+      gender: user.gender,
       createdAt: user.createdAt
     },
     stats: {
@@ -3639,9 +3663,9 @@ async function exchangeCodeForTokens(code, callbackUrl, codeVerifier) {
     body: params.toString()
   });
   if (!response.ok) {
-    const text10 = await response.text();
-    console.error("Token exchange error:", text10);
-    throw new Error(`Failed to exchange code for tokens: ${text10}`);
+    const text11 = await response.text();
+    console.error("Token exchange error:", text11);
+    throw new Error(`Failed to exchange code for tokens: ${text11}`);
   }
   return response.json();
 }
@@ -3656,12 +3680,12 @@ async function getUserProfile(accessToken) {
     }
   });
   if (!response.ok) {
-    const text10 = await response.text();
-    console.error("User profile error:", text10);
-    throw new Error(`Failed to get user profile: ${text10}`);
+    const text11 = await response.text();
+    console.error("User profile error:", text11);
+    throw new Error(`Failed to get user profile: ${text11}`);
   }
-  const json4 = await response.json();
-  return json4.data;
+  const json5 = await response.json();
+  return json5.data;
 }
 async function refreshAccessToken(refreshToken) {
   const url = "https://api.twitter.com/2/oauth2/token";
@@ -3680,8 +3704,8 @@ async function refreshAccessToken(refreshToken) {
     body: params.toString()
   });
   if (!response.ok) {
-    const text10 = await response.text();
-    throw new Error(`Failed to refresh token: ${text10}`);
+    const text11 = await response.text();
+    throw new Error(`Failed to refresh token: ${text11}`);
   }
   return response.json();
 }
@@ -3857,8 +3881,8 @@ async function getUserProfileByUsername(username) {
       }
     });
     if (!response.ok) {
-      const text10 = await response.text();
-      console.error("Twitter user lookup error:", response.status, text10);
+      const text11 = await response.text();
+      console.error("Twitter user lookup error:", response.status, text11);
       return null;
     }
     const data = await response.json();
@@ -6287,6 +6311,25 @@ var statsRouter = router({
   })
 });
 
+// server/routers/release-notes.ts
+import { z as z26 } from "zod";
+init_connection();
+init_schema2();
+var releaseNotesRouter = router({
+  // すべてのリリースノートを取得
+  getAll: publicProcedure.query(async () => {
+    const db = await getDb();
+    if (!db) return [];
+    return db.select().from(releaseNotes).orderBy(desc(releaseNotes.date));
+  }),
+  // 最新のリリースノートを取得
+  getLatest: publicProcedure.input(z26.object({ limit: z26.number().min(1).max(10).default(5) })).query(async ({ input }) => {
+    const db = await getDb();
+    if (!db) return [];
+    return db.select().from(releaseNotes).orderBy(desc(releaseNotes.date)).limit(input.limit);
+  })
+});
+
 // server/routers/index.ts
 var appRouter = router({
   auth: authRouter,
@@ -6314,7 +6357,8 @@ var appRouter = router({
   ticketTransfer: ticketTransferRouter,
   ticketWaitlist: ticketWaitlistRouter,
   admin: adminRouter,
-  stats: statsRouter
+  stats: statsRouter,
+  releaseNotes: releaseNotesRouter
 });
 
 // server/_core/context.ts

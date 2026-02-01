@@ -760,7 +760,65 @@
 - [x] app/oauth/twitter-callback.tsx: ThemedViewのインポートパスを修正
 
 ### 残りのタスク
-- [ ] TypeScript Language Serverのキャッシュをクリア
-- [ ] 残りのTypeScriptエラーを確認
+- [x] TypeScript Language Serverのキャッシュをクリア
+- [x] 残りのTypeScriptエラーを確認（0件）
+- [x] チェックポイント保存（version: 384dda0a）
+- [x] デプロイ（本番環境に正常にデプロイ済み、commit: 3955914）
+
+---
+
+## 🚀 デプロイ環境の整備とバージョン管理 (2026-02-01)
+
+### 目的
+- docs/DEPLOY.mdの更新（production/main → main）
+- デプロイ前チェックリストの習慣化
+- サーバーのcron設定の確認と実装
+- バージョン番号の更新（6.171 → 6.172）
+- バージョン履歴をサイトに反映
+
+### タスク
+- [x] docs/DEPLOY.mdの「production/main」を「main」に修正
+- [ ] デプロイ前チェックリストをドキュメント化
+- [ ] サーバーのcron設定を確認（具体的な要件を確認）
+- [ ] shared/version.tsのAPP_VERSIONを6.172に更新
+- [ ] バージョン履歴をサイトに表示する機能を実装
+- [ ] チェックポイント保存
+- [ ] デプロイ
+
+---
+
+## 🎨 アカウント情報表示の統一とコンポーネント化 (2026-02-01 - 最優先)
+
+### 問題点
+- アカウント情報（TwitterID、アカウント名、サムネイル、プロフィール文章、フォロワー）の表示が統一されていない
+- ファンページとマイページで背景色が異なる（ピンク/紫グラデーション vs 黒背景）
+- 男女別の色分けが実装されていない（男性：青系、女性：ピンク系）
+- コンポーネント化が全くできていない
+
+### タスク
+- [x] 共通のUserProfileHeaderコンポーネントを作成（男女別色分け対応）
+- [x] ファンページでUserProfileHeaderを使用
+- [x] マイページでTwitterUserCardを使用（既に実装済み、性別色分け不要）
+- [x] チャレンジ詳細でUserProfileCardを使用（ファイルが見つからない）
+- [ ] ファンページの表示を確認（男女別色分けが機能しているか）
+- [ ] DESIGN_PRINCIPLES.mdとCOMPONENT_REGISTRY.mdを更新
+
+
+---
+
+## ✅ サーバーのcron設定とバージョン履歴のサイト反映 (2026-02-01 - 完了)
+
+### 完了したタスク
+- [x] サーバーのcron設定を実装（server/_core/cron.ts）
+  - 古いOAuth PKCEデータの削除
+  - 古いTwitterユーザーキャッシュの削除
+  - 統計データの集計
+- [x] release_notesテーブルを作成
+- [x] tRPCエンドポイントを追加（server/routers/release-notes.ts）
+- [x] 既存のリリースノートデータをデータベースに挿入
+- [x] app/release-notes.tsxをtRPCで動的に表示するように更新
+
+### 次のステップ
+- [ ] shared/version.tsのAPP_VERSIONを6.172に更新
 - [ ] チェックポイント保存
 - [ ] デプロイ
