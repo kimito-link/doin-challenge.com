@@ -146,13 +146,6 @@ export function registerTwitterRoutes(app: Express) {
           email: null,
           loginMethod: "twitter",
           lastSignedIn: new Date(),
-          // Twitter specific fields
-          username: userProfile.username,
-          profileImage: userProfile.profile_image_url?.replace("_normal", "_400x400"),
-          followersCount: userProfile.public_metrics?.followers_count || 0,
-          description: userProfile.description || "",
-          twitterId: userProfile.id,
-          twitterAccessToken: tokens.access_token,
         });
         console.log("[Twitter OAuth 2.0] User profile saved to database");
       } catch (error) {

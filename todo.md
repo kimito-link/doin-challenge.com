@@ -464,6 +464,9 @@
 - [x] sync-handlers.tsのfollowersCountエラーを修正
 - [x] useHomeData.tsのsearchエラーを修正
 - [x] その他のTypeScriptエラーを修正（60件→0件）
+- [x] twitter-routes.tsのupsertUserエラーを修正（Twitter固有フィールドを削除）
+- [x] twitter-callback.tsxのThemedViewインポートエラーを修正
+- [x] app/invite/[id].tsxの型エラーを修正
 
 ### ログインUI統一
 - [x] ホーム画面のログインボタンをLoginModalに統一
@@ -935,3 +938,16 @@
 - [ ] チェックポイント保存
 - [ ] デプロイ
 - [ ] 本番環境でテスト
+
+
+---
+
+## 🐛 既存のTypeScriptエラーを修正（2026-02-01）
+
+### タスク
+- [ ] app/invite/[id].tsxのTypeScriptエラーを修正
+- [ ] app/oauth/twitter-callback.tsxのTypeScriptエラーを修正
+- [ ] テストを実行して動作確認
+- [ ] PROGRESS.mdに記録してgit commit
+- [ ] チェックポイント保存
+- [ ] デプロイ

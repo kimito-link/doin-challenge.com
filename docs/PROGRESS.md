@@ -57,3 +57,33 @@
 2. PROGRESS.mdに記録してgit commit
 
 ---
+
+## 2026-02-01 19:10 - TypeScriptエラー修正（60エラー → 0エラー）
+
+### 作業内容
+
+1. **twitter-routes.tsの修正**
+   - upsertUserからTwitter固有フィールド（username, profileImage, followersCount, description, twitterId, twitterAccessToken）を削除
+   - これらのフィールドはusersテーブルに存在しないため、InsertUser型エラーが発生していた
+
+2. **twitter-callback.tsxの修正**
+   - ThemedViewのインポートを削除（存在しないモジュール）
+   - ActivityIndicatorのcolor.orange500を#f97316に修正（color変数が未定義）
+
+3. **app/invite/[id].tsxの修正**
+   - onSuccessコールバックのdata型アノテーションを削除（any型エラー）
+
+4. **user-db.tsの修正**
+   - upsertUser関数にgenderフィールドのサポートを追加
+
+### テスト結果
+
+- **TypeScriptエラー**: 60エラー → 0エラー ✅
+- **ユニットテスト**: 722 passed, 6 failed（tRPC統合テストの既存問題）
+
+### 次のステップ
+
+1. git commitを実行
+2. チェックポイント保存
+
+---
