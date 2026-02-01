@@ -25,6 +25,13 @@ import Animated, {
 import { useEffect, useState, useMemo } from "react";
 import { useLoginABTest } from "@/hooks/use-login-ab-test";
 
+// キャラクター画像の静的マッピング（動的require()を避けるため）
+const CHARACTER_IMAGES = {
+  rinku: require("@/assets/images/characters/rinku.png"),
+  konta: require("@/assets/images/characters/konta.png"),
+  tanune: require("@/assets/images/characters/tanune.png"),
+};
+
 interface LoginModalProps {
   visible: boolean;
   onConfirm: () => void;
@@ -155,7 +162,7 @@ export function LoginModal({
             }}
           >
             <Animated.Image
-              source={require(`@/assets/images/characters/${currentMessage.character}.png`)}
+              source={CHARACTER_IMAGES[currentMessage.character]}
               style={[
                 { width: 64, height: 64, marginRight: 12 },
                 characterAnimatedStyle,

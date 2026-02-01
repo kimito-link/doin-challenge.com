@@ -21,6 +21,13 @@ import Animated, {
 import { useEffect, useState } from "react";
 import { getRandomLoginMessage, type LoginMessage } from "@/constants/login-messages";
 
+// キャラクター画像の静的マッピング（動的require()を避けるため）
+const CHARACTER_IMAGES = {
+  rinku: require("@/assets/images/characters/rinku.png"),
+  konta: require("@/assets/images/characters/konta.png"),
+  tanune: require("@/assets/images/characters/tanune.png"),
+};
+
 interface WelcomeMessageProps {
   visible: boolean;
   onHide: () => void;
@@ -100,7 +107,7 @@ export function WelcomeMessage({ visible, onHide, userName }: WelcomeMessageProp
         >
           {/* キャラクター */}
           <Animated.Image
-            source={require(`@/assets/images/characters/${message.character}.png`)}
+            source={CHARACTER_IMAGES[message.character]}
             style={[
               { width: 80, height: 80, marginBottom: 20 },
               characterAnimatedStyle,

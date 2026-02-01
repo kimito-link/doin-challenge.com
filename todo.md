@@ -669,10 +669,57 @@
 
 ### 問題
 - [x] constants/login-messages.tsでSyntaxErrorが発生
+- [ ] Vercelが古いコミット（a7fb37d）をデプロイしている
 - [ ] Vercelデプロイが失敗（Build Failed）
 
 ### 修正
 - [x] login-messages.tsのSyntaxErrorを特定（require()の動的読み込みが原因）
 - [x] エラーを修正（characterImagePathに変更、使用箇所をrequire()に変更）
-- [ ] チェックポイント保存とデプロイ
+- [x] GitHubに最新の修正をpush（コミット77588d3）
+- [ ] Vercelのデプロイ設定を確認（Production Branch = main）
+- [ ] Vercelで最新コミットを手動再デプロイ
 - [ ] 本番環境のデプロイ成功を確認
+
+
+---
+
+## 🚨 Vercelデプロイエラー修正 (2026-02-01 14:34)
+
+### 問題
+- [x] constants/login-messages.tsでSyntaxErrorが発生
+- [x] Vercelが古いコミット（a7fb37d）をデプロイしていた → GitHub Actionsで「Unexpected error」が発生
+- [ ] Vercelデプロイが失敗（Build Failed）
+
+### 修正
+- [x] login-messages.tsのSyntaxErrorを特定（require()の動的読み込みが原因）
+- [x] エラーを修正（characterImagePathに変更、使用箇所をrequire()に変更）
+- [x] GitHubに最新の修正をpush（コミット77588d3）
+- [x] 空のコミットをpushしてワークフローを再トリガー（コミット5896bc7）
+- [ ] デプロイ完了を待機中（実行中）
+- [ ] 本番環境のデプロイ成功を確認
+
+
+---
+
+## 🚨 LoginModal.tsxのデプロイエラー修正 (2026-02-01 15:41)
+
+### 問題
+- [x] components/common/LoginModal.tsxで動的require()によるSyntaxErrorが発生
+- [x] components/common/WelcomeMessage.tsxでも同じ問題を発見
+- [ ] Vercelデプロイが失敗（Build Failed）
+- [ ] 同じ問題が繰り返し発生している
+
+### 根本原因
+- [x] LoginModal.tsx:158行目で動的require()を使用している
+- [x] WelcomeMessage.tsx:103行目でも動的require()を使用している
+- [x] Vercelのビルド環境では動的require()が使えない
+
+### 修正完了
+- [x] LoginModal.tsxの動的require()を静的マッピングに変更
+- [x] WelcomeMessage.tsxの動的require()を静的マッピングに変更
+- [x] プロジェクト全体で動的require()がないことを確認
+- [ ] チェックポイント保存とデプロイ
+
+### 再発防止策
+- [ ] 動的require()を使用しないルールをドキュメント化
+- [ ] デプロイ前にチェックするスクリプトを作成
