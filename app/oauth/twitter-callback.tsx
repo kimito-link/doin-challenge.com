@@ -1,6 +1,6 @@
 // v5.39: description field support
-import { FollowSuccessModal } from "@/components/molecules/follow-success-modal";
-import { ThemedView } from "@/components/atoms/themed-view";
+
+
 import * as Auth from "@/lib/_core/auth";
 import { saveTokenData } from "@/lib/token-manager";
 import { useLocalSearchParams } from "expo-router";
@@ -312,18 +312,7 @@ export default function TwitterOAuthCallback() {
           </View>
         )}
         
-        {/* フォロー完了お祝いモーダル */}
-        <FollowSuccessModal
-          visible={showFollowSuccessModal}
-          onClose={() => {
-            setShowFollowSuccessModal(false);
-            // モーダルを閉じたら保存したリダイレクト先に移動
-            console.log("[Twitter OAuth] Modal closed, redirecting to:", savedReturnUrl);
-            navigateReplace.withUrl(savedReturnUrl);
-          }}
-          targetUsername={targetAccountInfo?.username || "idolfunch"}
-          targetDisplayName={targetAccountInfo?.name || "君斗りんく"}
-        />
+
       </View>
     </SafeAreaView>
   );

@@ -1008,3 +1008,18 @@
 ### テストとチェックポイント
 - [x] テスト実行（722 passed, 6 failed - tRPC統合テストの既存問題）
 - [x] チェックポイント作成
+
+---
+
+## 🚨 緊急: TypeScriptエラー修正とPublishボタン有効化 (2026-02-02)
+
+### エラー修正
+- [x] app/invite/[id].tsx(66,17): Parameter 'data' implicitly has an 'any' type
+- [x] app/oauth/twitter-callback.tsx: 不要なインポートを削除
+- [x] app/oauth/twitter-callback.tsx: FollowSuccessModalの使用箇所を削除
+- [x] app/oauth/twitter-callback.tsx: 終了タグを追加
+
+### 確認
+- [x] TypeScriptエラー: 60件 → 0件
+- [ ] サーバー再起動
+- [ ] Publishボタンが有効化されることを確認

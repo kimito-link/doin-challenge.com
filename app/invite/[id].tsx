@@ -63,7 +63,7 @@ export default function InviteScreen() {
 
   // v6.10: OGP画像生成ミューテーション
   const generateOgpMutation = trpc.ogp.generateInviteOgp.useMutation({
-    onSuccess: (data: { url?: string }) => {
+    onSuccess: (data) => {
       setOgpImageUrl(data.url || null);
       setIsGeneratingOgp(false);
     },
