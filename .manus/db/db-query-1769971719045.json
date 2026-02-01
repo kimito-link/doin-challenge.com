@@ -1,0 +1,9 @@
+{
+  "query": "SELECT twitterId, displayName, profileImage FROM twitter_user_cache LIMIT 5;",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway02.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 3YCTtbVp6bbE1oz.aaf91d266729 --database 4EfvvuNg9KRk4UPdFprmBJ --execute SELECT twitterId, displayName, profileImage FROM twitter_user_cache LIMIT 5;",
+  "rows": [],
+  "messages": [],
+  "stdout": "",
+  "stderr": "",
+  "execution_time_ms": 1569
+}
