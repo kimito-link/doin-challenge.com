@@ -77,6 +77,14 @@ export const participationsRouter = router({
           isAnonymous: false,
         });
         
+        // ログインユーザーの場合、usersテーブルのgenderも更新
+        if (ctx.user?.id && input.gender) {
+          await db.upsertUser({
+            openId: ctx.user.openId,
+            gender: input.gender,
+          });
+        }
+        
         // 監査ログ: CREATE
         if (participationId && ctx.requestId) {
           await db.logAction({

@@ -4,12 +4,10 @@
  */
 import { View, Text } from "react-native";
 import MaterialIcons from "@expo/vector-icons/MaterialIcons";
-import { LinearGradient } from "expo-linear-gradient";
 import { useColors } from "@/hooks/use-colors";
 import { useResponsive } from "@/hooks/use-responsive";
-import { FollowStatusBadge } from "@/components/molecules/follow-gate";
-import { TwitterUserCard } from "@/components/molecules/twitter-user-card";
-import { mypageUI, mypageText, mypageGradient, mypageAccent } from "../ui/theme/tokens";
+import { UserProfileHeader } from "@/components/organisms/user-profile-header";
+import { mypageUI, mypageText, mypageAccent } from "../ui/theme/tokens";
 import { Button } from "@/components/ui/button";
 
 interface ProfileCardProps {
@@ -20,6 +18,7 @@ interface ProfileCardProps {
     profileImage?: string | null;
     followersCount?: number | null;
     description?: string | null;
+    gender?: "male" | "female" | "unspecified";
   } | null;
   isFollowing: boolean;
   totalContribution: number;
@@ -61,31 +60,21 @@ export function ProfileCard({
         width: isDesktop ? "100%" : undefined,
       }}
     >
-      <LinearGradient
-        colors={[...mypageGradient.profileHeader]}
-        start={{ x: 0, y: 0 }}
-        end={{ x: 1, y: 0 }}
-        style={{ height: 4 }}
+      {/* ユーザープロフィールヘッダー（性別色分け対応） */}
+      <UserProfileHeader
+        user={{
+          twitterId: user?.twitterId,
+          name: user?.name || "ゲスト",
+          username: user?.username ?? undefined,
+          profileImage: user?.profileImage ?? undefined,
+          followersCount: user?.followersCount ?? undefined,
+          description: user?.description ?? undefined,
+          gender: user?.gender as "male" | "female" | undefined,
+        }}
+        showFollowButton={false}
       />
+
       <View style={{ padding: 16 }}>
-        {/* Twitterユーザーカード */}
-        <View style={{ flexDirection: "row", alignItems: "flex-start" }}>
-          <View style={{ flex: 1 }}>
-            <TwitterUserCard
-              user={{
-                twitterId: user?.twitterId,
-                name: user?.name || "ゲスト",
-                username: user?.username ?? undefined,
-                profileImage: user?.profileImage ?? undefined,
-                followersCount: user?.followersCount ?? undefined,
-                description: user?.description ?? undefined,
-              }}
-              size="large"
-              showDescription={true}
-            />
-          </View>
-          <FollowStatusBadge isFollowing={isFollowing} />
-        </View>
 
         {/* 統計情報 */}
         <View

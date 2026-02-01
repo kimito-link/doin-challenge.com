@@ -4477,6 +4477,12 @@ var participationsRouter = router({
         attendanceType: input.attendanceType || "venue",
         isAnonymous: false
       });
+      if (ctx.user?.id && input.gender) {
+        await upsertUser({
+          openId: ctx.user.openId,
+          gender: input.gender
+        });
+      }
       if (participationId && ctx.requestId) {
         await logAction({
           requestId: ctx.requestId,
