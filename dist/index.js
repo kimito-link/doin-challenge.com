@@ -3945,6 +3945,7 @@ async function getUserProfileByUsername(username) {
 }
 
 // server/twitter-routes.ts
+init_db2();
 function registerTwitterRoutes(app) {
   app.get("/api/twitter/auth", async (req, res) => {
     try {
@@ -4018,6 +4019,25 @@ function registerTwitterRoutes(app) {
         isFollowingTarget,
         targetAccount
       };
+      try {
+        await upsertUser({
+          openId: `twitter:${userProfile.id}`,
+          name: userProfile.name,
+          email: null,
+          loginMethod: "twitter",
+          lastSignedIn: /* @__PURE__ */ new Date(),
+          // Twitter specific fields
+          username: userProfile.username,
+          profileImage: userProfile.profile_image_url?.replace("_normal", "_400x400"),
+          followersCount: userProfile.public_metrics?.followers_count || 0,
+          description: userProfile.description || "",
+          twitterId: userProfile.id,
+          twitterAccessToken: tokens.access_token
+        });
+        console.log("[Twitter OAuth 2.0] User profile saved to database");
+      } catch (error) {
+        console.error("[Twitter OAuth 2.0] Failed to save user profile:", error);
+      }
       const encodedData = encodeURIComponent(JSON.stringify(userData));
       const host = req.get("host") || "";
       const protocol = req.get("x-forwarded-proto") || req.protocol;
