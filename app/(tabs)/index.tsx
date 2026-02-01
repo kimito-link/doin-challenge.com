@@ -29,6 +29,7 @@ import {
 } from "@/features/home";
 import type { Challenge, FilterType } from "@/types/challenge";
 import { usePerformanceMonitor } from "@/lib/performance-monitor";
+import { InstallPrompt } from "@/components/install-prompt";
 
 export default function HomeScreen() {
   const { isDesktop } = useResponsive();
@@ -228,6 +229,9 @@ export default function HomeScreen() {
         customMessage={encouragementModal.customMessage}
         customEmoji={encouragementModal.customEmoji}
       />
+
+      {/* PWAインストールプロンプト */}
+      <InstallPrompt />
     </ScreenContainer>
   );
 }
