@@ -18,6 +18,27 @@
 
 ---
 
+## 2026-02-01 19:05 - Twitter OAuthのprofileImage保存機能のテスト作成と動作確認
+
+### 作業内容
+
+1. **__tests__/twitter-oauth-profile-image.test.tsを作成**
+   - Twitter OAuth成功後、usersテーブルのprofileImageが保存されるテスト
+   - 既存ユーザーの場合、profileImageが更新されるテスト
+   - profileImageがnullの場合、エラーが発生しないテスト
+   - チャレンジ作成時、hostProfileImageが正しく設定されるテスト
+   - user.profileImageがnullの場合、デフォルト画像を使用するテスト
+
+2. **テスト実行**
+   - すべてのテストがパス（5 passed）
+
+### 次のステップ
+
+1. PROGRESS.mdに記録してgit commit
+2. チェックポイント保存
+
+---
+
 ## 2026-02-01 18:50 - Twitter OAuthでprofileImageを保存（実装済み）
 
 ### 作業内容
