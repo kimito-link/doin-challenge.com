@@ -994,3 +994,17 @@
 
 ### チェックポイント
 - [ ] チェックポイント作成
+
+---
+
+## 🔧 TypeScriptエラー修正（60件） (2026-02-02)
+
+### エラー修正
+- [x] TypeScriptエラーの詳細を確認
+- [x] app/invite/[id].tsxのエラーを修正（data型、customMessage）
+- [x] app/oauth/twitter-callback.tsxのエラーを修正（ThemedView、FollowSuccessModal）
+- [x] TypeScriptエラー: 60件 → 0件
+
+### テストとチェックポイント
+- [x] テスト実行（722 passed, 6 failed - tRPC統合テストの既存問題）
+- [ ] チェックポイント作成

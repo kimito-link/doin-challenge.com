@@ -1,5 +1,6 @@
 // v5.39: description field support
 import { FollowSuccessModal } from "@/components/molecules/follow-success-modal";
+import { ThemedView } from "@/components/atoms/themed-view";
 import * as Auth from "@/lib/_core/auth";
 import { saveTokenData } from "@/lib/token-manager";
 import { useLocalSearchParams } from "expo-router";
