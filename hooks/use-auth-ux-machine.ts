@@ -18,6 +18,7 @@ export type AuthUxState =
   | { name: "redirecting" }
   | { name: "waitingReturn"; startedAt: number; timeoutMs: number }
   | { name: "success" }
+  | { name: "showingWelcome" }
   | { name: "cancel"; kind: "timeout" | "user" }
   | { name: "error"; message?: string };
 
@@ -31,6 +32,8 @@ export type AuthUxAction =
   | { type: "REDIRECTING_START" }
   | { type: "WAITING_RETURN_START"; startedAt: number; timeoutMs: number }
   | { type: "SUCCESS" }
+  | { type: "SHOW_WELCOME" }
+  | { type: "HIDE_WELCOME" }
   | { type: "CANCEL"; kind: "timeout" | "user" }
   | { type: "ERROR"; message?: string }
   | { type: "RETRY" }
@@ -96,9 +99,23 @@ function authUxReducer(state: AuthUxState, action: AuthUxAction): AuthUxState {
       return state;
 
     case "SUCCESS":
-      // waitingReturn → success
+      // waitingReturn → showingWelcome
       if (state.name === "waitingReturn") {
-        return { name: "success" };
+        return { name: "showingWelcome" };
+      }
+      return state;
+
+    case "SHOW_WELCOME":
+      // success → showingWelcome
+      if (state.name === "success") {
+        return { name: "showingWelcome" };
+      }
+      return state;
+
+    case "HIDE_WELCOME":
+      // showingWelcome → idle
+      if (state.name === "showingWelcome") {
+        return { name: "idle" };
       }
       return state;
 
@@ -123,8 +140,8 @@ function authUxReducer(state: AuthUxState, action: AuthUxAction): AuthUxState {
       return state;
 
     case "BACK_WITHOUT_LOGIN":
-      // cancel/error/success → idle
-      if (state.name === "cancel" || state.name === "error" || state.name === "success") {
+      // cancel/error/success/showingWelcome → idle
+      if (state.name === "cancel" || state.name === "error" || state.name === "success" || state.name === "showingWelcome") {
         return { name: "idle" };
       }
       return state;
@@ -241,9 +258,19 @@ export function useAuthUxMachine() {
     dispatch({ type: "RETRY" });
   }, []);
 
-  // ログインせずに戻る（cancel/error/success → idle）
+  // ログインせずに戻る（cancel/error/success/showingWelcome → idle）
   const backWithoutLogin = useCallback(() => {
     dispatch({ type: "BACK_WITHOUT_LOGIN" });
+  }, []);
+
+  // ウェルカムメッセージを表示（success → showingWelcome）
+  const showWelcome = useCallback(() => {
+    dispatch({ type: "SHOW_WELCOME" });
+  }, []);
+
+  // ウェルカムメッセージを非表示（showingWelcome → idle）
+  const hideWelcome = useCallback(() => {
+    dispatch({ type: "HIDE_WELCOME" });
   }, []);
 
   return {
@@ -256,5 +283,7 @@ export function useAuthUxMachine() {
     error,
     retry,
     backWithoutLogin,
+    showWelcome,
+    hideWelcome,
   };
 }

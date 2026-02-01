@@ -19,6 +19,7 @@ import { SuccessScreen } from "@/components/molecules/auth-ux/SuccessScreen";
 import { CancelScreen } from "@/components/molecules/auth-ux/CancelScreen";
 import { ErrorScreen } from "@/components/molecules/auth-ux/ErrorScreen";
 import { useAuthUxMachine } from "@/hooks/use-auth-ux-machine";
+import { WelcomeMessage } from "@/components/common/WelcomeMessage";
 import * as Haptics from "expo-haptics";
 
 // キャラクター画像
@@ -35,7 +36,7 @@ export function GlobalMenu({ isVisible, onClose }: GlobalMenuProps) {
   
   const { user, isAuthenticated } = useAuth();
   const [showLogoutModal, setShowLogoutModal] = useState(false);
-  const { state, tapLogin, confirmYes, confirmNo, retry, backWithoutLogin } = useAuthUxMachine();
+  const { state, tapLogin, confirmYes, confirmNo, retry, backWithoutLogin, hideWelcome } = useAuthUxMachine();
 
   const handleHaptic = () => {
     if (Platform.OS !== "web") {
@@ -408,6 +409,13 @@ export function GlobalMenu({ isVisible, onClose }: GlobalMenuProps) {
           onBack={backWithoutLogin}
         />
       </Modal>
+      
+      {/* ウェルカムメッセージ */}
+      <WelcomeMessage
+        visible={state.name === "showingWelcome"}
+        onHide={hideWelcome}
+        userName={user?.name || user?.username}
+      />
     </>
   );
 }

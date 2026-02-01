@@ -14,6 +14,7 @@ import { SuccessScreen } from "@/components/molecules/auth-ux/SuccessScreen";
 import { CancelScreen } from "@/components/molecules/auth-ux/CancelScreen";
 import { ErrorScreen } from "@/components/molecules/auth-ux/ErrorScreen";
 import { useAuthUxMachine } from "@/hooks/use-auth-ux-machine";
+import { WelcomeMessage } from "@/components/common/WelcomeMessage";
 
 // ロゴ画像
 const logoImage = require("@/assets/images/logo/logo-color.jpg");
@@ -57,7 +58,7 @@ export function AppHeader({
   
   const { user } = useAuth();
   const [menuVisible, setMenuVisible] = useState(false);
-  const { state, tapLogin, confirmYes, confirmNo, retry, backWithoutLogin } = useAuthUxMachine();
+  const { state, tapLogin, confirmYes, confirmNo, retry, backWithoutLogin, hideWelcome } = useAuthUxMachine();
   
   const handleTitlePress = () => {
     triggerHaptic();
@@ -257,6 +258,13 @@ export function AppHeader({
           onBack={backWithoutLogin}
         />
       )}
+      
+      {/* ウェルカムメッセージ */}
+      <WelcomeMessage
+        visible={state.name === "showingWelcome"}
+        onHide={hideWelcome}
+        userName={user?.name || user?.username}
+      />
     </>
   );
 }

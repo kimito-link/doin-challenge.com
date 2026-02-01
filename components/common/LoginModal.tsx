@@ -3,6 +3,11 @@
  * 共通ログイン確認モーダル
  * 
  * すべての画面（ホーム、チャレンジ、マイページ）で使用する統一されたログインUI
+ * 
+ * 機能:
+ * - 3キャラクター（りんく、こん太、たぬ姉）のバリエーション
+ * - 5種類のメッセージバリエーション
+ * - A/Bテスト（表示回数・ログイン成功率の記録）
  */
 
 import { View, Text, Modal, Pressable, Image } from "react-native";
@@ -18,6 +23,7 @@ import Animated, {
   withSequence,
 } from "react-native-reanimated";
 import { useEffect, useState, useMemo } from "react";
+import { useLoginABTest } from "@/hooks/use-login-ab-test";
 
 interface LoginModalProps {
   visible: boolean;
@@ -25,29 +31,31 @@ interface LoginModalProps {
   onCancel: () => void;
 }
 
-// りんくのメッセージバリエーション
-const RINKU_MESSAGES = [
-  "ログインすると、参加履歴やお気に入りが使えるよ！",
-  "一緒に推しを応援しよう！ログインして参加しよう！",
-  "ログインすると、あなたの応援が記録されるよ！",
-  "みんなと一緒に推しを盛り上げよう！",
-  "ログインして、もっと楽しく推し活しよう！",
-];
-
 export function LoginModal({ 
   visible, 
   onConfirm, 
   onCancel 
 }: LoginModalProps) {
   const colors = useColors();
+  const { selectMessage, recordConversion, selectedMessage } = useLoginABTest();
+  const [currentMessage, setCurrentMessage] = useState(selectedMessage);
 
-  // ランダムなメッセージを選択（モーダルが表示されるたびに変わる）
-  const rinkuMessage = useMemo(() => {
-    return RINKU_MESSAGES[Math.floor(Math.random() * RINKU_MESSAGES.length)];
+  // モーダルが表示されるたびにメッセージを選択
+  useEffect(() => {
+    if (visible) {
+      const message = selectMessage();
+      setCurrentMessage(message);
+    }
   }, [visible]);
 
-  // りんくキャラクターのバウンスアニメーション
-  const rinkuAnimatedStyle = useAnimatedStyle(() => {
+  // ログイン確認時にコンバージョンを記録
+  const handleConfirm = () => {
+    recordConversion();
+    onConfirm();
+  };
+
+  // キャラクターのバウンスアニメーション
+  const characterAnimatedStyle = useAnimatedStyle(() => {
     return {
       transform: [
         {
@@ -63,6 +71,11 @@ export function LoginModal({
       ],
     };
   });
+
+  // メッセージが選択されていない場合は何も表示しない
+  if (!currentMessage) {
+    return null;
+  }
 
   return (
     <Modal
@@ -124,7 +137,7 @@ export function LoginModal({
             </Text>
           </View>
 
-          {/* りんくの吹き出し */}
+          {/* キャラクターの吹き出し */}
           <Animated.View 
             entering={FadeInDown.delay(200).springify()}
             style={{ 
@@ -142,10 +155,10 @@ export function LoginModal({
             }}
           >
             <Animated.Image
-              source={require("@/assets/images/characters/rinku.png")}
+              source={currentMessage.characterImage}
               style={[
                 { width: 64, height: 64, marginRight: 12 },
-                rinkuAnimatedStyle,
+                characterAnimatedStyle,
               ]}
             />
             <Animated.View 
@@ -158,7 +171,7 @@ export function LoginModal({
                 lineHeight: 23,
                 fontWeight: "500",
               }}>
-                {rinkuMessage}
+                {currentMessage.message}
               </Text>
             </Animated.View>
           </Animated.View>
@@ -166,7 +179,7 @@ export function LoginModal({
           {/* ボタン */}
           <View style={{ gap: 12 }}>
             <Button
-              onPress={onConfirm}
+              onPress={handleConfirm}
               icon="login"
               style={{ backgroundColor: "#1DA1F2" }}
             >
