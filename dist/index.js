@@ -773,6 +773,10 @@ async function upsertUser(user) {
       values.role = "admin";
       updateSet.role = "admin";
     }
+    if (user.gender !== void 0) {
+      values.gender = user.gender;
+      updateSet.gender = user.gender;
+    }
     if (!values.lastSignedIn) {
       values.lastSignedIn = /* @__PURE__ */ new Date();
     }
@@ -4025,14 +4029,7 @@ function registerTwitterRoutes(app) {
           name: userProfile.name,
           email: null,
           loginMethod: "twitter",
-          lastSignedIn: /* @__PURE__ */ new Date(),
-          // Twitter specific fields
-          username: userProfile.username,
-          profileImage: userProfile.profile_image_url?.replace("_normal", "_400x400"),
-          followersCount: userProfile.public_metrics?.followers_count || 0,
-          description: userProfile.description || "",
-          twitterId: userProfile.id,
-          twitterAccessToken: tokens.access_token
+          lastSignedIn: /* @__PURE__ */ new Date()
         });
         console.log("[Twitter OAuth 2.0] User profile saved to database");
       } catch (error) {
