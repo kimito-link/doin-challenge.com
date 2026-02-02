@@ -1,7 +1,6 @@
-import { ThemedView } from "@/components/atoms/themed-view";
-import { color, palette } from "@/theme/tokens";
 // v5.39: description field support
-import { FollowSuccessModal } from "@/components/molecules/follow-success-modal";
+
+
 import * as Auth from "@/lib/_core/auth";
 import { saveTokenData } from "@/lib/token-manager";
 import { useLocalSearchParams } from "expo-router";
@@ -226,7 +225,7 @@ export default function TwitterOAuthCallback() {
 
   return (
     <SafeAreaView className="flex-1 bg-background" edges={["top", "bottom", "left", "right"]}>
-      <ThemedView className="flex-1 items-center justify-center gap-4 p-5">
+      <View className="flex-1 items-center justify-center gap-4 p-5">
         {status === "processing" && (
           <View className="items-center justify-center gap-4">
             {/* ロゴ */}
@@ -244,7 +243,7 @@ export default function TwitterOAuthCallback() {
               style={{ marginVertical: 12 }}
             />
             
-            <ActivityIndicator size="large" color={color.orange500} />
+            <ActivityIndicator size="large" color="#f97316" />
             <Text className="mt-2 text-base leading-6 text-center text-foreground">
               認証を完了しています...
             </Text>
@@ -313,19 +312,8 @@ export default function TwitterOAuthCallback() {
           </View>
         )}
         
-        {/* フォロー完了お祝いモーダル */}
-        <FollowSuccessModal
-          visible={showFollowSuccessModal}
-          onClose={() => {
-            setShowFollowSuccessModal(false);
-            // モーダルを閉じたら保存したリダイレクト先に移動
-            console.log("[Twitter OAuth] Modal closed, redirecting to:", savedReturnUrl);
-            navigateReplace.withUrl(savedReturnUrl);
-          }}
-          targetUsername={targetAccountInfo?.username || "idolfunch"}
-          targetDisplayName={targetAccountInfo?.name || "君斗りんく"}
-        />
-      </ThemedView>
+
+      </View>
     </SafeAreaView>
   );
 }

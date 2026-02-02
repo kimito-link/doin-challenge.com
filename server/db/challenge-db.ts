@@ -1,7 +1,7 @@
-import { getDb, eq, desc, sql } from "./connection";
+import { getDb } from "./connection";
 import { generateSlug } from "./connection";
-import { challenges, InsertChallenge } from "../../drizzle/schema";
-
+import { challenges, InsertChallenge, users } from "../../drizzle/schema";
+import { sql, eq, desc } from "drizzle-orm";
 // 後方互換性のためのエイリアス
 const events = challenges;
 type InsertEvent = InsertChallenge;
@@ -21,7 +21,39 @@ export async function getAllEvents() {
   const db = await getDb();
   if (!db) return eventsCache.data ?? [];
   
-  const result = await db.select().from(events).where(eq(events.isPublic, true)).orderBy(desc(events.eventDate));
+  // v6.175: usersテーブルとJOINしてhostGenderを取得
+  const result = await db
+    .select({
+      id: events.id,
+      hostUserId: events.hostUserId,
+      hostTwitterId: events.hostTwitterId,
+      hostName: events.hostName,
+      hostUsername: events.hostUsername,
+      hostProfileImage: events.hostProfileImage,
+      hostFollowersCount: events.hostFollowersCount,
+      hostDescription: events.hostDescription,
+      hostGender: users.gender, // 主催者の性別
+      title: events.title,
+      slug: events.slug,
+      description: events.description,
+      goalType: events.goalType,
+      goalValue: events.goalValue,
+      goalUnit: events.goalUnit,
+      currentValue: events.currentValue,
+      eventType: events.eventType,
+      categoryId: events.categoryId,
+      eventDate: events.eventDate,
+      venue: events.venue,
+      prefecture: events.prefecture,
+      status: events.status,
+      isPublic: events.isPublic,
+      createdAt: events.createdAt,
+      updatedAt: events.updatedAt,
+    })
+    .from(events)
+    .leftJoin(users, eq(events.hostUserId, users.id))
+    .where(eq(events.isPublic, true))
+    .orderBy(desc(events.eventDate));
   
   // キャッシュを更新
   eventsCache = { data: result, timestamp: now };

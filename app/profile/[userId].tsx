@@ -167,13 +167,13 @@ export default function ProfileScreen() {
         />
         <UserProfileHeader
           user={{
-            twitterId: (profile.user as any)?.twitterId,
+            twitterId: profile.user?.twitterId || undefined,
             name: profile.user?.name || "名前未設定",
-            username: (profile.user as any)?.username,
-            profileImage: (profile.user as any)?.profileImage,
-            followersCount: (profile.user as any)?.followersCount,
-            description: (profile.user as any)?.description,
-            gender: (profile.user as any)?.gender,
+            username: profile.user?.username || undefined,
+            profileImage: profile.user?.profileImage || undefined,
+            followersCount: profile.user?.followersCount || 0,
+            description: profile.user?.description || undefined,
+            gender: profile.user?.gender as "male" | "female" | undefined,
           }}
           showFollowButton={!isOwnProfile && !!user}
           isFollowing={isFollowing}

@@ -10,6 +10,15 @@ import MaterialIcons from "@expo/vector-icons/MaterialIcons";
 import { color } from "@/theme/tokens";
 import { RANK_COLORS } from "./constants";
 import type { TopThreeItemProps } from "./types";
+import type { Gender } from "@/types/participation";
+import { getGenderIcon } from "@/types/participation";
+
+// v6.176: 性別に応じた色を取得
+function getGenderColor(gender: Gender | null | undefined): string {
+  if (gender === "male") return "#3B82F6"; // 男性: 青
+  if (gender === "female") return "#EC4899"; // 女性: ピンク
+  return "#64748B"; // 未指定: グレー
+}
 
 export function TopThreeItem({ participant, rank, isFirst = false }: TopThreeItemProps) {
   const colors = RANK_COLORS[rank];
@@ -26,20 +35,39 @@ export function TopThreeItem({ participant, rank, isFirst = false }: TopThreeIte
         <Text style={[styles.topThreeBadgeText, { color: colors.text }]}>{rank}</Text>
       </View>
 
-      <View style={isFirst ? styles.topThreeAvatarLarge : styles.topThreeAvatarSmall}>
-        {participant.profileImage && !participant.isAnonymous ? (
-          <Image
-            source={{ uri: participant.profileImage }}
-            style={isFirst ? styles.topThreeAvatarImgLarge : styles.topThreeAvatarImg}
-            contentFit="cover"
-          />
-        ) : (
-          <MaterialIcons
-            name="person"
-            size={isFirst ? 32 : 24}
-            color={color.textSubtle}
-          />
-        )}
+      <View style={{ position: "relative" }}>
+        <View
+          style={[
+            isFirst ? styles.topThreeAvatarLarge : styles.topThreeAvatarSmall,
+            { backgroundColor: getGenderColor(participant.gender) },
+          ]}
+        >
+          {participant.profileImage && !participant.isAnonymous ? (
+            <Image
+              source={{ uri: participant.profileImage }}
+              style={isFirst ? styles.topThreeAvatarImgLarge : styles.topThreeAvatarImg}
+              contentFit="cover"
+            />
+          ) : (
+            <MaterialIcons
+              name="person"
+              size={isFirst ? 32 : 24}
+              color={color.textSubtle}
+            />
+          )}
+        </View>
+        {/* v6.176: 性別アイコンバッジ */}
+        <View
+          style={[
+            styles.genderBadge,
+            isFirst && styles.genderBadgeFirst,
+            { backgroundColor: getGenderColor(participant.gender) },
+          ]}
+        >
+          <Text style={[styles.genderBadgeText, isFirst && styles.genderBadgeTextFirst]}>
+            {getGenderIcon(participant.gender)}
+          </Text>
+        </View>
       </View>
 
       <Text
@@ -132,5 +160,30 @@ const styles = StyleSheet.create({
   },
   topThreeScoreFirst: {
     fontSize: 18,
+  },
+  genderBadge: {
+    position: "absolute",
+    bottom: -2,
+    right: -2,
+    borderRadius: 10,
+    width: 20,
+    height: 20,
+    alignItems: "center",
+    justifyContent: "center",
+    borderWidth: 2,
+    borderColor: "#fff",
+  },
+  genderBadgeFirst: {
+    width: 24,
+    height: 24,
+    borderRadius: 12,
+  },
+  genderBadgeText: {
+    color: "#fff",
+    fontSize: 12,
+    fontWeight: "bold",
+  },
+  genderBadgeTextFirst: {
+    fontSize: 14,
   },
 });

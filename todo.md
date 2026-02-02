@@ -464,6 +464,9 @@
 - [x] sync-handlers.tsのfollowersCountエラーを修正
 - [x] useHomeData.tsのsearchエラーを修正
 - [x] その他のTypeScriptエラーを修正（60件→0件）
+- [x] twitter-routes.tsのupsertUserエラーを修正（Twitter固有フィールドを削除）
+- [x] twitter-callback.tsxのThemedViewインポートエラーを修正
+- [x] app/invite/[id].tsxの型エラーを修正
 
 ### ログインUI統一
 - [x] ホーム画面のログインボタンをLoginModalに統一
@@ -822,3 +825,201 @@
 - [ ] shared/version.tsのAPP_VERSIONを6.172に更新
 - [ ] チェックポイント保存
 - [ ] デプロイ
+
+
+---
+
+## 🚨 緊急: コンポーネント化の徹底（2026-02-01）
+
+### 問題
+- [x] UserProfileHeaderコンポーネントを作成したが、実際には使用されていない
+- [ ] ファンページ: 固定のピンク/紫グラデーション（性別による色分けなし）
+- [ ] マイページ: 黒背景（性別による色分けなし）
+- [ ] ホーム画面のチャレンジカード: 独自実装（統一されていない）
+
+### 修正タスク
+- [ ] ファンページ（app/profile/[userId].tsx）でUserProfileHeaderを使用
+- [ ] マイページ（features/mypage/components/ProfileCard.tsx）でUserProfileHeaderを使用
+- [ ] ホーム画面のチャレンジカードで統一されたデザインを使用
+- [ ] 視認性の確認（WCAG 2.1 AA基準）
+- [ ] チェックポイント保存
+- [ ] デプロイ
+
+
+---
+
+## 🚨 緊急: データベース最適化と性別色分けの修正（2026-02-01）
+
+### 真の原因
+- [x] UserProfileHeaderコンポーネントは既に実装済み
+- [x] ファンページでは既にUserProfileHeaderを使用中
+- [ ] **しかし、すべてのユーザーgender="unspecified"のため、全員ピンク色になる**
+- [ ] テストデータが多すぎてデータベースが散らかっている
+
+### 修正タスク
+- [x] データベースのテストデータを削除
+- [x] ユーザーのgenderを適切に設定（男性/女性）
+- [x] 動作確認（男性＝青、女性＝ピンク）
+- [ ] チェックポイント保存
+- [ ] デプロイ
+
+
+---
+
+## 🎨 マイページの性別色分けと新規ユーザーgender設定（2026-02-01）
+
+### タスク
+- [x] マイページのProfileCardをUserProfileHeaderに置き換え
+- [x] 参加表明フォームにgender選択を追加（既に性別選択はあるが、usersテーブルに保存されていない）
+- [x] 参加表明時にusersテーブルのgenderを更新
+- [ ] チェックポイント保存
+- [ ] デプロイ
+- [ ] 本番環境でテスト
+
+
+---
+
+## 🎨 gender="unspecified"の色追加とホーム画面の統一（2026-02-01）
+
+### タスク
+- [x] UserProfileHeaderにgender="unspecified"の場合のグレー系グラデーションを追加
+- [x] ホーム画面のChallengeCardコンポーネントで性別色分けを実装
+- [ ] チェックポイント保存
+- [ ] デプロイ
+- [ ] 本番環境でテスト
+
+
+---
+
+## 🎨 参加者一覧の性別色分けとアクセシビリティ確認（2026-02-01）
+
+### タスク
+- [x] チャレンジ詳細画面の参加者一覧で性別色分けを適用
+- [x] 色覚異常のユーザーでも区別できるよう、色だけでなくアイコンやラベルも追加
+- [x] チェックポイント保存
+- [ ] デプロイ
+- [ ] 本番環境でテスト
+
+
+---
+
+## 🐛 プレビュー環境でTwitterプロフィール画像が表示されない問題（2026-02-01）
+
+### 問題
+- プレビュー環境のホーム画面でチャレンジカードのサムネイル（hostProfileImage）が表示されない
+- 本番環境では正しく表示されている
+
+### タスク
+- [ ] データベースのchallengesテーブルを確認
+- [ ] hostProfileImageフィールドが空の場合は、有効なTwitterプロフィール画像URLを設定
+- [ ] チェックポイント保存
+- [ ] デプロイ
+
+
+---
+
+## 🚀 TDD駆動開発ワークフローの適用（2026-02-01）
+
+### フェーズ1: ドキュメント作成
+- [ ] docs/REQUIREMENTS.mdを作成（要件定義）
+- [ ] docs/DESIGN.mdを作成（設計書・タスク・テストケース）
+- [ ] docs/PROGRESS.mdを作成（作業履歴）
+
+### フェーズ2: Twitter OAuthのprofileImage保存機能
+- [ ] テストケースを作成（__tests__/twitter-oauth-profile-image.test.ts）
+- [ ] テストを実行して動作確認
+- [ ] テストに通らない場合は修正
+
+### フェーズ3: 作業履歴の記録とコミット
+- [ ] PROGRESS.mdに作業内容を記録
+- [ ] git add . && git commit -m "作業内容の要約"
+
+### フェーズ4: チェックポイント保存とデプロイ
+- [ ] チェックポイント保存
+- [ ] デプロイ
+- [ ] 本番環境でテスト
+
+
+---
+
+## 🐛 既存のTypeScriptエラーを修正（2026-02-01）
+
+### タスク
+- [ ] app/invite/[id].tsxのTypeScriptエラーを修正
+- [ ] app/oauth/twitter-callback.tsxのTypeScriptエラーを修正
+- [ ] テストを実行して動作確認
+- [ ] PROGRESS.mdに記録してgit commit
+- [ ] チェックポイント保存
+- [ ] デプロイ
+
+---
+
+## 📱 PWAインストールプロンプト実装 (2026-02-02)
+
+### インストールプロンプトバナー
+- [x] InstallPromptコンポーネントの作成
+- [x] 表示条件の設定（すでにインストール済みなら非表示）
+- [x] AsyncStorageでバナー非表示状態を保存
+- [x] ホーム画面への統合
+
+### インストール説明ページ
+- [x] iOS向けの説明（Safari）
+- [x] Android向けの説明（Chrome）
+- [x] スクリーンショット付きの手順
+- [x] ルーティング設定
+
+### テストと動作確認
+- [x] バナーの表示確認（Web版のみ、standaloneモードでは非表示）
+- [x] 「後で」ボタンの動作確認（AsyncStorageに保存）
+- [x] インストール説明ページの表示確認（/install-instructions）
+- [x] すでにインストール済みの場合の非表示確認
+
+### チェックポイント
+- [ ] チェックポイント作成
+
+---
+
+## 📊 データ駆動設計プロセス導入 (2026-02-02)
+
+### 現在のプロジェクトへの適用
+- [x] 既存のデータ構造を分析・整理
+- [x] design.mdに「データ設計」セクションを追加
+- [x] REQUIREMENTS.mdに状態遷移図を追加
+- [x] 曖昧な前提を洗い出し、明文化
+
+### 汎用テンプレート作成
+- [x] DATA_DESIGN_TEMPLATE.mdを作成
+- [x] 他のプロジェクトでも使える形式に整理
+- [x] ステップバイステップのガイドを含める
+
+### チェックポイント
+- [ ] チェックポイント作成
+
+---
+
+## 🔧 TypeScriptエラー修正（60件） (2026-02-02)
+
+### エラー修正
+- [x] TypeScriptエラーの詳細を確認
+- [x] app/invite/[id].tsxのエラーを修正（data型、customMessage）
+- [x] app/oauth/twitter-callback.tsxのエラーを修正（ThemedView、FollowSuccessModal）
+- [x] TypeScriptエラー: 60件 → 0件
+
+### テストとチェックポイント
+- [x] テスト実行（722 passed, 6 failed - tRPC統合テストの既存問題）
+- [x] チェックポイント作成
+
+---
+
+## 🚨 緊急: TypeScriptエラー修正とPublishボタン有効化 (2026-02-02)
+
+### エラー修正
+- [x] app/invite/[id].tsx(66,17): Parameter 'data' implicitly has an 'any' type
+- [x] app/oauth/twitter-callback.tsx: 不要なインポートを削除
+- [x] app/oauth/twitter-callback.tsx: FollowSuccessModalの使用箇所を削除
+- [x] app/oauth/twitter-callback.tsx: 終了タグを追加
+
+### 確認
+- [x] TypeScriptエラー: 60件 → 0件
+- [ ] サーバー再起動
+- [ ] Publishボタンが有効化されることを確認

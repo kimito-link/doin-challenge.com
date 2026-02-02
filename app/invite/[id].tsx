@@ -86,9 +86,6 @@ export default function InviteScreen() {
     const payload: { challengeId: number; maxUses?: number; expiresAt?: string } = {
       challengeId: parseInt(id),
     };
-    // Note: customMessageとcustomTitleはAPI側でサポートされていないため、コメントアウト
-    // ...(customMessage.trim() && { customMessage: customMessage.trim() }),
-    // ...(customTitle.trim() && { customTitle: customTitle.trim() }),
     createInviteMutation.mutate(payload);
   };
 

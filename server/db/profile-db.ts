@@ -1,5 +1,5 @@
 import { getDb, eq, desc, sql, ne } from "./connection";
-import { users, participations, challenges, userBadges, badges } from "../../drizzle/schema";
+import { users, participations, challenges, userBadges, badges, twitterUserCache } from "../../drizzle/schema";
 
 export async function getUserPublicProfile(userId: number) {
   const db = await getDb();
@@ -58,6 +58,15 @@ export async function getUserPublicProfile(userId: number) {
   // 最新の参加情報からプロフィール情報を取得
   const latestParticipation = participationList[0];
   
+  // Twitter情報をキャッシュから取得
+  let twitterData = null;
+  if (latestParticipation?.username) {
+    const twitterCache = await db.select().from(twitterUserCache).where(eq(twitterUserCache.twitterUsername, latestParticipation.username));
+    if (twitterCache.length > 0) {
+      twitterData = twitterCache[0];
+    }
+  }
+  
   return {
     user: {
       id: user.id,
@@ -66,6 +75,10 @@ export async function getUserPublicProfile(userId: number) {
       profileImage: latestParticipation?.profileImage || null,
       gender: user.gender,
       createdAt: user.createdAt,
+      // TwitterUserCardに必要なフィールド
+      twitterId: twitterData?.twitterId || null,
+      followersCount: twitterData?.followersCount || 0,
+      description: twitterData?.description || null,
     },
     stats: {
       totalContribution,
