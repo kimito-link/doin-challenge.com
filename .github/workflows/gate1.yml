@@ -1,0 +1,106 @@
+name: Gate 1 Check
+
+on:
+  pull_request:
+    branches: [main]
+  push:
+    branches: [main]
+
+jobs:
+  diff-check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 2  # 前回のコミットも取得
+      
+      - name: Run diff-check
+        id: diff-check
+        run: |
+          bash scripts/diff-check.sh
+        continue-on-error: true
+      
+      - name: Comment PR
+        if: github.event_name == 'pull_request'
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const sensitive = '${{ steps.diff-check.outputs.sensitive }}';
+            const touchAuth = '${{ steps.diff-check.outputs.touch_auth }}';
+            const touchDeploy = '${{ steps.diff-check.outputs.touch_deploy }}';
+            const touchEnv = '${{ steps.diff-check.outputs.touch_env }}';
+            const touchDb = '${{ steps.diff-check.outputs.touch_db }}';
+            const touchHealth = '${{ steps.diff-check.outputs.touch_health }}';
+            
+            let comment = '## 🔍 Gate 1: diff-check結果\n\n';
+            
+            if (sensitive === 'true') {
+              comment += '⚠️ **危険な変更が検知されました**\n\n';
+              comment += '以下の必須アクションを実行してください：\n\n';
+              
+              if (touchAuth === 'true') {
+                comment += '- [ ] **認証関連**: ログイン機能のテストを実施\n';
+              }
+              if (touchDeploy === 'true') {
+                comment += '- [ ] **Deploy関連**: Deploy後ヘルス照合を実施\n';
+              }
+              if (touchEnv === 'true') {
+                comment += '- [ ] **環境変数関連**: 環境変数の設定確認を実施\n';
+              }
+              if (touchDb === 'true') {
+                comment += '- [ ] **データベース関連**: マイグレーション実行確認を実施\n';
+              }
+              if (touchHealth === 'true') {
+                comment += '- [ ] **ヘルスチェック関連**: Deploy後ヘルス照合を実施\n';
+              }
+            } else {
+              comment += '✅ **危険な変更は検知されませんでした**\n';
+            }
+            
+            github.rest.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: comment
+            });
+
+      - name: Gate 1 enforcement
+        if: steps.diff-check.outputs.sensitive == 'true'
+        run: |
+          echo "❌ Gate 1: 危険な変更が検知されたため失敗させます"
+          exit 1
+
+  health-check:
+    runs-on: ubuntu-latest
+    needs: []
+    if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Wait for deployment
+        run: sleep 60  # デプロイが完了するまで待機
+      
+      - name: Check deployed commit SHA
+        run: |
+          EXPECTED_SHA="${{ github.sha }}"
+          ACTUAL_SHA="unknown"
+          for i in {1..10}; do
+            echo "Health check attempt ${i}..."
+            RESPONSE=$(curl -s https://doin-challenge.com/api/health || true)
+            if [ -n "${RESPONSE}" ]; then
+              ACTUAL_SHA=$(echo "${RESPONSE}" | jq -r .commitSha 2>/dev/null || echo "unknown")
+              if [ "${ACTUAL_SHA}" != "unknown" ]; then
+                break
+              fi
+            fi
+            sleep 10
+          done
+          
+          if [ "$EXPECTED_SHA" != "$ACTUAL_SHA" ]; then
+            echo "❌ Deployed commit mismatch"
+            echo "Expected: $EXPECTED_SHA"
+            echo "Actual: $ACTUAL_SHA"
+            exit 1
+          fi
+          
+          echo "✅ Deployed commit matches: $EXPECTED_SHA"
