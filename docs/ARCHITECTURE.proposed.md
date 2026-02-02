@@ -210,7 +210,7 @@ birthday-celebration/
 ├── docs/                    # ドキュメント
 │   ├── deployment-guide.md  # デプロイガイド
 │   ├── development-guide.md # 開発環境セットアップガイド
-│   ├── architecture.md      # アーキテクチャ設計書（このファイル）
+│   ├── ARCHITECTURE.md      # アーキテクチャ設計書（このファイル）
 │   ├── gate1.md             # 本番環境の品質基準
 │   ├── visibility-issues.md # 視認性問題の修正履歴
 │   └── chatlog-YYYYMMDD.md  # 作業ログ

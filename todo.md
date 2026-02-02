@@ -113,7 +113,7 @@
 ### ドキュメント整理
 - [x] README.mdを整理し、デプロイ方法を最優先で表示
 - [x] docs/development-guide.mdを作成（開発環境のセットアップ）
-- [x] docs/architecture.mdを作成（アーキテクチャの説明）
+- [x] docs/ARCHITECTURE.mdを作成（アーキテクチャの説明）
 - [x] chatlog-20260130.mdを作成（今回のセッションの作業ログ）
 - [x] v6.166のチェックポイント作成
 - [x] GitHubにプッシュ

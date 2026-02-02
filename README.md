@@ -61,7 +61,7 @@
 | `docs/chatlog-YYYYMMDD.md` | 過去の作業ログ（必ず読む） | 🔴 最高 |
 | `docs/deployment-guide.md` | デプロイ手順の詳細 | 🔴 最高 |
 | `docs/development-guide.md` | 開発環境のセットアップ | 🟡 高 |
-| `docs/architecture.md` | アーキテクチャの説明 | 🟢 中 |
+| `docs/ARCHITECTURE.md` | アーキテクチャの説明 | 🟢 中 |
 | `docs/gate1.md` | 本番環境の品質基準 | 🔴 最高 |
 | `todo.md` | 未完了タスク一覧 | 🔴 最高 |
 
