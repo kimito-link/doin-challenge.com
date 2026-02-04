@@ -10,7 +10,8 @@ import { eq, and, gte, lte, sql, desc } from "drizzle-orm";
 
 // X APIの従量課金設定
 const FREE_TIER_LIMIT = 100; // 月100件まで無料
-const COST_PER_REQUEST = 0.01; // 100件を超えた分は $0.01/件（仮定）
+// 要確認: X API公式の従量課金単価に更新すること（100件超過分のUSD/件）
+const COST_PER_REQUEST = 0.01;
 
 /**
  * API呼び出しを記録
