@@ -30,6 +30,58 @@
 - [ ] `components/molecules/challenge-created-modal.tsx` - チェックリスト形式のため構造が異なり、後回し
 - [ ] 手動動作確認
 
+### コミット履歴
+- 2025-01-31: Checkboxコンポーネント統一完了（commit: 66a216a）
+
+---
+
+---
+
+## 2025-01-31: TextInput → Input コンポーネント移行
+
+### 作業開始
+- **タスク**: TextInput → Input コンポーネントへの移行（パイロット）
+- **目的**: 重複実装されているTextInputパターンを統一Inputコンポーネントに置き換え
+- **対象ファイル（パイロット）**: 
+  1. `features/create/ui/components/create-challenge-form/TitleInputSection.tsx`
+  2. `features/create/ui/components/create-challenge-form/DescriptionSection.tsx`
+
+### 設計・要件定義完了
+- [x] REQUIREMENTS.md作成
+- [x] DESIGN.md作成
+- [x] TASKS.md作成
+
+### Phase 1完了: パイロット移行
+- [x] TitleInputSection.tsxの移行完了
+  - TextInput → Inputコンポーネント
+  - ラベルを`label` propに移動
+  - InlineValidationErrorを併用（キャラクター表示のため）
+- [x] DescriptionSection.tsxの移行完了
+  - TextInput → Inputコンポーネント（multiline対応）
+  - ラベルを`label` propに移動
+  - `multiline`と`numberOfLines` propを設定
+
+### 次のステップ
+1. 動作確認
+2. コミット
+3. 残り10ファイルの移行（Phase 2）
+
+---
+
+## 次のタスク候補
+
+### 優先度: 高
+1. **TextInput → Input コンポーネントへの移行（残り10ファイル）**
+   - パイロット完了後、残りファイルを順次移行
+
+2. **ローディング/エラー表示統一**
+   - Skeletonコンポーネントの統合
+   - エラーフォールバックの統一
+
+3. **型定義の統一**
+   - Gender型の統一（"unspecified" vs ""）
+   - Challenge/Participation型の統一
+
 ---
 
 ## 完了済みタスク
