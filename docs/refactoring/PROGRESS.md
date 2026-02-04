@@ -10,10 +10,13 @@
 - [x] `components/organisms/fan-profile-modal.tsx` - 独自retryButtonをRetryButtonコンポーネントに置き換え
 - [x] `components/organisms/host-profile-modal.tsx` - 独自retryButtonをRetryButtonコンポーネントに置き換え
 - [x] `features/create/ui/components/GoalTypeSelector.tsx` - TextInputをInputコンポーネントに移行
+- [x] `app/admin/release-notes.tsx` - TextInputをInputコンポーネントに移行（4箇所）
+- [x] `components/organisms/ticket-transfer-section/modals.tsx` - TextInputをInputコンポーネントに移行
 
 ### コミット履歴
 - 2025-02-04: RetryButton統一完了（fan-profile-modal, host-profile-modal）
 - 2025-02-04: GoalTypeSelectorのTextInputをInputに移行
+- 2025-02-04: release-notesとticket-transfer modalsのTextInputをInputに移行
 
 ---
 
