@@ -134,7 +134,7 @@ const styles = StyleSheet.create({
     textAlign: "center",
   },
   participantTwitter: {
-    fontSize: 10,
+    fontSize: 12,
     color: color.textSecondary,
     marginTop: 2,
   },
@@ -146,7 +146,7 @@ const styles = StyleSheet.create({
     marginTop: 4,
   },
   regionText: {
-    fontSize: 10,
+    fontSize: 12,
     color: color.accentPrimary,
   },
 });

@@ -305,7 +305,7 @@ export function SimpleRegionMap({ prefectureCounts }: { prefectureCounts: Prefec
                     backgroundColor: region.color,
                     marginRight: 6,
                   }} />
-                  <Text style={{ color: color.textMuted, fontSize: 11 }}>{region.name}</Text>
+                  <Text style={{ color: color.textMuted, fontSize: 12 }}>{region.name}</Text>
                 </View>
                 {isHot && (
                   <Text style={{ fontSize: 10 }}>🔥</Text>
@@ -357,7 +357,7 @@ export function SimpleRegionMap({ prefectureCounts }: { prefectureCounts: Prefec
             <Text style={{ color: color.accentPrimary, fontSize: 13, fontWeight: "bold" }}>
               {hotRegion.name}が熱い！
             </Text>
-            <Text style={{ color: color.textMuted, fontSize: 11, marginTop: 2 }}>
+            <Text style={{ color: color.textMuted, fontSize: 12, marginTop: 2 }}>
               {hotRegion.count}人が参加表明中
             </Text>
           </View>

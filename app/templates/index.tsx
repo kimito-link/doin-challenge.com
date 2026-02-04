@@ -83,7 +83,7 @@ export default function TemplatesScreen() {
         </Text>
         {item.isPublic && (
           <View style={{ backgroundColor: color.success, borderRadius: 4, paddingHorizontal: 6, paddingVertical: 2 }}>
-            <Text style={{ color: color.textWhite, fontSize: 10 }}>公開中</Text>
+            <Text style={{ color: color.textWhite, fontSize: 12 }}>公開中</Text>
           </View>
         )}
       </View>

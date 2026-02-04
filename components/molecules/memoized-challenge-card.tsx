@@ -231,7 +231,7 @@ const styles = StyleSheet.create({
   },
   badgeText: {
     color: color.textWhite,
-    fontSize: 10,
+    fontSize: 12,
     fontWeight: "600",
   },
   title: {

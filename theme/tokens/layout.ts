@@ -18,13 +18,13 @@ export const spacing = {
   "4xl": 64,
 } as const;
 
-// タイポグラフィ
+// タイポグラフィ（視認性: 黒背景では 12px を下限とする）
 export const typography = {
-  // フォントサイズ
+  // フォントサイズ（meta=xs, body=sm, title=base）
   fontSize: {
-    xs: 12,
-    sm: 14,
-    base: 16,
+    xs: 12,   // meta, ラベル
+    sm: 14,   // body, 本文
+    base: 16, // title, タイトル
     lg: 18,
     xl: 20,
     "2xl": 24,

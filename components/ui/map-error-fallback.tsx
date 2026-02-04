@@ -120,7 +120,7 @@ const styles = StyleSheet.create({
   },
   hint: {
     color: color.textSubtle,
-    fontSize: 11,
+    fontSize: 12,
     marginTop: 4,
   },
 });

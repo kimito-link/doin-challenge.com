@@ -180,13 +180,13 @@ const styles = StyleSheet.create({
     marginBottom: 2,
   },
   regionName: {
-    fontSize: 10,
+    fontSize: 12,
     fontWeight: "600",
     color: "#555",
     textAlign: "center",
   },
   count: {
-    fontSize: 11,
+    fontSize: 12,
     color: "#999",
     marginTop: 2,
   },

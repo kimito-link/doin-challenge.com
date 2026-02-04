@@ -359,7 +359,7 @@ export default function ProfileScreen() {
                     <Text style={{ color: colors.foreground, fontSize: 12, fontWeight: "600", textAlign: "center" }}>
                       {badge.name}
                     </Text>
-                    <Text style={{ color: color.textMuted, fontSize: 10, textAlign: "center", marginTop: 2 }}>
+                    <Text style={{ color: color.textMuted, fontSize: 12, textAlign: "center", marginTop: 2 }}>
                       {new Date(badge.earnedAt).toLocaleDateString("ja-JP")}
                     </Text>
                   </View>

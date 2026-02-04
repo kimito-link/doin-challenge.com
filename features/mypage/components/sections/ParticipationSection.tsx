@@ -3,12 +3,13 @@
  * マイページで参加中のチャレンジ一覧を表示する
  */
 
-import { View, Text, Pressable , Platform} from "react-native";
-import * as Haptics from "expo-haptics";
+import { View, Text, Pressable } from "react-native";
 import { useColors } from "@/hooks/use-colors";
+import { SectionHeader } from "@/components/ui";
 import { mypageUI, mypageText } from "../../ui/theme/tokens";
 import MaterialIcons from "@expo/vector-icons/MaterialIcons";
 import { FanEmptyState } from "@/components/organisms/fan-empty-state";
+import { typography } from "@/theme/tokens";
 
 interface Participation {
   id: number;
@@ -29,10 +30,7 @@ export function ParticipationSection({ participations, onChallengePress }: Parti
 
   return (
     <View style={{ paddingHorizontal: 16, marginBottom: 24 }}>
-      <Text style={{ color: colors.foreground, fontSize: 18, fontWeight: "bold", marginBottom: 12 }}>
-        参加チャレンジ
-      </Text>
-      
+      <SectionHeader title="参加チャレンジ" />
       {participations && participations.length > 0 ? (
         <View style={{ gap: 12 }}>
           {participations.map((participation) => (

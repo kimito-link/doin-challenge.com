@@ -332,7 +332,7 @@ export default function InviteScreen() {
                     borderColor: color.border,
                   }}
                 />
-                <Text style={{ color: color.textHint, fontSize: 11, marginTop: 4, textAlign: "right" }}>
+                <Text style={{ color: color.textHint, fontSize: 12, marginTop: 4, textAlign: "right" }}>
                   {customTitle.length}/100
                 </Text>
               </View>
@@ -362,7 +362,7 @@ export default function InviteScreen() {
                     borderColor: color.border,
                   }}
                 />
-                <Text style={{ color: color.textHint, fontSize: 11, marginTop: 4, textAlign: "right" }}>
+                <Text style={{ color: color.textHint, fontSize: 12, marginTop: 4, textAlign: "right" }}>
                   {customMessage.length}/500
                 </Text>
               </View>

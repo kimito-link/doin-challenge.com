@@ -83,7 +83,7 @@ export function ParticipantsList({
                 </View>
               </View>
               <Text
-                style={{ color: colors.foreground, fontSize: 11, marginTop: 4, textAlign: "center" }}
+                style={{ color: colors.foreground, fontSize: 12, marginTop: 4, textAlign: "center" }}
                 numberOfLines={1}
               >
                 {p.displayName}

@@ -431,7 +431,7 @@ const styles = StyleSheet.create({
     alignItems: "center",
   },
   genderBarText: {
-    fontSize: 10,
+    fontSize: 12,
     fontWeight: "bold",
   },
   genderLegend: {
@@ -483,7 +483,7 @@ const styles = StyleSheet.create({
     backgroundColor: color.accentPrimary,
   },
   genderFilterText: {
-    fontSize: 11,
+    fontSize: 12,
     fontWeight: "600",
   },
   prefectureFilterButton: {
@@ -542,7 +542,7 @@ const styles = StyleSheet.create({
     backgroundColor: color.accentPrimary,
   },
   prefectureChipText: {
-    fontSize: 11,
+    fontSize: 12,
   },
   ownPostHighlight: {
     borderWidth: 3,

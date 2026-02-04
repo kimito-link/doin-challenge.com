@@ -3,29 +3,32 @@
  * 
  * events配下のコンポーネントでは直書き色（#XXXXXX）を使用せず、
  * このトークンを使用することで視認性を保証し、再発を防止する。
+ * 一般テキスト色は semantic と揃え、黒背景での可読性を優先。
  * 
  * 使用例:
  * import { eventText, eventFont } from "@/features/events/ui/theme/tokens";
  * <Text style={{ color: eventText.username, fontSize: eventFont.username }}>@{username}</Text>
  */
 
+import { palette } from "@/theme/tokens";
+
 /**
  * テキスト色トークン
- * ダーク背景（#1A1D21）に対して十分なコントラスト比を確保
+ * ダーク背景に対して十分なコントラスト比を確保（semantic と統一）
  */
 export const eventText = {
-  // 一般テキスト
-  primary: "#E5E7EB",   // ほぼ白（ダークで読みやすい）コントラスト比: 12.6:1
-  muted: "#D1D5DB",     // サブテキスト（followersなど）コントラスト比: 11.48:1
+  // 一般テキスト（semantic と同一方針）
+  primary: palette.gray100,   // #f5f5f5
+  muted: palette.gray200,      // #d4d4d4
 
   // 特定用途
-  username: "#FBBF24",  // @username（視認性強）コントラスト比: 10.13:1
-  follower: "#F472B6",  // フォロワー数（ピンクを明度寄せ）コントラスト比: 6.39:1
-  
-  // 補助
-  secondary: "#9CA3AF", // 補助テキスト（大きいサイズ用）コントラスト比: 6.66:1
-  hint: "#6B7280",      // ヒントテキスト（大きいサイズ用）コントラスト比: 4.48:1
-  
+  username: "#FBBF24",  // @username（視認性強）
+  follower: "#F472B6",  // フォロワー数（ピンク）
+
+  // 補助（semantic.textSecondary / textHint と統一）
+  secondary: palette.gray200, // #d4d4d4
+  hint: palette.gray300,      // #a3a3a3
+
   // アクセント・強調
   accent: "#D91C81",    // 強調（貢献度など）- WCAG AA準拠
   danger: "#EF4444",    // 削除・警告

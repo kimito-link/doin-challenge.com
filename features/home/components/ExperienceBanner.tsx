@@ -75,7 +75,7 @@ export function ExperienceBanner() {
             </Text>
             <Text style={{ 
               color: "rgba(255,255,255,0.8)", 
-              fontSize: 11,
+              fontSize: 12,
               textAlign: "center",
             }}>
               チャレンジを{"\n"}作る側の体験
@@ -112,7 +112,7 @@ export function ExperienceBanner() {
             </Text>
             <Text style={{ 
               color: "rgba(255,255,255,0.8)", 
-              fontSize: 11,
+              fontSize: 12,
               textAlign: "center",
             }}>
               参加表明する{"\n"}側の体験

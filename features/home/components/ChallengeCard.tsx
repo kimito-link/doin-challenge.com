@@ -6,7 +6,7 @@ import { View, Text } from "react-native";
 import { LinearGradient } from "expo-linear-gradient";
 import MaterialIcons from "@expo/vector-icons/MaterialIcons";
 import { useColors } from "@/hooks/use-colors";
-import { homeColor, homeGradient, homeUI, homeText } from "@/features/home/ui/theme/tokens";
+import { homeColor, homeGradient, homeUI, homeText, homeFont } from "@/features/home/ui/theme/tokens";
 import { useResponsive } from "@/hooks/use-responsive";
 import { AnimatedCard } from "@/components/molecules/animated-pressable";
 import { LazyAvatar } from "@/components/molecules/lazy-image";
@@ -72,7 +72,7 @@ export function ChallengeCard({
     >
       <View style={{ position: "absolute", top: 8, left: 8, zIndex: 1 }}>
         <View style={{ backgroundColor: typeBadge.color, paddingHorizontal: 8, paddingVertical: 2, borderRadius: 4 }}>
-          <Text style={{ color: colors.foreground, fontSize: 10, fontWeight: "bold" }}>{typeBadge.label}</Text>
+          <Text style={{ color: colors.foreground, fontSize: homeFont.meta, fontWeight: "bold" }}>{typeBadge.label}</Text>
         </View>
       </View>
 
@@ -104,15 +104,15 @@ export function ChallengeCard({
       </LinearGradient>
 
       <View style={{ padding: 16, paddingTop: 20 }}>
-        <Text style={{ color: colors.foreground, fontSize: 14, fontWeight: "bold", marginBottom: 4 }} numberOfLines={2}>
+        <Text style={{ color: colors.foreground, fontSize: homeFont.body, fontWeight: "bold", marginBottom: 4 }} numberOfLines={2}>
           {challenge.title}
         </Text>
-        <Text style={{ color: homeText.muted, fontSize: 12, marginBottom: 8 }} numberOfLines={1}>{challenge.hostName}</Text>
+        <Text style={{ color: homeText.muted, fontSize: homeFont.meta, marginBottom: 8 }} numberOfLines={1}>{challenge.hostName}</Text>
         <View style={{ marginBottom: 8 }}>
           <View style={{ flexDirection: "row", justifyContent: "space-between", marginBottom: 4 }}>
-            <Text style={{ color: colors.foreground, fontSize: 18, fontWeight: "bold" }}>
+            <Text style={{ color: colors.foreground, fontSize: homeFont.title, fontWeight: "bold" }}>
               {challenge.currentValue}
-              <Text style={{ fontSize: 12, color: homeText.muted }}> / {challenge.goalValue}{unit}</Text>
+              <Text style={{ fontSize: homeFont.meta, color: homeText.muted }}> / {challenge.goalValue}{unit}</Text>
             </Text>
           </View>
           <View style={{ height: 6, backgroundColor: homeUI.progressBar, borderRadius: 3, overflow: "hidden" }}>
@@ -123,7 +123,7 @@ export function ChallengeCard({
               style={{ height: "100%", width: `${progress}%`, borderRadius: 3 }}
             />
           </View>
-          <Text style={{ color: homeText.muted, fontSize: 10, marginTop: 4 }}>
+          <Text style={{ color: homeText.muted, fontSize: homeFont.meta, marginTop: 4 }}>
             あと{remaining}{unit}で目標達成！
           </Text>
         </View>

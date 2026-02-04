@@ -53,7 +53,7 @@ const styles = StyleSheet.create({
   },
   legendText: {
     color: color.textMuted,
-    fontSize: 11,
+    fontSize: 12,
     marginHorizontal: 4,
   },
 });

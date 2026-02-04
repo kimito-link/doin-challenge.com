@@ -112,7 +112,7 @@ export default function RankingsScreen() {
         <Text style={{ color: color.textWhite, fontSize: 18, fontWeight: "bold" }}>
           ランキング
         </Text>
-        <Text style={{ color: "#A0AEC0", fontSize: 12, marginTop: 4 }}>
+        <Text style={{ color: color.textSecondary, fontSize: 12, marginTop: 4 }}>
           チャレンジへの参加・貢献でポイントを獲得して上位を目指そう
         </Text>
       </View>
@@ -156,7 +156,7 @@ export default function RankingsScreen() {
 
       {/* タブ説明 */}
       <View style={{ paddingHorizontal: 16, paddingBottom: 8 }}>
-        <Text style={{ color: color.textSubtle, fontSize: 11 }}>
+        <Text style={{ color: color.textSubtle, fontSize: 12 }}>
           {tab === "contribution" 
             ? "貢献度: チャレンジへの参加・同伴・拡散で獲得したポイントのランキング"
             : "主催者: チャレンジを作成した人の総参加予定数ランキング"}
@@ -298,7 +298,7 @@ export default function RankingsScreen() {
                 <Text style={{ color: color.accentPrimary, fontSize: 18, fontWeight: "bold" }}>
                   {((item as ContributionRankingItem).totalContribution || (item as HostRankingItem).totalParticipants || 0).toLocaleString()}
                 </Text>
-                <Text style={{ color: color.textMuted, fontSize: 10 }}>
+                <Text style={{ color: color.textMuted, fontSize: 12 }}>
                   {tab === "contribution" ? "貢献度" : "総参加予定数（現時点）"}
                 </Text>
               </View>

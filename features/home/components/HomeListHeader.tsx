@@ -6,6 +6,7 @@
 
 import { View, Text } from "react-native";
 import { color } from "@/theme/tokens";
+import { homeText } from "@/features/home/ui/theme/tokens";
 import { OnboardingSteps } from "@/components/organisms/onboarding-steps";
 import { ChallengeCardSkeleton } from "@/components/atoms/skeleton-loader";
 import { 
@@ -132,7 +133,7 @@ export function HomeListHeader({
           <Text style={{ fontSize: 48, marginBottom: 16 }}>
             {filter === "favorites" ? "⭐" : filter === "solo" ? "👤" : filter === "group" ? "👥" : "🔍"}
           </Text>
-          <Text style={{ color: "#9CA3AF", fontSize: 16, textAlign: "center", marginBottom: 8 }}>
+          <Text style={{ color: homeText.primary, fontSize: 16, textAlign: "center", marginBottom: 8 }}>
             {filter === "favorites" 
               ? "お気に入りのチャレンジはまだありません"
               : filter === "solo"
@@ -143,7 +144,7 @@ export function HomeListHeader({
               ? "このカテゴリのチャレンジはまだありません"
               : "該当するチャレンジがありません"}
           </Text>
-          <Text style={{ color: "#6B7280", fontSize: 14, textAlign: "center" }}>
+          <Text style={{ color: homeText.hint, fontSize: 14, textAlign: "center" }}>
             {filter === "favorites" 
               ? "チャレンジの☆ボタンを押してお気に入りに追加しよう"
               : "「総合」タブで全てのチャレンジを見る"}

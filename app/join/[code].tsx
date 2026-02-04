@@ -208,7 +208,7 @@ export default function JoinScreen() {
                   borderLeftColor: color.hostAccentLegacy,
                 }}
               >
-                <Text style={{ color: color.textMuted, fontSize: 11, marginBottom: 4 }}>
+                <Text style={{ color: color.textMuted, fontSize: 12, marginBottom: 4 }}>
                   💬 {invitation.inviterName || "友達"}さんからのメッセージ
                 </Text>
                 <Text style={{ color: color.textWhite, fontSize: 14, lineHeight: 20 }}>

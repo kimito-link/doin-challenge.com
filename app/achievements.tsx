@@ -134,7 +134,7 @@ function AchievementCard({
                 marginLeft: 8,
               }}
             >
-              <Text style={{ color: colors.badgeText, fontSize: 11, fontWeight: "bold" }}>
+              <Text style={{ color: colors.badgeText, fontSize: 12, fontWeight: "bold" }}>
                 {RARITY_NAMES[achievement.rarity] || 'コモン'}
               </Text>
             </View>
@@ -155,7 +155,7 @@ function AchievementCard({
                   }}
                 />
               </View>
-              <Text style={{ color: color.textSubtle, fontSize: 11, marginTop: 4 }}>
+              <Text style={{ color: color.textSubtle, fontSize: 12, marginTop: 4 }}>
                 {progress} / {maxProgress}
               </Text>
             </View>
@@ -165,7 +165,7 @@ function AchievementCard({
           <Text style={{ color: isUnlocked ? color.rankGold : color.textSubtle, fontSize: 14, fontWeight: "bold" }}>
             +{achievement.points}
           </Text>
-          <Text style={{ color: color.textSubtle, fontSize: 10 }}>ポイント</Text>
+          <Text style={{ color: color.textSubtle, fontSize: 12 }}>ポイント</Text>
         </View>
       </View>
     </View>

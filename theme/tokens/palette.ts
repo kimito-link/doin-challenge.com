@@ -34,11 +34,11 @@ export const palette = {
   gray700: "#262626",         // border
   gray600: "#404040",         // border alt
 
-  // Neutral (text) - 視認性改善（WCAG AA準拠）
-  gray500: "#525252",         // hint text
-  gray400: "#7a7a7a",         // secondary text / placeholder（コントラスト比4.61:1）
-  gray300: "#a3a3a3",         // muted text
-  gray200: "#d4d4d4",         // subtle text
+  // Neutral (text) - 視認性改善（黒背景で読めるよう semantic で gray300/200 を採用）
+  gray500: "#525252",         // 非推奨（黒背景でコントラスト不足）。semantic.textHint は gray300 を使用
+  gray400: "#7a7a7a",         // 非推奨（黒背景でやや薄い）。semantic.textSecondary は gray200 を使用
+  gray300: "#a3a3a3",         // muted / hint（プレースホルダ等）
+  gray200: "#d4d4d4",         // subtle / secondary（本文・ラベル）
   gray100: "#f5f5f5",         // primary text（最も明るい）
   white: "#FFFFFF",
 

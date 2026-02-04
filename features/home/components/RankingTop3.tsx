@@ -215,7 +215,7 @@ const styles = StyleSheet.create({
   },
   badgeText: {
     color: homeText.accent,
-    fontSize: 11,
+    fontSize: 12,
     fontWeight: "bold",
   },
   secondRow: {
@@ -293,7 +293,7 @@ const styles = StyleSheet.create({
     gap: 8,
   },
   statText: {
-    fontSize: 11,
+    fontSize: 12,
   },
   progressBadge: {
     paddingHorizontal: 6,
@@ -301,7 +301,7 @@ const styles = StyleSheet.create({
     borderRadius: 8,
   },
   progressText: {
-    fontSize: 10,
+    fontSize: 12,
     fontWeight: "bold",
   },
   progressBar: {

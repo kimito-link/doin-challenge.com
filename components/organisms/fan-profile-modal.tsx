@@ -428,7 +428,7 @@ const styles = StyleSheet.create({
     fontWeight: "700",
   },
   statCardLabel: {
-    fontSize: 11,
+    fontSize: 12,
     marginTop: 2,
   },
   recentChallenges: {
@@ -454,11 +454,11 @@ const styles = StyleSheet.create({
     fontWeight: "500",
   },
   challengeTarget: {
-    fontSize: 11,
+    fontSize: 12,
     marginTop: 2,
   },
   challengeDate: {
-    fontSize: 11,
+    fontSize: 12,
   },
   noDataContainer: {
     paddingVertical: 20,

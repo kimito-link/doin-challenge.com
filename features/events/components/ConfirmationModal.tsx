@@ -283,7 +283,7 @@ const styles = StyleSheet.create({
     alignItems: "center",
   },
   companionAvatarText: {
-    fontSize: 10,
+    fontSize: 12,
   },
   companionName: {
     fontSize: 14,

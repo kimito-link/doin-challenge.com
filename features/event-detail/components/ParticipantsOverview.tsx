@@ -4,9 +4,10 @@
  */
 
 import { View, Text } from "react-native";
-import MaterialIcons from "@expo/vector-icons/MaterialIcons";
 import { color } from "@/theme/tokens";
 import { useColors } from "@/hooks/use-colors";
+import { SectionHeader } from "@/components/ui";
+import { typography } from "@/theme/tokens";
 import { TicketTransferSection } from "@/components/organisms/ticket-transfer-section";
 import { TopThreeRanking } from "@/components/organisms/participant-ranking";
 import {
@@ -70,19 +71,17 @@ export function ParticipantsOverview({
       {attendanceTypeCounts && (
         <View style={{ marginTop: 16, marginHorizontal: 16 }}>
           <View style={{ backgroundColor: color.surface, borderRadius: 16, padding: 16 }}>
-            <Text style={{ color: colors.foreground, fontSize: 18, fontWeight: "bold", marginBottom: 12 }}>
-              参加方法別内訳
-            </Text>
+            <SectionHeader title="参加方法別内訳" style={{ paddingHorizontal: 0, paddingVertical: 0, marginBottom: 12 }} />
             <View style={{ flexDirection: "row", gap: 12 }}>
               <View style={{ flex: 1, backgroundColor: color.bg, borderRadius: 12, padding: 12 }}>
-                <Text style={{ color: colors.muted, fontSize: 12, marginBottom: 4 }}>🏟️ 会場参加</Text>
-                <Text style={{ color: colors.foreground, fontSize: 24, fontWeight: "bold" }}>
+                <Text style={{ color: colors.muted, fontSize: typography.fontSize.xs, marginBottom: 4 }}>🏟️ 会場参加</Text>
+                <Text style={{ color: colors.foreground, fontSize: typography.fontSize["2xl"], fontWeight: "bold" }}>
                   {attendanceTypeCounts.venue + attendanceTypeCounts.both}
                 </Text>
               </View>
               <View style={{ flex: 1, backgroundColor: color.bg, borderRadius: 12, padding: 12 }}>
-                <Text style={{ color: colors.muted, fontSize: 12, marginBottom: 4 }}>📺 配信視聴</Text>
-                <Text style={{ color: colors.foreground, fontSize: 24, fontWeight: "bold" }}>
+                <Text style={{ color: colors.muted, fontSize: typography.fontSize.xs, marginBottom: 4 }}>📺 配信視聴</Text>
+                <Text style={{ color: colors.foreground, fontSize: typography.fontSize["2xl"], fontWeight: "bold" }}>
                   {attendanceTypeCounts.streaming + attendanceTypeCounts.both}
                 </Text>
               </View>
@@ -127,10 +126,7 @@ export function ParticipantsOverview({
       {participations.length >= 3 && (
         <View style={{ marginTop: 16, marginHorizontal: 16 }}>
           <View style={{ backgroundColor: color.surface, borderRadius: 16, padding: 16 }}>
-            <View style={{ flexDirection: "row", alignItems: "center", gap: 8, marginBottom: 8 }}>
-              <MaterialIcons name="emoji-events" size={24} color={color.rankGold} />
-              <Text style={{ color: colors.foreground, fontSize: 18, fontWeight: "bold" }}>貢献トップ3</Text>
-            </View>
+            <SectionHeader title="貢献トップ3" icon="emoji-events" iconColor={color.rankGold} style={{ paddingHorizontal: 0, paddingVertical: 0, marginBottom: 8 }} />
             <TopThreeRanking participants={participations} />
           </View>
         </View>

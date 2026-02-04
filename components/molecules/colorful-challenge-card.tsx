@@ -371,7 +371,7 @@ const styles = StyleSheet.create({
   },
   ownerBadgeText: {
     color: color.textWhite,
-    fontSize: 9,
+    fontSize: 12,
     fontWeight: "600",
   },
   content: {
@@ -407,7 +407,7 @@ const styles = StyleSheet.create({
   },
   badgeText: {
     color: color.textWhite,
-    fontSize: 10,
+    fontSize: 12,
     fontWeight: "600",
   },
   progressContainer: {
@@ -461,12 +461,12 @@ const styles = StyleSheet.create({
   },
   hostName: {
     color: "rgba(255,255,255,0.9)",
-    fontSize: 11,
+    fontSize: 12,
     fontWeight: "600",
   },
   hostUsername: {
     color: "rgba(255,255,255,0.7)",
-    fontSize: 9,
+    fontSize: 12,
   },
   // モーダルスタイル
   modalOverlay: {

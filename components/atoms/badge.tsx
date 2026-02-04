@@ -48,7 +48,7 @@ const sizeStyles = {
   sm: {
     paddingVertical: 2,
     paddingHorizontal: 8,
-    fontSize: 10,
+    fontSize: 12,
     borderRadius: 4,
   },
   md: {

@@ -473,7 +473,7 @@ const styles = StyleSheet.create({
   },
   contributionLabel: {
     color: color.textSubtle,
-    fontSize: 11,
+    fontSize: 12,
   },
   messageBox: {
     backgroundColor: color.surface,

@@ -281,7 +281,7 @@ export default function NotificationsScreen() {
                     <Text style={{ color: color.textMuted, fontSize: 13, marginTop: 4, lineHeight: 18 }}>
                       {notification.body}
                     </Text>
-                    <Text style={{ color: color.textSubtle, fontSize: 11, marginTop: 8 }}>
+                    <Text style={{ color: color.textSubtle, fontSize: 12, marginTop: 8 }}>
                       {new Date(notification.sentAt).toLocaleString("ja-JP")}
                     </Text>
                   </View>

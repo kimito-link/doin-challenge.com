@@ -275,13 +275,13 @@ export default function AchievementPage() {
                     </View>
                   )}
                   <Text
-                    style={{ color: color.textMuted, fontSize: 10, textAlign: "center" }}
+                    style={{ color: color.textMuted, fontSize: 12, textAlign: "center" }}
                     numberOfLines={1}
                   >
                     {p.isAnonymous ? "匿名" : p.displayName}
                   </Text>
                   {p.contribution > 1 && (
-                    <Text style={{ color: color.accentPrimary, fontSize: 10 }}>
+                    <Text style={{ color: color.accentPrimary, fontSize: 12 }}>
                       +{p.contribution}
                     </Text>
                   )}

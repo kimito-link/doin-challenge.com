@@ -156,7 +156,7 @@ const styles = StyleSheet.create({
   },
   typeBadgeText: {
     color: "#fff",
-    fontSize: 10,
+    fontSize: 12,
     fontWeight: "bold",
   },
   title: {
@@ -183,7 +183,7 @@ const styles = StyleSheet.create({
   },
   progressGoal: {
     color: homeText.muted,
-    fontSize: 11,
+    fontSize: 12,
   },
   dateContainer: {
     flexDirection: "row",

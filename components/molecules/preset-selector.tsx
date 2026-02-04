@@ -228,7 +228,7 @@ const styles = StyleSheet.create({
     fontWeight: "600",
   },
   presetDesc: {
-    fontSize: 11,
+    fontSize: 12,
     marginTop: 2,
   },
   presetMeta: {
@@ -237,6 +237,6 @@ const styles = StyleSheet.create({
     marginTop: 4,
   },
   presetMetaText: {
-    fontSize: 11,
+    fontSize: 12,
   },
 });

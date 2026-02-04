@@ -242,7 +242,7 @@ export default function ManageCommentsScreen() {
                             paddingVertical: 4,
                           }}
                         >
-                          <Text style={{ color: colors.foreground, fontSize: 10, fontWeight: "bold" }}>
+                          <Text style={{ color: colors.foreground, fontSize: 12, fontWeight: "bold" }}>
                             ピックアップ済
                           </Text>
                         </View>
@@ -394,7 +394,7 @@ export default function ManageCommentsScreen() {
                           paddingVertical: 4,
                         }}
                       >
-                        <Text style={{ color: "#000", fontSize: 10, fontWeight: "bold" }}>
+                        <Text style={{ color: "#000", fontSize: 12, fontWeight: "bold" }}>
                           動画使用済
                         </Text>
                       </View>

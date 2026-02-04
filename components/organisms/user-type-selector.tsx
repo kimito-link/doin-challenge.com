@@ -320,7 +320,7 @@ const styles = StyleSheet.create({
   },
   optionBadgeText: {
     color: color.textWhite,
-    fontSize: 10,
+    fontSize: 12,
     fontWeight: "600",
   },
   helpText: {

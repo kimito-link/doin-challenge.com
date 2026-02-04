@@ -81,11 +81,11 @@ function TimeHeatmap({ participations }: { participations: Participation[] }) {
                 justifyContent: "center",
               }}
             >
-              <Text style={{ color: count > 0 ? color.textWhite : color.textSubtle, fontSize: 10 }}>
+              <Text style={{ color: count > 0 ? color.textWhite : color.textSubtle, fontSize: 11 }}>
                 {hour}時
               </Text>
               {count > 0 && (
-                <Text style={{ color: color.textWhite, fontSize: 10, fontWeight: "bold" }}>
+                <Text style={{ color: color.textWhite, fontSize: 11, fontWeight: "bold" }}>
                   {count}
                 </Text>
               )}
@@ -178,17 +178,17 @@ function DailyTrendChart({ participations }: { participations: Participation[] }
           {dailyData.length <= 7 ? (
             dailyData.map((d, index) => (
               <View key={d.date} style={{ flex: 1, alignItems: "center" }}>
-                <Text style={{ color: color.textSubtle, fontSize: 8 }}>
+                <Text style={{ color: color.textSubtle, fontSize: 11 }}>
                   {d.date.slice(5)}
                 </Text>
               </View>
             ))
           ) : (
             <>
-              <Text style={{ color: color.textSubtle, fontSize: 10, flex: 1 }}>
+              <Text style={{ color: color.textSubtle, fontSize: 11, flex: 1 }}>
                 {dailyData[0]?.date.slice(5)}
               </Text>
-              <Text style={{ color: color.textSubtle, fontSize: 10, flex: 1, textAlign: "right" }}>
+              <Text style={{ color: color.textSubtle, fontSize: 11, flex: 1, textAlign: "right" }}>
                 {dailyData[dailyData.length - 1]?.date.slice(5)}
               </Text>
             </>

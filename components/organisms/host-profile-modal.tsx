@@ -289,7 +289,7 @@ const styles = StyleSheet.create({
   },
   hostBadgeText: {
     color: color.textWhite,
-    fontSize: 11,
+    fontSize: 12,
     fontWeight: "600",
   },
   name: {

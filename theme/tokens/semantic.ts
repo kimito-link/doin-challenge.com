@@ -22,12 +22,12 @@ export const color = {
   border: palette.gray700,       // #262626
   borderAlt: palette.gray600,    // #404040
 
-  // Text - 視認性改善（WCAG AA準拠）
-  textPrimary: palette.gray100,  // #f5f5f5
-  textMuted: palette.gray300,    // #a3a3a3
-  textSubtle: palette.gray200,   // #d4d4d4
-  textSecondary: palette.gray400, // #7a7a7a（コントラスト比4.61:1）
-  textHint: palette.gray500,     // #525252
+  // Text - 視認性改善（WCAG AA準拠・黒背景での読みやすさ優先）
+  textPrimary: palette.gray100,   // #f5f5f5
+  textMuted: palette.gray300,     // #a3a3a3
+  textSubtle: palette.gray200,    // #d4d4d4
+  textSecondary: palette.gray200, // #d4d4d4（旧gray400→視認性のため明るく）
+  textHint: palette.gray300,      // #a3a3a3（旧gray500→プレースホルダも読めるように）
   textWhite: palette.white,
 
   // Accents - Pink & Purple

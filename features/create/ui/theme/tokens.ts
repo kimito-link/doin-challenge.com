@@ -1,8 +1,11 @@
 /**
  * チャレンジ作成画面用カラートークン
  * 
- * 直書き色を一元管理し、テーマ変更を容易にする
+ * 直書き色を一元管理し、テーマ変更を容易にする。
+ * テキスト補助色は semantic（palette）と統一。
  */
+
+import { palette } from "@/theme/tokens";
 
 // UI要素色
 export const createUI = {
@@ -20,11 +23,11 @@ export const createUI = {
   successAccent: "#22C55E",     // 緑（公開設定）
 } as const;
 
-// テキスト色
+// テキスト色（semantic.textHint と統一）
 export const createText = {
-  placeholder: "#9CA3AF",       // プレースホルダー
-  muted: "#9CA3AF",             // 補足テキスト
-  accent: "#D91C81",            // アクセントテキスト（選択状態）- WCAG AA準拠
-  purple: "#7C3AED",            // 紫テキスト - WCAG AA準拠
-  success: "#22C55E",           // 成功テキスト
+  placeholder: palette.gray300,
+  muted: palette.gray300,
+  accent: "#D91C81",   // アクセント（選択状態）- WCAG AA準拠
+  purple: "#7C3AED",   // 紫 - WCAG AA準拠
+  success: "#22C55E",
 } as const;

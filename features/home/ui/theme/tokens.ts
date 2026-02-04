@@ -2,18 +2,21 @@
 
 /**
  * Home feature theme tokens
- * 直書き色を禁止し、一貫したデザインを維持するためのトークン定義
+ * 直書き色を禁止し、一貫したデザインを維持するためのトークン定義。
+ * 一般テキストは semantic（palette）と揃える。
  */
 
-export const homeText = {
-  // main
-  primary: "#E5E7EB",
-  muted: "#D1D5DB",
-  secondary: "#9CA3AF",
-  hint: "#6B7280",
+import { palette } from "@/theme/tokens";
 
-  // semantic accents
-  accent: "#FBBF24", // 旧 #DD6500（視認性UPしたアクセント）
+export const homeText = {
+  // main（semantic と統一）
+  primary: palette.gray100,
+  muted: palette.gray200,
+  secondary: palette.gray200,
+  hint: palette.gray300,
+
+  // semantic accents（Home 固有）
+  accent: "#FBBF24",
   brand: "#D91C81",  // ピンク - WCAG AA準拠（4.53:1）
 } as const;
 

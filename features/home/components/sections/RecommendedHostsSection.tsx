@@ -61,11 +61,11 @@ export function RecommendedHostsSection() {
                   {host.name || "主催者"}
                 </Text>
                 {host.username && (
-                  <Text style={{ color: homeText.muted, fontSize: 10 }} numberOfLines={1}>
+                  <Text style={{ color: homeText.muted, fontSize: 11 }} numberOfLines={1}>
                     @{host.username}
                   </Text>
                 )}
-                <Text style={{ color: homeUI.iconBgPurple, fontSize: 9, marginTop: 2 }}>
+                <Text style={{ color: homeUI.iconBgPurple, fontSize: 11, marginTop: 2 }}>
                   {host.challengeCount}チャレンジ
                 </Text>
               </Button>

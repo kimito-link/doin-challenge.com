@@ -279,7 +279,7 @@ const styles = StyleSheet.create({
     fontWeight: "bold",
   },
   statLabel: {
-    fontSize: 11,
+    fontSize: 12,
     marginTop: 2,
   },
   statDivider: {

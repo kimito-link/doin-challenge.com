@@ -8,9 +8,9 @@
  * - FormButtonsSection: フォームボタン部分（キャンセル、送信）
  */
 
-import { View, Text } from "react-native";
+import { View } from "react-native";
 import { color } from "@/theme/tokens";
-import { useColors } from "@/hooks/use-colors";
+import { SectionHeader } from "@/components/ui";
 import type { Companion, LookedUpProfile } from "../types";
 import { FormInputSection } from "./FormInputSection";
 import { CompanionAddSection } from "./CompanionAddSection";
@@ -96,8 +96,6 @@ export function ParticipationFormSection({
   onLookupTwitterProfile,
   isSubmitting,
 }: ParticipationFormSectionProps) {
-  const colors = useColors();
-  
   return (
     <View
       style={{
@@ -109,9 +107,7 @@ export function ParticipationFormSection({
         borderColor: color.border,
       }}
     >
-      <Text style={{ color: colors.foreground, fontSize: 18, fontWeight: "bold", marginBottom: 16 }}>
-        参加表明
-      </Text>
+      <SectionHeader title="参加表明" style={{ paddingHorizontal: 0, paddingVertical: 0, marginBottom: 16 }} />
 
       {/* フォーム入力部分 */}
       <FormInputSection

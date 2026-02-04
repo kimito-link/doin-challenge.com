@@ -94,7 +94,7 @@ function CollaboratorCard({
                 marginLeft: 8,
               }}
             >
-              <Text style={{ color: colors.foreground, fontSize: 10, fontWeight: "bold" }}>
+              <Text style={{ color: colors.foreground, fontSize: 12, fontWeight: "bold" }}>
                 {ROLE_NAMES[collaborator.role] || collaborator.role}
               </Text>
             </View>
@@ -108,19 +108,19 @@ function CollaboratorCard({
           {collaborator.canEdit && (
             <View style={{ flexDirection: "row", alignItems: "center", marginBottom: 2 }}>
               <MaterialIcons name="edit" size={12} color={color.successDark} />
-              <Text style={{ color: color.successDark, fontSize: 10, marginLeft: 2 }}>編集可</Text>
+              <Text style={{ color: color.successDark, fontSize: 12, marginLeft: 2 }}>編集可</Text>
             </View>
           )}
           {collaborator.canManageParticipants && (
             <View style={{ flexDirection: "row", alignItems: "center", marginBottom: 2 }}>
               <MaterialIcons name="people" size={12} color={color.info} />
-              <Text style={{ color: color.info, fontSize: 10, marginLeft: 2 }}>参加者管理</Text>
+              <Text style={{ color: color.info, fontSize: 12, marginLeft: 2 }}>参加者管理</Text>
             </View>
           )}
           {collaborator.canInvite && (
             <View style={{ flexDirection: "row", alignItems: "center" }}>
               <MaterialIcons name="person-add" size={12} color={color.warning} />
-              <Text style={{ color: color.warning, fontSize: 10, marginLeft: 2 }}>招待可</Text>
+              <Text style={{ color: color.warning, fontSize: 12, marginLeft: 2 }}>招待可</Text>
             </View>
           )}
         </View>
@@ -237,7 +237,7 @@ function InviteForm({
             <Text style={{ color: colors.foreground, fontSize: 14, fontWeight: role === "co-host" ? "bold" : "normal" }}>
               共同主催者
             </Text>
-            <Text style={{ color: role === "co-host" ? "rgba(255,255,255,0.8)" : color.textSubtle, fontSize: 10, marginTop: 2 }}>
+            <Text style={{ color: role === "co-host" ? "rgba(255,255,255,0.8)" : color.textSubtle, fontSize: 12, marginTop: 2 }}>
               編集・参加者管理・招待
             </Text>
           </Pressable>
@@ -254,7 +254,7 @@ function InviteForm({
             <Text style={{ color: colors.foreground, fontSize: 14, fontWeight: role === "moderator" ? "bold" : "normal" }}>
               モデレーター
             </Text>
-            <Text style={{ color: role === "moderator" ? "rgba(255,255,255,0.8)" : color.textSubtle, fontSize: 10, marginTop: 2 }}>
+            <Text style={{ color: role === "moderator" ? "rgba(255,255,255,0.8)" : color.textSubtle, fontSize: 12, marginTop: 2 }}>
               参加者管理のみ
             </Text>
           </Pressable>

@@ -133,7 +133,7 @@ const styles = StyleSheet.create({
     alignItems: "center",
   },
   countText: {
-    fontSize: 10,
+    fontSize: 12,
     fontWeight: "bold",
     color: homeText.muted,
   },

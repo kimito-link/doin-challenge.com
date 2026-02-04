@@ -303,7 +303,7 @@ const styles = StyleSheet.create({
   },
   prefectureCount: {
     color: color.textMuted,
-    fontSize: 11,
+    fontSize: 12,
     marginLeft: 6,
   },
   prefectureCountSelected: {
@@ -353,7 +353,7 @@ const styles = StyleSheet.create({
   },
   followersText: {
     color: color.accentAlt,
-    fontSize: 10,
+    fontSize: 12,
     fontWeight: "bold",
   },
   participantUsername: {
@@ -363,7 +363,7 @@ const styles = StyleSheet.create({
   },
   participantPrefecture: {
     color: color.textSubtle,
-    fontSize: 11,
+    fontSize: 12,
     marginTop: 2,
   },
   contributionBadge: {

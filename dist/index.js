@@ -10,16 +10,11 @@ var __export = (target, all) => {
 
 // server/db/connection.ts
 import { eq, desc, and, sql, isNull, or, gte, lte, lt, inArray, asc, ne, like, count } from "drizzle-orm";
-import { drizzle } from "drizzle-orm/mysql2";
+import { drizzle } from "drizzle-orm/node-postgres";
 async function getDb() {
   if (!_db && process.env.DATABASE_URL) {
     try {
-      let connectionUrl = process.env.DATABASE_URL;
-      if (connectionUrl && !connectionUrl.includes("ssl=")) {
-        const separator = connectionUrl.includes("?") ? "&" : "?";
-        connectionUrl = `${connectionUrl}${separator}ssl={"rejectUnauthorized":true}`;
-      }
-      _db = drizzle(connectionUrl);
+      _db = drizzle(process.env.DATABASE_URL);
     } catch (error) {
       console.warn("[Database] Failed to connect:", error);
       _db = null;
@@ -69,25 +64,28 @@ var init_connection = __esm({
 });
 
 // drizzle/schema/users.ts
-import { mysqlTable, int, varchar, text, timestamp, mysqlEnum, boolean } from "drizzle-orm/mysql-core";
-var users, twitterFollowStatus, oauthPkceData, twitterUserCache;
+import { pgTable, serial, integer, varchar, text, timestamp, pgEnum, boolean } from "drizzle-orm/pg-core";
+var roleEnum, genderEnum, users, twitterFollowStatus, oauthPkceData, twitterUserCache;
 var init_users = __esm({
   "drizzle/schema/users.ts"() {
     "use strict";
-    users = mysqlTable("users", {
-      id: int("id").autoincrement().primaryKey(),
+    roleEnum = pgEnum("role", ["user", "admin"]);
+    genderEnum = pgEnum("gender", ["male", "female", "unspecified"]);
+    users = pgTable("users", {
+      id: serial("id").primaryKey(),
       openId: varchar("openId", { length: 64 }).notNull().unique(),
       name: text("name"),
       email: varchar("email", { length: 320 }),
       loginMethod: varchar("loginMethod", { length: 64 }),
-      role: mysqlEnum("role", ["user", "admin"]).default("user").notNull(),
+      role: roleEnum("role").default("user").notNull(),
+      gender: genderEnum("gender").default("unspecified").notNull(),
       createdAt: timestamp("createdAt").defaultNow().notNull(),
-      updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
+      updatedAt: timestamp("updatedAt").defaultNow().notNull(),
       lastSignedIn: timestamp("lastSignedIn").defaultNow().notNull()
     });
-    twitterFollowStatus = mysqlTable("twitter_follow_status", {
-      id: int("id").autoincrement().primaryKey(),
-      userId: int("userId").notNull(),
+    twitterFollowStatus = pgTable("twitter_follow_status", {
+      id: serial("id").primaryKey(),
+      userId: integer("userId").notNull(),
       twitterId: varchar("twitterId", { length: 64 }).notNull(),
       twitterUsername: varchar("twitterUsername", { length: 255 }),
       targetTwitterId: varchar("targetTwitterId", { length: 64 }).notNull(),
@@ -95,193 +93,187 @@ var init_users = __esm({
       isFollowing: boolean("isFollowing").default(false).notNull(),
       lastCheckedAt: timestamp("lastCheckedAt").defaultNow().notNull(),
       createdAt: timestamp("createdAt").defaultNow().notNull(),
-      updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull()
+      updatedAt: timestamp("updatedAt").defaultNow().notNull()
     });
-    oauthPkceData = mysqlTable("oauth_pkce_data", {
-      id: int("id").autoincrement().primaryKey(),
+    oauthPkceData = pgTable("oauth_pkce_data", {
+      id: serial("id").primaryKey(),
       state: varchar("state", { length: 64 }).notNull().unique(),
       codeVerifier: varchar("codeVerifier", { length: 128 }).notNull(),
       callbackUrl: text("callbackUrl").notNull(),
       expiresAt: timestamp("expiresAt").notNull(),
       createdAt: timestamp("createdAt").defaultNow().notNull()
     });
-    twitterUserCache = mysqlTable("twitter_user_cache", {
-      id: int("id").autoincrement().primaryKey(),
+    twitterUserCache = pgTable("twitter_user_cache", {
+      id: serial("id").primaryKey(),
       twitterUsername: varchar("twitterUsername", { length: 255 }).notNull().unique(),
       twitterId: varchar("twitterId", { length: 64 }),
       displayName: varchar("displayName", { length: 255 }),
       profileImage: text("profileImage"),
-      followersCount: int("followersCount").default(0),
+      followersCount: integer("followersCount").default(0),
       description: text("description"),
       cachedAt: timestamp("cachedAt").defaultNow().notNull(),
       expiresAt: timestamp("expiresAt").notNull(),
       createdAt: timestamp("createdAt").defaultNow().notNull(),
-      updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull()
+      updatedAt: timestamp("updatedAt").defaultNow().notNull()
     });
   }
 });
 
 // drizzle/schema/challenges.ts
-import { mysqlTable as mysqlTable2, int as int2, varchar as varchar2, text as text2, timestamp as timestamp2, mysqlEnum as mysqlEnum2, boolean as boolean2, json as json2 } from "drizzle-orm/mysql-core";
-var challenges, events, categories, challengeTemplates, challengeStats, challengeMembers;
+import { pgTable as pgTable2, serial as serial2, integer as integer2, varchar as varchar2, text as text2, timestamp as timestamp2, pgEnum as pgEnum2, boolean as boolean2, jsonb } from "drizzle-orm/pg-core";
+var goalTypeEnum, eventTypeEnum, statusEnum, challenges, events, categories, challengeTemplates, challengeStats, challengeMembers;
 var init_challenges = __esm({
   "drizzle/schema/challenges.ts"() {
     "use strict";
-    challenges = mysqlTable2("challenges", {
-      id: int2("id").autoincrement().primaryKey(),
-      // ホスト（主催者）の情報
-      hostUserId: int2("hostUserId"),
+    goalTypeEnum = pgEnum2("goalType", ["attendance", "followers", "viewers", "points", "custom"]);
+    eventTypeEnum = pgEnum2("eventType", ["solo", "group"]);
+    statusEnum = pgEnum2("status", ["upcoming", "active", "ended"]);
+    challenges = pgTable2("challenges", {
+      id: serial2("id").primaryKey(),
+      hostUserId: integer2("hostUserId"),
       hostTwitterId: varchar2("hostTwitterId", { length: 64 }),
       hostName: varchar2("hostName", { length: 255 }).notNull(),
       hostUsername: varchar2("hostUsername", { length: 255 }),
       hostProfileImage: text2("hostProfileImage"),
-      hostFollowersCount: int2("hostFollowersCount").default(0),
+      hostFollowersCount: integer2("hostFollowersCount").default(0),
       hostDescription: text2("hostDescription"),
-      // チャレンジ情報
       title: varchar2("title", { length: 255 }).notNull(),
       slug: varchar2("slug", { length: 255 }),
       description: text2("description"),
-      // 目標設定
-      goalType: mysqlEnum2("goalType", ["attendance", "followers", "viewers", "points", "custom"]).default("attendance").notNull(),
-      goalValue: int2("goalValue").default(100).notNull(),
+      goalType: goalTypeEnum("goalType").default("attendance").notNull(),
+      goalValue: integer2("goalValue").default(100).notNull(),
       goalUnit: varchar2("goalUnit", { length: 32 }).default("\u4EBA").notNull(),
-      currentValue: int2("currentValue").default(0).notNull(),
-      // イベント種別
-      eventType: mysqlEnum2("eventType", ["solo", "group"]).default("solo").notNull(),
-      // カテゴリ
-      categoryId: int2("categoryId"),
-      // 日時・場所
+      currentValue: integer2("currentValue").default(0).notNull(),
+      eventType: eventTypeEnum("eventType").default("solo").notNull(),
+      categoryId: integer2("categoryId"),
       eventDate: timestamp2("eventDate").notNull(),
       venue: varchar2("venue", { length: 255 }),
       prefecture: varchar2("prefecture", { length: 32 }),
-      // チケット情報
-      ticketPresale: int2("ticketPresale"),
-      ticketDoor: int2("ticketDoor"),
+      ticketPresale: integer2("ticketPresale"),
+      ticketDoor: integer2("ticketDoor"),
       ticketSaleStart: timestamp2("ticketSaleStart"),
       ticketUrl: text2("ticketUrl"),
-      // 外部リンク
       externalUrl: text2("externalUrl"),
-      // ステータス
-      status: mysqlEnum2("status", ["upcoming", "active", "ended"]).default("active").notNull(),
+      status: statusEnum("status").default("active").notNull(),
       isPublic: boolean2("isPublic").default(true).notNull(),
-      // メタデータ
       createdAt: timestamp2("createdAt").defaultNow().notNull(),
-      updatedAt: timestamp2("updatedAt").defaultNow().onUpdateNow().notNull(),
-      // AI向け最適化カラム
+      updatedAt: timestamp2("updatedAt").defaultNow().notNull(),
       aiSummary: text2("aiSummary"),
-      intentTags: json2("intentTags").$type(),
-      regionSummary: json2("regionSummary").$type(),
-      participantSummary: json2("participantSummary").$type(),
+      intentTags: jsonb("intentTags").$type(),
+      regionSummary: jsonb("regionSummary").$type(),
+      participantSummary: jsonb("participantSummary").$type(),
       aiSummaryUpdatedAt: timestamp2("aiSummaryUpdatedAt")
     });
     events = challenges;
-    categories = mysqlTable2("categories", {
-      id: int2("id").autoincrement().primaryKey(),
+    categories = pgTable2("categories", {
+      id: serial2("id").primaryKey(),
       name: varchar2("name", { length: 64 }).notNull(),
       slug: varchar2("slug", { length: 64 }).notNull().unique(),
       icon: varchar2("icon", { length: 32 }).default("\u{1F3A4}").notNull(),
       color: varchar2("color", { length: 16 }).default("#EC4899").notNull(),
       description: text2("description"),
-      sortOrder: int2("sortOrder").default(0).notNull(),
+      sortOrder: integer2("sortOrder").default(0).notNull(),
       isActive: boolean2("isActive").default(true).notNull(),
       createdAt: timestamp2("createdAt").defaultNow().notNull()
     });
-    challengeTemplates = mysqlTable2("challenge_templates", {
-      id: int2("id").autoincrement().primaryKey(),
-      userId: int2("userId").notNull(),
+    challengeTemplates = pgTable2("challenge_templates", {
+      id: serial2("id").primaryKey(),
+      userId: integer2("userId").notNull(),
       name: varchar2("name", { length: 255 }).notNull(),
       description: text2("description"),
-      goalType: mysqlEnum2("goalType", ["attendance", "followers", "viewers", "points", "custom"]).default("attendance").notNull(),
-      goalValue: int2("goalValue").default(100).notNull(),
+      goalType: goalTypeEnum("goalType").default("attendance").notNull(),
+      goalValue: integer2("goalValue").default(100).notNull(),
       goalUnit: varchar2("goalUnit", { length: 32 }).default("\u4EBA").notNull(),
-      eventType: mysqlEnum2("eventType", ["solo", "group"]).default("solo").notNull(),
-      ticketPresale: int2("ticketPresale"),
-      ticketDoor: int2("ticketDoor"),
+      eventType: eventTypeEnum("eventType").default("solo").notNull(),
+      ticketPresale: integer2("ticketPresale"),
+      ticketDoor: integer2("ticketDoor"),
       isPublic: boolean2("isPublic").default(false).notNull(),
-      useCount: int2("useCount").default(0).notNull(),
+      useCount: integer2("useCount").default(0).notNull(),
       createdAt: timestamp2("createdAt").defaultNow().notNull(),
-      updatedAt: timestamp2("updatedAt").defaultNow().onUpdateNow().notNull()
+      updatedAt: timestamp2("updatedAt").defaultNow().notNull()
     });
-    challengeStats = mysqlTable2("challenge_stats", {
-      id: int2("id").autoincrement().primaryKey(),
-      challengeId: int2("challengeId").notNull(),
+    challengeStats = pgTable2("challenge_stats", {
+      id: serial2("id").primaryKey(),
+      challengeId: integer2("challengeId").notNull(),
       recordedAt: timestamp2("recordedAt").defaultNow().notNull(),
       recordDate: varchar2("recordDate", { length: 10 }).notNull(),
-      recordHour: int2("recordHour").default(0).notNull(),
-      participantCount: int2("participantCount").default(0).notNull(),
-      totalContribution: int2("totalContribution").default(0).notNull(),
-      newParticipants: int2("newParticipants").default(0).notNull(),
+      recordHour: integer2("recordHour").default(0).notNull(),
+      participantCount: integer2("participantCount").default(0).notNull(),
+      totalContribution: integer2("totalContribution").default(0).notNull(),
+      newParticipants: integer2("newParticipants").default(0).notNull(),
       prefectureData: text2("prefectureData"),
       createdAt: timestamp2("createdAt").defaultNow().notNull()
     });
-    challengeMembers = mysqlTable2("challenge_members", {
-      id: int2("id").autoincrement().primaryKey(),
-      challengeId: int2("challengeId").notNull(),
+    challengeMembers = pgTable2("challenge_members", {
+      id: serial2("id").primaryKey(),
+      challengeId: integer2("challengeId").notNull(),
       twitterUsername: varchar2("twitterUsername", { length: 255 }).notNull(),
       twitterId: varchar2("twitterId", { length: 64 }),
       displayName: varchar2("displayName", { length: 255 }),
       profileImage: text2("profileImage"),
-      followersCount: int2("followersCount").default(0),
-      sortOrder: int2("sortOrder").default(0).notNull(),
+      followersCount: integer2("followersCount").default(0),
+      sortOrder: integer2("sortOrder").default(0).notNull(),
       createdAt: timestamp2("createdAt").defaultNow().notNull(),
-      updatedAt: timestamp2("updatedAt").defaultNow().onUpdateNow().notNull()
+      updatedAt: timestamp2("updatedAt").defaultNow().notNull()
     });
   }
 });
 
 // drizzle/schema/participations.ts
-import { mysqlTable as mysqlTable3, int as int3, varchar as varchar3, text as text3, timestamp as timestamp3, mysqlEnum as mysqlEnum3, boolean as boolean3 } from "drizzle-orm/mysql-core";
-var participations, participationCompanions;
+import { pgTable as pgTable3, serial as serial3, integer as integer3, varchar as varchar3, text as text3, timestamp as timestamp3, pgEnum as pgEnum3, boolean as boolean3 } from "drizzle-orm/pg-core";
+var genderEnum2, attendanceTypeEnum, participations, participationCompanions;
 var init_participations = __esm({
   "drizzle/schema/participations.ts"() {
     "use strict";
-    participations = mysqlTable3("participations", {
-      id: int3("id").autoincrement().primaryKey(),
-      challengeId: int3("challengeId").notNull(),
-      userId: int3("userId"),
+    genderEnum2 = pgEnum3("gender", ["male", "female", "unspecified"]);
+    attendanceTypeEnum = pgEnum3("attendanceType", ["venue", "streaming", "both"]);
+    participations = pgTable3("participations", {
+      id: serial3("id").primaryKey(),
+      challengeId: integer3("challengeId").notNull(),
+      userId: integer3("userId"),
       twitterId: varchar3("twitterId", { length: 64 }),
       displayName: varchar3("displayName", { length: 255 }).notNull(),
       username: varchar3("username", { length: 255 }),
       profileImage: text3("profileImage"),
-      followersCount: int3("followersCount").default(0),
+      followersCount: integer3("followersCount").default(0),
       message: text3("message"),
-      companionCount: int3("companionCount").default(0).notNull(),
+      companionCount: integer3("companionCount").default(0).notNull(),
       prefecture: varchar3("prefecture", { length: 32 }),
-      gender: mysqlEnum3("gender", ["male", "female", "unspecified"]).default("unspecified").notNull(),
-      contribution: int3("contribution").default(1).notNull(),
+      gender: genderEnum2("gender").default("unspecified").notNull(),
+      contribution: integer3("contribution").default(1).notNull(),
       isAnonymous: boolean3("isAnonymous").default(false).notNull(),
-      // 参加方法: venue(会場), streaming(配信), both(両方)
-      attendanceType: mysqlEnum3("attendanceType", ["venue", "streaming", "both"]).default("venue").notNull(),
+      attendanceType: attendanceTypeEnum("attendanceType").default("venue").notNull(),
       createdAt: timestamp3("createdAt").defaultNow().notNull(),
-      updatedAt: timestamp3("updatedAt").defaultNow().onUpdateNow().notNull(),
-      // ソフトデリート用カラム
+      updatedAt: timestamp3("updatedAt").defaultNow().notNull(),
       deletedAt: timestamp3("deletedAt"),
-      deletedBy: int3("deletedBy")
+      deletedBy: integer3("deletedBy")
     });
-    participationCompanions = mysqlTable3("participation_companions", {
-      id: int3("id").autoincrement().primaryKey(),
-      participationId: int3("participationId").notNull(),
-      challengeId: int3("challengeId").notNull(),
+    participationCompanions = pgTable3("participation_companions", {
+      id: serial3("id").primaryKey(),
+      participationId: integer3("participationId").notNull(),
+      challengeId: integer3("challengeId").notNull(),
       displayName: varchar3("displayName", { length: 255 }).notNull(),
       twitterUsername: varchar3("twitterUsername", { length: 255 }),
       twitterId: varchar3("twitterId", { length: 64 }),
       profileImage: text3("profileImage"),
-      invitedByUserId: int3("invitedByUserId"),
+      invitedByUserId: integer3("invitedByUserId"),
       createdAt: timestamp3("createdAt").defaultNow().notNull()
     });
   }
 });
 
 // drizzle/schema/notifications.ts
-import { mysqlTable as mysqlTable4, int as int4, varchar as varchar4, text as text4, timestamp as timestamp4, mysqlEnum as mysqlEnum4, boolean as boolean4 } from "drizzle-orm/mysql-core";
-var notificationSettings, notifications, reminders;
+import { pgTable as pgTable4, serial as serial4, integer as integer4, varchar as varchar4, text as text4, timestamp as timestamp4, pgEnum as pgEnum4, boolean as boolean4 } from "drizzle-orm/pg-core";
+var notificationTypeEnum, reminderTypeEnum, notificationSettings, notifications, reminders;
 var init_notifications = __esm({
   "drizzle/schema/notifications.ts"() {
     "use strict";
-    notificationSettings = mysqlTable4("notification_settings", {
-      id: int4("id").autoincrement().primaryKey(),
-      userId: int4("userId").notNull(),
-      challengeId: int4("challengeId").notNull(),
+    notificationTypeEnum = pgEnum4("notification_type", ["goal_reached", "milestone_25", "milestone_50", "milestone_75", "new_participant"]);
+    reminderTypeEnum = pgEnum4("reminderType", ["day_before", "day_of", "hour_before", "custom"]);
+    notificationSettings = pgTable4("notification_settings", {
+      id: serial4("id").primaryKey(),
+      userId: integer4("userId").notNull(),
+      challengeId: integer4("challengeId").notNull(),
       onGoalReached: boolean4("onGoalReached").default(true).notNull(),
       onMilestone25: boolean4("onMilestone25").default(true).notNull(),
       onMilestone50: boolean4("onMilestone50").default(true).notNull(),
@@ -289,24 +281,24 @@ var init_notifications = __esm({
       onNewParticipant: boolean4("onNewParticipant").default(false).notNull(),
       expoPushToken: text4("expoPushToken"),
       createdAt: timestamp4("createdAt").defaultNow().notNull(),
-      updatedAt: timestamp4("updatedAt").defaultNow().onUpdateNow().notNull()
+      updatedAt: timestamp4("updatedAt").defaultNow().notNull()
     });
-    notifications = mysqlTable4("notifications", {
-      id: int4("id").autoincrement().primaryKey(),
-      userId: int4("userId").notNull(),
-      challengeId: int4("challengeId").notNull(),
-      type: mysqlEnum4("type", ["goal_reached", "milestone_25", "milestone_50", "milestone_75", "new_participant"]).notNull(),
+    notifications = pgTable4("notifications", {
+      id: serial4("id").primaryKey(),
+      userId: integer4("userId").notNull(),
+      challengeId: integer4("challengeId").notNull(),
+      type: notificationTypeEnum("type").notNull(),
       title: varchar4("title", { length: 255 }).notNull(),
       body: text4("body").notNull(),
       isRead: boolean4("isRead").default(false).notNull(),
       sentAt: timestamp4("sentAt").defaultNow().notNull(),
       createdAt: timestamp4("createdAt").defaultNow().notNull()
     });
-    reminders = mysqlTable4("reminders", {
-      id: int4("id").autoincrement().primaryKey(),
-      challengeId: int4("challengeId").notNull(),
-      userId: int4("userId").notNull(),
-      reminderType: mysqlEnum4("reminderType", ["day_before", "day_of", "hour_before", "custom"]).default("day_before").notNull(),
+    reminders = pgTable4("reminders", {
+      id: serial4("id").primaryKey(),
+      challengeId: integer4("challengeId").notNull(),
+      userId: integer4("userId").notNull(),
+      reminderType: reminderTypeEnum("reminderType").default("day_before").notNull(),
       customTime: timestamp4("customTime"),
       isSent: boolean4("isSent").default(false).notNull(),
       sentAt: timestamp4("sentAt"),
@@ -316,55 +308,55 @@ var init_notifications = __esm({
 });
 
 // drizzle/schema/social.ts
-import { mysqlTable as mysqlTable5, int as int5, varchar as varchar5, text as text5, timestamp as timestamp5, boolean as boolean5 } from "drizzle-orm/mysql-core";
+import { pgTable as pgTable5, serial as serial5, integer as integer5, varchar as varchar5, text as text5, timestamp as timestamp5, boolean as boolean5 } from "drizzle-orm/pg-core";
 var cheers, follows, directMessages, searchHistory, favoriteArtists;
 var init_social = __esm({
   "drizzle/schema/social.ts"() {
     "use strict";
-    cheers = mysqlTable5("cheers", {
-      id: int5("id").autoincrement().primaryKey(),
-      fromUserId: int5("fromUserId").notNull(),
+    cheers = pgTable5("cheers", {
+      id: serial5("id").primaryKey(),
+      fromUserId: integer5("fromUserId").notNull(),
       fromUserName: varchar5("fromUserName", { length: 255 }).notNull(),
       fromUserImage: text5("fromUserImage"),
-      toParticipationId: int5("toParticipationId").notNull(),
-      toUserId: int5("toUserId"),
+      toParticipationId: integer5("toParticipationId").notNull(),
+      toUserId: integer5("toUserId"),
       message: text5("message"),
       emoji: varchar5("emoji", { length: 32 }).default("\u{1F44F}").notNull(),
-      challengeId: int5("challengeId").notNull(),
+      challengeId: integer5("challengeId").notNull(),
       createdAt: timestamp5("createdAt").defaultNow().notNull()
     });
-    follows = mysqlTable5("follows", {
-      id: int5("id").autoincrement().primaryKey(),
-      followerId: int5("followerId").notNull(),
+    follows = pgTable5("follows", {
+      id: serial5("id").primaryKey(),
+      followerId: integer5("followerId").notNull(),
       followerName: varchar5("followerName", { length: 255 }),
-      followeeId: int5("followeeId").notNull(),
+      followeeId: integer5("followeeId").notNull(),
       followeeName: varchar5("followeeName", { length: 255 }),
       followeeImage: text5("followeeImage"),
       notifyNewChallenge: boolean5("notifyNewChallenge").default(true).notNull(),
       createdAt: timestamp5("createdAt").defaultNow().notNull()
     });
-    directMessages = mysqlTable5("direct_messages", {
-      id: int5("id").autoincrement().primaryKey(),
-      fromUserId: int5("fromUserId").notNull(),
+    directMessages = pgTable5("direct_messages", {
+      id: serial5("id").primaryKey(),
+      fromUserId: integer5("fromUserId").notNull(),
       fromUserName: varchar5("fromUserName", { length: 255 }).notNull(),
       fromUserImage: text5("fromUserImage"),
-      toUserId: int5("toUserId").notNull(),
+      toUserId: integer5("toUserId").notNull(),
       message: text5("message").notNull(),
-      challengeId: int5("challengeId").notNull(),
+      challengeId: integer5("challengeId").notNull(),
       isRead: boolean5("isRead").default(false).notNull(),
       readAt: timestamp5("readAt"),
       createdAt: timestamp5("createdAt").defaultNow().notNull()
     });
-    searchHistory = mysqlTable5("search_history", {
-      id: int5("id").autoincrement().primaryKey(),
-      userId: int5("userId").notNull(),
+    searchHistory = pgTable5("search_history", {
+      id: serial5("id").primaryKey(),
+      userId: integer5("userId").notNull(),
       query: varchar5("query", { length: 255 }).notNull(),
-      resultCount: int5("resultCount").default(0).notNull(),
+      resultCount: integer5("resultCount").default(0).notNull(),
       createdAt: timestamp5("createdAt").defaultNow().notNull()
     });
-    favoriteArtists = mysqlTable5("favorite_artists", {
-      id: int5("id").autoincrement().primaryKey(),
-      userId: int5("userId").notNull(),
+    favoriteArtists = pgTable5("favorite_artists", {
+      id: serial5("id").primaryKey(),
+      userId: integer5("userId").notNull(),
       userTwitterId: varchar5("userTwitterId", { length: 64 }),
       artistTwitterId: varchar5("artistTwitterId", { length: 64 }).notNull(),
       artistName: varchar5("artistName", { length: 255 }),
@@ -373,95 +365,112 @@ var init_social = __esm({
       notifyNewChallenge: boolean5("notifyNewChallenge").default(true).notNull(),
       expoPushToken: text5("expoPushToken"),
       createdAt: timestamp5("createdAt").defaultNow().notNull(),
-      updatedAt: timestamp5("updatedAt").defaultNow().onUpdateNow().notNull()
+      updatedAt: timestamp5("updatedAt").defaultNow().notNull()
     });
   }
 });
 
 // drizzle/schema/gamification.ts
-import { mysqlTable as mysqlTable6, int as int6, varchar as varchar6, text as text6, timestamp as timestamp6, mysqlEnum as mysqlEnum5, boolean as boolean6 } from "drizzle-orm/mysql-core";
-var badges, userBadges, achievements, userAchievements, achievementPages, pickedComments;
+import { pgTable as pgTable6, serial as serial6, integer as integer6, varchar as varchar6, text as text6, timestamp as timestamp6, pgEnum as pgEnum5, boolean as boolean6 } from "drizzle-orm/pg-core";
+var badgeTypeEnum, badgeConditionTypeEnum, achievementTypeEnum, achievementConditionTypeEnum, rarityEnum, badges, userBadges, achievements, userAchievements, achievementPages, pickedComments;
 var init_gamification = __esm({
   "drizzle/schema/gamification.ts"() {
     "use strict";
-    badges = mysqlTable6("badges", {
-      id: int6("id").autoincrement().primaryKey(),
+    badgeTypeEnum = pgEnum5("badge_type", ["participation", "achievement", "milestone", "special"]);
+    badgeConditionTypeEnum = pgEnum5("badge_condition_type", [
+      "first_participation",
+      "goal_reached",
+      "milestone_25",
+      "milestone_50",
+      "milestone_75",
+      "contribution_5",
+      "contribution_10",
+      "contribution_20",
+      "host_challenge",
+      "special",
+      "follower_badge"
+    ]);
+    achievementTypeEnum = pgEnum5("achievement_type", ["participation", "hosting", "invitation", "contribution", "streak", "special"]);
+    achievementConditionTypeEnum = pgEnum5("achievement_condition_type", [
+      "first_participation",
+      "participate_5",
+      "participate_10",
+      "participate_25",
+      "participate_50",
+      "first_host",
+      "host_5",
+      "host_10",
+      "invite_1",
+      "invite_5",
+      "invite_10",
+      "invite_25",
+      "contribution_10",
+      "contribution_50",
+      "contribution_100",
+      "streak_3",
+      "streak_7",
+      "streak_30",
+      "goal_reached",
+      "special"
+    ]);
+    rarityEnum = pgEnum5("rarity", ["common", "uncommon", "rare", "epic", "legendary"]);
+    badges = pgTable6("badges", {
+      id: serial6("id").primaryKey(),
       name: varchar6("name", { length: 100 }).notNull(),
       description: text6("description"),
       iconUrl: text6("iconUrl"),
-      type: mysqlEnum5("type", ["participation", "achievement", "milestone", "special"]).default("participation").notNull(),
-      conditionType: mysqlEnum5("conditionType", ["first_participation", "goal_reached", "milestone_25", "milestone_50", "milestone_75", "contribution_5", "contribution_10", "contribution_20", "host_challenge", "special", "follower_badge"]).notNull(),
+      type: badgeTypeEnum("type").default("participation").notNull(),
+      conditionType: badgeConditionTypeEnum("conditionType").notNull(),
       createdAt: timestamp6("createdAt").defaultNow().notNull()
     });
-    userBadges = mysqlTable6("user_badges", {
-      id: int6("id").autoincrement().primaryKey(),
-      userId: int6("userId").notNull(),
-      badgeId: int6("badgeId").notNull(),
-      challengeId: int6("challengeId"),
+    userBadges = pgTable6("user_badges", {
+      id: serial6("id").primaryKey(),
+      userId: integer6("userId").notNull(),
+      badgeId: integer6("badgeId").notNull(),
+      challengeId: integer6("challengeId"),
       earnedAt: timestamp6("earnedAt").defaultNow().notNull()
     });
-    achievements = mysqlTable6("achievements", {
-      id: int6("id").autoincrement().primaryKey(),
+    achievements = pgTable6("achievements", {
+      id: serial6("id").primaryKey(),
       name: varchar6("name", { length: 100 }).notNull(),
       description: text6("description"),
       iconUrl: text6("iconUrl"),
       icon: varchar6("icon", { length: 32 }).default("\u{1F3C6}").notNull(),
-      type: mysqlEnum5("type", ["participation", "hosting", "invitation", "contribution", "streak", "special"]).default("participation").notNull(),
-      conditionType: mysqlEnum5("conditionType", [
-        "first_participation",
-        "participate_5",
-        "participate_10",
-        "participate_25",
-        "participate_50",
-        "first_host",
-        "host_5",
-        "host_10",
-        "invite_1",
-        "invite_5",
-        "invite_10",
-        "invite_25",
-        "contribution_10",
-        "contribution_50",
-        "contribution_100",
-        "streak_3",
-        "streak_7",
-        "streak_30",
-        "goal_reached",
-        "special"
-      ]).notNull(),
-      conditionValue: int6("conditionValue").default(1).notNull(),
-      points: int6("points").default(10).notNull(),
-      rarity: mysqlEnum5("rarity", ["common", "uncommon", "rare", "epic", "legendary"]).default("common").notNull(),
+      type: achievementTypeEnum("type").default("participation").notNull(),
+      conditionType: achievementConditionTypeEnum("conditionType").notNull(),
+      conditionValue: integer6("conditionValue").default(1).notNull(),
+      points: integer6("points").default(10).notNull(),
+      rarity: rarityEnum("rarity").default("common").notNull(),
       isActive: boolean6("isActive").default(true).notNull(),
       createdAt: timestamp6("createdAt").defaultNow().notNull()
     });
-    userAchievements = mysqlTable6("user_achievements", {
-      id: int6("id").autoincrement().primaryKey(),
-      userId: int6("userId").notNull(),
-      achievementId: int6("achievementId").notNull(),
-      progress: int6("progress").default(0).notNull(),
+    userAchievements = pgTable6("user_achievements", {
+      id: serial6("id").primaryKey(),
+      userId: integer6("userId").notNull(),
+      achievementId: integer6("achievementId").notNull(),
+      progress: integer6("progress").default(0).notNull(),
       isCompleted: boolean6("isCompleted").default(false).notNull(),
       completedAt: timestamp6("completedAt"),
       createdAt: timestamp6("createdAt").defaultNow().notNull(),
-      updatedAt: timestamp6("updatedAt").defaultNow().onUpdateNow().notNull()
+      updatedAt: timestamp6("updatedAt").defaultNow().notNull()
     });
-    achievementPages = mysqlTable6("achievement_pages", {
-      id: int6("id").autoincrement().primaryKey(),
-      challengeId: int6("challengeId").notNull(),
+    achievementPages = pgTable6("achievement_pages", {
+      id: serial6("id").primaryKey(),
+      challengeId: integer6("challengeId").notNull(),
       achievedAt: timestamp6("achievedAt").notNull(),
-      finalValue: int6("finalValue").notNull(),
-      goalValue: int6("goalValue").notNull(),
-      totalParticipants: int6("totalParticipants").notNull(),
+      finalValue: integer6("finalValue").notNull(),
+      goalValue: integer6("goalValue").notNull(),
+      totalParticipants: integer6("totalParticipants").notNull(),
       title: varchar6("title", { length: 255 }).notNull(),
       message: text6("message"),
       isPublic: boolean6("isPublic").default(true).notNull(),
       createdAt: timestamp6("createdAt").defaultNow().notNull()
     });
-    pickedComments = mysqlTable6("picked_comments", {
-      id: int6("id").autoincrement().primaryKey(),
-      participationId: int6("participationId").notNull(),
-      challengeId: int6("challengeId").notNull(),
-      pickedBy: int6("pickedBy").notNull(),
+    pickedComments = pgTable6("picked_comments", {
+      id: serial6("id").primaryKey(),
+      participationId: integer6("participationId").notNull(),
+      challengeId: integer6("challengeId").notNull(),
+      pickedBy: integer6("pickedBy").notNull(),
       reason: text6("reason"),
       isUsedInVideo: boolean6("isUsedInVideo").default(false).notNull(),
       pickedAt: timestamp6("pickedAt").defaultNow().notNull()
@@ -470,64 +479,68 @@ var init_gamification = __esm({
 });
 
 // drizzle/schema/invitations.ts
-import { mysqlTable as mysqlTable7, int as int7, varchar as varchar7, text as text7, timestamp as timestamp7, mysqlEnum as mysqlEnum6, boolean as boolean7 } from "drizzle-orm/mysql-core";
-var invitations, invitationUses, collaborators, collaboratorInvitations;
+import { pgTable as pgTable7, serial as serial7, integer as integer7, varchar as varchar7, text as text7, timestamp as timestamp7, pgEnum as pgEnum6, boolean as boolean7 } from "drizzle-orm/pg-core";
+var collaboratorRoleEnum, collaboratorStatusEnum, collaboratorInviteRoleEnum, collaboratorInviteStatusEnum, invitations, invitationUses, collaborators, collaboratorInvitations;
 var init_invitations = __esm({
   "drizzle/schema/invitations.ts"() {
     "use strict";
-    invitations = mysqlTable7("invitations", {
-      id: int7("id").autoincrement().primaryKey(),
-      challengeId: int7("challengeId").notNull(),
-      inviterId: int7("inviterId").notNull(),
+    collaboratorRoleEnum = pgEnum6("collaborator_role", ["owner", "co-host", "moderator"]);
+    collaboratorStatusEnum = pgEnum6("collaborator_status", ["pending", "accepted", "declined"]);
+    collaboratorInviteRoleEnum = pgEnum6("collaborator_invite_role", ["co-host", "moderator"]);
+    collaboratorInviteStatusEnum = pgEnum6("collaborator_invite_status", ["pending", "accepted", "declined", "expired"]);
+    invitations = pgTable7("invitations", {
+      id: serial7("id").primaryKey(),
+      challengeId: integer7("challengeId").notNull(),
+      inviterId: integer7("inviterId").notNull(),
       inviterName: varchar7("inviterName", { length: 255 }),
       code: varchar7("code", { length: 32 }).notNull().unique(),
       customMessage: text7("customMessage"),
       customTitle: varchar7("customTitle", { length: 255 }),
-      maxUses: int7("maxUses").default(0),
-      useCount: int7("useCount").default(0).notNull(),
+      maxUses: integer7("maxUses").default(0),
+      useCount: integer7("useCount").default(0).notNull(),
       expiresAt: timestamp7("expiresAt"),
       isActive: boolean7("isActive").default(true).notNull(),
       createdAt: timestamp7("createdAt").defaultNow().notNull()
     });
-    invitationUses = mysqlTable7("invitation_uses", {
-      id: int7("id").autoincrement().primaryKey(),
-      invitationId: int7("invitationId").notNull(),
-      userId: int7("userId"),
+    invitationUses = pgTable7("invitation_uses", {
+      id: serial7("id").primaryKey(),
+      invitationId: integer7("invitationId").notNull(),
+      userId: integer7("userId"),
       displayName: varchar7("displayName", { length: 255 }),
       twitterId: varchar7("twitterId", { length: 64 }),
       twitterUsername: varchar7("twitterUsername", { length: 255 }),
-      participationId: int7("participationId"),
+      participationId: integer7("participationId"),
       isConfirmed: boolean7("isConfirmed").default(false).notNull(),
       confirmedAt: timestamp7("confirmedAt"),
       createdAt: timestamp7("createdAt").defaultNow().notNull()
     });
-    collaborators = mysqlTable7("collaborators", {
-      id: int7("id").autoincrement().primaryKey(),
-      challengeId: int7("challengeId").notNull(),
-      userId: int7("userId").notNull(),
+    collaborators = pgTable7("collaborators", {
+      id: serial7("id").primaryKey(),
+      challengeId: integer7("challengeId").notNull(),
+      userId: integer7("userId").notNull(),
       userName: varchar7("userName", { length: 255 }).notNull(),
       userImage: text7("userImage"),
-      role: mysqlEnum6("role", ["owner", "co-host", "moderator"]).default("co-host").notNull(),
+      role: collaboratorRoleEnum("role").default("co-host").notNull(),
       canEdit: boolean7("canEdit").default(true).notNull(),
       canManageParticipants: boolean7("canManageParticipants").default(true).notNull(),
       canInvite: boolean7("canInvite").default(true).notNull(),
-      status: mysqlEnum6("status", ["pending", "accepted", "declined"]).default("pending").notNull(),
+      status: collaboratorStatusEnum("status").default("pending").notNull(),
       invitedAt: timestamp7("invitedAt").defaultNow().notNull(),
       respondedAt: timestamp7("respondedAt"),
       createdAt: timestamp7("createdAt").defaultNow().notNull(),
-      updatedAt: timestamp7("updatedAt").defaultNow().onUpdateNow().notNull()
+      updatedAt: timestamp7("updatedAt").defaultNow().notNull()
     });
-    collaboratorInvitations = mysqlTable7("collaborator_invitations", {
-      id: int7("id").autoincrement().primaryKey(),
-      challengeId: int7("challengeId").notNull(),
-      inviterId: int7("inviterId").notNull(),
+    collaboratorInvitations = pgTable7("collaborator_invitations", {
+      id: serial7("id").primaryKey(),
+      challengeId: integer7("challengeId").notNull(),
+      inviterId: integer7("inviterId").notNull(),
       inviterName: varchar7("inviterName", { length: 255 }),
-      inviteeId: int7("inviteeId"),
+      inviteeId: integer7("inviteeId"),
       inviteeEmail: varchar7("inviteeEmail", { length: 320 }),
       inviteeTwitterId: varchar7("inviteeTwitterId", { length: 64 }),
       code: varchar7("code", { length: 32 }).notNull().unique(),
-      role: mysqlEnum6("role", ["co-host", "moderator"]).default("co-host").notNull(),
-      status: mysqlEnum6("status", ["pending", "accepted", "declined", "expired"]).default("pending").notNull(),
+      role: collaboratorInviteRoleEnum("role").default("co-host").notNull(),
+      status: collaboratorInviteStatusEnum("status").default("pending").notNull(),
       expiresAt: timestamp7("expiresAt"),
       createdAt: timestamp7("createdAt").defaultNow().notNull()
     });
@@ -535,83 +548,74 @@ var init_invitations = __esm({
 });
 
 // drizzle/schema/tickets.ts
-import { mysqlTable as mysqlTable8, int as int8, varchar as varchar8, text as text8, timestamp as timestamp8, mysqlEnum as mysqlEnum7, boolean as boolean8 } from "drizzle-orm/mysql-core";
-var ticketTransfers, ticketWaitlist;
+import { pgTable as pgTable8, serial as serial8, integer as integer8, varchar as varchar8, text as text8, timestamp as timestamp8, pgEnum as pgEnum7, boolean as boolean8 } from "drizzle-orm/pg-core";
+var priceTypeEnum, ticketStatusEnum, ticketTransfers, ticketWaitlist;
 var init_tickets = __esm({
   "drizzle/schema/tickets.ts"() {
     "use strict";
-    ticketTransfers = mysqlTable8("ticket_transfers", {
-      id: int8("id").autoincrement().primaryKey(),
-      challengeId: int8("challengeId").notNull(),
-      userId: int8("userId").notNull(),
+    priceTypeEnum = pgEnum7("priceType", ["face_value", "negotiable", "free"]);
+    ticketStatusEnum = pgEnum7("ticket_status", ["available", "reserved", "completed", "cancelled"]);
+    ticketTransfers = pgTable8("ticket_transfers", {
+      id: serial8("id").primaryKey(),
+      challengeId: integer8("challengeId").notNull(),
+      userId: integer8("userId").notNull(),
       userName: varchar8("userName", { length: 255 }).notNull(),
       userUsername: varchar8("userUsername", { length: 255 }),
       userImage: text8("userImage"),
-      ticketCount: int8("ticketCount").default(1).notNull(),
-      priceType: mysqlEnum7("priceType", ["face_value", "negotiable", "free"]).default("face_value").notNull(),
+      ticketCount: integer8("ticketCount").default(1).notNull(),
+      priceType: priceTypeEnum("priceType").default("face_value").notNull(),
       comment: text8("comment"),
-      status: mysqlEnum7("status", ["available", "reserved", "completed", "cancelled"]).default("available").notNull(),
+      status: ticketStatusEnum("status").default("available").notNull(),
       createdAt: timestamp8("createdAt").defaultNow().notNull(),
-      updatedAt: timestamp8("updatedAt").defaultNow().onUpdateNow().notNull()
+      updatedAt: timestamp8("updatedAt").defaultNow().notNull()
     });
-    ticketWaitlist = mysqlTable8("ticket_waitlist", {
-      id: int8("id").autoincrement().primaryKey(),
-      challengeId: int8("challengeId").notNull(),
-      userId: int8("userId").notNull(),
+    ticketWaitlist = pgTable8("ticket_waitlist", {
+      id: serial8("id").primaryKey(),
+      challengeId: integer8("challengeId").notNull(),
+      userId: integer8("userId").notNull(),
       userName: varchar8("userName", { length: 255 }).notNull(),
       userUsername: varchar8("userUsername", { length: 255 }),
       userImage: text8("userImage"),
-      desiredCount: int8("desiredCount").default(1).notNull(),
+      desiredCount: integer8("desiredCount").default(1).notNull(),
       notifyOnNew: boolean8("notifyOnNew").default(true).notNull(),
       isActive: boolean8("isActive").default(true).notNull(),
       createdAt: timestamp8("createdAt").defaultNow().notNull(),
-      updatedAt: timestamp8("updatedAt").defaultNow().onUpdateNow().notNull()
+      updatedAt: timestamp8("updatedAt").defaultNow().notNull()
     });
   }
 });
 
 // drizzle/schema/audit.ts
-import { mysqlTable as mysqlTable9, int as int9, varchar as varchar9, text as text9, timestamp as timestamp9, mysqlEnum as mysqlEnum8, json as json3 } from "drizzle-orm/mysql-core";
-var auditLogs, AUDIT_ACTIONS, ENTITY_TYPES;
+import { pgTable as pgTable9, serial as serial9, integer as integer9, varchar as varchar9, text as text9, timestamp as timestamp9, pgEnum as pgEnum8, jsonb as jsonb2 } from "drizzle-orm/pg-core";
+var auditActionEnum, auditLogs, AUDIT_ACTIONS, ENTITY_TYPES;
 var init_audit = __esm({
   "drizzle/schema/audit.ts"() {
     "use strict";
-    auditLogs = mysqlTable9("audit_logs", {
-      id: int9("id").autoincrement().primaryKey(),
-      // リクエスト追跡用ID（tRPC middlewareで生成）
+    auditActionEnum = pgEnum8("audit_action", [
+      "CREATE",
+      "EDIT",
+      "DELETE",
+      "RESTORE",
+      "BULK_DELETE",
+      "BULK_RESTORE",
+      "LOGIN",
+      "LOGOUT",
+      "ADMIN_ACTION"
+    ]);
+    auditLogs = pgTable9("audit_logs", {
+      id: serial9("id").primaryKey(),
       requestId: varchar9("requestId", { length: 36 }).notNull(),
-      // 操作種別
-      action: mysqlEnum8("action", [
-        "CREATE",
-        "EDIT",
-        "DELETE",
-        "RESTORE",
-        "BULK_DELETE",
-        "BULK_RESTORE",
-        "LOGIN",
-        "LOGOUT",
-        "ADMIN_ACTION"
-      ]).notNull(),
-      // 操作対象のエンティティ種別
+      action: auditActionEnum("action").notNull(),
       entityType: varchar9("entityType", { length: 64 }).notNull(),
-      // 操作対象のID
-      targetId: int9("targetId"),
-      // 操作を実行したユーザーID
-      actorId: int9("actorId"),
-      // 操作を実行したユーザー名（ログイン名のスナップショット）
+      targetId: integer9("targetId"),
+      actorId: integer9("actorId"),
       actorName: varchar9("actorName", { length: 255 }),
-      // 操作を実行したユーザーのロール
       actorRole: varchar9("actorRole", { length: 32 }),
-      // 変更前のデータ（JSON）
-      beforeData: json3("beforeData").$type(),
-      // 変更後のデータ（JSON）
-      afterData: json3("afterData").$type(),
-      // 操作の詳細・理由（任意）
+      beforeData: jsonb2("beforeData").$type(),
+      afterData: jsonb2("afterData").$type(),
       reason: text9("reason"),
-      // クライアント情報
       ipAddress: varchar9("ipAddress", { length: 45 }),
       userAgent: text9("userAgent"),
-      // タイムスタンプ
       createdAt: timestamp9("createdAt").defaultNow().notNull()
     });
     AUDIT_ACTIONS = {
@@ -636,6 +640,60 @@ var init_audit = __esm({
   }
 });
 
+// drizzle/schema/release-notes.ts
+import { pgTable as pgTable10, serial as serial10, varchar as varchar10, text as text10, timestamp as timestamp10, jsonb as jsonb3 } from "drizzle-orm/pg-core";
+var releaseNotes;
+var init_release_notes = __esm({
+  "drizzle/schema/release-notes.ts"() {
+    "use strict";
+    releaseNotes = pgTable10("release_notes", {
+      id: serial10("id").primaryKey(),
+      version: varchar10("version", { length: 32 }).notNull(),
+      date: varchar10("date", { length: 32 }).notNull(),
+      title: text10("title").notNull(),
+      changes: jsonb3("changes").notNull(),
+      createdAt: timestamp10("createdAt").defaultNow().notNull(),
+      updatedAt: timestamp10("updatedAt").defaultNow().notNull()
+    });
+  }
+});
+
+// drizzle/schema/api-usage.ts
+import { pgTable as pgTable11, serial as serial11, integer as integer10, varchar as varchar11, timestamp as timestamp11, numeric, jsonb as jsonb4, index } from "drizzle-orm/pg-core";
+var apiUsage, apiCostSettings;
+var init_api_usage = __esm({
+  "drizzle/schema/api-usage.ts"() {
+    "use strict";
+    apiUsage = pgTable11(
+      "api_usage",
+      {
+        id: serial11("id").primaryKey(),
+        endpoint: varchar11("endpoint", { length: 255 }).notNull(),
+        method: varchar11("method", { length: 10 }).default("GET").notNull(),
+        success: integer10("success").default(1).notNull(),
+        cost: numeric("cost", { precision: 10, scale: 4 }).default("0").notNull(),
+        rateLimitInfo: jsonb4("rateLimitInfo"),
+        month: varchar11("month", { length: 7 }).notNull(),
+        createdAt: timestamp11("createdAt").defaultNow().notNull()
+      },
+      (table) => ({
+        monthIdx: index("month_idx").on(table.month),
+        endpointIdx: index("endpoint_idx").on(table.endpoint),
+        createdAtIdx: index("created_at_idx").on(table.createdAt)
+      })
+    );
+    apiCostSettings = pgTable11("api_cost_settings", {
+      id: serial11("id").primaryKey(),
+      monthlyLimit: numeric("monthlyLimit", { precision: 10, scale: 2 }).default("10.00").notNull(),
+      alertThreshold: numeric("alertThreshold", { precision: 10, scale: 2 }).default("8.00").notNull(),
+      alertEmail: varchar11("alertEmail", { length: 320 }),
+      autoStop: integer10("autoStop").default(0).notNull(),
+      createdAt: timestamp11("createdAt").defaultNow().notNull(),
+      updatedAt: timestamp11("updatedAt").defaultNow().notNull()
+    });
+  }
+});
+
 // drizzle/schema/index.ts
 var init_schema = __esm({
   "drizzle/schema/index.ts"() {
@@ -649,6 +707,8 @@ var init_schema = __esm({
     init_invitations();
     init_tickets();
     init_audit();
+    init_release_notes();
+    init_api_usage();
   }
 });
 
@@ -659,6 +719,8 @@ __export(schema_exports, {
   ENTITY_TYPES: () => ENTITY_TYPES,
   achievementPages: () => achievementPages,
   achievements: () => achievements,
+  apiCostSettings: () => apiCostSettings,
+  apiUsage: () => apiUsage,
   auditLogs: () => auditLogs,
   badges: () => badges,
   categories: () => categories,
@@ -681,6 +743,7 @@ __export(schema_exports, {
   participationCompanions: () => participationCompanions,
   participations: () => participations,
   pickedComments: () => pickedComments,
+  releaseNotes: () => releaseNotes,
   reminders: () => reminders,
   searchHistory: () => searchHistory,
   ticketTransfers: () => ticketTransfers,
@@ -751,13 +814,18 @@ async function upsertUser(user) {
       values.role = "admin";
       updateSet.role = "admin";
     }
+    if (user.gender !== void 0) {
+      values.gender = user.gender;
+      updateSet.gender = user.gender;
+    }
     if (!values.lastSignedIn) {
       values.lastSignedIn = /* @__PURE__ */ new Date();
     }
     if (Object.keys(updateSet).length === 0) {
       updateSet.lastSignedIn = /* @__PURE__ */ new Date();
     }
-    await db.insert(users).values(values).onDuplicateKeyUpdate({
+    await db.insert(users).values(values).onConflictDoUpdate({
+      target: users.openId,
       set: updateSet
     });
   } catch (error) {
@@ -804,7 +872,8 @@ async function getUserByTwitterId(twitterId) {
     id: user.id,
     name: user.name,
     twitterId,
-    twitterUsername: followStatus.length > 0 ? followStatus[0].twitterUsername : null
+    twitterUsername: followStatus.length > 0 ? followStatus[0].twitterUsername : null,
+    gender: user.gender
   };
 }
 var init_user_db = __esm({
@@ -817,6 +886,7 @@ var init_user_db = __esm({
 });
 
 // server/db/challenge-db.ts
+import { sql as sql2, eq as eq2, desc as desc2 } from "drizzle-orm";
 async function getAllEvents() {
   const now = Date.now();
   if (eventsCache.data && now - eventsCache.timestamp < EVENTS_CACHE_TTL) {
@@ -824,7 +894,34 @@ async function getAllEvents() {
   }
   const db = await getDb();
   if (!db) return eventsCache.data ?? [];
-  const result = await db.select().from(events2).where(eq(events2.isPublic, true)).orderBy(desc(events2.eventDate));
+  const result = await db.select({
+    id: events2.id,
+    hostUserId: events2.hostUserId,
+    hostTwitterId: events2.hostTwitterId,
+    hostName: events2.hostName,
+    hostUsername: events2.hostUsername,
+    hostProfileImage: events2.hostProfileImage,
+    hostFollowersCount: events2.hostFollowersCount,
+    hostDescription: events2.hostDescription,
+    hostGender: users.gender,
+    // 主催者の性別
+    title: events2.title,
+    slug: events2.slug,
+    description: events2.description,
+    goalType: events2.goalType,
+    goalValue: events2.goalValue,
+    goalUnit: events2.goalUnit,
+    currentValue: events2.currentValue,
+    eventType: events2.eventType,
+    categoryId: events2.categoryId,
+    eventDate: events2.eventDate,
+    venue: events2.venue,
+    prefecture: events2.prefecture,
+    status: events2.status,
+    isPublic: events2.isPublic,
+    createdAt: events2.createdAt,
+    updatedAt: events2.updatedAt
+  }).from(events2).leftJoin(users, eq2(events2.hostUserId, users.id)).where(eq2(events2.isPublic, true)).orderBy(desc2(events2.eventDate));
   eventsCache = { data: result, timestamp: now };
   return result;
 }
@@ -834,18 +931,18 @@ function invalidateEventsCache() {
 async function getEventById(id) {
   const db = await getDb();
   if (!db) return null;
-  const result = await db.select().from(events2).where(eq(events2.id, id));
+  const result = await db.select().from(events2).where(eq2(events2.id, id));
   return result[0] || null;
 }
 async function getEventsByHostUserId(hostUserId) {
   const db = await getDb();
   if (!db) return [];
-  return db.select().from(events2).where(eq(events2.hostUserId, hostUserId)).orderBy(desc(events2.eventDate));
+  return db.select().from(events2).where(eq2(events2.hostUserId, hostUserId)).orderBy(desc2(events2.eventDate));
 }
 async function getEventsByHostTwitterId(hostTwitterId) {
   const db = await getDb();
   if (!db) return [];
-  return db.select().from(events2).where(eq(events2.hostTwitterId, hostTwitterId)).orderBy(desc(events2.eventDate));
+  return db.select().from(events2).where(eq2(events2.hostTwitterId, hostTwitterId)).orderBy(desc2(events2.eventDate));
 }
 async function createEvent(data) {
   const db = await getDb();
@@ -854,13 +951,13 @@ async function createEvent(data) {
   const eventDate = data.eventDate ? new Date(data.eventDate).toISOString().slice(0, 19).replace("T", " ") : now;
   const slug = data.slug || generateSlug(data.title);
   const ticketSaleStart = data.ticketSaleStart ? new Date(data.ticketSaleStart).toISOString().slice(0, 19).replace("T", " ") : null;
-  const result = await db.execute(sql`
+  const result = await db.execute(sql2`
     INSERT INTO challenges (
-      hostUserId, hostTwitterId, hostName, hostUsername, hostProfileImage, hostFollowersCount, hostDescription,
-      title, description, goalType, goalValue, goalUnit, currentValue,
-      eventType, categoryId, eventDate, venue, prefecture,
-      ticketPresale, ticketDoor, ticketSaleStart, ticketUrl, externalUrl,
-      status, isPublic, createdAt, updatedAt
+      "hostUserId", "hostTwitterId", "hostName", "hostUsername", "hostProfileImage", "hostFollowersCount", "hostDescription",
+      title, description, "goalType", "goalValue", "goalUnit", "currentValue",
+      "eventType", "categoryId", "eventDate", venue, prefecture,
+      "ticketPresale", "ticketDoor", "ticketSaleStart", "ticketUrl", "externalUrl",
+      status, "isPublic", "createdAt", "updatedAt"
     ) VALUES (
       ${data.hostUserId ?? null},
       ${data.hostTwitterId ?? null},
@@ -890,27 +987,32 @@ async function createEvent(data) {
       ${now},
       ${now}
     )
+    RETURNING id
   `);
+  const raw = result;
+  const rows = Array.isArray(raw) ? raw : raw?.rows;
+  const id = rows?.[0]?.id;
   invalidateEventsCache();
-  return result[0].insertId;
+  if (id == null) throw new Error("Failed to create challenge");
+  return id;
 }
 async function updateEvent(id, data) {
   const db = await getDb();
   if (!db) throw new Error("Database not available");
-  await db.update(events2).set(data).where(eq(events2.id, id));
+  await db.update(events2).set(data).where(eq2(events2.id, id));
   invalidateEventsCache();
 }
 async function deleteEvent(id) {
   const db = await getDb();
   if (!db) throw new Error("Database not available");
-  await db.delete(events2).where(eq(events2.id, id));
+  await db.delete(events2).where(eq2(events2.id, id));
   invalidateEventsCache();
 }
 async function searchChallenges(query) {
   const db = await getDb();
   if (!db) return [];
   const normalizedQuery = query.toLowerCase().trim();
-  const allChallenges = await db.select().from(challenges).where(eq(challenges.isPublic, true)).orderBy(desc(challenges.eventDate));
+  const allChallenges = await db.select().from(challenges).where(eq2(challenges.isPublic, true)).orderBy(desc2(challenges.eventDate));
   return allChallenges.filter((c) => {
     const title = (c.title || "").toLowerCase();
     const hostName = (c.hostName || "").toLowerCase();
@@ -967,8 +1069,8 @@ async function getActiveParticipationById(id) {
 async function createParticipation(data) {
   const db = await getDb();
   if (!db) throw new Error("Database not available");
-  const result = await db.insert(participations).values(data);
-  const participationId = result[0].insertId;
+  const result = await db.insert(participations).values(data).returning({ id: participations.id });
+  const participationId = result[0]?.id ?? null;
   if (data.challengeId) {
     const contribution = (data.contribution || 1) + (data.companionCount || 0);
     await db.update(challenges).set({ currentValue: sql`${challenges.currentValue} + ${contribution}` }).where(eq(challenges.id, data.challengeId));
@@ -1051,8 +1153,8 @@ async function getContributionRanking(challengeId, limit = 10) {
     eq(participations.challengeId, challengeId),
     isNull(participations.deletedAt)
   )).orderBy(desc(participations.contribution));
-  return result.slice(0, limit).map((p, index) => ({
-    rank: index + 1,
+  return result.slice(0, limit).map((p, index2) => ({
+    rank: index2 + 1,
     userId: p.userId,
     displayName: p.displayName,
     username: p.username,
@@ -1395,8 +1497,8 @@ async function getUsersWithNotificationEnabled(challengeId, notificationType) {
 async function createNotification(data) {
   const db = await getDb();
   if (!db) throw new Error("Database not available");
-  const result = await db.insert(notifications).values(data);
-  const notificationId = result[0].insertId;
+  const result = await db.insert(notifications).values(data).returning({ id: notifications.id });
+  const notificationId = result[0]?.id ?? null;
   try {
     const { sendNotificationToUser: sendNotificationToUser2 } = await Promise.resolve().then(() => (init_websocket(), websocket_exports));
     sendNotificationToUser2(data.userId.toString(), {
@@ -1447,8 +1549,8 @@ async function getBadgeById(id) {
 async function createBadge(data) {
   const db = await getDb();
   if (!db) throw new Error("Database not available");
-  const result = await db.insert(badges).values(data);
-  return result[0].insertId;
+  const result = await db.insert(badges).values(data).returning({ id: badges.id });
+  return result[0]?.id ?? null;
 }
 async function getUserBadges(userId) {
   const db = await getDb();
@@ -1474,8 +1576,8 @@ async function awardBadge(userId, badgeId, challengeId) {
     userId,
     badgeId,
     challengeId
-  });
-  return result[0].insertId;
+  }).returning({ id: userBadges.id });
+  return result[0]?.id ?? null;
 }
 async function checkAndAwardBadges(userId, challengeId, contribution) {
   const db = await getDb();
@@ -1516,8 +1618,8 @@ async function awardFollowerBadge(userId) {
       description: "\u30DB\u30B9\u30C8\u3092\u30D5\u30A9\u30ED\u30FC\u3057\u3066\u5FDC\u63F4\u3057\u3066\u3044\u307E\u3059\uFF01",
       type: "special",
       conditionType: "follower_badge"
-    });
-    followerBadge = await db.select().from(badges).where(eq(badges.id, result[0].insertId));
+    }).returning({ id: badges.id });
+    followerBadge = await db.select().from(badges).where(eq(badges.id, result[0].id));
   }
   if (followerBadge.length === 0) return null;
   return awardBadge(userId, followerBadge[0].id);
@@ -1556,8 +1658,8 @@ async function pickComment(participationId, challengeId, pickedBy, reason) {
     challengeId,
     pickedBy,
     reason
-  });
-  return result[0].insertId;
+  }).returning({ id: pickedComments.id });
+  return result[0]?.id ?? null;
 }
 async function unpickComment(participationId) {
   const db = await getDb();
@@ -1578,8 +1680,8 @@ async function isCommentPicked(participationId) {
 async function sendCheer(cheer) {
   const db = await getDb();
   if (!db) return null;
-  const result = await db.insert(cheers).values(cheer);
-  return result[0].insertId;
+  const result = await db.insert(cheers).values(cheer).returning({ id: cheers.id });
+  return result[0]?.id ?? null;
 }
 async function getCheersForParticipation(participationId) {
   const db = await getDb();
@@ -1610,8 +1712,8 @@ async function getCheersSentByUser(userId) {
 async function createAchievementPage(page) {
   const db = await getDb();
   if (!db) return null;
-  const result = await db.insert(achievementPages).values(page);
-  return result[0].insertId;
+  const result = await db.insert(achievementPages).values(page).returning({ id: achievementPages.id });
+  return result[0]?.id ?? null;
 }
 async function getAchievementPage(challengeId) {
   const db = await getDb();
@@ -1641,8 +1743,8 @@ var init_social_db = __esm({
 async function createReminder(reminder) {
   const db = await getDb();
   if (!db) return null;
-  const result = await db.insert(reminders).values(reminder);
-  return result[0].insertId;
+  const result = await db.insert(reminders).values(reminder).returning({ id: reminders.id });
+  return result[0]?.id ?? null;
 }
 async function getRemindersForUser(userId) {
   const db = await getDb();
@@ -1683,8 +1785,8 @@ async function markReminderAsSent(id) {
 async function sendDirectMessage(dm) {
   const db = await getDb();
   if (!db) return null;
-  const result = await db.insert(directMessages).values(dm);
-  const messageId = result[0].insertId;
+  const result = await db.insert(directMessages).values(dm).returning({ id: directMessages.id });
+  const messageId = result[0]?.id ?? null;
   try {
     const { sendMessageToUser: sendMessageToUser2 } = await Promise.resolve().then(() => (init_websocket(), websocket_exports));
     sendMessageToUser2(dm.toUserId.toString(), {
@@ -1744,8 +1846,8 @@ async function getConversationList(userId, limit = 20, cursor) {
 async function createChallengeTemplate(template) {
   const db = await getDb();
   if (!db) return null;
-  const result = await db.insert(challengeTemplates).values(template);
-  return result[0].insertId;
+  const result = await db.insert(challengeTemplates).values(template).returning({ id: challengeTemplates.id });
+  return result[0]?.id ?? null;
 }
 async function getChallengeTemplatesForUser(userId) {
   const db = await getDb();
@@ -1790,8 +1892,8 @@ var init_messaging_db = __esm({
 async function saveSearchHistory(history) {
   const db = await getDb();
   if (!db) return null;
-  const result = await db.insert(searchHistory).values(history);
-  return result[0].insertId;
+  const result = await db.insert(searchHistory).values(history).returning({ id: searchHistory.id });
+  return result[0]?.id ?? null;
 }
 async function getSearchHistoryForUser(userId, limit = 10) {
   const db = await getDb();
@@ -1808,9 +1910,9 @@ async function followUser(follow) {
   if (!db) return null;
   const existing = await db.select().from(follows).where(and(eq(follows.followerId, follow.followerId), eq(follows.followeeId, follow.followeeId)));
   if (existing.length > 0) return null;
-  const result = await db.insert(follows).values(follow);
+  const result = await db.insert(follows).values(follow).returning({ id: follows.id });
   await awardFollowerBadge(follow.followerId);
-  return result[0].insertId;
+  return result[0]?.id ?? null;
 }
 async function unfollowUser(followerId, followeeId) {
   const db = await getDb();
@@ -1969,8 +2071,8 @@ async function getCategoryBySlug(slug) {
 async function createCategory(category) {
   const db = await getDb();
   if (!db) return null;
-  const result = await db.insert(categories).values(category);
-  return result[0].insertId;
+  const result = await db.insert(categories).values(category).returning({ id: categories.id });
+  return result[0]?.id ?? null;
 }
 async function getChallengesByCategory(categoryId) {
   const db = await getDb();
@@ -2004,8 +2106,8 @@ var init_category_db = __esm({
 async function createInvitation(invitation) {
   const db = await getDb();
   if (!db) return null;
-  const result = await db.insert(invitations).values(invitation);
-  return result[0].insertId;
+  const result = await db.insert(invitations).values(invitation).returning({ id: invitations.id });
+  return result[0]?.id ?? null;
 }
 async function getInvitationByCode(code) {
   const db = await getDb();
@@ -2036,8 +2138,8 @@ async function deactivateInvitation(id) {
 async function recordInvitationUse(use) {
   const db = await getDb();
   if (!db) return null;
-  const result = await db.insert(invitationUses).values(use);
-  return result[0].insertId;
+  const result = await db.insert(invitationUses).values(use).returning({ id: invitationUses.id });
+  return result[0]?.id ?? null;
 }
 async function confirmInvitationUse(invitationId, userId, participationId) {
   const db = await getDb();
@@ -2147,13 +2249,25 @@ async function getUserPublicProfile(userId) {
   });
   const hostedChallenges = await db.select({ count: sql`count(*)` }).from(challenges).where(eq(challenges.hostUserId, userId));
   const latestParticipation = participationList[0];
+  let twitterData = null;
+  if (latestParticipation?.username) {
+    const twitterCache = await db.select().from(twitterUserCache).where(eq(twitterUserCache.twitterUsername, latestParticipation.username));
+    if (twitterCache.length > 0) {
+      twitterData = twitterCache[0];
+    }
+  }
   return {
     user: {
       id: user.id,
       name: user.name || latestParticipation?.displayName || "\u30E6\u30FC\u30B6\u30FC",
       username: latestParticipation?.username || null,
       profileImage: latestParticipation?.profileImage || null,
-      createdAt: user.createdAt
+      gender: user.gender,
+      createdAt: user.createdAt,
+      // TwitterUserCardに必要なフィールド
+      twitterId: twitterData?.twitterId || null,
+      followersCount: twitterData?.followersCount || 0,
+      description: twitterData?.description || null
     },
     stats: {
       totalContribution,
@@ -2227,14 +2341,14 @@ var init_profile_db = __esm({
 async function createCompanion(companion) {
   const db = await getDb();
   if (!db) return null;
-  const result = await db.insert(participationCompanions).values(companion);
-  return result[0].insertId;
+  const result = await db.insert(participationCompanions).values(companion).returning({ id: participationCompanions.id });
+  return result[0]?.id ?? null;
 }
 async function createCompanions(companions) {
   const db = await getDb();
   if (!db) return [];
   if (companions.length === 0) return [];
-  const result = await db.insert(participationCompanions).values(companions);
+  const result = await db.insert(participationCompanions).values(companions).returning({ id: participationCompanions.id });
   return result;
 }
 async function getCompanionsForParticipation(participationId) {
@@ -2453,8 +2567,8 @@ var init_ai_db = __esm({
 async function createTicketTransfer(transfer) {
   const db = await getDb();
   if (!db) return null;
-  const result = await db.insert(ticketTransfers).values(transfer);
-  return result[0].insertId;
+  const result = await db.insert(ticketTransfers).values(transfer).returning({ id: ticketTransfers.id });
+  return result[0]?.id ?? null;
 }
 async function getTicketTransfersForChallenge(challengeId) {
   const db = await getDb();
@@ -2491,8 +2605,8 @@ async function addToTicketWaitlist(waitlist) {
   if (existing.length > 0) {
     return existing[0].id;
   }
-  const result = await db.insert(ticketWaitlist).values(waitlist);
-  return result[0].insertId;
+  const result = await db.insert(ticketWaitlist).values(waitlist).returning({ id: ticketWaitlist.id });
+  return result[0]?.id ?? null;
 }
 async function removeFromTicketWaitlist(challengeId, userId) {
   const db = await getDb();
@@ -2707,12 +2821,14 @@ async function getDbSchema() {
   if (!db) return { tables: [], error: "Database not available" };
   try {
     const result = await db.execute(sql`
-      SELECT TABLE_NAME, COLUMN_NAME, DATA_TYPE, IS_NULLABLE, COLUMN_DEFAULT
-      FROM INFORMATION_SCHEMA.COLUMNS
-      WHERE TABLE_SCHEMA = DATABASE()
-      ORDER BY TABLE_NAME, ORDINAL_POSITION
+      SELECT table_name, column_name, data_type, is_nullable, column_default
+      FROM information_schema.columns
+      WHERE table_schema = 'public'
+      ORDER BY table_name, ordinal_position
     `);
-    return { tables: result[0] };
+    const raw = result;
+    const rows = Array.isArray(raw) ? raw[0] : raw?.rows;
+    return { tables: (Array.isArray(rows) ? rows : []) ?? [] };
   } catch (error) {
     return { tables: [], error: String(error) };
   }
@@ -2722,11 +2838,13 @@ async function compareSchemas() {
   if (!db) return { match: false, error: "Database not available" };
   try {
     const result = await db.execute(sql`
-      SELECT TABLE_NAME
-      FROM INFORMATION_SCHEMA.TABLES
-      WHERE TABLE_SCHEMA = DATABASE()
+      SELECT table_name
+      FROM information_schema.tables
+      WHERE table_schema = 'public'
     `);
-    const dbTables = result[0].map((r) => r.TABLE_NAME);
+    const raw = result;
+    const rows = Array.isArray(raw) ? raw[0] : raw?.rows;
+    const dbTables = (Array.isArray(rows) ? rows : []).map((r) => r.table_name);
     const codeTables = [
       "users",
       "challenges",
@@ -2790,8 +2908,8 @@ async function createAuditLog(data) {
     return null;
   }
   try {
-    const result = await db.insert(auditLogs).values(data);
-    return result[0].insertId;
+    const result = await db.insert(auditLogs).values(data).returning({ id: auditLogs.id });
+    return result[0]?.id ?? null;
   } catch (error) {
     console.error("[AuditLog] Failed to create audit log:", error);
     return null;
@@ -3076,6 +3194,474 @@ var init_db2 = __esm({
     "use strict";
     init_db();
     init_schema2();
+  }
+});
+
+// server/db/api-usage-db.ts
+var api_usage_db_exports = {};
+__export(api_usage_db_exports, {
+  checkCostLimit: () => checkCostLimit,
+  getCostSettings: () => getCostSettings,
+  getCurrentMonthStats: () => getCurrentMonthStats,
+  getMonthlyCost: () => getMonthlyCost,
+  getMonthlyUsage: () => getMonthlyUsage,
+  getUsageByEndpoint: () => getUsageByEndpoint,
+  isApiCallAllowed: () => isApiCallAllowed,
+  recordApiUsage: () => recordApiUsage,
+  upsertCostSettings: () => upsertCostSettings
+});
+import { eq as eq4, sql as sql3, desc as desc4 } from "drizzle-orm";
+async function recordApiUsage(usage) {
+  const db = await getDb();
+  if (!db) {
+    console.warn("[API Usage] Database not available, skipping record");
+    return null;
+  }
+  try {
+    const now = /* @__PURE__ */ new Date();
+    const month = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}`;
+    const monthlyUsage = await getMonthlyUsage(month);
+    const isFreeTier = monthlyUsage < FREE_TIER_LIMIT;
+    const cost = isFreeTier ? 0 : COST_PER_REQUEST;
+    const insertData = {
+      endpoint: usage.endpoint,
+      method: usage.method || "GET",
+      success: usage.success ? 1 : 0,
+      cost: cost.toString(),
+      rateLimitInfo: usage.rateLimitInfo ?? null,
+      month
+    };
+    const result = await db.insert(apiUsage).values(insertData).returning({ id: apiUsage.id });
+    return result[0]?.id ?? null;
+  } catch (error) {
+    console.error("[API Usage] Failed to record usage:", error);
+    return null;
+  }
+}
+async function getMonthlyUsage(month) {
+  const db = await getDb();
+  if (!db) return 0;
+  try {
+    const result = await db.select({ count: sql3`count(*)` }).from(apiUsage).where(eq4(apiUsage.month, month));
+    return result[0]?.count || 0;
+  } catch (error) {
+    console.error("[API Usage] Failed to get monthly usage:", error);
+    return 0;
+  }
+}
+async function getMonthlyCost(month) {
+  const db = await getDb();
+  if (!db) return 0;
+  try {
+    const result = await db.select({ totalCost: sql3`sum(${apiUsage.cost})` }).from(apiUsage).where(eq4(apiUsage.month, month));
+    return Number(result[0]?.totalCost || 0);
+  } catch (error) {
+    console.error("[API Usage] Failed to get monthly cost:", error);
+    return 0;
+  }
+}
+async function getCurrentMonthStats() {
+  const now = /* @__PURE__ */ new Date();
+  const month = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}`;
+  const usage = await getMonthlyUsage(month);
+  const cost = await getMonthlyCost(month);
+  const freeTierRemaining = Math.max(0, FREE_TIER_LIMIT - usage);
+  return {
+    usage,
+    cost,
+    freeTierRemaining
+  };
+}
+async function getUsageByEndpoint(month, limit = 20) {
+  const db = await getDb();
+  if (!db) return [];
+  try {
+    const result = await db.select({
+      endpoint: apiUsage.endpoint,
+      count: sql3`count(*)`,
+      cost: sql3`sum(${apiUsage.cost})`
+    }).from(apiUsage).where(eq4(apiUsage.month, month)).groupBy(apiUsage.endpoint).orderBy(desc4(sql3`count(*)`)).limit(limit);
+    return result.map((r) => ({
+      endpoint: r.endpoint,
+      count: r.count,
+      cost: Number(r.cost || 0)
+    }));
+  } catch (error) {
+    console.error("[API Usage] Failed to get usage by endpoint:", error);
+    return [];
+  }
+}
+async function getCostSettings() {
+  const db = await getDb();
+  if (!db) return null;
+  try {
+    const result = await db.select().from(apiCostSettings).limit(1);
+    return result[0] || null;
+  } catch (error) {
+    console.error("[API Usage] Failed to get cost settings:", error);
+    return null;
+  }
+}
+async function upsertCostSettings(settings) {
+  const db = await getDb();
+  if (!db) {
+    console.warn("[API Usage] Database not available, skipping upsert");
+    return;
+  }
+  try {
+    const existing = await getCostSettings();
+    if (existing) {
+      await db.update(apiCostSettings).set({
+        ...settings,
+        updatedAt: /* @__PURE__ */ new Date()
+      }).where(eq4(apiCostSettings.id, existing.id));
+    } else {
+      await db.insert(apiCostSettings).values({
+        monthlyLimit: settings.monthlyLimit || "10.00",
+        alertThreshold: settings.alertThreshold || "8.00",
+        alertEmail: settings.alertEmail || null,
+        autoStop: settings.autoStop || 0
+      });
+    }
+  } catch (error) {
+    console.error("[API Usage] Failed to upsert cost settings:", error);
+    throw error;
+  }
+}
+async function checkCostLimit() {
+  const settings = await getCostSettings();
+  const currentMonth = await getCurrentMonthStats();
+  const limit = settings ? Number(settings.monthlyLimit) : 10;
+  const alertThreshold = settings ? Number(settings.alertThreshold) : 8;
+  const autoStop = settings ? settings.autoStop === 1 : false;
+  const exceeded = currentMonth.cost >= limit;
+  const shouldAlert = currentMonth.cost >= alertThreshold;
+  const shouldStop = exceeded && autoStop;
+  return {
+    exceeded,
+    currentCost: currentMonth.cost,
+    limit,
+    shouldAlert,
+    shouldStop
+  };
+}
+async function isApiCallAllowed() {
+  const costLimit = await checkCostLimit();
+  return !costLimit.shouldStop;
+}
+var FREE_TIER_LIMIT, COST_PER_REQUEST;
+var init_api_usage_db = __esm({
+  "server/db/api-usage-db.ts"() {
+    "use strict";
+    init_db();
+    init_schema2();
+    FREE_TIER_LIMIT = 100;
+    COST_PER_REQUEST = 0.01;
+  }
+});
+
+// server/_core/notification.ts
+import { TRPCError } from "@trpc/server";
+async function notifyOwner(payload) {
+  const { title, content } = validatePayload(payload);
+  if (!ENV.forgeApiUrl) {
+    throw new TRPCError({
+      code: "INTERNAL_SERVER_ERROR",
+      message: "Notification service URL is not configured."
+    });
+  }
+  if (!ENV.forgeApiKey) {
+    throw new TRPCError({
+      code: "INTERNAL_SERVER_ERROR",
+      message: "Notification service API key is not configured."
+    });
+  }
+  const endpoint = buildEndpointUrl(ENV.forgeApiUrl);
+  try {
+    const response = await fetch(endpoint, {
+      method: "POST",
+      headers: {
+        accept: "application/json",
+        authorization: `Bearer ${ENV.forgeApiKey}`,
+        "content-type": "application/json",
+        "connect-protocol-version": "1"
+      },
+      body: JSON.stringify({ title, content })
+    });
+    if (!response.ok) {
+      const detail = await response.text().catch(() => "");
+      console.warn(
+        `[Notification] Failed to notify owner (${response.status} ${response.statusText})${detail ? `: ${detail}` : ""}`
+      );
+      return false;
+    }
+    return true;
+  } catch (error) {
+    console.warn("[Notification] Error calling notification service:", error);
+    return false;
+  }
+}
+var TITLE_MAX_LENGTH, CONTENT_MAX_LENGTH, trimValue, isNonEmptyString2, buildEndpointUrl, validatePayload;
+var init_notification = __esm({
+  "server/_core/notification.ts"() {
+    "use strict";
+    init_env();
+    TITLE_MAX_LENGTH = 1200;
+    CONTENT_MAX_LENGTH = 2e4;
+    trimValue = (value) => value.trim();
+    isNonEmptyString2 = (value) => typeof value === "string" && value.trim().length > 0;
+    buildEndpointUrl = (baseUrl) => {
+      const normalizedBase = baseUrl.endsWith("/") ? baseUrl : `${baseUrl}/`;
+      return new URL("webdevtoken.v1.WebDevService/SendNotification", normalizedBase).toString();
+    };
+    validatePayload = (input) => {
+      if (!isNonEmptyString2(input.title)) {
+        throw new TRPCError({
+          code: "BAD_REQUEST",
+          message: "Notification title is required."
+        });
+      }
+      if (!isNonEmptyString2(input.content)) {
+        throw new TRPCError({
+          code: "BAD_REQUEST",
+          message: "Notification content is required."
+        });
+      }
+      const title = trimValue(input.title);
+      const content = trimValue(input.content);
+      if (title.length > TITLE_MAX_LENGTH) {
+        throw new TRPCError({
+          code: "BAD_REQUEST",
+          message: `Notification title must be at most ${TITLE_MAX_LENGTH} characters.`
+        });
+      }
+      if (content.length > CONTENT_MAX_LENGTH) {
+        throw new TRPCError({
+          code: "BAD_REQUEST",
+          message: `Notification content must be at most ${CONTENT_MAX_LENGTH} characters.`
+        });
+      }
+      return { title, content };
+    };
+  }
+});
+
+// server/api-cost-alert.ts
+var api_cost_alert_exports = {};
+__export(api_cost_alert_exports, {
+  checkAndSendCostAlert: () => checkAndSendCostAlert,
+  resetAlertFlags: () => resetAlertFlags
+});
+async function sendCostAlertWebhook(payload) {
+  if (!COST_ALERT_WEBHOOK_URL) return;
+  try {
+    const res = await fetch(COST_ALERT_WEBHOOK_URL, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(payload)
+    });
+    if (!res.ok) {
+      console.warn("[Cost Alert] Webhook failed:", res.status, await res.text().catch(() => ""));
+    }
+  } catch (e) {
+    console.warn("[Cost Alert] Webhook error:", e);
+  }
+}
+async function checkAndSendCostAlert() {
+  try {
+    const costLimit = await checkCostLimit();
+    const settings = await getCostSettings();
+    if (!costLimit.shouldAlert) {
+      return;
+    }
+    const alertKey = `cost_alert_${(/* @__PURE__ */ new Date()).toISOString().slice(0, 7)}`;
+    if (alertSentFlags.get(alertKey)) {
+      return;
+    }
+    const currentMonth = await getCurrentMonthStats();
+    const message = costLimit.exceeded ? `\u26A0\uFE0F X API\u30B3\u30B9\u30C8\u4E0A\u9650\u3092\u8D85\u904E\u3057\u307E\u3057\u305F
+
+\u73FE\u5728\u306E\u30B3\u30B9\u30C8: $${costLimit.currentCost.toFixed(2)}
+\u8A2D\u5B9A\u4E0A\u9650: $${costLimit.limit.toFixed(2)}
+\u4ECA\u6708\u306E\u4F7F\u7528\u91CF: ${currentMonth.usage} \u4EF6
+\u7121\u6599\u67A0\u6B8B\u308A: ${currentMonth.freeTierRemaining} \u4EF6
+
+${costLimit.shouldStop ? "API\u547C\u3073\u51FA\u3057\u306F\u81EA\u52D5\u505C\u6B62\u3055\u308C\u3066\u3044\u307E\u3059\u3002" : "API\u547C\u3073\u51FA\u3057\u306F\u7D99\u7D9A\u4E2D\u3067\u3059\u3002"}
+
+\u7BA1\u7406\u753B\u9762\u3067\u8A2D\u5B9A\u3092\u78BA\u8A8D\u3057\u3066\u304F\u3060\u3055\u3044: /admin/api-usage` : `\u26A0\uFE0F X API\u30B3\u30B9\u30C8\u4E0A\u9650\u306B\u8FD1\u3065\u3044\u3066\u3044\u307E\u3059
+
+\u73FE\u5728\u306E\u30B3\u30B9\u30C8: $${costLimit.currentCost.toFixed(2)}
+\u30A2\u30E9\u30FC\u30C8\u95BE\u5024: $${costLimit.limit.toFixed(2)}
+\u4ECA\u6708\u306E\u4F7F\u7528\u91CF: ${currentMonth.usage} \u4EF6
+\u7121\u6599\u67A0\u6B8B\u308A: ${currentMonth.freeTierRemaining} \u4EF6
+
+\u7BA1\u7406\u753B\u9762\u3067\u8A2D\u5B9A\u3092\u78BA\u8A8D\u3057\u3066\u304F\u3060\u3055\u3044: /admin/api-usage`;
+    const title = costLimit.exceeded ? "X API\u30B3\u30B9\u30C8\u4E0A\u9650\u8D85\u904E\u30A2\u30E9\u30FC\u30C8" : "X API\u30B3\u30B9\u30C8\u4E0A\u9650\u8B66\u544A";
+    try {
+      await notifyOwner({ title, content: message });
+    } catch (e) {
+      console.warn("[Cost Alert] notifyOwner failed:", e);
+    }
+    await sendCostAlertWebhook({
+      title,
+      content: message,
+      alertEmail: settings?.alertEmail ?? null,
+      exceeded: costLimit.exceeded,
+      currentCost: costLimit.currentCost,
+      limit: costLimit.limit
+    });
+    alertSentFlags.set(alertKey, true);
+    console.log("[Cost Alert] Alert sent:", {
+      exceeded: costLimit.exceeded,
+      currentCost: costLimit.currentCost,
+      limit: costLimit.limit,
+      alertEmail: settings?.alertEmail ?? void 0
+    });
+  } catch (error) {
+    console.error("[Cost Alert] Failed to check and send alert:", error);
+  }
+}
+function resetAlertFlags() {
+  alertSentFlags.clear();
+}
+var alertSentFlags, COST_ALERT_WEBHOOK_URL;
+var init_api_cost_alert = __esm({
+  "server/api-cost-alert.ts"() {
+    "use strict";
+    init_api_usage_db();
+    init_notification();
+    alertSentFlags = /* @__PURE__ */ new Map();
+    COST_ALERT_WEBHOOK_URL = process.env.COST_ALERT_WEBHOOK_URL ?? "";
+  }
+});
+
+// server/api-usage-tracker.ts
+var api_usage_tracker_exports = {};
+__export(api_usage_tracker_exports, {
+  getApiUsageStats: () => getApiUsageStats,
+  getDashboardSummary: () => getDashboardSummary,
+  getEndpointStats: () => getEndpointStats,
+  getRateLimitWarningLevel: () => getRateLimitWarningLevel,
+  getRecentUsageHistory: () => getRecentUsageHistory,
+  getWarningsSummary: () => getWarningsSummary,
+  recordApiUsage: () => recordApiUsage2,
+  recordRateLimitError: () => recordRateLimitError,
+  resetApiUsageStats: () => resetApiUsageStats
+});
+async function recordApiUsage2(endpoint, rateLimitInfo, success = true, method = "GET") {
+  const now = Date.now();
+  stats.totalRequests++;
+  if (success) {
+    stats.successfulRequests++;
+  } else {
+    stats.rateLimitedRequests++;
+  }
+  stats.lastUpdated = now;
+  recordApiUsage({
+    endpoint,
+    method,
+    success,
+    rateLimitInfo
+  }).catch((error) => {
+    console.error("[API Usage] Failed to record to database:", error);
+  });
+  if (rateLimitInfo) {
+    const entry = {
+      endpoint,
+      limit: rateLimitInfo.limit,
+      remaining: rateLimitInfo.remaining,
+      reset: rateLimitInfo.reset,
+      timestamp: now
+    };
+    usageHistory.push(entry);
+    if (usageHistory.length > MAX_HISTORY_SIZE) {
+      usageHistory = usageHistory.slice(-MAX_HISTORY_SIZE);
+    }
+    const usagePercent = (rateLimitInfo.limit - rateLimitInfo.remaining) / rateLimitInfo.limit * 100;
+    stats.endpoints[endpoint] = {
+      requests: (stats.endpoints[endpoint]?.requests || 0) + 1,
+      limit: rateLimitInfo.limit,
+      remaining: rateLimitInfo.remaining,
+      resetAt: new Date(rateLimitInfo.reset * 1e3).toISOString(),
+      usagePercent: Math.round(usagePercent * 10) / 10
+    };
+  }
+}
+async function recordRateLimitError(endpoint, method = "GET") {
+  await recordApiUsage2(endpoint, null, false, method);
+}
+function getApiUsageStats() {
+  return { ...stats };
+}
+function getEndpointStats(endpoint) {
+  return stats.endpoints[endpoint] || null;
+}
+function getRecentUsageHistory(count3 = 100) {
+  return usageHistory.slice(-count3);
+}
+function resetApiUsageStats() {
+  usageHistory = [];
+  stats = {
+    totalRequests: 0,
+    successfulRequests: 0,
+    rateLimitedRequests: 0,
+    endpoints: {},
+    lastUpdated: Date.now()
+  };
+}
+function getRateLimitWarningLevel(endpoint) {
+  const endpointStats = stats.endpoints[endpoint];
+  if (!endpointStats) {
+    return "safe";
+  }
+  if (endpointStats.remaining <= 5) {
+    return "critical";
+  }
+  if (endpointStats.usagePercent >= 80) {
+    return "warning";
+  }
+  return "safe";
+}
+function getWarningsSummary() {
+  const warnings = [];
+  for (const [endpoint, endpointStats] of Object.entries(stats.endpoints)) {
+    const level = getRateLimitWarningLevel(endpoint);
+    if (level !== "safe") {
+      warnings.push({
+        endpoint,
+        level,
+        remaining: endpointStats.remaining,
+        resetAt: endpointStats.resetAt
+      });
+    }
+  }
+  return warnings;
+}
+async function getDashboardSummary() {
+  const monthlyStats = await getCurrentMonthStats();
+  const costLimit = await checkCostLimit();
+  return {
+    stats: getApiUsageStats(),
+    warnings: getWarningsSummary(),
+    recentHistory: getRecentUsageHistory(20),
+    monthlyStats,
+    costLimit
+  };
+}
+var usageHistory, stats, MAX_HISTORY_SIZE;
+var init_api_usage_tracker = __esm({
+  "server/api-usage-tracker.ts"() {
+    "use strict";
+    init_api_usage_db();
+    usageHistory = [];
+    stats = {
+      totalRequests: 0,
+      successfulRequests: 0,
+      rateLimitedRequests: 0,
+      endpoints: {},
+      lastUpdated: Date.now()
+    };
+    MAX_HISTORY_SIZE = 1e3;
   }
 });
 
@@ -3490,7 +4076,7 @@ function registerOAuthRoutes(app) {
 init_db2();
 init_schema2();
 import crypto from "crypto";
-import { eq as eq3, lt as lt3 } from "drizzle-orm";
+import { eq as eq5, lt as lt3 } from "drizzle-orm";
 
 // server/rate-limit-handler.ts
 var DEFAULT_OPTIONS = {
@@ -3579,10 +4165,43 @@ async function withExponentialBackoff(requestFn, options = {}) {
   );
 }
 async function twitterApiFetch(url, options = {}, retryOptions = {}) {
+  try {
+    const { isApiCallAllowed: isApiCallAllowed2 } = await Promise.resolve().then(() => (init_api_usage_db(), api_usage_db_exports));
+    const isAllowed = await isApiCallAllowed2();
+    if (!isAllowed) {
+      console.warn("[RateLimit] API call blocked due to cost limit exceeded");
+      throw new Error("API\u547C\u3073\u51FA\u3057\u306F\u30B3\u30B9\u30C8\u4E0A\u9650\u306B\u3088\u308A\u505C\u6B62\u3055\u308C\u3066\u3044\u307E\u3059\u3002\u7BA1\u7406\u753B\u9762\u3067\u8A2D\u5B9A\u3092\u78BA\u8A8D\u3057\u3066\u304F\u3060\u3055\u3044\u3002");
+    }
+    Promise.resolve().then(() => (init_api_cost_alert(), api_cost_alert_exports)).then((alert) => {
+      alert.checkAndSendCostAlert().catch(() => {
+      });
+    }).catch(() => {
+    });
+  } catch (error) {
+    if (error instanceof Error && error.message.includes("\u30B3\u30B9\u30C8\u4E0A\u9650")) {
+      throw error;
+    }
+    console.warn("[RateLimit] Cost limit check failed, continuing:", error);
+  }
   const result = await withExponentialBackoff(
     () => fetch(url, options),
     retryOptions
   );
+  const success = result.response.ok || result.response.status === 429;
+  const method = options.method || "GET";
+  const urlObj = new URL(url);
+  const endpoint = urlObj.pathname;
+  Promise.resolve().then(() => (init_api_usage_tracker(), api_usage_tracker_exports)).then((tracker) => {
+    tracker.recordApiUsage(
+      endpoint,
+      result.rateLimitInfo,
+      success,
+      method
+    ).catch((error) => {
+      console.error("[RateLimit] Failed to record API usage:", error);
+    });
+  }).catch(() => {
+  });
   if (!result.response.ok && result.response.status !== 429) {
     const errorText = JSON.stringify(result.data);
     throw new Error(`Twitter API error (${result.response.status}): ${errorText}`);
@@ -3639,9 +4258,9 @@ async function exchangeCodeForTokens(code, callbackUrl, codeVerifier) {
     body: params.toString()
   });
   if (!response.ok) {
-    const text10 = await response.text();
-    console.error("Token exchange error:", text10);
-    throw new Error(`Failed to exchange code for tokens: ${text10}`);
+    const text11 = await response.text();
+    console.error("Token exchange error:", text11);
+    throw new Error(`Failed to exchange code for tokens: ${text11}`);
   }
   return response.json();
 }
@@ -3656,12 +4275,12 @@ async function getUserProfile(accessToken) {
     }
   });
   if (!response.ok) {
-    const text10 = await response.text();
-    console.error("User profile error:", text10);
-    throw new Error(`Failed to get user profile: ${text10}`);
+    const text11 = await response.text();
+    console.error("User profile error:", text11);
+    throw new Error(`Failed to get user profile: ${text11}`);
   }
-  const json4 = await response.json();
-  return json4.data;
+  const json = await response.json();
+  return json.data;
 }
 async function refreshAccessToken(refreshToken) {
   const url = "https://api.twitter.com/2/oauth2/token";
@@ -3680,8 +4299,8 @@ async function refreshAccessToken(refreshToken) {
     body: params.toString()
   });
   if (!response.ok) {
-    const text10 = await response.text();
-    throw new Error(`Failed to refresh token: ${text10}`);
+    const text11 = await response.text();
+    throw new Error(`Failed to refresh token: ${text11}`);
   }
   return response.json();
 }
@@ -3723,7 +4342,7 @@ async function getPKCEData(state) {
     return void 0;
   }
   try {
-    const result = await db.select().from(oauthPkceData).where(eq3(oauthPkceData.state, state)).limit(1);
+    const result = await db.select().from(oauthPkceData).where(eq5(oauthPkceData.state, state)).limit(1);
     if (result.length === 0) {
       console.log("[PKCE] No PKCE data found for state:", state.substring(0, 8) + "...");
       return void 0;
@@ -3752,7 +4371,7 @@ async function deletePKCEData(state) {
     return;
   }
   try {
-    await db.delete(oauthPkceData).where(eq3(oauthPkceData.state, state));
+    await db.delete(oauthPkceData).where(eq5(oauthPkceData.state, state));
     console.log("[PKCE] Deleted PKCE data for state:", state.substring(0, 8) + "...");
   } catch (error) {
     console.error("[PKCE] Failed to delete from database:", error);
@@ -3760,7 +4379,22 @@ async function deletePKCEData(state) {
 }
 var pkceMemoryStore = /* @__PURE__ */ new Map();
 var TARGET_TWITTER_USERNAME = "idolfunch";
+var FOLLOW_STATUS_CACHE_TTL_MS = 24 * 60 * 60 * 1e3;
+var followStatusCache = /* @__PURE__ */ new Map();
+function getFollowStatusCacheKey(sourceUserId, targetUsername) {
+  return `${sourceUserId}:${targetUsername}`;
+}
 async function checkFollowStatus(accessToken, sourceUserId, targetUsername = TARGET_TWITTER_USERNAME) {
+  const cacheKey = getFollowStatusCacheKey(sourceUserId, targetUsername);
+  const cached = followStatusCache.get(cacheKey);
+  const now = Date.now();
+  if (cached && now - cached.lastCheckedAt < FOLLOW_STATUS_CACHE_TTL_MS) {
+    console.log("[Twitter API] Follow status cache hit for", sourceUserId);
+    return {
+      isFollowing: cached.isFollowing,
+      targetUser: cached.targetUser
+    };
+  }
   try {
     const userLookupUrl = `https://api.twitter.com/2/users/by/username/${targetUsername}`;
     const { data: userData, rateLimitInfo: userRateLimitInfo } = await twitterApiFetch(
@@ -3806,13 +4440,19 @@ async function checkFollowStatus(accessToken, sourceUserId, targetUsername = TAR
     }
     const following = followData.data || [];
     const isFollowing2 = following.some((user) => user.id === targetUser.id);
+    const targetUserInfo = {
+      id: targetUser.id,
+      name: targetUser.name,
+      username: targetUser.username
+    };
+    followStatusCache.set(cacheKey, {
+      isFollowing: isFollowing2,
+      targetUser: targetUserInfo,
+      lastCheckedAt: now
+    });
     return {
       isFollowing: isFollowing2,
-      targetUser: {
-        id: targetUser.id,
-        name: targetUser.name,
-        username: targetUser.username
-      }
+      targetUser: targetUserInfo
     };
   } catch (error) {
     const errorMessage = error instanceof Error ? error.message : String(error);
@@ -3850,18 +4490,15 @@ async function getUserProfileByUsername(username) {
     const url = `https://api.twitter.com/2/users/by/username/${cleanUsername}`;
     const params = "user.fields=profile_image_url,public_metrics,description";
     const fullUrl = `${url}?${params}`;
-    const response = await fetch(fullUrl, {
-      method: "GET",
-      headers: {
-        "Authorization": `Bearer ${bearerToken}`
+    const { data, rateLimitInfo } = await twitterApiFetch(
+      fullUrl,
+      {
+        method: "GET",
+        headers: {
+          "Authorization": `Bearer ${bearerToken}`
+        }
       }
-    });
-    if (!response.ok) {
-      const text10 = await response.text();
-      console.error("Twitter user lookup error:", response.status, text10);
-      return null;
-    }
-    const data = await response.json();
+    );
     if (!data.data) {
       console.error("Twitter user not found:", cleanUsername);
       return null;
@@ -3882,6 +4519,7 @@ async function getUserProfileByUsername(username) {
 }
 
 // server/twitter-routes.ts
+init_db2();
 function registerTwitterRoutes(app) {
   app.get("/api/twitter/auth", async (req, res) => {
     try {
@@ -3955,6 +4593,18 @@ function registerTwitterRoutes(app) {
         isFollowingTarget,
         targetAccount
       };
+      try {
+        await upsertUser({
+          openId: `twitter:${userProfile.id}`,
+          name: userProfile.name,
+          email: null,
+          loginMethod: "twitter",
+          lastSignedIn: /* @__PURE__ */ new Date()
+        });
+        console.log("[Twitter OAuth 2.0] User profile saved to database");
+      } catch (error) {
+        console.error("[Twitter OAuth 2.0] Failed to save user profile:", error);
+      }
       const encodedData = encodeURIComponent(JSON.stringify(userData));
       const host = req.get("host") || "";
       const protocol = req.get("x-forwarded-proto") || req.protocol;
@@ -4150,7 +4800,7 @@ function registerTwitterRoutes(app) {
 }
 
 // server/_core/trpc.ts
-import { initTRPC, TRPCError } from "@trpc/server";
+import { initTRPC, TRPCError as TRPCError2 } from "@trpc/server";
 import superjson from "superjson";
 
 // server/_core/request-id.ts
@@ -4183,7 +4833,7 @@ var publicProcedure = t.procedure.use(requestIdMiddleware);
 var requireUser = t.middleware(async (opts) => {
   const { ctx, next } = opts;
   if (!ctx.user) {
-    throw new TRPCError({ code: "UNAUTHORIZED", message: UNAUTHED_ERR_MSG });
+    throw new TRPCError2({ code: "UNAUTHORIZED", message: UNAUTHED_ERR_MSG });
   }
   return next({
     ctx: {
@@ -4197,7 +4847,7 @@ var adminProcedure = t.procedure.use(requestIdMiddleware).use(
   t.middleware(async (opts) => {
     const { ctx, next } = opts;
     if (!ctx.user || ctx.user.role !== "admin") {
-      throw new TRPCError({ code: "FORBIDDEN", message: NOT_ADMIN_ERR_MSG });
+      throw new TRPCError2({ code: "FORBIDDEN", message: NOT_ADMIN_ERR_MSG });
     }
     return next({
       ctx: {
@@ -4442,6 +5092,12 @@ var participationsRouter = router({
         attendanceType: input.attendanceType || "venue",
         isAnonymous: false
       });
+      if (ctx.user?.id && input.gender) {
+        await upsertUser({
+          openId: ctx.user.openId,
+          gender: input.gender
+        });
+      }
       if (participationId && ctx.requestId) {
         await logAction({
           requestId: ctx.requestId,
@@ -6158,13 +6814,40 @@ var adminRouter = router({
     return compareSchemas();
   }),
   // 参加管理（削除済み投稿の管理）
-  participations: adminParticipationsRouter
+  participations: adminParticipationsRouter,
+  // APIコスト設定取得
+  getApiCostSettings: protectedProcedure.query(async ({ ctx }) => {
+    if (ctx.user.role !== "admin") {
+      throw new Error("\u7BA1\u7406\u8005\u6A29\u9650\u304C\u5FC5\u8981\u3067\u3059");
+    }
+    const { getCostSettings: getCostSettings2 } = await Promise.resolve().then(() => (init_api_usage_db(), api_usage_db_exports));
+    return getCostSettings2();
+  }),
+  // APIコスト設定更新
+  updateApiCostSettings: protectedProcedure.input(z25.object({
+    monthlyLimit: z25.number().optional(),
+    alertThreshold: z25.number().optional(),
+    alertEmail: z25.string().email().nullable().optional(),
+    autoStop: z25.boolean().optional()
+  })).mutation(async ({ ctx, input }) => {
+    if (ctx.user.role !== "admin") {
+      throw new Error("\u7BA1\u7406\u8005\u6A29\u9650\u304C\u5FC5\u8981\u3067\u3059");
+    }
+    const { upsertCostSettings: upsertCostSettings2 } = await Promise.resolve().then(() => (init_api_usage_db(), api_usage_db_exports));
+    await upsertCostSettings2({
+      monthlyLimit: input.monthlyLimit?.toFixed(2),
+      alertThreshold: input.alertThreshold?.toFixed(2),
+      alertEmail: input.alertEmail ?? void 0,
+      autoStop: input.autoStop ? 1 : 0
+    });
+    return { success: true };
+  })
 });
 
 // server/routers/stats.ts
 init_connection();
 init_schema2();
-import { eq as eq4, and as and3, gte as gte2, desc as desc3, sql as sql2, count as count2 } from "drizzle-orm";
+import { eq as eq6, and as and4, gte as gte3, desc as desc5, sql as sql4, count as count2 } from "drizzle-orm";
 var statsRouter = router({
   /**
    * ユーザー統計を取得
@@ -6173,8 +6856,8 @@ var statsRouter = router({
     const db = await getDb();
     if (!db) throw new Error("\u30C7\u30FC\u30BF\u30D9\u30FC\u30B9\u306B\u63A5\u7D9A\u3067\u304D\u307E\u305B\u3093");
     const userId = ctx.user.id;
-    const totalParticipations = await db.select({ count: count2() }).from(participations).where(eq4(participations.userId, userId));
-    const completedParticipations = await db.select({ count: count2() }).from(participations).where(eq4(participations.userId, userId));
+    const totalParticipations = await db.select({ count: count2() }).from(participations).where(eq6(participations.userId, userId));
+    const completedParticipations = await db.select({ count: count2() }).from(participations).where(eq6(participations.userId, userId));
     const total = totalParticipations[0]?.count || 0;
     const completed = completedParticipations[0]?.count || 0;
     const completionRate = total > 0 ? completed / total * 100 : 0;
@@ -6184,29 +6867,29 @@ var statsRouter = router({
       createdAt: participations.createdAt,
       updatedAt: participations.updatedAt,
       eventTitle: challenges.title
-    }).from(participations).leftJoin(challenges, eq4(participations.challengeId, challenges.id)).where(eq4(participations.userId, userId)).orderBy(desc3(participations.createdAt)).limit(10);
+    }).from(participations).leftJoin(challenges, eq6(participations.challengeId, challenges.id)).where(eq6(participations.userId, userId)).orderBy(desc5(participations.createdAt)).limit(10);
     const sixMonthsAgo = /* @__PURE__ */ new Date();
     sixMonthsAgo.setMonth(sixMonthsAgo.getMonth() - 6);
     const monthlyStats = await db.select({
-      month: sql2`DATE_FORMAT(${participations.createdAt}, '%Y-%m')`,
+      month: sql4`DATE_FORMAT(${participations.createdAt}, '%Y-%m')`,
       count: count2()
     }).from(participations).where(
-      and3(
-        eq4(participations.userId, userId),
-        gte2(participations.createdAt, sixMonthsAgo)
+      and4(
+        eq6(participations.userId, userId),
+        gte3(participations.createdAt, sixMonthsAgo)
       )
-    ).groupBy(sql2`DATE_FORMAT(${participations.createdAt}, '%Y-%m')`).orderBy(sql2`DATE_FORMAT(${participations.createdAt}, '%Y-%m')`);
+    ).groupBy(sql4`DATE_FORMAT(${participations.createdAt}, '%Y-%m')`).orderBy(sql4`DATE_FORMAT(${participations.createdAt}, '%Y-%m')`);
     const fourWeeksAgo = /* @__PURE__ */ new Date();
     fourWeeksAgo.setDate(fourWeeksAgo.getDate() - 28);
     const weeklyActivity = await db.select({
-      week: sql2`DATE_FORMAT(${participations.createdAt}, '%Y-W%u')`,
+      week: sql4`DATE_FORMAT(${participations.createdAt}, '%Y-W%u')`,
       count: count2()
     }).from(participations).where(
-      and3(
-        eq4(participations.userId, userId),
-        gte2(participations.createdAt, fourWeeksAgo)
+      and4(
+        eq6(participations.userId, userId),
+        gte3(participations.createdAt, fourWeeksAgo)
       )
-    ).groupBy(sql2`DATE_FORMAT(${participations.createdAt}, '%Y-W%u')`).orderBy(sql2`DATE_FORMAT(${participations.createdAt}, '%Y-W%u')`);
+    ).groupBy(sql4`DATE_FORMAT(${participations.createdAt}, '%Y-W%u')`).orderBy(sql4`DATE_FORMAT(${participations.createdAt}, '%Y-W%u')`);
     return {
       summary: {
         totalChallenges: total,
@@ -6245,20 +6928,20 @@ var statsRouter = router({
       userId: participations.userId,
       userName: users.name,
       completedChallenges: count2()
-    }).from(participations).leftJoin(users, eq4(participations.userId, users.id)).groupBy(participations.userId, users.name).orderBy(desc3(count2())).limit(10);
+    }).from(participations).leftJoin(users, eq6(participations.userId, users.id)).groupBy(participations.userId, users.name).orderBy(desc5(count2())).limit(10);
     const eventStats = await db.select({
       challengeId: participations.challengeId,
       eventTitle: challenges.title,
       totalAttempts: count2(),
       completedAttempts: count2()
       // 全ての参加を達成とみなす
-    }).from(participations).leftJoin(challenges, eq4(participations.challengeId, challenges.id)).groupBy(participations.challengeId, challenges.title).orderBy(desc3(count2()));
+    }).from(participations).leftJoin(challenges, eq6(participations.challengeId, challenges.id)).groupBy(participations.challengeId, challenges.title).orderBy(desc5(count2()));
     const thirtyDaysAgo = /* @__PURE__ */ new Date();
     thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
     const dailyActivity = await db.select({
-      date: sql2`DATE(${participations.createdAt})`,
+      date: sql4`DATE(${participations.createdAt})`,
       count: count2()
-    }).from(participations).where(gte2(participations.createdAt, thirtyDaysAgo)).groupBy(sql2`DATE(${participations.createdAt})`).orderBy(sql2`DATE(${participations.createdAt})`);
+    }).from(participations).where(gte3(participations.createdAt, thirtyDaysAgo)).groupBy(sql4`DATE(${participations.createdAt})`).orderBy(sql4`DATE(${participations.createdAt})`);
     return {
       summary: {
         totalUsers: totalUsers[0]?.count || 0,
@@ -6284,6 +6967,25 @@ var statsRouter = router({
         count: a.count
       }))
     };
+  })
+});
+
+// server/routers/release-notes.ts
+import { z as z26 } from "zod";
+init_connection();
+init_schema2();
+var releaseNotesRouter = router({
+  // すべてのリリースノートを取得
+  getAll: publicProcedure.query(async () => {
+    const db = await getDb();
+    if (!db) return [];
+    return db.select().from(releaseNotes).orderBy(desc(releaseNotes.date));
+  }),
+  // 最新のリリースノートを取得
+  getLatest: publicProcedure.input(z26.object({ limit: z26.number().min(1).max(10).default(5) })).query(async ({ input }) => {
+    const db = await getDb();
+    if (!db) return [];
+    return db.select().from(releaseNotes).orderBy(desc(releaseNotes.date)).limit(input.limit);
   })
 });
 
@@ -6314,7 +7016,8 @@ var appRouter = router({
   ticketTransfer: ticketTransferRouter,
   ticketWaitlist: ticketWaitlistRouter,
   admin: adminRouter,
-  stats: statsRouter
+  stats: statsRouter,
+  releaseNotes: releaseNotesRouter
 });
 
 // server/_core/context.ts
@@ -6332,56 +7035,8 @@ async function createContext(opts) {
   };
 }
 
-// server/api-usage-tracker.ts
-var usageHistory = [];
-var stats = {
-  totalRequests: 0,
-  successfulRequests: 0,
-  rateLimitedRequests: 0,
-  endpoints: {},
-  lastUpdated: Date.now()
-};
-function getApiUsageStats() {
-  return { ...stats };
-}
-function getRecentUsageHistory(count3 = 100) {
-  return usageHistory.slice(-count3);
-}
-function getRateLimitWarningLevel(endpoint) {
-  const endpointStats = stats.endpoints[endpoint];
-  if (!endpointStats) {
-    return "safe";
-  }
-  if (endpointStats.remaining <= 5) {
-    return "critical";
-  }
-  if (endpointStats.usagePercent >= 80) {
-    return "warning";
-  }
-  return "safe";
-}
-function getWarningsSummary() {
-  const warnings = [];
-  for (const [endpoint, endpointStats] of Object.entries(stats.endpoints)) {
-    const level = getRateLimitWarningLevel(endpoint);
-    if (level !== "safe") {
-      warnings.push({
-        endpoint,
-        level,
-        remaining: endpointStats.remaining,
-        resetAt: endpointStats.resetAt
-      });
-    }
-  }
-  return warnings;
-}
-function getDashboardSummary() {
-  return {
-    stats: getApiUsageStats(),
-    warnings: getWarningsSummary(),
-    recentHistory: getRecentUsageHistory(20)
-  };
-}
+// server/_core/index.ts
+init_api_usage_tracker();
 
 // server/ai-error-analyzer.ts
 import axios2 from "axios";
@@ -6444,8 +7099,8 @@ function getErrorStats() {
 // server/schema-check.ts
 init_db2();
 var EXPECTED_SCHEMA = {
-  version: "0023",
-  // 最新のマイグレーション番号
+  version: "0027",
+  // 最新のマイグレーション番号（api_usage 含む）
   tables: {
     // participationsテーブル: 参加登録
     participations: {
@@ -6507,6 +7162,31 @@ var EXPECTED_SCHEMA = {
         "createdAt",
         "updatedAt"
       ]
+    },
+    // api_usage: X API 使用量記録（0027）
+    api_usage: {
+      requiredColumns: [
+        "id",
+        "endpoint",
+        "method",
+        "success",
+        "cost",
+        "rateLimitInfo",
+        "month",
+        "createdAt"
+      ]
+    },
+    // api_cost_settings: コスト上限設定（0027）
+    api_cost_settings: {
+      requiredColumns: [
+        "id",
+        "monthlyLimit",
+        "alertThreshold",
+        "alertEmail",
+        "autoStop",
+        "createdAt",
+        "updatedAt"
+      ]
     }
   }
 };
@@ -6528,14 +7208,15 @@ async function checkSchemaIntegrity() {
     for (const [tableName, tableSpec] of Object.entries(EXPECTED_SCHEMA.tables)) {
       try {
         const columnsResult = await db.execute(
-          sql`SELECT COLUMN_NAME FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = ${tableName}`
+          sql`SELECT column_name FROM information_schema.columns WHERE table_schema = 'public' AND table_name = ${tableName}`
         );
-        const rows = Array.isArray(columnsResult) ? columnsResult[0] : columnsResult;
+        const raw = columnsResult;
+        const rows = Array.isArray(raw) ? raw[0] : raw?.rows ?? raw;
         const existingColumns = new Set(
-          rows.map((c) => c.COLUMN_NAME)
+          rows.map((c) => (c.column_name || c.COLUMN_NAME || "").toLowerCase())
         );
         for (const requiredColumn of tableSpec.requiredColumns) {
-          if (!existingColumns.has(requiredColumn)) {
+          if (!existingColumns.has(requiredColumn.toLowerCase())) {
             result.missingColumns.push({
               table: tableName,
               column: requiredColumn
@@ -6549,11 +7230,14 @@ async function checkSchemaIntegrity() {
       }
     }
     try {
-      const [migrations] = await db.execute(
-        `SELECT hash FROM __drizzle_migrations ORDER BY created_at DESC LIMIT 1`
+      const migrationsResult = await db.execute(
+        sql`SELECT hash FROM __drizzle_migrations ORDER BY created_at DESC LIMIT 1`
       );
-      if (Array.isArray(migrations) && migrations.length > 0) {
-        result.actualVersion = migrations[0].hash?.slice(0, 8) || "unknown";
+      const migRaw = migrationsResult;
+      const migRows = Array.isArray(migRaw) ? migRaw[0] : migRaw?.rows ?? migRaw;
+      const migList = Array.isArray(migRows) ? migRows : [migRows];
+      if (migList.length > 0) {
+        result.actualVersion = migList[0].hash?.slice(0, 8) || "unknown";
       }
     } catch {
       result.actualVersion = "unknown";
@@ -7148,11 +7832,21 @@ function initSentry() {
     tracesSampleRate: process.env.NODE_ENV === "production" ? 0.1 : 1,
     // Set profilesSampleRate to 1.0 to profile every transaction.
     profilesSampleRate: process.env.NODE_ENV === "production" ? 0.1 : 1,
-    beforeSend(event) {
+    // Gate 1: 3種類の通知のみに絞る（ノイズ抑制）
+    beforeSend(event, hint) {
       if (process.env.NODE_ENV === "development") {
         console.log("Sentry event (dev mode):", event);
       }
-      return event;
+      const error = hint.originalException;
+      const message = error && typeof error === "object" && "message" in error ? String(error.message) : "";
+      const statusCode = event.contexts?.response?.status_code;
+      const isOAuthError = message.includes("OAuth") || message.includes("callback") || message.includes("state parameter") || event.request?.url?.includes("/api/auth/callback");
+      const is5xxError = statusCode && statusCode >= 500 && statusCode < 600;
+      const isUnknownVersion = message.includes("unknown version") || event.extra?.version === "unknown";
+      if (isOAuthError || is5xxError || isUnknownVersion) {
+        return event;
+      }
+      return null;
     }
   });
   console.log("Sentry initialized for backend");
@@ -7458,9 +8152,14 @@ async function startServer() {
       res.status(500).json({ error: "\u30B7\u30B9\u30C6\u30E0\u72B6\u614B\u306E\u53D6\u5F97\u306B\u5931\u6557\u3057\u307E\u3057\u305F" });
     }
   });
-  app.get("/api/admin/api-usage", (_req, res) => {
-    const summary = getDashboardSummary();
-    res.json(summary);
+  app.get("/api/admin/api-usage", async (_req, res) => {
+    try {
+      const summary = await getDashboardSummary();
+      res.json(summary);
+    } catch (error) {
+      console.error("[Admin] API usage error:", error);
+      res.status(500).json({ error: "API\u4F7F\u7528\u91CF\u306E\u53D6\u5F97\u306B\u5931\u6557\u3057\u307E\u3057\u305F" });
+    }
   });
   app.get("/api/admin/api-usage/stats", (_req, res) => {
     const stats2 = getApiUsageStats();

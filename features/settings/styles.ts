@@ -1,7 +1,7 @@
 // features/settings/styles.ts
 // v6.18: 設定画面のスタイル定義
 import { StyleSheet } from "react-native";
-import { color } from "@/theme/tokens";
+import { color, typography } from "@/theme/tokens";
 
 export const settingsStyles = StyleSheet.create({
   header: {
@@ -21,7 +21,7 @@ export const settingsStyles = StyleSheet.create({
   },
   headerTitle: {
     color: color.textWhite,
-    fontSize: 18,
+    fontSize: typography.fontSize.lg,
     fontWeight: "bold",
   },
   headerSpacer: {
@@ -40,7 +40,7 @@ export const settingsStyles = StyleSheet.create({
   },
   sectionTitle: {
     color: color.textMuted,
-    fontSize: 13,
+    fontSize: typography.fontSize.xs,
     fontWeight: "600",
     textTransform: "uppercase",
     marginBottom: 12,
@@ -71,12 +71,12 @@ export const settingsStyles = StyleSheet.create({
   },
   accountName: {
     color: color.textWhite,
-    fontSize: 16,
+    fontSize: typography.fontSize.base,
     fontWeight: "600",
   },
   accountUsername: {
     color: color.textMuted,
-    fontSize: 14,
+    fontSize: typography.fontSize.sm,
     marginTop: 2,
   },
   currentBadge: {
@@ -87,7 +87,7 @@ export const settingsStyles = StyleSheet.create({
   },
   currentBadgeText: {
     color: color.successDark,
-    fontSize: 12,
+    fontSize: typography.fontSize.xs,
     fontWeight: "600",
   },
   notLoggedIn: {
@@ -99,7 +99,7 @@ export const settingsStyles = StyleSheet.create({
   },
   notLoggedInText: {
     color: color.textSubtle,
-    fontSize: 14,
+    fontSize: typography.fontSize.sm,
     marginTop: 8,
   },
   menuItem: {
@@ -124,12 +124,12 @@ export const settingsStyles = StyleSheet.create({
   },
   menuItemTitle: {
     color: color.textWhite,
-    fontSize: 16,
+    fontSize: typography.fontSize.base,
     fontWeight: "500",
   },
   menuItemDescription: {
     color: color.textMuted,
-    fontSize: 13,
+    fontSize: typography.fontSize.xs,
     marginTop: 2,
   },
   savedAccountsPreview: {
@@ -141,7 +141,7 @@ export const settingsStyles = StyleSheet.create({
   },
   savedAccountsLabel: {
     color: color.textSubtle,
-    fontSize: 12,
+    fontSize: typography.fontSize.xs,
     marginRight: 8,
   },
   savedAccountsAvatars: {
@@ -171,7 +171,7 @@ export const settingsStyles = StyleSheet.create({
   },
   moreAccountsText: {
     color: color.textMuted,
-    fontSize: 10,
+    fontSize: typography.fontSize.xs,
     fontWeight: "600",
   },
   logoutItem: {
@@ -193,7 +193,7 @@ export const settingsStyles = StyleSheet.create({
   },
   sessionExpiryText: {
     color: color.textMuted,
-    fontSize: 12,
+    fontSize: typography.fontSize.xs,
     marginLeft: 6,
   },
   sessionExpiryExpired: {
@@ -219,22 +219,22 @@ export const settingsStyles = StyleSheet.create({
   },
   footerAppName: {
     color: color.textWhite,
-    fontSize: 16,
+    fontSize: typography.fontSize.base,
     fontWeight: "bold",
     marginLeft: 8,
   },
   footerVersion: {
     color: color.textMuted,
-    fontSize: 12,
+    fontSize: typography.fontSize.xs,
     marginBottom: 4,
   },
   footerText: {
     color: color.textSubtle,
-    fontSize: 14,
+    fontSize: typography.fontSize.sm,
   },
   footerSubtext: {
     color: color.textSubtle,
-    fontSize: 12,
+    fontSize: typography.fontSize.xs,
     marginTop: 4,
   },
   footerLinks: {
@@ -252,12 +252,12 @@ export const settingsStyles = StyleSheet.create({
   },
   footerLinkText: {
     color: color.twitter,
-    fontSize: 13,
+    fontSize: typography.fontSize.xs,
     marginLeft: 4,
   },
   footerCopyright: {
     color: color.textSubtle,
-    fontSize: 11,
+    fontSize: typography.fontSize.xs,
     marginTop: 16,
   },
 });

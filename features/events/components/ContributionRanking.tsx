@@ -5,6 +5,7 @@
 import { View, Text } from "react-native";
 import { navigate } from "@/lib/navigation";
 import { useColors } from "@/hooks/use-colors";
+import { color } from "@/theme/tokens";
 import { eventText, eventFont, eventUI } from "@/features/events/ui/theme/tokens";
 import { OptimizedAvatar } from "@/components/molecules/optimized-image";
 import { Button } from "@/components/ui/button";
@@ -56,17 +57,15 @@ export function ContributionRanking({
 
   if (sorted.length === 0) return null;
 
-  // ランキングの色（金・銀・銅）
-  const getRankColor = (index: number) => {
-    if (index === 0) return "#FFD700";
-    if (index === 1) return "#C0C0C0";
-    if (index === 2) return "#CD7F32";
-    return "#2D3139";
-  };
+  const rankBgColors = [color.rankGold, color.rankSilver, color.rankBronze] as const;
+  const getRankColor = (index: number) =>
+    index < 3 ? rankBgColors[index] : color.surfaceAlt;
+  const rankBorderColor = (index: number) =>
+    index === 0 ? color.rankGold : color.border;
 
   return (
     <View style={{ marginVertical: 16 }}>
-      <Text style={{ color: colors.foreground, fontSize: 16, fontWeight: "bold", marginBottom: 12 }}>
+      <Text style={{ color: colors.foreground, fontSize: eventFont.title, fontWeight: "bold", marginBottom: 12 }}>
         貢献度ランキング
       </Text>
       {sorted.map((p, index) => (
@@ -75,12 +74,12 @@ export function ContributionRanking({
           style={{
             flexDirection: "row",
             alignItems: "center",
-            backgroundColor: "#1A1D21",
+            backgroundColor: color.surface,
             borderRadius: 8,
             padding: 12,
             marginBottom: 8,
             borderWidth: index === 0 ? 2 : 1,
-            borderColor: index === 0 ? "#FFD700" : "#2D3139",
+            borderColor: rankBorderColor(index),
           }}
         >
           <View
@@ -94,7 +93,7 @@ export function ContributionRanking({
               marginRight: 12,
             }}
           >
-            <Text style={{ color: index < 3 ? "#000" : "#fff", fontSize: 12, fontWeight: "bold" }}>
+            <Text style={{ color: index < 3 ? color.bg : color.textWhite, fontSize: eventFont.meta, fontWeight: "bold" }}>
               {index + 1}
             </Text>
           </View>
@@ -108,12 +107,12 @@ export function ContributionRanking({
           </View>
           <View style={{ flex: 1 }}>
             <View style={{ flexDirection: "row", alignItems: "center" }}>
-              <Text style={{ color: colors.foreground, fontSize: 14, fontWeight: "600" }}>
+              <Text style={{ color: colors.foreground, fontSize: eventFont.body, fontWeight: "600" }}>
                 {p.isAnonymous ? "匿名" : p.displayName}
               </Text>
               {/* 性別アイコン */}
               {p.gender && p.gender !== "unspecified" && (
-                <Text style={{ marginLeft: 4, fontSize: 12 }}>
+                <Text style={{ marginLeft: 4, fontSize: eventFont.meta }}>
                   {p.gender === "male" ? "👨" : "👩"}
                 </Text>
               )}
@@ -127,7 +126,7 @@ export function ContributionRanking({
                     borderRadius: 8,
                   }}
                 >
-                  <Text style={{ color: colors.foreground, fontSize: 9, fontWeight: "bold" }}>フォロワー</Text>
+                  <Text style={{ color: colors.foreground, fontSize: eventFont.small, fontWeight: "bold" }}>フォロワー</Text>
                 </View>
               )}
             </View>
@@ -149,7 +148,7 @@ export function ContributionRanking({
             </View>
           </View>
           <View style={{ alignItems: "flex-end" }}>
-            <Text style={{ color: eventText.accent, fontSize: 18, fontWeight: "bold" }}>+{p.contribution || 1}</Text>
+            <Text style={{ color: eventText.accent, fontSize: eventFont.title, fontWeight: "bold" }}>+{p.contribution || 1}</Text>
             <Text style={{ color: eventText.hint, fontSize: eventFont.small }}>
               {p.companionCount > 0 ? `(本人+${p.companionCount}人)` : ""}
             </Text>

@@ -15,10 +15,12 @@
 import React, { Component, type ReactNode, type ErrorInfo } from "react";
 import { View, Text, StyleSheet, Pressable } from "react-native";
 import MaterialIcons from "@expo/vector-icons/MaterialIcons";
-import { color } from "@/theme/tokens";
+import { color, typography } from "@/theme/tokens";
 
 // エラーバウンダリのProps型
 export interface ErrorBoundaryProps {
+  /** 画面・コンポーネント名（ログ・表示の特定用） */
+  screenName?: string;
   /** エラー時に表示するフォールバックUI */
   fallback?: ReactNode;
   /** エラー時に表示するフォールバックUIを返す関数 */
@@ -35,6 +37,8 @@ export interface ErrorBoundaryProps {
 export interface FallbackProps {
   error: Error;
   resetErrorBoundary: () => void;
+  /** エラー発生箇所の識別名 */
+  screenName?: string;
 }
 
 // エラーバウンダリの状態型
@@ -59,11 +63,10 @@ export class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundarySt
   }
 
   componentDidCatch(error: Error, errorInfo: ErrorInfo): void {
-    // エラーログを出力
-    console.error("[ErrorBoundary] Caught error:", error);
-    console.error("[ErrorBoundary] Error info:", errorInfo);
-    
-    // コールバックがあれば呼び出し
+    const { screenName } = this.props;
+    const prefix = screenName ? `[ErrorBoundary][${screenName}]` : "[ErrorBoundary]";
+    console.error(prefix, "Caught error:", error);
+    console.error(prefix, "Component stack:", errorInfo.componentStack);
     this.props.onError?.(error, errorInfo);
   }
 
@@ -82,6 +85,7 @@ export class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundarySt
         return fallbackRender({
           error,
           resetErrorBoundary: this.resetErrorBoundary,
+          screenName: this.props.screenName,
         });
       }
 
@@ -95,6 +99,7 @@ export class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundarySt
         <DefaultErrorFallback
           error={error}
           resetErrorBoundary={this.resetErrorBoundary}
+          screenName={this.props.screenName}
         />
       );
     }
@@ -104,13 +109,16 @@ export class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundarySt
 }
 
 /**
- * DefaultErrorFallback - デフォルトのエラー表示UI
+ * DefaultErrorFallback - デフォルトのエラー表示UI（screenName で発生箇所を表示）
  */
-function DefaultErrorFallback({ error, resetErrorBoundary }: FallbackProps) {
+function DefaultErrorFallback({ error, resetErrorBoundary, screenName }: FallbackProps) {
   return (
     <View style={styles.container}>
       <MaterialIcons name="error-outline" size={48} color={color.danger} />
       <Text style={styles.title}>エラーが発生しました</Text>
+      {screenName ? (
+        <Text style={styles.screenName} numberOfLines={1}>{screenName}</Text>
+      ) : null}
       <Text style={styles.message} numberOfLines={3}>
         {error.message}
       </Text>
@@ -140,12 +148,17 @@ const styles = StyleSheet.create({
   },
   title: {
     color: color.textWhite,
-    fontSize: 18,
+    fontSize: typography.fontSize.lg,
     fontWeight: "bold",
+  },
+  screenName: {
+    color: color.textHint,
+    fontSize: typography.fontSize.xs,
+    marginTop: 4,
   },
   message: {
     color: color.textMuted,
-    fontSize: 14,
+    fontSize: typography.fontSize.sm,
     textAlign: "center",
     maxWidth: 280,
   },
@@ -165,7 +178,7 @@ const styles = StyleSheet.create({
   },
   retryText: {
     color: color.textWhite,
-    fontSize: 14,
+    fontSize: typography.fontSize.sm,
     fontWeight: "600",
   },
 });

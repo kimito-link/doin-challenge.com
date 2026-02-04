@@ -141,6 +141,6 @@ const styles = StyleSheet.create({
   },
   cachedText: {
     color: color.warning,
-    fontSize: 10,
+    fontSize: 12,
   },
 });

@@ -40,6 +40,7 @@ import { ExperienceProvider } from "@/lib/experience-context";
 import { ExperienceOverlay } from "@/components/organisms/experience-overlay";
 import { OnboardingScreen, useOnboarding } from "@/features/onboarding";
 import { initSentry } from "@/lib/sentry";
+import { ErrorBoundary } from "@/components/ui";
 
 const DEFAULT_WEB_INSETS: EdgeInsets = { top: 0, right: 0, bottom: 0, left: 0 };
 const DEFAULT_WEB_FRAME: Rect = { x: 0, y: 0, width: 0, height: 0 };
@@ -187,39 +188,39 @@ export default function RootLayout() {
   }, [initialInsets, initialFrame]);
 
   const content = (
-    <GestureHandlerRootView style={{ flex: 1, overflow: "hidden" }}>
-      <trpc.Provider client={trpcClient} queryClient={queryClient}>
-        <PersistQueryClientProvider 
-          client={queryClient} 
-          persistOptions={{ persister: asyncStoragePersister }}
-        >
-          <AutoLoginProvider>
-            <LoginSuccessProvider>
-              <TutorialProvider>
-                <ExperienceProvider>
-                  <ToastProvider>
-                    <OnboardingWrapper>
-                      {/* Default to hiding native headers so raw route segments don't appear (e.g. "(tabs)", "products/[id]"). */}
-                      {/* If a screen needs the native header, explicitly enable it and set a human title via Stack.Screen options. */}
-                      <Stack screenOptions={{ headerShown: false }}>
-                        <Stack.Screen name="(tabs)" />
-                        <Stack.Screen name="oauth/callback" />
-                      </Stack>
-                      <StatusBar style="auto" />
-                      <LoginSuccessModalWrapper />
-                      <OfflineBanner />
-                      <NetworkToast />
-                      <TutorialUI />
-                      <ExperienceOverlay />
-                    </OnboardingWrapper>
-                  </ToastProvider>
-                </ExperienceProvider>
-              </TutorialProvider>
-            </LoginSuccessProvider>
-          </AutoLoginProvider>
-        </PersistQueryClientProvider>
-      </trpc.Provider>
-    </GestureHandlerRootView>
+    <ErrorBoundary screenName="App">
+      <GestureHandlerRootView style={{ flex: 1, overflow: "hidden" }}>
+        <trpc.Provider client={trpcClient} queryClient={queryClient}>
+          <PersistQueryClientProvider
+            client={queryClient}
+            persistOptions={{ persister: asyncStoragePersister }}
+          >
+            <AutoLoginProvider>
+              <LoginSuccessProvider>
+                <TutorialProvider>
+                  <ExperienceProvider>
+                    <ToastProvider>
+                      <OnboardingWrapper>
+                        <Stack screenOptions={{ headerShown: false }}>
+                          <Stack.Screen name="(tabs)" />
+                          <Stack.Screen name="oauth/callback" />
+                        </Stack>
+                        <StatusBar style="auto" />
+                        <LoginSuccessModalWrapper />
+                        <OfflineBanner />
+                        <NetworkToast />
+                        <TutorialUI />
+                        <ExperienceOverlay />
+                      </OnboardingWrapper>
+                    </ToastProvider>
+                  </ExperienceProvider>
+                </TutorialProvider>
+              </LoginSuccessProvider>
+            </AutoLoginProvider>
+          </PersistQueryClientProvider>
+        </trpc.Provider>
+      </GestureHandlerRootView>
+    </ErrorBoundary>
   );
 
   const shouldOverrideSafeArea = Platform.OS === "web";

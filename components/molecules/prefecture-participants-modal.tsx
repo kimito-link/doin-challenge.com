@@ -233,7 +233,7 @@ const styles = StyleSheet.create({
   },
   followersText: {
     color: color.accentAlt,
-    fontSize: 10,
+    fontSize: 12,
     fontWeight: "bold",
   },
   participantUsername: {
