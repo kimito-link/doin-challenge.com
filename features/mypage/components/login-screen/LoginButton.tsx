@@ -1,6 +1,8 @@
 /**
  * LoginButton Component
- * Xアカウント認証ボタン
+ * Xアカウント認証ボタン（マイページの未ログイン時ボタン用）
+ *
+ * @deprecated 新規のログイン導線では components/common/LoginModal に統一すること。COMPONENT_REGISTRY 参照。
  */
 
 import { Button } from "@/components/ui/button";

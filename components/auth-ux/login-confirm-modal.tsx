@@ -1,7 +1,8 @@
 /**
  * Phase 2: ログインUX改善
  * PR-1: LoginConfirmModalコンポーネント（ログイン確認モーダル）
- * 
+ *
+ * @deprecated ログイン確認は components/common/LoginModal に統一済み。新規実装では LoginModal を使用すること。
  * このファイルはPhase 2実装ガイドに基づいて作成されています。
  * docs/phase2-implementation-guide.md を参照してください。
  */

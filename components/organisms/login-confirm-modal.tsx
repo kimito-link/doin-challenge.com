@@ -1,7 +1,8 @@
 /**
  * LoginConfirmModal Component
  * ログイン確認モーダル
- * 
+ *
+ * @deprecated ログイン確認は components/common/LoginModal に統一済み。新規実装では LoginModal を使用すること。
  * Xログイン開始前に表示し、ユーザーに心の準備をさせる
  */
 
