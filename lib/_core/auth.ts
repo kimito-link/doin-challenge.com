@@ -9,6 +9,9 @@ export type User = {
   email: string | null;
   loginMethod: string | null;
   lastSignedIn: Date;
+  // Profile (for 1-Click participation)
+  prefecture?: string | null;
+  gender?: "male" | "female" | "unspecified" | null;
   // Twitter/X specific fields
   username?: string;
   profileImage?: string;
@@ -120,7 +123,9 @@ export async function setUserInfo(user: User): Promise<void> {
     const mergedUser: User = existingUser ? {
       ...existingUser,
       ...user,
-      // Explicitly preserve Twitter-specific fields if they exist in either object
+      // Explicitly preserve profile and Twitter-specific fields if they exist in either object
+      prefecture: user.prefecture ?? existingUser.prefecture,
+      gender: user.gender ?? existingUser.gender,
       description: user.description ?? existingUser.description,
       username: user.username ?? existingUser.username,
       profileImage: user.profileImage ?? existingUser.profileImage,

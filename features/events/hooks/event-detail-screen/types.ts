@@ -37,6 +37,7 @@ export type CompanionInput = {
  */
 export type UiState = {
   showForm: boolean;
+  showOneClickConfirm: boolean;
   showPrefectureList: boolean;
   showPrefectureFilterList: boolean;
   showConfirmation: boolean;
@@ -109,6 +110,7 @@ export type UseEventDetailScreenActions = {
   // UI操作
   openParticipationForm: () => void;
   closeParticipationForm: () => void;
+  setShowOneClickConfirm: (v: boolean) => void;
   openEditMode: (participation: ParticipationVM) => void;
   togglePrefectureList: () => void;
   togglePrefectureFilterList: () => void;

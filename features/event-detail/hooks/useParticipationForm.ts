@@ -3,7 +3,7 @@
  * 参加フォームの状態管理
  */
 
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect, useCallback } from "react";
 import { ScrollView, View, Alert, Platform } from "react-native";
 import * as Haptics from "expo-haptics";
 import { trpc } from "@/lib/trpc";
@@ -25,6 +25,8 @@ interface UseParticipationFormOptions {
     profileImage?: string | null;
     followersCount?: number | null;
     openId?: string | null;
+    prefecture?: string | null;
+    gender?: "male" | "female" | "unspecified" | null;
   } | null;
   login: () => void;
   refetch: () => Promise<void>;
@@ -44,6 +46,9 @@ interface UseParticipationFormReturn {
   setAllowVideoUse: (value: boolean) => void;
   showForm: boolean;
   setShowForm: (value: boolean) => void;
+  showOneClickConfirm: boolean;
+  setShowOneClickConfirm: (value: boolean) => void;
+  openParticipationForm: () => void;
   showPrefectureList: boolean;
   setShowPrefectureList: (value: boolean) => void;
   showConfirmation: boolean;
@@ -104,8 +109,20 @@ export function useParticipationForm({
   const [gender, setGender] = useState<"male" | "female" | "">("");
   const [allowVideoUse, setAllowVideoUse] = useState(true);
   const [showForm, setShowForm] = useState(false);
+  const [showOneClickConfirm, setShowOneClickConfirm] = useState(false);
   const [showPrefectureList, setShowPrefectureList] = useState(false);
   const [showConfirmation, setShowConfirmation] = useState(false);
+
+  // Sync prefecture/gender from user when available (for 1-Click and form defaults)
+  useEffect(() => {
+    if (!user) return;
+    if (user.prefecture) {
+      setPrefecture((prev) => (prev === "" ? user!.prefecture! : prev));
+    }
+    if (user.gender && user.gender !== "unspecified") {
+      setGender((prev) => (prev === "" ? (user!.gender as "male" | "female") : prev));
+    }
+  }, [user?.prefecture, user?.gender]);
   const [justSubmitted, setJustSubmitted] = useState(false);
   
   // Companion state
@@ -158,6 +175,7 @@ export function useParticipationForm({
       setPrefecture("");
       setCompanions([]);
       setShowForm(false);
+      setShowOneClickConfirm(false);
       setJustSubmitted(true);
       
       await refetch();
@@ -287,7 +305,24 @@ export function useParticipationForm({
     setLookupError(null);
     setShowAddCompanionForm(false);
   };
-  
+
+  // Open form or 1-Click confirmation: if user has prefecture+gender and no companions, show 1-Click confirm
+  const openParticipationForm = useCallback(() => {
+    if (!user) {
+      login();
+      return;
+    }
+    const hasProfile = user.prefecture && user.gender && user.gender !== "unspecified";
+    if (hasProfile && companions.length === 0) {
+      setPrefecture(user.prefecture!);
+      setGender(user.gender as "male" | "female");
+      setMessage("");
+      setShowOneClickConfirm(true);
+    } else {
+      setShowForm(true);
+    }
+  }, [user, companions.length, login]);
+
   // Submit handler
   const handleSubmit = () => {
     if (!user) {
@@ -297,7 +332,7 @@ export function useParticipationForm({
     setShowConfirmation(true);
   };
   
-  // Confirm submit
+  // Confirm submit (used by both full confirmation modal and 1-Click modal)
   const handleConfirmSubmit = () => {
     const companionData = companions.map(c => ({
       displayName: c.displayName,
@@ -306,6 +341,7 @@ export function useParticipationForm({
     
     if (user) {
       setShowConfirmation(false);
+      setShowOneClickConfirm(false);
       
       const twitterId = user.openId?.startsWith("twitter:") 
         ? user.openId.replace("twitter:", "") 
@@ -342,6 +378,9 @@ export function useParticipationForm({
     setAllowVideoUse,
     showForm,
     setShowForm,
+    showOneClickConfirm,
+    setShowOneClickConfirm,
+    openParticipationForm,
     showPrefectureList,
     setShowPrefectureList,
     showConfirmation,

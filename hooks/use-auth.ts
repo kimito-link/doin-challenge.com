@@ -145,6 +145,9 @@ export function useAuth(options?: UseAuthOptions) {
               email: apiUser.email,
               loginMethod: apiUser.loginMethod,
               lastSignedIn: new Date(apiUser.lastSignedIn),
+              prefecture: apiUser.prefecture ?? null,
+              gender: apiUser.gender ?? null,
+              role: apiUser.role ?? undefined,
             };
             setUser(userInfo);
             cachedAuthState = { user: userInfo, timestamp: Date.now() };

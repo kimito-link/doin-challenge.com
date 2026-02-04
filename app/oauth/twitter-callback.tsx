@@ -1,18 +1,22 @@
 // v5.39: description field support
 
-
 import * as Auth from "@/lib/_core/auth";
 import { saveTokenData } from "@/lib/token-manager";
 import { useLocalSearchParams } from "expo-router";
 import { navigateReplace } from "@/lib/navigation/app-routes";
 import { useEffect, useState, useRef } from "react";
-import { ActivityIndicator, Text, View } from "react-native";
+import { ActivityIndicator, Text, View, Pressable, ScrollView } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { saveAccount } from "@/lib/account-manager";
 import { Image } from "expo-image";
 import { BlinkingLink, LINK_CHARACTER_SETS } from "@/components/atoms/blinking-character";
 import { CelebrationAnimation } from "@/components/molecules/celebration-animation";
+import { PrefectureSelector } from "@/components/ui/prefecture-selector";
+import { trpc } from "@/lib/trpc";
+import { useColors } from "@/hooks/use-colors";
+import { color } from "@/theme/tokens";
+import * as Api from "@/lib/_core/api";
 
 // 画像アセット
 const APP_LOGO = require("@/assets/images/logos/kimitolink-logo.jpg");
@@ -48,7 +52,28 @@ export default function TwitterOAuthCallback() {
   const [showFollowSuccessModal, setShowFollowSuccessModal] = useState(false);
   const [targetAccountInfo, setTargetAccountInfo] = useState<{ username: string; name: string } | null>(null);
   const [savedReturnUrl, setSavedReturnUrl] = useState<string>("/(tabs)/mypage");
+  const [needOnboarding, setNeedOnboarding] = useState(false);
+  const [onboardingPrefecture, setOnboardingPrefecture] = useState("");
+  const [onboardingGender, setOnboardingGender] = useState<"male" | "female" | "unspecified">("unspecified");
+  const [showPrefectureList, setShowPrefectureList] = useState(false);
   const isFollowingRef = useRef(false);
+
+  const updateProfileMutation = trpc.profiles.updateMyProfile.useMutation({
+    onSuccess: async (data) => {
+      if (data?.user) {
+        const existing = await Auth.getUserInfo();
+        if (existing) {
+          await Auth.setUserInfo({
+            ...existing,
+            prefecture: data.user.prefecture ?? existing.prefecture,
+            gender: data.user.gender ?? existing.gender,
+            role: data.user.role ?? existing.role,
+          });
+        }
+      }
+    },
+  });
+  const colors = useColors();
 
   useEffect(() => {
     const handleCallback = async () => {
@@ -134,17 +159,28 @@ export default function TwitterOAuthCallback() {
             targetAccount: userData.targetAccount,
           };
 
-          // Store user info using the Auth module
-          console.log("[Twitter OAuth] About to store userInfo:", JSON.stringify(userInfo));
-          console.log("[Twitter OAuth] userInfo.description value:", userInfo.description);
-          console.log("[Twitter OAuth] typeof userInfo.description:", typeof userInfo.description);
           await Auth.setUserInfo(userInfo);
-          console.log("[Twitter OAuth] User info stored successfully via Auth module");
-          
-          // Verify storage immediately
-          const storedInfo = await Auth.getUserInfo();
-          console.log("[Twitter OAuth] Verification - stored info:", JSON.stringify(storedInfo));
-          console.log("[Twitter OAuth] Verification - description:", storedInfo?.description);
+
+          // Merge prefecture/gender/role from server (DB) when session is available（getUserInfo は必要時のみ1回）
+          let storedInfo: Auth.User | null = null;
+          try {
+            const me = await Api.getMe();
+            if (me && (me.prefecture !== undefined || me.gender !== undefined || me.role !== undefined)) {
+              const merged: Auth.User = {
+                ...userInfo,
+                prefecture: me.prefecture ?? userInfo.prefecture ?? null,
+                gender: me.gender ?? userInfo.gender ?? null,
+                role: me.role ?? userInfo.role ?? undefined,
+              };
+              await Auth.setUserInfo(merged);
+              storedInfo = merged;
+            }
+          } catch (_) {
+            // Session may not be available yet; useAuth will merge on next fetch
+          }
+          if (!storedInfo) {
+            storedInfo = await Auth.getUserInfo();
+          }
 
           // Store token data for auto-refresh (if available)
           if (userData.accessToken) {
@@ -167,7 +203,7 @@ export default function TwitterOAuthCallback() {
 
           setStatus("success");
           console.log("[Twitter OAuth] Authentication successful");
-          
+
           // ログイン前に保存したリダイレクト先を取得
           let returnUrl = "/(tabs)/mypage";
           if (typeof window !== "undefined") {
@@ -179,32 +215,35 @@ export default function TwitterOAuthCallback() {
             }
           }
           setSavedReturnUrl(returnUrl);
-          
-          // フォローしている場合はお祝いモーダルを表示
-          if (userData.isFollowingTarget) {
-            isFollowingRef.current = true;
-            setTargetAccountInfo(userData.targetAccount);
-            
-            // 以前にモーダルを表示したかチェック
-            const hasShownBefore = await AsyncStorage.getItem(FOLLOW_SUCCESS_SHOWN_KEY);
-            if (!hasShownBefore) {
-              console.log("[Twitter OAuth] Showing follow success modal");
-              setShowFollowSuccessModal(true);
-              await AsyncStorage.setItem(FOLLOW_SUCCESS_SHOWN_KEY, "true");
-              // モーダルを閉じたら保存したリダイレクト先に移動（後でモーダルのonCloseで処理）
+
+          // 都道府県未設定 or 性別未設定ならオンボーディングを表示
+          const needsProfile =
+            !storedInfo?.prefecture ||
+            storedInfo?.gender === "unspecified" ||
+            !storedInfo?.gender ||
+            storedInfo?.gender === "";
+          setNeedOnboarding(!!needsProfile);
+
+          if (!needsProfile) {
+            // フォローしている場合はお祝いモーダルを表示
+            if (userData.isFollowingTarget) {
+              isFollowingRef.current = true;
+              setTargetAccountInfo(userData.targetAccount);
+
+              const hasShownBefore = await AsyncStorage.getItem(FOLLOW_SUCCESS_SHOWN_KEY);
+              if (!hasShownBefore) {
+                setShowFollowSuccessModal(true);
+                await AsyncStorage.setItem(FOLLOW_SUCCESS_SHOWN_KEY, "true");
+              } else {
+                setTimeout(() => {
+                  navigateReplace.withUrl(returnUrl);
+                }, 1500);
+              }
             } else {
-              // 既に表示済みの場合は直接リダイレクト
               setTimeout(() => {
-                console.log("[Twitter OAuth] Executing redirect to:", returnUrl);
                 navigateReplace.withUrl(returnUrl);
               }, 1500);
             }
-          } else {
-            // フォローしていない場合は直接リダイレクト
-            setTimeout(() => {
-              console.log("[Twitter OAuth] Executing redirect to:", returnUrl);
-              navigateReplace.withUrl(returnUrl);
-            }, 1500);
           }
         } catch (parseError) {
           console.error("[Twitter OAuth] Failed to parse user data:", parseError);
@@ -249,22 +288,105 @@ export default function TwitterOAuthCallback() {
             </Text>
           </View>
         )}
-        {status === "success" && (
+        {status === "success" && needOnboarding && (
+          <ScrollView className="flex-1 px-4" contentContainerStyle={{ paddingVertical: 24 }}>
+            <Image
+              source={APP_LOGO}
+              style={{ width: 120, height: 40, alignSelf: "center", marginBottom: 24 }}
+              contentFit="contain"
+            />
+            <Text className="text-lg font-semibold text-center text-foreground mb-2">
+              プロフィールを設定
+            </Text>
+            <Text className="text-sm text-center text-muted-foreground mb-6">
+              参加表明がスムーズになります（あとで変更可能）
+            </Text>
+            <PrefectureSelector
+              value={onboardingPrefecture}
+              onChange={setOnboardingPrefecture}
+              isOpen={showPrefectureList}
+              onOpenChange={setShowPrefectureList}
+              label="都道府県"
+              placeholder="選択してください"
+            />
+            <View style={{ marginBottom: 16 }}>
+              <Text style={{ color: color.textSecondary, fontSize: 14, marginBottom: 8 }}>性別（任意）</Text>
+              <View style={{ flexDirection: "row", gap: 12 }}>
+                {(["male", "female", "unspecified"] as const).map((g) => (
+                  <Pressable
+                    key={g}
+                    onPress={() => setOnboardingGender(g)}
+                    style={{
+                      flex: 1,
+                      backgroundColor: onboardingGender === g ? color.info : colors.background,
+                      paddingVertical: 12,
+                      borderRadius: 12,
+                      alignItems: "center",
+                      borderWidth: 2,
+                      borderColor: onboardingGender === g ? color.info : color.border,
+                    }}
+                  >
+                    <Text
+                      style={{
+                        color: onboardingGender === g ? color.textWhite : color.textSecondary,
+                        fontSize: 13,
+                        fontWeight: "600",
+                      }}
+                    >
+                      {g === "male" ? "男性" : g === "female" ? "女性" : "無回答"}
+                    </Text>
+                  </Pressable>
+                ))}
+              </View>
+            </View>
+            <Pressable
+              onPress={async () => {
+                try {
+                  await updateProfileMutation.mutateAsync({
+                    prefecture: onboardingPrefecture || null,
+                    gender: onboardingGender,
+                  });
+                  setNeedOnboarding(false);
+                  navigateReplace.withUrl(savedReturnUrl);
+                } catch (e) {
+                  console.error("[Twitter OAuth] updateMyProfile failed:", e);
+                }
+              }}
+              disabled={updateProfileMutation.isPending}
+              style={{
+                backgroundColor: color.primary,
+                paddingVertical: 14,
+                borderRadius: 12,
+                alignItems: "center",
+                marginTop: 8,
+                opacity: updateProfileMutation.isPending ? 0.6 : 1,
+              }}
+            >
+              <Text style={{ color: color.textWhite, fontWeight: "600", fontSize: 16 }}>確定</Text>
+            </Pressable>
+            <Pressable
+              onPress={() => {
+                setNeedOnboarding(false);
+                navigateReplace.withUrl(savedReturnUrl);
+              }}
+              style={{ alignItems: "center", marginTop: 16 }}
+            >
+              <Text style={{ color: color.primary, fontSize: 14 }}>あとで設定する</Text>
+            </Pressable>
+          </ScrollView>
+        )}
+        {status === "success" && !needOnboarding && (
           <View className="items-center justify-center gap-4">
-            {/* お祝いアニメーション */}
             <CelebrationAnimation
               visible={true}
               characterSize={120}
               showConfetti={true}
             />
-            
-            {/* ロゴ */}
             <Image
               source={APP_LOGO}
               style={{ width: 120, height: 40, marginTop: 140 }}
               contentFit="contain"
             />
-            
             <Text className="text-xl font-bold text-center text-success">
               認証成功！
             </Text>

@@ -49,15 +49,22 @@ function buildUserResponse(
         email?: string | null;
         loginMethod?: string | null;
         lastSignedIn?: Date | null;
+        prefecture?: string | null;
+        gender?: "male" | "female" | "unspecified" | null;
+        role?: "user" | "admin" | null;
       },
 ) {
+  const u = user as any;
   return {
-    id: (user as any)?.id ?? null,
+    id: u?.id ?? null,
     openId: user?.openId ?? null,
     name: user?.name ?? null,
     email: user?.email ?? null,
     loginMethod: user?.loginMethod ?? null,
     lastSignedIn: (user?.lastSignedIn ?? new Date()).toISOString(),
+    prefecture: u?.prefecture ?? null,
+    gender: u?.gender ?? null,
+    role: u?.role ?? null,
   };
 }
 

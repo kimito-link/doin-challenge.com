@@ -4,7 +4,7 @@
  * イベント詳細画面用のカスタムフック
  * 型定義とデータ変換ロジックは event-detail-screen/ に分割
  */
-import { useState, useCallback, useRef } from "react";
+import { useState, useCallback, useRef, useEffect } from "react";
 import { Alert, ScrollView, View } from "react-native";
 import { useRouter } from "expo-router";
 import { trpc } from "@/lib/trpc";
@@ -91,8 +91,16 @@ export function useEventDetailScreen(challengeId: number): UseEventDetailScreenR
   const [showDeleteParticipationModal, setShowDeleteParticipationModal] = useState(false);
   const [selectedPrefectureForModal, setSelectedPrefectureForModal] = useState<string | null>(null);
   const [selectedRegion, setSelectedRegion] = useState<{ name: string; prefectures: string[] } | null>(null);
+  const [showOneClickConfirm, setShowOneClickConfirm] = useState(false);
   const [selectedFan, setSelectedFan] = useState<FanVM | null>(null);
   const [deleteTargetParticipation, setDeleteTargetParticipation] = useState<ParticipationVM | null>(null);
+
+  // Sync prefecture/gender from user when available
+  useEffect(() => {
+    if (!user || editingParticipationId != null) return;
+    if (user.prefecture) setPrefecture((prev) => (prev === "" ? user!.prefecture! : prev));
+    if (user.gender && user.gender !== "unspecified") setGender((prev) => (prev === "" ? user!.gender as "male" | "female" : prev));
+  }, [user?.prefecture, user?.gender, editingParticipationId]);
   const [lastParticipation, setLastParticipation] = useState<{
     name: string;
     username?: string;
@@ -190,6 +198,7 @@ export function useEventDetailScreen(challengeId: number): UseEventDetailScreenR
   
   const createParticipationMutation = trpc.participations.create.useMutation({
     onSuccess: async () => {
+      setShowOneClickConfirm(false);
       setLastParticipation({
         name: user?.name || "",
         username: user?.username || undefined,
@@ -465,6 +474,22 @@ export function useEventDetailScreen(challengeId: number): UseEventDetailScreenR
     }
   }, [challengeData, challengeId, generateOgpMutation]);
   
+  const openParticipationForm = useCallback(() => {
+    if (!user) {
+      Alert.alert("ログインが必要です", "参加表明するにはログインしてください");
+      return;
+    }
+    const hasProfile = user.prefecture && user.gender && user.gender !== "unspecified";
+    if (hasProfile && companions.length === 0) {
+      setPrefecture(user.prefecture!);
+      setGender(user.gender as "male" | "female");
+      setMessage("");
+      setShowOneClickConfirm(true);
+    } else {
+      setShowForm(true);
+    }
+  }, [user, companions.length]);
+
   const openEditMode = useCallback((participation: ParticipationVM) => {
     setMessage(participation.message || "");
     setPrefecture(participation.prefecture || "");
@@ -494,6 +519,7 @@ export function useEventDetailScreen(challengeId: number): UseEventDetailScreenR
   
   const ui: UiState = {
     showForm,
+    showOneClickConfirm,
     showPrefectureList,
     showPrefectureFilterList,
     showConfirmation,
@@ -544,12 +570,14 @@ export function useEventDetailScreen(challengeId: number): UseEventDetailScreenR
     setAllowVideoUse,
     
     // UI操作
-    openParticipationForm: () => setShowForm(true),
+    openParticipationForm,
     closeParticipationForm: () => {
       setShowForm(false);
+      setShowOneClickConfirm(false);
       setIsEditMode(false);
       setEditingParticipationId(null);
     },
+    setShowOneClickConfirm,
     openEditMode,
     togglePrefectureList: () => setShowPrefectureList(prev => !prev),
     togglePrefectureFilterList: () => setShowPrefectureFilterList(prev => !prev),

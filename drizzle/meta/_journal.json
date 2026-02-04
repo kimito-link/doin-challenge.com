@@ -204,6 +204,13 @@
       "when": 1770194215266,
       "tag": "0028_smart_amphibian",
       "breakpoints": true
+    },
+    {
+      "idx": 29,
+      "version": "5",
+      "when": 1770300000000,
+      "tag": "0029_users_add_prefecture",
+      "breakpoints": true
     }
   ]
 }

@@ -60,7 +60,7 @@ export const palette = {
 
   // Gender colors（性別ボーダー用）
   genderMale: "#3B82F6",      // 男性: 青
-  genderFemale: "#F472B6",    // 女性: ピンク（v6.63仕様）
+  genderFemale: "#EF4444",    // 女性: 赤（仕様）
   genderNeutral: "rgba(255,255,255,0.12)", // 未設定: ニュートラル
   genderOther: "#A855F7",     // その他: パープル
 

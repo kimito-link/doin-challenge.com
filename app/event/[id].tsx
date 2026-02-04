@@ -7,7 +7,7 @@
  * - features/event-detail/components/ - UIコンポーネント
  */
 
-import { View, Text, ScrollView, KeyboardAvoidingView, Platform, RefreshControl } from "react-native";
+import { View, Text, ScrollView, KeyboardAvoidingView, Platform, RefreshControl, Modal, Pressable } from "react-native";
 import { useLocalSearchParams } from "expo-router";
 import { navigate } from "@/lib/navigation";
 import { ScreenContainer } from "@/components/organisms/screen-container";
@@ -292,7 +292,7 @@ export default function ChallengeDetailScreen() {
                 eventDate={challenge.eventDate}
                 onShare={eventActions.handleShare}
                 onTwitterShare={eventActions.handleTwitterShare}
-                onShowForm={() => participationForm.setShowForm(true)}
+                onShowForm={participationForm.openParticipationForm}
               />
             )}
           </View>
@@ -312,6 +312,40 @@ export default function ChallengeDetailScreen() {
         companions={participationForm.companions}
         message={participationForm.message}
       />
+
+      {/* 1-Click 参加表明確認モーダル */}
+      <Modal
+        visible={participationForm.showOneClickConfirm}
+        transparent
+        animationType="fade"
+        onRequestClose={() => participationForm.setShowOneClickConfirm(false)}
+      >
+        <Pressable
+          style={{ flex: 1, backgroundColor: "rgba(0,0,0,0.5)", justifyContent: "center", padding: 24 }}
+          onPress={() => participationForm.setShowOneClickConfirm(false)}
+        >
+          <Pressable style={{ backgroundColor: colors.surface, borderRadius: 16, padding: 24 }} onPress={(e) => e.stopPropagation()}>
+            <Text style={{ fontSize: 16, color: colors.foreground, marginBottom: 24, textAlign: "center" }}>
+              {participationForm.prefecture}・{participationForm.gender === "male" ? "男性" : "女性"}で参加表明します。よろしいですか？
+            </Text>
+            <View style={{ flexDirection: "row", gap: 12 }}>
+              <Pressable
+                onPress={() => participationForm.setShowOneClickConfirm(false)}
+                style={{ flex: 1, paddingVertical: 12, borderRadius: 12, alignItems: "center", backgroundColor: colors.background }}
+              >
+                <Text style={{ color: colors.foreground }}>キャンセル</Text>
+              </Pressable>
+              <Pressable
+                onPress={participationForm.handleConfirmSubmit}
+                disabled={participationForm.isSubmitting}
+                style={{ flex: 1, paddingVertical: 12, borderRadius: 12, alignItems: "center", backgroundColor: colors.primary, opacity: participationForm.isSubmitting ? 0.6 : 1 }}
+              >
+                <Text style={{ color: "#fff", fontWeight: "600" }}>{participationForm.isSubmitting ? "送信中..." : "参加表明する"}</Text>
+              </Pressable>
+            </View>
+          </Pressable>
+        </Pressable>
+      </Modal>
 
       {/* りんく吹き出し: ◯人目の参加だよ！ */}
       {participationForm.showParticipantNumberSpeech && participationForm.participantNumber && (

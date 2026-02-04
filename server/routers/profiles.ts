@@ -4,10 +4,33 @@
  * 公開プロフィール関連のルーター
  */
 import { z } from "zod";
-import { publicProcedure, router } from "../_core/trpc";
+import { protectedProcedure, publicProcedure, router } from "../_core/trpc";
 import * as db from "../db";
 
+const genderSchema = z.enum(["male", "female", "unspecified"]);
+
 export const profilesRouter = router({
+  // 認証中ユーザーの自分用プロフィール取得（auth.me と同様だが profiles 名前空間）
+  me: publicProcedure.query((opts) => opts.ctx.user),
+
+  // 自分のプロフィール（都道府県・性別）を更新
+  updateMyProfile: protectedProcedure
+    .input(
+      z.object({
+        prefecture: z.string().max(32).nullable().optional(),
+        gender: genderSchema.optional(),
+      }),
+    )
+    .mutation(async ({ ctx, input }) => {
+      await db.upsertUser({
+        openId: ctx.user.openId,
+        ...(input.prefecture !== undefined && { prefecture: input.prefecture }),
+        ...(input.gender !== undefined && { gender: input.gender }),
+      });
+      const updated = await db.getUserByOpenId(ctx.user.openId);
+      return { user: updated ?? null };
+    }),
+
   // ユーザーの公開プロフィールを取得
   get: publicProcedure
     .input(z.object({ userId: z.number() }))
