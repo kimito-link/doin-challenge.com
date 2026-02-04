@@ -2,6 +2,21 @@
 
 **このファイルは、AI（Manus、ChatGPT、Claude等）が実装を行う際に必ず参照するガイドラインです。**
 
+## ⚠️ 最重要原則：根本的解決の徹底
+
+**表面的な解決は絶対に禁止。すべての問題は根本から解決すること。**
+
+詳細は [FUNDAMENTAL_SOLUTION_RULES.md](./FUNDAMENTAL_SOLUTION_RULES.md) を参照。
+
+### 根本的解決の必須プロセス
+
+1. **問題の深掘り** - 根本原因の特定、影響範囲の確認
+2. **ルールの明確化** - ルールの存在確認、文書化、適用範囲の明確化
+3. **根本的な修正** - 設計の見直し、実装、予防策の実装
+4. **検証と文書化** - 動作確認、ドキュメント更新、レビュー
+
+**表面的な修正（症状の対処のみ、部分的な修正、一時しのぎ）は絶対に禁止。**
+
 ---
 
 ## 【最優先】命令の忠実な実行と記憶の扱い
@@ -44,6 +59,7 @@
 
 | 作業の種類 | 必ず参照する doc |
 |------------|------------------|
+| **問題修正・改善** | **`docs/FUNDAMENTAL_SOLUTION_RULES.md`（根本的解決の原則）** |
 | 新機能・仕様を決める | `docs/contract.md`（4 点セット） |
 | Git の流れ・TDD・PROGRESS | `docs/GIT_DEVELOPMENT_WORKFLOW.md`（手順 1〜6, 6-1〜6-6） |
 | 危険な変更・PR・デプロイ | `docs/GATE1_WORKFLOW.md`, `.github/pull_request_template.md`, `scripts/diff-check.sh` |
