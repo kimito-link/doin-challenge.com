@@ -4,12 +4,13 @@
  * 動員/フォロワー/同時視聴/ポイント/カスタムの選択UI
  */
 
-import { View, Text, ScrollView, TextInput } from "react-native";
+import { View, Text, ScrollView } from "react-native";
 import MaterialIcons from "@expo/vector-icons/MaterialIcons";
 import { useColors } from "@/hooks/use-colors";
 import { createUI, createText, createFont } from "../theme/tokens";
 import { goalTypeOptions } from "@/constants/goal-types";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 
 interface GoalTypeSelectorProps {
   goalType: string;
@@ -82,25 +83,13 @@ export function GoalTypeSelector({
 
       {/* カスタム単位入力 */}
       {goalType === "custom" && (
-        <View style={{ marginBottom: 16 }}>
-          <Text style={{ color: colors.muted, fontSize: createFont.body, marginBottom: 8 }}>
-            単位
-          </Text>
-          <TextInput
-            value={goalUnit}
-            onChangeText={onGoalUnitChange}
-            placeholder="例: 人、pt、回"
-            placeholderTextColor={createText.placeholder}
-            style={{
-              backgroundColor: colors.background,
-              borderRadius: 8,
-              padding: 12,
-              color: colors.foreground,
-              borderWidth: 1,
-              borderColor: createUI.inputBorder,
-            }}
-          />
-        </View>
+        <Input
+          label="単位"
+          value={goalUnit}
+          onChangeText={onGoalUnitChange}
+          placeholder="例: 人、pt、回"
+          containerStyle={{ marginBottom: 16 }}
+        />
       )}
     </>
   );
