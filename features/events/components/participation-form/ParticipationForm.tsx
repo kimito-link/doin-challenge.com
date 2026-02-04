@@ -213,17 +213,14 @@ export function ParticipationForm({
 
       {/* 応援メッセージ入力 */}
       <View style={styles.inputSection}>
-        <Text style={[styles.inputLabel, { color: colors.foreground }]}>
-          応援メッセージ
-        </Text>
-        <TextInput
+        <Input
+          label="応援メッセージ"
           value={message}
           onChangeText={onMessageChange}
           placeholder="推しへの熱い思いを書いてね！"
-          placeholderTextColor={color.textHint}
           multiline
           numberOfLines={4}
-          style={[styles.messageInput, { color: colors.foreground }]}
+          containerStyle={{ marginBottom: 0 }}
         />
       </View>
 
@@ -423,15 +420,12 @@ export function ParticipationForm({
                   <Text style={styles.dividerText}>または名前で追加</Text>
                   <View style={styles.dividerLine} />
                 </View>
-                <Text style={[styles.addCompanionLabel, { color: colors.foreground }]}>
-                  友人の名前
-                </Text>
-                <TextInput
+                <Input
+                  label="友人の名前"
                   value={newCompanionName}
                   onChangeText={onNewCompanionNameChange}
                   placeholder="ニックネーム"
-                  placeholderTextColor={color.textHint}
-                  style={[styles.nameInput, { color: colors.foreground }]}
+                  containerStyle={{ marginBottom: 0 }}
                 />
               </>
             )}
