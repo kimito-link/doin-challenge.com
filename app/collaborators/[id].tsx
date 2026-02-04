@@ -1,4 +1,4 @@
-import { Text, View, Pressable, ScrollView, TextInput, Alert , Platform} from "react-native";
+import { Text, View, Pressable, ScrollView, Alert, Platform } from "react-native";
 import * as Haptics from "expo-haptics";
 import { color, palette } from "@/theme/tokens";
 import { Image } from "expo-image";
@@ -12,6 +12,7 @@ import { useColors } from "@/hooks/use-colors";
 import MaterialIcons from "@expo/vector-icons/MaterialIcons";
 import { LinearGradient } from "expo-linear-gradient";
 import { AppHeader } from "@/components/organisms/app-header";
+import { Input } from "@/components/ui/input";
 
 // 権限の日本語名（初心者向けに簡素化）
 const ROLE_NAMES: Record<string, string> = {
@@ -197,23 +198,11 @@ function InviteForm({
       </Text>
       
       <View style={{ marginBottom: 12 }}>
-        <Text style={{ color: color.textMuted, fontSize: 12, marginBottom: 4 }}>
-          Twitter ID（@なし）
-        </Text>
-        <TextInput
+        <Input
+          label="Twitter ID（@なし）"
           value={twitterId}
           onChangeText={setTwitterId}
           placeholder="例: idolfunch"
-          placeholderTextColor={color.textSubtle}
-          style={{
-            backgroundColor: colors.background,
-            borderRadius: 8,
-            padding: 12,
-            color: colors.foreground,
-            fontSize: 16,
-            borderWidth: 1,
-            borderColor: color.border,
-          }}
           autoCapitalize="none"
           autoCorrect={false}
         />

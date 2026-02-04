@@ -6,6 +6,8 @@
  */
 
 import { ScreenContainer } from "@/components/organisms/screen-container";
+import { Input } from "@/components/ui/input";
+import { RetryButton } from "@/components/ui/retry-button";
 import { useColors } from "@/hooks/use-colors";
 import { apiGet, getErrorMessage } from "@/lib/api";
 import { navigateBack } from "@/lib/navigation/app-routes";
@@ -18,7 +20,6 @@ import {
   Pressable,
   ActivityIndicator,
   RefreshControl,
-  TextInput,
   Switch,
   Alert,
   Platform,
@@ -192,20 +193,7 @@ export default function ApiUsageDashboard() {
         <Text className="text-4xl mb-4">⚠️</Text>
         <Text className="text-lg font-bold text-foreground mb-2">エラー</Text>
         <Text className="text-muted text-center mb-4">{error}</Text>
-        <Pressable
-          onPress={fetchData}
-          style={({ pressed }) => [
-            {
-              backgroundColor: colors.primary,
-              paddingHorizontal: 24,
-              paddingVertical: 12,
-              borderRadius: 8,
-              opacity: pressed ? 0.8 : 1,
-            },
-          ]}
-        >
-          <Text className="text-white font-semibold">再試行</Text>
-        </Pressable>
+        <RetryButton onPress={fetchData} variant="retry" />
       </ScreenContainer>
     );
   }
@@ -397,38 +385,32 @@ export default function ApiUsageDashboard() {
           </Text>
           <View className="bg-surface p-4 rounded-lg">
             <View className="mb-3">
-              <Text className="text-sm text-muted mb-1">月間コスト上限 (USD)</Text>
-              <TextInput
+              <Input
+                label="月間コスト上限 (USD)"
                 value={monthlyLimit}
                 onChangeText={setMonthlyLimit}
                 placeholder="10"
                 keyboardType="decimal-pad"
-                className="border border-border rounded-lg px-3 py-2 text-foreground"
-                placeholderTextColor={colors.muted}
               />
             </View>
             <View className="mb-3">
-              <Text className="text-sm text-muted mb-1">アラート閾値 (USD)</Text>
-              <TextInput
+              <Input
+                label="アラート閾値 (USD)"
                 value={alertThreshold}
                 onChangeText={setAlertThreshold}
                 placeholder="8"
                 keyboardType="decimal-pad"
-                className="border border-border rounded-lg px-3 py-2 text-foreground"
-                placeholderTextColor={colors.muted}
               />
             </View>
             <View className="mb-3">
-              <Text className="text-sm text-muted mb-1">アラート送信先メール</Text>
-              <TextInput
+              <Input
+                label="アラート送信先メール"
                 value={alertEmail}
                 onChangeText={setAlertEmail}
                 placeholder="info@best-trust.biz"
                 keyboardType="email-address"
                 autoCapitalize="none"
                 autoCorrect={false}
-                className="border border-border rounded-lg px-3 py-2 text-foreground"
-                placeholderTextColor={colors.muted}
               />
             </View>
             <View className="flex-row items-center justify-between mb-4">

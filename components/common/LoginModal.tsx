@@ -153,7 +153,7 @@ export function LoginModal({
               marginBottom: 28,
               backgroundColor: colors.surface,
               borderWidth: 1,
-              borderColor: color.border,
+              borderColor: colors.border,
               padding: 20,
               borderRadius: 16,
               shadowColor: "#000",

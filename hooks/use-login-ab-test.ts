@@ -74,15 +74,33 @@ export function useLoginABTest() {
   }
 
   /**
-   * りんくを優先的にメッセージを選択し、表示回数を記録
-   * りんくが主役なので、常にりんくのメッセージを優先的に表示
+   * 役割に基づいてメッセージを選択し、表示回数を記録
+   * りんくが主役のため約70%でりんく、残りでこん太・たぬ姉を役割に応じて表示
    */
   function selectMessage(): LoginMessage {
-    // りんくのメッセージを優先的に選択
-    const rinkuMessages = LOGIN_MESSAGES.filter(msg => msg.character === "rinku");
-    const selectedMessage = rinkuMessages.length > 0
-      ? rinkuMessages[Math.floor(Math.random() * rinkuMessages.length)]
-      : LOGIN_MESSAGES[Math.floor(Math.random() * LOGIN_MESSAGES.length)]; // フォールバック
+    const rinkuMessages = LOGIN_MESSAGES.filter((msg) => msg.role === "main");
+    const communityMessages = LOGIN_MESSAGES.filter((msg) => msg.role === "community");
+    const planningMessages = LOGIN_MESSAGES.filter((msg) => msg.role === "planning");
+
+    const roll = Math.random();
+    let selectedMessage: LoginMessage;
+    if (roll < 0.7 && rinkuMessages.length > 0) {
+      selectedMessage =
+        rinkuMessages[Math.floor(Math.random() * rinkuMessages.length)];
+    } else if (roll < 0.85 && communityMessages.length > 0) {
+      selectedMessage =
+        communityMessages[
+          Math.floor(Math.random() * communityMessages.length)
+        ];
+    } else if (planningMessages.length > 0) {
+      selectedMessage =
+        planningMessages[
+          Math.floor(Math.random() * planningMessages.length)
+        ];
+    } else {
+      selectedMessage =
+        LOGIN_MESSAGES[Math.floor(Math.random() * LOGIN_MESSAGES.length)];
+    }
 
     // 表示回数をインクリメント
     const newData = { ...state.data };

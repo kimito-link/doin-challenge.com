@@ -20,6 +20,7 @@ jobs:
       touch_env: ${{ steps.diff-check.outputs.touch_env }}
       touch_health: ${{ steps.diff-check.outputs.touch_health }}
       touch_routing: ${{ steps.diff-check.outputs.touch_routing }}
+      touch_workflow: ${{ steps.diff-check.outputs.touch_workflow }}
       sensitive: ${{ steps.diff-check.outputs.sensitive }}
     steps:
       - uses: actions/checkout@v4
@@ -44,6 +45,7 @@ jobs:
             const touchDb = '${{ steps.diff-check.outputs.touch_db }}';
             const touchHealth = '${{ steps.diff-check.outputs.touch_health }}';
             const touchRouting = '${{ steps.diff-check.outputs.touch_routing }}';
+            const touchWorkflow = '${{ steps.diff-check.outputs.touch_workflow }}';
             
             let comment = '## 🔍 Gate 1: diff-check結果\n\n';
             
@@ -69,8 +71,14 @@ jobs:
               if (touchRouting === 'true') {
                 comment += '- [ ] **Routing/Redirect/Proxy関連**: リダイレクトのテストを実施\n';
               }
+              if (touchWorkflow === 'true') {
+                comment += '- [ ] **ワークフロー関連**: デプロイ・CIパイプラインの動作確認を実施\n';
+              }
             } else {
               comment += '✅ **危険な変更は検知されませんでした**\n';
+            }
+            if (touchWorkflow === 'true') {
+              comment += '\nℹ️ `.github/workflows/` に変更があります。マージ後のデプロイ・Gate 1 動作に注意してください。\n';
             }
             
             github.rest.issues.createComment({
@@ -86,6 +94,27 @@ jobs:
         run: |
           echo "❌ Gate 1: 危険な変更が検知されたため失敗させます"
           exit 1
+
+  quality:
+    name: Lint / Type check / Test
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          cache: "pnpm"
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 9.12.0
+      - name: Install dependencies
+        run: pnpm install
+      - name: Lint
+        run: pnpm lint
+      - name: Type check
+        run: pnpm check
+      - name: Test
+        run: pnpm test
 
   health-check:
     runs-on: ubuntu-latest

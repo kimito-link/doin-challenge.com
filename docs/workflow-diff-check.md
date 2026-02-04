@@ -154,13 +154,23 @@ git log -p path/to/file.tsx
 - 無関係なファイルの変更を含める
 - 大規模なリファクタリングと機能追加を同時に行う
 
-## GitHub Actions連携
+## GitHub Actions連携（Gate 1）
 
-PR作成時、`.github/workflows/pr-diff-check.yml`が自動実行され：
+PRを `main` に作成すると、**Gate 1**（`.github/workflows/gate1.yml`）が自動実行されます。
 
-1. 変更されたファイルを検出
-2. 重要ファイルが含まれる場合、警告を表示
-3. PRにコメントを自動投稿
-4. diffサマリーを表示
+1. **diff-check**（`scripts/diff-check.sh`）で変更ファイルを検出
+2. 認証・Deploy・環境変数・DB・ヘルス・ルーティングなど「危険な変更」を検知
+3. 検知した場合、PRに必須アクションのチェックリストをコメントで投稿
+4. **危険な変更があるPRは Gate 1 で失敗し、マージできない**
 
-これにより、レビュアーと作業者の両方が変更内容を把握しやすくなります。
+ローカルで事前に確認するには：
+
+```bash
+# 現在のブランチの変更（直前コミット対比）をチェック
+bash scripts/diff-check.sh
+
+# main との差分をチェック（main を fetch 済みの場合）
+bash scripts/diff-check.sh origin/main HEAD
+```
+
+実行すると、変更ファイル一覧と「どの領域に触ったか」のサマリーが表示されます。

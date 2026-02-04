@@ -21,13 +21,14 @@ diff-check で警告が出た場合、該当する必須アクションを実施
 - [ ] **データベース**に変更がある場合 → マイグレーション実行確認を実施した
 - [ ] **ヘルスチェック**に変更がある場合 → Deploy後ヘルス照合を実施した
 - [ ] **Routing/Redirect/Proxy**に変更がある場合 → リダイレクトのテストを実施した
+- [ ] **ワークフロー**（`.github/workflows/`）に変更がある場合 → デプロイ・CIの動作確認を実施した
 
 ## Gate 1: こまめなバージョン管理（推奨）
 
 - [ ] このPRは**1つの変更のみ**を含む
 - [ ] テストを実施した（ユニットテスト or 統合テスト or 手動確認）
 - [ ] バージョン番号を更新した（`shared/version.ts`）
-- [ ] `bash scripts/diff-check.sh` を実行し、警告内容を確認した
+- [ ] `bash scripts/diff-check.sh` を実行し、サマリー・警告を確認した（main との差分: `bash scripts/diff-check.sh origin/main HEAD`）
 
 ## Gate 1: Deploy/Health確認
 - [ ] Gate 1: Deploy/Health確認

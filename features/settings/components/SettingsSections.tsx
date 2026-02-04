@@ -260,7 +260,7 @@ export function SettingsFooter({
       </View>
       
       <Text style={styles.footerCopyright}>
-        © 2024 KimitoLink. All rights reserved.
+        © KimitoLink
       </Text>
     </View>
   );

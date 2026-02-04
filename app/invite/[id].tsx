@@ -1,4 +1,4 @@
-import { Text, View, ScrollView, Pressable, Share, Platform, TextInput } from "react-native";
+import { Text, View, ScrollView, Pressable, Share, Platform } from "react-native";
 import { color, palette } from "@/theme/tokens";
 import { Image } from "expo-image";
 import { useLocalSearchParams } from "expo-router";
@@ -12,6 +12,7 @@ import { LinearGradient } from "expo-linear-gradient";
 // Clipboardはネイティブ機能を使用
 import * as Haptics from "expo-haptics";
 import { AppHeader } from "@/components/organisms/app-header";
+import { Input } from "@/components/ui/input";
 import { RefreshingIndicator } from "@/components/molecules/refreshing-indicator";
 import { useColors } from "@/hooks/use-colors";
 
@@ -313,24 +314,12 @@ export default function InviteScreen() {
             >
               {/* カスタムタイトル */}
               <View style={{ marginBottom: 16 }}>
-                <Text style={{ color: color.textMuted, fontSize: 12, marginBottom: 8 }}>
-                  招待タイトル（任意）
-                </Text>
-                <TextInput
+                <Input
+                  label="招待タイトル（任意）"
                   value={customTitle}
                   onChangeText={setCustomTitle}
                   placeholder={challenge.title}
-                  placeholderTextColor={color.textHint}
                   maxLength={100}
-                  style={{
-                    backgroundColor: colors.background,
-                    borderRadius: 8,
-                    padding: 12,
-                    color: color.textWhite,
-                    fontSize: 14,
-                    borderWidth: 1,
-                    borderColor: color.border,
-                  }}
                 />
                 <Text style={{ color: color.textHint, fontSize: 12, marginTop: 4, textAlign: "right" }}>
                   {customTitle.length}/100
@@ -339,28 +328,15 @@ export default function InviteScreen() {
 
               {/* カスタムメッセージ */}
               <View style={{ marginBottom: 16 }}>
-                <Text style={{ color: color.textMuted, fontSize: 12, marginBottom: 8 }}>
-                  あなたからのメッセージ（任意）
-                </Text>
-                <TextInput
+                <Input
+                  label="あなたからのメッセージ（任意）"
                   value={customMessage}
                   onChangeText={setCustomMessage}
                   placeholder="例: 一緒に推しを応援しよう！絶対楽しいから来てね♪"
-                  placeholderTextColor={color.textHint}
                   multiline
                   numberOfLines={4}
                   maxLength={500}
-                  style={{
-                    backgroundColor: colors.background,
-                    borderRadius: 8,
-                    padding: 12,
-                    color: color.textWhite,
-                    fontSize: 14,
-                    minHeight: 100,
-                    textAlignVertical: "top",
-                    borderWidth: 1,
-                    borderColor: color.border,
-                  }}
+                  style={{ minHeight: 100, textAlignVertical: "top" }}
                 />
                 <Text style={{ color: color.textHint, fontSize: 12, marginTop: 4, textAlign: "right" }}>
                   {customMessage.length}/500

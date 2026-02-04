@@ -1,4 +1,4 @@
-import { Text, View, Pressable, ScrollView, ActivityIndicator, Alert, TextInput , Platform} from "react-native";
+import { Text, View, Pressable, ScrollView, ActivityIndicator, Alert, Platform } from "react-native";
 import * as Haptics from "expo-haptics";
 import { color, palette } from "@/theme/tokens";
 import { useLocalSearchParams } from "expo-router";
@@ -11,6 +11,7 @@ import { useColors } from "@/hooks/use-colors";
 import MaterialIcons from "@expo/vector-icons/MaterialIcons";
 import { Image } from "expo-image";
 import { AppHeader } from "@/components/organisms/app-header";
+import { Input } from "@/components/ui/input";
 
 export default function ManageCommentsScreen() {
   const colors = useColors();
@@ -257,19 +258,11 @@ export default function ManageCommentsScreen() {
                     {/* ピックアップ理由入力 */}
                     {isPickingThis && (
                       <View style={{ marginBottom: 12 }}>
-                        <TextInput
+                        <Input
+                          label="ピックアップ理由（任意）"
                           value={pickReason}
                           onChangeText={setPickReason}
                           placeholder="ピックアップ理由（任意）"
-                          placeholderTextColor={color.textSubtle}
-                          style={{
-                            backgroundColor: colors.background,
-                            borderRadius: 8,
-                            padding: 12,
-                            color: colors.foreground,
-                            borderWidth: 1,
-                            borderColor: color.accentPrimary,
-                          }}
                           multiline
                         />
                       </View>

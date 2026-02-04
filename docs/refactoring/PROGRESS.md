@@ -1,5 +1,20 @@
 # ファクタリング作業履歴
 
+## 2025-02-XX: TextInput→Input 残り・RetryButton統一（追加）
+
+### 実装完了
+- [x] `app/admin/api-usage.tsx` - TextInputをInputに移行（3箇所）、エラー時の再試行をRetryButtonに統一
+- [x] `app/edit-challenge/[id].tsx` - TextInputをInputに移行（5箇所: タイトル・説明・開催場所・チケットURL・外部URL）
+- [x] `app/collaborators/[id].tsx` - TextInputをInputに移行（1箇所: Twitter ID）
+- [x] `app/manage-comments/[id].tsx` - TextInputをInputに移行（1箇所: ピックアップ理由）
+- [x] `app/invite/[id].tsx` - TextInputをInputに移行（2箇所: 招待タイトル・メッセージ）
+
+### サマリー
+- TextInput→Input: 上記5ファイルで計12箇所を統一Inputに移行
+- 再試行UI: api-usage のエラー時ボタンを RetryButton に統一
+
+---
+
 ## 2025-02-04: 追加のファクタリング作業完了
 
 ### 作業開始
@@ -191,8 +206,9 @@
 ## 次のタスク候補
 
 ### 優先度: 高
-1. **TextInput → Input コンポーネントへの移行（残り10ファイル）**
-   - パイロット完了後、残りファイルを順次移行
+1. **TextInput → Input コンポーネントへの移行**
+   - 主要画面の移行は完了（admin/api-usage, edit-challenge, collaborators, manage-comments, invite を含む）
+   - 複雑なサジェスト・デバウンスが必要な SearchBar は既に Input ベースに移行済み
 
 2. **ローディング/エラー表示統一**
    - Skeletonコンポーネントの統合

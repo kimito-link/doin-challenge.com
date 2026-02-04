@@ -82,7 +82,7 @@ fontSize: homeFont.body,
             </Text>
           </Button>
           
-          {/* りんくといっしょにファン体験（こん太・たぬ姉は仲間） */}
+          {/* りんくといっしょにファン体験（りんく主役） */}
           <Button
             variant="ghost"
             onPress={() => startExperience("fan")}
@@ -98,7 +98,7 @@ fontSize: homeFont.body,
             }}
           >
             <Image
-              source={require("@/assets/images/characters/konta/kitsune-yukkuri-smile-mouth-open.png")}
+              source={require("@/assets/images/characters/link/link-yukkuri-smile-mouth-open.png")}
               style={{ width: 48, height: 48, marginBottom: 8 }}
               contentFit="contain"
             />

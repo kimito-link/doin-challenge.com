@@ -1,4 +1,4 @@
-import { View, Text, ScrollView, TextInput, Pressable, KeyboardAvoidingView, Platform, ActivityIndicator } from "react-native";
+import { View, Text, ScrollView, Pressable, KeyboardAvoidingView, Platform, ActivityIndicator } from "react-native";
 import * as Haptics from "expo-haptics";
 import { color, palette } from "@/theme/tokens";
 import { Image } from "expo-image";
@@ -13,6 +13,7 @@ import { useColors } from "@/hooks/use-colors";
 import MaterialIcons from "@expo/vector-icons/MaterialIcons";
 import { LinearGradient } from "expo-linear-gradient";
 import { AppHeader } from "@/components/organisms/app-header";
+import { Input } from "@/components/ui/input";
 import { DatePicker } from "@/components/molecules/date-picker";
 import { NumberStepper } from "@/components/molecules/number-stepper";
 import { showAlert } from "@/lib/web-alert";
@@ -189,49 +190,24 @@ export default function EditChallengeScreen() {
             <View style={{ padding: 20, gap: 24 }}>
               {/* タイトル */}
               <View style={{ gap: 8 }}>
-                <Text style={{ color: colors.foreground, fontSize: 16, fontWeight: "600" }}>
-                  タイトル <Text style={{ color: colors.error }}>*</Text>
-                </Text>
-                <TextInput
+                <Input
+                  label="タイトル *"
                   value={title}
                   onChangeText={setTitle}
                   placeholder="例: 君斗りんく生誕祭2025"
-                  placeholderTextColor={colors.muted}
-                  style={{
-                    backgroundColor: colors.surface,
-                    borderRadius: 12,
-                    padding: 16,
-                    color: colors.foreground,
-                    fontSize: 16,
-                    borderWidth: 1,
-                    borderColor: colors.border,
-                  }}
                 />
               </View>
 
               {/* 説明 */}
               <View style={{ gap: 8 }}>
-                <Text style={{ color: colors.foreground, fontSize: 16, fontWeight: "600" }}>
-                  説明
-                </Text>
-                <TextInput
+                <Input
+                  label="説明"
                   value={description}
                   onChangeText={setDescription}
                   placeholder="チャレンジの詳細を入力"
-                  placeholderTextColor={colors.muted}
                   multiline
                   numberOfLines={4}
-                  style={{
-                    backgroundColor: colors.surface,
-                    borderRadius: 12,
-                    padding: 16,
-                    color: colors.foreground,
-                    fontSize: 16,
-                    borderWidth: 1,
-                    borderColor: colors.border,
-                    minHeight: 100,
-                    textAlignVertical: "top",
-                  }}
+                  style={{ minHeight: 100, textAlignVertical: "top" }}
                 />
               </View>
 
@@ -249,23 +225,11 @@ export default function EditChallengeScreen() {
 
               {/* 開催場所 */}
               <View style={{ gap: 8 }}>
-                <Text style={{ color: colors.foreground, fontSize: 16, fontWeight: "600" }}>
-                  開催場所 <Text style={{ color: colors.error }}>*</Text>
-                </Text>
-                <TextInput
+                <Input
+                  label="開催場所 *"
                   value={venue}
                   onChangeText={setVenue}
                   placeholder="例: 渋谷CLUB QUATTRO"
-                  placeholderTextColor={colors.muted}
-                  style={{
-                    backgroundColor: colors.surface,
-                    borderRadius: 12,
-                    padding: 16,
-                    color: colors.foreground,
-                    fontSize: 16,
-                    borderWidth: 1,
-                    borderColor: colors.border,
-                  }}
                 />
               </View>
 
@@ -359,42 +323,21 @@ export default function EditChallengeScreen() {
                   </View>
                 </View>
 
-                <TextInput
+                <Input
+                  label="チケット購入URL（任意）"
                   value={ticketUrl}
                   onChangeText={setTicketUrl}
                   placeholder="チケット購入URL"
-                  placeholderTextColor={colors.muted}
-                  style={{
-                    backgroundColor: colors.surface,
-                    borderRadius: 12,
-                    padding: 16,
-                    color: colors.foreground,
-                    fontSize: 16,
-                    borderWidth: 1,
-                    borderColor: colors.border,
-                  }}
                 />
               </View>
 
               {/* 外部URL */}
               <View style={{ gap: 8 }}>
-                <Text style={{ color: colors.foreground, fontSize: 16, fontWeight: "600" }}>
-                  外部URL（任意）
-                </Text>
-                <TextInput
+                <Input
+                  label="外部URL（任意）"
                   value={externalUrl}
                   onChangeText={setExternalUrl}
                   placeholder="イベント詳細ページのURL"
-                  placeholderTextColor={colors.muted}
-                  style={{
-                    backgroundColor: colors.surface,
-                    borderRadius: 12,
-                    padding: 16,
-                    color: colors.foreground,
-                    fontSize: 16,
-                    borderWidth: 1,
-                    borderColor: colors.border,
-                  }}
                 />
               </View>
 

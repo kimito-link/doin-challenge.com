@@ -124,3 +124,23 @@ fi
   echo "touch_workflow=${touch_workflow}"
   echo "sensitive=${sensitive}"
 } | tee -a "${GITHUB_OUTPUT:-/dev/null}"
+
+# ---- ローカル実行時用サマリー（CIでは GITHUB_OUTPUT にだけ書く）
+if [[ -z "${GITHUB_OUTPUT:-}" ]] || [[ "${GITHUB_OUTPUT}" == "/dev/null" ]]; then
+  echo ""
+  echo "--- diff-check サマリー ---"
+  echo "  touch_api:      ${touch_api}"
+  echo "  touch_auth:     ${touch_auth}"
+  echo "  touch_db:       ${touch_db}"
+  echo "  touch_ui:       ${touch_ui}"
+  echo "  touch_deploy:   ${touch_deploy}"
+  echo "  touch_env:      ${touch_env}"
+  echo "  touch_health:   ${touch_health}"
+  echo "  touch_routing:  ${touch_routing}"
+  echo "  touch_workflow: ${touch_workflow}"
+  echo "  sensitive:      ${sensitive}"
+  if [[ "${sensitive}" == "true" ]]; then
+    echo ""
+    echo "⚠️  危険な変更が検知されました。PRテンプレートの Gate 1 必須アクションを実施してください。"
+  fi
+fi
