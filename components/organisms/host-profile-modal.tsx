@@ -18,6 +18,7 @@ import {
 import { openTwitterProfile } from "@/lib/navigation";
 import { Image } from "expo-image";
 import MaterialIcons from "@expo/vector-icons/MaterialIcons";
+import { RetryButton } from "@/components/ui/retry-button";
 import * as Haptics from "expo-haptics";
 import { getProfile, type TwitterProfile } from "@/lib/api";
 import { useColors } from "@/hooks/use-colors";
@@ -121,16 +122,9 @@ export function HostProfileModal({
             <View style={styles.errorContainer}>
               <MaterialIcons name="error-outline" size={48} color={colors.error} />
               <Text style={[styles.errorText, { color: colors.error }]}>{error}</Text>
-              <Pressable
-                style={({ pressed }) => [
-                  styles.retryButton,
-                  { backgroundColor: colors.primary },
-                  pressed && { opacity: 0.8, transform: [{ scale: 0.97 }] },
-                ]}
-                onPress={loadProfile}
-              >
-                <Text style={styles.retryButtonText}>再試行</Text>
-              </Pressable>
+              <View style={styles.retryButtonContainer}>
+                <RetryButton onPress={loadProfile} variant="retry" />
+              </View>
             </View>
           ) : (
             <>
@@ -252,16 +246,8 @@ const styles = StyleSheet.create({
     fontSize: 14,
     textAlign: "center",
   },
-  retryButton: {
+  retryButtonContainer: {
     marginTop: 16,
-    paddingHorizontal: 20,
-    paddingVertical: 10,
-    borderRadius: 8,
-  },
-  retryButtonText: {
-    color: color.textWhite,
-    fontSize: 14,
-    fontWeight: "600",
   },
   imageContainer: {
     position: "relative",
