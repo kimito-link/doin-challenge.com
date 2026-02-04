@@ -74,11 +74,15 @@ export function useLoginABTest() {
   }
 
   /**
-   * ランダムにメッセージを選択し、表示回数を記録
+   * りんくを優先的にメッセージを選択し、表示回数を記録
+   * りんくが主役なので、常にりんくのメッセージを優先的に表示
    */
   function selectMessage(): LoginMessage {
-    const randomIndex = Math.floor(Math.random() * LOGIN_MESSAGES.length);
-    const selectedMessage = LOGIN_MESSAGES[randomIndex];
+    // りんくのメッセージを優先的に選択
+    const rinkuMessages = LOGIN_MESSAGES.filter(msg => msg.character === "rinku");
+    const selectedMessage = rinkuMessages.length > 0
+      ? rinkuMessages[Math.floor(Math.random() * rinkuMessages.length)]
+      : LOGIN_MESSAGES[Math.floor(Math.random() * LOGIN_MESSAGES.length)]; // フォールバック
 
     // 表示回数をインクリメント
     const newData = { ...state.data };
