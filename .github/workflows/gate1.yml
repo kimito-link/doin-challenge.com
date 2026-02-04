@@ -90,29 +90,28 @@ jobs:
       - uses: actions/checkout@v4
       
       - name: Wait for deployment
-        run: sleep 60  # デプロイが完了するまで待機
+        run: sleep 120  # Vercel/Railway のデプロイ完了を待つ（60s では不足するため 120s に延長）
       
       - name: Check deployed commit SHA
         run: |
           EXPECTED_SHA="${{ github.sha }}"
           ACTUAL_SHA="unknown"
-          for i in {1..10}; do
+          for i in {1..12}; do
             echo "Health check attempt ${i}..."
             RESPONSE=$(curl -s https://doin-challenge.com/api/health || true)
             if [ -n "${RESPONSE}" ]; then
               ACTUAL_SHA=$(echo "${RESPONSE}" | jq -r .commitSha 2>/dev/null || echo "unknown")
               if [ "${ACTUAL_SHA}" != "unknown" ]; then
-                break
+                if [ "$EXPECTED_SHA" = "$ACTUAL_SHA" ]; then
+                  echo "✅ Deployed commit matches: $EXPECTED_SHA"
+                  exit 0
+                fi
               fi
             fi
-            sleep 10
+            sleep 15
           done
           
-          if [ "$EXPECTED_SHA" != "$ACTUAL_SHA" ]; then
-            echo "❌ Deployed commit mismatch"
-            echo "Expected: $EXPECTED_SHA"
-            echo "Actual: $ACTUAL_SHA"
-            exit 1
-          fi
-          
-          echo "✅ Deployed commit matches: $EXPECTED_SHA"
+          echo "❌ Deployed commit mismatch (timeout)"
+          echo "Expected: $EXPECTED_SHA"
+          echo "Actual: $ACTUAL_SHA"
+          exit 1
