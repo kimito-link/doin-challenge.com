@@ -4,12 +4,11 @@
  * チャレンジをテンプレートとして保存するオプションUI
  */
 
-import { View, Text, TextInput } from "react-native";
+import { View } from "react-native";
 import MaterialIcons from "@expo/vector-icons/MaterialIcons";
-import { useColors } from "@/hooks/use-colors";
-import { createUI, createText, createFont } from "../theme/tokens";
-import { Button } from "@/components/ui/button";
+import { createUI, createText } from "../theme/tokens";
 import { Checkbox } from "@/components/ui";
+import { Input } from "@/components/ui";
 
 interface TemplateSaveSectionProps {
   saveAsTemplate: boolean;
@@ -28,8 +27,6 @@ export function TemplateSaveSection({
   onTemplateNameChange,
   onTemplateIsPublicChange,
 }: TemplateSaveSectionProps) {
-  const colors = useColors();
-
   return (
     <View style={{ marginBottom: 16, backgroundColor: createUI.inputBg, borderRadius: 12, padding: 16, borderWidth: 1, borderColor: createUI.inputBorder }}>
       <View style={{ flexDirection: "row", alignItems: "center", marginBottom: saveAsTemplate ? 12 : 0 }}>
@@ -44,20 +41,11 @@ export function TemplateSaveSection({
       
       {saveAsTemplate && (
         <View style={{ marginTop: 12 }}>
-          <TextInput
+          <Input
             value={templateName}
             onChangeText={onTemplateNameChange}
             placeholder="テンプレート名"
-            placeholderTextColor={createText.placeholder}
-            style={{
-              backgroundColor: colors.background,
-              borderRadius: 8,
-              padding: 12,
-              color: colors.foreground,
-              borderWidth: 1,
-              borderColor: createUI.inputBorder,
-              marginBottom: 8,
-            }}
+            containerStyle={{ marginBottom: 8 }}
           />
           <Checkbox
             checked={templateIsPublic}
