@@ -20,7 +20,7 @@
 - [x] `components/molecules/challenge-created-modal.tsx` - 統一Checkboxコンポーネントを使用
 
 ### コミット履歴
-- 2025-01-31: 残りのファクタリング作業完了 - 作業中
+- 2025-01-31: 残りのファクタリング作業完了
 
 ---
 

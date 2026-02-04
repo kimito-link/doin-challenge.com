@@ -13,7 +13,7 @@ const schemeFromBundleId = `manus${timestamp}`;
 // アプリバージョン（デプロイ確認用）
 // 本番デプロイ時にこの値を更新し、/api/healthと照合することで
 // 正しいバージョンがデプロイされているか確認できる
-const APP_VERSION = "6.181";
+const APP_VERSION = "6.182";
 
 const env = {
   // App branding - update these values directly (do not use env vars)
