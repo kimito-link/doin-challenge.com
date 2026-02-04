@@ -1,6 +1,7 @@
 import { View, Text, Pressable, Platform } from "react-native";
 import { color, palette } from "@/theme/tokens";
 import MaterialIcons from "@expo/vector-icons/MaterialIcons";
+import { RetryButton } from "@/components/ui/retry-button";
 import * as Haptics from "expo-haptics";
 
 interface ErrorMessageProps {
@@ -58,28 +59,13 @@ export function ErrorMessage({ message, onRetry, type = "error" }: ErrorMessageP
         </Text>
       </View>
       {onRetry && (
-        <Pressable
-          onPress={() => {
-            triggerHaptic();
-            onRetry();
-          }}
-          style={({ pressed }) => [
-            {
-              minHeight: 44,
-              minWidth: 44,
-              paddingHorizontal: 16,
-              paddingVertical: 10,
-              backgroundColor: config.borderColor,
-              borderRadius: 8,
-              alignItems: "center",
-              justifyContent: "center",
-              marginLeft: 12,
-            },
-            pressed && { opacity: 0.7, transform: [{ scale: 0.97 }] },
-          ]}
-        >
-          <Text style={{ color: color.textWhite, fontSize: 14, fontWeight: "600" }}>再試行</Text>
-        </Pressable>
+        <View style={{ marginLeft: 12 }}>
+          <RetryButton 
+            onPress={onRetry} 
+            size="sm"
+            label="再試行"
+          />
+        </View>
       )}
     </View>
   );

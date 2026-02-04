@@ -1,6 +1,7 @@
 import { View, Text, Pressable, Modal, StyleSheet, Image, Animated, Platform } from "react-native";
 import { color, palette } from "@/theme/tokens";
 import MaterialIcons from "@expo/vector-icons/MaterialIcons";
+import { RetryButton } from "@/components/ui/retry-button";
 import { useEffect, useRef } from "react";
 import * as Haptics from "expo-haptics";
 
@@ -132,16 +133,13 @@ export function ErrorDialog({
           {/* ボタン */}
           <View style={styles.buttonContainer}>
             {canRetry && onRetry && (
-              <Pressable
-                style={({ pressed }) => [
-                  styles.retryButton,
-                  pressed && { opacity: 0.8, transform: [{ scale: 0.97 }] },
-                ]}
-                onPress={handleRetry}
-              >
-                <MaterialIcons name="refresh" size={20} color={color.textWhite} />
-                <Text style={styles.retryButtonText}>もう一度試す</Text>
-              </Pressable>
+              <View style={{ flex: 1 }}>
+                <RetryButton 
+                  onPress={handleRetry} 
+                  variant="tryAgain"
+                  label="もう一度試す"
+                />
+              </View>
             )}
             <Pressable
               style={({ pressed }) => [
@@ -294,21 +292,6 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     gap: 12,
     width: "100%",
-  },
-  retryButton: {
-    flex: 1,
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "center",
-    backgroundColor: color.hostAccentLegacy,
-    borderRadius: 12,
-    paddingVertical: 14,
-    gap: 8,
-  },
-  retryButtonText: {
-    color: color.textWhite,
-    fontSize: 15,
-    fontWeight: "600",
   },
   closeButton: {
     flex: 1,
