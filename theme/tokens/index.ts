@@ -19,3 +19,5 @@ export {
   animation,
   zIndex,
 } from "./layout";
+export { typographyScale } from "./typography";
+export type { TypographyScaleKey } from "./typography";
