@@ -1,11 +1,10 @@
 // components/ui/retry-button.tsx
 // v6.20: 統一されたRetryButtonコンポーネント
 
-import { Pressable, Text, StyleSheet } from "react-native";
+import { Pressable, Text, StyleSheet, Platform } from "react-native";
 import MaterialIcons from "@expo/vector-icons/MaterialIcons";
 import { color } from "@/theme/tokens";
 import * as Haptics from "expo-haptics";
-import { Platform } from "react-native";
 
 // ==================== 型定義 ====================
 

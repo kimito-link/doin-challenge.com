@@ -15,7 +15,7 @@ import {
   type ViewStyle,
 } from "react-native";
 import MaterialIcons from "@expo/vector-icons/MaterialIcons";
-import { color } from "@/theme/tokens";
+import { color, shadows } from "@/theme/tokens";
 import { useColors } from "@/hooks/use-colors";
 
 // ==================== 型定義 ====================
@@ -109,16 +109,17 @@ export const Input = forwardRef<TextInput, InputProps>(({
 }, ref) => {
   const [isFocused, setIsFocused] = useState(false);
   const sizeStyle = sizeStyles[size];
+  const { onFocus, onBlur } = props;
 
   const handleFocus = useCallback((e: any) => {
     setIsFocused(true);
-    props.onFocus?.(e);
-  }, [props.onFocus]);
+    onFocus?.(e);
+  }, [onFocus]);
 
   const handleBlur = useCallback((e: any) => {
     setIsFocused(false);
-    props.onBlur?.(e);
-  }, [props.onBlur]);
+    onBlur?.(e);
+  }, [onBlur]);
 
   const borderColor = error 
     ? color.danger 
@@ -258,9 +259,7 @@ export function SearchInput({
 }: SearchInputProps) {
   const colors = useColors();
   const [localValue, setLocalValue] = useState(value);
-  const [showSuggestions, setShowSuggestions] = useState(false);
   const [isFocused, setIsFocused] = useState(false);
-  const inputRef = useRef<TextInput>(null);
 
   // デバウンス処理
   const debouncedValue = useDebounce(localValue, debounceMs);
@@ -289,7 +288,6 @@ export function SearchInput({
 
   const handleLocalChange = useCallback((text: string) => {
     setLocalValue(text);
-    setShowSuggestions(true);
     if (debounceMs === 0) {
       onChangeText?.(text);
     }
@@ -299,27 +297,22 @@ export function SearchInput({
     setLocalValue("");
     onChangeText?.("");
     onClear?.();
-    setShowSuggestions(false);
   }, [onChangeText, onClear]);
 
   const handleSuggestionPress = useCallback((suggestion: string) => {
     setLocalValue(suggestion);
     onChangeText?.(suggestion);
-    setShowSuggestions(false);
     Keyboard.dismiss();
     onSuggestionPress?.(suggestion);
   }, [onChangeText, onSuggestionPress]);
 
   const handleFocus = useCallback(() => {
     setIsFocused(true);
-    setShowSuggestions(true);
   }, []);
 
   const handleBlur = useCallback(() => {
-    // 少し遅延させてサジェストのタップを受け付ける
     setTimeout(() => {
       setIsFocused(false);
-      setShowSuggestions(false);
     }, 200);
   }, []);
 
@@ -360,20 +353,7 @@ export function SearchInput({
           borderWidth: 1,
           borderColor: color.border,
           maxHeight: 200,
-          ...Platform.select({
-            ios: {
-              shadowColor: "#000",
-              shadowOffset: { width: 0, height: 2 },
-              shadowOpacity: 0.15,
-              shadowRadius: 4,
-            },
-            android: {
-              elevation: 4,
-            },
-            web: {
-              boxShadow: "0 2px 8px rgba(0,0,0,0.15)",
-            },
-          }),
+          ...shadows.md,
         }}>
           <ScrollView 
             keyboardShouldPersistTaps="handled"
