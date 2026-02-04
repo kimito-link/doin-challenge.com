@@ -11,7 +11,7 @@ import { useEffect } from "react";
 import { useColors } from "@/hooks/use-colors";
 import { Image } from "expo-image";
 
-const rinkuImage = require("@/assets/images/characters/rinku.png");
+const rinkuImage = require("@/assets/images/characters/link/link-yukkuri-smile-mouth-open.png");
 
 export interface SuccessScreenProps {
   onClose: () => void;

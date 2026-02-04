@@ -13,11 +13,11 @@ import { AppHeader } from "@/components/organisms/app-header";
 import { useCreateChallenge, CreateChallengeForm } from "@/features/create";
 import { ChallengeCreatedModal } from "@/components/molecules/challenge-created-modal";
 
-// キャラクター画像
+// キャラクター画像（りんく・こん太・たぬ姉のオリジナル画像を統一使用）
 const characterImages = {
-  rinku: require("@/assets/images/characters/rinku.png"),
-  konta: require("@/assets/images/characters/konta.png"),
-  tanune: require("@/assets/images/characters/tanune.png"),
+  rinku: require("@/assets/images/characters/link/link-yukkuri-smile-mouth-open.png"),
+  konta: require("@/assets/images/characters/konta/kitsune-yukkuri-smile-mouth-open.png"),
+  tanune: require("@/assets/images/characters/tanunee/tanuki-yukkuri-smile-mouth-open.png"),
 };
 
 export default function CreateChallengeScreen() {

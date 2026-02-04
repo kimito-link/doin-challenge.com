@@ -95,14 +95,15 @@ jobs:
       - uses: actions/checkout@v4
       
       - name: Wait for deployment
-        run: sleep 120  # Vercel/Railway のデプロイ完了を待つ（60s では不足するため 120s に延長）
+        run: sleep 180  # Vercel/Railway のデプロイ完了を待つ（3分）
       
       - name: Check deployed commit SHA
         run: |
           EXPECTED_SHA="${{ github.sha }}"
           ACTUAL_SHA="unknown"
-          for i in {1..12}; do
-            echo "Health check attempt ${i}..."
+          # 最大20回・15秒間隔＝約5分のポーリング
+          for i in $(seq 1 20); do
+            echo "Health check attempt ${i}/20..."
             RESPONSE=$(curl -s https://doin-challenge.com/api/health || true)
             if [ -n "${RESPONSE}" ]; then
               ACTUAL_SHA=$(echo "${RESPONSE}" | jq -r .commitSha 2>/dev/null || echo "unknown")

@@ -16,7 +16,7 @@ export interface CharacterImageSet {
   blink: ImageSource;
 }
 
-// りんくちゃんの画像セット
+// りんくの画像セット（主人公）
 export const LINK_CHARACTER_SETS = {
   // 通常（口閉じ）
   normalClosed: {

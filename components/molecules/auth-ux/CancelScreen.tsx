@@ -11,7 +11,7 @@ import { useColors } from "@/hooks/use-colors";
 import { Image } from "expo-image";
 import { Button } from "@/components/ui/button";
 
-const rinkuImage = require("@/assets/images/characters/rinku.png");
+const rinkuImage = require("@/assets/images/characters/link/link-yukkuri-smile-mouth-open.png");
 
 export interface CancelScreenProps {
   kind: "timeout" | "user";

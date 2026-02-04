@@ -14,7 +14,7 @@ import Animated, {
 } from "react-native-reanimated";
 import { useEffect } from "react";
 
-// キャラクター画像（コンタ）
+// キャラクター画像（こん太）
 const characterImage = require("@/assets/images/characters/konta/kitsune-yukkuri-smile-mouth-open.png");
 
 /**

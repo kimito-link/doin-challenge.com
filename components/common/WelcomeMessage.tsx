@@ -21,11 +21,11 @@ import Animated, {
 import { useEffect, useState } from "react";
 import { getRandomLoginMessage, type LoginMessage } from "@/constants/login-messages";
 
-// キャラクター画像の静的マッピング（動的require()を避けるため）
+// キャラクター画像（りんく・こん太・たぬ姉のオリジナル画像）
 const CHARACTER_IMAGES = {
-  rinku: require("@/assets/images/characters/rinku.png"),
-  konta: require("@/assets/images/characters/konta.png"),
-  tanune: require("@/assets/images/characters/tanune.png"),
+  rinku: require("@/assets/images/characters/link/link-yukkuri-smile-mouth-open.png"),
+  konta: require("@/assets/images/characters/konta/kitsune-yukkuri-smile-mouth-open.png"),
+  tanune: require("@/assets/images/characters/tanunee/tanuki-yukkuri-smile-mouth-open.png"),
 };
 
 interface WelcomeMessageProps {

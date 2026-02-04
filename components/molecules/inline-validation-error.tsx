@@ -4,11 +4,11 @@ import { View, Text, StyleSheet, Platform } from "react-native";
 import { Image } from "expo-image";
 import * as Haptics from "expo-haptics";
 
-// キャラクター画像
+// キャラクター画像（りんく・こん太・たぬ姉のオリジナル画像を統一使用）
 const CHARACTER_IMAGES = {
   rinku: require("@/assets/images/characters/link/link-yukkuri-half-eyes-mouth-open.png"),
-  konta: require("@/assets/images/characters/konta.png"),
-  tanune: require("@/assets/images/characters/tanune.png"),
+  konta: require("@/assets/images/characters/konta/kitsune-yukkuri-smile-mouth-open.png"),
+  tanune: require("@/assets/images/characters/tanunee/tanuki-yukkuri-smile-mouth-open.png"),
 };
 
 type CharacterType = "rinku" | "konta" | "tanune";
