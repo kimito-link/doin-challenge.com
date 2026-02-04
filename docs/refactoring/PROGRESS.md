@@ -71,6 +71,15 @@
 - **移行完了**: 9ファイル（10箇所のTextInput）
 - **残り**: 2ファイル（複雑な機能があるため後回し）
 
+### コミット履歴
+- 2025-01-31: TextInput → Input移行完了（9ファイル）
+  - commit: e111d9e (パイロット)
+  - commit: 9aa6318 (VenueInputSection, ExternalUrlSection)
+  - commit: c6ef424 (TemplateSaveSection)
+  - commit: e674d08 (TermsAndPermissions)
+  - commit: 24affd7 (TicketInfoSection)
+  - commit: 6bb217a (TwitterSearchForm)
+
 ---
 
 ## 次のタスク候補

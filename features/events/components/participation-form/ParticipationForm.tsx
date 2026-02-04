@@ -3,8 +3,9 @@
  * 
  * 参加表明フォームコンポーネント（リファクタリング版）
  */
-import { View, Text, TextInput, ScrollView } from "react-native";
+import { View, Text, ScrollView } from "react-native";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui";
 import { Image } from "expo-image";
 import MaterialIcons from "@expo/vector-icons/MaterialIcons";
 import { LinearGradient } from "expo-linear-gradient";
@@ -359,15 +360,14 @@ export function ParticipationForm({
               X（Twitter）ユーザー名で検索
             </Text>
             <View style={styles.twitterSearchRow}>
-              <TextInput
+              <Input
                 value={newCompanionTwitter}
                 onChangeText={onNewCompanionTwitterChange}
                 placeholder="@username"
-                placeholderTextColor={color.textHint}
-                style={[
-                  styles.twitterSearchInput,
-                  { color: colors.foreground },
-                  lookedUpProfile && styles.twitterSearchInputSuccess,
+                autoCapitalize="none"
+                containerStyle={{ marginBottom: 0, flex: 1 }}
+                inputStyle={[
+                  lookedUpProfile && { borderColor: color.success },
                 ]}
               />
               <Button
