@@ -9,6 +9,7 @@ import { ScreenContainer } from "@/components/organisms/screen-container";
 import { useColors } from "@/hooks/use-colors";
 import { apiGet, getErrorMessage } from "@/lib/api";
 import { navigateBack } from "@/lib/navigation/app-routes";
+import { trpc } from "@/lib/trpc";
 import { useEffect, useState, useCallback } from "react";
 import {
   Text,
@@ -17,6 +18,10 @@ import {
   Pressable,
   ActivityIndicator,
   RefreshControl,
+  TextInput,
+  Switch,
+  Alert,
+  Platform,
 } from "react-native";
 
 interface EndpointStats {
@@ -52,6 +57,18 @@ interface DashboardData {
     reset: number;
     timestamp: number;
   }>;
+  monthlyStats?: {
+    usage: number;
+    cost: number;
+    freeTierRemaining: number;
+  };
+  costLimit?: {
+    exceeded: boolean;
+    currentCost: number;
+    limit: number;
+    shouldAlert: boolean;
+    shouldStop: boolean;
+  };
 }
 
 export default function ApiUsageDashboard() {
@@ -61,6 +78,61 @@ export default function ApiUsageDashboard() {
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
   const [error, setError] = useState<string | null>(null);
+
+  // コスト設定フォーム
+  const [monthlyLimit, setMonthlyLimit] = useState("");
+  const [alertThreshold, setAlertThreshold] = useState("");
+  const [alertEmail, setAlertEmail] = useState("");
+  const [autoStop, setAutoStop] = useState(true);
+  const [settingsMessage, setSettingsMessage] = useState<{ type: "success" | "error"; text: string } | null>(null);
+
+  const { data: costSettings, refetch: refetchCostSettings } = trpc.admin.getApiCostSettings.useQuery(undefined, {
+    enabled: !loading && !error,
+  });
+
+  const updateCostSettingsMutation = trpc.admin.updateApiCostSettings.useMutation({
+    onSuccess: () => {
+      setSettingsMessage({ type: "success", text: "設定を保存しました" });
+      refetchCostSettings();
+      fetchData();
+      setTimeout(() => setSettingsMessage(null), 3000);
+    },
+    onError: (err) => {
+      setSettingsMessage({ type: "error", text: err.message });
+    },
+  });
+
+  useEffect(() => {
+    if (costSettings) {
+      setMonthlyLimit(costSettings.monthlyLimit ?? "10");
+      setAlertThreshold(costSettings.alertThreshold ?? "8");
+      setAlertEmail(costSettings.alertEmail ?? "");
+      setAutoStop(costSettings.autoStop === 1);
+    }
+  }, [costSettings]);
+
+  const handleSaveCostSettings = useCallback(() => {
+    const limit = parseFloat(monthlyLimit);
+    const threshold = parseFloat(alertThreshold);
+    if (isNaN(limit) || limit < 0) {
+      setSettingsMessage({ type: "error", text: "月間上限は0以上の数値を入力してください" });
+      return;
+    }
+    if (isNaN(threshold) || threshold < 0) {
+      setSettingsMessage({ type: "error", text: "アラート閾値は0以上の数値を入力してください" });
+      return;
+    }
+    if (alertEmail.trim() && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(alertEmail.trim())) {
+      setSettingsMessage({ type: "error", text: "有効なメールアドレスを入力してください" });
+      return;
+    }
+    updateCostSettingsMutation.mutate({
+      monthlyLimit: limit,
+      alertThreshold: threshold,
+      alertEmail: alertEmail.trim() || null,
+      autoStop,
+    });
+  }, [monthlyLimit, alertThreshold, alertEmail, autoStop]);
 
   const fetchData = useCallback(async () => {
     try {
@@ -225,6 +297,185 @@ export default function ApiUsageDashboard() {
               </Text>
               <Text className="text-sm text-muted">レート制限</Text>
             </View>
+          </View>
+        </View>
+
+        {/* コスト情報 */}
+        {data?.monthlyStats && (
+          <View className="mb-6">
+            <Text className="text-lg font-semibold text-foreground mb-3">
+              💰 今月のコスト
+            </Text>
+            <View className="bg-surface p-4 rounded-lg mb-3">
+              <View className="flex-row justify-between items-center mb-2">
+                <Text className="text-foreground font-semibold">使用量</Text>
+                <Text className="text-2xl font-bold text-foreground">
+                  {data.monthlyStats.usage} 件
+                </Text>
+              </View>
+              <View className="flex-row justify-between items-center mb-2">
+                <Text className="text-muted">無料枠残り</Text>
+                <Text
+                  className={`font-semibold ${
+                    data.monthlyStats.freeTierRemaining > 0
+                      ? "text-success"
+                      : "text-error"
+                  }`}
+                >
+                  {data.monthlyStats.freeTierRemaining} 件
+                </Text>
+              </View>
+              <View className="h-1 bg-border rounded-full overflow-hidden my-2">
+                <View
+                  className="h-full rounded-full"
+                  style={{
+                    width: `${Math.min(100, (data.monthlyStats.usage / 100) * 100)}%`,
+                    backgroundColor:
+                      data.monthlyStats.usage >= 100
+                        ? colors.error
+                        : data.monthlyStats.usage >= 80
+                        ? colors.warning
+                        : colors.success,
+                  }}
+                />
+              </View>
+              <View className="flex-row justify-between items-center mt-2">
+                <Text className="text-foreground font-semibold">推定コスト</Text>
+                <Text
+                  className={`text-2xl font-bold ${
+                    data.monthlyStats.cost > 0 ? "text-error" : "text-success"
+                  }`}
+                >
+                  ${data.monthlyStats.cost.toFixed(2)}
+                </Text>
+              </View>
+              {data.costLimit && (
+                <>
+                  <View className="flex-row justify-between items-center mt-2">
+                    <Text className="text-muted">コスト上限</Text>
+                    <Text className="text-muted">${data.costLimit.limit.toFixed(2)}</Text>
+                  </View>
+                  {data.costLimit.exceeded && (
+                    <View
+                      className="mt-3 p-3 rounded-lg"
+                      style={{ backgroundColor: colors.error + "20" }}
+                    >
+                      <Text className="text-error font-semibold">
+                        ⚠️ コスト上限を超過しました
+                      </Text>
+                      {data.costLimit.shouldStop && (
+                        <Text className="text-error text-sm mt-1">
+                          API呼び出しが自動停止されています
+                        </Text>
+                      )}
+                    </View>
+                  )}
+                  {data.costLimit.shouldAlert && !data.costLimit.exceeded && (
+                    <View
+                      className="mt-3 p-3 rounded-lg"
+                      style={{ backgroundColor: colors.warning + "20" }}
+                    >
+                      <Text className="text-warning font-semibold">
+                        ⚠️ コスト上限に近づいています
+                      </Text>
+                      <Text className="text-warning text-sm mt-1">
+                        現在: ${data.costLimit.currentCost.toFixed(2)} / 上限: ${data.costLimit.limit.toFixed(2)}
+                      </Text>
+                    </View>
+                  )}
+                </>
+              )}
+            </View>
+          </View>
+        )}
+
+        {/* コスト設定フォーム */}
+        <View className="mb-6">
+          <Text className="text-lg font-semibold text-foreground mb-3">
+            ⚙️ コスト設定
+          </Text>
+          <View className="bg-surface p-4 rounded-lg">
+            <View className="mb-3">
+              <Text className="text-sm text-muted mb-1">月間コスト上限 (USD)</Text>
+              <TextInput
+                value={monthlyLimit}
+                onChangeText={setMonthlyLimit}
+                placeholder="10"
+                keyboardType="decimal-pad"
+                className="border border-border rounded-lg px-3 py-2 text-foreground"
+                placeholderTextColor={colors.muted}
+              />
+            </View>
+            <View className="mb-3">
+              <Text className="text-sm text-muted mb-1">アラート閾値 (USD)</Text>
+              <TextInput
+                value={alertThreshold}
+                onChangeText={setAlertThreshold}
+                placeholder="8"
+                keyboardType="decimal-pad"
+                className="border border-border rounded-lg px-3 py-2 text-foreground"
+                placeholderTextColor={colors.muted}
+              />
+            </View>
+            <View className="mb-3">
+              <Text className="text-sm text-muted mb-1">アラート送信先メール</Text>
+              <TextInput
+                value={alertEmail}
+                onChangeText={setAlertEmail}
+                placeholder="info@best-trust.biz"
+                keyboardType="email-address"
+                autoCapitalize="none"
+                autoCorrect={false}
+                className="border border-border rounded-lg px-3 py-2 text-foreground"
+                placeholderTextColor={colors.muted}
+              />
+            </View>
+            <View className="flex-row items-center justify-between mb-4">
+              <Text className="text-sm text-foreground">上限到達時にAPI呼び出しを自動停止</Text>
+              <Switch
+                value={autoStop}
+                onValueChange={setAutoStop}
+                trackColor={{ false: colors.muted, true: colors.primary }}
+                thumbColor="#fff"
+              />
+            </View>
+            {settingsMessage && (
+              <View
+                className="p-2 rounded mb-3"
+                style={{
+                  backgroundColor:
+                    settingsMessage.type === "success" ? colors.success + "20" : colors.error + "20",
+                }}
+              >
+                <Text
+                  style={{
+                    color: settingsMessage.type === "success" ? colors.success : colors.error,
+                    fontSize: 14,
+                  }}
+                >
+                  {settingsMessage.text}
+                </Text>
+              </View>
+            )}
+            <Pressable
+              onPress={handleSaveCostSettings}
+              disabled={updateCostSettingsMutation.isPending}
+              style={({ pressed }) => [
+                {
+                  backgroundColor: colors.primary,
+                  paddingVertical: 12,
+                  borderRadius: 8,
+                  alignItems: "center",
+                  opacity: pressed || updateCostSettingsMutation.isPending ? 0.7 : 1,
+                },
+              ]}
+            >
+              {updateCostSettingsMutation.isPending ? (
+                <ActivityIndicator size="small" color="#fff" />
+              ) : (
+                <Text className="text-white font-semibold">設定を保存</Text>
+              )}
+            </Pressable>
           </View>
         </View>
 

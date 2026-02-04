@@ -37,8 +37,8 @@ export async function pickComment(participationId: number, challengeId: number, 
     challengeId,
     pickedBy,
     reason,
-  });
-  return result[0].insertId;
+  }).returning({ id: pickedComments.id });
+  return result[0]?.id ?? null;
 }
 
 export async function unpickComment(participationId: number) {
@@ -65,8 +65,8 @@ export async function isCommentPicked(participationId: number) {
 export async function sendCheer(cheer: InsertCheer) {
   const db = await getDb();
   if (!db) return null;
-  const result = await db.insert(cheers).values(cheer);
-  return result[0].insertId;
+  const result = await db.insert(cheers).values(cheer).returning({ id: cheers.id });
+  return result[0]?.id ?? null;
 }
 
 export async function getCheersForParticipation(participationId: number) {
@@ -105,8 +105,8 @@ export async function getCheersSentByUser(userId: number) {
 export async function createAchievementPage(page: InsertAchievementPage) {
   const db = await getDb();
   if (!db) return null;
-  const result = await db.insert(achievementPages).values(page);
-  return result[0].insertId;
+  const result = await db.insert(achievementPages).values(page).returning({ id: achievementPages.id });
+  return result[0]?.id ?? null;
 }
 
 export async function getAchievementPage(challengeId: number) {

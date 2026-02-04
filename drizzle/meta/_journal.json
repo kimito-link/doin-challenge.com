@@ -190,6 +190,20 @@
       "when": 1769847318035,
       "tag": "0026_lovely_pixie",
       "breakpoints": true
+    },
+    {
+      "idx": 27,
+      "version": "5",
+      "when": 1738684800000,
+      "tag": "0027_api_usage_tracking",
+      "breakpoints": true
+    },
+    {
+      "idx": 28,
+      "version": "5",
+      "when": 1770194215266,
+      "tag": "0028_smart_amphibian",
+      "breakpoints": true
     }
   ]
 }

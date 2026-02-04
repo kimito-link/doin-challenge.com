@@ -81,4 +81,36 @@ export const adminRouter = router({
 
   // 参加管理（削除済み投稿の管理）
   participations: adminParticipationsRouter,
+
+  // APIコスト設定取得
+  getApiCostSettings: protectedProcedure
+    .query(async ({ ctx }) => {
+      if (ctx.user.role !== "admin") {
+        throw new Error("管理者権限が必要です");
+      }
+      const { getCostSettings } = await import("../db/api-usage-db");
+      return getCostSettings();
+    }),
+
+  // APIコスト設定更新
+  updateApiCostSettings: protectedProcedure
+    .input(z.object({
+      monthlyLimit: z.number().optional(),
+      alertThreshold: z.number().optional(),
+      alertEmail: z.string().email().nullable().optional(),
+      autoStop: z.boolean().optional(),
+    }))
+    .mutation(async ({ ctx, input }) => {
+      if (ctx.user.role !== "admin") {
+        throw new Error("管理者権限が必要です");
+      }
+      const { upsertCostSettings } = await import("../db/api-usage-db");
+      await upsertCostSettings({
+        monthlyLimit: input.monthlyLimit?.toFixed(2),
+        alertThreshold: input.alertThreshold?.toFixed(2),
+        alertEmail: input.alertEmail ?? undefined,
+        autoStop: input.autoStop ? 1 : 0,
+      });
+      return { success: true };
+    }),
 });

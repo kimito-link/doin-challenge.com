@@ -7,8 +7,8 @@ import { ticketTransfers, ticketWaitlist, participations, participationCompanion
 export async function createTicketTransfer(transfer: InsertTicketTransfer) {
   const db = await getDb();
   if (!db) return null;
-  const result = await db.insert(ticketTransfers).values(transfer);
-  return result[0].insertId;
+  const result = await db.insert(ticketTransfers).values(transfer).returning({ id: ticketTransfers.id });
+  return result[0]?.id ?? null;
 }
 
 // 譲渡投稿を取得（チャレンジ別）
@@ -69,8 +69,8 @@ export async function addToTicketWaitlist(waitlist: InsertTicketWaitlist) {
     return existing[0].id; // 既に登録済み
   }
   
-  const result = await db.insert(ticketWaitlist).values(waitlist);
-  return result[0].insertId;
+  const result = await db.insert(ticketWaitlist).values(waitlist).returning({ id: ticketWaitlist.id });
+  return result[0]?.id ?? null;
 }
 
 // 待機リストから削除

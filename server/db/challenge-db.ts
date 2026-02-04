@@ -105,11 +105,11 @@ export async function createEvent(data: InsertEvent) {
   // これらのカラムは後から追加する場合は、マイグレーションを実行してから使用する
   const result = await db.execute(sql`
     INSERT INTO challenges (
-      hostUserId, hostTwitterId, hostName, hostUsername, hostProfileImage, hostFollowersCount, hostDescription,
-      title, description, goalType, goalValue, goalUnit, currentValue,
-      eventType, categoryId, eventDate, venue, prefecture,
-      ticketPresale, ticketDoor, ticketSaleStart, ticketUrl, externalUrl,
-      status, isPublic, createdAt, updatedAt
+      "hostUserId", "hostTwitterId", "hostName", "hostUsername", "hostProfileImage", "hostFollowersCount", "hostDescription",
+      title, description, "goalType", "goalValue", "goalUnit", "currentValue",
+      "eventType", "categoryId", "eventDate", venue, prefecture,
+      "ticketPresale", "ticketDoor", "ticketSaleStart", "ticketUrl", "externalUrl",
+      status, "isPublic", "createdAt", "updatedAt"
     ) VALUES (
       ${data.hostUserId ?? null},
       ${data.hostTwitterId ?? null},
@@ -139,10 +139,14 @@ export async function createEvent(data: InsertEvent) {
       ${now},
       ${now}
     )
+    RETURNING id
   `);
-  
-  invalidateEventsCache(); // キャッシュを無効化
-  return (result[0] as any).insertId;
+  const raw = result as unknown as { rows?: Array<{ id: number }> } | Array<unknown>;
+  const rows = Array.isArray(raw) ? raw : raw?.rows;
+  const id = (rows?.[0] as { id: number } | undefined)?.id;
+  invalidateEventsCache();
+  if (id == null) throw new Error("Failed to create challenge");
+  return id;
 }
 
 export async function updateEvent(id: number, data: Partial<InsertEvent>) {

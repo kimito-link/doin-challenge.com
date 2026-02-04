@@ -4,8 +4,8 @@ import { invitations, invitationUses, InsertInvitation, InsertInvitationUse } fr
 export async function createInvitation(invitation: InsertInvitation) {
   const db = await getDb();
   if (!db) return null;
-  const result = await db.insert(invitations).values(invitation);
-  return result[0].insertId;
+  const result = await db.insert(invitations).values(invitation).returning({ id: invitations.id });
+  return result[0]?.id ?? null;
 }
 
 export async function getInvitationByCode(code: string) {
@@ -42,8 +42,8 @@ export async function deactivateInvitation(id: number) {
 export async function recordInvitationUse(use: InsertInvitationUse) {
   const db = await getDb();
   if (!db) return null;
-  const result = await db.insert(invitationUses).values(use);
-  return result[0].insertId;
+  const result = await db.insert(invitationUses).values(use).returning({ id: invitationUses.id });
+  return result[0]?.id ?? null;
 }
 
 // v6.08: 招待された人が参加表明したときに確認フラグを更新

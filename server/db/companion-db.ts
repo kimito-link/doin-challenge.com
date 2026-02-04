@@ -4,15 +4,15 @@ import { participationCompanions, InsertParticipationCompanion } from "../../dri
 export async function createCompanion(companion: InsertParticipationCompanion) {
   const db = await getDb();
   if (!db) return null;
-  const result = await db.insert(participationCompanions).values(companion);
-  return result[0].insertId;
+  const result = await db.insert(participationCompanions).values(companion).returning({ id: participationCompanions.id });
+  return result[0]?.id ?? null;
 }
 
 export async function createCompanions(companions: InsertParticipationCompanion[]) {
   const db = await getDb();
   if (!db) return [];
   if (companions.length === 0) return [];
-  const result = await db.insert(participationCompanions).values(companions);
+  const result = await db.insert(participationCompanions).values(companions).returning({ id: participationCompanions.id });
   return result;
 }
 

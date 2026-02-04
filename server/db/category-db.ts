@@ -41,8 +41,8 @@ export async function getCategoryBySlug(slug: string) {
 export async function createCategory(category: InsertCategory) {
   const db = await getDb();
   if (!db) return null;
-  const result = await db.insert(categories).values(category);
-  return result[0].insertId;
+  const result = await db.insert(categories).values(category).returning({ id: categories.id });
+  return result[0]?.id ?? null;
 }
 
 export async function getChallengesByCategory(categoryId: number) {

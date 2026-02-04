@@ -17,8 +17,8 @@ export async function getBadgeById(id: number) {
 export async function createBadge(data: InsertBadge) {
   const db = await getDb();
   if (!db) throw new Error("Database not available");
-  const result = await db.insert(badges).values(data);
-  return result[0].insertId;
+  const result = await db.insert(badges).values(data).returning({ id: badges.id });
+  return result[0]?.id ?? null;
 }
 
 export async function getUserBadges(userId: number) {
@@ -54,8 +54,8 @@ export async function awardBadge(userId: number, badgeId: number, challengeId?: 
     userId,
     badgeId,
     challengeId,
-  });
-  return result[0].insertId;
+  }).returning({ id: userBadges.id });
+  return result[0]?.id ?? null;
 }
 
 export async function checkAndAwardBadges(userId: number, challengeId: number, contribution: number) {
@@ -110,8 +110,8 @@ export async function awardFollowerBadge(userId: number) {
       description: "ホストをフォローして応援しています！",
       type: "special",
       conditionType: "follower_badge",
-    });
-    followerBadge = await db.select().from(badges).where(eq(badges.id, result[0].insertId));
+    }).returning({ id: badges.id });
+    followerBadge = await db.select().from(badges).where(eq(badges.id, result[0]!.id));
   }
   
   if (followerBadge.length === 0) return null;

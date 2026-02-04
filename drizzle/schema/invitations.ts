@@ -1,28 +1,26 @@
 /**
  * Invitation-related Schema Tables
- * 
+ *
  * チャレンジ招待・コラボ招待関連のテーブル定義
  */
 
-import { mysqlTable, int, varchar, text, timestamp, mysqlEnum, boolean } from "drizzle-orm/mysql-core";
+import { pgTable, serial, integer, varchar, text, timestamp, pgEnum, boolean } from "drizzle-orm/pg-core";
 
-// =============================================================================
-// Invitations Table
-// =============================================================================
+const collaboratorRoleEnum = pgEnum("collaborator_role", ["owner", "co-host", "moderator"]);
+const collaboratorStatusEnum = pgEnum("collaborator_status", ["pending", "accepted", "declined"]);
+const collaboratorInviteRoleEnum = pgEnum("collaborator_invite_role", ["co-host", "moderator"]);
+const collaboratorInviteStatusEnum = pgEnum("collaborator_invite_status", ["pending", "accepted", "declined", "expired"]);
 
-/**
- * チャレンジ招待テーブル
- */
-export const invitations = mysqlTable("invitations", {
-  id: int("id").autoincrement().primaryKey(),
-  challengeId: int("challengeId").notNull(),
-  inviterId: int("inviterId").notNull(),
+export const invitations = pgTable("invitations", {
+  id: serial("id").primaryKey(),
+  challengeId: integer("challengeId").notNull(),
+  inviterId: integer("inviterId").notNull(),
   inviterName: varchar("inviterName", { length: 255 }),
   code: varchar("code", { length: 32 }).notNull().unique(),
   customMessage: text("customMessage"),
   customTitle: varchar("customTitle", { length: 255 }),
-  maxUses: int("maxUses").default(0),
-  useCount: int("useCount").default(0).notNull(),
+  maxUses: integer("maxUses").default(0),
+  useCount: integer("useCount").default(0).notNull(),
   expiresAt: timestamp("expiresAt"),
   isActive: boolean("isActive").default(true).notNull(),
   createdAt: timestamp("createdAt").defaultNow().notNull(),
@@ -31,21 +29,14 @@ export const invitations = mysqlTable("invitations", {
 export type Invitation = typeof invitations.$inferSelect;
 export type InsertInvitation = typeof invitations.$inferInsert;
 
-// =============================================================================
-// Invitation Uses Table
-// =============================================================================
-
-/**
- * 招待経由の参加追跡テーブル
- */
-export const invitationUses = mysqlTable("invitation_uses", {
-  id: int("id").autoincrement().primaryKey(),
-  invitationId: int("invitationId").notNull(),
-  userId: int("userId"),
+export const invitationUses = pgTable("invitation_uses", {
+  id: serial("id").primaryKey(),
+  invitationId: integer("invitationId").notNull(),
+  userId: integer("userId"),
   displayName: varchar("displayName", { length: 255 }),
   twitterId: varchar("twitterId", { length: 64 }),
   twitterUsername: varchar("twitterUsername", { length: 255 }),
-  participationId: int("participationId"),
+  participationId: integer("participationId"),
   isConfirmed: boolean("isConfirmed").default(false).notNull(),
   confirmedAt: timestamp("confirmedAt"),
   createdAt: timestamp("createdAt").defaultNow().notNull(),
@@ -54,51 +45,37 @@ export const invitationUses = mysqlTable("invitation_uses", {
 export type InvitationUse = typeof invitationUses.$inferSelect;
 export type InsertInvitationUse = typeof invitationUses.$inferInsert;
 
-// =============================================================================
-// Collaborators Table
-// =============================================================================
-
-/**
- * コラボホストテーブル（共同主催者）
- */
-export const collaborators = mysqlTable("collaborators", {
-  id: int("id").autoincrement().primaryKey(),
-  challengeId: int("challengeId").notNull(),
-  userId: int("userId").notNull(),
+export const collaborators = pgTable("collaborators", {
+  id: serial("id").primaryKey(),
+  challengeId: integer("challengeId").notNull(),
+  userId: integer("userId").notNull(),
   userName: varchar("userName", { length: 255 }).notNull(),
   userImage: text("userImage"),
-  role: mysqlEnum("role", ["owner", "co-host", "moderator"]).default("co-host").notNull(),
+  role: collaboratorRoleEnum("role").default("co-host").notNull(),
   canEdit: boolean("canEdit").default(true).notNull(),
   canManageParticipants: boolean("canManageParticipants").default(true).notNull(),
   canInvite: boolean("canInvite").default(true).notNull(),
-  status: mysqlEnum("status", ["pending", "accepted", "declined"]).default("pending").notNull(),
+  status: collaboratorStatusEnum("status").default("pending").notNull(),
   invitedAt: timestamp("invitedAt").defaultNow().notNull(),
   respondedAt: timestamp("respondedAt"),
   createdAt: timestamp("createdAt").defaultNow().notNull(),
-  updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
+  updatedAt: timestamp("updatedAt").defaultNow().notNull(),
 });
 
 export type Collaborator = typeof collaborators.$inferSelect;
 export type InsertCollaborator = typeof collaborators.$inferInsert;
 
-// =============================================================================
-// Collaborator Invitations Table
-// =============================================================================
-
-/**
- * コラボ招待テーブル
- */
-export const collaboratorInvitations = mysqlTable("collaborator_invitations", {
-  id: int("id").autoincrement().primaryKey(),
-  challengeId: int("challengeId").notNull(),
-  inviterId: int("inviterId").notNull(),
+export const collaboratorInvitations = pgTable("collaborator_invitations", {
+  id: serial("id").primaryKey(),
+  challengeId: integer("challengeId").notNull(),
+  inviterId: integer("inviterId").notNull(),
   inviterName: varchar("inviterName", { length: 255 }),
-  inviteeId: int("inviteeId"),
+  inviteeId: integer("inviteeId"),
   inviteeEmail: varchar("inviteeEmail", { length: 320 }),
   inviteeTwitterId: varchar("inviteeTwitterId", { length: 64 }),
   code: varchar("code", { length: 32 }).notNull().unique(),
-  role: mysqlEnum("role", ["co-host", "moderator"]).default("co-host").notNull(),
-  status: mysqlEnum("status", ["pending", "accepted", "declined", "expired"]).default("pending").notNull(),
+  role: collaboratorInviteRoleEnum("role").default("co-host").notNull(),
+  status: collaboratorInviteStatusEnum("status").default("pending").notNull(),
   expiresAt: timestamp("expiresAt"),
   createdAt: timestamp("createdAt").defaultNow().notNull(),
 });

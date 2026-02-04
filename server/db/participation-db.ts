@@ -75,8 +75,8 @@ export async function getActiveParticipationById(id: number) {
 export async function createParticipation(data: InsertParticipation) {
   const db = await getDb();
   if (!db) throw new Error("Database not available");
-  const result = await db.insert(participations).values(data);
-  const participationId = result[0].insertId;
+  const result = await db.insert(participations).values(data).returning({ id: participations.id });
+  const participationId = result[0]?.id ?? null;
   
   // challengesのcurrentValueを更新（参加者数 + 同伴者数）
   if (data.challengeId) {

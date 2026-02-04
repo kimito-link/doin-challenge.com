@@ -1,55 +1,44 @@
 /**
  * Ticket-related Schema Tables
- * 
+ *
  * チケット譲渡・待機リスト関連のテーブル定義
  */
 
-import { mysqlTable, int, varchar, text, timestamp, mysqlEnum, boolean } from "drizzle-orm/mysql-core";
+import { pgTable, serial, integer, varchar, text, timestamp, pgEnum, boolean } from "drizzle-orm/pg-core";
 
-// =============================================================================
-// Ticket Transfers Table
-// =============================================================================
+const priceTypeEnum = pgEnum("priceType", ["face_value", "negotiable", "free"]);
+const ticketStatusEnum = pgEnum("ticket_status", ["available", "reserved", "completed", "cancelled"]);
 
-/**
- * チケット譲渡テーブル
- */
-export const ticketTransfers = mysqlTable("ticket_transfers", {
-  id: int("id").autoincrement().primaryKey(),
-  challengeId: int("challengeId").notNull(),
-  userId: int("userId").notNull(),
+export const ticketTransfers = pgTable("ticket_transfers", {
+  id: serial("id").primaryKey(),
+  challengeId: integer("challengeId").notNull(),
+  userId: integer("userId").notNull(),
   userName: varchar("userName", { length: 255 }).notNull(),
   userUsername: varchar("userUsername", { length: 255 }),
   userImage: text("userImage"),
-  ticketCount: int("ticketCount").default(1).notNull(),
-  priceType: mysqlEnum("priceType", ["face_value", "negotiable", "free"]).default("face_value").notNull(),
+  ticketCount: integer("ticketCount").default(1).notNull(),
+  priceType: priceTypeEnum("priceType").default("face_value").notNull(),
   comment: text("comment"),
-  status: mysqlEnum("status", ["available", "reserved", "completed", "cancelled"]).default("available").notNull(),
+  status: ticketStatusEnum("status").default("available").notNull(),
   createdAt: timestamp("createdAt").defaultNow().notNull(),
-  updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
+  updatedAt: timestamp("updatedAt").defaultNow().notNull(),
 });
 
 export type TicketTransfer = typeof ticketTransfers.$inferSelect;
 export type InsertTicketTransfer = typeof ticketTransfers.$inferInsert;
 
-// =============================================================================
-// Ticket Waitlist Table
-// =============================================================================
-
-/**
- * チケット待機リストテーブル
- */
-export const ticketWaitlist = mysqlTable("ticket_waitlist", {
-  id: int("id").autoincrement().primaryKey(),
-  challengeId: int("challengeId").notNull(),
-  userId: int("userId").notNull(),
+export const ticketWaitlist = pgTable("ticket_waitlist", {
+  id: serial("id").primaryKey(),
+  challengeId: integer("challengeId").notNull(),
+  userId: integer("userId").notNull(),
   userName: varchar("userName", { length: 255 }).notNull(),
   userUsername: varchar("userUsername", { length: 255 }),
   userImage: text("userImage"),
-  desiredCount: int("desiredCount").default(1).notNull(),
+  desiredCount: integer("desiredCount").default(1).notNull(),
   notifyOnNew: boolean("notifyOnNew").default(true).notNull(),
   isActive: boolean("isActive").default(true).notNull(),
   createdAt: timestamp("createdAt").defaultNow().notNull(),
-  updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
+  updatedAt: timestamp("updatedAt").defaultNow().notNull(),
 });
 
 export type TicketWaitlist = typeof ticketWaitlist.$inferSelect;

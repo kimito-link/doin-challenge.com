@@ -42,8 +42,8 @@ export async function getUsersWithNotificationEnabled(challengeId: number, notif
 export async function createNotification(data: InsertNotification) {
   const db = await getDb();
   if (!db) throw new Error("Database not available");
-  const result = await db.insert(notifications).values(data);
-  const notificationId = result[0].insertId;
+  const result = await db.insert(notifications).values(data).returning({ id: notifications.id });
+  const notificationId = result[0]?.id ?? null;
   
   // WebSocketで通知を配信
   try {

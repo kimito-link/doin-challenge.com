@@ -6,8 +6,8 @@ import { reminders, directMessages, challengeTemplates, InsertReminder, InsertDi
 export async function createReminder(reminder: InsertReminder) {
   const db = await getDb();
   if (!db) return null;
-  const result = await db.insert(reminders).values(reminder);
-  return result[0].insertId;
+  const result = await db.insert(reminders).values(reminder).returning({ id: reminders.id });
+  return result[0]?.id ?? null;
 }
 
 export async function getRemindersForUser(userId: number) {
@@ -58,8 +58,8 @@ export async function markReminderAsSent(id: number) {
 export async function sendDirectMessage(dm: InsertDirectMessage) {
   const db = await getDb();
   if (!db) return null;
-  const result = await db.insert(directMessages).values(dm);
-  const messageId = result[0].insertId;
+  const result = await db.insert(directMessages).values(dm).returning({ id: directMessages.id });
+  const messageId = result[0]?.id ?? null;
   
   // WebSocketでメッセージを配信（受信者にのみ）
   try {
@@ -153,8 +153,8 @@ export async function getConversationList(
 export async function createChallengeTemplate(template: InsertChallengeTemplate) {
   const db = await getDb();
   if (!db) return null;
-  const result = await db.insert(challengeTemplates).values(template);
-  return result[0].insertId;
+  const result = await db.insert(challengeTemplates).values(template).returning({ id: challengeTemplates.id });
+  return result[0]?.id ?? null;
 }
 
 export async function getChallengeTemplatesForUser(userId: number) {

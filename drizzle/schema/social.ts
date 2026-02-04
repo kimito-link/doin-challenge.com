@@ -1,46 +1,32 @@
 /**
  * Social-related Schema Tables
- * 
+ *
  * エール・フォロー・DM・検索履歴関連のテーブル定義
  */
 
-import { mysqlTable, int, varchar, text, timestamp, boolean } from "drizzle-orm/mysql-core";
+import { pgTable, serial, integer, varchar, text, timestamp, boolean } from "drizzle-orm/pg-core";
 
-// =============================================================================
-// Cheers Table
-// =============================================================================
-
-/**
- * エールテーブル（参加者同士の応援）
- */
-export const cheers = mysqlTable("cheers", {
-  id: int("id").autoincrement().primaryKey(),
-  fromUserId: int("fromUserId").notNull(),
+export const cheers = pgTable("cheers", {
+  id: serial("id").primaryKey(),
+  fromUserId: integer("fromUserId").notNull(),
   fromUserName: varchar("fromUserName", { length: 255 }).notNull(),
   fromUserImage: text("fromUserImage"),
-  toParticipationId: int("toParticipationId").notNull(),
-  toUserId: int("toUserId"),
+  toParticipationId: integer("toParticipationId").notNull(),
+  toUserId: integer("toUserId"),
   message: text("message"),
   emoji: varchar("emoji", { length: 32 }).default("👏").notNull(),
-  challengeId: int("challengeId").notNull(),
+  challengeId: integer("challengeId").notNull(),
   createdAt: timestamp("createdAt").defaultNow().notNull(),
 });
 
 export type Cheer = typeof cheers.$inferSelect;
 export type InsertCheer = typeof cheers.$inferInsert;
 
-// =============================================================================
-// Follows Table
-// =============================================================================
-
-/**
- * フォローテーブル（ホスト・アーティストのフォロー）
- */
-export const follows = mysqlTable("follows", {
-  id: int("id").autoincrement().primaryKey(),
-  followerId: int("followerId").notNull(),
+export const follows = pgTable("follows", {
+  id: serial("id").primaryKey(),
+  followerId: integer("followerId").notNull(),
   followerName: varchar("followerName", { length: 255 }),
-  followeeId: int("followeeId").notNull(),
+  followeeId: integer("followeeId").notNull(),
   followeeName: varchar("followeeName", { length: 255 }),
   followeeImage: text("followeeImage"),
   notifyNewChallenge: boolean("notifyNewChallenge").default(true).notNull(),
@@ -50,21 +36,14 @@ export const follows = mysqlTable("follows", {
 export type Follow = typeof follows.$inferSelect;
 export type InsertFollow = typeof follows.$inferInsert;
 
-// =============================================================================
-// Direct Messages Table
-// =============================================================================
-
-/**
- * ダイレクトメッセージテーブル
- */
-export const directMessages = mysqlTable("direct_messages", {
-  id: int("id").autoincrement().primaryKey(),
-  fromUserId: int("fromUserId").notNull(),
+export const directMessages = pgTable("direct_messages", {
+  id: serial("id").primaryKey(),
+  fromUserId: integer("fromUserId").notNull(),
   fromUserName: varchar("fromUserName", { length: 255 }).notNull(),
   fromUserImage: text("fromUserImage"),
-  toUserId: int("toUserId").notNull(),
+  toUserId: integer("toUserId").notNull(),
   message: text("message").notNull(),
-  challengeId: int("challengeId").notNull(),
+  challengeId: integer("challengeId").notNull(),
   isRead: boolean("isRead").default(false).notNull(),
   readAt: timestamp("readAt"),
   createdAt: timestamp("createdAt").defaultNow().notNull(),
@@ -73,34 +52,20 @@ export const directMessages = mysqlTable("direct_messages", {
 export type DirectMessage = typeof directMessages.$inferSelect;
 export type InsertDirectMessage = typeof directMessages.$inferInsert;
 
-// =============================================================================
-// Search History Table
-// =============================================================================
-
-/**
- * 検索履歴テーブル
- */
-export const searchHistory = mysqlTable("search_history", {
-  id: int("id").autoincrement().primaryKey(),
-  userId: int("userId").notNull(),
+export const searchHistory = pgTable("search_history", {
+  id: serial("id").primaryKey(),
+  userId: integer("userId").notNull(),
   query: varchar("query", { length: 255 }).notNull(),
-  resultCount: int("resultCount").default(0).notNull(),
+  resultCount: integer("resultCount").default(0).notNull(),
   createdAt: timestamp("createdAt").defaultNow().notNull(),
 });
 
 export type SearchHistory = typeof searchHistory.$inferSelect;
 export type InsertSearchHistory = typeof searchHistory.$inferInsert;
 
-// =============================================================================
-// Favorite Artists Table
-// =============================================================================
-
-/**
- * お気に入りアーティストテーブル（チャレンジ開始通知用）
- */
-export const favoriteArtists = mysqlTable("favorite_artists", {
-  id: int("id").autoincrement().primaryKey(),
-  userId: int("userId").notNull(),
+export const favoriteArtists = pgTable("favorite_artists", {
+  id: serial("id").primaryKey(),
+  userId: integer("userId").notNull(),
   userTwitterId: varchar("userTwitterId", { length: 64 }),
   artistTwitterId: varchar("artistTwitterId", { length: 64 }).notNull(),
   artistName: varchar("artistName", { length: 255 }),
@@ -109,7 +74,7 @@ export const favoriteArtists = mysqlTable("favorite_artists", {
   notifyNewChallenge: boolean("notifyNewChallenge").default(true).notNull(),
   expoPushToken: text("expoPushToken"),
   createdAt: timestamp("createdAt").defaultNow().notNull(),
-  updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
+  updatedAt: timestamp("updatedAt").defaultNow().notNull(),
 });
 
 export type FavoriteArtist = typeof favoriteArtists.$inferSelect;

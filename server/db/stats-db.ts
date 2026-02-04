@@ -234,13 +234,14 @@ export async function getDbSchema() {
   
   try {
     const result = await db.execute(sql`
-      SELECT TABLE_NAME, COLUMN_NAME, DATA_TYPE, IS_NULLABLE, COLUMN_DEFAULT
-      FROM INFORMATION_SCHEMA.COLUMNS
-      WHERE TABLE_SCHEMA = DATABASE()
-      ORDER BY TABLE_NAME, ORDINAL_POSITION
+      SELECT table_name, column_name, data_type, is_nullable, column_default
+      FROM information_schema.columns
+      WHERE table_schema = 'public'
+      ORDER BY table_name, ordinal_position
     `);
-    
-    return { tables: result[0] };
+    const raw = result as unknown as { rows?: unknown[] } | [unknown];
+    const rows = Array.isArray(raw) ? raw[0] : raw?.rows;
+    return { tables: (Array.isArray(rows) ? rows : []) ?? [] };
   } catch (error) {
     return { tables: [], error: String(error) };
   }
@@ -255,12 +256,13 @@ export async function compareSchemas() {
   
   try {
     const result = await db.execute(sql`
-      SELECT TABLE_NAME
-      FROM INFORMATION_SCHEMA.TABLES
-      WHERE TABLE_SCHEMA = DATABASE()
+      SELECT table_name
+      FROM information_schema.tables
+      WHERE table_schema = 'public'
     `);
-    
-    const dbTables = (result[0] as unknown as any[]).map(r => r.TABLE_NAME);
+    const raw = result as unknown as { rows?: Array<{ table_name: string }> } | [unknown];
+    const rows = Array.isArray(raw) ? raw[0] : raw?.rows;
+    const dbTables = (Array.isArray(rows) ? rows : []).map((r: { table_name: string }) => r.table_name);
     
     const codeTables = [
       "users", "challenges", "participations", "notifications", "notification_settings",
@@ -272,8 +274,8 @@ export async function compareSchemas() {
       "collaborator_invitations", "achievements", "user_achievements", "challenge_stats"
     ];
     
-    const missingInDb = codeTables.filter(t => !dbTables.includes(t));
-    const extraInDb = dbTables.filter(t => !codeTables.includes(t));
+    const missingInDb = codeTables.filter((t: string) => !dbTables.includes(t));
+    const extraInDb = dbTables.filter((t: string) => !codeTables.includes(t));
     
     return {
       match: missingInDb.length === 0 && extraInDb.length === 0,

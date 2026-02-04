@@ -138,28 +138,15 @@ async function runMigration(): Promise<void> {
   }
 
   try {
-    // Step 1: Generate migration files (if schema changed)
-    console.log("\n[migrate] Step 1: Generating migration files...");
-    try {
-      execSync("npx drizzle-kit generate", {
-        stdio: "inherit",
-        env: process.env,
-      });
-      console.log("[migrate] Migration files generated (or no changes detected)");
-    } catch (genError) {
-      // generate は変更がない場合でもエラーになることがあるので、警告のみ
-      console.log("[migrate] No schema changes detected or generation skipped");
-    }
-
-    // Step 2: Run migrations
-    console.log("\n[migrate] Step 2: Running migrations...");
-    execSync("npx drizzle-kit migrate", {
+    // PostgreSQL: 既存の .sql は MySQL 用のため migrate は使わず、push でスキーマを同期する
+    console.log("\n[migrate] Syncing schema to database (drizzle-kit push)...");
+    execSync("npx drizzle-kit push", {
       stdio: "inherit",
       env: process.env,
     });
 
     console.log("\n" + "=".repeat(60));
-    console.log("[migrate] ✅ Migration completed successfully!");
+    console.log("[migrate] ✅ Schema sync completed successfully!");
     console.log("=".repeat(60));
 
     await sendNotification(

@@ -275,9 +275,23 @@ const pkceMemoryStore = new Map<string, { codeVerifier: string; callbackUrl: str
 // Target account to check follow status (idolfunch)
 const TARGET_TWITTER_USERNAME = "idolfunch";
 
+// フォロー状態のサーバー側キャッシュ（24時間 TTL）
+const FOLLOW_STATUS_CACHE_TTL_MS = 24 * 60 * 60 * 1000;
+interface FollowStatusCacheEntry {
+  isFollowing: boolean;
+  targetUser: { id: string; name: string; username: string };
+  lastCheckedAt: number;
+}
+const followStatusCache = new Map<string, FollowStatusCacheEntry>();
+
+function getFollowStatusCacheKey(sourceUserId: string, targetUsername: string): string {
+  return `${sourceUserId}:${targetUsername}`;
+}
+
 // Check if user follows a specific account
 // 指数バックオフとレート制限対応を適用
 // レート制限時はスキップして認証を継続
+// サーバー側で24時間キャッシュし、同一ユーザーの重複API呼び出しを削減
 export async function checkFollowStatus(
   accessToken: string,
   sourceUserId: string,
@@ -291,6 +305,17 @@ export async function checkFollowStatus(
   } | null;
   skipped?: boolean;
 }> {
+  const cacheKey = getFollowStatusCacheKey(sourceUserId, targetUsername);
+  const cached = followStatusCache.get(cacheKey);
+  const now = Date.now();
+  if (cached && now - cached.lastCheckedAt < FOLLOW_STATUS_CACHE_TTL_MS) {
+    console.log("[Twitter API] Follow status cache hit for", sourceUserId);
+    return {
+      isFollowing: cached.isFollowing,
+      targetUser: cached.targetUser,
+    };
+  }
+
   try {
     // First, get the target user's ID by username
     const userLookupUrl = `https://api.twitter.com/2/users/by/username/${targetUsername}`;
@@ -351,13 +376,22 @@ export async function checkFollowStatus(
     // Check if target user is in the following list
     const isFollowing = following.some((user: { id: string }) => user.id === targetUser.id);
     
+    const targetUserInfo = {
+      id: targetUser.id,
+      name: targetUser.name,
+      username: targetUser.username,
+    };
+
+    // 24時間キャッシュに保存
+    followStatusCache.set(cacheKey, {
+      isFollowing,
+      targetUser: targetUserInfo,
+      lastCheckedAt: now,
+    });
+    
     return {
       isFollowing,
-      targetUser: {
-        id: targetUser.id,
-        name: targetUser.name,
-        username: targetUser.username,
-      },
+      targetUser: targetUserInfo,
     };
   } catch (error) {
     // レート制限エラーの場合はスキップして認証を継続
@@ -422,20 +456,27 @@ export async function getUserProfileByUsername(username: string): Promise<{
     const params = "user.fields=profile_image_url,public_metrics,description";
     const fullUrl = `${url}?${params}`;
     
-    const response = await fetch(fullUrl, {
-      method: "GET",
-      headers: {
-        "Authorization": `Bearer ${bearerToken}`,
-      },
-    });
-    
-    if (!response.ok) {
-      const text = await response.text();
-      console.error("Twitter user lookup error:", response.status, text);
-      return null;
-    }
-    
-    const data = await response.json();
+    // twitterApiFetchを使用してレート制限対応と使用量記録を自動化
+    const { data, rateLimitInfo } = await twitterApiFetch<{ data?: {
+      id: string;
+      name: string;
+      username: string;
+      profile_image_url?: string;
+      description?: string;
+      public_metrics?: {
+        followers_count: number;
+        following_count: number;
+        tweet_count: number;
+      };
+    } }>(
+      fullUrl,
+      {
+        method: "GET",
+        headers: {
+          "Authorization": `Bearer ${bearerToken}`,
+        },
+      }
+    );
     
     if (!data.data) {
       console.error("Twitter user not found:", cleanUsername);

@@ -7,8 +7,8 @@ import { awardFollowerBadge } from "./badge-db";
 export async function saveSearchHistory(history: InsertSearchHistory) {
   const db = await getDb();
   if (!db) return null;
-  const result = await db.insert(searchHistory).values(history);
-  return result[0].insertId;
+  const result = await db.insert(searchHistory).values(history).returning({ id: searchHistory.id });
+  return result[0]?.id ?? null;
 }
 
 export async function getSearchHistoryForUser(userId: number, limit: number = 10) {
@@ -38,12 +38,11 @@ export async function followUser(follow: InsertFollow) {
   
   if (existing.length > 0) return null; // 既にフォロー済み
   
-  const result = await db.insert(follows).values(follow);
-  
-  // フォロワーバッジを付与
+  const result = await db.insert(follows).values(follow).returning({ id: follows.id });
+
   await awardFollowerBadge(follow.followerId);
-  
-  return result[0].insertId;
+
+  return result[0]?.id ?? null;
 }
 
 export async function unfollowUser(followerId: number, followeeId: number) {

@@ -290,10 +290,15 @@ async function startServer() {
     }
   });
 
-  app.get("/api/admin/api-usage", (_req, res) => {
+  app.get("/api/admin/api-usage", async (_req, res) => {
     // TODO: 管理者認証を追加
-    const summary = getDashboardSummary();
-    res.json(summary);
+    try {
+      const summary = await getDashboardSummary();
+      res.json(summary);
+    } catch (error) {
+      console.error("[Admin] API usage error:", error);
+      res.status(500).json({ error: "API使用量の取得に失敗しました" });
+    }
   });
 
   app.get("/api/admin/api-usage/stats", (_req, res) => {

@@ -34,7 +34,7 @@ export function useOfflineChallenge(options: UseOfflineChallengeOptions = {}) {
   const createMutation = trpc.events.create.useMutation({
     onSuccess: (data) => {
       setIsSubmitting(false);
-      options.onSuccess?.(data.id);
+      options.onSuccess?.(data.id as number);
     },
     onError: (error) => {
       setIsSubmitting(false);

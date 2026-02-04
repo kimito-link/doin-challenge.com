@@ -1,88 +1,60 @@
 /**
  * Gamification-related Schema Tables
- * 
+ *
  * バッジ・アチーブメント・達成記念ページ関連のテーブル定義
  */
 
-import { mysqlTable, int, varchar, text, timestamp, mysqlEnum, boolean } from "drizzle-orm/mysql-core";
+import { pgTable, serial, integer, varchar, text, timestamp, pgEnum, boolean } from "drizzle-orm/pg-core";
 
-// =============================================================================
-// Badges Table
-// =============================================================================
+const badgeTypeEnum = pgEnum("badge_type", ["participation", "achievement", "milestone", "special"]);
+const badgeConditionTypeEnum = pgEnum("badge_condition_type", [
+  "first_participation", "goal_reached", "milestone_25", "milestone_50", "milestone_75",
+  "contribution_5", "contribution_10", "contribution_20", "host_challenge", "special", "follower_badge",
+]);
+const achievementTypeEnum = pgEnum("achievement_type", ["participation", "hosting", "invitation", "contribution", "streak", "special"]);
+const achievementConditionTypeEnum = pgEnum("achievement_condition_type", [
+  "first_participation", "participate_5", "participate_10", "participate_25", "participate_50",
+  "first_host", "host_5", "host_10", "invite_1", "invite_5", "invite_10", "invite_25",
+  "contribution_10", "contribution_50", "contribution_100", "streak_3", "streak_7", "streak_30",
+  "goal_reached", "special",
+]);
+const rarityEnum = pgEnum("rarity", ["common", "uncommon", "rare", "epic", "legendary"]);
 
-/**
- * バッジマスターテーブル
- */
-export const badges = mysqlTable("badges", {
-  id: int("id").autoincrement().primaryKey(),
+export const badges = pgTable("badges", {
+  id: serial("id").primaryKey(),
   name: varchar("name", { length: 100 }).notNull(),
   description: text("description"),
   iconUrl: text("iconUrl"),
-  type: mysqlEnum("type", ["participation", "achievement", "milestone", "special"]).default("participation").notNull(),
-  conditionType: mysqlEnum("conditionType", ["first_participation", "goal_reached", "milestone_25", "milestone_50", "milestone_75", "contribution_5", "contribution_10", "contribution_20", "host_challenge", "special", "follower_badge"]).notNull(),
+  type: badgeTypeEnum("type").default("participation").notNull(),
+  conditionType: badgeConditionTypeEnum("conditionType").notNull(),
   createdAt: timestamp("createdAt").defaultNow().notNull(),
 });
 
 export type Badge = typeof badges.$inferSelect;
 export type InsertBadge = typeof badges.$inferInsert;
 
-// =============================================================================
-// User Badges Table
-// =============================================================================
-
-/**
- * ユーザーバッジ関連テーブル
- */
-export const userBadges = mysqlTable("user_badges", {
-  id: int("id").autoincrement().primaryKey(),
-  userId: int("userId").notNull(),
-  badgeId: int("badgeId").notNull(),
-  challengeId: int("challengeId"),
+export const userBadges = pgTable("user_badges", {
+  id: serial("id").primaryKey(),
+  userId: integer("userId").notNull(),
+  badgeId: integer("badgeId").notNull(),
+  challengeId: integer("challengeId"),
   earnedAt: timestamp("earnedAt").defaultNow().notNull(),
 });
 
 export type UserBadge = typeof userBadges.$inferSelect;
 export type InsertUserBadge = typeof userBadges.$inferInsert;
 
-// =============================================================================
-// Achievements Table
-// =============================================================================
-
-/**
- * アチーブメントマスターテーブル
- */
-export const achievements = mysqlTable("achievements", {
-  id: int("id").autoincrement().primaryKey(),
+export const achievements = pgTable("achievements", {
+  id: serial("id").primaryKey(),
   name: varchar("name", { length: 100 }).notNull(),
   description: text("description"),
   iconUrl: text("iconUrl"),
   icon: varchar("icon", { length: 32 }).default("🏆").notNull(),
-  type: mysqlEnum("type", ["participation", "hosting", "invitation", "contribution", "streak", "special"]).default("participation").notNull(),
-  conditionType: mysqlEnum("conditionType", [
-    "first_participation",
-    "participate_5",
-    "participate_10",
-    "participate_25",
-    "participate_50",
-    "first_host",
-    "host_5",
-    "host_10",
-    "invite_1",
-    "invite_5",
-    "invite_10",
-    "invite_25",
-    "contribution_10",
-    "contribution_50",
-    "contribution_100",
-    "streak_3",
-    "streak_7",
-    "streak_30",
-    "goal_reached",
-    "special"
-  ]).notNull(),
-  conditionValue: int("conditionValue").default(1).notNull(),
-  points: int("points").default(10).notNull(),
-  rarity: mysqlEnum("rarity", ["common", "uncommon", "rare", "epic", "legendary"]).default("common").notNull(),
+  type: achievementTypeEnum("type").default("participation").notNull(),
+  conditionType: achievementConditionTypeEnum("conditionType").notNull(),
+  conditionValue: integer("conditionValue").default(1).notNull(),
+  points: integer("points").default(10).notNull(),
+  rarity: rarityEnum("rarity").default("common").notNull(),
   isActive: boolean("isActive").default(true).notNull(),
   createdAt: timestamp("createdAt").defaultNow().notNull(),
 });
@@ -90,41 +62,27 @@ export const achievements = mysqlTable("achievements", {
 export type Achievement = typeof achievements.$inferSelect;
 export type InsertAchievement = typeof achievements.$inferInsert;
 
-// =============================================================================
-// User Achievements Table
-// =============================================================================
-
-/**
- * ユーザーアチーブメントテーブル
- */
-export const userAchievements = mysqlTable("user_achievements", {
-  id: int("id").autoincrement().primaryKey(),
-  userId: int("userId").notNull(),
-  achievementId: int("achievementId").notNull(),
-  progress: int("progress").default(0).notNull(),
+export const userAchievements = pgTable("user_achievements", {
+  id: serial("id").primaryKey(),
+  userId: integer("userId").notNull(),
+  achievementId: integer("achievementId").notNull(),
+  progress: integer("progress").default(0).notNull(),
   isCompleted: boolean("isCompleted").default(false).notNull(),
   completedAt: timestamp("completedAt"),
   createdAt: timestamp("createdAt").defaultNow().notNull(),
-  updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
+  updatedAt: timestamp("updatedAt").defaultNow().notNull(),
 });
 
 export type UserAchievement = typeof userAchievements.$inferSelect;
 export type InsertUserAchievement = typeof userAchievements.$inferInsert;
 
-// =============================================================================
-// Achievement Pages Table
-// =============================================================================
-
-/**
- * 達成記念ページテーブル
- */
-export const achievementPages = mysqlTable("achievement_pages", {
-  id: int("id").autoincrement().primaryKey(),
-  challengeId: int("challengeId").notNull(),
+export const achievementPages = pgTable("achievement_pages", {
+  id: serial("id").primaryKey(),
+  challengeId: integer("challengeId").notNull(),
   achievedAt: timestamp("achievedAt").notNull(),
-  finalValue: int("finalValue").notNull(),
-  goalValue: int("goalValue").notNull(),
-  totalParticipants: int("totalParticipants").notNull(),
+  finalValue: integer("finalValue").notNull(),
+  goalValue: integer("goalValue").notNull(),
+  totalParticipants: integer("totalParticipants").notNull(),
   title: varchar("title", { length: 255 }).notNull(),
   message: text("message"),
   isPublic: boolean("isPublic").default(true).notNull(),
@@ -134,18 +92,11 @@ export const achievementPages = mysqlTable("achievement_pages", {
 export type AchievementPage = typeof achievementPages.$inferSelect;
 export type InsertAchievementPage = typeof achievementPages.$inferInsert;
 
-// =============================================================================
-// Picked Comments Table
-// =============================================================================
-
-/**
- * ピックアップコメントテーブル
- */
-export const pickedComments = mysqlTable("picked_comments", {
-  id: int("id").autoincrement().primaryKey(),
-  participationId: int("participationId").notNull(),
-  challengeId: int("challengeId").notNull(),
-  pickedBy: int("pickedBy").notNull(),
+export const pickedComments = pgTable("picked_comments", {
+  id: serial("id").primaryKey(),
+  participationId: integer("participationId").notNull(),
+  challengeId: integer("challengeId").notNull(),
+  pickedBy: integer("pickedBy").notNull(),
   reason: text("reason"),
   isUsedInVideo: boolean("isUsedInVideo").default(false).notNull(),
   pickedAt: timestamp("pickedAt").defaultNow().notNull(),

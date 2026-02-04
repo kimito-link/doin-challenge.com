@@ -163,7 +163,7 @@ export function useCreateChallenge() {
         showValidationError: false,
         showCreatedModal: true,
         createdChallenge: {
-          id: newChallenge.id,
+          id: newChallenge.id as number,
           title: prev.title,
           eventDate: prev.eventDateStr,
           venue: prev.venue || undefined,
