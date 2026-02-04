@@ -6,7 +6,7 @@ import { View, Text } from "react-native";
 import { useMemo } from "react";
 import MaterialIcons from "@expo/vector-icons/MaterialIcons";
 import { useColors } from "@/hooks/use-colors";
-import { homeUI, homeText } from "@/features/home/ui/theme/tokens";
+import { homeUI, homeText, homeFont } from "@/features/home/ui/theme/tokens";
 import { regionGroups } from "@/constants/prefectures";
 import type { Challenge } from "@/types/challenge";
 
@@ -48,7 +48,7 @@ export function EngagementSection({ challenges }: EngagementSectionProps) {
         borderWidth: 1,
         borderColor: homeUI.border,
       }}>
-        <Text style={{ color: homeText.accent, fontSize: 16, fontWeight: "bold", marginBottom: 16 }}>
+        <Text style={{ color: homeText.accent, fontSize: homeFont.title, fontWeight: "bold", marginBottom: 16 }}>
           📊 みんなの盛り上がり
         </Text>
         
@@ -56,15 +56,15 @@ export function EngagementSection({ challenges }: EngagementSectionProps) {
         <View style={{ flexDirection: "row", justifyContent: "space-around", marginBottom: 20 }}>
           <View style={{ alignItems: "center" }}>
             <Text style={{ color: colors.foreground, fontSize: 32, fontWeight: "bold" }}>{stats.totalParticipants}</Text>
-            <Text style={{ color: homeText.muted, fontSize: 12 }}>総参加表明</Text>
+            <Text style={{ color: homeText.muted, fontSize: homeFont.meta }}>総参加表明</Text>
           </View>
           <View style={{ alignItems: "center" }}>
             <Text style={{ color: colors.foreground, fontSize: 32, fontWeight: "bold" }}>{stats.activeChallenges}</Text>
-            <Text style={{ color: homeText.muted, fontSize: 12 }}>開催中</Text>
+            <Text style={{ color: homeText.muted, fontSize: homeFont.meta }}>開催中</Text>
           </View>
           <View style={{ alignItems: "center" }}>
             <Text style={{ color: colors.foreground, fontSize: 32, fontWeight: "bold" }}>{stats.totalChallenges}</Text>
-            <Text style={{ color: homeText.muted, fontSize: 12 }}>総チャレンジ</Text>
+            <Text style={{ color: homeText.muted, fontSize: homeFont.meta }}>総チャレンジ</Text>
           </View>
         </View>
 
@@ -79,10 +79,10 @@ export function EngagementSection({ challenges }: EngagementSectionProps) {
           }}>
             <Text style={{ fontSize: 24, marginRight: 12 }}>🗾</Text>
             <View style={{ flex: 1 }}>
-              <Text style={{ color: homeUI.iconBgGold, fontSize: 14, fontWeight: "bold" }}>
+              <Text style={{ color: homeUI.iconBgGold, fontSize: homeFont.body, fontWeight: "bold" }}>
                 {stats.hotRegion[0]}が熱い！
               </Text>
-              <Text style={{ color: homeText.muted, fontSize: 12 }}>
+              <Text style={{ color: homeText.muted, fontSize: homeFont.meta }}>
                 {stats.hotRegion[1]}人が参加表明中
               </Text>
             </View>

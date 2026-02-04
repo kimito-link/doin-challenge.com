@@ -10,7 +10,7 @@ import { View, TextInput, Pressable, Text, ScrollView, Keyboard, Platform } from
 import * as Haptics from "expo-haptics";
 import MaterialIcons from "@expo/vector-icons/MaterialIcons";
 import { useColors } from "@/hooks/use-colors";
-import { homeUI, homeText } from "@/features/home/ui/theme/tokens";
+import { homeUI, homeText, homeFont } from "@/features/home/ui/theme/tokens";
 
 interface SearchBarProps {
   value: string;
@@ -155,7 +155,7 @@ export function SearchBar({
             flex: 1,
             marginLeft: 8,
             color: colors.foreground,
-            fontSize: 14,
+            fontSize: homeFont.body,
             paddingVertical: 8,
           }}
           returnKeyType="search"
@@ -224,7 +224,7 @@ export function SearchBar({
                 }}
               >
                 <MaterialIcons name="search" size={16} color={homeText.muted} style={{ marginRight: 12 }} />
-                <Text style={{ color: colors.foreground, fontSize: 14 }}>
+                <Text style={{ color: colors.foreground, fontSize: homeFont.body }}>
                   {suggestion}
                 </Text>
               </Pressable>

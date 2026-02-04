@@ -5,7 +5,7 @@
 import { View, Text } from "react-native";
 import MaterialIcons from "@expo/vector-icons/MaterialIcons";
 import { useColors } from "@/hooks/use-colors";
-import { homeUI, homeText } from "@/features/home/ui/theme/tokens";
+import { homeUI, homeText, homeFont } from "@/features/home/ui/theme/tokens";
 
 export function FeatureListSection() {
   const colors = useColors();
@@ -20,7 +20,7 @@ export function FeatureListSection() {
       }}>
         <Text style={{ 
           color: colors.foreground, 
-          fontSize: 16, 
+fontSize: homeFont.title,
           fontWeight: "bold",
           marginBottom: 16,
           textAlign: "center",
@@ -38,7 +38,7 @@ export function FeatureListSection() {
             }}>
               <MaterialIcons name="favorite" size={18} color={colors.foreground} />
             </View>
-            <Text style={{ color: colors.foreground, fontSize: 14, flex: 1 }}>
+            <Text style={{ color: colors.foreground, fontSize: homeFont.body, flex: 1 }}>
               参加表明で応援メッセージを送れる
             </Text>
           </View>
@@ -51,7 +51,7 @@ export function FeatureListSection() {
             }}>
               <MaterialIcons name="people" size={18} color={colors.foreground} />
             </View>
-            <Text style={{ color: colors.foreground, fontSize: 14, flex: 1 }}>
+            <Text style={{ color: colors.foreground, fontSize: homeFont.body, flex: 1 }}>
               友達と一緒に参加して盛り上げよう
             </Text>
           </View>
@@ -64,7 +64,7 @@ export function FeatureListSection() {
             }}>
               <MaterialIcons name="emoji-events" size={18} color={colors.foreground} />
             </View>
-            <Text style={{ color: colors.foreground, fontSize: 14, flex: 1 }}>
+            <Text style={{ color: colors.foreground, fontSize: homeFont.body, flex: 1 }}>
               目標達成でみんなでお祝い！
             </Text>
           </View>

@@ -6,7 +6,7 @@ import { View, Text } from "react-native";
 import { Image } from "expo-image";
 import { LinearGradient } from "expo-linear-gradient";
 import { useColors } from "@/hooks/use-colors";
-import { homeUI, homeText, homeGradient } from "@/features/home/ui/theme/tokens";
+import { homeUI, homeText, homeGradient, homeFont } from "@/features/home/ui/theme/tokens";
 
 // キャラクター画像
 const characterImages = {
@@ -44,7 +44,7 @@ export function CatchCopySection() {
           }}>
             <Text style={{ 
               color: colors.foreground, 
-              fontSize: 15, 
+fontSize: homeFont.body,
               fontWeight: "bold",
               marginBottom: 4,
             }}>
@@ -52,7 +52,7 @@ export function CatchCopySection() {
             </Text>
             <Text style={{ 
               color: homeText.primary, 
-              fontSize: 13, 
+fontSize: homeFont.meta,
               lineHeight: 20,
             }}>
               あなたの「推し」が、大きなステージに立つ瞬間を想像してみて。
@@ -64,7 +64,7 @@ export function CatchCopySection() {
         <View style={{ marginBottom: 20 }}>
           <Text style={{ 
             color: homeText.muted, 
-            fontSize: 14, 
+fontSize: homeFont.body,
             lineHeight: 24,
             marginBottom: 16,
           }}>
@@ -75,7 +75,7 @@ export function CatchCopySection() {
           
           <Text style={{ 
             color: homeText.brand, 
-            fontSize: 18, 
+fontSize: homeFont.lg,
             fontWeight: "bold",
             textAlign: "center",
             marginBottom: 16,
@@ -85,7 +85,7 @@ export function CatchCopySection() {
 
           <Text style={{ 
             color: homeText.muted, 
-            fontSize: 14, 
+fontSize: homeFont.body,
             lineHeight: 24,
           }}>
             「動員ちゃれんじ」は、みんなの想いを集めて、{"\n"}
@@ -104,7 +104,7 @@ export function CatchCopySection() {
         }}>
           <Text style={{ 
             color: homeText.primary, 
-            fontSize: 14, 
+fontSize: homeFont.body,
             lineHeight: 22,
           }}>
             一人の参加表明が、二人、三人と広がって、{"\n"}
@@ -116,7 +116,7 @@ export function CatchCopySection() {
         <View style={{ alignItems: "center", marginBottom: 16 }}>
           <Text style={{ 
             color: colors.foreground, 
-            fontSize: 16, 
+fontSize: homeFont.title,
             fontWeight: "bold",
             textAlign: "center",
             lineHeight: 26,
@@ -135,7 +135,7 @@ export function CatchCopySection() {
         }}>
           <Text style={{ 
             color: homeText.brand, 
-            fontSize: 15, 
+fontSize: homeFont.body,
             fontWeight: "bold",
             marginBottom: 4,
           }}>
@@ -143,7 +143,7 @@ export function CatchCopySection() {
           </Text>
           <Text style={{ 
             color: homeText.muted, 
-            fontSize: 12,
+            fontSize: homeFont.meta,
           }}>
             下のチャレンジから参加表明してみてね
           </Text>

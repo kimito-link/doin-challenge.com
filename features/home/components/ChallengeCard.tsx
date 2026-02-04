@@ -87,7 +87,7 @@ export function ChallengeCard({
         </View>
         {challenge.venue && (
           <View style={{ position: "absolute", top: 8, left: 8, right: 32 }}>
-            <Text style={{ color: "rgba(255,255,255,0.9)", fontSize: 11, fontWeight: "600" }} numberOfLines={1}>
+            <Text style={{ color: "rgba(255,255,255,0.9)", fontSize: homeFont.small, fontWeight: "600" }} numberOfLines={1}>
               {challenge.venue}
             </Text>
           </View>
@@ -131,7 +131,7 @@ export function ChallengeCard({
           {!isDateUndecided && <Countdown targetDate={challenge.eventDate} compact />}
           <View style={{ flexDirection: "row", alignItems: "center" }}>
             <MaterialIcons name="event" size={12} color={homeText.accent} />
-            <Text style={{ color: homeText.accent, fontSize: 12, marginLeft: 2 }}>{formattedDate}</Text>
+            <Text style={{ color: homeText.accent, fontSize: homeFont.meta, marginLeft: 2 }}>{formattedDate}</Text>
           </View>
         </View>
       </View>

@@ -3,7 +3,7 @@
 import { View, Text, Pressable, StyleSheet } from "react-native";
 import MaterialIcons from "@expo/vector-icons/MaterialIcons";
 import { useColors } from "@/hooks/use-colors";
-import { homeText, homeUI } from "@/features/home/ui/theme/tokens";
+import { homeText, homeUI, homeFont } from "@/features/home/ui/theme/tokens";
 import type { Challenge } from "@/types/challenge";
 import { AnimatedCard } from "@/components/molecules/animated-pressable";
 import { LazyAvatar } from "@/components/molecules/lazy-image";
@@ -135,7 +135,7 @@ const styles = StyleSheet.create({
     justifyContent: "center",
   },
   rankText: {
-    fontSize: 16,
+    fontSize: homeFont.title,
     fontWeight: "bold",
   },
   avatarContainer: {
@@ -156,17 +156,17 @@ const styles = StyleSheet.create({
   },
   typeBadgeText: {
     color: "#fff",
-    fontSize: 12,
+    fontSize: homeFont.meta,
     fontWeight: "bold",
   },
   title: {
-    fontSize: 14,
+    fontSize: homeFont.body,
     fontWeight: "bold",
     flex: 1,
   },
   hostName: {
     color: homeText.muted,
-    fontSize: 12,
+    fontSize: homeFont.meta,
     marginTop: 2,
   },
   progressSection: {
@@ -178,12 +178,12 @@ const styles = StyleSheet.create({
     marginBottom: 4,
   },
   progressValue: {
-    fontSize: 12,
+    fontSize: homeFont.meta,
     fontWeight: "600",
   },
   progressGoal: {
     color: homeText.muted,
-    fontSize: 12,
+    fontSize: homeFont.meta,
   },
   dateContainer: {
     flexDirection: "row",
@@ -192,7 +192,7 @@ const styles = StyleSheet.create({
   },
   dateText: {
     color: homeText.accent,
-    fontSize: 12,
+    fontSize: homeFont.meta,
   },
   progressBar: {
     height: 6,

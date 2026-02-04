@@ -8,7 +8,7 @@
 import { View, Text, ScrollView } from "react-native";
 import { useColors } from "@/hooks/use-colors";
 import { useResponsive } from "@/hooks/use-responsive";
-import { homeUI } from "@/features/home/ui/theme/tokens";
+import { homeUI, homeFont } from "@/features/home/ui/theme/tokens";
 import { Button } from "@/components/ui/button";
 
 interface Category {
@@ -48,7 +48,7 @@ function CategoryChip({
         minHeight: 36,
       }}
     >
-      <Text style={{ color: colors.foreground, fontSize: 12 }}>{children}</Text>
+      <Text style={{ color: colors.foreground, fontSize: homeFont.meta }}>{children}</Text>
     </Button>
   );
 }

@@ -5,7 +5,7 @@
 
 import { Text } from "react-native";
 import { useColors } from "@/hooks/use-colors";
-import { homeUI, homeText } from "@/features/home/ui/theme/tokens";
+import { homeUI, homeText, homeFont } from "@/features/home/ui/theme/tokens";
 import { Button } from "@/components/ui/button";
 
 interface FilterButtonProps {
@@ -30,7 +30,7 @@ export function FilterButton({ label, active, onPress }: FilterButtonProps) {
         backgroundColor: active ? homeText.accent : homeUI.border,
       }}
     >
-      <Text style={{ color: colors.foreground, fontSize: 14, fontWeight: active ? "bold" : "normal" }}>
+      <Text style={{ color: colors.foreground, fontSize: homeFont.body, fontWeight: active ? "bold" : "normal" }}>
         {label}
       </Text>
     </Button>

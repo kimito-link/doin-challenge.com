@@ -44,10 +44,12 @@ export const homeGradient = {
 } as const;
 
 export const homeFont = {
-  // 下限12に寄せたいが、今回は既存を維持しつつ "今後の基準" として置く
+  small: 11,
   meta: 12,
   body: 14,
   title: 16,
+  lg: 18,
+  display: 48,
 } as const;
 
 // 後方互換性のためのエイリアス（既存コードで使用）

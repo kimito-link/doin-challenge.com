@@ -4,7 +4,7 @@ import { View, Text, Pressable, StyleSheet } from "react-native";
 import MaterialIcons from "@expo/vector-icons/MaterialIcons";
 import { Image } from "expo-image";
 import { useColors } from "@/hooks/use-colors";
-import { homeText, homeUI } from "@/features/home/ui/theme/tokens";
+import { homeText, homeUI, homeFont } from "@/features/home/ui/theme/tokens";
 import type { Challenge } from "@/types/challenge";
 import { goalTypeConfig } from "@/constants/goal-types";
 import { eventTypeBadge } from "@/types/challenge";
@@ -204,7 +204,7 @@ const styles = StyleSheet.create({
     marginBottom: 4,
   },
   title: {
-    fontSize: 16,
+    fontSize: homeFont.title,
     fontWeight: "bold",
   },
   badge: {
@@ -215,7 +215,7 @@ const styles = StyleSheet.create({
   },
   badgeText: {
     color: homeText.accent,
-    fontSize: 12,
+    fontSize: homeFont.meta,
     fontWeight: "bold",
   },
   secondRow: {
@@ -249,7 +249,7 @@ const styles = StyleSheet.create({
     zIndex: 10,
   },
   rankText: {
-    fontSize: 12,
+    fontSize: homeFont.meta,
     fontWeight: "bold",
   },
   thumbnail: {
@@ -281,11 +281,11 @@ const styles = StyleSheet.create({
     gap: 6,
   },
   challengeTitle: {
-    fontSize: 13,
+    fontSize: homeFont.meta,
     fontWeight: "600",
   },
   titleLarge: {
-    fontSize: 15,
+    fontSize: homeFont.body,
   },
   stats: {
     flexDirection: "row",
@@ -293,7 +293,7 @@ const styles = StyleSheet.create({
     gap: 8,
   },
   statText: {
-    fontSize: 12,
+    fontSize: homeFont.meta,
   },
   progressBadge: {
     paddingHorizontal: 6,
@@ -301,7 +301,7 @@ const styles = StyleSheet.create({
     borderRadius: 8,
   },
   progressText: {
-    fontSize: 12,
+    fontSize: homeFont.meta,
     fontWeight: "bold",
   },
   progressBar: {
