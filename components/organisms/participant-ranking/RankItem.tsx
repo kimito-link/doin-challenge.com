@@ -7,6 +7,7 @@
 import { View, Text, StyleSheet } from "react-native";
 import MaterialIcons from "@expo/vector-icons/MaterialIcons";
 import { color } from "@/theme/tokens";
+import { formatParticipationDate } from "@/lib/format-date";
 import { RANK_COLORS, GENDER_COLORS } from "./constants";
 import { RankBadge } from "./RankBadge";
 import { ParticipantAvatar } from "./ParticipantAvatar";
@@ -39,6 +40,11 @@ export function RankItem({ participant, rank, showBadge }: RankItemProps) {
         {participant.username && !participant.isAnonymous && (
           <Text style={styles.userHandle} numberOfLines={1}>
             @{participant.username}
+          </Text>
+        )}
+        {participant.createdAt != null && (
+          <Text style={styles.joinedAt} numberOfLines={1}>
+            {formatParticipationDate(participant.createdAt)}参加
           </Text>
         )}
       </View>
@@ -88,6 +94,11 @@ const styles = StyleSheet.create({
   userHandle: {
     color: color.textSubtle,
     fontSize: 12,
+  },
+  joinedAt: {
+    color: color.textSubtle,
+    fontSize: 11,
+    marginTop: 2,
   },
   contributionContainer: {
     alignItems: "flex-end",

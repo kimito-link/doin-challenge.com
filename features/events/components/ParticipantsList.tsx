@@ -9,6 +9,7 @@ import { useColors } from "@/hooks/use-colors";
 import { Button } from "@/components/ui/button";
 import { eventText, eventFont, eventUI } from "@/features/events/ui/theme/tokens";
 import { OptimizedAvatar } from "@/components/molecules/optimized-image";
+import { formatParticipationDate } from "@/lib/format-date";
 import type { Participation, FanProfile } from "@/types/participation";
 
 interface ParticipantsListProps {
@@ -87,6 +88,9 @@ export function ParticipantsList({
                 numberOfLines={1}
               >
                 {p.displayName}
+              </Text>
+              <Text style={{ color: eventText.secondary, fontSize: eventFont.tiny, marginTop: 2, textAlign: "center" }}>
+                {formatParticipationDate(p.createdAt)}に参加
               </Text>
               {p.followersCount && p.followersCount > 0 && (
                 <Text style={{ color: eventText.accent, fontSize: eventFont.tiny, fontWeight: "bold" }} numberOfLines={1}>

@@ -9,12 +9,13 @@ import { SectionHeader } from "@/components/ui";
 import { mypageUI, mypageText, mypageFont } from "../../ui/theme/tokens";
 import MaterialIcons from "@expo/vector-icons/MaterialIcons";
 import { FanEmptyState } from "@/components/organisms/fan-empty-state";
-import { typography } from "@/theme/tokens";
+import { formatParticipationDate } from "@/lib/format-date";
 
 interface Participation {
   id: number;
   challengeId: number;
   contribution?: number;
+  createdAt?: Date | string;
   event?: {
     title?: string;
   };
@@ -53,6 +54,11 @@ export function ParticipationSection({ participations, onChallengePress }: Parti
                   <Text style={{ color: mypageText.muted, fontSize: mypageFont.meta, marginTop: 4 }}>
                     貢献度: {participation.contribution || 1}
                   </Text>
+                  {participation.createdAt != null && (
+                    <Text style={{ color: mypageText.muted, fontSize: mypageFont.meta, marginTop: 2 }}>
+                      {formatParticipationDate(participation.createdAt)}に参加表明
+                    </Text>
+                  )}
                 </View>
                 <MaterialIcons name="chevron-right" size={24} color={mypageText.muted} />
               </View>
