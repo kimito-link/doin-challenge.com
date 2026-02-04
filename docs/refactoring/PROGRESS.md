@@ -1,5 +1,22 @@
 # ファクタリング作業履歴
 
+## 2025-02-04: 追加のファクタリング作業完了
+
+### 作業開始
+- **タスク**: 残りのファクタリング作業の完了
+- **目的**: コードの統一性と保守性を向上
+
+### 実装完了
+- [x] `components/organisms/fan-profile-modal.tsx` - 独自retryButtonをRetryButtonコンポーネントに置き換え
+- [x] `components/organisms/host-profile-modal.tsx` - 独自retryButtonをRetryButtonコンポーネントに置き換え
+- [x] `features/create/ui/components/GoalTypeSelector.tsx` - TextInputをInputコンポーネントに移行
+
+### コミット履歴
+- 2025-02-04: RetryButton統一完了（fan-profile-modal, host-profile-modal）
+- 2025-02-04: GoalTypeSelectorのTextInputをInputに移行
+
+---
+
 ## 2025-01-31: 残りのファクタリング作業完了
 
 ### 作業開始
