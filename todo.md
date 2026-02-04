@@ -1023,3 +1023,14 @@
 - [x] TypeScriptエラー: 60件 → 0件
 - [ ] サーバー再起動
 - [ ] Publishボタンが有効化されることを確認
+
+---
+
+## 📅 参加表明日時の記録と表示 (案2) (2026-02)
+
+### 実装内容
+- [x] 共通フォーマット追加（lib/format-date.ts: formatParticipationDate）
+- [x] マイページ ParticipationSection に「〇月〇日に参加表明」表示
+- [x] イベント詳細 ParticipantsList に「〇月〇日に参加」表示
+- [x] ランキング RankItem に「〇月〇日参加」表示（主催者ダッシュボード含む）
+- [x] 既存の participations.createdAt を利用（API変更なし）
