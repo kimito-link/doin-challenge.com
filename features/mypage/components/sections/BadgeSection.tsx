@@ -5,7 +5,7 @@
 
 import { View, Text } from "react-native";
 import { SectionHeader, EmptyState } from "@/components/ui";
-import { mypageUI, mypageText } from "../../ui/theme/tokens";
+import { mypageUI, mypageText, mypageFont } from "../../ui/theme/tokens";
 import { typography } from "@/theme/tokens";
 
 interface Badge {
@@ -39,7 +39,7 @@ export function BadgeSection({ badges }: BadgeSectionProps) {
                 borderColor: mypageUI.cardBorder,
               }}
             >
-              <Text style={{ fontSize: 32 }}>{userBadge.badge?.icon || "🏅"}</Text>
+              <Text style={{ fontSize: mypageFont.display }}>{userBadge.badge?.icon || "🏅"}</Text>
               <Text style={{ color: mypageText.muted, fontSize: typography.fontSize.xs, marginTop: 4, textAlign: "center" }}>
                 {userBadge.badge?.name || "バッジ"}
               </Text>

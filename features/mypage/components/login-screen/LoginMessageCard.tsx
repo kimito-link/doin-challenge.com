@@ -6,6 +6,7 @@
 import { View, Text } from "react-native";
 import { LinearGradient } from "expo-linear-gradient";
 import { Button } from "@/components/ui/button";
+import { mypageFont } from "../../ui/theme/tokens";
 import type { LoginPattern } from "./constants";
 
 interface LoginMessageCardProps {
@@ -30,7 +31,7 @@ export function LoginMessageCard({ pattern, isLoggingIn, onLogin }: LoginMessage
     >
       <Text style={{ 
         color: "#fff", 
-        fontSize: 20, 
+fontSize: mypageFont.lg,
         fontWeight: "bold",
         marginBottom: 12,
         textAlign: "center",
@@ -39,7 +40,7 @@ export function LoginMessageCard({ pattern, isLoggingIn, onLogin }: LoginMessage
       </Text>
       <Text style={{ 
         color: "rgba(255,255,255,0.9)", 
-        fontSize: 14,
+        fontSize: mypageFont.body,
         lineHeight: 22,
         textAlign: "center",
         marginBottom: 16,
@@ -54,7 +55,7 @@ export function LoginMessageCard({ pattern, isLoggingIn, onLogin }: LoginMessage
       }}>
         <Text style={{ 
           color: "#fff", 
-          fontSize: 16, 
+fontSize: mypageFont.title,
           fontWeight: "bold",
           textAlign: "center",
         }}>

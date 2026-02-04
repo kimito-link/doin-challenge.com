@@ -11,6 +11,7 @@ import MaterialIcons from "@expo/vector-icons/MaterialIcons";
 import * as Haptics from "expo-haptics";
 import { color } from "@/theme/tokens";
 import { useColors } from "@/hooks/use-colors";
+import { mypageFont } from "../../ui/theme/tokens";
 import { navigate } from "@/lib/navigation";
 
 interface RoleSectionProps {
@@ -220,12 +221,12 @@ const styles = StyleSheet.create({
     paddingVertical: 16,
   },
   sectionTitle: {
-    fontSize: 20,
+    fontSize: mypageFont.lg,
     fontWeight: "bold",
     marginBottom: 4,
   },
   sectionDescription: {
-    fontSize: 13,
+    fontSize: mypageFont.meta,
     marginBottom: 16,
   },
   roleCard: {
@@ -254,11 +255,11 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   roleTitle: {
-    fontSize: 16,
+    fontSize: mypageFont.title,
     fontWeight: "bold",
   },
   roleSubtitle: {
-    fontSize: 12,
+    fontSize: mypageFont.meta,
     marginTop: 2,
   },
   statsRow: {
@@ -275,11 +276,11 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   statValue: {
-    fontSize: 20,
+    fontSize: mypageFont.lg,
     fontWeight: "bold",
   },
   statLabel: {
-    fontSize: 12,
+    fontSize: mypageFont.meta,
     marginTop: 2,
   },
   statDivider: {
@@ -292,7 +293,7 @@ const styles = StyleSheet.create({
     marginBottom: 12,
   },
   featureItem: {
-    fontSize: 12,
+    fontSize: mypageFont.meta,
     marginBottom: 4,
   },
   actionButton: {
@@ -310,7 +311,7 @@ const styles = StyleSheet.create({
     transform: [{ scale: 0.98 }],
   },
   actionButtonText: {
-    fontSize: 14,
+    fontSize: mypageFont.body,
     fontWeight: "600",
   },
 });

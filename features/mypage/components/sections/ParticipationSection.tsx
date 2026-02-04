@@ -6,7 +6,7 @@
 import { View, Text, Pressable } from "react-native";
 import { useColors } from "@/hooks/use-colors";
 import { SectionHeader } from "@/components/ui";
-import { mypageUI, mypageText } from "../../ui/theme/tokens";
+import { mypageUI, mypageText, mypageFont } from "../../ui/theme/tokens";
 import MaterialIcons from "@expo/vector-icons/MaterialIcons";
 import { FanEmptyState } from "@/components/organisms/fan-empty-state";
 import { typography } from "@/theme/tokens";
@@ -47,10 +47,10 @@ export function ParticipationSection({ participations, onChallengePress }: Parti
             >
               <View style={{ flexDirection: "row", justifyContent: "space-between", alignItems: "center" }}>
                 <View style={{ flex: 1 }}>
-                  <Text style={{ color: colors.foreground, fontSize: 16, fontWeight: "bold" }}>
+                  <Text style={{ color: colors.foreground, fontSize: mypageFont.title, fontWeight: "bold" }}>
                     {participation.event?.title || "チャレンジ"}
                   </Text>
-                  <Text style={{ color: mypageText.muted, fontSize: 12, marginTop: 4 }}>
+                  <Text style={{ color: mypageText.muted, fontSize: mypageFont.meta, marginTop: 4 }}>
                     貢献度: {participation.contribution || 1}
                   </Text>
                 </View>

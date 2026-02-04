@@ -5,7 +5,7 @@
 
 import { View, Text } from "react-native";
 import { Image } from "expo-image";
-import { mypageText } from "../../ui/theme/tokens";
+import { mypageText, mypageFont } from "../../ui/theme/tokens";
 import { characterImages, type LoginPattern } from "./constants";
 
 interface CharacterBubbleProps {
@@ -41,7 +41,7 @@ export function CharacterBubble({ pattern }: CharacterBubbleProps) {
       }}>
         <Text style={{ 
           color: mypageText.mutedLight, 
-          fontSize: 13, 
+          fontSize: mypageFont.meta, 
           lineHeight: 20,
         }}>
           {pattern.message}

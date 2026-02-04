@@ -25,7 +25,7 @@ const defaultLoginIcons: CharacterIconWithId[] = [
     size: 56,
     borderWidth: 2,
     borderColor: mypageAccent.linkPink,
-    name: "君斗りんく",
+    name: "りんく",
   },
   {
     id: "konta",
@@ -34,7 +34,7 @@ const defaultLoginIcons: CharacterIconWithId[] = [
     size: 64,
     borderWidth: 3,
     borderColor: mypageAccent.kontaOrange,
-    name: "コンタ",
+    name: "こん太",
   },
   {
     id: "tanune",
@@ -54,7 +54,7 @@ interface LoginCharacterIconRowProps {
 
 /**
  * ログイン画面用のキャラクターアイコン行
- * デフォルトで3キャラクター（りんく、コンタ、たぬね）を表示
+ * デフォルトで3キャラクター（りんく、こん太、たぬ姉）を表示
  * タップするとキャラクター詳細モーダルを表示
  */
 export function CharacterIconRow({ marginBottom = 32 }: LoginCharacterIconRowProps = {}) {

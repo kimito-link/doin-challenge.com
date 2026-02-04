@@ -5,7 +5,7 @@
 import { View, Text } from "react-native";
 import MaterialIcons from "@expo/vector-icons/MaterialIcons";
 import { useColors } from "@/hooks/use-colors";
-import { mypageUI, mypageText } from "../ui/theme/tokens";
+import { mypageUI, mypageText, mypageFont } from "../ui/theme/tokens";
 import { Button } from "@/components/ui/button";
 
 interface SettingsLinkItemProps {
@@ -57,10 +57,10 @@ export function SettingsLinkItem({
         <MaterialIcons name={icon} size={24} color={colors.foreground} />
       </View>
       <View style={{ flex: 1 }}>
-        <Text style={{ color: colors.foreground, fontSize: 16, fontWeight: "bold" }}>
+        <Text style={{ color: colors.foreground, fontSize: mypageFont.title, fontWeight: "bold" }}>
           {title}
         </Text>
-        <Text style={{ color: mypageText.muted, fontSize: 12 }}>
+        <Text style={{ color: mypageText.muted, fontSize: mypageFont.meta }}>
           {description}
         </Text>
       </View>

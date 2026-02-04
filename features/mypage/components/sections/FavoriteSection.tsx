@@ -4,6 +4,7 @@ import { ColorfulChallengeCard } from "@/components/molecules/colorful-challenge
 import { useFavorites } from "@/hooks/use-favorites";
 import { trpc } from "@/lib/trpc";
 import { color } from "@/theme/tokens";
+import { mypageFont } from "../../ui/theme/tokens";
 
 /**
  * マイページ - 気になるイベントリスト
@@ -41,7 +42,7 @@ export function FavoriteSection() {
       >
         <Text
           style={{
-            fontSize: 20,
+            fontSize: mypageFont.lg,
             fontWeight: "bold",
             color: color.textPrimary,
           }}
@@ -50,7 +51,7 @@ export function FavoriteSection() {
         </Text>
         <Text
           style={{
-            fontSize: 14,
+            fontSize: mypageFont.body,
             color: color.textMuted,
           }}
         >

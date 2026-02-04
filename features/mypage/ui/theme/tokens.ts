@@ -65,3 +65,13 @@ export const mypageAccent = {
   tanuneGreen: "#10B981",
   tanunePink: "#F43F5E",
 } as const;
+
+// フォントサイズ（TOKENS_INVENTORY 方針: meta=12, body=14, title=16）
+export const mypageFont = {
+  meta: 12,
+  body: 14,
+  title: 16,
+  lg: 20,
+  xl: 24,
+  display: 32,
+} as const;
