@@ -136,6 +136,75 @@ const COST_PER_REQUEST = 0.01; // 実際の価格に更新
 - `app/admin/api-usage.tsx` - 管理画面UI
 - `scripts/init-api-cost-settings.ts` - 初期設定スクリプト
 
+## 日次レポート機能
+
+### 概要
+毎日のAPI使用量とコストを自動的にメール通知する機能です。
+
+### 設定方法
+
+#### Vercel Cron Jobsを使用する場合
+
+`vercel.json`に以下の設定を追加：
+
+```json
+{
+  "crons": [
+    {
+      "path": "/api/cron/daily-report",
+      "schedule": "0 0 * * *"
+    }
+  ]
+}
+```
+
+`app/api/cron/daily-report/route.ts`を作成：
+
+```typescript
+import { sendDailyReport } from "@/server/api-daily-report";
+
+export async function GET(request: Request) {
+  // 認証チェック（Vercel Cron Secretを使用）
+  const authHeader = request.headers.get("authorization");
+  if (authHeader !== `Bearer ${process.env.CRON_SECRET}`) {
+    return new Response("Unauthorized", { status: 401 });
+  }
+
+  try {
+    await sendDailyReport();
+    return Response.json({ success: true });
+  } catch (error) {
+    console.error("[Cron] Daily report failed:", error);
+    return Response.json({ error: "Failed to send daily report" }, { status: 500 });
+  }
+}
+```
+
+環境変数に`CRON_SECRET`を設定してください。
+
+#### GitHub Actionsを使用する場合
+
+`.github/workflows/daily-api-report.yml`を作成：
+
+```yaml
+name: Daily API Report
+
+on:
+  schedule:
+    - cron: '0 0 * * *' # 毎日UTC 0時（JST 9時）
+  workflow_dispatch: # 手動実行も可能
+
+jobs:
+  send-report:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Send Daily Report
+        run: |
+          curl -X POST "${{ secrets.API_BASE_URL }}/api/cron/daily-report" \
+            -H "Authorization: Bearer ${{ secrets.CRON_SECRET }}"
+```
+
 ## 次のステップ
 
 1. ✅ データベースマイグレーションの実行
@@ -145,3 +214,5 @@ const COST_PER_REQUEST = 0.01; // 実際の価格に更新
    手順: ファイルを開き `COST_PER_REQUEST` を検索 → 公式の単価（USD/件）に書き換え → 保存。現在は仮の `0.01`。
 4. ✅ 管理画面で設定を確認
 5. ✅ テストAPI呼び出しで動作確認
+6. ✅ 日次レポート機能の設定（Vercel Cron JobsまたはGitHub Actions）
+7. ✅ キャッシュ期間の調整（`FOLLOW_STATUS_CACHE_TTL_HOURS`環境変数、デフォルト: 48時間）
