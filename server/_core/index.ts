@@ -115,19 +115,19 @@ async function startServer() {
       const db = await getDb();
       if (db) {
         await db.execute(sql`SELECT 1`);
-        let challengesCount: number | undefined;
+        let challengesCount = 0;
         try {
           const r = await db.execute(sql`SELECT COUNT(*) AS c FROM challenges WHERE "isPublic" = true`);
           const rows = (r as { rows?: Array<{ c: string }> })?.rows ?? (Array.isArray(r) ? r : []);
           challengesCount = rows.length ? Number((rows[0] as { c: string })?.c ?? 0) : 0;
         } catch (_) {
-          // テーブルが無い等は無視
+          // テーブルが無い等は 0 のまま
         }
         dbStatus = {
           connected: true,
           latency: Date.now() - startTime,
           error: "",
-          ...(challengesCount !== undefined && { challengesCount }),
+          challengesCount,
         };
       } else {
         dbStatus.error = "DATABASE_URLが設定されていません";
