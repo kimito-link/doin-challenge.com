@@ -58,11 +58,11 @@
 - [x] ExternalUrlSection.tsxの移行完了
 - [x] TemplateSaveSection.tsxの移行完了
 
-**完了ファイル数**: 5/12
+**完了ファイル数**: 8/12
 
 ### 残りファイル（Phase 2）
-- [ ] TicketInfoSection.tsx (3箇所のTextInput)
-- [ ] TermsAndPermissions.tsx (MessageInput)
+- [x] TicketInfoSection.tsx (3箇所のTextInput) ✅
+- [x] TermsAndPermissions.tsx (MessageInput) ✅
 - [ ] ParticipationForm.tsx (複数箇所)
 - [ ] SearchBar.tsx → SearchInput使用
 - [ ] TwitterSearchForm.tsx (2箇所)
