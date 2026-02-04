@@ -3,8 +3,8 @@
  * 管理者がリリースノートを追加・管理できる画面
  */
 
-import { useState } from "react";
-import { View, Text, ScrollView, Pressable, TextInput, Alert, ActivityIndicator } from "react-native";
+import { useState, useEffect } from "react";
+import { View, Text, ScrollView, Pressable, TextInput, Alert, ActivityIndicator, Platform } from "react-native";
 import { ScreenContainer } from "@/components/organisms/screen-container";
 import { AppHeader } from "@/components/organisms/app-header";
 import { useColors } from "@/hooks/use-colors";
@@ -26,7 +26,6 @@ export default function ReleaseNotesAdminScreen() {
 改善: X APIコスト管理: フォロー状態のキャッシュ期間を24時間から48時間に延長
 改善: コンポーネント統一: RetryButtonコンポーネントを統一
 改善: コンポーネント統一: Skeletonコンポーネントを統一`);
-
   const addReleaseNoteMutation = trpc.releaseNotes.add.useMutation({
     onSuccess: () => {
       Alert.alert("成功", "リリースノートを追加しました");
