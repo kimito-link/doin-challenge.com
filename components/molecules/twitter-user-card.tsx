@@ -1,3 +1,20 @@
+/**
+ * Twitterユーザーカード関連コンポーネント（一元管理）
+ *
+ * 使用箇所:
+ * - EventHeaderSection: 主催者表示（TwitterUserCard）
+ * - create UserInfoSection: 作成フォームのユーザー表示（TwitterUserCard）
+ * - user-profile-header: プロフィールヘッダ（TwitterUserCard）
+ * - mypage ProfileCard: マイページプロフィール（TwitterUserCard）
+ * - event-detail UserInfoSection: 参加表明フォームの参加者（TwitterUserCard）
+ * - ConfirmationModal: 参加者・同伴者（TwitterUserCard / TwitterUserCompact）
+ * - SettingsSections: 現在のアカウント（TwitterUserCard）
+ * - TwitterSearchForm: 検索結果プロフィール（TwitterUserCompact）
+ * - admin/components: コンポーネントカタログ
+ *
+ * 他レイアウト（匿名対応・性別・都道府県等）: MessageCard, ParticipantsList, ContributionRanking は
+ * 専用UIのためそのまま。toTwitterUserData で API 型を渡す場合は共通利用可能。
+ */
 import { View, Text, Pressable, StyleSheet } from "react-native";
 import { Image } from "expo-image";
 import { Ionicons } from "@expo/vector-icons";
@@ -314,6 +331,28 @@ export function TwitterAvatar({
   }
 
   return image;
+}
+
+/**
+ * API・フォームのユーザー型を TwitterUserData に変換するヘルパー
+ * 参加者・同伴者・設定アカウントなどで共通利用
+ */
+export function toTwitterUserData(o: {
+  name?: string | null;
+  username?: string | null;
+  displayName?: string | null;
+  profileImage?: string | null;
+  followersCount?: number | null;
+  description?: string | null;
+  twitterUsername?: string | null;
+}): TwitterUserData {
+  return {
+    name: (o.name ?? o.displayName ?? "名前未設定") as string,
+    username: (o.username ?? o.twitterUsername ?? undefined) as string | undefined,
+    profileImage: o.profileImage ?? undefined,
+    followersCount: o.followersCount ?? undefined,
+    description: o.description ?? undefined,
+  };
 }
 
 const styles = StyleSheet.create({

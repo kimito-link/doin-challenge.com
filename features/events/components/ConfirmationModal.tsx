@@ -1,10 +1,10 @@
 import { View, Text, Modal, StyleSheet } from "react-native";
-import { Image } from "expo-image";
 import { LinearGradient } from "expo-linear-gradient";
 import { color } from "@/theme/tokens";
 import { useColors } from "@/hooks/use-colors";
 import type { Companion } from "./ParticipationForm";
 import { Button } from "@/components/ui/button";
+import { TwitterUserCard, TwitterUserCompact, toTwitterUserData } from "@/components/molecules/twitter-user-card";
 
 export type ConfirmationModalProps = {
   visible: boolean;
@@ -55,37 +55,16 @@ export function ConfirmationModal({
           </Text>
 
           {/* 参加者情報 */}
-          <View style={styles.userCard}>
-            <Text style={styles.cardLabel}>参加者</Text>
-            <View style={styles.userInfo}>
-              {user?.profileImage ? (
-                <Image
-                  source={{ uri: user.profileImage }}
-                  style={styles.userAvatar}
-                  contentFit="cover"
-                />
-              ) : (
-                <View style={[styles.userAvatarPlaceholder, { backgroundColor: color.accentPrimary }]}>
-                  <Text style={[styles.userAvatarText, { color: colors.foreground }]}>
-                    {(user?.name || user?.username || "ゲ")?.charAt(0).toUpperCase()}
-                  </Text>
-                </View>
-              )}
-              <View style={styles.userDetails}>
-                <Text style={[styles.userName, { color: colors.foreground }]}>
-                  {user?.name || user?.username || "ゲスト"}
-                </Text>
-                {user?.username && (
-                  <Text style={styles.userHandle}>@{user.username}</Text>
-                )}
-                {user?.followersCount != null && user.followersCount > 0 && (
-                  <Text style={styles.userFollowers}>
-                    {user.followersCount.toLocaleString()} フォロワー
-                  </Text>
-                )}
-              </View>
+          {user && (
+            <View style={styles.userCard}>
+              <Text style={styles.cardLabel}>参加者</Text>
+              <TwitterUserCard
+                user={toTwitterUserData(user)}
+                size="small"
+                showFollowers={true}
+              />
             </View>
-          </View>
+          )}
 
           {/* 都道府県 */}
           {prefecture && (
@@ -102,19 +81,14 @@ export function ConfirmationModal({
               <View style={styles.companionList}>
                 {companions.map((c) => (
                   <View key={c.id} style={styles.companionItem}>
-                    {c.profileImage ? (
-                      <Image source={{ uri: c.profileImage }} style={styles.companionAvatar} />
-                    ) : (
-                      <View style={[styles.companionAvatarPlaceholder, { backgroundColor: color.accentAlt }]}>
-                        <Text style={[styles.companionAvatarText, { color: colors.foreground }]}>
-                          {c.displayName.charAt(0)}
-                        </Text>
-                      </View>
-                    )}
-                    <Text style={[styles.companionName, { color: colors.foreground }]}>{c.displayName}</Text>
-                    {c.twitterUsername && (
-                      <Text style={styles.companionHandle}>@{c.twitterUsername}</Text>
-                    )}
+                    <TwitterUserCompact
+                      user={toTwitterUserData({
+                        displayName: c.displayName,
+                        twitterUsername: c.twitterUsername,
+                        profileImage: c.profileImage,
+                      })}
+                      size="small"
+                    />
                   </View>
                 ))}
               </View>
@@ -214,44 +188,6 @@ const styles = StyleSheet.create({
     fontSize: 12,
     marginBottom: 8,
   },
-  userInfo: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 12,
-  },
-  userAvatar: {
-    width: 48,
-    height: 48,
-    borderRadius: 24,
-  },
-  userAvatarPlaceholder: {
-    width: 48,
-    height: 48,
-    borderRadius: 24,
-    justifyContent: "center",
-    alignItems: "center",
-  },
-  userAvatarText: {
-    fontSize: 20,
-    fontWeight: "bold",
-  },
-  userDetails: {
-    flex: 1,
-  },
-  userName: {
-    fontSize: 16,
-    fontWeight: "600",
-  },
-  userHandle: {
-    color: color.textSecondary,
-    fontSize: 14,
-    marginTop: 2,
-  },
-  userFollowers: {
-    color: color.accentPrimary,
-    fontSize: 12,
-    marginTop: 4,
-  },
   infoCard: {
     borderRadius: 12,
     padding: 12,
@@ -269,28 +205,6 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     alignItems: "center",
     gap: 8,
-  },
-  companionAvatar: {
-    width: 24,
-    height: 24,
-    borderRadius: 12,
-  },
-  companionAvatarPlaceholder: {
-    width: 24,
-    height: 24,
-    borderRadius: 12,
-    justifyContent: "center",
-    alignItems: "center",
-  },
-  companionAvatarText: {
-    fontSize: 12,
-  },
-  companionName: {
-    fontSize: 14,
-  },
-  companionHandle: {
-    color: color.textSecondary,
-    fontSize: 12,
   },
   messageText: {
     fontSize: 14,

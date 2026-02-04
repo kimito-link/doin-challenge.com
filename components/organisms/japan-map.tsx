@@ -1,11 +1,15 @@
-import { View, Text, Pressable, Dimensions, Platform } from "react-native";
+import { View, Text, Pressable, useWindowDimensions, Platform } from "react-native";
 import * as Haptics from "expo-haptics";
 import { color, palette } from "@/theme/tokens";
 import { MapErrorBoundary } from "@/components/ui/map-error-boundary";
 import Svg, { Path, G, Text as SvgText } from "react-native-svg";
 import { useMemo } from "react";
 
-const screenWidth = Dimensions.get("window").width;
+/** 日本列島のアスペクト比（高さ/幅）。地図の見やすさのため全画面で統一 */
+const JAPAN_ARCHIPELAGO_ASPECT = 1.2;
+const MAP_MAX_WIDTH = 480;
+const MAP_MIN_WIDTH = 280;
+const HORIZONTAL_PADDING = 32;
 
 // 都道府県コードと名前のマッピング
 const prefectureData: { [key: string]: { name: string; x: number; y: number } } = {
@@ -80,8 +84,12 @@ interface JapanMapProps {
 }
 
 function JapanMapInner({ prefectureCounts, onPrefecturePress, selectedPrefecture }: JapanMapProps) {
-  const mapWidth = Math.min(screenWidth - 32, 400);
-  const mapHeight = mapWidth * 1.2;
+  const { width: screenWidth } = useWindowDimensions();
+  const mapWidth = Math.max(
+    MAP_MIN_WIDTH,
+    Math.min(screenWidth - HORIZONTAL_PADDING, MAP_MAX_WIDTH)
+  );
+  const mapHeight = mapWidth * JAPAN_ARCHIPELAGO_ASPECT;
   const scale = mapWidth / 400;
 
   // 地域ごとの参加者数を集計

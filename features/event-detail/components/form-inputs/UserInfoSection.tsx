@@ -1,15 +1,15 @@
 /**
  * UserInfoSection Component
- * ユーザー情報表示・ログイン促進
+ * ユーザー情報表示・ログイン促進（TwitterUserCard で統一）
  */
 
 import { View, Text, Pressable } from "react-native";
-import { Image } from "expo-image";
 import MaterialIcons from "@expo/vector-icons/MaterialIcons";
 import { color } from "@/theme/tokens";
 import { useColors } from "@/hooks/use-colors";
 import { LoginModal } from "@/components/common/LoginModal";
 import { useState } from "react";
+import { TwitterUserCard, toTwitterUserData } from "@/components/molecules/twitter-user-card";
 
 interface UserInfoSectionProps {
   user: {
@@ -23,62 +23,22 @@ interface UserInfoSectionProps {
 }
 
 export function UserInfoSection({ user, login }: UserInfoSectionProps) {
+  const colors = useColors();
   if (user) {
-    return <UserInfoDisplay user={user} />;
+    return (
+      <View style={{ marginBottom: 16, backgroundColor: colors.background, borderRadius: 12, padding: 16, borderWidth: 1, borderColor: color.border }}>
+        <Text style={{ color: color.textSecondary, fontSize: 12, marginBottom: 8 }}>
+          参加者
+        </Text>
+        <TwitterUserCard
+          user={toTwitterUserData(user)}
+          size="medium"
+          showFollowers={true}
+        />
+      </View>
+    );
   }
   return <LoginPrompt login={login} />;
-}
-
-// ユーザー情報表示
-function UserInfoDisplay({
-  user,
-}: {
-  user: {
-    name?: string | null;
-    username?: string | null;
-    profileImage?: string | null;
-    followersCount?: number | null;
-  };
-}) {
-  const colors = useColors();
-  
-  return (
-    <View style={{ marginBottom: 16, backgroundColor: colors.background, borderRadius: 12, padding: 16, borderWidth: 1, borderColor: color.border }}>
-      <Text style={{ color: color.textSecondary, fontSize: 12, marginBottom: 8 }}>
-        参加者
-      </Text>
-      <View style={{ flexDirection: "row", alignItems: "center", gap: 12 }}>
-        {user.profileImage ? (
-          <Image
-            source={{ uri: user.profileImage }}
-            style={{ width: 48, height: 48, borderRadius: 24 }}
-            contentFit="cover"
-          />
-        ) : (
-          <View style={{ width: 48, height: 48, borderRadius: 24, backgroundColor: color.accentPrimary, justifyContent: "center", alignItems: "center" }}>
-            <Text style={{ color: colors.foreground, fontSize: 20, fontWeight: "bold" }}>
-              {(user.name || user.username || "ゲ")?.charAt(0).toUpperCase()}
-            </Text>
-          </View>
-        )}
-        <View style={{ flex: 1 }}>
-          <Text style={{ color: colors.foreground, fontSize: 16, fontWeight: "600" }}>
-            {user.name || user.username || "ゲスト"}
-          </Text>
-          {user.username && (
-            <Text style={{ color: color.textSecondary, fontSize: 14, marginTop: 2 }}>
-              @{user.username}
-            </Text>
-          )}
-          {user.followersCount != null && user.followersCount > 0 && (
-            <Text style={{ color: color.accentPrimary, fontSize: 12, marginTop: 4 }}>
-              {user.followersCount.toLocaleString()} フォロワー
-            </Text>
-          )}
-        </View>
-      </View>
-    </View>
-  );
 }
 
 // ログイン促進

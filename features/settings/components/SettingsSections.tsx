@@ -9,6 +9,7 @@ import { color } from "@/theme/tokens";
 import { settingsStyles as styles } from "./SettingsSections.styles";
 import { Button } from "@/components/ui/button";
 import type { SessionExpiryInfo } from "@/lib/token-manager";
+import { TwitterUserCard, toTwitterUserData } from "@/components/molecules/twitter-user-card";
 
 type User = {
   id: number;
@@ -83,26 +84,12 @@ export function AccountSection({
       {isAuthenticated && user ? (
         <View style={styles.currentAccount}>
           <View style={styles.accountRow}>
-            {user.profileImage ? (
-              <Image
-                source={{ uri: user.profileImage }}
-                style={styles.avatar}
-                contentFit="cover"
-              />
-            ) : (
-              <View style={[styles.avatar, styles.avatarPlaceholder]}>
-                <MaterialIcons name="person" size={24} color={color.textMuted} />
-              </View>
-            )}
             <View style={styles.accountInfo}>
-              <Text style={styles.accountName} numberOfLines={1}>
-                {user.name || user.username || "ユーザー"}
-              </Text>
-              {user.username && (
-                <Text style={styles.accountUsername} numberOfLines={1}>
-                  @{user.username}
-                </Text>
-              )}
+              <TwitterUserCard
+                user={toTwitterUserData(user)}
+                size="medium"
+                showFollowers={false}
+              />
             </View>
             <View style={styles.currentBadge}>
               <Text style={styles.currentBadgeText}>ログイン中</Text>

@@ -4,11 +4,11 @@
  */
 
 import { View, Text, Pressable, TextInput } from "react-native";
-import { Image } from "expo-image";
 import MaterialIcons from "@expo/vector-icons/MaterialIcons";
 import { color } from "@/theme/tokens";
 import { useColors } from "@/hooks/use-colors";
 import type { LookedUpProfile } from "../../types";
+import { TwitterUserCompact, toTwitterUserData } from "@/components/molecules/twitter-user-card";
 
 interface TwitterSearchFormProps {
   newCompanionName: string;
@@ -148,10 +148,8 @@ function TwitterInput({
   );
 }
 
-// 検索結果表示
+// 検索結果表示（TwitterUserCompact で統一）
 function LookedUpProfileDisplay({ profile }: { profile: LookedUpProfile }) {
-  const colors = useColors();
-  
   return (
     <View style={{
       backgroundColor: color.surface,
@@ -163,17 +161,11 @@ function LookedUpProfileDisplay({ profile }: { profile: LookedUpProfile }) {
       borderWidth: 1,
       borderColor: color.twitter,
     }}>
-      <Image
-        source={{ uri: profile.profileImage }}
-        style={{ width: 40, height: 40, borderRadius: 20, marginRight: 12 }}
-      />
       <View style={{ flex: 1 }}>
-        <Text style={{ color: colors.foreground, fontWeight: "600" }}>
-          {profile.name}
-        </Text>
-        <Text style={{ color: color.twitter, fontSize: 12 }}>
-          @{profile.username}
-        </Text>
+        <TwitterUserCompact
+          user={toTwitterUserData(profile)}
+          size="medium"
+        />
       </View>
       <MaterialIcons name="check-circle" size={24} color={color.success} />
     </View>

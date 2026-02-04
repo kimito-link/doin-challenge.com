@@ -97,15 +97,15 @@ export const palette = {
   borderKyushu: "#DC2626",
   borderOkinawa: "#EC4899",
 
-  // Heatmap Colors
+  // Heatmap Colors（温度グラデーション: 少＝ベージュ → 多＝濃い赤。最高状態で日本列島が赤く染まる）
   heatmapNone: "#1f1f1f",
-  heatmapLevel1: "#1e3a5f",
-  heatmapLevel2: "#2d5a87",
-  heatmapLevel3: "#3b7ab0",
-  heatmapLevel4: "#4a9ad8",
-  heatmapLevel5: "#59baff",
-  heatmapLevel6: "#7ecbff",
-  heatmapLevel7: "#a3dcff",
+  heatmapLevel1: "#F0DCC0", // 1,000人以上: 薄いベージュ
+  heatmapLevel2: "#E8B868", // 5,000人以上: 淡い黄橙
+  heatmapLevel3: "#E09A48", // 10,000人以上: 明るいオレンジ
+  heatmapLevel4: "#E07030", // 30,000人以上: オレンジ
+  heatmapLevel5: "#D84820", // 50,000人以上: 赤橙
+  heatmapLevel6: "#C02020", // 100,000人以上: 濃い赤
+  heatmapLevel7: "#8B1010", // 200,000人以上: 最深紅（日本列島が赤く染まる）
 
   // Heatmap Intensity Colors
   heatIntense1: "#1a1a2e",

@@ -4,7 +4,7 @@
  * 単一責任: 47都道府県の地図描画のみ
  */
 
-import { View, StyleSheet, Dimensions, Platform } from "react-native";
+import { View, StyleSheet, Platform, useWindowDimensions } from "react-native";
 import Svg, { Path, G, Text as SvgText } from "react-native-svg";
 import * as Haptics from "expo-haptics";
 import { color } from "@/theme/tokens";
@@ -12,7 +12,12 @@ import { prefecturesData, prefectureNameToCode } from "@/lib/prefecture-paths";
 import { MAP_CONFIG, PREFECTURE_LABEL_POSITIONS } from "./constants";
 import { getHeatColor, normalizePrefectureName, getShortPrefectureName, getDynamicIcon } from "./utils";
 
-const screenWidth = Dimensions.get("window").width;
+/** 地図の最大幅（大画面でも見やすい上限） */
+const MAP_MAX_WIDTH = 480;
+/** 地図の最小幅（小さい画面でも都道府県が押しやすい） */
+const MAP_MIN_WIDTH = 280;
+/** 左右パディング合計 */
+const HORIZONTAL_PADDING = 32;
 
 interface JapanMapSvgProps {
   prefectureCounts47: Record<number, number>;
@@ -20,13 +25,17 @@ interface JapanMapSvgProps {
   onPrefecturePress?: (prefectureName: string) => void;
 }
 
-export function JapanMapSvg({ 
-  prefectureCounts47, 
-  maxPrefectureCount, 
-  onPrefecturePress 
+export function JapanMapSvg({
+  prefectureCounts47,
+  maxPrefectureCount,
+  onPrefecturePress,
 }: JapanMapSvgProps) {
-  const mapWidth = Math.min(screenWidth - 32, 380);
-  const mapHeight = mapWidth * 1.2;
+  const { width: screenWidth } = useWindowDimensions();
+  const mapWidth = Math.max(
+    MAP_MIN_WIDTH,
+    Math.min(screenWidth - HORIZONTAL_PADDING, MAP_MAX_WIDTH)
+  );
+  const mapHeight = mapWidth * MAP_CONFIG.aspectRatio;
   const { viewBoxWidth, viewBoxHeight, scale, offsetX, offsetY } = MAP_CONFIG;
 
   return (
