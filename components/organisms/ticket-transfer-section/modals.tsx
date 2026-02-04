@@ -1,10 +1,11 @@
 // components/organisms/ticket-transfer-section/modals.tsx
 // v6.18: チケット譲渡のモーダルコンポーネント
 import { useState } from "react";
-import { View, Text, Pressable, TextInput, Modal , Platform} from "react-native";
+import { View, Text, Pressable, Modal , Platform} from "react-native";
 import * as Haptics from "expo-haptics";
 import { color } from "@/theme/tokens";
 import { PriceType, priceTypeLabels, priceTypeColors } from "./types";
+import { Input } from "@/components/ui/input";
 
 // 譲渡投稿作成モーダル
 export function CreateTransferModal({
@@ -104,25 +105,15 @@ export function CreateTransferModal({
           </View>
           
           {/* コメント */}
-          <Text style={{ color: color.textMuted, fontSize: 14, marginBottom: 8 }}>コメント（任意）</Text>
-          <TextInput
+          <Input
+            label="コメント（任意）"
             value={comment}
             onChangeText={setComment}
             placeholder="例: 急な仕事で行けなくなりました..."
-            placeholderTextColor={color.textSubtle}
             multiline
             numberOfLines={3}
-            style={{
-              backgroundColor: color.bg,
-              borderRadius: 8,
-              padding: 12,
-              color: color.textWhite,
-              borderWidth: 1,
-              borderColor: color.border,
-              minHeight: 80,
-              textAlignVertical: "top",
-              marginBottom: 16,
-            }}
+            containerStyle={{ marginBottom: 16 }}
+            style={{ minHeight: 80, textAlignVertical: "top" }}
           />
           
           {/* 注意事項 */}

@@ -3,8 +3,8 @@
  * 管理者がリリースノートを追加・管理できる画面
  */
 
-import { useState, useEffect } from "react";
-import { View, Text, ScrollView, Pressable, TextInput, Alert, ActivityIndicator, Platform } from "react-native";
+import { useState } from "react";
+import { View, Text, ScrollView, Pressable, Alert, ActivityIndicator } from "react-native";
 import { ScreenContainer } from "@/components/organisms/screen-container";
 import { AppHeader } from "@/components/organisms/app-header";
 import { useColors } from "@/hooks/use-colors";
@@ -12,6 +12,7 @@ import { trpc } from "@/lib/trpc";
 import { color } from "@/theme/tokens";
 import MaterialIcons from "@expo/vector-icons/MaterialIcons";
 import { navigateBack } from "@/lib/navigation/app-routes";
+import { Input } from "@/components/ui/input";
 
 export default function ReleaseNotesAdminScreen() {
   const colors = useColors();
@@ -78,85 +79,40 @@ export default function ReleaseNotesAdminScreen() {
     <ScreenContainer>
       <AppHeader title="リリースノート追加" />
       <ScrollView style={{ flex: 1 }} contentContainerStyle={{ padding: 16 }}>
-        <View style={{ marginBottom: 16 }}>
-          <Text style={{ color: colors.foreground, fontSize: 14, marginBottom: 8, fontWeight: "600" }}>
-            バージョン
-          </Text>
-          <TextInput
-            value={version}
-            onChangeText={setVersion}
-            style={{
-              backgroundColor: colors.surface,
-              borderWidth: 1,
-              borderColor: color.border,
-              borderRadius: 8,
-              padding: 12,
-              color: colors.foreground,
-            }}
-            placeholder="例: 6.182"
-          />
-        </View>
+        <Input
+          label="バージョン"
+          value={version}
+          onChangeText={setVersion}
+          placeholder="例: 6.182"
+          containerStyle={{ marginBottom: 16 }}
+        />
 
-        <View style={{ marginBottom: 16 }}>
-          <Text style={{ color: colors.foreground, fontSize: 14, marginBottom: 8, fontWeight: "600" }}>
-            日付 (YYYY-MM-DD)
-          </Text>
-          <TextInput
-            value={date}
-            onChangeText={setDate}
-            style={{
-              backgroundColor: colors.surface,
-              borderWidth: 1,
-              borderColor: color.border,
-              borderRadius: 8,
-              padding: 12,
-              color: colors.foreground,
-            }}
-            placeholder="例: 2025-01-31"
-          />
-        </View>
+        <Input
+          label="日付 (YYYY-MM-DD)"
+          value={date}
+          onChangeText={setDate}
+          placeholder="例: 2025-01-31"
+          containerStyle={{ marginBottom: 16 }}
+        />
 
-        <View style={{ marginBottom: 16 }}>
-          <Text style={{ color: colors.foreground, fontSize: 14, marginBottom: 8, fontWeight: "600" }}>
-            タイトル
-          </Text>
-          <TextInput
-            value={title}
-            onChangeText={setTitle}
-            style={{
-              backgroundColor: colors.surface,
-              borderWidth: 1,
-              borderColor: color.border,
-              borderRadius: 8,
-              padding: 12,
-              color: colors.foreground,
-            }}
-            placeholder="例: ファクタリング完了 & X APIコスト管理機能の改善"
-          />
-        </View>
+        <Input
+          label="タイトル"
+          value={title}
+          onChangeText={setTitle}
+          placeholder="例: ファクタリング完了 & X APIコスト管理機能の改善"
+          containerStyle={{ marginBottom: 16 }}
+        />
 
-        <View style={{ marginBottom: 16 }}>
-          <Text style={{ color: colors.foreground, fontSize: 14, marginBottom: 8, fontWeight: "600" }}>
-            変更内容（1行1項目、形式: 新機能/改善/修正/変更: 説明）
-          </Text>
-          <TextInput
-            value={changesText}
-            onChangeText={setChangesText}
-            multiline
-            numberOfLines={10}
-            style={{
-              backgroundColor: colors.surface,
-              borderWidth: 1,
-              borderColor: color.border,
-              borderRadius: 8,
-              padding: 12,
-              color: colors.foreground,
-              minHeight: 200,
-              textAlignVertical: "top",
-            }}
-            placeholder="改善: コンポーネント統一: SearchBarをSearchInputベースに移行&#10;新機能: X APIコスト管理: エンドポイント別コスト表示機能を追加"
-          />
-        </View>
+        <Input
+          label="変更内容（1行1項目、形式: 新機能/改善/修正/変更: 説明）"
+          value={changesText}
+          onChangeText={setChangesText}
+          multiline
+          numberOfLines={10}
+          placeholder="改善: コンポーネント統一: SearchBarをSearchInputベースに移行&#10;新機能: X APIコスト管理: エンドポイント別コスト表示機能を追加"
+          containerStyle={{ marginBottom: 16 }}
+          style={{ minHeight: 200, textAlignVertical: "top" }}
+        />
 
         <Pressable
           onPress={handleAdd}
