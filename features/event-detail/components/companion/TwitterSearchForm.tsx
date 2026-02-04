@@ -171,29 +171,14 @@ function DirectNameInput({
   value: string;
   onChange: (text: string) => void;
 }) {
-  const colors = useColors();
-  
   return (
-    <>
-      <Text style={{ color: color.textSecondary, fontSize: 14, marginBottom: 4, marginTop: 8 }}>
-        または名前を直接入力
-      </Text>
-      <TextInput
-        value={value}
-        onChangeText={onChange}
-        placeholder="友人の名前"
-        placeholderTextColor={color.textHint}
-        style={{
-          backgroundColor: color.surface,
-          borderRadius: 8,
-          padding: 12,
-          color: colors.foreground,
-          borderWidth: 1,
-          borderColor: color.border,
-          marginBottom: 12,
-        }}
-      />
-    </>
+    <Input
+      label="または名前を直接入力"
+      value={value}
+      onChangeText={onChange}
+      placeholder="友人の名前"
+      containerStyle={{ marginTop: 8, marginBottom: 0 }}
+    />
   );
 }
 
