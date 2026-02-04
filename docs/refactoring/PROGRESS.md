@@ -1,5 +1,29 @@
 # ファクタリング作業履歴
 
+## 2025-01-31: 残りのファクタリング作業完了
+
+### 作業開始
+- **タスク**: 残りのファクタリング作業の完了
+- **目的**: 長期的なメリットを優先し、コードの統一性と保守性を向上
+- **対象**: 
+  1. SearchBar.tsx → SearchInputベースに移行
+  2. challenge-created-modal.tsx → Checkbox統一
+
+### 設計・要件定義完了
+- [x] REQUIREMENTS.md作成（`docs/refactoring/searchbar-migration/REQUIREMENTS.md`）
+- [x] REQUIREMENTS.md作成（`docs/refactoring/challenge-modal-checkbox/REQUIREMENTS.md`）
+
+### 実装完了
+- [x] `components/ui/input.tsx` - SearchInputにサジェスト機能とデバウンス機能を追加
+- [x] `features/home/components/SearchBar.tsx` - SearchInputベースに書き換え（約200行→約60行に削減）
+- [x] `components/ui/checkbox.tsx` - アイコン、アクションボタン、checkedLabelStyleに対応
+- [x] `components/molecules/challenge-created-modal.tsx` - 統一Checkboxコンポーネントを使用
+
+### コミット履歴
+- 2025-01-31: 残りのファクタリング作業完了 - 作業中
+
+---
+
 ## 2025-01-31: X API コスト管理機能の改善
 
 ### 作業開始

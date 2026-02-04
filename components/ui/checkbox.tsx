@@ -4,6 +4,7 @@
 import { useCallback } from "react";
 import { View, Text, Pressable, StyleSheet, type ViewStyle } from "react-native";
 import MaterialIcons from "@expo/vector-icons/MaterialIcons";
+import { FontAwesome6 } from "@expo/vector-icons";
 import { color } from "@/theme/tokens";
 import { useColors } from "@/hooks/use-colors";
 
@@ -18,6 +19,16 @@ export interface CheckboxProps {
   disabled?: boolean;
   containerStyle?: ViewStyle;
   testID?: string;
+  /** アイコン名（FontAwesome6） */
+  icon?: string;
+  /** チェック時のラベルスタイル（打ち消し線など） */
+  checkedLabelStyle?: ViewStyle;
+  /** アクションボタン */
+  actionButton?: {
+    label: string;
+    onPress: () => void;
+    isActive?: boolean;
+  };
 }
 
 // ==================== サイズ定義 ====================
@@ -73,6 +84,9 @@ export function Checkbox({
   disabled = false,
   containerStyle,
   testID,
+  icon,
+  checkedLabelStyle,
+  actionButton,
 }: CheckboxProps) {
   const colors = useColors();
   const sizeStyle = sizeStyles[size];
@@ -84,77 +98,105 @@ export function Checkbox({
   }, [checked, onChange, disabled]);
 
   return (
-    <Pressable
-      onPress={handlePress}
-      disabled={disabled}
-      style={({ pressed }) => [
-        styles.container,
-        {
-          opacity: disabled ? 0.5 : pressed ? 0.8 : 1,
-        },
-        containerStyle,
-      ]}
-      accessibilityRole="checkbox"
-      accessibilityState={{ checked, disabled }}
-      accessibilityLabel={label}
-      testID={testID ? `${testID}-pressable` : undefined}
-    >
-      {/* チェックボックス */}
-      <View
-        style={[
-          styles.checkbox,
+    <View style={containerStyle}>
+      <Pressable
+        onPress={handlePress}
+        disabled={disabled}
+        style={({ pressed }) => [
+          styles.container,
           {
-            width: sizeStyle.checkboxSize,
-            height: sizeStyle.checkboxSize,
-            borderRadius: 4,
-            borderWidth: 2,
-            borderColor: checked
-              ? color.accentPrimary
-              : disabled
-              ? color.textDisabled
-              : color.textHint,
-            backgroundColor: checked ? color.accentPrimary : "transparent",
+            opacity: disabled ? 0.5 : pressed ? 0.8 : 1,
           },
         ]}
-        testID={testID ? `${testID}-checkbox` : undefined}
+        accessibilityRole="checkbox"
+        accessibilityState={{ checked, disabled }}
+        accessibilityLabel={label}
+        testID={testID ? `${testID}-pressable` : undefined}
       >
+        {/* チェックボックス */}
+        <View
+          style={[
+            styles.checkbox,
+            {
+              width: sizeStyle.checkboxSize,
+              height: sizeStyle.checkboxSize,
+              borderRadius: 4,
+              borderWidth: 2,
+              borderColor: checked
+                ? color.accentPrimary
+                : disabled
+                ? color.textDisabled
+                : color.textHint,
+              backgroundColor: checked ? color.accentPrimary : "transparent",
+            },
+          ]}
+          testID={testID ? `${testID}-checkbox` : undefined}
+        >
         {checked && (
           <MaterialIcons
             name="check"
             size={sizeStyle.iconSize}
-            color={colors.foreground}
+            color="#fff"
           />
         )}
-      </View>
+        </View>
 
-      {/* ラベル・説明文 */}
-      <View style={styles.labelContainer}>
-        <Text
+        {/* ラベル・説明文 */}
+        <View style={styles.labelContainer}>
+          <View style={styles.labelRow}>
+            {icon && (
+              <FontAwesome6
+                name={icon as any}
+                size={14}
+                color={checked ? colors.muted : colors.primary}
+                style={styles.icon}
+              />
+            )}
+            <Text
+              style={[
+                styles.label,
+                {
+                  color: disabled ? color.textDisabled : colors.foreground,
+                  fontSize: sizeStyle.fontSize,
+                },
+                checked && checkedLabelStyle,
+              ]}
+            >
+              {label}
+            </Text>
+          </View>
+          {description && (
+            <Text
+              style={[
+                styles.description,
+                {
+                  color: color.textSecondary,
+                  fontSize: sizeStyle.fontSize - 2,
+                  marginLeft: icon ? 22 : 0,
+                },
+              ]}
+            >
+              {description}
+            </Text>
+          )}
+        </View>
+      </Pressable>
+      
+      {/* アクションボタン */}
+      {actionButton && (
+        <Pressable
           style={[
-            styles.label,
-            {
-              color: disabled ? color.textDisabled : colors.foreground,
-              fontSize: sizeStyle.fontSize,
-            },
+            styles.actionButton,
+            { backgroundColor: colors.primary + "20" },
           ]}
+          onPress={actionButton.onPress}
         >
-          {label}
-        </Text>
-        {description && (
-          <Text
-            style={[
-              styles.description,
-              {
-                color: color.textSecondary,
-                fontSize: sizeStyle.fontSize - 2,
-              },
-            ]}
-          >
-            {description}
+          <Text style={[styles.actionButtonText, { color: colors.primary }]}>
+            {actionButton.isActive ? "✓ コピー完了" : actionButton.label}
           </Text>
-        )}
-      </View>
-    </Pressable>
+        </Pressable>
+      )}
+    </View>
   );
 }
 
@@ -175,6 +217,13 @@ const styles = StyleSheet.create({
   labelContainer: {
     flex: 1,
   },
+  labelRow: {
+    flexDirection: "row",
+    alignItems: "center",
+  },
+  icon: {
+    marginRight: 8,
+  },
   label: {
     fontWeight: "600",
     lineHeight: 20,
@@ -182,5 +231,17 @@ const styles = StyleSheet.create({
   description: {
     marginTop: 4,
     lineHeight: 16,
+  },
+  actionButton: {
+    paddingVertical: 10,
+    paddingHorizontal: 16,
+    marginTop: 12,
+    marginHorizontal: 0,
+    borderRadius: 8,
+    alignItems: "center",
+  },
+  actionButtonText: {
+    fontSize: 13,
+    fontWeight: "600",
   },
 });

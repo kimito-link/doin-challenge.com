@@ -22,6 +22,7 @@ import * as Clipboard from "expo-clipboard";
 import * as Haptics from "expo-haptics";
 import { useColors } from "@/hooks/use-colors";
 import { navigate } from "@/lib/navigation";
+import { Checkbox } from "@/components/ui";
 
 interface ChallengeCreatedModalProps {
   visible: boolean;
@@ -250,54 +251,19 @@ ${url}`;
                 key={item.id}
                 style={[styles.checklistItem, { backgroundColor: colors.surface, borderColor: colors.border }]}
               >
-                <Pressable
-                  style={styles.checkboxArea}
-                  onPress={() => toggleCheck(item.id)}
-                >
-                  <View
-                    style={[
-                      styles.checkbox,
-                      { borderColor: checkedItems.has(item.id) ? colors.success : colors.border },
-                      checkedItems.has(item.id) && { backgroundColor: colors.success },
-                    ]}
-                  >
-                    {checkedItems.has(item.id) && (
-                      <FontAwesome6 name="check" size={10} color="#fff" />
-                    )}
-                  </View>
-                  <View style={styles.checklistContent}>
-                    <View style={styles.checklistLabelRow}>
-                      <FontAwesome6
-                        name={item.icon as any}
-                        size={14}
-                        color={checkedItems.has(item.id) ? colors.muted : colors.primary}
-                        style={styles.checklistIcon}
-                      />
-                      <Text
-                        style={[
-                          styles.checklistLabel,
-                          { color: colors.foreground },
-                          checkedItems.has(item.id) && styles.checkedLabel,
-                        ]}
-                      >
-                        {item.label}
-                      </Text>
-                    </View>
-                    <Text style={[styles.checklistDescription, { color: colors.muted }]}>
-                      {item.description}
-                    </Text>
-                  </View>
-                </Pressable>
-                {item.action && (
-                  <Pressable
-                    style={[styles.actionButton, { backgroundColor: colors.primary + "20" }]}
-                    onPress={item.action}
-                  >
-                    <Text style={[styles.actionButtonText, { color: colors.primary }]}>
-                      {copiedTemplate === item.id ? "✓ コピー完了" : item.actionLabel}
-                    </Text>
-                  </Pressable>
-                )}
+                <Checkbox
+                  checked={checkedItems.has(item.id)}
+                  onChange={() => toggleCheck(item.id)}
+                  label={item.label}
+                  description={item.description}
+                  icon={item.icon}
+                  checkedLabelStyle={styles.checkedLabel}
+                  actionButton={item.action ? {
+                    label: item.actionLabel || "",
+                    onPress: item.action,
+                    isActive: copiedTemplate === item.id,
+                  } : undefined}
+                />
               </View>
             ))}
           </ScrollView>
@@ -397,57 +363,11 @@ const styles = StyleSheet.create({
     borderRadius: 12,
     borderWidth: 1,
     marginBottom: 12,
-    overflow: "hidden",
-  },
-  checkboxArea: {
-    flexDirection: "row",
-    alignItems: "flex-start",
     padding: 12,
-  },
-  checkbox: {
-    width: 20,
-    height: 20,
-    borderRadius: 4,
-    borderWidth: 2,
-    alignItems: "center",
-    justifyContent: "center",
-    marginRight: 12,
-    marginTop: 2,
-  },
-  checklistContent: {
-    flex: 1,
-  },
-  checklistLabelRow: {
-    flexDirection: "row",
-    alignItems: "center",
-    marginBottom: 4,
-  },
-  checklistIcon: {
-    marginRight: 8,
-  },
-  checklistLabel: {
-    fontSize: 14,
-    fontWeight: "600",
   },
   checkedLabel: {
     textDecorationLine: "line-through",
     opacity: 0.6,
-  },
-  checklistDescription: {
-    fontSize: 12,
-    marginLeft: 22,
-  },
-  actionButton: {
-    paddingVertical: 10,
-    paddingHorizontal: 16,
-    marginHorizontal: 12,
-    marginBottom: 12,
-    borderRadius: 8,
-    alignItems: "center",
-  },
-  actionButtonText: {
-    fontSize: 13,
-    fontWeight: "600",
   },
   footer: {
     paddingHorizontal: 24,
