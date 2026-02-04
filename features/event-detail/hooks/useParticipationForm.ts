@@ -9,6 +9,8 @@ import * as Haptics from "expo-haptics";
 import { trpc } from "@/lib/trpc";
 import { lookupTwitterUser, getErrorMessage } from "@/lib/api";
 import { SHARE_PROMPT_DELAY, SCROLL_TO_MESSAGES_DELAY } from "../constants";
+import type { FormGender } from "@/components/ui";
+import type { Gender } from "@/types/participation";
 import type { 
   Companion, 
   LookedUpProfile, 
@@ -40,8 +42,8 @@ interface UseParticipationFormReturn {
   setDisplayName: (value: string) => void;
   prefecture: string;
   setPrefecture: (value: string) => void;
-  gender: "male" | "female" | "";
-  setGender: (value: "male" | "female" | "") => void;
+  gender: FormGender;
+  setGender: (value: FormGender) => void;
   allowVideoUse: boolean;
   setAllowVideoUse: (value: boolean) => void;
   showForm: boolean;
@@ -106,7 +108,7 @@ export function useParticipationForm({
   const [message, setMessage] = useState("");
   const [displayName, setDisplayName] = useState("");
   const [prefecture, setPrefecture] = useState("");
-  const [gender, setGender] = useState<"male" | "female" | "">("");
+  const [gender, setGender] = useState<FormGender>("");
   const [allowVideoUse, setAllowVideoUse] = useState(true);
   const [showForm, setShowForm] = useState(false);
   const [showOneClickConfirm, setShowOneClickConfirm] = useState(false);
@@ -120,7 +122,7 @@ export function useParticipationForm({
       setPrefecture((prev) => (prev === "" ? user!.prefecture! : prev));
     }
     if (user.gender && user.gender !== "unspecified") {
-      setGender((prev) => (prev === "" ? (user!.gender as "male" | "female") : prev));
+      setGender((prev) => (prev === "" ? (user!.gender as Gender) : prev));
     }
   }, [user?.prefecture, user?.gender]);
   const [justSubmitted, setJustSubmitted] = useState(false);
@@ -315,7 +317,7 @@ export function useParticipationForm({
     const hasProfile = user.prefecture && user.gender && user.gender !== "unspecified";
     if (hasProfile && companions.length === 0) {
       setPrefecture(user.prefecture!);
-      setGender(user.gender as "male" | "female");
+      setGender(user.gender as Gender);
       setMessage("");
       setShowOneClickConfirm(true);
     } else {
@@ -353,7 +355,7 @@ export function useParticipationForm({
           message,
           companionCount: companions.length,
           prefecture,
-          ...(gender && { gender: gender as "male" | "female" | "unspecified" }),
+          ...(gender && { gender: gender as Gender }),
           twitterId,
           displayName: user.name || "ゲスト",
           username: user.username ?? undefined,

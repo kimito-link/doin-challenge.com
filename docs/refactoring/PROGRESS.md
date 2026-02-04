@@ -1,5 +1,39 @@
 # ファクタリング作業履歴
 
+## 2025-01-31: Gender型統一
+
+### 作業開始
+- **タスク**: Gender型の統一
+- **目的**: 複数の場所で定義されているGender型を統一し、型安全性と保守性を向上
+- **対象**: 
+  1. `components/ui/gender-selector.tsx` - FormGender型を導入
+  2. `features/event-detail/hooks/useParticipationForm.ts` - FormGender型を使用
+  3. `features/events/hooks/useEventDetailScreen.ts` - FormGender型を使用
+
+### 設計・要件定義完了
+- [x] REQUIREMENTS.md作成 (`docs/refactoring/gender-type-unification/REQUIREMENTS.md`)
+
+### 実装完了
+- [x] `components/ui/gender-selector.tsx` - `Gender`型を`FormGender = Gender | ""`に変更
+- [x] `components/ui/index.ts` - `Gender`エクスポートを`FormGender`に変更
+- [x] `features/event-detail/components/form-inputs/GenderSelector.tsx` - `FormGender`型を使用
+- [x] `features/event-detail/hooks/useParticipationForm.ts` - `FormGender`と`Gender`型を使用
+- [x] `features/events/hooks/useEventDetailScreen.ts` - `FormGender`と`Gender`型を使用
+
+### 実装完了（続き）
+- [x] `app/oauth/twitter-callback.tsx` - `Gender`型を使用
+- [x] `app/event/[id].tsx` - 表示ロジックを改善（空文字列対応）
+- [x] `features/events/components/participation-form/types.ts` - `FormGender`型を使用
+
+### 残タスク
+- [ ] その他の箇所の確認と統一（必要に応じて）
+- [ ] 動作確認
+
+### コミット履歴
+- 2025-01-31: Gender型統一完了
+
+---
+
 ## 2025-01-31: Checkbox コンポーネント統一
 
 ### 作業開始

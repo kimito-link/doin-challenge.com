@@ -105,7 +105,7 @@ export {
 export {
   GenderSelector,
   type GenderSelectorProps,
-  type Gender,
+  type FormGender,
 } from "./gender-selector";
 
 // Display系

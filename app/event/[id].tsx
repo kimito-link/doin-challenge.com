@@ -327,7 +327,7 @@ export default function ChallengeDetailScreen() {
         >
           <Pressable style={{ backgroundColor: colors.surface, borderRadius: 16, padding: 24 }} onPress={(e) => e.stopPropagation()}>
             <Text style={{ fontSize: 16, color: colors.foreground, marginBottom: 24, textAlign: "center" }}>
-              {participationForm.prefecture}・{participationForm.gender === "male" ? "男性" : "女性"}で参加表明します。よろしいですか？
+              {participationForm.prefecture}・{participationForm.gender === "male" ? "男性" : participationForm.gender === "female" ? "女性" : ""}で参加表明します。よろしいですか？
             </Text>
             <View style={{ flexDirection: "row", gap: 12 }}>
               <Pressable

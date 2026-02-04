@@ -5,11 +5,11 @@
  * 汎用コンポーネント components/ui/gender-selector.tsx を使用
  */
 
-import { GenderSelector as BaseGenderSelector, type Gender } from "@/components/ui";
+import { GenderSelector as BaseGenderSelector, type FormGender } from "@/components/ui";
 
 interface GenderSelectorProps {
-  gender: Gender;
-  setGender: (value: Gender) => void;
+  gender: FormGender;
+  setGender: (value: FormGender) => void;
 }
 
 export function GenderSelector({ gender, setGender }: GenderSelectorProps) {

@@ -4,6 +4,8 @@
  * ParticipationFormコンポーネントの型定義
  */
 
+import type { FormGender } from "@/components/ui";
+
 export type Companion = {
   id: string;
   displayName: string;
@@ -35,8 +37,8 @@ export type ParticipationFormProps = {
   onMessageChange: (text: string) => void;
   prefecture: string;
   onPrefectureChange: (pref: string) => void;
-  gender: "male" | "female" | "";
-  onGenderChange: (gender: "male" | "female" | "") => void;
+  gender: FormGender;
+  onGenderChange: (gender: FormGender) => void;
   allowVideoUse: boolean;
   onAllowVideoUseChange: (allow: boolean) => void;
   

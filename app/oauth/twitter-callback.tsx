@@ -17,6 +17,7 @@ import { trpc } from "@/lib/trpc";
 import { useColors } from "@/hooks/use-colors";
 import { color } from "@/theme/tokens";
 import * as Api from "@/lib/_core/api";
+import type { Gender } from "@/types/participation";
 
 // 画像アセット
 const APP_LOGO = require("@/assets/images/logos/kimitolink-logo.jpg");
@@ -54,7 +55,7 @@ export default function TwitterOAuthCallback() {
   const [savedReturnUrl, setSavedReturnUrl] = useState<string>("/(tabs)/mypage");
   const [needOnboarding, setNeedOnboarding] = useState(false);
   const [onboardingPrefecture, setOnboardingPrefecture] = useState("");
-  const [onboardingGender, setOnboardingGender] = useState<"male" | "female" | "unspecified">("unspecified");
+  const [onboardingGender, setOnboardingGender] = useState<Gender>("unspecified");
   const [showPrefectureList, setShowPrefectureList] = useState(false);
   const isFollowingRef = useRef(false);
 

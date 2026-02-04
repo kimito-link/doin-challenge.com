@@ -11,6 +11,8 @@ import { trpc } from "@/lib/trpc";
 import { useAuth } from "@/hooks/use-auth";
 import { useFavorites } from "@/hooks/use-favorites";
 import { lookupTwitterUser, getErrorMessage } from "@/lib/api";
+import type { FormGender } from "@/components/ui";
+import type { Gender } from "@/types/participation";
 
 import { useEventData } from "./event-detail-screen/useEventData";
 import type { 
@@ -54,7 +56,7 @@ export function useEventDetailScreen(challengeId: number): UseEventDetailScreenR
   const [displayName, setDisplayName] = useState("");
   const [companionCount, setCompanionCount] = useState(0);
   const [prefecture, setPrefecture] = useState("");
-  const [gender, setGender] = useState<"male" | "female" | "unspecified" | "">("");
+  const [gender, setGender] = useState<FormGender>("");
   const [allowVideoUse, setAllowVideoUse] = useState(true);
   const [companions, setCompanions] = useState<CompanionInput[]>([]);
   
@@ -99,7 +101,7 @@ export function useEventDetailScreen(challengeId: number): UseEventDetailScreenR
   useEffect(() => {
     if (!user || editingParticipationId != null) return;
     if (user.prefecture) setPrefecture((prev) => (prev === "" ? user!.prefecture! : prev));
-    if (user.gender && user.gender !== "unspecified") setGender((prev) => (prev === "" ? user!.gender as "male" | "female" : prev));
+    if (user.gender && user.gender !== "unspecified") setGender((prev) => (prev === "" ? user!.gender as Gender : prev));
   }, [user?.prefecture, user?.gender, editingParticipationId]);
   const [lastParticipation, setLastParticipation] = useState<{
     name: string;
@@ -407,7 +409,7 @@ export function useEventDetailScreen(challengeId: number): UseEventDetailScreenR
       message: message.trim() || undefined,
       companionCount: companions.length,
       prefecture: prefecture || undefined,
-      gender: (gender || undefined) as "male" | "female" | "unspecified" | undefined,
+      gender: (gender || undefined) as Gender | undefined,
       companions: companions.map(c => ({
         displayName: c.displayName,
         twitterUsername: c.twitterUsername || undefined,
@@ -482,7 +484,7 @@ export function useEventDetailScreen(challengeId: number): UseEventDetailScreenR
     const hasProfile = user.prefecture && user.gender && user.gender !== "unspecified";
     if (hasProfile && companions.length === 0) {
       setPrefecture(user.prefecture!);
-      setGender(user.gender as "male" | "female");
+      setGender(user.gender as Gender);
       setMessage("");
       setShowOneClickConfirm(true);
     } else {
@@ -493,7 +495,7 @@ export function useEventDetailScreen(challengeId: number): UseEventDetailScreenR
   const openEditMode = useCallback((participation: ParticipationVM) => {
     setMessage(participation.message || "");
     setPrefecture(participation.prefecture || "");
-    setGender((participation.gender || "") as "male" | "female" | "unspecified" | "");
+    setGender((participation.gender || "") as FormGender);
     setCompanionCount(participation.companionCount);
     setIsEditMode(true);
     setEditingParticipationId(parseInt(participation.id));
