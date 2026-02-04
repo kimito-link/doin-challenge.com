@@ -5,6 +5,8 @@
 
 このドキュメントは、新しい機能を実装する前に、AIアシスタントに命令を渡す際のテンプレートです。曖昧さを排除し、Done条件を明確化します。
 
+**推奨**: Gate 1 + こまめなバージョン管理に則り、**1バージョン = 1変更 + 1テスト + 1commit** を心がけてください。問題の特定とロールバックが容易になります。
+
 ---
 
 ## Contract: [機能名]
@@ -104,6 +106,7 @@
 ## 関連ドキュメント
 
 - [docs/GATE1_WORKFLOW.md](./GATE1_WORKFLOW.md) - Gate 1 + こまめなバージョン管理の統合ワークフロー
+- [docs/gate1.md](./gate1.md) - Gate 1 汎用テンプレート（危険な変更の検知と必須アクション）
 - [docs/DATA_DESIGN_PRINCIPLES.md](./DATA_DESIGN_PRINCIPLES.md) - データ構造から考える開発原則
 - [docs/GIT_DEVELOPMENT_WORKFLOW.md](./GIT_DEVELOPMENT_WORKFLOW.md) - Git開発の基本作法
 

@@ -49,6 +49,7 @@ touch_ui=false
 touch_deploy=false
 touch_env=false
 touch_health=false
+touch_routing=false
 touch_workflow=false
 
 while IFS= read -r f; do
@@ -89,6 +90,11 @@ while IFS= read -r f; do
     touch_health=true
   fi
 
+  # routing / redirect / proxy（Gate 1 汎用テンプレート: 危険な変更6つ目）
+  if [[ "${f}" =~ middleware ]] || [[ "${f}" =~ router ]] || [[ "${f}" =~ redirect ]] || [[ "${f}" =~ proxy ]]; then
+    touch_routing=true
+  fi
+
   # workflows
   if [[ "${f}" =~ ^\.github/workflows/ ]]; then
     touch_workflow=true
@@ -97,9 +103,9 @@ while IFS= read -r f; do
 done <<< "${CHANGED_FILES}"
 
 # "Gate1的に危険"（ここだけは必ず手当てしたい）
-# auth / deploy / env / db / health は事故りやすい
+# auth / deploy / env / db / health / routing は事故りやすい
 sensitive=false
-if [[ "${touch_auth}" == true || "${touch_deploy}" == true || "${touch_env}" == true || "${touch_db}" == true || "${touch_health}" == true ]]; then
+if [[ "${touch_auth}" == true || "${touch_deploy}" == true || "${touch_env}" == true || "${touch_db}" == true || "${touch_health}" == true || "${touch_routing}" == true ]]; then
   sensitive=true
 fi
 
@@ -114,6 +120,7 @@ fi
   echo "touch_deploy=${touch_deploy}"
   echo "touch_env=${touch_env}"
   echo "touch_health=${touch_health}"
+  echo "touch_routing=${touch_routing}"
   echo "touch_workflow=${touch_workflow}"
   echo "sensitive=${sensitive}"
 } | tee -a "${GITHUB_OUTPUT:-/dev/null}"
