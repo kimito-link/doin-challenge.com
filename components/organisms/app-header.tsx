@@ -9,7 +9,8 @@ import { GlobalMenu } from "@/components/organisms/global-menu";
 import { TalkingCharacter } from "@/components/molecules/talking-character";
 import * as Haptics from "expo-haptics";
 import { APP_VERSION } from "@/shared/version";
-import { LoginConfirmModal, RedirectingScreen, WaitingReturnScreen } from "@/components/auth-ux";
+import { RedirectingScreen, WaitingReturnScreen } from "@/components/auth-ux";
+import { LoginModal } from "@/components/common/LoginModal";
 import { SuccessScreen } from "@/components/molecules/auth-ux/SuccessScreen";
 import { CancelScreen } from "@/components/molecules/auth-ux/CancelScreen";
 import { ErrorScreen } from "@/components/molecules/auth-ux/ErrorScreen";
@@ -222,15 +223,9 @@ export function AppHeader({
         onClose={() => setMenuVisible(false)} 
       />
       
-      {/* 認証UXモーダル */}
-      <LoginConfirmModal
-        open={state.name === "confirm"}
-        speech={{
-          title: "Xでログインしますか？",
-          message: "このあとXの公式画面に移動します。\n戻ってきたらログイン完了です。",
-        }}
-        confirmLabel="Xでログイン"
-        cancelLabel="やめておく"
+      {/* 認証UXモーダル（共通LoginModalに統一） */}
+      <LoginModal
+        visible={state.name === "confirm"}
         onConfirm={confirmYes}
         onCancel={confirmNo}
       />
