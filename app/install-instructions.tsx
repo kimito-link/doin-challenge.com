@@ -1,7 +1,7 @@
 import { ScrollView, Text, View, Platform, Pressable } from "react-native";
-import { useRouter } from "expo-router";
 import { ScreenContainer } from "@/components/organisms/screen-container";
 import { useColors } from "@/hooks/use-colors";
+import { navigateBack } from "@/lib/navigation";
 
 /**
  * インストール説明ページ
@@ -9,7 +9,6 @@ import { useColors } from "@/hooks/use-colors";
  * iOS（Safari）とAndroid（Chrome）それぞれの手順を表示します。
  */
 export default function InstallInstructionsScreen() {
-  const router = useRouter();
   const colors = useColors();
 
   const isIOS = Platform.OS === "ios" || (Platform.OS === "web" && /iPad|iPhone|iPod/.test(navigator.userAgent));
@@ -21,7 +20,7 @@ export default function InstallInstructionsScreen() {
         {/* ヘッダー */}
         <View style={{ marginBottom: 24 }}>
           <Pressable
-            onPress={() => router.back()}
+            onPress={navigateBack}
             style={({ pressed }) => ({
               alignSelf: "flex-start",
               padding: 8,
@@ -192,7 +191,7 @@ export default function InstallInstructionsScreen() {
 
         {/* 戻るボタン */}
         <Pressable
-          onPress={() => router.back()}
+          onPress={navigateBack}
           style={({ pressed }) => ({
             backgroundColor: colors.primary,
             paddingVertical: 16,

@@ -222,7 +222,7 @@ export default function TwitterOAuthCallback() {
             !storedInfo?.prefecture ||
             storedInfo?.gender === "unspecified" ||
             !storedInfo?.gender ||
-            storedInfo?.gender === "";
+            (storedInfo?.gender as string) === "";
           setNeedOnboarding(!!needsProfile);
 
           if (!needsProfile) {
@@ -355,7 +355,7 @@ export default function TwitterOAuthCallback() {
               }}
               disabled={updateProfileMutation.isPending}
               style={{
-                backgroundColor: color.primary,
+                backgroundColor: color.accentPrimary,
                 paddingVertical: 14,
                 borderRadius: 12,
                 alignItems: "center",
@@ -372,7 +372,7 @@ export default function TwitterOAuthCallback() {
               }}
               style={{ alignItems: "center", marginTop: 16 }}
             >
-              <Text style={{ color: color.primary, fontSize: 14 }}>あとで設定する</Text>
+              <Text style={{ color: color.accentPrimary, fontSize: 14 }}>あとで設定する</Text>
             </Pressable>
           </ScrollView>
         )}

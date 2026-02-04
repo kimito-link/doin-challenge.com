@@ -118,7 +118,7 @@ async function startServer() {
         let challengesCount = 0;
         try {
           const r = await db.execute(sql`SELECT COUNT(*) AS c FROM challenges WHERE "isPublic" = true`);
-          const rows = (r as { rows?: Array<{ c: string }> })?.rows ?? (Array.isArray(r) ? r : []);
+          const rows = (r as unknown as { rows?: Array<{ c: string }> })?.rows ?? (Array.isArray(r) ? r : []);
           challengesCount = rows.length ? Number((rows[0] as { c: string })?.c ?? 0) : 0;
         } catch (_) {
           // テーブルが無い等は 0 のまま

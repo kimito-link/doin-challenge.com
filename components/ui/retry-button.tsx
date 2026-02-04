@@ -18,10 +18,11 @@ export interface RetryButtonProps {
 
 // ==================== ラベル定義 ====================
 
-const labelMap = {
+const labelMap: Record<NonNullable<RetryButtonProps["variant"]>, string> = {
   retry: "再試行",
   reload: "再読み込み",
   tryAgain: "もう一度試す",
+  primary: "再試行",
 };
 
 // ==================== RetryButton ====================

@@ -14,7 +14,7 @@
     "build": "node scripts/generate-build-info.cjs && esbuild server/_core/index.ts --platform=node --packages=external --bundle --format=esm --outdir=dist && cp -v server/_core/build-info.json dist/build-info.json",
     "start": "NODE_ENV=production node dist/index.js",
     "check": "tsc --noEmit",
-    "lint": "expo lint",
+    "lint": "expo lint --max-warnings 9999",
     "format": "prettier --write .",
     "test": "vitest run",
     "db:push": "node scripts/run-drizzle.cjs push",

@@ -33,7 +33,7 @@ export function HostedChallengeSection({ challenges, onChallengePress }: HostedC
           {challenges.map((challenge) => (
             <Pressable
               key={challenge.id}
-              onPress={onChallengePress(challenge.id)}
+              onPress={() => onChallengePress(challenge.id)}
               style={{
                 backgroundColor: mypageUI.cardBg,
                 borderRadius: 12,

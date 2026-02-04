@@ -2,7 +2,7 @@
 // v6.20: 統一されたCheckboxコンポーネント
 
 import { useCallback } from "react";
-import { View, Text, Pressable, StyleSheet, type ViewStyle } from "react-native";
+import { View, Text, Pressable, StyleSheet, type ViewStyle, type TextStyle } from "react-native";
 import MaterialIcons from "@expo/vector-icons/MaterialIcons";
 import { FontAwesome6 } from "@expo/vector-icons";
 import { color } from "@/theme/tokens";
@@ -22,7 +22,7 @@ export interface CheckboxProps {
   /** アイコン名（FontAwesome6） */
   icon?: string;
   /** チェック時のラベルスタイル（打ち消し線など） */
-  checkedLabelStyle?: ViewStyle;
+  checkedLabelStyle?: TextStyle;
   /** アクションボタン */
   actionButton?: {
     label: string;
@@ -136,7 +136,7 @@ export function Checkbox({
           <MaterialIcons
             name="check"
             size={sizeStyle.iconSize}
-            color="#fff"
+            color={color.textWhite}
           />
         )}
         </View>

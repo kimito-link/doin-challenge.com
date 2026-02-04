@@ -1,11 +1,11 @@
-import { View, StyleSheet, Animated, type ViewStyle } from "react-native";
+import { View, StyleSheet, Animated, type ViewStyle, type DimensionValue } from "react-native";
 import { useEffect, useRef } from "react";
 import { LinearGradient } from "expo-linear-gradient";
 import { color } from "@/theme/tokens";
 import { SKELETON_CONFIG } from "@/constants/skeleton-config";
 
 export interface SkeletonProps {
-  width?: number | string;
+  width?: DimensionValue;
   height?: number;
   borderRadius?: number;
   style?: ViewStyle;
@@ -16,7 +16,7 @@ export interface SkeletonProps {
  * コンテンツ読み込み中のプレースホルダーとして使用
  */
 export function Skeleton({
-  width = "100%",
+  width = "100%" as DimensionValue,
   height = 20,
   borderRadius = 4,
   style,

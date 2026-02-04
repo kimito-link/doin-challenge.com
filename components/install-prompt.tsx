@@ -1,8 +1,8 @@
 import { useState, useEffect } from "react";
 import { View, Text, Pressable, Platform } from "react-native";
 import AsyncStorage from "@react-native-async-storage/async-storage";
-import { useRouter } from "expo-router";
 import { useColors } from "@/hooks/use-colors";
+import { navigate } from "@/lib/navigation";
 
 const STORAGE_KEY = "@install_prompt_dismissed";
 
@@ -17,7 +17,6 @@ const STORAGE_KEY = "@install_prompt_dismissed";
 export function InstallPrompt() {
   const [showPrompt, setShowPrompt] = useState(false);
   const [isStandalone, setIsStandalone] = useState(false);
-  const router = useRouter();
   const colors = useColors();
 
   useEffect(() => {
@@ -54,7 +53,7 @@ export function InstallPrompt() {
   };
 
   const handleShowInstructions = () => {
-    router.push("/install-instructions" as any);
+    navigate.toInstallInstructions();
   };
 
   if (!showPrompt || isStandalone) {

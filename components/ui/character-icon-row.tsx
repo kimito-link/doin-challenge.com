@@ -4,10 +4,9 @@
  * 汎用UIコンポーネント - 様々な画面で再利用可能
  */
 
-import { View, Pressable, ImageSourcePropType } from "react-native";
+import { View, Pressable, ImageSourcePropType, Platform } from "react-native";
 import { Image } from "expo-image";
 import * as Haptics from "expo-haptics";
-import { Platform } from "react-native";
 
 export interface CharacterIconConfig {
   /** 一意の識別子 */

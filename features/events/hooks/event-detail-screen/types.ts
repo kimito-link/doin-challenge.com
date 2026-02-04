@@ -205,6 +205,7 @@ export const initialFormState: ParticipationFormState = {
  */
 export const initialUiState: UiState = {
   showForm: false,
+  showOneClickConfirm: false,
   showPrefectureList: false,
   showPrefectureFilterList: false,
   showConfirmation: false,

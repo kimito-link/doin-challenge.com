@@ -1,7 +1,7 @@
 // components/ui/input.tsx
 // v6.19: 統一されたフォーム入力コンポーネント
 
-import { useState, useCallback, forwardRef, useEffect, useRef } from "react";
+import { useState, useCallback, forwardRef, useEffect } from "react";
 import { 
   View, 
   Text, 
@@ -13,6 +13,7 @@ import {
   Keyboard,
   type TextInputProps,
   type ViewStyle,
+  type TextStyle,
 } from "react-native";
 import MaterialIcons from "@expo/vector-icons/MaterialIcons";
 import { color, shadows } from "@/theme/tokens";
@@ -28,7 +29,12 @@ export interface InputProps extends Omit<TextInputProps, "style"> {
   rightIcon?: keyof typeof MaterialIcons.glyphMap;
   onRightIconPress?: () => void;
   containerStyle?: ViewStyle;
-  inputStyle?: ViewStyle;
+  /** 入力欄のスタイル（TextInput に渡す。color 等の TextStyle 可） */
+  inputStyle?: ViewStyle | TextStyle;
+  /** 入力欄のスタイル（TextInput に渡す） */
+  style?: TextStyle;
+  /** 無効化 */
+  disabled?: boolean;
   /** 入力欄のサイズ */
   size?: "sm" | "md" | "lg";
   /** 複数行入力 */
@@ -102,6 +108,8 @@ export const Input = forwardRef<TextInput, InputProps>(({
   onRightIconPress,
   containerStyle,
   inputStyle,
+  style: styleProp,
+  disabled = false,
   size = "md",
   multiline = false,
   numberOfLines = 4,
@@ -163,8 +171,10 @@ export const Input = forwardRef<TextInput, InputProps>(({
             },
             multiline && styles.multilineInput,
             inputStyle,
+            styleProp,
           ]}
           placeholderTextColor={color.textSubtle}
+          editable={!disabled}
           multiline={multiline}
           numberOfLines={multiline ? numberOfLines : 1}
           textAlignVertical={multiline ? "top" : "center"}
@@ -258,7 +268,7 @@ export function SearchInput({
   ...props
 }: SearchInputProps) {
   const colors = useColors();
-  const [localValue, setLocalValue] = useState(value);
+  const [localValue, setLocalValue] = useState(value ?? "");
   const [isFocused, setIsFocused] = useState(false);
 
   // デバウンス処理
@@ -266,7 +276,7 @@ export function SearchInput({
   
   // デバウンス後に親コンポーネントに通知
   useEffect(() => {
-    if (debounceMs > 0 && debouncedValue !== value) {
+    if (debounceMs > 0 && debouncedValue !== value && debouncedValue !== undefined) {
       onChangeText?.(debouncedValue);
     }
   }, [debouncedValue, debounceMs, onChangeText, value]);
@@ -279,12 +289,13 @@ export function SearchInput({
   }, [value, localValue]);
 
   // サジェスト候補のフィルタリング
+  const safeLocal = localValue ?? "";
   const filteredSuggestions = (suggestions || []).filter(
-    (s) => localValue.length > 0 && s.toLowerCase().includes(localValue.toLowerCase()) && s !== localValue
+    (s) => safeLocal.length > 0 && s.toLowerCase().includes(safeLocal.toLowerCase()) && s !== safeLocal
   );
 
   // サジェストを表示するかどうか
-  const shouldShowSuggestions = suggestions && isFocused && localValue.length > 0 && filteredSuggestions.length > 0;
+  const shouldShowSuggestions = suggestions && isFocused && safeLocal.length > 0 && filteredSuggestions.length > 0;
 
   const handleLocalChange = useCallback((text: string) => {
     setLocalValue(text);

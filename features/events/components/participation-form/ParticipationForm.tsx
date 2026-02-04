@@ -363,9 +363,7 @@ export function ParticipationForm({
                 placeholder="@username"
                 autoCapitalize="none"
                 containerStyle={{ marginBottom: 0, flex: 1 }}
-                inputStyle={[
-                  lookedUpProfile && { borderColor: color.success },
-                ]}
+                inputStyle={lookedUpProfile ? { borderColor: color.success } : undefined}
               />
               <Button
                 variant="primary"

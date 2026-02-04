@@ -17,7 +17,7 @@ import Animated, {
   Easing,
 } from "react-native-reanimated";
 import * as Haptics from "expo-haptics";
-import { color } from "@/theme/tokens";
+import { color, shadows } from "@/theme/tokens";
 
 // ==================== 型定義 ====================
 
@@ -74,11 +74,7 @@ const variantStyles = {
     backgroundColor: color.surfaceAlt,
     borderWidth: 0,
     borderColor: "transparent",
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.15,
-    shadowRadius: 8,
-    elevation: 4,
+    ...shadows.lg,
   },
   outlined: {
     backgroundColor: "transparent",

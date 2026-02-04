@@ -16,25 +16,25 @@ import { characterImages, characterDetails } from "./constants";
 // キャラクターIDとアイコン設定のマッピング
 type CharacterIconWithId = CharacterIconConfig & { characterId: string };
 
-// デフォルトの3キャラクター設定
+// デフォルトの3キャラクター設定（主役・りんくを中央に配置）
 const defaultLoginIcons: CharacterIconWithId[] = [
-  {
-    id: "link",
-    characterId: "link",
-    image: characterImages.linkYukkuri,
-    size: 56,
-    borderWidth: 2,
-    borderColor: mypageAccent.linkPink,
-    name: "りんく",
-  },
   {
     id: "konta",
     characterId: "konta",
     image: characterImages.kontaYukkuri,
-    size: 64,
-    borderWidth: 3,
+    size: 56,
+    borderWidth: 2,
     borderColor: mypageAccent.kontaOrange,
     name: "こん太",
+  },
+  {
+    id: "link",
+    characterId: "link",
+    image: characterImages.linkYukkuri,
+    size: 64,
+    borderWidth: 3,
+    borderColor: mypageAccent.linkPink,
+    name: "りんく",
   },
   {
     id: "tanune",

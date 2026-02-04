@@ -40,7 +40,6 @@ export function GenderSelector({
   maleLabel = "男性",
   femaleLabel = "女性",
 }: GenderSelectorProps) {
-  const colors = useColors();
   const showError = required && value === "";
   
   return (
