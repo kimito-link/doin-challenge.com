@@ -4,6 +4,7 @@
 import { Text, Pressable } from "react-native";
 import MaterialIcons from "@expo/vector-icons/MaterialIcons";
 import { color } from "@/theme/tokens";
+import { createFont } from "../../theme/tokens";
 import { useColors } from "@/hooks/use-colors";
 import type { TwitterLoginSectionProps } from "./types";
 
@@ -30,7 +31,7 @@ export function TwitterLoginSection({ onLogin }: TwitterLoginSectionProps) {
       })}
     >
       <MaterialIcons name="login" size={20} color={color.textWhite} />
-      <Text style={{ color: colors.foreground, fontSize: 16, fontWeight: "bold", marginLeft: 8 }}>
+      <Text style={{ color: colors.foreground, fontSize: createFont.title, fontWeight: "bold", marginLeft: 8 }}>
         Twitterでログインして作成
       </Text>
     </Pressable>

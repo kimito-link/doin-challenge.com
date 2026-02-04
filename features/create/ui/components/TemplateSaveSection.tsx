@@ -7,7 +7,7 @@
 import { View, Text, TextInput } from "react-native";
 import MaterialIcons from "@expo/vector-icons/MaterialIcons";
 import { useColors } from "@/hooks/use-colors";
-import { createUI, createText } from "../theme/tokens";
+import { createUI, createText, createFont } from "../theme/tokens";
 import { Button } from "@/components/ui/button";
 
 interface TemplateSaveSectionProps {
@@ -38,7 +38,7 @@ export function TemplateSaveSection({
       >
         <View style={{ flexDirection: "row", alignItems: "center" }}>
           <MaterialIcons name="bookmark" size={20} color={createText.purple} />
-          <Text style={{ color: colors.foreground, fontSize: 14, fontWeight: "600", marginLeft: 8 }}>
+          <Text style={{ color: colors.foreground, fontSize: createFont.body, fontWeight: "600", marginLeft: 8 }}>
             テンプレートとして保存
           </Text>
         </View>
@@ -91,7 +91,7 @@ export function TemplateSaveSection({
             }}>
               {templateIsPublic && <MaterialIcons name="check" size={14} color="#fff" />}
             </View>
-            <Text style={{ color: colors.muted, fontSize: 13 }}>
+            <Text style={{ color: colors.muted, fontSize: createFont.meta }}>
               他のユーザーにも公開する
             </Text>
           </Button>

@@ -3,6 +3,7 @@
 
 import { Text, Pressable } from "react-native";
 import { color } from "@/theme/tokens";
+import { createFont } from "../../theme/tokens";
 import type { TemplateLinksectionProps } from "./types";
 
 /**
@@ -20,7 +21,7 @@ export function TemplateLinkSection({ onPress }: TemplateLinksectionProps) {
         opacity: pressed ? 0.7 : 1,
       })}
     >
-      <Text style={{ color: color.accentAlt, fontSize: 14 }}>
+      <Text style={{ color: color.accentAlt, fontSize: createFont.body }}>
         📁 テンプレートから作成
       </Text>
     </Pressable>

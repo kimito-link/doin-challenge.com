@@ -7,7 +7,7 @@
 import { View, Text, ScrollView, TextInput } from "react-native";
 import MaterialIcons from "@expo/vector-icons/MaterialIcons";
 import { useColors } from "@/hooks/use-colors";
-import { createUI, createText } from "../theme/tokens";
+import { createUI, createText, createFont } from "../theme/tokens";
 import { goalTypeOptions } from "@/constants/goal-types";
 import { Button } from "@/components/ui/button";
 
@@ -31,7 +31,7 @@ export function GoalTypeSelector({
     <>
       {/* 目標タイプ選択 */}
       <View style={{ marginBottom: 16 }}>
-        <Text style={{ color: colors.muted, fontSize: 14, marginBottom: 8 }}>
+        <Text style={{ color: colors.muted, fontSize: createFont.body, marginBottom: 8 }}>
           目標タイプ
         </Text>
         <ScrollView
@@ -64,7 +64,7 @@ export function GoalTypeSelector({
               <Text
                 style={{
                   color: goalType === type.id ? "#fff" : colors.muted,
-                  fontSize: 13,
+                  fontSize: createFont.meta,
                   marginLeft: 4,
                 }}
               >
@@ -74,7 +74,7 @@ export function GoalTypeSelector({
           ))}
         </ScrollView>
         {selectedGoalType && (
-          <Text style={{ color: colors.muted, fontSize: 12, marginTop: 8 }}>
+          <Text style={{ color: colors.muted, fontSize: createFont.meta, marginTop: 8 }}>
             {selectedGoalType.description}
           </Text>
         )}
@@ -83,7 +83,7 @@ export function GoalTypeSelector({
       {/* カスタム単位入力 */}
       {goalType === "custom" && (
         <View style={{ marginBottom: 16 }}>
-          <Text style={{ color: colors.muted, fontSize: 14, marginBottom: 8 }}>
+          <Text style={{ color: colors.muted, fontSize: createFont.body, marginBottom: 8 }}>
             単位
           </Text>
           <TextInput

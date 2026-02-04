@@ -8,7 +8,7 @@
 import { View, Text } from "react-native";
 import { useColors } from "@/hooks/use-colors";
 import { PURPOSES, type PurposeId } from "@/constants/event-categories";
-import { createUI } from "../theme/tokens";
+import { createUI, createFont } from "../theme/tokens";
 import { Button } from "@/components/ui/button";
 
 interface PurposeSelectorProps {
@@ -21,7 +21,7 @@ export function PurposeSelector({ selectedPurpose, onSelect }: PurposeSelectorPr
 
   return (
     <View style={{ marginBottom: 16 }}>
-      <Text style={{ color: colors.muted, fontSize: 14, marginBottom: 8 }}>
+      <Text style={{ color: colors.muted, fontSize: createFont.body, marginBottom: 8 }}>
         目的
       </Text>
       
@@ -35,12 +35,12 @@ export function PurposeSelector({ selectedPurpose, onSelect }: PurposeSelectorPr
         marginBottom: 12,
       }}>
         <View style={{ flexDirection: "row", alignItems: "center", marginBottom: 4 }}>
-          <Text style={{ fontSize: 16, marginRight: 6 }}>🎀</Text>
-          <Text style={{ color: colors.foreground, fontSize: 13, fontWeight: "600" }}>
+          <Text style={{ fontSize: createFont.title, marginRight: 6 }}>🎀</Text>
+          <Text style={{ color: colors.foreground, fontSize: createFont.meta, fontWeight: "600" }}>
             りんくからのお知らせ
           </Text>
         </View>
-        <Text style={{ color: colors.foreground, fontSize: 12, lineHeight: 18 }}>
+        <Text style={{ color: colors.foreground, fontSize: createFont.meta, lineHeight: 18 }}>
           今はライブ動員に集中しています。YouTubeプレミア同時視聴や作品リリースの反応を見る機能は、後で追加予定です。
         </Text>
       </View>
@@ -76,13 +76,13 @@ export function PurposeSelector({ selectedPurpose, onSelect }: PurposeSelectorPr
                   marginRight: 12,
                 }}
               >
-                <Text style={{ fontSize: 20 }}>{purpose.icon}</Text>
+                <Text style={{ fontSize: createFont.lg }}>{purpose.icon}</Text>
               </View>
               <View style={{ flex: 1 }}>
                 <Text
                   style={{
                     color: isSelected ? colors.primary : colors.foreground,
-                    fontSize: 14,
+                    fontSize: createFont.body,
                     fontWeight: isSelected ? "600" : "500",
                     marginBottom: 2,
                   }}
@@ -92,7 +92,7 @@ export function PurposeSelector({ selectedPurpose, onSelect }: PurposeSelectorPr
                 <Text
                   style={{
                     color: colors.muted,
-                    fontSize: 12,
+                    fontSize: createFont.meta,
                     opacity: 0.8,
                   }}
                   numberOfLines={1}
@@ -111,7 +111,7 @@ export function PurposeSelector({ selectedPurpose, onSelect }: PurposeSelectorPr
                     justifyContent: "center",
                   }}
                 >
-                  <Text style={{ color: "#FFFFFF", fontSize: 14 }}>✓</Text>
+                  <Text style={{ color: "#FFFFFF", fontSize: createFont.body }}>✓</Text>
                 </View>
               )}
             </Button>

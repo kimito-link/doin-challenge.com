@@ -3,6 +3,7 @@
 
 import { View, Text, TextInput, Pressable } from "react-native";
 import { color } from "@/theme/tokens";
+import { createFont } from "../../theme/tokens";
 import { useColors } from "@/hooks/use-colors";
 import type { VenueInputSectionProps } from "./types";
 
@@ -16,7 +17,7 @@ export function VenueInputSection({ value, onChange }: VenueInputSectionProps) {
 
   return (
     <View style={{ marginBottom: 16 }}>
-      <Text style={{ color: colors.muted, fontSize: 14, marginBottom: 8 }}>
+      <Text style={{ color: colors.muted, fontSize: createFont.body, marginBottom: 8 }}>
         開催場所（任意）
       </Text>
       
@@ -47,7 +48,7 @@ export function VenueInputSection({ value, onChange }: VenueInputSectionProps) {
             <View style={{ width: 8, height: 8, borderRadius: 4, backgroundColor: color.textWhite }} />
           )}
         </View>
-        <Text style={{ color: colors.muted, fontSize: 14 }}>
+        <Text style={{ color: colors.muted, fontSize: createFont.body }}>
           まだ決まっていない
         </Text>
       </Pressable>
@@ -70,7 +71,7 @@ export function VenueInputSection({ value, onChange }: VenueInputSectionProps) {
         />
       )}
       {isUndecided && (
-        <Text style={{ color: color.textSecondary, fontSize: 12, marginTop: 4 }}>
+        <Text style={{ color: color.textSecondary, fontSize: createFont.meta, marginTop: 4 }}>
           ※ 決まり次第、後から編集できます
         </Text>
       )}

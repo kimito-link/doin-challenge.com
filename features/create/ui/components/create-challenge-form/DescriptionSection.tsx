@@ -3,6 +3,7 @@
 
 import { View, Text, TextInput } from "react-native";
 import { color } from "@/theme/tokens";
+import { createFont } from "../../theme/tokens";
 import { useColors } from "@/hooks/use-colors";
 import type { DescriptionSectionProps } from "./types";
 
@@ -15,7 +16,7 @@ export function DescriptionSection({ value, onChange }: DescriptionSectionProps)
 
   return (
     <View style={{ marginBottom: 16 }}>
-      <Text style={{ color: colors.muted, fontSize: 14, marginBottom: 8 }}>
+      <Text style={{ color: colors.muted, fontSize: createFont.body, marginBottom: 8 }}>
         チャレンジ説明（任意）
       </Text>
       <TextInput

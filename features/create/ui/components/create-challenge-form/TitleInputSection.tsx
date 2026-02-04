@@ -3,6 +3,7 @@
 
 import { View, Text, TextInput } from "react-native";
 import { color } from "@/theme/tokens";
+import { createFont } from "../../theme/tokens";
 import { useColors } from "@/hooks/use-colors";
 import { InlineValidationError } from "@/components/molecules/inline-validation-error";
 import type { TitleInputSectionProps } from "./types";
@@ -22,7 +23,7 @@ export function TitleInputSection({
 
   return (
     <View ref={inputRef} style={{ marginBottom: 16 }}>
-      <Text style={{ color: colors.muted, fontSize: 14, marginBottom: 8 }}>
+      <Text style={{ color: colors.muted, fontSize: createFont.body, marginBottom: 8 }}>
         チャレンジ名 *
       </Text>
       <TextInput

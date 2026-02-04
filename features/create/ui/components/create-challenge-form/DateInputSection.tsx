@@ -3,6 +3,7 @@
 
 import { View, Text, Pressable } from "react-native";
 import { color } from "@/theme/tokens";
+import { createFont } from "../../theme/tokens";
 import { useColors } from "@/hooks/use-colors";
 import { DatePicker } from "@/components/molecules/date-picker";
 import type { DateInputSectionProps } from "./types";
@@ -31,7 +32,7 @@ export function DateInputSection({
 
   return (
     <View ref={inputRef} style={{ marginBottom: 16 }}>
-      <Text style={{ color: colors.muted, fontSize: 14, marginBottom: 8 }}>
+      <Text style={{ color: colors.muted, fontSize: createFont.body, marginBottom: 8 }}>
         開催日
       </Text>
       
@@ -62,14 +63,14 @@ export function DateInputSection({
             <View style={{ width: 8, height: 8, borderRadius: 4, backgroundColor: color.textWhite }} />
           )}
         </View>
-        <Text style={{ color: colors.muted, fontSize: 14 }}>
+        <Text style={{ color: colors.muted, fontSize: createFont.body }}>
           まだ決まっていない
         </Text>
       </Pressable>
 
       {/* 日付選択または説明テキスト */}
       {isUndecided ? (
-        <Text style={{ color: color.textSecondary, fontSize: 12 }}>
+        <Text style={{ color: color.textSecondary, fontSize: createFont.meta }}>
           ※ 日程が決まり次第、後から編集できます
         </Text>
       ) : (

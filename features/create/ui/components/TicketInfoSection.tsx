@@ -7,7 +7,7 @@
 import { View, Text, TextInput, Pressable } from "react-native";
 import MaterialIcons from "@expo/vector-icons/MaterialIcons";
 import { useColors } from "@/hooks/use-colors";
-import { createUI, createText } from "../theme/tokens";
+import { createUI, createText, createFont } from "../theme/tokens";
 
 interface TicketInfoSectionProps {
   ticketPresale: string;
@@ -53,7 +53,7 @@ export function TicketInfoSection({
     >
       <View style={{ flexDirection: "row", alignItems: "center", marginBottom: 12 }}>
         <MaterialIcons name="confirmation-number" size={20} color={createText.accent} />
-        <Text style={{ color: colors.foreground, fontSize: 16, fontWeight: "600", marginLeft: 8 }}>
+        <Text style={{ color: colors.foreground, fontSize: createFont.title, fontWeight: "600", marginLeft: 8 }}>
           チケット情報（任意）
         </Text>
       </View>
@@ -85,20 +85,20 @@ export function TicketInfoSection({
             <View style={{ width: 8, height: 8, borderRadius: 4, backgroundColor: "#fff" }} />
           )}
         </View>
-        <Text style={{ color: colors.muted, fontSize: 14 }}>
+        <Text style={{ color: colors.muted, fontSize: createFont.body }}>
           まだ決まっていない
         </Text>
       </Pressable>
       
       {isUndecided ? (
-        <Text style={{ color: createText.muted, fontSize: 12 }}>
+        <Text style={{ color: createText.muted, fontSize: createFont.meta }}>
           ※ 決まり次第、後から編集できます
         </Text>
       ) : (
         <>
           <View style={{ flexDirection: "row", gap: 12, marginBottom: 12 }}>
             <View style={{ flex: 1 }}>
-              <Text style={{ color: colors.muted, fontSize: 12, marginBottom: 4 }}>
+              <Text style={{ color: colors.muted, fontSize: createFont.meta, marginBottom: 4 }}>
                 前売り券
               </Text>
               <View style={{ flexDirection: "row", alignItems: "center" }}>
@@ -118,11 +118,11 @@ export function TicketInfoSection({
                     flex: 1,
                   }}
                 />
-                <Text style={{ color: colors.muted, fontSize: 14, marginLeft: 8 }}>円</Text>
+                <Text style={{ color: colors.muted, fontSize: createFont.body, marginLeft: 8 }}>円</Text>
               </View>
             </View>
             <View style={{ flex: 1 }}>
-              <Text style={{ color: colors.muted, fontSize: 12, marginBottom: 4 }}>
+              <Text style={{ color: colors.muted, fontSize: createFont.meta, marginBottom: 4 }}>
                 当日券
               </Text>
               <View style={{ flexDirection: "row", alignItems: "center" }}>
@@ -142,13 +142,13 @@ export function TicketInfoSection({
                     flex: 1,
                   }}
                 />
-                <Text style={{ color: colors.muted, fontSize: 14, marginLeft: 8 }}>円</Text>
+                <Text style={{ color: colors.muted, fontSize: createFont.body, marginLeft: 8 }}>円</Text>
               </View>
             </View>
           </View>
 
           <View>
-            <Text style={{ color: colors.muted, fontSize: 12, marginBottom: 4 }}>
+            <Text style={{ color: colors.muted, fontSize: createFont.meta, marginBottom: 4 }}>
               チケット購入URL
             </Text>
             <TextInput

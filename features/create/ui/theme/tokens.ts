@@ -31,3 +31,11 @@ export const createText = {
   purple: "#7C3AED",   // 紫 - WCAG AA準拠
   success: "#22C55E",
 } as const;
+
+// フォントサイズ（TOKENS_INVENTORY 方針: meta=12, body=14, title=16）
+export const createFont = {
+  meta: 12,
+  body: 14,
+  title: 16,
+  lg: 20,
+} as const;

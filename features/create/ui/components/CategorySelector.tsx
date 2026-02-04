@@ -7,7 +7,7 @@
 import { View, Text, ScrollView } from "react-native";
 import MaterialIcons from "@expo/vector-icons/MaterialIcons";
 import { useColors } from "@/hooks/use-colors";
-import { createUI, createText } from "../theme/tokens";
+import { createUI, createText, createFont } from "../theme/tokens";
 import { Button } from "@/components/ui/button";
 
 interface Category {
@@ -36,7 +36,7 @@ export function CategorySelector({
 
   return (
     <View style={{ marginBottom: 16 }}>
-      <Text style={{ color: colors.muted, fontSize: 14, marginBottom: 8 }}>
+      <Text style={{ color: colors.muted, fontSize: createFont.body, marginBottom: 8 }}>
         カテゴリ
       </Text>
       <Button
@@ -53,7 +53,7 @@ export function CategorySelector({
           alignItems: "center",
         }}
       >
-        <Text style={{ color: categoryId ? colors.foreground : createText.placeholder, fontSize: 14 }}>
+        <Text style={{ color: categoryId ? colors.foreground : createText.placeholder, fontSize: createFont.body }}>
           {selectedCategory?.name || "カテゴリを選択"}
         </Text>
         <MaterialIcons
@@ -92,7 +92,7 @@ export function CategorySelector({
                 <Text
                   style={{
                     color: categoryId === category.id ? createText.accent : colors.foreground,
-                    fontSize: 14,
+                    fontSize: createFont.body,
                   }}
                 >
                   {category.name}
