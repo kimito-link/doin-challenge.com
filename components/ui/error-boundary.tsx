@@ -13,9 +13,10 @@
  */
 
 import React, { Component, type ReactNode, type ErrorInfo } from "react";
-import { View, Text, StyleSheet, Pressable } from "react-native";
+import { View, Text, StyleSheet } from "react-native";
 import MaterialIcons from "@expo/vector-icons/MaterialIcons";
 import { color, typography } from "@/theme/tokens";
+import { RetryButton } from "./retry-button";
 
 // エラーバウンダリのProps型
 export interface ErrorBoundaryProps {
@@ -122,16 +123,7 @@ function DefaultErrorFallback({ error, resetErrorBoundary, screenName }: Fallbac
       <Text style={styles.message} numberOfLines={3}>
         {error.message}
       </Text>
-      <Pressable
-        onPress={resetErrorBoundary}
-        style={({ pressed }) => [
-          styles.retryButton,
-          pressed && styles.retryButtonPressed,
-        ]}
-      >
-        <MaterialIcons name="refresh" size={20} color={color.textWhite} />
-        <Text style={styles.retryText}>再試行</Text>
-      </Pressable>
+      <RetryButton onPress={resetErrorBoundary} variant="primary" />
     </View>
   );
 }
@@ -161,25 +153,6 @@ const styles = StyleSheet.create({
     fontSize: typography.fontSize.sm,
     textAlign: "center",
     maxWidth: 280,
-  },
-  retryButton: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 8,
-    backgroundColor: color.accentPrimary,
-    paddingHorizontal: 20,
-    paddingVertical: 12,
-    borderRadius: 8,
-    marginTop: 8,
-  },
-  retryButtonPressed: {
-    opacity: 0.8,
-    transform: [{ scale: 0.97 }],
-  },
-  retryText: {
-    color: color.textWhite,
-    fontSize: typography.fontSize.sm,
-    fontWeight: "600",
   },
 });
 
