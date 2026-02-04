@@ -72,8 +72,9 @@ jobs:
               body: comment
             });
 
+      # PR時のみ失敗させる。push（mainへのマージ後など）ではデプロイをブロックしない
       - name: Gate 1 enforcement
-        if: steps.diff-check.outputs.sensitive == 'true'
+        if: github.event_name == 'pull_request' && steps.diff-check.outputs.sensitive == 'true'
         run: |
           echo "❌ Gate 1: 危険な変更が検知されたため失敗させます"
           exit 1
