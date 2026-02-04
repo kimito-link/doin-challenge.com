@@ -9,6 +9,9 @@ on:
 jobs:
   diff-check:
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      pull-requests: write  # PR にコメントするために必要
     outputs:
       touch_api: ${{ steps.diff-check.outputs.touch_api }}
       touch_auth: ${{ steps.diff-check.outputs.touch_auth }}
