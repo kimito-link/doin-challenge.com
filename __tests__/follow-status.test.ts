@@ -21,7 +21,6 @@ describe("Twitter Follow Status", () => {
     });
 
     it("should return isFollowing true when user follows target", async () => {
-      // Mock user lookup response
       mockFetch
         .mockResolvedValueOnce({
           ok: true,
@@ -34,7 +33,6 @@ describe("Twitter Follow Status", () => {
             },
           }),
         })
-        // Mock following list response
         .mockResolvedValueOnce({
           ok: true,
           headers: createMockHeaders(),
@@ -46,16 +44,14 @@ describe("Twitter Follow Status", () => {
           }),
         });
 
-      // Import and test the function
       const { checkFollowStatus } = await import("../server/twitter-oauth2");
-      const result = await checkFollowStatus("test_token", "source_user_id");
+      const result = await checkFollowStatus("test_token", "source_user_follows");
 
       expect(result.isFollowing).toBe(true);
       expect(result.targetUser?.username).toBe("idolfunch");
     });
 
     it("should return isFollowing false when user does not follow target", async () => {
-      // Mock user lookup response
       mockFetch
         .mockResolvedValueOnce({
           ok: true,
@@ -68,7 +64,6 @@ describe("Twitter Follow Status", () => {
             },
           }),
         })
-        // Mock following list response (target not in list)
         .mockResolvedValueOnce({
           ok: true,
           headers: createMockHeaders(),
@@ -80,23 +75,27 @@ describe("Twitter Follow Status", () => {
         });
 
       const { checkFollowStatus } = await import("../server/twitter-oauth2");
-      const result = await checkFollowStatus("test_token", "source_user_id");
+      const result = await checkFollowStatus("test_token", "source_user_not_follows");
 
       expect(result.isFollowing).toBe(false);
       expect(result.targetUser?.username).toBe("idolfunch");
     });
 
     it("should handle API errors gracefully", async () => {
-      mockFetch.mockResolvedValueOnce({
+      const errorResponse = {
         ok: false,
         status: 500,
         headers: createMockHeaders(),
         json: () => Promise.resolve({ error: "API Error" }),
         text: () => Promise.resolve("API Error"),
-      });
+      };
+      mockFetch
+        .mockResolvedValueOnce(errorResponse)
+        .mockResolvedValueOnce(errorResponse)
+        .mockResolvedValueOnce(errorResponse);
 
       const { checkFollowStatus } = await import("../server/twitter-oauth2");
-      const result = await checkFollowStatus("test_token", "source_user_id");
+      const result = await checkFollowStatus("test_token", "source_user_api_error");
 
       expect(result.isFollowing).toBe(false);
       expect(result.targetUser).toBeNull();

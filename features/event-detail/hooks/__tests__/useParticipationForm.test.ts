@@ -9,16 +9,22 @@
 
 import { describe, it, expect, vi, beforeEach } from "vitest";
 
-// React Nativeのモック
+// React Nativeのモック（expo-modules-core が Platform / TurboModuleRegistry を参照するため含める）
 vi.mock("react-native", () => ({
-  Alert: {
-    alert: vi.fn(),
-  },
+  Alert: { alert: vi.fn() },
   ScrollView: {},
   View: {},
+  Text: {},
+  Pressable: {},
   Dimensions: {
     get: vi.fn().mockReturnValue({ width: 375, height: 812 }),
   },
+  Platform: {
+    OS: "web",
+    select: (obj: Record<string, unknown> & { default?: unknown }) => obj.web ?? obj.default,
+  },
+  TurboModuleRegistry: { get: vi.fn(() => null), getEnforcing: vi.fn(() => ({})) },
+  NativeModules: {},
 }));
 
 // expo-routerのモック
