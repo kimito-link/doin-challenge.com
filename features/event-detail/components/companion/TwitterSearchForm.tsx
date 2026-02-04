@@ -3,10 +3,11 @@
  * Twitter検索フォーム（ユーザー名入力、検索、結果表示）
  */
 
-import { View, Text, Pressable, TextInput } from "react-native";
+import { View, Text, Pressable } from "react-native";
 import MaterialIcons from "@expo/vector-icons/MaterialIcons";
 import { color } from "@/theme/tokens";
 import { useColors } from "@/hooks/use-colors";
+import { Input } from "@/components/ui";
 import type { LookedUpProfile } from "../../types";
 import { TwitterUserCompact, toTwitterUserData } from "@/components/molecules/twitter-user-card";
 
@@ -106,29 +107,18 @@ function TwitterInput({
   
   return (
     <>
-      <Text style={{ color: color.textSecondary, fontSize: 14, marginBottom: 4 }}>
-        Twitterユーザー名またはURL
-      </Text>
-      <Text style={{ color: color.textHint, fontSize: 12, marginBottom: 8 }}>
-        @username または https://x.com/username
-      </Text>
+      <Input
+        label="Twitterユーザー名またはURL"
+        value={value}
+        onChangeText={onChange}
+        placeholder="@idolfunch または https://x.com/idolfunch"
+        autoCapitalize="none"
+        hint="@username または https://x.com/username"
+        containerStyle={{ marginBottom: 8 }}
+        inputStyle={{ flex: 1, color: color.twitter }}
+      />
       <View style={{ flexDirection: "row", gap: 8, marginBottom: 12 }}>
-        <TextInput
-          value={value}
-          onChangeText={onChange}
-          placeholder="@idolfunch または https://x.com/idolfunch"
-          placeholderTextColor={color.textHint}
-          autoCapitalize="none"
-          style={{
-            flex: 1,
-            backgroundColor: color.surface,
-            borderRadius: 8,
-            padding: 12,
-            color: color.twitter,
-            borderWidth: 1,
-            borderColor: color.border,
-          }}
-        />
+        <View style={{ flex: 1 }} />
         <Pressable
           onPress={onSearch}
           disabled={isLoading || !value.trim()}
@@ -136,6 +126,7 @@ function TwitterInput({
             backgroundColor: isLoading || !value.trim() ? color.border : color.twitter,
             borderRadius: 8,
             paddingHorizontal: 16,
+            paddingVertical: 12,
             justifyContent: "center",
           }}
         >
