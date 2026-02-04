@@ -58,7 +58,7 @@ CIでは `lint-check-test` ジョブの後に `e2e` ジョブが実行されま�
 | API使用量 | `/admin/api-usage` + 「API」表示 |
 | エラーログ | `/admin/errors` + 「エラー」表示 |
 | データ整合性 | `/admin/data-integrity` + 「整合性」表示 |
-| コンポーネントギャラリー | `/admin/components` + 「コンポーネント」表示 |
+| コンポーネントギャラリー | `/admin/component-gallery` + 「コンポーネント」表示 |
 | 全ページ一括巡回 | 全10ページが404なしで連続アクセス可能 |
 
 ## 許可リスト
