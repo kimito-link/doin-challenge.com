@@ -80,8 +80,14 @@ export { IconSymbol } from "./icon-symbol";
 export { LabeledIcon } from "./labeled-icon";
 
 // Feedback系
-export { Skeleton } from "./skeleton";
-export { CardSkeleton, ListItemSkeleton, ProfileSkeleton, ChallengeCardSkeleton } from "./skeleton-loader";
+export { 
+  Skeleton,
+  CardSkeleton, 
+  ListItemSkeleton, 
+  ProfileSkeleton, 
+  ChallengeCardSkeleton,
+  type SkeletonProps,
+} from "./skeleton-loader";
 export { Toast, ToastProvider, useToast } from "./toast";
 export { SyncStatusIndicator } from "./sync-status-indicator";
 

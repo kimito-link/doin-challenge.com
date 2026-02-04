@@ -1,13 +1,14 @@
-import { View, StyleSheet, Animated } from "react-native";
+import { View, StyleSheet, Animated, type ViewStyle } from "react-native";
 import { useEffect, useRef } from "react";
 import { LinearGradient } from "expo-linear-gradient";
 import { color } from "@/theme/tokens";
+import { SKELETON_CONFIG } from "@/constants/skeleton-config";
 
-interface SkeletonProps {
+export interface SkeletonProps {
   width?: number | string;
   height?: number;
   borderRadius?: number;
-  style?: any;
+  style?: ViewStyle;
 }
 
 /**
@@ -26,7 +27,7 @@ export function Skeleton({
     const animation = Animated.loop(
       Animated.timing(shimmerAnim, {
         toValue: 1,
-        duration: 1500,
+        duration: SKELETON_CONFIG.animationDuration,
         useNativeDriver: true,
       })
     );
