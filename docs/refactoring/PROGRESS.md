@@ -53,18 +53,19 @@
 
 ### Phase 1完了: パイロット移行
 - [x] TitleInputSection.tsxの移行完了
-  - TextInput → Inputコンポーネント
-  - ラベルを`label` propに移動
-  - InlineValidationErrorを併用（キャラクター表示のため）
 - [x] DescriptionSection.tsxの移行完了
-  - TextInput → Inputコンポーネント（multiline対応）
-  - ラベルを`label` propに移動
-  - `multiline`と`numberOfLines` propを設定
+- [x] VenueInputSection.tsxの移行完了
+- [x] ExternalUrlSection.tsxの移行完了
+- [x] TemplateSaveSection.tsxの移行完了
 
-### 次のステップ
-1. 動作確認
-2. コミット
-3. 残り10ファイルの移行（Phase 2）
+**完了ファイル数**: 5/12
+
+### 残りファイル（Phase 2）
+- [ ] TicketInfoSection.tsx (3箇所のTextInput)
+- [ ] TermsAndPermissions.tsx (MessageInput)
+- [ ] ParticipationForm.tsx (複数箇所)
+- [ ] SearchBar.tsx → SearchInput使用
+- [ ] TwitterSearchForm.tsx (2箇所)
 
 ---
 

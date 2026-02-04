@@ -3,10 +3,9 @@
  * お約束・動画許可・メッセージ入力
  */
 
-import { View, Text, TextInput } from "react-native";
-import { Checkbox } from "@/components/ui";
+import { View, Text } from "react-native";
+import { Checkbox, Input } from "@/components/ui";
 import { color } from "@/theme/tokens";
-import { useColors } from "@/hooks/use-colors";
 
 interface TermsAndPermissionsProps {
   message: string;
@@ -46,32 +45,16 @@ function MessageInput({
   message: string;
   setMessage: (value: string) => void;
 }) {
-  const colors = useColors();
-  
   return (
-    <View style={{ marginBottom: 16 }}>
-      <Text style={{ color: color.textSecondary, fontSize: 14, marginBottom: 8 }}>
-        応援メッセージ（任意）
-      </Text>
-      <TextInput
-        value={message}
-        onChangeText={setMessage}
-        placeholder="応援メッセージを書いてね"
-        placeholderTextColor={color.textHint}
-        multiline
-        numberOfLines={3}
-        style={{
-          backgroundColor: colors.background,
-          borderRadius: 8,
-          padding: 12,
-          color: colors.foreground,
-          borderWidth: 1,
-          borderColor: color.border,
-          minHeight: 80,
-          textAlignVertical: "top",
-        }}
-      />
-    </View>
+    <Input
+      label="応援メッセージ（任意）"
+      value={message}
+      onChangeText={setMessage}
+      placeholder="応援メッセージを書いてね"
+      multiline
+      numberOfLines={3}
+      inputStyle={{ minHeight: 80 }}
+    />
   );
 }
 
