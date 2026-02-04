@@ -34,7 +34,7 @@ bash scripts/auto-setup.sh
 このスクリプトは以下を自動実行します：
 1. `.env.local`から`DATABASE_URL`を読み込み
 2. データベースマイグレーション実行
-3. コスト設定の初期化（上限$10、アラート$8、メール info@best-trust.biz）
+3. コスト設定の初期化（上限$10、アラート$8、メール info@best-trust.biz、自動停止: 有効）
 
 ## データベース接続文字列の取得方法
 
