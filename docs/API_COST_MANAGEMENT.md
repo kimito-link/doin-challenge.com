@@ -140,6 +140,8 @@ const COST_PER_REQUEST = 0.01; // 実際の価格に更新
 
 1. ✅ データベースマイグレーションの実行
 2. ✅ コスト設定の初期化（`scripts/init-api-cost-settings.ts`）
-3. ⚠️ X APIの実際の従量課金価格を確認して `COST_PER_REQUEST` を更新
+3. ⚠️ **COST_PER_REQUEST の更新（推奨）**  
+   X APIの従量課金価格を確認し、[server/db/api-usage-db.ts](../server/db/api-usage-db.ts) の定数を更新する。  
+   手順: ファイルを開き `COST_PER_REQUEST` を検索 → 公式の単価（USD/件）に書き換え → 保存。現在は仮の `0.01`。
 4. ✅ 管理画面で設定を確認
 5. ✅ テストAPI呼び出しで動作確認
