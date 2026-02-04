@@ -98,3 +98,12 @@ bash scripts/auto-setup.sh
 1. ⚠️ **必須**: `.env.local`に実際の`DATABASE_URL`を設定
 2. ✅ `bash scripts/auto-setup.sh` を実行
 3. ✅ 管理画面で動作確認
+
+## スコープ外（この手順では実施しない）
+
+以下は今回のセットアップの対象外です。必要に応じて既存の手順に従って別途実施してください。
+
+| 項目 | 対応 |
+|------|------|
+| **UptimeRobot / Sentry の手動設定** | 既存の MD の手順のまま手動で設定（例: docs/gate1.md, Sentry 関連ドキュメント） |
+| **サムネイル表示不具合の調査・修正** | 別 issue で対応することを推奨 |
