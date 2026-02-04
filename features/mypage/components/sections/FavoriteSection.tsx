@@ -1,10 +1,9 @@
-import { View, Text, FlatList, Pressable } from "react-native";
+import { View, FlatList, Platform } from "react-native";
 import { useRouter } from "expo-router";
 import { ColorfulChallengeCard } from "@/components/molecules/colorful-challenge-card";
+import { SectionHeader } from "@/components/ui";
 import { useFavorites } from "@/hooks/use-favorites";
 import { trpc } from "@/lib/trpc";
-import { color } from "@/theme/tokens";
-import { mypageFont } from "../../ui/theme/tokens";
 
 /**
  * マイページ - 気になるイベントリスト
@@ -30,35 +29,11 @@ export function FavoriteSection() {
   
   return (
     <View style={{ marginBottom: 32 }}>
-      {/* セクションヘッダー */}
-      <View
-        style={{
-          flexDirection: "row",
-          justifyContent: "space-between",
-          alignItems: "center",
-          marginBottom: 16,
-          paddingHorizontal: 16,
-        }}
-      >
-        <Text
-          style={{
-            fontSize: mypageFont.lg,
-            fontWeight: "bold",
-            color: color.textPrimary,
-          }}
-        >
-          気になるイベントリスト
-        </Text>
-        <Text
-          style={{
-            fontSize: mypageFont.body,
-            color: color.textMuted,
-          }}
-        >
-          {favoriteChallenges.length}件
-        </Text>
-      </View>
-      
+      <SectionHeader
+        title="気になるイベントリスト"
+        subtitle={`${favoriteChallenges.length}件`}
+        style={{ marginBottom: 16, paddingHorizontal: 16 }}
+      />
       {/* チャレンジカード一覧 */}
       <FlatList
         data={favoriteChallenges}
@@ -69,6 +44,11 @@ export function FavoriteSection() {
           gap: 12,
         }}
         keyExtractor={(item: any) => item.id.toString()}
+        windowSize={3}
+        maxToRenderPerBatch={5}
+        initialNumToRender={4}
+        removeClippedSubviews={Platform.OS !== "web"}
+        updateCellsBatchingPeriod={50}
         renderItem={({ item }: { item: any }) => (
           <View style={{ width: 280 }}>
             <ColorfulChallengeCard

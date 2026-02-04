@@ -30,6 +30,8 @@ export type CreateChallengeFormProps = {
   isDesktop: boolean;
   titleInputRef: RefObject<View | null>;
   dateInputRef: RefObject<View | null>;
+  /** 未ログイン時のログイン開始（共通LoginModalを開く）。未指定時は useAuth().login */
+  onLoginOpen?: () => void;
 };
 
 /**

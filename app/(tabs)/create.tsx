@@ -8,8 +8,14 @@ import { useAuth } from "@/hooks/use-auth";
 import { useFollowStatus } from "@/hooks/use-follow-status";
 import { useResponsive } from "@/hooks/use-responsive";
 import { useColors } from "@/hooks/use-colors";
+import { useAuthUxMachine } from "@/hooks/use-auth-ux-machine";
 import { FollowPromptBanner } from "@/components/molecules/follow-gate";
 import { AppHeader } from "@/components/organisms/app-header";
+import { LoginModal } from "@/components/common/LoginModal";
+import { RedirectingScreen, WaitingReturnScreen } from "@/components/auth-ux";
+import { SuccessScreen } from "@/components/molecules/auth-ux/SuccessScreen";
+import { CancelScreen } from "@/components/molecules/auth-ux/CancelScreen";
+import { ErrorScreen } from "@/components/molecules/auth-ux/ErrorScreen";
 import { useCreateChallenge, CreateChallengeForm } from "@/features/create";
 import { ChallengeCreatedModal } from "@/components/molecules/challenge-created-modal";
 
@@ -25,6 +31,7 @@ export default function CreateChallengeScreen() {
   const { isFollowing, targetUsername, targetDisplayName } = useFollowStatus();
   const { isDesktop } = useResponsive();
   const colors = useColors();
+  const { state: authState, tapLogin, confirmYes, confirmNo, retry, backWithoutLogin } = useAuthUxMachine();
   
   // カテゴリ一覧を取得
   const { data: categoriesData } = trpc.categories.list.useQuery();
@@ -65,12 +72,13 @@ export default function CreateChallengeScreen() {
           alwaysBounceHorizontal={false}
           contentContainerStyle={{ flexGrow: 1 }}
         >
-          {/* ヘッダー */}
+          {/* ヘッダー（未ログイン時は共通ログインボタン表示） */}
           <AppHeader 
             title="君斗りんくの動員ちゃれんじ" 
             showCharacters={false}
             isDesktop={isDesktop}
             showMenu={true}
+            showLoginButton={true}
           />
           <View style={{ paddingHorizontal: 16, paddingBottom: 8 }}>
             <Text style={{ color: colors.foreground, fontSize: 28, fontWeight: "bold" }}>
@@ -99,7 +107,7 @@ export default function CreateChallengeScreen() {
             />
           )}
 
-          {/* フォーム */}
+          {/* フォーム（未ログイン時は共通LoginModalを開く導線） */}
           <CreateChallengeForm
             state={state}
             updateField={updateField}
@@ -112,12 +120,34 @@ export default function CreateChallengeScreen() {
             isDesktop={isDesktop}
             titleInputRef={refs.titleInputRef}
             dateInputRef={refs.dateInputRef}
+            onLoginOpen={tapLogin}
           />
 
           <View style={{ height: 100 }} />
         </ScrollView>
       </KeyboardAvoidingView>
       
+      {/* 認証UXモーダル（「Xでログインして作成」タップ時・他タブと同一UI） */}
+      <LoginModal
+        visible={authState.name === "confirm"}
+        onConfirm={confirmYes}
+        onCancel={confirmNo}
+      />
+      <RedirectingScreen visible={authState.name === "redirecting"} />
+      <WaitingReturnScreen
+        visible={authState.name === "waitingReturn"}
+        remainingMs={authState.name === "waitingReturn" ? authState.timeoutMs - (Date.now() - authState.startedAt) : undefined}
+      />
+      {authState.name === "success" && (
+        <SuccessScreen onClose={backWithoutLogin} />
+      )}
+      {authState.name === "cancel" && (
+        <CancelScreen kind={authState.kind} onRetry={retry} onBack={backWithoutLogin} />
+      )}
+      {authState.name === "error" && (
+        <ErrorScreen message={authState.message} onRetry={retry} onBack={backWithoutLogin} />
+      )}
+
       {/* 作成完了モーダル */}
       {state.createdChallenge && (
         <ChallengeCreatedModal

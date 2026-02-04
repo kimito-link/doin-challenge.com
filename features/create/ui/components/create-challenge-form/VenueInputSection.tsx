@@ -1,10 +1,11 @@
 // features/create/ui/components/create-challenge-form/VenueInputSection.tsx
 // 開催場所入力セクション
 
-import { View, Text, TextInput, Pressable } from "react-native";
+import { View, Text, TextInput } from "react-native";
 import { color } from "@/theme/tokens";
 import { createFont } from "../../theme/tokens";
 import { useColors } from "@/hooks/use-colors";
+import { UndecidedOption } from "./UndecidedOption";
 import type { VenueInputSectionProps } from "./types";
 
 /**
@@ -20,40 +21,13 @@ export function VenueInputSection({ value, onChange }: VenueInputSectionProps) {
       <Text style={{ color: colors.muted, fontSize: createFont.body, marginBottom: 8 }}>
         開催場所（任意）
       </Text>
-      
-      {/* まだ決まっていないオプション */}
-      <Pressable
-        onPress={() => onChange("まだ決まっていない")}
-        style={({ pressed }) => ({
-          flexDirection: "row",
-          alignItems: "center",
-          marginBottom: 8,
-          opacity: pressed ? 0.7 : 1,
-        })}
-      >
-        <View
-          style={{
-            width: 20,
-            height: 20,
-            borderRadius: 10,
-            borderWidth: 2,
-            borderColor: isUndecided ? color.accentPrimary : color.textDisabled,
-            backgroundColor: isUndecided ? color.accentPrimary : "transparent",
-            marginRight: 8,
-            justifyContent: "center",
-            alignItems: "center",
-          }}
-        >
-          {isUndecided && (
-            <View style={{ width: 8, height: 8, borderRadius: 4, backgroundColor: color.textWhite }} />
-          )}
-        </View>
-        <Text style={{ color: colors.muted, fontSize: createFont.body }}>
-          まだ決まっていない
-        </Text>
-      </Pressable>
 
-      {/* 入力フィールドまたは説明テキスト */}
+      <UndecidedOption
+        checked={isUndecided}
+        onToggle={() => onChange("まだ決まっていない")}
+        note="※ 決まり次第、後から編集できます"
+      />
+
       {!isUndecided && (
         <TextInput
           value={value}
@@ -69,11 +43,6 @@ export function VenueInputSection({ value, onChange }: VenueInputSectionProps) {
             borderColor: color.border,
           }}
         />
-      )}
-      {isUndecided && (
-        <Text style={{ color: color.textSecondary, fontSize: createFont.meta, marginTop: 4 }}>
-          ※ 決まり次第、後から編集できます
-        </Text>
       )}
     </View>
   );

@@ -57,6 +57,12 @@ export {
   type SearchInputProps,
 } from "./input";
 
+// Checkbox系
+export {
+  Checkbox,
+  type CheckboxProps,
+} from "./checkbox";
+
 // List系
 export { 
   ListItem, 
@@ -113,11 +119,3 @@ export {
   type CharacterDetailModalProps,
   type CharacterInfo,
 } from "./character-detail-modal";
-
-// Image系
-export {
-  LazyImage,
-  LazyAvatar,
-  LazyThumbnail,
-} from "./lazy-image";
-

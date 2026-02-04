@@ -72,7 +72,7 @@ fontSize: mypageFont.title,
           width: "100%",
         }}
       >
-        {isLoggingIn ? "ログイン中..." : "Xでログインする"}
+        {isLoggingIn ? "ログイン中..." : "Xでログイン"}
       </Button>
     </LinearGradient>
   );

@@ -148,6 +148,7 @@ export default function ChallengeDetailScreen() {
             title="君斗りんくの動員ちゃれんじ" 
             showCharacters={false}
             showMenu={true}
+            showLoginButton={true}
           />
 
           {/* イベントヘッダー */}

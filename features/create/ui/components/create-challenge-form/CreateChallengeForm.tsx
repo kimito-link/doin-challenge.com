@@ -44,9 +44,11 @@ export function CreateChallengeForm({
   isDesktop,
   titleInputRef,
   dateInputRef,
+  onLoginOpen,
 }: CreateChallengeFormProps) {
   
   const { user, login } = useAuth();
+  const loginAction = onLoginOpen ?? login;
 
   return (
     <View
@@ -71,8 +73,8 @@ export function CreateChallengeForm({
       />
 
       <View style={{ padding: 16 }}>
-        {/* ログインセクション */}
-        {!user && <TwitterLoginSection onLogin={login} />}
+        {/* ログインセクション（onLoginOpen があれば共通LoginModalを開く） */}
+        {!user && <TwitterLoginSection onLogin={loginAction} />}
         {user && <UserInfoSection user={user} />}
 
         {/* プリセット選択（かんたん設定） */}

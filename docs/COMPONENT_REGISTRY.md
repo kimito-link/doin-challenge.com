@@ -16,10 +16,8 @@
   - `onConfirm: () => void` - ログイン確認時のコールバック
   - `onCancel: () => void` - キャンセル時のコールバック
 
-### LoginConfirmModal（非推奨）
-- **パス**: `components/organisms/login-confirm-modal.tsx`
-- **状態**: **非推奨** - `LoginModal` を使用すること
-- **理由**: 重複実装のため
+### LoginConfirmModal（削除済み）
+- **状態**: 削除済み。ログイン確認には必ず `LoginModal`（`components/common/LoginModal.tsx`）を使用すること。
 
 ### LoginButton（非推奨）
 - **パス**: `features/mypage/components/login-screen/LoginButton.tsx`
@@ -50,6 +48,18 @@
 - **パス**: `components/ui/input.tsx`
 - **用途**: テキスト入力フィールド
 - **使用箇所**: チャレンジ作成、プロフィール編集
+
+### Checkbox
+- **パス**: `components/ui/checkbox.tsx`
+- **用途**: チェックボックス（ラベル・説明文対応）
+- **使用箇所**: 動画利用許可、テンプレート保存設定
+- **Props**:
+  - `checked: boolean` - チェック状態
+  - `onChange: (checked: boolean) => void` - 状態変更ハンドラ
+  - `label: string` - ラベルテキスト
+  - `description?: string` - 説明文（任意）
+  - `size?: "sm" | "md"` - サイズ（デフォルト: "md"）
+  - `disabled?: boolean` - 無効化フラグ
 
 ### Modal
 - **パス**: `components/ui/modal.tsx`
@@ -97,15 +107,11 @@
 
 ## 画像関連
 
-### LazyImage
-- **パス**: `components/ui/lazy-image.tsx`
-- **用途**: 遅延読み込み画像
-- **使用箇所**: チャレンジカード、プロフィール画像
-
-### LazyAvatar
-- **パス**: `components/molecules/lazy-image.tsx` (160-179行目)
-- **用途**: 遅延読み込みアバター画像（フォールバック対応）
-- **使用箇所**: チャレンジカード、ユーザープロフィール
+### LazyImage / LazyAvatar
+- **パス**: `components/molecules/lazy-image.tsx`
+- **用途**: 遅延読み込み画像（Intersection Observer・フェードイン）。LazyAvatar はアバター用フォールバック対応
+- **使用箇所**: チャレンジカード、プロフィール画像、ランキング
+- **注意**: どちらも molecules に統一。`@/components/molecules/lazy-image` から import すること
 
 ### OptimizedImage
 - **パス**: `components/molecules/optimized-image.tsx`

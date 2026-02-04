@@ -1,4 +1,4 @@
-import { View, Text, StyleSheet, FlatList } from "react-native";
+import { View, Text, StyleSheet, FlatList, Platform } from "react-native";
 import MaterialIcons from "@expo/vector-icons/MaterialIcons";
 import { color } from "@/theme/tokens";
 import { useColors } from "@/hooks/use-colors";
@@ -82,6 +82,11 @@ export function ParticipantsSection({
         horizontal
         showsHorizontalScrollIndicator={false}
         contentContainerStyle={styles.listContent}
+        windowSize={3}
+        maxToRenderPerBatch={5}
+        initialNumToRender={5}
+        removeClippedSubviews={Platform.OS !== "web"}
+        updateCellsBatchingPeriod={50}
       />
     </View>
   );

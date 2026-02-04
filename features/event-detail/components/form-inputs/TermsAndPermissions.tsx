@@ -3,8 +3,8 @@
  * お約束・動画許可・メッセージ入力
  */
 
-import { View, Text, Pressable, TextInput } from "react-native";
-import MaterialIcons from "@expo/vector-icons/MaterialIcons";
+import { View, Text, TextInput } from "react-native";
+import { Checkbox } from "@/components/ui";
 import { color } from "@/theme/tokens";
 import { useColors } from "@/hooks/use-colors";
 
@@ -135,50 +135,14 @@ function VideoPermissionCheckbox({
   allowVideoUse: boolean;
   setAllowVideoUse: (value: boolean) => void;
 }) {
-  const colors = useColors();
-  
   return (
-    <Pressable
-      onPress={() => setAllowVideoUse(!allowVideoUse)}
-      style={{
-        flexDirection: "row",
-        alignItems: "flex-start",
-        marginBottom: 20,
-        padding: 12,
-        backgroundColor: colors.background,
-        borderRadius: 8,
-        borderWidth: 1,
-        borderColor: color.border,
-      }}
-    >
-      {/* チェックボックス */}
-      <View
-        style={{
-          width: 24,
-          height: 24,
-          borderRadius: 4,
-          borderWidth: 2,
-          borderColor: allowVideoUse ? color.accentPrimary : color.textHint,
-          backgroundColor: allowVideoUse ? color.accentPrimary : "transparent",
-          alignItems: "center",
-          justifyContent: "center",
-          marginRight: 12,
-        }}
-      >
-        {allowVideoUse && (
-          <MaterialIcons name="check" size={18} color={colors.foreground} />
-        )}
-      </View>
-
-      {/* ラベル */}
-      <View style={{ flex: 1 }}>
-        <Text style={{ color: colors.foreground, fontSize: 14, fontWeight: "600" }}>
-          応援動画への使用を許可する
-        </Text>
-        <Text style={{ color: color.textSecondary, fontSize: 12, marginTop: 4 }}>
-          あなたのコメントを応援動画に使用させていただく場合があります
-        </Text>
-      </View>
-    </Pressable>
+    <View style={{ marginBottom: 20, padding: 12, backgroundColor: color.surface, borderRadius: 8, borderWidth: 1, borderColor: color.border }}>
+      <Checkbox
+        checked={allowVideoUse}
+        onChange={setAllowVideoUse}
+        label="応援動画への使用を許可する"
+        description="あなたのコメントを応援動画に使用させていただく場合があります"
+      />
+    </View>
   );
 }

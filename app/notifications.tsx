@@ -239,6 +239,11 @@ export default function NotificationsScreen() {
             data={notificationList}
             keyExtractor={(item) => item.id.toString()}
             contentContainerStyle={{ paddingHorizontal: 16 }}
+            windowSize={5}
+            maxToRenderPerBatch={10}
+            initialNumToRender={10}
+            removeClippedSubviews={Platform.OS !== "web"}
+            updateCellsBatchingPeriod={50}
             renderItem={({ item: notification }) => (
               <Pressable
                 key={notification.id}
@@ -304,7 +309,6 @@ export default function NotificationsScreen() {
               }
             }}
             onEndReachedThreshold={0.5}
-            removeClippedSubviews={Platform.OS === "android"}
             ListFooterComponent={() => 
               isFetchingNextPage ? (
                 <View style={{ padding: 16, alignItems: "center" }}>

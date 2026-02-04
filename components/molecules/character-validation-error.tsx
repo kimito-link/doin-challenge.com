@@ -39,7 +39,7 @@ const VALIDATION_MESSAGES = {
   host: [
     { character: "rinku", text: "ログインしてね！", expression: "sad" },
     { character: "konta", text: "誰が主催するの？", expression: "normal" },
-    { character: "tanune", text: "Twitterでログインしよう！", expression: "normal" },
+    { character: "tanune", text: "Xでログインしよう！", expression: "normal" },
   ],
   general: [
     { character: "rinku", text: "まだ必要項目が入ってないよ！", expression: "worried" },

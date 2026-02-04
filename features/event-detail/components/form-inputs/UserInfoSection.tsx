@@ -66,7 +66,7 @@ function LoginPrompt({ login }: { login: () => void }) {
           ログインが必要です
         </Text>
         <Text style={{ color: color.textSecondary, fontSize: 13, marginBottom: 12 }}>
-          参加表明にはTwitterログインが必要です。
+          参加表明にはXログインが必要です。
         </Text>
         <Pressable
           onPress={handleLoginClick}
@@ -83,7 +83,7 @@ function LoginPrompt({ login }: { login: () => void }) {
         >
           <MaterialIcons name="login" size={20} color={colors.foreground} />
           <Text style={{ color: colors.foreground, fontSize: 14, fontWeight: "600" }}>
-            X（Twitter）でログイン
+            Xでログイン
           </Text>
         </Pressable>
       </View>

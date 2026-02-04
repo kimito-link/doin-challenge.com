@@ -32,7 +32,7 @@ export function TwitterLoginSection({ onLogin }: TwitterLoginSectionProps) {
     >
       <MaterialIcons name="login" size={20} color={color.textWhite} />
       <Text style={{ color: colors.foreground, fontSize: createFont.title, fontWeight: "bold", marginLeft: 8 }}>
-        Twitterでログインして作成
+        Xでログインして作成
       </Text>
     </Pressable>
   );

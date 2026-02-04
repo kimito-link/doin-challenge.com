@@ -4,10 +4,11 @@
  * 前売り券・当日券・購入URLの入力UI
  */
 
-import { View, Text, TextInput, Pressable } from "react-native";
+import { View, Text, TextInput } from "react-native";
 import MaterialIcons from "@expo/vector-icons/MaterialIcons";
 import { useColors } from "@/hooks/use-colors";
 import { createUI, createText, createFont } from "../theme/tokens";
+import { UndecidedOption } from "./create-challenge-form/UndecidedOption";
 
 interface TicketInfoSectionProps {
   ticketPresale: string;
@@ -57,44 +58,15 @@ export function TicketInfoSection({
           チケット情報（任意）
         </Text>
       </View>
-      
-      {/* まだ決まっていないオプション */}
-      <Pressable
-        onPress={handleToggleUndecided}
-        style={({ pressed }) => ({
-          flexDirection: "row",
-          alignItems: "center",
-          marginBottom: 12,
-          opacity: pressed ? 0.7 : 1,
-        })}
-      >
-        <View
-          style={{
-            width: 20,
-            height: 20,
-            borderRadius: 10,
-            borderWidth: 2,
-            borderColor: isUndecided ? createUI.activeAccent : createUI.checkboxActiveBorder,
-            backgroundColor: isUndecided ? createUI.activeAccent : "transparent",
-            marginRight: 8,
-            justifyContent: "center",
-            alignItems: "center",
-          }}
-        >
-          {isUndecided && (
-            <View style={{ width: 8, height: 8, borderRadius: 4, backgroundColor: "#fff" }} />
-          )}
-        </View>
-        <Text style={{ color: colors.muted, fontSize: createFont.body }}>
-          まだ決まっていない
-        </Text>
-      </Pressable>
-      
-      {isUndecided ? (
-        <Text style={{ color: createText.muted, fontSize: createFont.meta }}>
-          ※ 決まり次第、後から編集できます
-        </Text>
-      ) : (
+
+      <UndecidedOption
+        checked={isUndecided}
+        onToggle={handleToggleUndecided}
+        marginBottom={12}
+        note="※ 決まり次第、後から編集できます"
+      />
+
+      {!isUndecided && (
         <>
           <View style={{ flexDirection: "row", gap: 12, marginBottom: 12 }}>
             <View style={{ flex: 1 }}>
