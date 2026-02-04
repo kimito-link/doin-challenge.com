@@ -69,6 +69,7 @@ interface DashboardData {
     shouldAlert: boolean;
     shouldStop: boolean;
   };
+  endpointCosts?: Array<{ endpoint: string; count: number; cost: number }>;
 }
 
 export default function ApiUsageDashboard() {
@@ -482,10 +483,57 @@ export default function ApiUsageDashboard() {
         {/* エンドポイント別統計 */}
         <View className="mb-6">
           <Text className="text-lg font-semibold text-foreground mb-3">
-            🔗 エンドポイント別
+            🔗 エンドポイント別（今月の累計）
           </Text>
-          {data?.stats.endpoints && Object.keys(data.stats.endpoints).length > 0 ? (
-            Object.entries(data.stats.endpoints).map(([endpoint, stats]) => (
+          {data?.endpointCosts && data.endpointCosts.length > 0 ? (
+            data.endpointCosts.map((item) => (
+              <View
+                key={item.endpoint}
+                className="bg-surface p-4 rounded-lg mb-3"
+              >
+                <Text className="font-semibold text-foreground mb-2">
+                  {item.endpoint}
+                </Text>
+                <View className="flex-row justify-between mb-2">
+                  <Text className="text-sm text-muted">
+                    リクエスト: {item.count} 件
+                  </Text>
+                  <Text className={`text-sm font-semibold ${
+                    item.cost > 0 ? "text-error" : "text-success"
+                  }`}>
+                    コスト: ${item.cost.toFixed(4)}
+                  </Text>
+                </View>
+                {/* コストバー */}
+                {data.monthlyStats && data.monthlyStats.cost > 0 && (
+                  <View className="h-2 bg-border rounded-full overflow-hidden">
+                    <View
+                      className="h-full rounded-full"
+                      style={{
+                        width: `${Math.min(100, (item.cost / data.monthlyStats.cost) * 100)}%`,
+                        backgroundColor: colors.error,
+                      }}
+                    />
+                  </View>
+                )}
+              </View>
+            ))
+          ) : (
+            <View className="bg-surface p-4 rounded-lg">
+              <Text className="text-muted text-center">
+                まだAPIリクエストがありません
+              </Text>
+            </View>
+          )}
+        </View>
+
+        {/* エンドポイント別レート制限統計 */}
+        {data?.stats.endpoints && Object.keys(data.stats.endpoints).length > 0 && (
+          <View className="mb-6">
+            <Text className="text-lg font-semibold text-foreground mb-3">
+              📊 エンドポイント別レート制限状況
+            </Text>
+            {Object.entries(data.stats.endpoints).map(([endpoint, stats]) => (
               <View
                 key={endpoint}
                 className="bg-surface p-4 rounded-lg mb-3"
@@ -516,15 +564,9 @@ export default function ApiUsageDashboard() {
                   {new Date(stats.resetAt).toLocaleString("ja-JP")}
                 </Text>
               </View>
-            ))
-          ) : (
-            <View className="bg-surface p-4 rounded-lg">
-              <Text className="text-muted text-center">
-                まだAPIリクエストがありません
-              </Text>
-            </View>
-          )}
-        </View>
+            ))}
+          </View>
+        )}
 
         {/* 最終更新時刻 */}
         <Text className="text-xs text-muted text-center">

@@ -224,9 +224,15 @@ export async function getDashboardSummary(): Promise<{
     shouldAlert: boolean;
     shouldStop: boolean;
   };
+  endpointCosts: Array<{ endpoint: string; count: number; cost: number }>;
 }> {
   const monthlyStats = await apiUsageDb.getCurrentMonthStats();
   const costLimit = await apiUsageDb.checkCostLimit();
+  
+  // 今月のエンドポイント別コストを取得
+  const now = new Date();
+  const month = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}`;
+  const endpointCosts = await apiUsageDb.getUsageByEndpoint(month, 20);
 
   return {
     stats: getApiUsageStats(),
@@ -234,5 +240,6 @@ export async function getDashboardSummary(): Promise<{
     recentHistory: getRecentUsageHistory(20),
     monthlyStats,
     costLimit,
+    endpointCosts,
   };
 }
