@@ -21,44 +21,53 @@ export async function getAllEvents() {
   const db = await getDb();
   if (!db) return eventsCache.data ?? [];
   
-  // v6.175: usersテーブルとJOINしてhostGenderを取得
-  const result = await db
-    .select({
-      id: events.id,
-      hostUserId: events.hostUserId,
-      hostTwitterId: events.hostTwitterId,
-      hostName: events.hostName,
-      hostUsername: events.hostUsername,
-      hostProfileImage: events.hostProfileImage,
-      hostFollowersCount: events.hostFollowersCount,
-      hostDescription: events.hostDescription,
-      hostGender: users.gender, // 主催者の性別
-      title: events.title,
-      slug: events.slug,
-      description: events.description,
-      goalType: events.goalType,
-      goalValue: events.goalValue,
-      goalUnit: events.goalUnit,
-      currentValue: events.currentValue,
-      eventType: events.eventType,
-      categoryId: events.categoryId,
-      eventDate: events.eventDate,
-      venue: events.venue,
-      prefecture: events.prefecture,
-      status: events.status,
-      isPublic: events.isPublic,
-      createdAt: events.createdAt,
-      updatedAt: events.updatedAt,
-    })
-    .from(events)
-    .leftJoin(users, eq(events.hostUserId, users.id))
-    .where(eq(events.isPublic, true))
-    .orderBy(desc(events.eventDate));
-  
-  // キャッシュを更新
-  eventsCache = { data: result, timestamp: now };
-  
-  return result;
+  try {
+    // v6.175: usersテーブルとJOINしてhostGenderを取得
+    const result = await db
+      .select({
+        id: events.id,
+        hostUserId: events.hostUserId,
+        hostTwitterId: events.hostTwitterId,
+        hostName: events.hostName,
+        hostUsername: events.hostUsername,
+        hostProfileImage: events.hostProfileImage,
+        hostFollowersCount: events.hostFollowersCount,
+        hostDescription: events.hostDescription,
+        hostGender: users.gender, // 主催者の性別
+        title: events.title,
+        slug: events.slug,
+        description: events.description,
+        goalType: events.goalType,
+        goalValue: events.goalValue,
+        goalUnit: events.goalUnit,
+        currentValue: events.currentValue,
+        eventType: events.eventType,
+        categoryId: events.categoryId,
+        eventDate: events.eventDate,
+        venue: events.venue,
+        prefecture: events.prefecture,
+        status: events.status,
+        isPublic: events.isPublic,
+        createdAt: events.createdAt,
+        updatedAt: events.updatedAt,
+      })
+      .from(events)
+      .leftJoin(users, eq(events.hostUserId, users.id))
+      .where(eq(events.isPublic, true))
+      .orderBy(desc(events.eventDate));
+    eventsCache = { data: result, timestamp: now };
+    return result;
+  } catch (err) {
+    // users.gender などスキーマ不一致で失敗した場合のフォールバック（challenges のみ取得）
+    console.warn("[getAllEvents] JOIN query failed, falling back to challenges only:", (err as Error)?.message);
+    const fallback = await db
+      .select()
+      .from(events)
+      .where(eq(events.isPublic, true))
+      .orderBy(desc(events.eventDate));
+    eventsCache = { data: fallback, timestamp: now };
+    return fallback;
+  }
 }
 
 // キャッシュを無効化（イベント作成/更新/削除時に呼び出す）
