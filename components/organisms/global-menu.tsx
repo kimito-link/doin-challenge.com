@@ -14,7 +14,8 @@ import { navigate } from "@/lib/navigation";
 import MaterialIcons from "@expo/vector-icons/MaterialIcons";
 import { useAuth } from "@/hooks/use-auth";
 import { LogoutConfirmModal } from "@/components/molecules/logout-confirm-modal";
-import { LoginConfirmModal, RedirectingScreen, WaitingReturnScreen } from "@/components/auth-ux";
+import { RedirectingScreen, WaitingReturnScreen } from "@/components/auth-ux";
+import { LoginModal } from "@/components/common/LoginModal";
 import { SuccessScreen } from "@/components/molecules/auth-ux/SuccessScreen";
 import { CancelScreen } from "@/components/molecules/auth-ux/CancelScreen";
 import { ErrorScreen } from "@/components/molecules/auth-ux/ErrorScreen";
@@ -349,15 +350,9 @@ export function GlobalMenu({ isVisible, onClose }: GlobalMenuProps) {
         onConfirm={confirmLogout}
       />
 
-      {/* ログイン確認モーダル (Phase 2) */}
-      <LoginConfirmModal
-        open={state.name === "confirm"}
-        speech={{
-          title: "りんく",
-          message: "Xの画面に移動してログインするよ。戻ってきたら自動で続きに進むよ。",
-        }}
-        confirmLabel="Xでログインする"
-        cancelLabel="やめる"
+      {/* ログイン確認モーダル（共通LoginModalに統一） */}
+      <LoginModal
+        visible={state.name === "confirm"}
         onConfirm={confirmYes}
         onCancel={confirmNo}
       />
