@@ -257,7 +257,7 @@ const styles = StyleSheet.create({
     textAlign: "center",
   },
   subtitle: {
-    color: color.textWhite + "B3", // rgba(255, 255, 255, 0.7) の透明度16進数
+    color: color.textWhite + "B3", // 70% opacity
     fontSize: 18,
     marginBottom: 32,
     textAlign: "center",
@@ -283,7 +283,7 @@ const styles = StyleSheet.create({
     width: 70,
     height: 70,
     borderRadius: 35,
-    backgroundColor: color.textWhite + "33", // rgba(255, 255, 255, 0.2) の透明度16進数
+    backgroundColor: color.textWhite + "33", // 20% opacity
     justifyContent: "center",
     alignItems: "center",
     marginBottom: 12,
@@ -299,13 +299,13 @@ const styles = StyleSheet.create({
     marginBottom: 4,
   },
   optionDescription: {
-    color: color.textWhite + "CC", // rgba(255, 255, 255, 0.8) の透明度16進数
+    color: color.textWhite + "CC", // 80% opacity
     fontSize: 12,
     textAlign: "center",
     marginBottom: 8,
   },
   optionBadge: {
-    backgroundColor: color.textWhite + "33", // rgba(255, 255, 255, 0.2) の透明度16進数
+    backgroundColor: color.textWhite + "33", // 20% opacity
     paddingHorizontal: 10,
     paddingVertical: 4,
     borderRadius: 10,
@@ -316,7 +316,7 @@ const styles = StyleSheet.create({
     fontWeight: "600",
   },
   helpText: {
-    color: color.textWhite + "80", // rgba(255, 255, 255, 0.5) の透明度16進数
+    color: color.textWhite + "80", // 50% opacity
     fontSize: 12,
     marginBottom: 16,
     textAlign: "center",
@@ -326,7 +326,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 24,
   },
   skipText: {
-    color: color.textWhite + "80", // rgba(255, 255, 255, 0.5) の透明度16進数
+    color: color.textWhite + "80", // 50% opacity
     fontSize: 14,
   },
 });

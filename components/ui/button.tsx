@@ -64,15 +64,15 @@ const variantStyles = {
     bg: "transparent",
     text: color.accentPrimary,
     border: color.accentPrimary,
-    activeBg: color.accentPrimary + "1A", // rgba(236, 72, 153, 0.1) の透明度16進数
-    hoverBg: color.accentPrimary + "26", // rgba(236, 72, 153, 0.15) の透明度16進数
+    activeBg: color.accentPrimary + "1A", // 10% opacity
+    hoverBg: color.accentPrimary + "26", // 15% opacity
   },
   ghost: {
     bg: "transparent",
     text: color.textMuted,
     border: "transparent",
-    activeBg: color.textWhite + "1A", // rgba(255, 255, 255, 0.1) の透明度16進数
-    hoverBg: color.textWhite + "0D", // rgba(255, 255, 255, 0.05) の透明度16進数
+    activeBg: color.textWhite + "1A", // 10% opacity
+    hoverBg: color.textWhite + "0D", // 5% opacity
   },
   destructive: {
     bg: color.danger,

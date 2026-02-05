@@ -142,7 +142,7 @@ const styles = StyleSheet.create({
     minWidth: 220,
   },
   caption: {
-    color: palette.white + "B3", // rgba(255, 255, 255, 0.7) の透明度16進数
+    color: palette.white + "B3", // 70% opacity
     fontSize: 11,
     marginTop: 8,
   },
@@ -154,7 +154,7 @@ const styles = StyleSheet.create({
     alignItems: "center",
     paddingVertical: 8,
     borderBottomWidth: 1,
-    borderBottomColor: palette.white + "1A", // rgba(255, 255, 255, 0.1) の透明度16進数
+    borderBottomColor: palette.white + "1A", // 10% opacity
   },
   avatar: {
     width: 32,
@@ -172,13 +172,13 @@ const styles = StyleSheet.create({
     fontWeight: "600",
   },
   listItemSub: {
-    color: palette.white + "99", // rgba(255, 255, 255, 0.6) の透明度16進数
+    color: palette.white + "99", // 60% opacity
     fontSize: 10,
   },
   notificationCard: {
     flexDirection: "row",
     alignItems: "center",
-    backgroundColor: palette.white + "26", // rgba(255, 255, 255, 0.15) の透明度16進数
+    backgroundColor: palette.white + "26", // 15% opacity
     borderRadius: 12,
     padding: 12,
     gap: 10,
@@ -192,7 +192,7 @@ const styles = StyleSheet.create({
     fontWeight: "bold",
   },
   notificationBody: {
-    color: palette.white + "CC", // rgba(255, 255, 255, 0.8) の透明度16進数
+    color: palette.white + "CC", // 80% opacity
     fontSize: 11,
   },
   crownContainer: {
@@ -209,7 +209,7 @@ const styles = StyleSheet.create({
     fontWeight: "bold",
   },
   crownSub: {
-    color: palette.white + "B3", // rgba(255, 255, 255, 0.7) の透明度16進数
+    color: palette.white + "B3", // 70% opacity
     fontSize: 12,
     marginTop: 4,
   },
