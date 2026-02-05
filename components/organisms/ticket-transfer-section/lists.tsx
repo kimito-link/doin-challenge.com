@@ -1,11 +1,10 @@
 // components/organisms/ticket-transfer-section/lists.tsx
 // v6.18: チケット譲渡のリスト表示コンポーネント
-import { View, Text, Pressable, Alert, Platform } from "react-native";
+import { View, Text, Pressable, Alert } from "react-native";
 import { openTwitterDM } from "@/lib/navigation";
-import * as Haptics from "expo-haptics";
 import { Image } from "expo-image";
 import MaterialIcons from "@expo/vector-icons/MaterialIcons";
-import { color } from "@/theme/tokens";
+import { color, palette } from "@/theme/tokens";
 import { TicketTransfer, TicketWaitlist, PriceType, priceTypeLabels, priceTypeColors } from "./types";
 
 const handleOpenDM = (username: string | null) => {
@@ -111,7 +110,7 @@ export function TransferList({
                 onPress={() => handleOpenDM(transfer.userUsername)}
                 style={{
                   flex: 1,
-                  backgroundColor: "#000",
+                  backgroundColor: palette.black,
                   borderRadius: 12,
                   minHeight: 44,
                   paddingVertical: 12,
@@ -120,7 +119,7 @@ export function TransferList({
                   alignItems: "center",
                   justifyContent: "center",
                   borderWidth: 1,
-                  borderColor: "#333",
+                  borderColor: palette.gray700,
                 }}
               >
                 <Text style={{ color: color.textWhite, fontSize: 16, fontWeight: "bold" }}>𝕏</Text>
@@ -222,7 +221,7 @@ export function WaitlistList({
             <Pressable
               onPress={() => handleOpenDM(item.userUsername)}
               style={{
-                backgroundColor: "#000",
+                backgroundColor: palette.black,
                 borderRadius: 10,
                 minHeight: 44,
                 minWidth: 80,
@@ -232,7 +231,7 @@ export function WaitlistList({
                 alignItems: "center",
                 justifyContent: "center",
                 borderWidth: 1,
-                borderColor: "#333",
+                borderColor: palette.gray700,
               }}
             >
               <Text style={{ color: color.textWhite, fontSize: 14, fontWeight: "bold" }}>𝕏</Text>

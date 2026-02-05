@@ -2,6 +2,7 @@
 // v6.18: リファクタリング済みチュートリアルオーバーレイ
 import { View, Text, Pressable, StyleSheet, Platform } from "react-native";
 import { useEffect, useState } from "react";
+import * as Haptics from "expo-haptics";
 import Animated, {
   useSharedValue,
   useAnimatedStyle,
@@ -83,6 +84,8 @@ export function TutorialOverlay({
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
     // useSharedValueは依存配列に含める必要がない（Reanimatedの仕様）
+    // characterBounce, messageOpacity, previewScale, speechBubbleScaleはReanimatedのSharedValueで、
+    // これらを依存配列に含めると無限ループが発生する可能性があるため除外
   }, [visible, step]);
 
   const messageStyle = useAnimatedStyle(() => ({

@@ -7,7 +7,7 @@ import { View, Text, ScrollView, ImageSourcePropType } from "react-native";
 import { Image } from "expo-image";
 import { Modal } from "./modal";
 import { Button } from "./button";
-import { color, palette } from "@/theme/tokens";
+import { color } from "@/theme/tokens";
 import { useColors } from "@/hooks/use-colors";
 
 export interface CharacterInfo {
