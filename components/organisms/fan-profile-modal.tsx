@@ -42,11 +42,6 @@ interface RecentChallenge {
   participatedAt: string;
 }
 
-interface OshikatsuStats {
-  totalParticipations: number;
-  totalContribution: number;
-  recentChallenges: RecentChallenge[];
-}
 
 export function FanProfileModal({
   visible,

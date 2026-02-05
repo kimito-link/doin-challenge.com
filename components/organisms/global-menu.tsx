@@ -87,7 +87,7 @@ export function GlobalMenu({ isVisible, onClose }: GlobalMenuProps) {
         <Pressable
           style={{
             flex: 1,
-            backgroundColor: "rgba(0, 0, 0, 0.6)",
+            backgroundColor: palette.black + "99", // rgba(0, 0, 0, 0.6) = 60% opacity = 99 in hex
           }}
           onPress={onClose}
         >
@@ -317,7 +317,7 @@ export function GlobalMenu({ isVisible, onClose }: GlobalMenuProps) {
                       paddingVertical: 14,
                       paddingHorizontal: 12,
                       borderRadius: 12,
-                      backgroundColor: "rgba(239, 68, 68, 0.1)",
+                      backgroundColor: palette.red500 + "1A", // rgba(239, 68, 68, 0.1) = 10% opacity = 1A in hex
                     }, pressed && { opacity: 0.7, transform: [{ scale: 0.97 }] }]}
                   >
                     <MaterialIcons
