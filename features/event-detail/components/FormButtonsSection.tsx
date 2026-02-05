@@ -7,6 +7,7 @@ import { View, Text, Pressable } from "react-native";
 import { LinearGradient } from "expo-linear-gradient";
 import { color } from "@/theme/tokens";
 import { useColors } from "@/hooks/use-colors";
+import { eventDetailCopy, commonCopy } from "@/constants/copy";
 
 interface FormButtonsSectionProps {
   prefecture: string;
@@ -38,7 +39,7 @@ export function FormButtonsSection({
           alignItems: "center",
         }}
       >
-        <Text style={{ color: colors.foreground, fontSize: 16 }}>キャンセル</Text>
+        <Text style={{ color: colors.foreground, fontSize: 16 }}>{commonCopy.buttons.cancel}</Text>
       </Pressable>
       <Pressable
         onPress={onSubmit}
@@ -65,7 +66,7 @@ export function FormButtonsSection({
           }}
         />
         <Text style={{ color: colors.foreground, fontSize: 16, fontWeight: "bold" }}>
-          {!prefecture ? "都道府県を選択してください" : "参加表明する"}
+          {!prefecture ? eventDetailCopy.labels.prefectureRequired : eventDetailCopy.actions.participate}
         </Text>
       </Pressable>
     </View>

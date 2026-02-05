@@ -7,6 +7,7 @@ import { useColors } from "@/hooks/use-colors";
 import { regionGroups, prefectures } from "@/constants/prefectures";
 import { MessageCard } from "./MessageCard";
 import type { Participation } from "@/types/participation";
+import { eventDetailCopy } from "@/constants/copy";
 
 export type GenderFilter = "all" | "male" | "female";
 
@@ -102,10 +103,10 @@ export function MessagesSection({
             </View>
             <View style={styles.submitHighlightText}>
               <Text style={[styles.submitHighlightTitle, { color: colors.foreground }]}>
-                🎉 参加表明完了！
+                🎉 {eventDetailCopy.success.participated}
               </Text>
               <Text style={styles.submitHighlightSubtitle}>
-                あなたの応援メッセージが反映されました
+                {eventDetailCopy.success.participatedMessage}
               </Text>
             </View>
           </View>

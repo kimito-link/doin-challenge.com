@@ -5,6 +5,7 @@ import { useColors } from "@/hooks/use-colors";
 import type { Companion } from "./ParticipationForm";
 import { Button } from "@/components/ui/button";
 import { TwitterUserCard, TwitterUserCompact, toTwitterUserData } from "@/components/molecules/twitter-user-card";
+import { eventDetailCopy, commonCopy } from "@/constants/copy";
 
 export type ConfirmationModalProps = {
   visible: boolean;
@@ -48,10 +49,10 @@ export function ConfirmationModal({
       <View style={styles.overlay}>
         <View style={[styles.container, { backgroundColor: color.surface }]}>
           <Text style={[styles.title, { color: colors.foreground }]}>
-            参加表明の確認
+            {eventDetailCopy.section.participation}の確認
           </Text>
           <Text style={styles.subtitle}>
-            以下の内容で参加表明します
+            以下の内容で{eventDetailCopy.section.participation}します
           </Text>
 
           {/* 参加者情報 */}
@@ -135,7 +136,7 @@ export function ConfirmationModal({
                 style={[styles.confirmButtonGradient, isSubmitting && styles.confirmButtonDisabled]}
               >
                 <Text style={[styles.confirmButtonText, { color: colors.foreground }]}>
-                  {isSubmitting ? "送信中..." : "参加表明する"}
+                  {isSubmitting ? commonCopy.loading.submitting : eventDetailCopy.actions.participate}
                 </Text>
               </LinearGradient>
             </Button>

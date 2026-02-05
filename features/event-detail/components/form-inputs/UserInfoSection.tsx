@@ -10,6 +10,7 @@ import { useColors } from "@/hooks/use-colors";
 import { LoginModal } from "@/components/common/LoginModal";
 import { useState } from "react";
 import { TwitterUserCard, toTwitterUserData } from "@/components/molecules/twitter-user-card";
+import { eventDetailCopy, authCopy } from "@/constants/copy";
 
 interface UserInfoSectionProps {
   user: {
@@ -28,7 +29,7 @@ export function UserInfoSection({ user, login }: UserInfoSectionProps) {
     return (
       <View style={{ marginBottom: 16, backgroundColor: colors.background, borderRadius: 12, padding: 16, borderWidth: 1, borderColor: color.border }}>
         <Text style={{ color: color.textSecondary, fontSize: 12, marginBottom: 8 }}>
-          参加者
+          {eventDetailCopy.labels.participant}
         </Text>
         <TwitterUserCard
           user={toTwitterUserData(user)}
@@ -63,10 +64,10 @@ function LoginPrompt({ login }: { login: () => void }) {
     <>
       <View style={{ marginBottom: 16, backgroundColor: "rgba(236, 72, 153, 0.1)", borderRadius: 12, padding: 16, borderWidth: 1, borderColor: color.accentPrimary }}>
         <Text style={{ color: color.accentPrimary, fontSize: 14, fontWeight: "600", marginBottom: 8 }}>
-          ログインが必要です
+          {eventDetailCopy.login.required}
         </Text>
         <Text style={{ color: color.textSecondary, fontSize: 13, marginBottom: 12 }}>
-          参加表明にはXログインが必要です。
+          {eventDetailCopy.actions.participateLoginDesc}
         </Text>
         <Pressable
           onPress={handleLoginClick}
@@ -83,7 +84,7 @@ function LoginPrompt({ login }: { login: () => void }) {
         >
           <MaterialIcons name="login" size={20} color={colors.foreground} />
           <Text style={{ color: colors.foreground, fontSize: 14, fontWeight: "600" }}>
-            Xでログイン
+            {authCopy.login.loginWithX}
           </Text>
         </Pressable>
       </View>

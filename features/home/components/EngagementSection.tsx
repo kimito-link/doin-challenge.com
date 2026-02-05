@@ -9,6 +9,7 @@ import { useColors } from "@/hooks/use-colors";
 import { homeUI, homeText, homeFont } from "@/features/home/ui/theme/tokens";
 import { regionGroups } from "@/constants/prefectures";
 import type { Challenge } from "@/types/challenge";
+import { homeCopy } from "@/constants/copy/home";
 
 interface EngagementSectionProps {
   /** チャレンジデータの配列 */
@@ -56,7 +57,7 @@ export function EngagementSection({ challenges }: EngagementSectionProps) {
         <View style={{ flexDirection: "row", justifyContent: "space-around", marginBottom: 20 }}>
           <View style={{ alignItems: "center" }}>
             <Text style={{ color: colors.foreground, fontSize: 32, fontWeight: "bold" }}>{stats.totalParticipants}</Text>
-            <Text style={{ color: homeText.muted, fontSize: homeFont.meta }}>総参加表明</Text>
+            <Text style={{ color: homeText.muted, fontSize: homeFont.meta }}>{homeCopy.engagement.totalParticipations}</Text>
           </View>
           <View style={{ alignItems: "center" }}>
             <Text style={{ color: colors.foreground, fontSize: 32, fontWeight: "bold" }}>{stats.activeChallenges}</Text>
@@ -83,7 +84,7 @@ export function EngagementSection({ challenges }: EngagementSectionProps) {
                 {stats.hotRegion[0]}が熱い！
               </Text>
               <Text style={{ color: homeText.muted, fontSize: homeFont.meta }}>
-                {stats.hotRegion[1]}人が参加表明中
+                {stats.hotRegion[1]}{homeCopy.engagement.hotRegion}
               </Text>
             </View>
             <MaterialIcons name="local-fire-department" size={24} color={homeUI.iconBgFire} />

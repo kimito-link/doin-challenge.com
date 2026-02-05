@@ -7,6 +7,7 @@
 
 import { Button } from "@/components/ui/button";
 import { mypageUI } from "../../ui/theme/tokens";
+import { authCopy, commonCopy } from "@/constants/copy";
 
 interface LoginButtonProps {
   isLoggingIn: boolean;
@@ -26,7 +27,7 @@ export function LoginButton({ isLoggingIn, onLogin }: LoginButtonProps) {
         width: "100%",
       }}
     >
-      {isLoggingIn ? "ログイン中..." : "Xでログインする"}
+      {isLoggingIn ? commonCopy.loading.loading : authCopy.login.loginWithX + "する"}
     </Button>
   );
 }

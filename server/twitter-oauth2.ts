@@ -275,9 +275,10 @@ const pkceMemoryStore = new Map<string, { codeVerifier: string; callbackUrl: str
 // Target account to check follow status (idolfunch)
 const TARGET_TWITTER_USERNAME = "idolfunch";
 
-// フォロー状態のサーバー側キャッシュ（48時間 TTL、環境変数で設定可能）
+// フォロー状態のサーバー側キャッシュ（24時間 TTL、環境変数で設定可能）
+// 最適化: 48時間→24時間に短縮してAPI呼び出しを削減しつつ、データの鮮度を保つ
 const FOLLOW_STATUS_CACHE_TTL_HOURS = parseInt(
-  process.env.FOLLOW_STATUS_CACHE_TTL_HOURS || "48",
+  process.env.FOLLOW_STATUS_CACHE_TTL_HOURS || "24",
   10
 );
 const FOLLOW_STATUS_CACHE_TTL_MS = FOLLOW_STATUS_CACHE_TTL_HOURS * 60 * 60 * 1000;

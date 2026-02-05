@@ -15,6 +15,7 @@ import { useColors } from "@/hooks/use-colors";
 import { prefectures } from "@/constants/prefectures";
 import { styles } from "./ParticipationForm.styles";
 import type { ParticipationFormProps } from "./types";
+import { eventDetailCopy, authCopy, commonCopy } from "@/constants/copy";
 
 export function ParticipationForm({
   user,
@@ -59,7 +60,7 @@ export function ParticipationForm({
       <View style={styles.loginPrompt}>
         <MaterialIcons name="person-add" size={48} color={color.accentPrimary} />
         <Text style={[styles.loginPromptTitle, { color: colors.foreground }]}>
-          参加表明するにはログインが必要です
+          {eventDetailCopy.actions.participateLogin}
         </Text>
         <Button variant="primary" onPress={onLogin} style={styles.loginButton}>
           <LinearGradient
@@ -70,7 +71,7 @@ export function ParticipationForm({
           >
             <MaterialIcons name="login" size={20} color={colors.foreground} />
             <Text style={[styles.loginButtonText, { color: colors.foreground }]}>
-              Xでログイン
+              {authCopy.login.loginWithX}
             </Text>
           </LinearGradient>
         </Button>
@@ -84,10 +85,10 @@ export function ParticipationForm({
       <View style={styles.alreadyParticipated}>
         <MaterialIcons name="check-circle" size={48} color={color.success} />
         <Text style={[styles.alreadyParticipatedTitle, { color: colors.foreground }]}>
-          参加表明済みです
+          {eventDetailCopy.actions.participateDone}
         </Text>
         <Text style={styles.alreadyParticipatedSubtitle}>
-          上のメッセージ一覧であなたの投稿を確認できます
+          {eventDetailCopy.actions.participateDoneDesc}
         </Text>
       </View>
     );
@@ -98,7 +99,7 @@ export function ParticipationForm({
       <View style={styles.header}>
         <MaterialIcons name="edit" size={20} color={color.accentPrimary} />
         <Text style={[styles.headerTitle, { color: colors.foreground }]}>
-          {isEditMode ? "参加表明を編集" : "参加表明する"}
+          {isEditMode ? eventDetailCopy.actions.edit : eventDetailCopy.actions.participate}
         </Text>
       </View>
 
@@ -135,10 +136,10 @@ export function ParticipationForm({
       {/* 参加方法選択 */}
       <View style={styles.inputSection}>
         <Text style={[styles.inputLabel, { color: colors.foreground }]}>
-          リアルタイム参加方法
+          {eventDetailCopy.labels.attendanceType}
         </Text>
         <Text style={[styles.inputHint, { color: colors.muted }]}>
-          同じ時間を共有する仲間を募集中
+          {eventDetailCopy.labels.attendanceTypeHint}
         </Text>
         <View style={styles.attendanceTypeContainer}>
           <Button
@@ -158,7 +159,7 @@ export function ParticipationForm({
               styles.attendanceTypeText,
               { color: attendanceType === "venue" ? color.textWhite : colors.foreground }
             ]}>
-              会場参加
+              {eventDetailCopy.labels.venue}
             </Text>
           </Button>
           
@@ -179,7 +180,7 @@ export function ParticipationForm({
               styles.attendanceTypeText,
               { color: attendanceType === "streaming" ? color.textWhite : colors.foreground }
             ]}>
-              配信視聴
+              {eventDetailCopy.labels.streaming}
             </Text>
           </Button>
           
@@ -200,7 +201,7 @@ export function ParticipationForm({
               styles.attendanceTypeText,
               { color: attendanceType === "both" ? color.textWhite : colors.foreground }
             ]}>
-              両方
+              {eventDetailCopy.labels.both}
             </Text>
           </Button>
         </View>
@@ -537,7 +538,7 @@ export function ParticipationForm({
         >
           <MaterialIcons name="send" size={20} color={colors.foreground} />
           <Text style={[styles.submitButtonText, { color: colors.foreground }]}>
-            {isSubmitting ? "送信中..." : isEditMode ? "更新する" : "参加表明する"}
+            {isSubmitting ? commonCopy.loading.submitting : isEditMode ? eventDetailCopy.actions.update : eventDetailCopy.actions.participate}
           </Text>
         </LinearGradient>
       </Button>

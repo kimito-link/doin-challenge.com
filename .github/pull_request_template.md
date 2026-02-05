@@ -1,11 +1,13 @@
 ## 変更概要
 （1変更 = 1目的 で簡潔に）
 
-## Gate 1（必須）
+## Gate 1（壊れない運用）チェック
 
-- [ ] Diff-check: CIで pass
+- [ ] このPRは「1変更=1commit / 1目的=1PR」になっている
+- [ ] Diff-check: CIで pass（Gate1 Diff Check）
+- [ ] 危険ファイルに触れていない（oauth / vercel.json / deploy workflow など）
+- [ ] もし触れた場合：理由・影響範囲・ロールバック手順を本文に明記した
 - [ ] 本番照合: `/api/health` の commitSha がこのPRのmerge後SHAになる（deploy-verifyが pass）
-- [ ] 危険変更（OAuth / deploy / auth）を触った場合、確認結果をここに記載
 
 ### 確認結果（貼る）
 - `/api/health` レスポンス（commitShaが見える状態）:

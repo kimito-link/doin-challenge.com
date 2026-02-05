@@ -18,6 +18,7 @@ import { LinkSpeech } from "@/components/organisms/link-speech";
 import { RegionMap } from "@/features/events/components/RegionMap";
 import { ATTENDANCE_MESSAGES } from "@/types/attendance";
 import type { AttendanceType } from "@/types/attendance";
+import { eventDetailCopy } from "@/constants/copy";
 
 export interface ParticipationSuccessModalProps {
   visible: boolean;
@@ -82,7 +83,7 @@ export function ParticipationSuccessModal({
 
             {/* タイトル */}
             <Text style={[styles.title, { color: colors.foreground }]}>
-              参加表明完了！
+              {eventDetailCopy.success.participated}
             </Text>
 
             {/* りんく吹き出し */}

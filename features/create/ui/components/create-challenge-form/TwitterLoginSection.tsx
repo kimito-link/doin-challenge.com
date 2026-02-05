@@ -7,6 +7,7 @@ import { color } from "@/theme/tokens";
 import { createFont } from "../../theme/tokens";
 import { useColors } from "@/hooks/use-colors";
 import type { TwitterLoginSectionProps } from "./types";
+import { authCopy } from "@/constants/copy";
 
 /**
  * Twitterログインボタンセクション
@@ -32,7 +33,7 @@ export function TwitterLoginSection({ onLogin }: TwitterLoginSectionProps) {
     >
       <MaterialIcons name="login" size={20} color={color.textWhite} />
       <Text style={{ color: colors.foreground, fontSize: createFont.title, fontWeight: "bold", marginLeft: 8 }}>
-        Xでログインして作成
+        {authCopy.login.loginWithX}して作成
       </Text>
     </Pressable>
   );

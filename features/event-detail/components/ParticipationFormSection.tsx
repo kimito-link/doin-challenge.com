@@ -15,6 +15,7 @@ import type { Companion, LookedUpProfile } from "../types";
 import { FormInputSection } from "./FormInputSection";
 import { CompanionAddSection } from "./CompanionAddSection";
 import { FormButtonsSection } from "./FormButtonsSection";
+import { eventDetailCopy } from "@/constants/copy";
 
 interface ParticipationFormSectionProps {
   // User
@@ -107,7 +108,7 @@ export function ParticipationFormSection({
         borderColor: color.border,
       }}
     >
-      <SectionHeader title="参加表明" style={{ paddingHorizontal: 0, paddingVertical: 0, marginBottom: 16 }} />
+      <SectionHeader title={eventDetailCopy.section.participation} style={{ paddingHorizontal: 0, paddingVertical: 0, marginBottom: 16 }} />
 
       {/* フォーム入力部分 */}
       <FormInputSection

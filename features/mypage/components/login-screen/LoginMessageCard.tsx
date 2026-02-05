@@ -8,6 +8,7 @@ import { LinearGradient } from "expo-linear-gradient";
 import { Button } from "@/components/ui/button";
 import { mypageFont } from "../../ui/theme/tokens";
 import type { LoginPattern } from "./constants";
+import { authCopy, commonCopy } from "@/constants/copy";
 
 interface LoginMessageCardProps {
   pattern: LoginPattern;
@@ -72,7 +73,7 @@ fontSize: mypageFont.title,
           width: "100%",
         }}
       >
-        {isLoggingIn ? "ログイン中..." : "Xでログイン"}
+        {isLoggingIn ? commonCopy.loading.loading : authCopy.login.loginWithX}
       </Button>
     </LinearGradient>
   );

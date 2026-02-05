@@ -6,6 +6,7 @@ import { View, Text } from "react-native";
 import MaterialIcons from "@expo/vector-icons/MaterialIcons";
 import { useColors } from "@/hooks/use-colors";
 import { homeUI, homeText, homeFont } from "@/features/home/ui/theme/tokens";
+import { homeCopy } from "@/constants/copy/home";
 
 export function FeatureListSection() {
   const colors = useColors();
@@ -39,7 +40,7 @@ fontSize: homeFont.title,
               <MaterialIcons name="favorite" size={18} color={colors.foreground} />
             </View>
             <Text style={{ color: colors.foreground, fontSize: homeFont.body, flex: 1 }}>
-              参加表明で応援メッセージを送れる
+              {homeCopy.features.participation}
             </Text>
           </View>
           <View style={{ flexDirection: "row", alignItems: "center" }}>
