@@ -57,6 +57,7 @@ export const palette = {
   blue500: "#3B82F6",         // info
   blue400: "#60A5FA",         // info light
   blue600: "#2563EB",         // info dark
+  blue700: "#00427B",         // deep blue (onboarding steps)
 
   // Gender colors（性別ボーダー用）
   genderMale: "#3B82F6",      // 男性: 青

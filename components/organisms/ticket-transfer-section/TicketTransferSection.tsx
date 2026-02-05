@@ -1,14 +1,13 @@
 // components/organisms/ticket-transfer-section/TicketTransferSection.tsx
 // v6.18: リファクタリング済みチケット譲渡セクション
 import { useState } from "react";
-import { View, Text, Pressable, Alert , Platform} from "react-native";
-import * as Haptics from "expo-haptics";
+import { View, Text, Pressable, Alert } from "react-native";
 import MaterialIcons from "@expo/vector-icons/MaterialIcons";
 import { color } from "@/theme/tokens";
 import { trpc } from "@/lib/trpc";
 import { useAuth } from "@/hooks/use-auth";
 
-import { TicketTransferSectionProps, TicketTransfer, TicketWaitlist, PriceType } from "./types";
+import { TicketTransferSectionProps, TicketTransfer, TicketWaitlist } from "./types";
 import { CreateTransferModal, WaitlistModal } from "./modals";
 import { TransferList, WaitlistList } from "./lists";
 
