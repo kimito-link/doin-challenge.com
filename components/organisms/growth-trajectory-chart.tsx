@@ -1,5 +1,5 @@
 import { View, Text, StyleSheet, useWindowDimensions } from "react-native";
-import { color, palette } from "@/theme/tokens";
+import { color } from "@/theme/tokens";
 import Svg, { Path, Line, Circle, Text as SvgText, Defs, LinearGradient, Stop, G } from "react-native-svg";
 import { useMemo } from "react";
 

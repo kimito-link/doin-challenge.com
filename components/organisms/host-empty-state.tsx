@@ -1,5 +1,5 @@
 import { View, Text, Pressable, StyleSheet, Platform } from "react-native";
-import { color, palette } from "@/theme/tokens";
+import { color } from "@/theme/tokens";
 import { Image } from "expo-image";
 import { navigate } from "@/lib/navigation";
 import { useColors } from "@/hooks/use-colors";
@@ -7,10 +7,7 @@ import * as Haptics from "expo-haptics";
 import Animated, { 
   useAnimatedStyle, 
   useSharedValue, 
-  withRepeat, 
   withTiming,
-  withSequence,
-  Easing,
 } from "react-native-reanimated";
 import { useEffect } from "react";
 
@@ -38,6 +35,8 @@ export function HostEmptyState() {
     // 静的な表示（ちかちかアニメーション削除）
     bounce.value = withTiming(0, { duration: 300 });
     scale.value = withTiming(1, { duration: 300 });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    // bounceとscaleはReanimatedのSharedValueで、依存配列に含めると無限ループが発生する可能性があるため除外
   }, []);
   
   const characterAnimatedStyle = useAnimatedStyle(() => ({
