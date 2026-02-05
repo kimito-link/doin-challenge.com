@@ -39,7 +39,7 @@ export const styles = StyleSheet.create({
     width: 32,
     height: 32,
     borderRadius: 16,
-    backgroundColor: palette.white + "33", // 20% opacity
+    backgroundColor: palette.white + "33",
     justifyContent: "center",
     alignItems: "center",
   },
@@ -58,7 +58,7 @@ export const styles = StyleSheet.create({
   progressBarWrapper: {
     flex: 1,
     height: 4,
-    backgroundColor: palette.white + "33", // 20% opacity
+    backgroundColor: palette.white + "33",
     borderRadius: 2,
     overflow: "hidden",
   },
@@ -69,7 +69,7 @@ export const styles = StyleSheet.create({
   },
   progressText: {
     fontSize: 12,
-    color: palette.white + "99", // 60% opacity
+    color: palette.white + "99",
     minWidth: 50,
     textAlign: "right",
   },
@@ -100,7 +100,7 @@ export const styles = StyleSheet.create({
   // ?????
   thoughtBubble: {
     flex: 1,
-    backgroundColor: palette.white + "26", // 15% opacity
+    backgroundColor: palette.white + "26",
     borderRadius: 16,
     padding: 12,
     position: "relative",
@@ -142,7 +142,7 @@ export const styles = StyleSheet.create({
   },
   subMessageText: {
     fontSize: 14,
-    color: palette.white + "CC", // 80% opacity
+    color: palette.white + "CC",
     textAlign: "center",
     marginBottom: 20,
     paddingHorizontal: 20,
@@ -170,7 +170,7 @@ export const styles = StyleSheet.create({
     height: 56,
   },
   navBubble: {
-    backgroundColor: palette.white + "26", // 15% opacity
+    backgroundColor: palette.white + "26",
     borderRadius: 16,
     paddingHorizontal: 16,
     paddingVertical: 10,
@@ -184,7 +184,7 @@ export const styles = StyleSheet.create({
     marginRight: -8,
   },
   navBubbleDisabled: {
-    backgroundColor: palette.white + "14", // 8% opacity
+    backgroundColor: palette.white + "14",
   },
   navBubblePrimary: {
     backgroundColor: color.hotPink,
@@ -221,7 +221,7 @@ export const styles = StyleSheet.create({
     fontWeight: "600",
   },
   navBubbleTextDisabled: {
-    color: palette.white + "66", // 40% opacity
+    color: palette.white + "66",
   },
   navBubbleTextPrimary: {
     color: color.textWhite,

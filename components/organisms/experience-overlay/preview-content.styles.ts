@@ -10,7 +10,7 @@ import { color, palette } from "@/theme/tokens";
 export const styles = StyleSheet.create({
   // ?????????????
   previewContainer: {
-    backgroundColor: palette.white + "1A", // 10% opacity
+    backgroundColor: palette.white + "1A",
     borderRadius: 16,
     padding: 16,
     alignItems: "center",
@@ -61,7 +61,7 @@ export const styles = StyleSheet.create({
   participantCard: {
     flex: 1,
     alignItems: "center",
-    backgroundColor: palette.white + "1A", // 10% opacity
+    backgroundColor: palette.white + "1A",
     borderRadius: 12,
     padding: 12,
   },
@@ -86,7 +86,7 @@ export const styles = StyleSheet.create({
   },
   participantPref: {
     fontSize: 10,
-    color: palette.white + "B3", // 70% opacity
+    color: palette.white + "B3",
     marginTop: 2,
   },
   
@@ -119,7 +119,7 @@ export const styles = StyleSheet.create({
   },
   chartBarLabel: {
     fontSize: 10,
-    color: palette.white + "B3", // 70% opacity
+    color: palette.white + "B3",
   },
   
   // Notification preview
@@ -186,7 +186,7 @@ export const styles = StyleSheet.create({
   },
   badgeDesc: {
     fontSize: 12,
-    color: palette.white + "B3", // 70% opacity
+    color: palette.white + "B3",
   },
   badgeGrid: {
     flexDirection: "row",
@@ -198,7 +198,7 @@ export const styles = StyleSheet.create({
     width: 60,
     height: 60,
     borderRadius: 12,
-    backgroundColor: palette.white + "1A", // 10% opacity
+    backgroundColor: palette.white + "1A",
     justifyContent: "center",
     alignItems: "center",
   },
@@ -214,7 +214,7 @@ export const styles = StyleSheet.create({
   
   // Comment preview
   commentPreview: {
-    backgroundColor: palette.white + "1A", // 10% opacity
+    backgroundColor: palette.white + "1A",
     borderRadius: 16,
     padding: 16,
     width: "100%",
@@ -245,7 +245,7 @@ export const styles = StyleSheet.create({
   },
   commentTime: {
     fontSize: 10,
-    color: palette.white + "80", // 50% opacity
+    color: palette.white + "80",
   },
   commentText: {
     color: color.textWhite,
@@ -274,7 +274,7 @@ export const styles = StyleSheet.create({
     width: 44,
     height: 44,
     borderRadius: 22,
-    backgroundColor: palette.white + "33", // 20% opacity
+    backgroundColor: palette.white + "33",
     justifyContent: "center",
     alignItems: "center",
   },
@@ -298,12 +298,12 @@ export const styles = StyleSheet.create({
   },
   inviteDesc: {
     fontSize: 12,
-    color: palette.white + "B3", // 70% opacity
+    color: palette.white + "B3",
   },
   
   // Form preview
   formPreview: {
-    backgroundColor: palette.white + "1A", // 10% opacity
+    backgroundColor: palette.white + "1A",
     borderRadius: 16,
     padding: 16,
     width: "100%",
@@ -313,26 +313,26 @@ export const styles = StyleSheet.create({
   },
   formLabel: {
     fontSize: 12,
-    color: palette.white + "B3", // 70% opacity
+    color: palette.white + "B3",
     marginBottom: 6,
   },
   formInput: {
-    backgroundColor: palette.white + "1A", // 10% opacity
+    backgroundColor: palette.white + "1A",
     borderRadius: 8,
     padding: 12,
     borderWidth: 1,
-    borderColor: palette.white + "33", // 20% opacity
+    borderColor: palette.white + "33",
   },
   formInputText: {
     fontSize: 14,
     color: color.textWhite,
   },
   formSelect: {
-    backgroundColor: palette.white + "1A", // 10% opacity
+    backgroundColor: palette.white + "1A",
     borderRadius: 8,
     padding: 12,
     borderWidth: 1,
-    borderColor: palette.white + "33", // 20% opacity
+    borderColor: palette.white + "33",
     flexDirection: "row",
     justifyContent: "space-between",
     alignItems: "center",
@@ -343,7 +343,7 @@ export const styles = StyleSheet.create({
   },
   formSelectArrow: {
     fontSize: 12,
-    color: palette.white + "80", // 50% opacity
+    color: palette.white + "80",
   },
   
   // Prefecture preview
@@ -360,12 +360,12 @@ export const styles = StyleSheet.create({
     gap: 8,
   },
   prefectureButton: {
-    backgroundColor: palette.white + "1A", // 10% opacity
+    backgroundColor: palette.white + "1A",
     borderRadius: 8,
     paddingHorizontal: 16,
     paddingVertical: 10,
     borderWidth: 1,
-    borderColor: palette.white + "33", // 20% opacity
+    borderColor: palette.white + "33",
   },
   prefectureButtonSelected: {
     backgroundColor: color.accentPrimary,
@@ -373,7 +373,7 @@ export const styles = StyleSheet.create({
   },
   prefectureText: {
     fontSize: 14,
-    color: palette.white + "B3", // 70% opacity
+    color: palette.white + "B3",
   },
   prefectureTextSelected: {
     color: color.textWhite,
@@ -382,7 +382,7 @@ export const styles = StyleSheet.create({
   
   // Profile preview
   profilePreview: {
-    backgroundColor: palette.white + "1A", // 10% opacity
+    backgroundColor: palette.white + "1A",
     borderRadius: 16,
     padding: 16,
     width: "100%",
@@ -416,16 +416,16 @@ export const styles = StyleSheet.create({
   },
   profileBio: {
     fontSize: 12,
-    color: palette.white + "B3", // 70% opacity
+    color: palette.white + "B3",
     marginTop: 2,
   },
   profileFollowers: {
     fontSize: 11,
-    color: palette.white + "B3", // 70% opacity
+    color: palette.white + "B3",
     marginTop: 4,
   },
   influencerBadge: {
-    backgroundColor: palette.gold + "33", // 20% opacity
+    backgroundColor: palette.gold + "33",
     borderRadius: 4,
     paddingHorizontal: 6,
     paddingVertical: 2,
@@ -494,7 +494,7 @@ export const styles = StyleSheet.create({
   },
   genderLegendText: {
     fontSize: 12,
-    color: palette.white + "B3", // 70% opacity
+    color: palette.white + "B3",
   },
   
   // Challenge card preview
@@ -502,7 +502,7 @@ export const styles = StyleSheet.create({
     width: "100%",
     maxWidth: 320,
     borderWidth: 1,
-    borderColor: palette.pink500 + "80", // 50% opacity
+    borderColor: palette.pink500 + "80",
   },
   challengeCardHeader: {
     flexDirection: "row",
@@ -513,7 +513,7 @@ export const styles = StyleSheet.create({
   challengeCardCategory: {
     fontSize: 12,
     color: color.accentPrimary,
-    backgroundColor: palette.pink500 + "33", // 20% opacity
+    backgroundColor: palette.pink500 + "33",
     paddingHorizontal: 8,
     paddingVertical: 4,
     borderRadius: 4,
@@ -521,7 +521,7 @@ export const styles = StyleSheet.create({
   challengeCardDays: {
     fontSize: 12,
     color: color.textWhite,
-    backgroundColor: palette.white + "33", // 20% opacity
+    backgroundColor: palette.white + "33",
     paddingHorizontal: 8,
     paddingVertical: 4,
     borderRadius: 4,
@@ -553,14 +553,14 @@ export const styles = StyleSheet.create({
   },
   challengeCardHostName: {
     fontSize: 12,
-    color: palette.white + "CC", // 80% opacity
+    color: palette.white + "CC",
   },
   challengeCardProgress: {
     marginTop: 12,
   },
   challengeCardProgressBar: {
     height: 8,
-    backgroundColor: palette.white + "33", // 20% opacity
+    backgroundColor: palette.white + "33",
     borderRadius: 4,
     overflow: "hidden",
     marginBottom: 4,
@@ -592,7 +592,7 @@ export const styles = StyleSheet.create({
   },
   progressBarTrack: {
     height: 16,
-    backgroundColor: palette.white + "33", // 20% opacity
+    backgroundColor: palette.white + "33",
     borderRadius: 8,
     overflow: "hidden",
     marginBottom: 8,
@@ -614,7 +614,7 @@ export const styles = StyleSheet.create({
   },
   progressBarGoal: {
     fontSize: 16,
-    color: palette.white + "B3", // 70% opacity
+    color: palette.white + "B3",
   },
   progressBarMilestones: {
     flexDirection: "row",
@@ -622,13 +622,13 @@ export const styles = StyleSheet.create({
     gap: 8,
   },
   progressBarMilestone: {
-    backgroundColor: palette.white + "1A", // 10% opacity
+    backgroundColor: palette.white + "1A",
     borderRadius: 4,
     paddingHorizontal: 8,
     paddingVertical: 4,
   },
   progressBarMilestoneCompleted: {
-    backgroundColor: palette.green400 + "4D", // 30% opacity
+    backgroundColor: palette.green400 + "4D",
   },
   progressBarMilestoneText: {
     fontSize: 10,
@@ -643,7 +643,7 @@ export const styles = StyleSheet.create({
   },
   countdownTitle: {
     fontSize: 14,
-    color: palette.white + "B3", // 70% opacity
+    color: palette.white + "B3",
     marginBottom: 12,
   },
   countdownNumbers: {
@@ -654,7 +654,7 @@ export const styles = StyleSheet.create({
   },
   countdownItem: {
     alignItems: "center",
-    backgroundColor: palette.white + "1A", // 10% opacity
+    backgroundColor: palette.white + "1A",
     borderRadius: 8,
     padding: 12,
     minWidth: 50,
@@ -666,16 +666,16 @@ export const styles = StyleSheet.create({
   },
   countdownLabel: {
     fontSize: 10,
-    color: palette.white + "B3", // 70% opacity
+    color: palette.white + "B3",
   },
   countdownSeparator: {
     fontSize: 24,
     fontWeight: "bold",
-    color: palette.white + "80", // 50% opacity
+    color: palette.white + "80",
   },
   countdownDate: {
     fontSize: 12,
-    color: palette.white + "B3", // 70% opacity
+    color: palette.white + "B3",
   },
   
   // Achievement preview
@@ -703,7 +703,7 @@ export const styles = StyleSheet.create({
   },
   achievementDesc: {
     fontSize: 12,
-    color: palette.white + "B3", // 70% opacity
+    color: palette.white + "B3",
     marginBottom: 12,
   },
   achievementNames: {
@@ -715,14 +715,14 @@ export const styles = StyleSheet.create({
   achievementName: {
     fontSize: 12,
     color: color.textWhite,
-    backgroundColor: palette.white + "1A", // 10% opacity
+    backgroundColor: palette.white + "1A",
     paddingHorizontal: 8,
     paddingVertical: 4,
     borderRadius: 4,
   },
   achievementMore: {
     fontSize: 12,
-    color: palette.white + "80", // 50% opacity
+    color: palette.white + "80",
     paddingHorizontal: 8,
     paddingVertical: 4,
   },
@@ -755,7 +755,7 @@ export const styles = StyleSheet.create({
     fontWeight: "bold",
   },
   shareCard: {
-    backgroundColor: palette.white + "1A", // 10% opacity
+    backgroundColor: palette.white + "1A",
     borderRadius: 8,
     padding: 12,
   },
@@ -782,12 +782,12 @@ export const styles = StyleSheet.create({
   rankingItem: {
     flexDirection: "row",
     alignItems: "center",
-    backgroundColor: palette.white + "1A", // 10% opacity
+    backgroundColor: palette.white + "1A",
     borderRadius: 8,
     padding: 12,
   },
   rankingItemHighlight: {
-    backgroundColor: palette.pink500 + "4D", // 30% opacity
+    backgroundColor: palette.pink500 + "4D",
     borderWidth: 1,
     borderColor: color.accentPrimary,
   },
@@ -838,7 +838,7 @@ export const styles = StyleSheet.create({
     gap: 8,
   },
   dmMessageReceived: {
-    backgroundColor: palette.white + "1A", // 10% opacity
+    backgroundColor: palette.white + "1A",
     borderRadius: 12,
     borderTopLeftRadius: 4,
     padding: 12,
@@ -877,7 +877,7 @@ export const styles = StyleSheet.create({
     flexDirection: "row",
     justifyContent: "space-between",
     alignItems: "center",
-    backgroundColor: palette.white + "1A", // 10% opacity
+    backgroundColor: palette.white + "1A",
     borderRadius: 8,
     padding: 12,
   },
@@ -889,7 +889,7 @@ export const styles = StyleSheet.create({
     width: 44,
     height: 24,
     borderRadius: 12,
-    backgroundColor: palette.white + "33", // 20% opacity
+    backgroundColor: palette.white + "33",
     padding: 2,
   },
   reminderToggleOn: {
@@ -921,7 +921,7 @@ export const styles = StyleSheet.create({
     flexDirection: "row",
     justifyContent: "space-between",
     alignItems: "center",
-    backgroundColor: palette.white + "1A", // 10% opacity
+    backgroundColor: palette.white + "1A",
     borderRadius: 8,
     padding: 12,
   },
@@ -964,7 +964,7 @@ export const styles = StyleSheet.create({
   },
   cheerButton: {
     alignItems: "center",
-    backgroundColor: palette.white + "1A", // 10% opacity
+    backgroundColor: palette.white + "1A",
     borderRadius: 12,
     padding: 12,
   },
@@ -997,7 +997,7 @@ export const styles = StyleSheet.create({
   statsItem: {
     flex: 1,
     minWidth: "45%",
-    backgroundColor: palette.white + "1A", // 10% opacity
+    backgroundColor: palette.white + "1A",
     borderRadius: 8,
     padding: 12,
     alignItems: "center",
@@ -1009,7 +1009,7 @@ export const styles = StyleSheet.create({
   },
   statsLabel: {
     fontSize: 10,
-    color: palette.white + "B3", // 70% opacity
+    color: palette.white + "B3",
     marginTop: 4,
   },
   
@@ -1030,7 +1030,7 @@ export const styles = StyleSheet.create({
   },
   celebrationSubtitle: {
     fontSize: 14,
-    color: palette.white + "B3", // 70% opacity
+    color: palette.white + "B3",
     marginBottom: 16,
   },
   celebrationConfetti: {
