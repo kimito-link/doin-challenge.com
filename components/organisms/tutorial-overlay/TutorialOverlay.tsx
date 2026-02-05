@@ -12,10 +12,8 @@ import Animated, {
   FadeIn,
   FadeOut,
 } from "react-native-reanimated";
-import { useColors } from "@/hooks/use-colors";
-import * as Haptics from "expo-haptics";
 import { Image } from "expo-image";
-import { color } from "@/theme/tokens";
+import { color, palette } from "@/theme/tokens";
 
 import { CHARACTER_IMAGES, type CharacterKey, type TutorialOverlayProps } from "./types";
 import { Confetti, Sparkles } from "./effects";
@@ -32,7 +30,6 @@ export function TutorialOverlay({
   onComplete,
   visible,
 }: TutorialOverlayProps) {
-  const colors = useColors();
   const [showConfetti, setShowConfetti] = useState(false);
   const [showSparkles, setShowSparkles] = useState(false);
   const [currentExpression, setCurrentExpression] = useState<CharacterKey>("rinku_normal");
@@ -84,6 +81,8 @@ export function TutorialOverlay({
       setShowConfetti(false);
       setShowSparkles(false);
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    // useSharedValueは依存配列に含める必要がない（Reanimatedの仕様）
   }, [visible, step]);
 
   const messageStyle = useAnimatedStyle(() => ({
@@ -263,7 +262,7 @@ const styles = StyleSheet.create({
   },
   darkOverlay: {
     ...StyleSheet.absoluteFillObject,
-    backgroundColor: "rgba(0, 0, 0, 0.92)",
+    backgroundColor: palette.black + "EB", // rgba(0, 0, 0, 0.92) = 92% opacity = EB in hex
   },
   contentContainer: {
     alignItems: "center",
@@ -331,7 +330,7 @@ const styles = StyleSheet.create({
     lineHeight: 32,
   },
   subMessageText: {
-    color: "rgba(255, 255, 255, 0.9)",
+    color: palette.white + "E6", // rgba(255, 255, 255, 0.9) = 90% opacity = E6 in hex
     fontSize: 14,
     textAlign: "center",
     marginTop: 8,
@@ -346,7 +345,7 @@ const styles = StyleSheet.create({
     width: 8,
     height: 8,
     borderRadius: 4,
-    backgroundColor: "rgba(255, 255, 255, 0.3)",
+    backgroundColor: palette.white + "4D", // rgba(255, 255, 255, 0.3) = 30% opacity = 4D in hex
   },
   stepDotActive: {
     backgroundColor: color.hostAccentLegacy,
@@ -374,7 +373,7 @@ const styles = StyleSheet.create({
     height: 48,
   },
   navBubble: {
-    backgroundColor: "rgba(255, 255, 255, 0.15)",
+    backgroundColor: palette.white + "26", // rgba(255, 255, 255, 0.15) = 15% opacity = 26 in hex
     borderRadius: 16,
     paddingHorizontal: 14,
     paddingVertical: 8,
@@ -388,7 +387,7 @@ const styles = StyleSheet.create({
     marginRight: -8,
   },
   navBubbleDisabled: {
-    backgroundColor: "rgba(255, 255, 255, 0.08)",
+    backgroundColor: palette.white + "14", // rgba(255, 255, 255, 0.08) = 8% opacity = 14 in hex
   },
   navBubblePrimary: {
     backgroundColor: color.hotPink,
@@ -404,7 +403,7 @@ const styles = StyleSheet.create({
     borderBottomWidth: 5,
     borderBottomColor: "transparent",
     borderRightWidth: 6,
-    borderRightColor: "rgba(255, 255, 255, 0.15)",
+    borderRightColor: palette.white + "26", // rgba(255, 255, 255, 0.15) = 15% opacity = 26 in hex
   },
   navBubbleTailRight: {
     position: "absolute",
@@ -425,7 +424,7 @@ const styles = StyleSheet.create({
     fontWeight: "600",
   },
   navBubbleTextDisabled: {
-    color: "rgba(255, 255, 255, 0.4)",
+    color: palette.white + "66", // rgba(255, 255, 255, 0.4) = 40% opacity = 66 in hex
   },
   navBubbleTextPrimary: {
     color: color.textWhite,

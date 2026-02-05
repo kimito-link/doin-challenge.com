@@ -1,8 +1,7 @@
 // components/organisms/ticket-transfer-section/modals.tsx
 // v6.18: チケット譲渡のモーダルコンポーネント
 import { useState } from "react";
-import { View, Text, Pressable, Modal , Platform} from "react-native";
-import * as Haptics from "expo-haptics";
+import { View, Text, Pressable, Modal } from "react-native";
 import { color, palette } from "@/theme/tokens";
 import { PriceType, priceTypeLabels, priceTypeColors } from "./types";
 import { Input } from "@/components/ui/input";
