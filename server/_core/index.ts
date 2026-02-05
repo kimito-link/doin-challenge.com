@@ -20,6 +20,10 @@ import swaggerUi from "swagger-ui-express";
 import { initWebSocketServer } from "../websocket";
 import { initSentry, Sentry } from "./sentry";
 import { rateLimiterMiddleware } from "./rate-limiter";
+import { verifyAdminPassword } from "../admin-password-auth";
+import { getSessionCookieOptions } from "./cookies";
+import type { Request, Response } from "express";
+import { ONE_YEAR_MS } from "../../shared/const";
 
 function isPortAvailable(port: number): Promise<boolean> {
   return new Promise((resolve) => {
@@ -339,6 +343,36 @@ async function startServer() {
   app.delete("/api/admin/errors", (_req, res) => {
     const count = clearErrorLogs();
     res.json({ success: true, count });
+  });
+
+  // 管理者パスワード認証
+  app.post("/api/admin/verify-password", async (req: Request, res: Response) => {
+    try {
+      const { password } = req.body;
+      
+      if (!password) {
+        res.status(400).json({ error: "パスワードが必要です" });
+        return;
+      }
+
+      if (verifyAdminPassword(password)) {
+        // パスワードが正しい場合、管理者セッションCookieを設定（1年間有効）
+        const ADMIN_SESSION_COOKIE = "admin_session";
+        const cookieOptions = getSessionCookieOptions(req);
+        
+        res.cookie(ADMIN_SESSION_COOKIE, "authenticated", {
+          ...cookieOptions,
+          maxAge: ONE_YEAR_MS,
+        });
+        
+        res.json({ success: true });
+      } else {
+        res.status(401).json({ error: "パスワードが正しくありません" });
+      }
+    } catch (error) {
+      console.error("[Admin] Password verification error:", error);
+      res.status(500).json({ error: "認証に失敗しました" });
+    }
   });
 
   app.use(

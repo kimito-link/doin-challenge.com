@@ -12,8 +12,12 @@ import { useAuth } from "@/hooks/use-auth";
 import { palette } from "@/theme/tokens";
 import { View, Text, Pressable, ScrollView, ActivityIndicator, Platform } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Ionicons } from "@expo/vector-icons";
+import { getAdminSession, setAdminSession } from "@/lib/admin-session";
+import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
+import { apiCall } from "@/lib/_core/api";
 
 interface MenuItem {
   id: string;
@@ -36,6 +40,8 @@ const menuItems: MenuItem[] = [
   { id: "participations", label: "参加管理", icon: "chatbubbles-outline", path: "/admin/participations" },
 ];
 
+const ADMIN_PASSWORD = process.env.EXPO_PUBLIC_ADMIN_PASSWORD || "pass304130";
+
 export default function AdminLayout() {
   const colors = useColors();
   
@@ -43,9 +49,51 @@ export default function AdminLayout() {
   const insets = useSafeAreaInsets();
   const { user, loading } = useAuth();
   const [sidebarOpen, setSidebarOpen] = useState(Platform.OS === "web");
+  const [password, setPassword] = useState("");
+  const [isCheckingSession, setIsCheckingSession] = useState(true);
+  const [hasAdminSession, setHasAdminSession] = useState(false);
+  const [passwordError, setPasswordError] = useState("");
+
+  // 管理者セッションをチェック
+  useEffect(() => {
+    const checkAdminSession = async () => {
+      const session = await getAdminSession();
+      setHasAdminSession(session);
+      setIsCheckingSession(false);
+    };
+    checkAdminSession();
+  }, []);
+
+  // パスワード認証
+  const handlePasswordSubmit = async () => {
+    try {
+      // サーバー側でパスワードを検証
+      const result = await apiCall<{ success: boolean; error?: string }>(
+        "/api/admin/verify-password",
+        {
+          method: "POST",
+          body: JSON.stringify({ password }),
+        }
+      );
+
+      if (result.success) {
+        // クライアント側のセッションも保存
+        await setAdminSession();
+        setHasAdminSession(true);
+        setPasswordError("");
+        setPassword("");
+      } else {
+        setPasswordError(result.error || "パスワードが正しくありません");
+      }
+    } catch (error) {
+      console.error("[Admin] Password verification error:", error);
+      const errorMessage = error instanceof Error ? error.message : "認証に失敗しました";
+      setPasswordError(errorMessage);
+    }
+  };
 
   // ローディング中
-  if (loading) {
+  if (loading || isCheckingSession) {
     return (
       <View className="flex-1 items-center justify-center bg-background">
         <ActivityIndicator size="large" color={colors.primary} />
@@ -54,28 +102,53 @@ export default function AdminLayout() {
     );
   }
 
-  // 未ログインまたは管理者以外
-  if (!user || user.role !== "admin") {
+  // 管理者権限チェック（role: admin または パスワード認証済み）
+  const isAdmin = user?.role === "admin" || hasAdminSession;
+
+  // パスワード認証画面（管理者権限がない場合）
+  if (!isAdmin) {
     return (
       <View className="flex-1 items-center justify-center bg-background p-6">
         <Ionicons name="lock-closed" size={64} color={colors.muted} />
-        <Text className="text-xl font-bold text-foreground mt-4">アクセス権限がありません</Text>
-        <Text className="text-muted text-center mt-2">
-          この画面は管理者のみアクセスできます
+        <Text className="text-xl font-bold text-foreground mt-4">管理者認証</Text>
+        <Text className="text-muted text-center mt-2 mb-6">
+          管理画面にアクセスするにはパスワードが必要です
         </Text>
-        <Pressable
-          onPress={() => navigateReplace.toHomeRoot()}
-          style={({ pressed }) => ({
-            backgroundColor: colors.primary,
-            paddingHorizontal: 24,
-            paddingVertical: 12,
-            borderRadius: 8,
-            marginTop: 24,
-            opacity: pressed ? 0.8 : 1,
-          })}
-        >
-          <Text className="text-white font-semibold">ホームに戻る</Text>
-        </Pressable>
+        
+        <View style={{ width: "100%", maxWidth: 400, gap: 16 }}>
+          <Input
+            value={password}
+            onChangeText={(text) => {
+              setPassword(text);
+              setPasswordError("");
+            }}
+            placeholder="パスワードを入力"
+            secureTextEntry
+            error={passwordError}
+            onSubmitEditing={handlePasswordSubmit}
+          />
+          
+          <Button
+            onPress={handlePasswordSubmit}
+            variant="primary"
+            fullWidth
+            disabled={!password.trim()}
+          >
+            認証
+          </Button>
+          
+          {user && (
+            <Pressable
+              onPress={() => navigateReplace.toHomeRoot()}
+              style={({ pressed }) => ({
+                paddingVertical: 12,
+                opacity: pressed ? 0.8 : 1,
+              })}
+            >
+              <Text className="text-muted text-center">ホームに戻る</Text>
+            </Pressable>
+          )}
+        </View>
       </View>
     );
   }
