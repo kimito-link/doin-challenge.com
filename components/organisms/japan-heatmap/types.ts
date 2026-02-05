@@ -56,11 +56,13 @@ export interface HotPrefectureCardProps {
 }
 
 /** 凡例のProps */
+// eslint-disable-next-line @typescript-eslint/no-empty-object-type
 export interface LegendProps {
   // 現状Propsなし、将来の拡張用
 }
 
 /** 空状態のProps */
+// eslint-disable-next-line @typescript-eslint/no-empty-object-type
 export interface EmptyStateProps {
   // 現状Propsなし、将来の拡張用
 }

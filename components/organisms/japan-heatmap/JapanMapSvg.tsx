@@ -8,7 +8,7 @@ import { View, StyleSheet, Platform, useWindowDimensions } from "react-native";
 import Svg, { Path, G, Text as SvgText } from "react-native-svg";
 import * as Haptics from "expo-haptics";
 import { color, palette } from "@/theme/tokens";
-import { prefecturesData, prefectureNameToCode } from "@/lib/prefecture-paths";
+import { prefecturesData } from "@/lib/prefecture-paths";
 import { MAP_CONFIG, PREFECTURE_LABEL_POSITIONS } from "./constants";
 import { getHeatColor, normalizePrefectureName, getShortPrefectureName, getDynamicIcon } from "./utils";
 

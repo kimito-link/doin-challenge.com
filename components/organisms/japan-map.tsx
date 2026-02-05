@@ -10,8 +10,6 @@ function opacityToHex(opacity: number): string {
   return hex;
 }
 
-/** 日本列島のアスペクト比（高さ/幅）。地図の見やすさのため全画面で統一 */
-const JAPAN_ARCHIPELAGO_ASPECT = 1.2;
 const MAP_MAX_WIDTH = 480;
 const MAP_MIN_WIDTH = 280;
 const HORIZONTAL_PADDING = 32;
