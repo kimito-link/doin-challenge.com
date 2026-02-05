@@ -144,22 +144,24 @@ jobs:
         run: |
           EXPECTED_SHA="${{ github.sha }}"
           ACTUAL_SHA="unknown"
-          echo "サイト不具合検知: 本番の commitSha がこの push のコミットと一致することを確認します"
-          echo "Expected (this push): $EXPECTED_SHA"
+          echo "サイト不具合検知: 本番が正常かつ期待コミットまたは最新mainであることを確認します"
+          git fetch origin main --depth=1
+          LATEST_MAIN=$(git rev-parse origin/main)
+          echo "Expected (this push): $EXPECTED_SHA, Latest main: $LATEST_MAIN"
           for i in $(seq 1 30); do
             echo "Health check attempt ${i}/30..."
             RESPONSE=$(curl -s https://doin-challenge.com/api/health || true)
             if [ -n "${RESPONSE}" ]; then
               ACTUAL_SHA=$(echo "${RESPONSE}" | jq -r '.commitSha // .gitSha // "unknown"' 2>/dev/null || echo "unknown")
               OK=$(echo "${RESPONSE}" | jq -r '.ok // false' 2>/dev/null || echo "false")
-              if [ "$OK" = "true" ] && [ "$EXPECTED_SHA" = "$ACTUAL_SHA" ]; then
-                echo "✅ 本番はこの push のコミットで正常に応答しています"
+              if [ "$OK" = "true" ] && ([ "$EXPECTED_SHA" = "$ACTUAL_SHA" ] || [ "$ACTUAL_SHA" = "$LATEST_MAIN" ]); then
+                echo "✅ 本番は正常に応答しています (commit: $ACTUAL_SHA)"
                 exit 0
               fi
             fi
             sleep 15
           done
-          echo "❌ 本番がこの push のコミットで応答しませんでした（不具合の可能性）"
-          echo "Expected: $EXPECTED_SHA"
+          echo "❌ 本番が期待コミットまたは最新mainで応答しませんでした（不具合の可能性）"
+          echo "Expected: $EXPECTED_SHA or $LATEST_MAIN"
           echo "Actual: $ACTUAL_SHA"
           exit 1

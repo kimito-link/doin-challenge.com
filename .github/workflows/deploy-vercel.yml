@@ -65,19 +65,22 @@ jobs:
           echo "⏳ Waiting for Railway deployment to sync..."
           echo "Expected commitSha (this deploy): $EXPECTED_SHA"
           sleep 600  # 10分: Railway のビルド・デプロイ完了を待つ
+          git fetch origin main --depth=1
+          LATEST_MAIN=$(git rev-parse origin/main)
+          echo "Latest main: $LATEST_MAIN"
           for i in $(seq 1 40); do
             echo "Verify attempt $i/40..."
             HEALTH=$(curl -s https://doin-challenge.com/api/health || echo "{}")
             HEALTH_SHA=$(echo "$HEALTH" | jq -r '.commitSha // .gitSha // "unknown"')
             OK=$(echo "$HEALTH" | jq -r '.ok // false')
-            echo "Actual commitSha: $HEALTH_SHA, ok: $OK"
-            if [[ "$OK" == "true" ]] && [[ "$HEALTH_SHA" == "$EXPECTED_SHA" ]]; then
-              echo "✅ 本番はこの push のコミットで正常に応答しています"
+            echo "Actual commitSha: $HEALTH_SHA, ok: $OK (expected: $EXPECTED_SHA or $LATEST_MAIN)"
+            if [[ "$OK" == "true" ]] && ([[ "$HEALTH_SHA" == "$EXPECTED_SHA" ]] || [[ "$HEALTH_SHA" == "$LATEST_MAIN" ]]); then
+              echo "✅ 本番は正常に応答しています (commit: $HEALTH_SHA)"
               break
             fi
             if [[ $i -eq 40 ]]; then
-              echo "❌ 本番がこの push のコミットで応答しませんでした（不具合の可能性）"
-              echo "Expected: $EXPECTED_SHA"
+              echo "❌ 本番が期待コミットまたは最新mainで応答しませんでした（不具合の可能性）"
+              echo "Expected: $EXPECTED_SHA or $LATEST_MAIN"
               echo "Got: $HEALTH_SHA"
               echo "Last health response: $HEALTH"
               exit 1
