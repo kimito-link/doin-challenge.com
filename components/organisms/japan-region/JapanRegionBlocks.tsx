@@ -38,8 +38,7 @@ export function JapanRegionBlocks({ prefectureCounts, onPrefecturePress, onRegio
   const pulseScale = useSharedValue(1);
   
   // ユーザーの地域がある場合、パルスアニメーションを開始
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  // pulseScaleはReanimatedのSharedValueで、依存配列に含めると無限ループが発生する可能性があるため除外
+  // eslint-disable-next-line react-hooks/exhaustive-deps -- pulseScaleはReanimatedのSharedValueで、依存配列に含めると無限ループが発生する可能性があるため除外
   useEffect(() => {
     if (userRegionId) {
       pulseScale.value = withTiming(1.03, { duration: 800 });
