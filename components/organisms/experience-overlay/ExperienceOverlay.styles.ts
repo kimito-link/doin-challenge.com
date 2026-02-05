@@ -1,15 +1,16 @@
 /**
  * ExperienceOverlay.styles.ts
  * 
- * ExperienceOverlay????E????????????
- * v6.35: ?????????????E */
+ * ExperienceOverlay????????????????
+ * v6.35: ?????????????
+ */
 import { StyleSheet, Dimensions } from "react-native";
 import { color, palette } from "@/theme/tokens";
 
 const { width: SCREEN_WIDTH } = Dimensions.get("window");
 
 export const styles = StyleSheet.create({
-  // ????E??
+  // ??????
   overlay: {
     ...StyleSheet.absoluteFillObject,
     zIndex: 9999,
@@ -47,7 +48,7 @@ export const styles = StyleSheet.create({
     fontSize: 16,
   },
   
-  // ???????E
+  // ???????
   progressContainer: {
     flexDirection: "row",
     alignItems: "center",
@@ -96,7 +97,7 @@ export const styles = StyleSheet.create({
     height: 80,
   },
   
-  // ??E????
+  // ?????
   thoughtBubble: {
     flex: 1,
     backgroundColor: palette.white + "26", // 15% opacity
@@ -124,7 +125,7 @@ export const styles = StyleSheet.create({
     fontStyle: "italic",
   },
   
-  // ???E????
+  // ????
   speechBubble: {
     backgroundColor: color.textWhite,
     borderRadius: 20,

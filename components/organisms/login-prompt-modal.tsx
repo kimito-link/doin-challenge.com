@@ -44,7 +44,7 @@ export function LoginPromptModal({ visible, onLogin, onSkip }: LoginPromptModalP
   const bounce = useSharedValue(0);
   const sparkle = useSharedValue(0);
   
-  // eslint-disable-next-line react-hooks/exhaustive-deps -- bounceとsparkleはReanimatedのSharedValueで、依存配列に含めると無限ループが発生する可能性があるため除外
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   useEffect(() => {
     if (visible) {
       // 静的な表示（ちかちかアニメーション削除）

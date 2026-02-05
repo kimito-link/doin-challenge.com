@@ -61,7 +61,7 @@ export function TutorialOverlay({
     return () => clearInterval(blinkInterval);
   }, [visible, step.character]);
 
-  // eslint-disable-next-line react-hooks/exhaustive-deps -- messageOpacity, characterBounce, previewScale, speechBubbleScaleはReanimatedのSharedValueで、依存配列に含めると無限ループが発生する可能性があるため除外
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   useEffect(() => {
     if (visible) {
       messageOpacity.value = withTiming(1, { duration: 300 });

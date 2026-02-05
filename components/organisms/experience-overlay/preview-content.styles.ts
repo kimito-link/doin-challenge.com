@@ -978,33 +978,6 @@ export const styles = StyleSheet.create({
     fontWeight: "bold",
   },
   
-  // Badge preview
-  badgeGrid: {
-    flexDirection: "row",
-    flexWrap: "wrap",
-    gap: 8,
-    justifyContent: "center",
-  },
-  badgeItem: {
-    width: 70,
-    alignItems: "center",
-    backgroundColor: palette.white + "1A", // 10% opacity
-    borderRadius: 8,
-    padding: 12,
-  },
-  badgeItemLocked: {
-    opacity: 0.5,
-  },
-  badgeEmoji: {
-    fontSize: 24,
-    marginBottom: 4,
-  },
-  badgeName: {
-    fontSize: 10,
-    color: color.textWhite,
-    textAlign: "center",
-  },
-  
   // Stats preview
   statsPreview: {
     width: "100%",

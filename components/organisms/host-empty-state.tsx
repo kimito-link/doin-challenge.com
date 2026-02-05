@@ -31,7 +31,7 @@ export function HostEmptyState() {
   const bounce = useSharedValue(0);
   const scale = useSharedValue(1);
   
-  // eslint-disable-next-line react-hooks/exhaustive-deps -- bounceとscaleはReanimatedのSharedValueで、依存配列に含めると無限ループが発生する可能性があるため除外
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   useEffect(() => {
     // 静的な表示（ちかちかアニメーション削除）
     bounce.value = withTiming(0, { duration: 300 });
