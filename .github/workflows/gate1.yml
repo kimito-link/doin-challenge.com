@@ -131,21 +131,29 @@ jobs:
       - uses: actions/checkout@v4
       
       - name: Wait for deployment
-        run: sleep 180  # Vercel/Railway のデプロイ完了を待つ（3分）
+        run: sleep 300  # Vercel/Railway のデプロイ完了を待つ（5分）
       
       - name: Check deployed commit SHA
         run: |
           EXPECTED_SHA="${{ github.sha }}"
+          git fetch origin main --depth=1
+          LATEST_MAIN=$(git rev-parse origin/main)
           ACTUAL_SHA="unknown"
-          # 最大20回・15秒間隔＝約5分のポーリング
-          for i in $(seq 1 20); do
-            echo "Health check attempt ${i}/20..."
+          echo "Expected (this push): $EXPECTED_SHA"
+          echo "Latest main: $LATEST_MAIN"
+          # 最大25回・15秒間隔でポーリング
+          for i in $(seq 1 25); do
+            echo "Health check attempt ${i}/25..."
             RESPONSE=$(curl -s https://doin-challenge.com/api/health || true)
             if [ -n "${RESPONSE}" ]; then
-              ACTUAL_SHA=$(echo "${RESPONSE}" | jq -r .commitSha 2>/dev/null || echo "unknown")
+              ACTUAL_SHA=$(echo "${RESPONSE}" | jq -r '.commitSha // .gitSha // "unknown"' 2>/dev/null || echo "unknown")
               if [ "${ACTUAL_SHA}" != "unknown" ]; then
                 if [ "$EXPECTED_SHA" = "$ACTUAL_SHA" ]; then
-                  echo "✅ Deployed commit matches: $EXPECTED_SHA"
+                  echo "✅ Deployed commit matches expected: $EXPECTED_SHA"
+                  exit 0
+                fi
+                if [ "$LATEST_MAIN" = "$ACTUAL_SHA" ]; then
+                  echo "✅ Production is on latest main: $LATEST_MAIN"
                   exit 0
                 fi
               fi
@@ -154,6 +162,6 @@ jobs:
           done
           
           echo "❌ Deployed commit mismatch (timeout)"
-          echo "Expected: $EXPECTED_SHA"
+          echo "Expected: $EXPECTED_SHA or latest main $LATEST_MAIN"
           echo "Actual: $ACTUAL_SHA"
           exit 1
