@@ -20,8 +20,8 @@ interface LinkSpeechProps {
 export function LinkSpeech({ 
   message, 
   characterImage = require("@/assets/images/characters/link/link-yukkuri-smile-mouth-open.png"),
-  backgroundColor = "rgba(255, 255, 255, 0.95)",
-  borderColor = "rgba(236, 72, 153, 0.8)",
+  backgroundColor = palette.white + "F2", // rgba(255, 255, 255, 0.95) = 95% opacity = F2 in hex
+  borderColor = palette.pink500 + "CC", // rgba(236, 72, 153, 0.8) = 80% opacity = CC in hex
 }: LinkSpeechProps) {
   return (
     <View style={{ 

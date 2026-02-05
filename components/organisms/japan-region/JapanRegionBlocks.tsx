@@ -1,5 +1,4 @@
-import { View, Text, Pressable, Modal, ScrollView, useWindowDimensions , Platform} from "react-native";
-import * as Haptics from "expo-haptics";
+import { View, Text, Pressable, Modal, ScrollView, useWindowDimensions } from "react-native";
 import { color } from "@/theme/tokens";
 import { useMemo, useState, useEffect } from "react";
 import Animated, { 
@@ -53,6 +52,8 @@ export function JapanRegionBlocks({ prefectureCounts, onPrefecturePress, onRegio
         true
       );
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    // pulseScaleはReanimatedのSharedValueで、依存配列に含めると無限ループが発生する可能性があるため除外
   }, [userRegionId]);
   
   // パルスアニメーションスタイル
