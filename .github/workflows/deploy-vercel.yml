@@ -17,7 +17,7 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: '22'
+          node-version: '24'
       
       - name: Install pnpm
         uses: pnpm/action-setup@v4
@@ -37,15 +37,10 @@ jobs:
         run: pnpm test
       
       - name: Build
+        env:
+          GITHUB_SHA: ${{ github.sha }}
         run: pnpm build
 
-      - name: Write version.json
-        run: |
-          COMMIT_SHA="${{ github.sha }}"
-          mkdir -p public
-          echo "{\"commitSha\":\"$COMMIT_SHA\",\"version\":\"$COMMIT_SHA\",\"builtAt\":\"$(date -u +%Y-%m-%dT%H:%M:%SZ)\"}" > public/version.json
-          cat public/version.json
-      
       - name: Deploy to Vercel
         uses: amondnet/vercel-action@v25
         with:

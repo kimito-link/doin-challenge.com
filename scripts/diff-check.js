@@ -1,28 +1,53 @@
 #!/usr/bin/env node
-/**
- * Gate 1: diff-check の Node ラッパー
- * 実行: node scripts/diff-check.js [BASE_SHA] [HEAD_SHA]
- * 未指定時は環境変数 GITHUB_BASE_REF / HEAD や git から取得
- */
-const { execSync, spawnSync } = require("child_process");
-const path = require("path");
-const fs = require("fs");
+import { execSync } from "child_process";
+import fs from "fs";
+import path from "path";
+import { fileURLToPath } from "url";
 
-const scriptDir = path.dirname(__filename);
-const shPath = path.join(scriptDir, "diff-check.sh");
+const __dirname = path.dirname(fileURLToPath(import.meta.url));
+const repoRoot = path.join(__dirname, "..");
+const configPath = path.join(repoRoot, "scripts", "diff-check.config.json");
+const config = JSON.parse(fs.readFileSync(configPath, "utf-8"));
 
-if (!fs.existsSync(shPath)) {
-  console.error("diff-check.sh not found at", shPath);
+function getDiffFiles() {
+  const base = process.env.GITHUB_BASE_REF
+    ? `origin/${process.env.GITHUB_BASE_REF}`
+    : "HEAD~1";
+  const diff = execSync(`git diff --name-only ${base}`, {
+    encoding: "utf-8",
+    cwd: repoRoot,
+  });
+  return diff.split("\n").filter(Boolean);
+}
+
+function fail(msg) {
+  console.error("❌ DIFF CHECK FAILED");
+  console.error(msg);
   process.exit(1);
 }
 
-const base = process.argv[2];
-const head = process.argv[3];
-const args = base && head ? [base, head] : [];
+const files = getDiffFiles();
 
-const result = spawnSync("bash", [shPath, ...args], {
-  stdio: "inherit",
-  cwd: path.join(scriptDir, ".."),
-});
+console.log("🔍 Changed files:");
+files.forEach((f) => console.log(" -", f));
 
-process.exit(result.status ?? 1);
+for (const file of files) {
+  for (const danger of config.dangerFiles) {
+    if (file.startsWith(danger)) {
+      fail(`Dangerous file changed: ${file}`);
+    }
+  }
+}
+
+for (const file of files) {
+  const fullPath = path.join(repoRoot, file);
+  if (!fs.existsSync(fullPath)) continue;
+  const content = fs.readFileSync(fullPath, "utf-8");
+  for (const word of config.forbiddenWords) {
+    if (content.includes(word)) {
+      fail(`Forbidden word "${word}" found in ${file}`);
+    }
+  }
+}
+
+console.log("✅ Diff check passed");

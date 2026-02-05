@@ -2,10 +2,10 @@ import "dotenv/config";
 import express from "express";
 import { createServer } from "http";
 import net from "net";
-import { readFileSync, existsSync } from "fs";
 import path from "path";
 import { fileURLToPath } from "url";
 import { createExpressMiddleware } from "@trpc/server/adapters/express";
+import { readBuildInfo } from "./health";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 import { registerOAuthRoutes } from "./oauth";
@@ -81,47 +81,19 @@ async function startServer() {
   registerTwitterRoutes(app);
 
   app.get("/api/health", async (_req, res) => {
-    // バージョン情報（優先: 環境変数 > build-info.json）Gate 1 / UptimeRobot 用
-    let versionInfo: { version: string; commitSha: string; builtAt: string } = {
-      version: process.env.RAILWAY_GIT_COMMIT_SHA || process.env.APP_VERSION || process.env.GIT_SHA || "",
-      commitSha: process.env.RAILWAY_GIT_COMMIT_SHA || process.env.GIT_SHA || "",
-      builtAt: process.env.BUILT_AT || "",
-    };
-    if (!versionInfo.commitSha || !versionInfo.version) {
-      const buildInfoPath = path.join(__dirname, "build-info.json");
-      if (existsSync(buildInfoPath)) {
-        try {
-          const raw = readFileSync(buildInfoPath, "utf-8");
-          const buildInfo = JSON.parse(raw) as { commitSha?: string; version?: string; builtAt?: string };
-          versionInfo.version = versionInfo.version || buildInfo.version || buildInfo.commitSha || "unknown";
-          versionInfo.commitSha = versionInfo.commitSha || buildInfo.commitSha || buildInfo.version || "unknown";
-          versionInfo.builtAt = versionInfo.builtAt || buildInfo.builtAt || buildInfo.buildTime || new Date().toISOString();
-        } catch (e) {
-          console.error("[health] Failed to read build-info.json:", e);
-        }
-      }
-    }
-    if (!versionInfo.version) versionInfo.version = "unknown";
-    if (!versionInfo.commitSha) versionInfo.commitSha = "unknown";
-    if (!versionInfo.builtAt) versionInfo.builtAt = new Date().toISOString();
-
+    // Gate 1: build-info を必ず読む。unknown なら ok=false / 500（UptimeRobot 検知用）
+    const buildInfo = readBuildInfo();
     const nodeEnv = process.env.NODE_ENV || "development";
-    const versionUnknown = versionInfo.version === "unknown" || versionInfo.commitSha === "unknown";
-
-    if (versionUnknown) {
-      const error = new Error("unknown version detected in /api/health");
-      if (Sentry) {
-        Sentry.captureException(error, { extra: { version: versionInfo.version, commitSha: versionInfo.commitSha, env: nodeEnv } });
-      }
-      console.error("[CRITICAL] unknown version detected:", versionInfo);
+    if (!buildInfo.ok && Sentry) {
+      Sentry.captureException(new Error("unknown version in /api/health"), {
+        extra: { commitSha: buildInfo.commitSha, env: nodeEnv },
+      });
+      console.error("[CRITICAL] unknown version detected:", buildInfo);
     }
-
     const baseInfo = {
-      timestamp: Date.now(),
-      version: versionInfo.version,
-      commitSha: versionInfo.commitSha,
-      builtAt: versionInfo.builtAt,
+      ...buildInfo,
       nodeEnv,
+      timestamp: Date.now(),
     };
 
     // DB接続確認
@@ -207,11 +179,11 @@ async function startServer() {
 
     // 全体のok（unknown なら false = UptimeRobot 等で検知可能）
     const overallOk =
-      !versionUnknown &&
+      buildInfo.ok &&
       dbStatus.connected &&
       (!checkCritical || Object.values(criticalApis).every(api => typeof api === "object" && "ok" in api && api.ok));
 
-    res.json({
+    res.status(overallOk ? 200 : 500).json({
       ...baseInfo,
       ok: overallOk,
       db: dbStatus,
