@@ -208,7 +208,7 @@ export function LoginPromptModal({ visible, onLogin, onSkip }: LoginPromptModalP
 const styles = StyleSheet.create({
   overlay: {
     flex: 1,
-    backgroundColor: palette.black + "CC", // rgba(0, 0, 0, 0.8) = 80% opacity = CC in hex
+    backgroundColor: palette.black + "CC", // 80% opacity
     justifyContent: "center",
     alignItems: "center",
     padding: 24,
@@ -279,8 +279,8 @@ const styles = StyleSheet.create({
     alignItems: "center",
     borderRadius: 12,
     borderWidth: 1,
-    borderColor: palette.white + "33", // rgba(255, 255, 255, 0.2) = 20% opacity = 33 in hex
-    backgroundColor: palette.white + "0D", // rgba(255, 255, 255, 0.05) = 5% opacity = 0D in hex
+    borderColor: palette.white + "33", // 20% opacity
+    backgroundColor: palette.white + "0D", // 5% opacity
   },
   loginButtonText: {
     fontSize: 15,

@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { color, palette } from "@/theme/tokens";
 import { View, Text, Pressable, Platform } from "react-native";
 import { Image } from "expo-image";

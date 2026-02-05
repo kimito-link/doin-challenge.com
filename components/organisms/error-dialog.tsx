@@ -63,7 +63,7 @@ export function ErrorDialog({
       scaleAnim.setValue(0.8);
       opacityAnim.setValue(0);
     }
-  }, [visible]);
+  }, [visible, scaleAnim, opacityAnim]);
 
   const handleRetry = () => {
     if (Platform.OS !== "web") {

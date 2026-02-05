@@ -1,15 +1,13 @@
 /**
  * preview-content.styles.ts
  * 
- * PreviewContentコンポーネント専用のスタイル定義
- * v6.35: スタイルコロケーション対応
- */
+ * PreviewContentコンポ�Eネント専用のスタイル定義
+ * v6.35: スタイルコロケーション対忁E */
 import { StyleSheet } from "react-native";
 import { color, palette } from "@/theme/tokens";
 
 export const styles = StyleSheet.create({
-  // プレビューコンテナ（共通）
-  previewContainer: {
+  // プレビューコンチE���E��E通！E  previewContainer: {
     backgroundColor: palette.white + "1A", // 10% opacity
     borderRadius: 16,
     padding: 16,
@@ -425,7 +423,7 @@ export const styles = StyleSheet.create({
     marginTop: 4,
   },
   influencerBadge: {
-    backgroundColor: palette.gold + "33", // rgba(255, 215, 0, 0.2) = 20% opacity = 33 in hex
+    backgroundColor: palette.gold + "33", // % opacity
     borderRadius: 4,
     paddingHorizontal: 6,
     paddingVertical: 2,
@@ -499,14 +497,14 @@ export const styles = StyleSheet.create({
   
   // Challenge card preview
   challengeCardPreview: {
-    // Note: LinearGradientはコンポーネント側で設定されるため、ここでは背景色のみ
-    backgroundColor: palette.pink500, // グラデーションの開始色
+    // Note: LinearGradientはコンポ�Eネント�Eで設定されるため、ここでは背景色のみ
+    backgroundColor: palette.pink500, // グラチE�Eションの開始色
     borderRadius: 16,
     padding: 16,
     width: "100%",
     maxWidth: 320,
     borderWidth: 1,
-    borderColor: palette.pink500 + "80", // rgba(236, 72, 153, 0.5) = 50% opacity = 80 in hex
+    borderColor: palette.pink500 + "80", // % opacity
   },
   challengeCardHeader: {
     flexDirection: "row",
@@ -517,7 +515,7 @@ export const styles = StyleSheet.create({
   challengeCardCategory: {
     fontSize: 12,
     color: color.accentPrimary,
-    backgroundColor: palette.pink500 + "33", // rgba(236, 72, 153, 0.2) = 20% opacity = 33 in hex
+    backgroundColor: palette.pink500 + "33", // % opacity
     paddingHorizontal: 8,
     paddingVertical: 4,
     borderRadius: 4,
@@ -631,7 +629,7 @@ export const styles = StyleSheet.create({
     paddingVertical: 4,
   },
   progressBarMilestoneCompleted: {
-    backgroundColor: palette.green400 + "4D", // rgba(74, 222, 128, 0.3) = 30% opacity = 4D in hex
+    backgroundColor: palette.green400 + "4D", // % opacity
   },
   progressBarMilestoneText: {
     fontSize: 10,
@@ -794,7 +792,7 @@ export const styles = StyleSheet.create({
     gap: 12,
   },
   rankingItemHighlight: {
-    backgroundColor: palette.pink500 + "4D", // rgba(236, 72, 153, 0.3) = 30% opacity = 4D in hex
+    backgroundColor: palette.pink500 + "4D", // % opacity
     borderWidth: 1,
     borderColor: color.accentPrimary,
   },
