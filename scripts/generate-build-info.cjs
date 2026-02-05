@@ -2,8 +2,14 @@ const fs = require('fs');
 const { execSync } = require('child_process');
 const path = require('path');
 
-// Prefer CI SHA so Gate 1 verify matches exactly
-let commitSha = process.env.GITHUB_SHA;
+// Gate 1: デプロイ先に応じた commit SHA（優先順）
+// - GITHUB_SHA: GitHub Actions でビルド時
+// - RAILWAY_GIT_COMMIT_SHA: Railway が自動設定（/api/health は Railway で応答）
+// - VERCEL_GIT_COMMIT_SHA: Vercel ビルド時
+let commitSha =
+  process.env.GITHUB_SHA ||
+  process.env.RAILWAY_GIT_COMMIT_SHA ||
+  process.env.VERCEL_GIT_COMMIT_SHA;
 if (!commitSha) {
   try {
     commitSha = execSync('git rev-parse HEAD', { encoding: 'utf-8' }).trim();

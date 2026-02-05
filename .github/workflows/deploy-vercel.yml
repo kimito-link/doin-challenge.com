@@ -48,8 +48,8 @@ jobs:
           vercel-org-id: ${{ secrets.VERCEL_ORG_ID }}
           vercel-project-id: ${{ secrets.VERCEL_PROJECT_ID }}
           vercel-args: '--prod'
-      
-      - name: Post-deploy verify (Gate 1: CI緑＝本番にそのコード)
+
+      - name: Post-deploy verify (Gate 1)
         env:
           EXPECTED_SHA: ${{ github.sha }}
         run: |
@@ -82,3 +82,16 @@ jobs:
             exit 1
           fi
           echo "✅ /version.json commitSha matches"
+
+      - name: Gate 2 - API smoke
+        env:
+          BASE_URL: https://doin-challenge.com
+        run: node scripts/gate2-api-smoke.mjs
+
+      - name: Gate 2 - E2E (ホーム→詳細)
+        env:
+          PLAYWRIGHT_BASE_URL: https://doin-challenge.com
+          VERCEL_AUTOMATION_BYPASS_SECRET: ${{ secrets.VERCEL_AUTOMATION_BYPASS_SECRET }}
+        run: |
+          npx playwright install --with-deps chromium
+          pnpm exec playwright test tests/e2e/gate2-flow.spec.ts --project=chromium

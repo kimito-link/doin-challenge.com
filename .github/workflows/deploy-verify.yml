@@ -1,0 +1,23 @@
+# Gate 1: main に push → デプロイ後、本番の commitSha を照合（最小版）
+name: deploy-verify
+
+on:
+  push:
+    branches: [main]
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Wait for deployment
+        run: sleep 180
+
+      - name: Verify production health matches this commit
+        env:
+          PROD_URL: https://doin-challenge.com
+          SHA: ${{ github.sha }}
+        run: |
+          chmod +x scripts/verify-deploy.sh
+          ./scripts/verify-deploy.sh "$PROD_URL" "$SHA"

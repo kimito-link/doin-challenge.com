@@ -1,6 +1,16 @@
 ## 変更概要
 （1変更 = 1目的 で簡潔に）
 
+## Gate 1（必須）
+
+- [ ] Diff-check: CIで pass
+- [ ] 本番照合: `/api/health` の commitSha がこのPRのmerge後SHAになる（deploy-verifyが pass）
+- [ ] 危険変更（OAuth / deploy / auth）を触った場合、確認結果をここに記載
+
+### 確認結果（貼る）
+- `/api/health` レスポンス（commitShaが見える状態）:
+
+
 ## 影響範囲
 - [ ] 認証 / OAuth
 - [ ] API

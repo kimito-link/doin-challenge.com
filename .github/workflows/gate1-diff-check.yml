@@ -1,0 +1,19 @@
+# Gate 1: PR で危険変更・禁止ワードを検知（強制）
+name: gate1-diff-check
+
+on:
+  pull_request:
+    branches: [main]
+
+jobs:
+  diff-check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Run diff check
+        run: |
+          chmod +x scripts/diff-check.sh
+          ./scripts/diff-check.sh origin/main HEAD
