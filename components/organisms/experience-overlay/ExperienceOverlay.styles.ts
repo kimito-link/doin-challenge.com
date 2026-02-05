@@ -1,22 +1,22 @@
 /**
  * ExperienceOverlay.styles.ts
  * 
- * ExperienceOverlayコンポ�Eネント専用のスタイル定義
- * v6.35: スタイルコロケーション対忁E */
+ * ExperienceOverlay????E????????????
+ * v6.35: ?????????????E */
 import { StyleSheet, Dimensions } from "react-native";
 import { color, palette } from "@/theme/tokens";
 
 const { width: SCREEN_WIDTH } = Dimensions.get("window");
 
 export const styles = StyleSheet.create({
-  // オーバ�Eレイ
+  // ????E??
   overlay: {
     ...StyleSheet.absoluteFillObject,
     zIndex: 9999,
     paddingHorizontal: 20,
   },
   
-  // ヘッダー
+  // ????
   header: {
     flexDirection: "row",
     justifyContent: "space-between",
@@ -38,7 +38,7 @@ export const styles = StyleSheet.create({
     width: 32,
     height: 32,
     borderRadius: 16,
-    backgroundColor: palette.white + "33", // % opacity
+    backgroundColor: palette.white + "33", // 20% opacity
     justifyContent: "center",
     alignItems: "center",
   },
@@ -47,7 +47,7 @@ export const styles = StyleSheet.create({
     fontSize: 16,
   },
   
-  // プログレスバ�E
+  // ???????E
   progressContainer: {
     flexDirection: "row",
     alignItems: "center",
@@ -57,7 +57,7 @@ export const styles = StyleSheet.create({
   progressBarWrapper: {
     flex: 1,
     height: 4,
-    backgroundColor: palette.white + "33", // % opacity
+    backgroundColor: palette.white + "33", // 20% opacity
     borderRadius: 2,
     overflow: "hidden",
   },
@@ -68,19 +68,19 @@ export const styles = StyleSheet.create({
   },
   progressText: {
     fontSize: 12,
-    color: palette.white + "99", // % opacity
+    color: palette.white + "99", // 60% opacity
     minWidth: 50,
     textAlign: "right",
   },
   
-  // スクロールコンチE��チE  scrollContent: {
+  // ????????E???E  scrollContent: {
     paddingBottom: 40,
   },
   content: {
     alignItems: "center",
   },
   
-  // キャラクターセクション
+  // ???????????
   characterSection: {
     flexDirection: "row",
     alignItems: "flex-start",
@@ -95,10 +95,10 @@ export const styles = StyleSheet.create({
     height: 80,
   },
   
-  // 思老E��ブル
+  // ??E????
   thoughtBubble: {
     flex: 1,
-    backgroundColor: palette.white + "26", // % opacity
+    backgroundColor: palette.white + "26", // 15% opacity
     borderRadius: 16,
     padding: 12,
     position: "relative",
@@ -123,7 +123,7 @@ export const styles = StyleSheet.create({
     fontStyle: "italic",
   },
   
-  // スピ�Eチバブル
+  // ???E????
   speechBubble: {
     backgroundColor: color.textWhite,
     borderRadius: 20,
@@ -140,13 +140,13 @@ export const styles = StyleSheet.create({
   },
   subMessageText: {
     fontSize: 14,
-    color: palette.white + "CC", // % opacity
+    color: palette.white + "CC", // 80% opacity
     textAlign: "center",
     marginBottom: 20,
     paddingHorizontal: 20,
   },
   
-  // ナビゲーション
+  // ???????
   navigation: {
     flexDirection: "row",
     justifyContent: "center",
@@ -155,7 +155,7 @@ export const styles = StyleSheet.create({
     gap: 40,
   },
   
-  // キャラクターナビゲーションボタン
+  // ????????????????
   characterNavButton: {
     flexDirection: "row",
     alignItems: "flex-end",
@@ -168,7 +168,7 @@ export const styles = StyleSheet.create({
     height: 56,
   },
   navBubble: {
-    backgroundColor: palette.white + "26", // % opacity
+    backgroundColor: palette.white + "26", // 15% opacity
     borderRadius: 16,
     paddingHorizontal: 16,
     paddingVertical: 10,
@@ -182,7 +182,7 @@ export const styles = StyleSheet.create({
     marginRight: -8,
   },
   navBubbleDisabled: {
-    backgroundColor: palette.white + "14", // % opacity
+    backgroundColor: palette.white + "14", // 8% opacity
   },
   navBubblePrimary: {
     backgroundColor: color.hotPink,
@@ -219,7 +219,7 @@ export const styles = StyleSheet.create({
     fontWeight: "600",
   },
   navBubbleTextDisabled: {
-    color: palette.white + "66", // % opacity
+    color: palette.white + "66", // 40% opacity
   },
   navBubbleTextPrimary: {
     color: color.textWhite,

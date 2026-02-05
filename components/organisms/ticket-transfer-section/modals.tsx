@@ -37,7 +37,7 @@ export function CreateTransferModal({
     <Modal visible={visible} transparent animationType="fade" onRequestClose={onClose}>
       <View style={{
         flex: 1,
-        backgroundColor: palette.gray900 + "CC", // rgba(0,0,0,0.8) の透明度16進数
+        backgroundColor: palette.gray900 + "CC", // 80% opacity
         justifyContent: "center",
         alignItems: "center",
         padding: 20,
@@ -117,7 +117,7 @@ export function CreateTransferModal({
           
           {/* 注意事項 */}
           <View style={{
-            backgroundColor: color.warning + "1A", // rgba(245, 158, 11, 0.1) の透明度16進数
+            backgroundColor: color.warning + "1A", // 10% opacity
             borderRadius: 8,
             padding: 12,
             marginBottom: 20,
@@ -192,7 +192,7 @@ export function WaitlistModal({
     <Modal visible={visible} transparent animationType="fade" onRequestClose={onClose}>
       <View style={{
         flex: 1,
-        backgroundColor: palette.gray900 + "CC", // rgba(0,0,0,0.8) の透明度16進数
+        backgroundColor: palette.gray900 + "CC", // 80% opacity
         justifyContent: "center",
         alignItems: "center",
         padding: 20,

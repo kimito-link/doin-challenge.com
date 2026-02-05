@@ -95,7 +95,7 @@ export function LoginModal({
       <Pressable 
         style={{ 
           flex: 1, 
-          backgroundColor: palette.gray900 + "80", // rgba(0, 0, 0, 0.5) の透明度16進数
+          backgroundColor: palette.gray900 + "80", // 50% opacity
           justifyContent: "center",
           alignItems: "center",
           padding: 24,

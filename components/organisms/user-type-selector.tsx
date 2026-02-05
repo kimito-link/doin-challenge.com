@@ -214,7 +214,7 @@ const styles = StyleSheet.create({
   },
   overlay: {
     flex: 1,
-    backgroundColor: palette.gray900 + "EB", // rgba(0, 0, 0, 0.92) の透明度16進数
+    backgroundColor: palette.gray900 + "EB", // 92% opacity
     justifyContent: "center",
     alignItems: "center",
     padding: 20,

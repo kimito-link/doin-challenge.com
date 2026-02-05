@@ -136,7 +136,7 @@ export function PreviewComponent({ type }: { type?: string }) {
 const styles = StyleSheet.create({
   container: {
     alignItems: "center",
-    backgroundColor: palette.white + "1A", // rgba(255, 255, 255, 0.1) の透明度16進数
+    backgroundColor: palette.white + "1A", // 10% opacity
     borderRadius: 16,
     padding: 16,
     minWidth: 220,
