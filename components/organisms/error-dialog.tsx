@@ -2,7 +2,7 @@ import { View, Text, Pressable, Modal, StyleSheet, Image, Animated, Platform } f
 import { color, palette } from "@/theme/tokens";
 import MaterialIcons from "@expo/vector-icons/MaterialIcons";
 import { RetryButton } from "@/components/ui/retry-button";
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState, useCallback } from "react";
 import * as Haptics from "expo-haptics";
 
 // キャラクター画像（りんく・こん太・たぬ姉のオリジナル画像を統一使用）
@@ -161,7 +161,6 @@ export function ErrorDialog({
 /**
  * エラーダイアログを簡単に使うためのフック
  */
-import { useState, useCallback } from "react";
 
 export interface UseErrorDialogReturn {
   showError: (message: string, options?: {
@@ -228,7 +227,7 @@ export function useErrorDialog(): UseErrorDialogReturn {
 const styles = StyleSheet.create({
   overlay: {
     flex: 1,
-    backgroundColor: palette.black + "B3", // rgba(0, 0, 0, 0.7) = 70% opacity = B3 in hex
+    backgroundColor: palette.black + "B3", // 70% opacity
     justifyContent: "center",
     alignItems: "center",
     padding: 24,
@@ -256,7 +255,7 @@ const styles = StyleSheet.create({
     width: 64,
     height: 64,
     borderRadius: 32,
-    backgroundColor: palette.red500 + "1A", // rgba(239, 68, 68, 0.1) = 10% opacity = 1A in hex
+    backgroundColor: palette.red500 + "1A", // 10% opacity
     justifyContent: "center",
     alignItems: "center",
     marginBottom: 16,
@@ -276,7 +275,7 @@ const styles = StyleSheet.create({
     marginBottom: 16,
   },
   encourageContainer: {
-    backgroundColor: palette.white + "0D", // rgba(255, 255, 255, 0.05) = 5% opacity = 0D in hex
+    backgroundColor: palette.white + "0D", // 5% opacity
     borderRadius: 12,
     padding: 12,
     marginBottom: 20,

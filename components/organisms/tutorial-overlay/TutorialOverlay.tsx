@@ -61,6 +61,7 @@ export function TutorialOverlay({
     return () => clearInterval(blinkInterval);
   }, [visible, step.character]);
 
+  // eslint-disable-next-line react-hooks/exhaustive-deps -- messageOpacity, characterBounce, previewScale, speechBubbleScaleはReanimatedのSharedValueで、依存配列に含めると無限ループが発生する可能性があるため除外
   useEffect(() => {
     if (visible) {
       messageOpacity.value = withTiming(1, { duration: 300 });
@@ -82,7 +83,6 @@ export function TutorialOverlay({
       setShowConfetti(false);
       setShowSparkles(false);
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [visible, step]);
 
   const messageStyle = useAnimatedStyle(() => ({
@@ -262,7 +262,7 @@ const styles = StyleSheet.create({
   },
   darkOverlay: {
     ...StyleSheet.absoluteFillObject,
-    backgroundColor: palette.black + "EB", // rgba(0, 0, 0, 0.92) = 92% opacity = EB in hex
+    backgroundColor: palette.black + "EB", // 92% opacity
   },
   contentContainer: {
     alignItems: "center",
@@ -330,7 +330,7 @@ const styles = StyleSheet.create({
     lineHeight: 32,
   },
   subMessageText: {
-    color: palette.white + "E6", // rgba(255, 255, 255, 0.9) = 90% opacity = E6 in hex
+    color: palette.white + "E6", // 90% opacity
     fontSize: 14,
     textAlign: "center",
     marginTop: 8,
@@ -345,7 +345,7 @@ const styles = StyleSheet.create({
     width: 8,
     height: 8,
     borderRadius: 4,
-    backgroundColor: palette.white + "4D", // rgba(255, 255, 255, 0.3) = 30% opacity = 4D in hex
+    backgroundColor: palette.white + "4D", // 30% opacity
   },
   stepDotActive: {
     backgroundColor: color.hostAccentLegacy,
@@ -373,7 +373,7 @@ const styles = StyleSheet.create({
     height: 48,
   },
   navBubble: {
-    backgroundColor: palette.white + "26", // rgba(255, 255, 255, 0.15) = 15% opacity = 26 in hex
+    backgroundColor: palette.white + "26", // 15% opacity
     borderRadius: 16,
     paddingHorizontal: 14,
     paddingVertical: 8,
@@ -387,7 +387,7 @@ const styles = StyleSheet.create({
     marginRight: -8,
   },
   navBubbleDisabled: {
-    backgroundColor: palette.white + "14", // rgba(255, 255, 255, 0.08) = 8% opacity = 14 in hex
+    backgroundColor: palette.white + "14", // 8% opacity
   },
   navBubblePrimary: {
     backgroundColor: color.hotPink,
@@ -403,7 +403,7 @@ const styles = StyleSheet.create({
     borderBottomWidth: 5,
     borderBottomColor: "transparent",
     borderRightWidth: 6,
-    borderRightColor: palette.white + "26", // rgba(255, 255, 255, 0.15) = 15% opacity = 26 in hex
+    borderRightColor: palette.white + "26", // 15% opacity
   },
   navBubbleTailRight: {
     position: "absolute",
@@ -424,7 +424,7 @@ const styles = StyleSheet.create({
     fontWeight: "600",
   },
   navBubbleTextDisabled: {
-    color: palette.white + "66", // rgba(255, 255, 255, 0.4) = 40% opacity = 66 in hex
+    color: palette.white + "66", // 40% opacity
   },
   navBubbleTextPrimary: {
     color: color.textWhite,

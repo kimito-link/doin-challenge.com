@@ -144,7 +144,7 @@ export function AppHeader({
                     alignItems: "center",
                     justifyContent: "center",
                     borderRadius: 22,
-                    backgroundColor: palette.white + "1A", // rgba(255, 255, 255, 0.1) = 10% opacity = 1A in hex
+                    backgroundColor: palette.white + "1A", // 10% opacity
                   },
                   pressed && { opacity: 0.7, transform: [{ scale: 0.97 }] },
                 ]}
@@ -164,7 +164,7 @@ export function AppHeader({
                 flexDirection: "row", 
                 alignItems: "center", 
                 marginTop: 8,
-                backgroundColor: palette.green500 + "26", // rgba(16, 185, 129, 0.15) = 15% opacity = 26 in hex
+                backgroundColor: palette.green500 + "26", // 15% opacity
                 paddingHorizontal: 12,
                 paddingVertical: 6,
                 borderRadius: 20,
