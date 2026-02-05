@@ -102,14 +102,13 @@ while IFS= read -r f; do
 
 done <<< "${CHANGED_FILES}"
 
-# "Gate1的に危険"（ここだけは必ず手当てしたい）
-# auth / deploy / env / db / health / routing は事故りやすい
+# "Gate1的に危険"（危険ファイルを触ったら CI で fail）
 sensitive=false
 if [[ "${touch_auth}" == true || "${touch_deploy}" == true || "${touch_env}" == true || "${touch_db}" == true || "${touch_health}" == true || "${touch_routing}" == true ]]; then
   sensitive=true
 fi
 
-# ---- outputs
+# ---- outputs（先に出す。fail 時も他ジョブで参照できるよう）
 {
   echo "baseSha=${BASE_SHA}"
   echo "headSha=${HEAD_SHA}"
@@ -124,6 +123,22 @@ fi
   echo "touch_workflow=${touch_workflow}"
   echo "sensitive=${sensitive}"
 } | tee -a "${GITHUB_OUTPUT:-/dev/null}"
+
+# 禁止ワード検知（コミットメッセージのみ。コード内の「成功しました」等は許可）
+FORBIDDEN_WORDS="成功|保証|必ず|確実|売れる"
+COMMIT_MSGS="$(git log --format=%B "${BASE_SHA}".."${HEAD_SHA}" 2>/dev/null || true)"
+if echo "${COMMIT_MSGS}" | grep -qE "${FORBIDDEN_WORDS}"; then
+  echo "❌ コミットメッセージに禁止ワードを検知しました: ${FORBIDDEN_WORDS}"
+  echo "該当コミット:"
+  git log --oneline "${BASE_SHA}".."${HEAD_SHA}" 2>/dev/null || true
+  exit 1
+fi
+
+# 危険ファイルを触ったら fail（Gate 1 で止める）
+if [[ "${sensitive}" == true ]]; then
+  echo "❌ 危険な変更が検知されました（oauth/auth/vercel.json/env/schema/health/routing 等）。PRテンプレの必須アクションを実施してください。"
+  exit 1
+fi
 
 # ---- ローカル実行時用サマリー（CIでは GITHUB_OUTPUT にだけ書く）
 if [[ -z "${GITHUB_OUTPUT:-}" ]] || [[ "${GITHUB_OUTPUT}" == "/dev/null" ]]; then

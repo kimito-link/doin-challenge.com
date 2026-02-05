@@ -11,9 +11,15 @@
 
 ---
 
+## Gate 1: 手動1分儀式（マージ前必須）
+
+- [ ] **1分**でできる手動確認を実施した（該当画面を開く・主要操作1回）
+- [ ] 変更した画面を **3サイズ** で表示確認した（スマホ幅 / タブレット幅 / PC幅）
+- [ ] `bash scripts/diff-check.sh origin/main HEAD` を実行し、**変更ファイル一覧・サマリー・危険フラグ**を確認した
+
 ## Gate 1: 危険な変更の確認（必須）
 
-diff-check で警告が出た場合、該当する必須アクションを実施してください。
+diff-check で危険ファイル（oauth/auth/vercel.json/env/schema/health/routing 等）に触れている場合、CI が fail します。該当する必須アクションを実施してください。
 
 - [ ] **認証関連**に変更がある場合 → ログイン機能のテストを実施した
 - [ ] **Deploy/CI**に変更がある場合 → Deploy後ヘルス照合を実施した
@@ -28,15 +34,14 @@ diff-check で警告が出た場合、該当する必須アクションを実施
 - [ ] このPRは**1つの変更のみ**を含む
 - [ ] テストを実施した（ユニットテスト or 統合テスト or 手動確認）
 - [ ] バージョン番号を更新した（`shared/version.ts`）
-- [ ] `bash scripts/diff-check.sh` を実行し、サマリー・警告を確認した（main との差分: `bash scripts/diff-check.sh origin/main HEAD`）
 
 ## Gate 1: Deploy/Health確認
-- [ ] Gate 1: Deploy/Health確認
 - [ ] OAuth/ログイン動作確認
 - [ ] ロールバック手順確認
 
 ### Deploy/Health確認のメモ（貼ってOK）
-- `/api/health` のレスポンス（commitSha / version）
+- `/api/health` のレスポンス（commitSha / version / ok）
+- `/version.json` の commitSha
 - 期待値と一致しているか
 
 ---

@@ -38,6 +38,13 @@ jobs:
       
       - name: Build
         run: pnpm build
+
+      - name: Write version.json
+        run: |
+          COMMIT_SHA="${{ github.sha }}"
+          mkdir -p public
+          echo "{\"commitSha\":\"$COMMIT_SHA\",\"version\":\"$COMMIT_SHA\",\"builtAt\":\"$(date -u +%Y-%m-%dT%H:%M:%SZ)\"}" > public/version.json
+          cat public/version.json
       
       - name: Deploy to Vercel
         uses: amondnet/vercel-action@v25
@@ -47,23 +54,36 @@ jobs:
           vercel-project-id: ${{ secrets.VERCEL_PROJECT_ID }}
           vercel-args: '--prod'
       
-      - name: Post-deployment verification
+      - name: Post-deploy verify (Gate 1: CI緑＝本番にそのコード)
+        env:
+          EXPECTED_SHA: ${{ github.sha }}
         run: |
-          echo "Waiting for deployment to propagate..."
-          sleep 30
-          
-          echo "Checking production health..."
-          RESPONSE=$(curl -s https://doin-challenge.com/api/health)
-          echo "Health check response: $RESPONSE"
-          
-          VERSION=$(echo $RESPONSE | jq -r '.version')
-          COMMIT_SHA=$(git rev-parse HEAD)
-          
-          echo "Deployed version: $VERSION"
-          echo "Expected commit: $COMMIT_SHA"
-          
-          if [[ "$VERSION" == "$COMMIT_SHA"* ]]; then
-            echo "✅ Deployment verified successfully"
-          else
-            echo "⚠️ Version mismatch detected, but deployment may still be propagating"
+          set -e
+          echo "Expected commitSha: $EXPECTED_SHA"
+          for i in $(seq 1 20); do
+            echo "Verify attempt $i/20..."
+            HEALTH=$(curl -s https://doin-challenge.com/api/health || true)
+            HEALTH_SHA=$(echo "$HEALTH" | jq -r '.commitSha // empty')
+            OK=$(echo "$HEALTH" | jq -r '.ok // false')
+            if [[ "$HEALTH_SHA" == "$EXPECTED_SHA" ]] && [[ "$OK" == "true" ]]; then
+              echo "✅ /api/health commitSha matches"
+              break
+            fi
+            if [[ $i -eq 20 ]]; then
+              echo "❌ /api/health commitSha mismatch after 20 attempts"
+              echo "Expected: $EXPECTED_SHA"
+              echo "Got: $HEALTH_SHA"
+              echo "Response: $HEALTH"
+              exit 1
+            fi
+            sleep 15
+          done
+          VERSION_JSON=$(curl -s https://doin-challenge.com/version.json || true)
+          VJ_SHA=$(echo "$VERSION_JSON" | jq -r '.commitSha // empty')
+          if [[ "$VJ_SHA" != "$EXPECTED_SHA" ]]; then
+            echo "❌ /version.json commitSha mismatch"
+            echo "Expected: $EXPECTED_SHA"
+            echo "Got: $VJ_SHA"
+            exit 1
           fi
+          echo "✅ /version.json commitSha matches"
