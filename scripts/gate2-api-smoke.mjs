@@ -2,6 +2,7 @@
 /**
  * Gate 2: API スモークテスト
  * デプロイ後に主要APIが 200 + 期待JSON を返すことを確認する。
+ * tRPC は batch=1 + input={"0": <input>} の GET で呼ぶ（v11 形式）。
  * 使い方: BASE_URL=https://doin-challenge.com node scripts/gate2-api-smoke.mjs
  */
 const BASE = process.env.BASE_URL || process.env.API_URL || "https://doin-challenge.com";
@@ -16,6 +17,13 @@ async function fetchOk(url, options = {}) {
     throw new Error(`${url} → ${res.status} ${res.statusText}`);
   }
   return res;
+}
+
+/** tRPC GET: 単一手続きを batch=1 で呼ぶ。input は Record<number, unknown> で {"0": procedureInput} */
+function trpcGet(path, procedureInput = {}) {
+  const batchInput = { 0: procedureInput };
+  const inputParam = encodeURIComponent(JSON.stringify(batchInput));
+  return `${BASE}/api/trpc/${path}?batch=1&input=${inputParam}`;
 }
 
 async function smoke() {
@@ -36,9 +44,11 @@ async function smoke() {
 
   // 2. イベント一覧（公開）
   try {
-    const res = await fetchOk(`${BASE}/api/trpc/events.list`);
+    const url = trpcGet("events.list", {});
+    const res = await fetchOk(url);
     const data = await res.json();
-    if (data?.result === undefined) {
+    const result = Array.isArray(data) ? data[0] : data;
+    if (result?.result === undefined) {
       failures.push("/api/trpc/events.list: result なし");
     } else {
       log("✅ /api/trpc/events.list");
@@ -49,10 +59,11 @@ async function smoke() {
 
   // 3. イベント詳細（存在するIDで試す）
   try {
-    const input = encodeURIComponent(JSON.stringify({ id: 90001 }));
-    const res = await fetchOk(`${BASE}/api/trpc/events.getById?input=${input}`);
+    const url = trpcGet("events.getById", { id: 90001 });
+    const res = await fetchOk(url);
     const data = await res.json();
-    if (data?.result === undefined) {
+    const result = Array.isArray(data) ? data[0] : data;
+    if (result?.result === undefined) {
       failures.push("/api/trpc/events.getById: result なし");
     } else {
       log("✅ /api/trpc/events.getById");
@@ -63,10 +74,11 @@ async function smoke() {
 
   // 4. ランキング（ホスト）
   try {
-    const input = encodeURIComponent(JSON.stringify({ limit: 1 }));
-    const res = await fetchOk(`${BASE}/api/trpc/rankings.hosts?input=${input}`);
+    const url = trpcGet("rankings.hosts", { limit: 1 });
+    const res = await fetchOk(url);
     const data = await res.json();
-    if (data?.result === undefined) {
+    const result = Array.isArray(data) ? data[0] : data;
+    if (result?.result === undefined) {
       failures.push("/api/trpc/rankings.hosts: result なし");
     } else {
       log("✅ /api/trpc/rankings.hosts");
@@ -77,10 +89,11 @@ async function smoke() {
 
   // 5. ランキング（貢献度）
   try {
-    const input = encodeURIComponent(JSON.stringify({ period: "all", limit: 1 }));
-    const res = await fetchOk(`${BASE}/api/trpc/rankings.contribution?input=${input}`);
+    const url = trpcGet("rankings.contribution", { period: "all", limit: 1 });
+    const res = await fetchOk(url);
     const data = await res.json();
-    if (data?.result === undefined) {
+    const result = Array.isArray(data) ? data[0] : data;
+    if (result?.result === undefined) {
       failures.push("/api/trpc/rankings.contribution: result なし");
     } else {
       log("✅ /api/trpc/rankings.contribution");
@@ -91,10 +104,11 @@ async function smoke() {
 
   // 6. 参加者一覧（公開・1イベント）
   try {
-    const input = encodeURIComponent(JSON.stringify({ eventId: 90001 }));
-    const res = await fetchOk(`${BASE}/api/trpc/participations.listByEvent?input=${input}`);
+    const url = trpcGet("participations.listByEvent", { eventId: 90001 });
+    const res = await fetchOk(url);
     const data = await res.json();
-    if (data?.result === undefined) {
+    const result = Array.isArray(data) ? data[0] : data;
+    if (result?.result === undefined) {
       failures.push("/api/trpc/participations.listByEvent: result なし");
     } else {
       log("✅ /api/trpc/participations.listByEvent");
