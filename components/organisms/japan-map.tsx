@@ -87,7 +87,7 @@ function JapanMapInner({ prefectureCounts, onPrefecturePress, selectedPrefecture
               }}
               style={({ pressed }) => [{
                 width: "48%",
-                backgroundColor: isHot ? palette.pink500 + "33" : color.surface, // rgba(236, 72, 153, 0.2) = 20% opacity = 33 in hex
+                backgroundColor: isHot ? palette.pink500 + "33" : color.surface, // 20% opacity
                 borderRadius: 12,
                 padding: 12,
                 marginBottom: 8,
@@ -142,11 +142,11 @@ function JapanMapInner({ prefectureCounts, onPrefecturePress, selectedPrefecture
       {/* ホットな地域のハイライト */}
       {hotRegion.count > 0 && (
         <View style={{
-          backgroundColor: palette.pink500 + "26", // rgba(236, 72, 153, 0.15) = 15% opacity = 26 in hex
+          backgroundColor: palette.pink500 + "26", // 15% opacity
           borderRadius: 12,
           padding: 16,
           borderWidth: 1,
-          borderColor: palette.pink500 + "4D", // rgba(236, 72, 153, 0.3) = 30% opacity = 4D in hex
+          borderColor: palette.pink500 + "4D", // 30% opacity
           flexDirection: "row",
           alignItems: "center",
         }}>
@@ -237,7 +237,7 @@ export function SimpleRegionMap({ prefectureCounts }: { prefectureCounts: Prefec
               key={region.name}
               style={{
                 width: "48%",
-                backgroundColor: isHot ? palette.pink500 + "33" : color.surface, // rgba(236, 72, 153, 0.2) = 20% opacity = 33 in hex
+                backgroundColor: isHot ? palette.pink500 + "33" : color.surface, // 20% opacity
                 borderRadius: 12,
                 padding: 12,
                 marginBottom: 8,
@@ -292,12 +292,12 @@ export function SimpleRegionMap({ prefectureCounts }: { prefectureCounts: Prefec
       {/* ホットな地域のハイライト */}
       {hotRegion.count > 0 && (
         <View style={{
-          backgroundColor: palette.pink500 + "26", // rgba(236, 72, 153, 0.15) = 15% opacity = 26 in hex
+          backgroundColor: palette.pink500 + "26", // 15% opacity
           borderRadius: 12,
           padding: 14,
           marginTop: 8,
           borderWidth: 1,
-          borderColor: palette.pink500 + "4D", // rgba(236, 72, 153, 0.3) = 30% opacity = 4D in hex
+          borderColor: palette.pink500 + "4D", // 30% opacity
           flexDirection: "row",
           alignItems: "center",
         }}>

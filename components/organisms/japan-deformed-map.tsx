@@ -437,12 +437,12 @@ const styles = StyleSheet.create({
   hotHighlight: {
     flexDirection: "row",
     alignItems: "center",
-    backgroundColor: palette.red400 + "26", // rgba(255, 107, 107, 0.15) = 15% opacity = 26 in hex
+    backgroundColor: palette.red400 + "26", // 15% opacity
     borderRadius: 12,
     padding: 12,
     marginBottom: 12,
     borderWidth: 1,
-    borderColor: palette.red400 + "4D", // rgba(255, 107, 107, 0.3) = 30% opacity = 4D in hex
+    borderColor: palette.red400 + "4D", // 30% opacity
   },
   hotIcon: {
     fontSize: 32,

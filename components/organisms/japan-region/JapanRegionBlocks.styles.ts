@@ -194,7 +194,7 @@ export const styles = StyleSheet.create({
     borderBottomColor: color.surfaceAlt,
   },
   rankingItemHighlight: {
-    backgroundColor: palette.pink500 + "1A", // rgba(236, 72, 153, 0.1) = 10% opacity = 1A in hex
+    backgroundColor: palette.pink500 + "1A", // 10% opacity
     marginHorizontal: -8,
     paddingHorizontal: 8,
     borderRadius: 8,
@@ -250,11 +250,11 @@ export const styles = StyleSheet.create({
   hotHighlight: {
     flexDirection: "row",
     alignItems: "center",
-    backgroundColor: palette.red400 + "26", // rgba(255, 107, 107, 0.15) = 15% opacity = 26 in hex
+    backgroundColor: palette.red400 + "26", // 15% opacity
     borderRadius: 12,
     padding: 12,
     borderWidth: 1,
-    borderColor: palette.red400 + "4D", // rgba(255, 107, 107, 0.3) = 30% opacity = 4D in hex
+    borderColor: palette.red400 + "4D", // 30% opacity
   },
   hotIcon: {
     fontSize: 32,
@@ -272,7 +272,7 @@ export const styles = StyleSheet.create({
   // モーダルスタイル
   modalOverlay: {
     flex: 1,
-    backgroundColor: palette.black + "99", // rgba(0, 0, 0, 0.6) = 60% opacity = 99 in hex
+    backgroundColor: palette.black + "99", // 60% opacity
     justifyContent: "flex-end",
   },
   modalContent: {
@@ -368,7 +368,7 @@ export const styles = StyleSheet.create({
     borderBottomColor: color.surfaceAlt,
   },
   prefectureRankItemHighlight: {
-    backgroundColor: palette.pink500 + "26", // rgba(236, 72, 153, 0.15) = 15% opacity = 26 in hex
+    backgroundColor: palette.pink500 + "26", // 15% opacity
     borderRadius: 8,
     marginHorizontal: -4,
     paddingHorizontal: 12,
