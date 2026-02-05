@@ -316,7 +316,7 @@ const styles = StyleSheet.create({
   },
   overlay: {
     flex: 1,
-    backgroundColor: "rgba(0, 0, 0, 0.7)",
+    backgroundColor: palette.black + "B3",
     justifyContent: "center",
     alignItems: "center",
     padding: 24,
@@ -357,7 +357,7 @@ const styles = StyleSheet.create({
   },
   optionButtonActive: {
     borderColor: color.accentPrimary,
-    backgroundColor: "rgba(236, 72, 153, 0.1)",
+    backgroundColor: palette.pink500 + "1A",
   },
   optionButtonDisabled: {
     opacity: 0.5,

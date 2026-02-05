@@ -118,7 +118,7 @@ export function WelcomeModal({
       <Animated.View
         style={{
           flex: 1,
-          backgroundColor: "rgba(0,0,0,0.8)",
+          backgroundColor: palette.black + "CC",
           justifyContent: "center",
           alignItems: "center",
           opacity: fadeAnim,
@@ -172,7 +172,7 @@ export function WelcomeModal({
                 <View
                   style={{
                     marginHorizontal: 8,
-                    backgroundColor: "rgba(255,255,255,0.2)",
+                    backgroundColor: palette.white + "33",
                     borderRadius: 16,
                     padding: 6,
                   }}
@@ -196,7 +196,7 @@ export function WelcomeModal({
                       width: 60,
                       height: 60,
                       borderRadius: 30,
-                      backgroundColor: "rgba(255,255,255,0.2)",
+                      backgroundColor: palette.white + "33",
                       alignItems: "center",
                       justifyContent: "center",
                       borderWidth: 2,

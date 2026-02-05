@@ -140,7 +140,7 @@ export function LoginSuccessModal({
       <Animated.View
         style={{
           flex: 1,
-          backgroundColor: "rgba(0,0,0,0.7)",
+          backgroundColor: palette.black + "B3",
           justifyContent: "center",
           alignItems: "center",
           opacity: fadeAnim,
@@ -233,7 +233,7 @@ export function LoginSuccessModal({
                 <View
                   style={{
                     marginHorizontal: 8,
-                    backgroundColor: "rgba(255,255,255,0.2)",
+                    backgroundColor: palette.white + "33",
                     borderRadius: 20,
                     padding: 8,
                   }}
@@ -259,7 +259,7 @@ export function LoginSuccessModal({
                       width: 80,
                       height: 80,
                       borderRadius: 40,
-                      backgroundColor: "rgba(255,255,255,0.2)",
+                      backgroundColor: palette.white + "33",
                       alignItems: "center",
                       justifyContent: "center",
                       borderWidth: 3,
@@ -278,7 +278,7 @@ export function LoginSuccessModal({
                   fontSize: 24,
                   fontWeight: "bold",
                   textAlign: "center",
-                  textShadowColor: "rgba(0,0,0,0.3)",
+                  textShadowColor: palette.black + "4D",
                   textShadowOffset: { width: 0, height: 2 },
                   textShadowRadius: 4,
                 }}

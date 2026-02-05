@@ -371,7 +371,7 @@ export function AccountSwitcher({ visible, onClose }: AccountSwitcherProps) {
 const styles = StyleSheet.create({
   overlay: {
     flex: 1,
-    backgroundColor: "rgba(0, 0, 0, 0.6)",
+    backgroundColor: palette.black + "99",
     justifyContent: "flex-end",
   },
   container: {

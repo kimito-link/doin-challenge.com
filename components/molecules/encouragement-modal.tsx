@@ -163,7 +163,7 @@ export function useEncouragementModal() {
 const styles = StyleSheet.create({
   overlay: {
     flex: 1,
-    backgroundColor: "rgba(0, 0, 0, 0.6)",
+    backgroundColor: palette.black + "99",
     justifyContent: "center",
     alignItems: "center",
     padding: 24,

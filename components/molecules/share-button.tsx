@@ -188,7 +188,7 @@ const styles = StyleSheet.create({
     borderColor: color.accentPrimary,
   },
   buttonIcon: {
-    backgroundColor: "rgba(236, 72, 153, 0.2)",
+    backgroundColor: palette.pink500 + "33",
     width: 44,
     height: 44,
     borderRadius: 22,

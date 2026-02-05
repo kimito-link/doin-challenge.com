@@ -185,7 +185,7 @@ export function FollowSuccessModal({
 const styles = StyleSheet.create({
   overlay: {
     flex: 1,
-    backgroundColor: "rgba(0, 0, 0, 0.8)",
+    backgroundColor: palette.black + "CC",
     justifyContent: "center",
     alignItems: "center",
     padding: 20,
@@ -246,7 +246,7 @@ const styles = StyleSheet.create({
   followInfo: {
     flexDirection: "row",
     alignItems: "center",
-    backgroundColor: "rgba(34, 197, 94, 0.1)",
+    backgroundColor: palette.green500 + "1A",
     paddingHorizontal: 12,
     paddingVertical: 8,
     borderRadius: 20,
@@ -260,7 +260,7 @@ const styles = StyleSheet.create({
   },
   featureList: {
     width: "100%",
-    backgroundColor: "rgba(236, 72, 153, 0.1)",
+    backgroundColor: palette.pink500 + "1A",
     borderRadius: 12,
     padding: 12,
   },

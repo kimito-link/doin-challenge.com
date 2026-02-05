@@ -64,7 +64,7 @@ export function HoverableListItem({
 
   // ホバー時の背景色
   const hoverBackgroundStyle: ViewStyle = Platform.OS === "web" && isHovered && !disabled ? {
-    backgroundColor: "rgba(221, 101, 0, 0.08)",
+    backgroundColor: palette.orange500 + "14",
   } : {};
 
   // ホバー時の左ボーダー

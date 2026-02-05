@@ -85,7 +85,7 @@ export function FollowGate({
             left: 0,
             right: 0,
             bottom: 0,
-            backgroundColor: "rgba(0,0,0,0.7)",
+            backgroundColor: palette.black + "B3",
             alignItems: "center",
             justifyContent: "center",
             padding: 24,
@@ -125,7 +125,7 @@ export function FollowGate({
         <View
           style={{
             flex: 1,
-            backgroundColor: "rgba(0,0,0,0.8)",
+            backgroundColor: palette.black + "CC",
             alignItems: "center",
             justifyContent: "center",
             padding: 24,

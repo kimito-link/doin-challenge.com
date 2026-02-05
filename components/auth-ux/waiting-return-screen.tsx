@@ -4,7 +4,7 @@
  */
 
 import { View, Text, ActivityIndicator } from "react-native";
-import { color } from "@/theme/tokens";
+import { color, palette } from "@/theme/tokens";
 import { LinkSpeech } from "./link-speech";
 import { useEffect, useState } from "react";
 
@@ -52,7 +52,7 @@ export function WaitingReturnScreen({ visible, remainingMs }: WaitingReturnScree
         left: 0,
         right: 0,
         bottom: 0,
-        backgroundColor: "rgba(0, 0, 0, 0.8)",
+        backgroundColor: palette.black + "CC",
         alignItems: "center",
         justifyContent: "center",
         zIndex: 9999,

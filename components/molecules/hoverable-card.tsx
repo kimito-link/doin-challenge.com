@@ -173,7 +173,7 @@ export function HoverableMenuItem({
 
   // ホバー時のスタイル
   const hoverStyle: ViewStyle = enableHover && isHovered && !disabled ? {
-    backgroundColor: "rgba(221, 101, 0, 0.08)",
+    backgroundColor: palette.orange500 + "14",
     borderLeftWidth: 3,
     borderLeftColor: color.hostAccentLegacy,
   } : {};

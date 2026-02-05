@@ -220,7 +220,7 @@ const styles = StyleSheet.create({
     borderLeftWidth: 1,
   },
   largeStepButton: {
-    backgroundColor: "rgba(236, 72, 153, 0.1)",
+    backgroundColor: palette.pink500 + "1A",
   },
   valueContainer: {
     flex: 1,

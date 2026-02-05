@@ -252,7 +252,7 @@ export function ColorfulChallengeCard({
                 <Text style={styles.badgeText}>{typeBadge.label}</Text>
               </View>
               {challenge.venue && (
-                <View style={[styles.badge, { backgroundColor: palette.black + "33" }]}> {/* rgba(0,0,0,0.2) = 20% opacity = 33 in hex */}
+                <View style={[styles.badge, { backgroundColor: palette.black + "33" }]}>
                   <MaterialIcons name="place" size={10} color={color.textWhite} />
                   <Text style={[styles.badgeText, { marginLeft: 2 }]} numberOfLines={1}>
                     {challenge.venue}
@@ -278,14 +278,14 @@ export function ColorfulChallengeCard({
 
             {/* 日付（右下） */}
             <View style={styles.dateContainer}>
-              <MaterialIcons name="event" size={14} color={palette.white + "CC"} /> {/* rgba(255,255,255,0.8) = 80% opacity = CC in hex */}
+              <MaterialIcons name="event" size={14} color={palette.white + "CC"} />
               <Text style={styles.dateText}>{formattedDate}</Text>
             </View>
           </View>
 
           {/* コメントアイコン（右下） */}
           <View style={styles.commentIcon}>
-            <MaterialIcons name="chat-bubble-outline" size={18} color={palette.white + "99"} /> {/* rgba(255,255,255,0.6) = 60% opacity = 99 in hex */}
+            <MaterialIcons name="chat-bubble-outline" size={18} color={palette.white + "99"} />
           </View>
         </LinearGradient>
       </AnimatedCard>

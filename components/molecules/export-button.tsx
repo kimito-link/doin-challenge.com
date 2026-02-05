@@ -227,7 +227,7 @@ const styles = StyleSheet.create({
   },
   modalOverlay: {
     flex: 1,
-    backgroundColor: "rgba(0, 0, 0, 0.7)",
+    backgroundColor: palette.black + "B3",
     justifyContent: "center",
     alignItems: "center",
     padding: 24,
@@ -292,7 +292,7 @@ const styles = StyleSheet.create({
     left: 0,
     right: 0,
     bottom: 0,
-    backgroundColor: "rgba(0, 0, 0, 0.8)",
+    backgroundColor: palette.black + "CC",
     alignItems: "center",
     justifyContent: "center",
   },
