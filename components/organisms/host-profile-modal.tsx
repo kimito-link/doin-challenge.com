@@ -57,7 +57,7 @@ export function HostProfileModal({
     try {
       const data = await getProfile(username);
       setProfile(data);
-    } catch (err) {
+    } catch {
       setError("プロフィールの取得に失敗しました");
     } finally {
       setLoading(false);

@@ -37,12 +37,6 @@ interface JapanMapProps {
 }
 
 function JapanMapInner({ prefectureCounts, onPrefecturePress, selectedPrefecture }: JapanMapProps) {
-  const { width: screenWidth } = useWindowDimensions();
-  const mapWidth = Math.max(
-    MAP_MIN_WIDTH,
-    Math.min(screenWidth - HORIZONTAL_PADDING, MAP_MAX_WIDTH)
-  );
-
   // 地域ごとの参加者数を集計
   const regionCounts = useMemo(() => {
     const counts: { [region: string]: number } = {};
