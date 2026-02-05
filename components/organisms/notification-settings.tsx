@@ -55,9 +55,9 @@ function SettingItem({
         value={value}
         onValueChange={handleChange}
         disabled={disabled}
-        trackColor={{ false: "#3A3F47", true: color.hostAccentLegacy }}
+        trackColor={{ false: palette.gray650, true: color.hostAccentLegacy }}
         thumbColor={value ? color.textWhite : color.textMuted}
-        ios_backgroundColor="#3A3F47"
+        ios_backgroundColor={palette.gray650}
       />
     </View>
   );
@@ -187,9 +187,9 @@ export function NotificationSettingsPanel({ onClose }: NotificationSettingsProps
                 updateSetting("enabled", value);
               }
             }}
-            trackColor={{ false: "#3A3F47", true: color.hostAccentLegacy }}
+            trackColor={{ false: palette.gray650, true: color.hostAccentLegacy }}
             thumbColor={settings.enabled ? color.textWhite : color.textMuted}
-            ios_backgroundColor="#3A3F47"
+            ios_backgroundColor={palette.gray650}
           />
         )}
       </View>
@@ -279,7 +279,7 @@ const styles = StyleSheet.create({
   webNotice: {
     flexDirection: "row",
     alignItems: "center",
-    backgroundColor: "rgba(245, 158, 11, 0.1)",
+    backgroundColor: palette.gold + "1A", // rgba(245, 158, 11, 0.1) = 10% opacity = 1A in hex
     padding: 12,
     margin: 16,
     borderRadius: 8,

@@ -32,6 +32,7 @@ export const palette = {
   gray800: "#171717",         // surface（カード背景）
   gray750: "#1f1f1f",         // surface alt
   gray700: "#262626",         // border
+  gray650: "#3A3F47",         // switch track (dark)
   gray600: "#404040",         // border alt
 
   // Neutral (text) - 視認性改善（黒背景で読めるよう semantic で gray300/200 を採用）

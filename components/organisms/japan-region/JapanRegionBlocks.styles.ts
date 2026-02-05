@@ -368,7 +368,7 @@ export const styles = StyleSheet.create({
     borderBottomColor: color.surfaceAlt,
   },
   prefectureRankItemHighlight: {
-    backgroundColor: "rgba(236, 72, 153, 0.15)",
+    backgroundColor: palette.pink500 + "26", // rgba(236, 72, 153, 0.15) = 15% opacity = 26 in hex
     borderRadius: 8,
     marginHorizontal: -4,
     paddingHorizontal: 12,
