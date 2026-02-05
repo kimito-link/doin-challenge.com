@@ -1,4 +1,4 @@
-import { View, Text, StyleSheet, Pressable, Dimensions, useWindowDimensions, Platform } from "react-native";
+import { View, Text, StyleSheet, Pressable, useWindowDimensions, Platform } from "react-native";
 import * as Haptics from "expo-haptics";
 import { color, palette } from "@/theme/tokens";
 import { MapErrorBoundary } from "@/components/ui/map-error-boundary";

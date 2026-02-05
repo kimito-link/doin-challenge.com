@@ -102,9 +102,9 @@ function JapanBlockMapInner({ prefectureCounts, onPrefecturePress, onRegionPress
   const [selectedRegion, setSelectedRegion] = useState<string | null>(null);
 
   // 都道府県のカウントを取得
-  const getCount = (prefName: string, shortName: string) => {
+  const getCount = useCallback((prefName: string, shortName: string) => {
     return prefectureCounts[prefName] || prefectureCounts[shortName] || 0;
-  };
+  }, [prefectureCounts]);
 
   // 統計情報を計算
   const stats = useMemo(() => {
@@ -126,7 +126,7 @@ function JapanBlockMapInner({ prefectureCounts, onPrefecturePress, onRegionPress
     }
     
     return { totalPrefectures, totalParticipants, maxCount, hotPrefecture };
-  }, [prefectureCounts]);
+  }, [prefectureCounts, getCount]);
 
   // 地域ごとの合計を計算
   const regionTotals = useMemo(() => {
@@ -137,7 +137,7 @@ function JapanBlockMapInner({ prefectureCounts, onPrefecturePress, onRegionPress
       }, 0);
     }
     return totals;
-  }, [prefectureCounts]);
+  }, [prefectureCounts, getCount]);
 
   // 透明度を16進数に変換するヘルパー関数
   const opacityToHex = (opacity: number): string => {
