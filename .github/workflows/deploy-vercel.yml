@@ -54,47 +54,43 @@ jobs:
           EXPECTED_SHA: ${{ github.sha }}
         run: |
           set -e
-          echo "Expected commitSha: $EXPECTED_SHA"
-          HEALTH_SHA=""
+          git fetch origin main --depth=1
+          LATEST_MAIN=$(git rev-parse origin/main)
+          echo "Expected commitSha: $EXPECTED_SHA (or latest main: $LATEST_MAIN)"
           for i in $(seq 1 20); do
             echo "Verify attempt $i/20..."
             HEALTH=$(curl -s https://doin-challenge.com/api/health || true)
             HEALTH_SHA=$(echo "$HEALTH" | jq -r '.commitSha // empty')
             OK=$(echo "$HEALTH" | jq -r '.ok // false')
-            if [[ "$HEALTH_SHA" == "$EXPECTED_SHA" ]] && [[ "$OK" == "true" ]]; then
-              echo "✅ /api/health commitSha matches"
+            if [[ "$OK" != "true" ]]; then
+              :
+            elif [[ "$HEALTH_SHA" == "$EXPECTED_SHA" ]]; then
+              echo "✅ /api/health commitSha matches expected"
+              break
+            elif [[ "$HEALTH_SHA" == "$LATEST_MAIN" ]]; then
+              echo "✅ /api/health is on latest main ($LATEST_MAIN)"
               break
             fi
             if [[ $i -eq 20 ]]; then
-              git fetch origin main --depth=1
-              LATEST_MAIN=$(git rev-parse origin/main)
-              if [[ "$HEALTH_SHA" == "$LATEST_MAIN" ]]; then
-                echo "✅ /api/health is on latest main ($LATEST_MAIN), OK"
-                break
-              else
-                echo "❌ /api/health commitSha mismatch after 20 attempts"
-                echo "Expected: $EXPECTED_SHA"
-                echo "Got: $HEALTH_SHA"
-                echo "Response: $HEALTH"
-                exit 1
-              fi
+              echo "❌ /api/health commitSha mismatch after 20 attempts"
+              echo "Expected: $EXPECTED_SHA or $LATEST_MAIN"
+              echo "Got: $HEALTH_SHA"
+              echo "Response: $HEALTH"
+              exit 1
             fi
             sleep 15
           done
           VERSION_JSON=$(curl -s https://doin-challenge.com/version.json || true)
           VJ_SHA=$(echo "$VERSION_JSON" | jq -r '.commitSha // empty')
-          if [[ "$VJ_SHA" != "$EXPECTED_SHA" ]]; then
-            LATEST_MAIN=$(git rev-parse origin/main 2>/dev/null || true)
-            if [[ -n "$LATEST_MAIN" && "$VJ_SHA" == "$LATEST_MAIN" ]]; then
-              echo "✅ /version.json is on latest main ($LATEST_MAIN), OK"
-            else
-              echo "❌ /version.json commitSha mismatch"
-              echo "Expected: $EXPECTED_SHA"
-              echo "Got: $VJ_SHA"
-              exit 1
-            fi
-          else
+          if [[ "$VJ_SHA" == "$EXPECTED_SHA" ]]; then
             echo "✅ /version.json commitSha matches"
+          elif [[ "$VJ_SHA" == "$LATEST_MAIN" ]]; then
+            echo "✅ /version.json is on latest main ($LATEST_MAIN)"
+          else
+            echo "❌ /version.json commitSha mismatch"
+            echo "Expected: $EXPECTED_SHA or $LATEST_MAIN"
+            echo "Got: $VJ_SHA"
+            exit 1
           fi
 
       - name: Gate 2 - API smoke
