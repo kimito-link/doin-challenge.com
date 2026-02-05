@@ -20,4 +20,15 @@ jobs:
           SHA: ${{ github.sha }}
         run: |
           chmod +x scripts/verify-deploy.sh
-          ./scripts/verify-deploy.sh "$PROD_URL" "$SHA"
+          for i in $(seq 1 20); do
+            echo "Verify attempt $i/20..."
+            if ./scripts/verify-deploy.sh "$PROD_URL" "$SHA"; then
+              echo "✅ Production matches commit $SHA"
+              exit 0
+            fi
+            if [ "$i" -eq 20 ]; then
+              echo "❌ Still mismatch after 20 attempts"
+              exit 1
+            fi
+            sleep 15
+          done
