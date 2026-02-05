@@ -95,4 +95,4 @@ export function Text({
   );
 }
 
-const styles = StyleSheet.create({});
+// const styles = StyleSheet.create({}); // 未使用

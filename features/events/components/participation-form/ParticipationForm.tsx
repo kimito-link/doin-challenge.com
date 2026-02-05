@@ -289,7 +289,7 @@ export function ParticipationForm({
             onPress={() => onGenderChange("male")}
             style={[
               styles.genderButton,
-              gender === "male" && { backgroundColor: "#3B82F6", borderColor: "#3B82F6" },
+              gender === "male" && { backgroundColor: color.info, borderColor: color.info },
             ]}
           >
             <Text style={[

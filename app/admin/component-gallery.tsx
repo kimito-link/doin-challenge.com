@@ -8,6 +8,7 @@
 import { View, Text, ScrollView, Pressable, StyleSheet } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useColors } from "@/hooks/use-colors";
+import { color, palette } from "@/theme/tokens";
 import { TwitterUserCard, TwitterUserCompact, TwitterAvatar } from "@/components/molecules/twitter-user-card";
 import { LinearGradient } from "expo-linear-gradient";
 import { Ionicons } from "@expo/vector-icons";
@@ -66,7 +67,7 @@ export default function ComponentsScreen() {
           <View className="flex-row" style={{ gap: 12 }}>
             <View style={{ flex: 1 }}>
               <LinearGradient
-                colors={['#EC4899', '#8B5CF6']}
+                colors={[palette.pink500, palette.purple500]}
                 start={{ x: 0, y: 0 }}
                 end={{ x: 1, y: 0 }}
                 style={{ height: 60, borderRadius: 12 }}
@@ -75,7 +76,7 @@ export default function ComponentsScreen() {
             </View>
             <View style={{ flex: 1 }}>
               <LinearGradient
-                colors={['#3B82F6', '#8B5CF6']}
+                colors={[color.info, palette.purple500]}
                 start={{ x: 0, y: 0 }}
                 end={{ x: 1, y: 0 }}
                 style={{ height: 60, borderRadius: 12 }}
@@ -120,7 +121,7 @@ export default function ComponentsScreen() {
           {/* グラデーション背景 */}
           <SubSection title="グラデーション背景（ホストカード）">
             <LinearGradient
-              colors={['#EC4899', '#8B5CF6']}
+              colors={[palette.pink500, palette.purple500]}
               start={{ x: 0, y: 0 }}
               end={{ x: 1, y: 0 }}
               style={{ padding: 16, borderRadius: 12 }}
@@ -224,7 +225,7 @@ export default function ComponentsScreen() {
             <SubSection title="グラデーション">
               <Pressable style={({ pressed }) => [{ opacity: pressed ? 0.8 : 1 }]}>
                 <LinearGradient
-                  colors={['#EC4899', '#8B5CF6']}
+                  colors={[palette.pink500, palette.purple500]}
                   start={{ x: 0, y: 0 }}
                   end={{ x: 1, y: 0 }}
                   style={[styles.button, { borderRadius: 12 }]}
@@ -240,7 +241,7 @@ export default function ComponentsScreen() {
                 style={({ pressed }) => [
                   styles.button,
                   styles.buttonWithIcon,
-                  { backgroundColor: '#1DA1F2', opacity: pressed ? 0.8 : 1 }
+                  { backgroundColor: color.twitter, opacity: pressed ? 0.8 : 1 }
                 ]}
               >
                 <Ionicons name="logo-twitter" size={20} color="white" />
@@ -276,7 +277,7 @@ export default function ComponentsScreen() {
               <View 
                 className="bg-surface p-4 rounded-xl"
                 style={{
-                  shadowColor: '#000',
+                  shadowColor: palette.gray900,
                   shadowOffset: { width: 0, height: 2 },
                   shadowOpacity: 0.1,
                   shadowRadius: 8,
@@ -384,7 +385,7 @@ function ColorSwatch({ name, color, border }: { name: string; color: string; bor
           backgroundColor: color,
           borderRadius: 8,
           borderWidth: border ? 1 : 0,
-          borderColor: '#333',
+          borderColor: palette.gray700,
         }}
       />
       <Text className="text-xs text-muted mt-1">{name}</Text>

@@ -6,8 +6,10 @@
 
 import { ScreenContainer } from "@/components/organisms/screen-container";
 import { RefreshingIndicator } from "@/components/molecules/refreshing-indicator";
-import { color, palette } from "@/theme/tokens";
+import { ScreenLoadingState } from "@/components/ui";
+import { color } from "@/theme/tokens";
 import { useColors } from "@/hooks/use-colors";
+import { useLoadingState } from "@/hooks/use-loading-state";
 import { trpc } from "@/lib/trpc";
 import { useCallback, useState } from "react";
 import {
@@ -15,7 +17,6 @@ import {
   Text,
   ScrollView,
   Pressable,
-  ActivityIndicator,
   RefreshControl,
   TextInput,
   Alert,
@@ -51,8 +52,11 @@ export default function CategoriesScreen() {
   
   // ローディング状態を分離
   const hasData = !!categories && categories.length >= 0;
-  const isInitialLoading = isLoading && !hasData;
-  const isRefreshing = isFetching && hasData;
+  const loadingState = useLoadingState({
+    isLoading,
+    isFetching,
+    hasData,
+  });
   
   // カテゴリ作成
   const createMutation = trpc.categories.create.useMutation({
@@ -146,18 +150,13 @@ export default function CategoriesScreen() {
     });
   };
 
-  if (isInitialLoading) {
-    return (
-      <ScreenContainer className="flex-1 items-center justify-center">
-        <ActivityIndicator size="large" color={colors.primary} />
-        <Text className="mt-4 text-muted">カテゴリを読み込み中...</Text>
-      </ScreenContainer>
-    );
+  if (loadingState.isInitialLoading) {
+    return <ScreenLoadingState message="カテゴリを読み込み中..." />;
   }
 
   return (
     <ScreenContainer>
-      {isRefreshing && <RefreshingIndicator isRefreshing={isRefreshing} />}
+      {loadingState.isRefreshing && <RefreshingIndicator isRefreshing={loadingState.isRefreshing} />}
       <ScrollView
         className="flex-1"
         contentContainerStyle={{ padding: 16 }}

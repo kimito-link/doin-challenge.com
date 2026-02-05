@@ -9,6 +9,7 @@ import { Stack, usePathname } from "expo-router";
 import { navigate, navigateReplace } from "@/lib/navigation";
 import { useColors } from "@/hooks/use-colors";
 import { useAuth } from "@/hooks/use-auth";
+import { palette } from "@/theme/tokens";
 import { View, Text, Pressable, ScrollView, ActivityIndicator, Platform } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useState } from "react";
@@ -227,7 +228,7 @@ export default function AdminLayout() {
             left: 260,
             right: 0,
             bottom: 0,
-            backgroundColor: "rgba(0,0,0,0.5)",
+            backgroundColor: palette.gray900 + "80", // rgba(0,0,0,0.5) の透明度16進数
           }}
         />
       )}

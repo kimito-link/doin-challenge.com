@@ -1,10 +1,11 @@
 import { View, Text, FlatList, Pressable, Image, Platform } from "react-native";
 import { EmojiIcon } from "@/components/ui/emoji-icon";
-import * as Haptics from "expo-haptics";
+import { ScreenLoadingState } from "@/components/ui";
 import { navigate, navigateBack } from "@/lib/navigation";
 import { ScreenContainer } from "@/components/organisms/screen-container";
 import { trpc } from "@/lib/trpc";
 import { useAuth } from "@/hooks/use-auth";
+import { useLoadingState } from "@/hooks/use-loading-state";
 import { AppHeader } from "@/components/organisms/app-header";
 import { RefreshingIndicator } from "@/components/molecules/refreshing-indicator";
 import { useWebSocket } from "@/lib/websocket-client";
@@ -12,10 +13,9 @@ import { useQueryClient } from "@tanstack/react-query";
 
 export default function MessagesScreen() {
   const queryClient = useQueryClient();
-  const { user } = useAuth();
   
   // WebSocket接続を確立
-  const { status: wsStatus } = useWebSocket({
+  useWebSocket({
     onMessage: (message) => {
       console.log("[Messages] New message received:", message);
       // メッセージ一覧を再取得
@@ -48,8 +48,12 @@ export default function MessagesScreen() {
 
   // ローディング状態を分離
   const hasData = conversations.length > 0;
-  const isInitialLoading = isLoading && !hasData;
-  const isRefreshing = isFetching && hasData && !isFetchingNextPage;
+  const loadingState = useLoadingState({
+    isLoading,
+    isFetching,
+    hasData,
+    isFetchingNextPage,
+  });
   const { data: unreadCount } = trpc.dm.unreadCount.useQuery(undefined, {
     enabled: !!user,
   });
@@ -153,11 +157,9 @@ export default function MessagesScreen() {
       </View>
 
       {/* 会話一覧 */}
-      {isRefreshing && <RefreshingIndicator isRefreshing={isRefreshing} />}
-      {isInitialLoading ? (
-        <View className="flex-1 items-center justify-center">
-          <Text className="text-muted">読み込み中...</Text>
-        </View>
+      {loadingState.isRefreshing && <RefreshingIndicator isRefreshing={loadingState.isRefreshing} />}
+      {loadingState.isInitialLoading ? (
+        <ScreenLoadingState message="メッセージを読み込み中..." />
       ) : conversations && conversations.length > 0 ? (
         <FlatList
           data={conversations}

@@ -1,5 +1,86 @@
 # ファクタリング作業履歴
 
+## 2025-02-05: 共通状態コンポーネント化完了
+
+### 作業開始
+- **タスク**: ローディング・エラー状態の共通コンポーネント化
+- **目的**: 重複コードの削減、保守性・一貫性の向上
+- **基準**: 「2回以上出るものはコンポーネント化」「設定化できるものは設定化」
+
+### 実装完了
+
+#### 共通コンポーネント作成
+- [x] `components/ui/screen-loading-state.tsx` - 画面全体のローディング状態表示
+- [x] `components/ui/screen-error-state.tsx` - エラー状態表示（再試行ボタン付き）
+- [x] `hooks/use-loading-state.ts` - ローディング状態判定フック
+- [x] `constants/copy/common.ts` - ローディングメッセージの設定化
+
+#### 主要画面への適用（10画面）
+- [x] `app/admin/users.tsx` - 共通コンポーネント適用完了
+- [x] `app/admin/challenges.tsx` - 共通コンポーネント適用完了
+- [x] `app/admin/categories.tsx` - 共通コンポーネント適用完了
+- [x] `app/admin/participations.tsx` - 共通コンポーネント適用完了
+- [x] `app/admin/errors.tsx` - 共通コンポーネント適用完了
+- [x] `app/admin/api-usage.tsx` - 共通コンポーネント適用完了（エラー状態も統一）
+- [x] `app/release-notes.tsx` - インラインローディングを統一
+- [x] `app/messages/index.tsx` - 共通コンポーネント適用完了
+- [x] `app/following.tsx` - 共通コンポーネント適用完了
+- [x] `app/followers.tsx` - 共通コンポーネント適用完了
+
+### サマリー
+- **コード削減**: 各画面で10-15行削減 → 全体で約150-200行削減
+- **統一性向上**: 全画面で統一されたローディング/エラー表示
+- **保守性向上**: ローディング/エラーUIの修正が1箇所で済む
+- **設定化**: 文言をconstantsに移動し、変更が容易に
+
+### コミット履歴
+- 2025-02-05: 共通状態コンポーネント化完了
+
+---
+
+## 2025-02-05: Stats・Rankings画面のファクタリング完了
+
+### 作業開始
+- **タスク**: 統計画面とランキング画面のファクタリング・コンポーネント化
+- **目的**: コードの統一性と保守性を向上、再利用可能なコンポーネントを作成
+
+### 実装完了
+
+#### Stats Feature (`features/stats`)
+- [x] `features/stats/hooks/useStatsData.ts` - データ取得ロジックを分離
+- [x] `features/stats/components/StatsLoadingState.tsx` - ローディング状態コンポーネント
+- [x] `features/stats/components/StatsErrorState.tsx` - エラー状態コンポーネント
+- [x] `features/stats/components/StatsEmptyState.tsx` - 空状態コンポーネント
+- [x] `features/stats/components/StatsContent.tsx` - メインコンテンツコンポーネント
+- [x] `features/stats/components/SummaryCards.tsx` - サマリーカードコンポーネント
+- [x] `features/stats/components/MonthlyStatsCard.tsx` - 月別統計カード
+- [x] `features/stats/components/WeeklyActivityCard.tsx` - 週別アクティビティカード
+- [x] `features/stats/components/RecentActivityCard.tsx` - 最近のアクティビティカード
+- [x] `features/stats/types.ts` - 型定義
+- [x] `app/(tabs)/stats.tsx` - リファクタリング完了（約180行→約30行に削減）
+
+#### Rankings Feature (`features/rankings`)
+- [x] `features/rankings/hooks/useRankingsData.ts` - データ取得・状態管理ロジックを分離
+- [x] `features/rankings/components/RankingTabs.tsx` - タブ切り替えコンポーネント
+- [x] `features/rankings/components/PeriodFilter.tsx` - 期間フィルターコンポーネント
+- [x] `features/rankings/components/MyPositionCard.tsx` - 自分の順位カード
+- [x] `features/rankings/components/RankingRow.tsx` - ランキング行コンポーネント
+- [x] `features/rankings/components/RankingEmptyState.tsx` - 空状態コンポーネント
+- [x] `features/rankings/components/RankingHeader.tsx` - ヘッダーコンポーネント
+- [x] `features/rankings/components/RankingLoadingState.tsx` - ローディング状態コンポーネント
+- [x] `features/rankings/types.ts` - 型定義
+- [x] `app/rankings.tsx` - リファクタリング完了（約330行→約90行に削減）
+
+### サマリー
+- **Stats画面**: 約180行→約30行（約83%削減）
+- **Rankings画面**: 約330行→約90行（約73%削減）
+- **新規作成**: 2つのfeatureディレクトリ、17個のコンポーネント、2つのフック
+
+### コミット履歴
+- 2025-02-05: Stats・Rankings画面のファクタリング完了
+
+---
+
 ## 2025-02-XX: TextInput→Input 残り・RetryButton統一（追加）
 
 ### 実装完了

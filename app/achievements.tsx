@@ -1,6 +1,6 @@
-import { Text, View, Pressable, ScrollView, Dimensions, Platform } from "react-native";
+import { Text, View, Pressable, ScrollView, Platform } from "react-native";
 import * as Haptics from "expo-haptics";
-import { color, palette } from "@/theme/tokens";
+import { color } from "@/theme/tokens";
 import { navigate } from "@/lib/navigation";
 import { ScreenContainer } from "@/components/organisms/screen-container";
 import { trpc } from "@/lib/trpc";
@@ -11,8 +11,6 @@ import { LinearGradient } from "expo-linear-gradient";
 import { useMemo } from "react";
 import { AppHeader } from "@/components/organisms/app-header";
 import { RefreshingIndicator } from "@/components/molecules/refreshing-indicator";
-
-const { width: screenWidth } = Dimensions.get("window");
 
 // アチーブメント定義
 const ACHIEVEMENTS = [
@@ -176,19 +174,17 @@ export default function AchievementsScreen() {
   const { user } = useAuth();
 
   // ユーザーの統計情報を取得
-  const { data: myParticipations = [], isLoading: participationsLoading, isFetching: participationsFetching } = trpc.participations.myParticipations.useQuery(undefined, {
+  const { data: myParticipations = [], isFetching: participationsFetching } = trpc.participations.myParticipations.useQuery(undefined, {
     enabled: !!user,
   });
   
-  const { data: myEvents = [], isLoading: eventsLoading, isFetching: eventsFetching } = trpc.events.myEvents.useQuery(undefined, {
+  const { data: myEvents = [], isFetching: eventsFetching } = trpc.events.myEvents.useQuery(undefined, {
     enabled: !!user,
   });
 
   // ローディング状態を分離
-  const isLoading = participationsLoading || eventsLoading;
   const isFetching = participationsFetching || eventsFetching;
   const hasData = myParticipations.length >= 0 && myEvents.length >= 0;
-  const isInitialLoading = isLoading && !hasData;
   const isRefreshing = isFetching && hasData;
 
   // アチーブメントの解除状況を計算
@@ -386,7 +382,7 @@ export default function AchievementsScreen() {
               <Text style={{ color: color.textWhite, fontSize: 28, fontWeight: "bold" }}>
                 {stats.unlocked}
               </Text>
-              <Text style={{ color: "rgba(255,255,255,0.8)", fontSize: 12 }}>
+              <Text style={{ color: color.textWhite + "CC", fontSize: 12 }}>
                 解除済み
               </Text>
             </View>
@@ -394,7 +390,7 @@ export default function AchievementsScreen() {
               <Text style={{ color: color.textWhite, fontSize: 28, fontWeight: "bold" }}>
                 {stats.total}
               </Text>
-              <Text style={{ color: "rgba(255,255,255,0.8)", fontSize: 12 }}>
+              <Text style={{ color: color.textWhite + "CC", fontSize: 12 }}>
                 全アチーブメント
               </Text>
             </View>
@@ -402,14 +398,14 @@ export default function AchievementsScreen() {
               <Text style={{ color: color.rankGold, fontSize: 28, fontWeight: "bold" }}>
                 {stats.points}
               </Text>
-              <Text style={{ color: "rgba(255,255,255,0.8)", fontSize: 12 }}>
+              <Text style={{ color: color.textWhite + "CC", fontSize: 12 }}>
                 獲得ポイント
               </Text>
             </View>
           </View>
           {/* 進捗バー */}
           <View style={{ marginTop: 16 }}>
-            <View style={{ height: 8, backgroundColor: "rgba(255,255,255,0.3)", borderRadius: 4, overflow: "hidden" }}>
+            <View style={{ height: 8, backgroundColor: color.textWhite + "4D", borderRadius: 4, overflow: "hidden" }}>
               <View
                 style={{
                   height: "100%",
@@ -419,7 +415,7 @@ export default function AchievementsScreen() {
                 }}
               />
             </View>
-            <Text style={{ color: "rgba(255,255,255,0.8)", fontSize: 12, textAlign: "center", marginTop: 4 }}>
+            <Text style={{ color: color.textWhite + "CC", fontSize: 12, textAlign: "center", marginTop: 4 }}>
               {((stats.unlocked / stats.total) * 100).toFixed(0)}% コンプリート
             </Text>
           </View>

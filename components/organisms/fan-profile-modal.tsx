@@ -286,7 +286,7 @@ export function FanProfileModal({
 const styles = StyleSheet.create({
   overlay: {
     flex: 1,
-    backgroundColor: "rgba(0, 0, 0, 0.6)",
+    backgroundColor: palette.gray900 + "99", // rgba(0, 0, 0, 0.6) の透明度16進数
     justifyContent: "center",
     alignItems: "center",
     padding: 24,

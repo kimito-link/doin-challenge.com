@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from "react";
-import { color, palette } from "@/theme/tokens";
+import { color } from "@/theme/tokens";
 import { View, Text, FlatList, TextInput, Pressable, KeyboardAvoidingView, Platform } from "react-native";
 import { useLocalSearchParams } from "expo-router";
 import { navigateBack } from "@/lib/navigation/app-routes";
@@ -40,7 +40,7 @@ export default function ConversationScreen() {
     if (user && partnerIdNum) {
       markAllAsRead.mutate({ fromUserId: partnerIdNum });
     }
-  }, [user, partnerIdNum]);
+  }, [user, partnerIdNum, markAllAsRead]);
 
   useEffect(() => {
     if (messages && messages.length > 0) {

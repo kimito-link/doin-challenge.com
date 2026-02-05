@@ -1,6 +1,6 @@
 import { View, Text, StyleSheet } from "react-native";
 import MaterialIcons from "@expo/vector-icons/MaterialIcons";
-import { colors, spacing, typography } from "@/constants/design-system";
+import { colors, typography } from "@/constants/design-system";
 
 interface LabeledIconProps {
   icon: keyof typeof MaterialIcons.glyphMap;

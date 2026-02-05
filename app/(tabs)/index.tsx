@@ -122,9 +122,6 @@ export default function HomeScreen() {
       user?.twitterId,
       homeActions,
       homeData,
-      homeActions.handleChallengeDelete,
-      homeData.isFavorite,
-      homeData.toggleFavorite,
     ]
   );
 

@@ -182,7 +182,7 @@ export default function HelpScreen() {
           </View>
 
           <View style={styles.tipCard}>
-            <View style={[styles.tipIcon, { backgroundColor: "rgba(221, 101, 0, 0.1)" }]}>
+            <View style={[styles.tipIcon, { backgroundColor: color.hostAccentLegacy + "1A" }]}>
               <MaterialIcons name="star" size={24} color={color.hostAccentLegacy} />
             </View>
             <View style={styles.tipContent}>
@@ -260,13 +260,13 @@ const styles = StyleSheet.create({
     borderRadius: 16,
     marginBottom: 24,
     borderWidth: 1,
-    borderColor: "rgba(236, 72, 153, 0.3)",
+    borderColor: color.accentPrimary + "4D",
   },
   tutorialButtonIcon: {
     width: 52,
     height: 52,
     borderRadius: 26,
-    backgroundColor: "rgba(236, 72, 153, 0.1)",
+    backgroundColor: color.accentPrimary + "1A",
     alignItems: "center",
     justifyContent: "center",
     marginRight: 12,
@@ -307,7 +307,7 @@ const styles = StyleSheet.create({
     width: 28,
     height: 28,
     borderRadius: 14,
-    backgroundColor: "rgba(236, 72, 153, 0.2)",
+    backgroundColor: color.accentPrimary + "33",
     alignItems: "center",
     justifyContent: "center",
     marginRight: 12,
@@ -333,7 +333,7 @@ const styles = StyleSheet.create({
     width: 28,
     height: 28,
     borderRadius: 14,
-    backgroundColor: "rgba(221, 101, 0, 0.2)",
+    backgroundColor: color.hostAccentLegacy + "33",
     alignItems: "center",
     justifyContent: "center",
     marginRight: 12,
@@ -360,7 +360,7 @@ const styles = StyleSheet.create({
     width: 44,
     height: 44,
     borderRadius: 22,
-    backgroundColor: "rgba(245, 158, 11, 0.1)",
+    backgroundColor: color.warning + "1A",
     alignItems: "center",
     justifyContent: "center",
     marginRight: 12,

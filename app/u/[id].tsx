@@ -19,7 +19,7 @@ import { ScreenContainer } from "@/components/organisms/screen-container";
 import { useColors } from "@/hooks/use-colors";
 
 // 既存のプロフィール画面コンポーネントを動的インポート
-import ProfileScreen from "@/app/profile/[userId]";
+// import ProfileScreen from "@/app/profile/[userId]"; // 未使用
 
 export default function SharedProfileScreen() {
   const colors = useColors();

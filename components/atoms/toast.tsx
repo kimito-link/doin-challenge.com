@@ -1,8 +1,7 @@
 import { useEffect, useRef } from "react";
-import { View, Text, Animated, StyleSheet, Platform } from "react-native";
+import { Text, Animated, StyleSheet } from "react-native";
 import MaterialIcons from "@expo/vector-icons/MaterialIcons";
-import * as Haptics from "expo-haptics";
-import { color } from "@/theme/tokens";
+import { color, palette } from "@/theme/tokens";
 
 type ToastType = "success" | "error" | "warning" | "info";
 
@@ -158,7 +157,7 @@ const styles = StyleSheet.create({
     borderRadius: 12,
     borderWidth: 1,
     zIndex: 9999,
-    shadowColor: "#000",
+    shadowColor: palette.gray900,
     shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.3,
     shadowRadius: 8,

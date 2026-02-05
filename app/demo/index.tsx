@@ -5,7 +5,7 @@
  */
 
 import { useCallback, useEffect, useState } from "react";
-import { color, palette } from "@/theme/tokens";
+import { color } from "@/theme/tokens";
 import {
   View,
   Text,
@@ -26,7 +26,6 @@ import Animated, {
   withSpring,
   withSequence,
   withDelay,
-  runOnJS,
   Easing,
 } from "react-native-reanimated";
 import {
@@ -34,7 +33,6 @@ import {
   joinDemoChallenge,
   addDemoContribution,
   resetDemoState,
-  setAnimationPlayed,
   type DemoChallenge,
   type DemoState,
 } from "@/lib/demo-challenge";
@@ -45,7 +43,6 @@ export default function DemoScreen() {
   const [challenge, setChallenge] = useState<(DemoChallenge & { userState: DemoState }) | null>(null);
   const [loading, setLoading] = useState(true);
   const [joining, setJoining] = useState(false);
-  const [showConfetti, setShowConfetti] = useState(false);
 
   // アニメーション値
   const progressWidth = useSharedValue(0);

@@ -1,6 +1,6 @@
 import { View, Text, Modal, StyleSheet } from "react-native";
 import { LinearGradient } from "expo-linear-gradient";
-import { color } from "@/theme/tokens";
+import { color, palette } from "@/theme/tokens";
 import { useColors } from "@/hooks/use-colors";
 import type { Companion } from "./ParticipationForm";
 import { Button } from "@/components/ui/button";
@@ -150,7 +150,7 @@ export function ConfirmationModal({
 const styles = StyleSheet.create({
   overlay: {
     flex: 1,
-    backgroundColor: "rgba(0,0,0,0.7)",
+    backgroundColor: palette.gray900 + "B3", // rgba(0,0,0,0.7) の透明度16進数
     justifyContent: "center",
     alignItems: "center",
     padding: 20,

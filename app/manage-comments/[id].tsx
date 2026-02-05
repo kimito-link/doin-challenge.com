@@ -1,6 +1,5 @@
-import { Text, View, Pressable, ScrollView, ActivityIndicator, Alert, Platform } from "react-native";
-import * as Haptics from "expo-haptics";
-import { color, palette } from "@/theme/tokens";
+import { Text, View, Pressable, ScrollView, Alert } from "react-native";
+import { color } from "@/theme/tokens";
 import { useLocalSearchParams } from "expo-router";
 import { navigateBack } from "@/lib/navigation/app-routes";
 import { useState } from "react";
@@ -193,7 +192,7 @@ export default function ManageCommentsScreen() {
                   <View
                     key={participation.id}
                     style={{
-                      backgroundColor: isPicked ? "#1E2530" : color.surface,
+                      backgroundColor: isPicked ? palette.gray800 : color.surface,
                       borderRadius: 12,
                       padding: 16,
                       marginBottom: 12,
@@ -337,7 +336,7 @@ export default function ManageCommentsScreen() {
                 <View
                   key={picked.id}
                   style={{
-                    backgroundColor: "#1E2530",
+                    backgroundColor: palette.gray800,
                     borderRadius: 12,
                     padding: 16,
                     marginBottom: 12,
@@ -387,7 +386,7 @@ export default function ManageCommentsScreen() {
                           paddingVertical: 4,
                         }}
                       >
-                        <Text style={{ color: "#000", fontSize: 12, fontWeight: "bold" }}>
+                        <Text style={{ color: palette.gray900, fontSize: 12, fontWeight: "bold" }}>
                           動画使用済
                         </Text>
                       </View>
@@ -424,7 +423,7 @@ export default function ManageCommentsScreen() {
                           alignItems: "center",
                         }}
                       >
-                        <Text style={{ color: "#000", fontWeight: "bold" }}>
+                        <Text style={{ color: palette.gray900, fontWeight: "bold" }}>
                           動画使用済みにする
                         </Text>
                       </Pressable>

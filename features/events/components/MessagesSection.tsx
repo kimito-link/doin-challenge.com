@@ -204,7 +204,7 @@ export function MessagesSection({
               onPress={() => onGenderFilterChange("male")}
               style={[
                 styles.genderFilterButton,
-                selectedGenderFilter === "male" && { backgroundColor: "#3B82F6" },
+                selectedGenderFilter === "male" && { backgroundColor: color.info },
               ]}
             >
               <Text style={[
@@ -376,7 +376,7 @@ const styles = StyleSheet.create({
     width: 48,
     height: 48,
     borderRadius: 24,
-    backgroundColor: "rgba(255,255,255,0.2)",
+    backgroundColor: color.textWhite + "33", // rgba(255,255,255,0.2) の透明度16進数
     justifyContent: "center",
     alignItems: "center",
   },
@@ -389,12 +389,12 @@ const styles = StyleSheet.create({
     fontWeight: "bold",
   },
   submitHighlightSubtitle: {
-    color: "rgba(255,255,255,0.9)",
+    color: color.textWhite + "E6", // rgba(255,255,255,0.9) の透明度16進数
     fontSize: 14,
     marginTop: 4,
   },
   submitHighlightHint: {
-    backgroundColor: "rgba(255,255,255,0.15)",
+    backgroundColor: color.textWhite + "26", // rgba(255,255,255,0.15) の透明度16進数
     borderRadius: 12,
     padding: 12,
   },

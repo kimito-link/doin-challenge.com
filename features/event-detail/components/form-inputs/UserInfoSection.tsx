@@ -62,7 +62,7 @@ function LoginPrompt({ login }: { login: () => void }) {
   
   return (
     <>
-      <View style={{ marginBottom: 16, backgroundColor: "rgba(236, 72, 153, 0.1)", borderRadius: 12, padding: 16, borderWidth: 1, borderColor: color.accentPrimary }}>
+      <View style={{ marginBottom: 16, backgroundColor: color.accentPrimary + "1A", borderRadius: 12, padding: 16, borderWidth: 1, borderColor: color.accentPrimary }}>
         <Text style={{ color: color.accentPrimary, fontSize: 14, fontWeight: "600", marginBottom: 8 }}>
           {eventDetailCopy.login.required}
         </Text>

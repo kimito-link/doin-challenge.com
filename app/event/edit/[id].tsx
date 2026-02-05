@@ -1,7 +1,5 @@
 import { View, Text, TextInput, ScrollView, Pressable, KeyboardAvoidingView, Platform, ActivityIndicator } from "react-native";
-import * as Haptics from "expo-haptics";
-import { color, palette } from "@/theme/tokens";
-import { Image } from "expo-image";
+import { color } from "@/theme/tokens";
 import { useLocalSearchParams } from "expo-router";
 import { navigateBack } from "@/lib/navigation/app-routes";
 import { useState, useEffect, useRef } from "react";
@@ -14,7 +12,6 @@ import { AppHeader } from "@/components/organisms/app-header";
 import { DatePicker } from "@/components/molecules/date-picker";
 import { NumberStepper } from "@/components/molecules/number-stepper";
 import { showAlert } from "@/lib/web-alert";
-import { goalTypeOptions, eventTypeOptions } from "@/constants/goal-types";
 import { prefectures } from "@/constants/prefectures";
 import {
   EventTypeSelector,
@@ -157,7 +154,7 @@ export default function EditChallengeScreen() {
             }}
             onPress={() => navigateBack()}
           >
-            <Text style={{ color: "#fff", fontWeight: "600" }}>戻る</Text>
+            <Text style={{ color: color.textWhite, fontWeight: "600" }}>戻る</Text>
           </Pressable>
         </View>
       </ScreenContainer>
@@ -185,7 +182,7 @@ export default function EditChallengeScreen() {
             }}
             onPress={() => navigateBack()}
           >
-            <Text style={{ color: "#fff", fontWeight: "600" }}>戻る</Text>
+            <Text style={{ color: color.textWhite, fontWeight: "600" }}>戻る</Text>
           </Pressable>
         </View>
       </ScreenContainer>
@@ -529,9 +526,9 @@ export default function EditChallengeScreen() {
               disabled={updateMutation.isPending}
             >
               {updateMutation.isPending ? (
-                <ActivityIndicator color="#fff" />
+                <ActivityIndicator color={color.textWhite} />
               ) : (
-                <Text style={{ color: "#fff", fontSize: 16, fontWeight: "bold" }}>
+                <Text style={{ color: color.textWhite, fontSize: 16, fontWeight: "bold" }}>
                   更新する
                 </Text>
               )}

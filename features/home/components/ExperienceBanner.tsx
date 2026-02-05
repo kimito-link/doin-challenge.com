@@ -5,6 +5,7 @@
 import { View, Text } from "react-native";
 import { Image } from "expo-image";
 import { useColors } from "@/hooks/use-colors";
+import { color } from "@/theme/tokens";
 import { homeUI, homeText, homeFont } from "@/features/home/ui/theme/tokens";
 import { useResponsive } from "@/hooks/use-responsive";
 import { useExperience } from "@/lib/experience-context";
@@ -66,15 +67,15 @@ export function ExperienceBanner() {
               contentFit="contain"
             />
             <Text style={{ 
-              color: "#fff", 
-fontSize: homeFont.body,
+              color: color.textWhite, 
+              fontSize: homeFont.body,
               fontWeight: "bold",
               marginBottom: 4,
             }}>
               りんくと主催者体験
             </Text>
             <Text style={{ 
-              color: "rgba(255,255,255,0.8)", 
+              color: color.textWhite + "CC", // rgba(255,255,255,0.8) の透明度16進数
               fontSize: homeFont.meta,
               textAlign: "center",
             }}>
@@ -103,15 +104,15 @@ fontSize: homeFont.body,
               contentFit="contain"
             />
             <Text style={{ 
-              color: "#fff", 
-fontSize: homeFont.body,
+              color: color.textWhite, 
+              fontSize: homeFont.body,
               fontWeight: "bold",
               marginBottom: 4,
             }}>
               りんくとファン体験
             </Text>
             <Text style={{ 
-              color: "rgba(255,255,255,0.8)", 
+              color: color.textWhite + "CC", // rgba(255,255,255,0.8) の透明度16進数
               fontSize: homeFont.meta,
               textAlign: "center",
             }}>

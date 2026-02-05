@@ -1,4 +1,3 @@
-import { View } from "react-native";
 import { ScreenContainer } from "@/components/organisms/screen-container";
 import { NotificationSettingsPanel } from "@/components/organisms/notification-settings";
 import { navigateBack } from "@/lib/navigation/app-routes";

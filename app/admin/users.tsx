@@ -6,7 +6,9 @@
 
 import { ScreenContainer } from "@/components/organisms/screen-container";
 import { RefreshingIndicator } from "@/components/molecules/refreshing-indicator";
+import { ScreenLoadingState, ScreenErrorState } from "@/components/ui";
 import { useColors } from "@/hooks/use-colors";
+import { useLoadingState } from "@/hooks/use-loading-state";
 import { trpc } from "@/lib/trpc";
 import { useCallback, useState } from "react";
 import {
@@ -14,9 +16,7 @@ import {
   Text,
   ScrollView,
   Pressable,
-  ActivityIndicator,
   RefreshControl,
-  Image,
   Alert,
   Platform,
 } from "react-native";
@@ -44,8 +44,11 @@ export default function UsersScreen() {
 
   // ローディング状態を分離
   const hasData = !!users && users.length > 0;
-  const isInitialLoading = isLoading && !hasData;
-  const isRefreshing = isFetching && hasData;
+  const loadingState = useLoadingState({
+    isLoading,
+    isFetching,
+    hasData,
+  });
 
   // ユーザー権限変更
   const updateRoleMutation = trpc.admin.updateUserRole.useMutation({
@@ -103,18 +106,22 @@ export default function UsersScreen() {
     refetch();
   }, [refetch]);
 
-  if (isInitialLoading) {
+  if (loadingState.isInitialLoading) {
+    return <ScreenLoadingState message="ユーザーを読み込み中..." />;
+  }
+
+  if (error) {
     return (
-      <ScreenContainer className="flex-1 items-center justify-center">
-        <ActivityIndicator size="large" color={colors.primary} />
-        <Text className="mt-4 text-muted">ユーザーを読み込み中...</Text>
-      </ScreenContainer>
+      <ScreenErrorState
+        errorMessage={error.message || "ユーザーを読み込めませんでした"}
+        onRetry={refetch}
+      />
     );
   }
 
   return (
     <ScreenContainer>
-      {isRefreshing && <RefreshingIndicator isRefreshing={isRefreshing} />}
+      {loadingState.isRefreshing && <RefreshingIndicator isRefreshing={loadingState.isRefreshing} />}
       <ScrollView
         className="flex-1"
         contentContainerStyle={{ padding: 16 }}

@@ -1,7 +1,6 @@
 import { Pressable, Platform, Text, type PressableProps, type ViewStyle, type TextStyle, StyleSheet } from "react-native";
 import { useState, useCallback } from "react";
 import Animated, { useAnimatedStyle, withTiming } from "react-native-reanimated";
-import * as Haptics from "expo-haptics";
 import { color, palette } from "@/theme/tokens";
 
 interface HoverableButtonProps extends Omit<PressableProps, "style"> {
@@ -144,7 +143,7 @@ function getVariantStyles(variant: string, isHovered: boolean, isPressed: boolea
     case "outline":
       return {
         container: {
-          backgroundColor: isHovered ? "rgba(221, 101, 0, 0.1)" : "transparent",
+          backgroundColor: isHovered ? color.hostAccentLegacy + "1A" : "transparent",
           borderWidth: 2,
           borderColor: isHovered ? hoverOrange : color.hostAccentLegacy,
         } as ViewStyle,
@@ -156,7 +155,7 @@ function getVariantStyles(variant: string, isHovered: boolean, isPressed: boolea
     case "ghost":
       return {
         container: {
-          backgroundColor: isHovered ? "rgba(221, 101, 0, 0.1)" : "transparent",
+          backgroundColor: isHovered ? color.hostAccentLegacy + "1A" : "transparent",
           borderWidth: 0,
         } as ViewStyle,
         text: {

@@ -6,6 +6,7 @@
 import { View, Text } from "react-native";
 import { LinearGradient } from "expo-linear-gradient";
 import { Button } from "@/components/ui/button";
+import { color } from "@/theme/tokens";
 import { mypageFont } from "../../ui/theme/tokens";
 import type { LoginPattern } from "./constants";
 import { authCopy, commonCopy } from "@/constants/copy";
@@ -31,8 +32,8 @@ export function LoginMessageCard({ pattern, isLoggingIn, onLogin }: LoginMessage
       }}
     >
       <Text style={{ 
-        color: "#fff", 
-fontSize: mypageFont.lg,
+        color: color.textWhite, 
+        fontSize: mypageFont.lg,
         fontWeight: "bold",
         marginBottom: 12,
         textAlign: "center",
@@ -40,7 +41,7 @@ fontSize: mypageFont.lg,
         {pattern.title}
       </Text>
       <Text style={{ 
-        color: "rgba(255,255,255,0.9)", 
+        color: color.textWhite + "E6", // rgba(255,255,255,0.9) の透明度16進数
         fontSize: mypageFont.body,
         lineHeight: 22,
         textAlign: "center",
@@ -49,14 +50,14 @@ fontSize: mypageFont.lg,
         {pattern.message}
       </Text>
       <View style={{ 
-        backgroundColor: "rgba(255,255,255,0.2)", 
+        backgroundColor: color.textWhite + "33", // rgba(255,255,255,0.2) の透明度16進数
         borderRadius: 8, 
         padding: 12,
         marginBottom: 16,
       }}>
         <Text style={{ 
-          color: "#fff", 
-fontSize: mypageFont.title,
+          color: color.textWhite, 
+          fontSize: mypageFont.title,
           fontWeight: "bold",
           textAlign: "center",
         }}>
@@ -69,7 +70,7 @@ fontSize: mypageFont.title,
         loading={isLoggingIn}
         icon="login"
         style={{
-          backgroundColor: "#1DA1F2",
+          backgroundColor: color.twitter,
           width: "100%",
         }}
       >

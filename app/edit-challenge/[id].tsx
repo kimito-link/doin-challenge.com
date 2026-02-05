@@ -1,14 +1,11 @@
 import { View, Text, ScrollView, Pressable, KeyboardAvoidingView, Platform, ActivityIndicator } from "react-native";
-import * as Haptics from "expo-haptics";
-import { color, palette } from "@/theme/tokens";
-import { Image } from "expo-image";
+import { color } from "@/theme/tokens";
 import { useLocalSearchParams } from "expo-router";
 import { navigateBack } from "@/lib/navigation/app-routes";
 import { useState, useEffect } from "react";
 import { ScreenContainer } from "@/components/organisms/screen-container";
 import { ResponsiveContainer } from "@/components/molecules/responsive-container";
 import { trpc } from "@/lib/trpc";
-import { useAuth } from "@/hooks/use-auth";
 import { useColors } from "@/hooks/use-colors";
 import MaterialIcons from "@expo/vector-icons/MaterialIcons";
 import { LinearGradient } from "expo-linear-gradient";
@@ -18,50 +15,15 @@ import { DatePicker } from "@/components/molecules/date-picker";
 import { NumberStepper } from "@/components/molecules/number-stepper";
 import { showAlert } from "@/lib/web-alert";
 
-// キャラクター画像（りんく・こん太・たぬ姉のオリジナル画像を統一使用）
-const characterImages = {
-  rinku: require("@/assets/images/characters/link/link-yukkuri-smile-mouth-open.png"),
-  konta: require("@/assets/images/characters/konta/kitsune-yukkuri-smile-mouth-open.png"),
-  tanune: require("@/assets/images/characters/tanunee/tanuki-yukkuri-smile-mouth-open.png"),
-};
-
-// 目標タイプの設定
-const goalTypes = [
-  { id: "attendance", label: "会場参加", icon: "people", unit: "人", description: "ライブ・イベントの参加予定者数" },
-  { id: "followers", label: "フォロワー", icon: "person-add", unit: "人", description: "SNSのフォロワー増加目標" },
-  { id: "viewers", label: "同時視聴", icon: "visibility", unit: "人", description: "配信・プレミア公開の同接" },
-  { id: "points", label: "ポイント", icon: "star", unit: "pt", description: "ミクチャ等のイベントポイント" },
-  { id: "custom", label: "カスタム", icon: "flag", unit: "", description: "自由な目標を設定" },
-];
-
-// イベントタイプの設定
-const eventTypes = [
-  { id: "solo", label: "ソロ", color: color.accentPrimary },
-  { id: "group", label: "グループ", color: color.accentAlt },
-];
-
-// 都道府県リスト
-const prefectures = [
-  "北海道", "青森県", "岩手県", "宮城県", "秋田県", "山形県", "福島県",
-  "茨城県", "栃木県", "群馬県", "埼玉県", "千葉県", "東京都", "神奈川県",
-  "新潟県", "富山県", "石川県", "福井県", "山梨県", "長野県", "岐阜県",
-  "静岡県", "愛知県", "三重県", "滋賀県", "京都府", "大阪府", "兵庫県",
-  "奈良県", "和歌山県", "鳥取県", "島根県", "岡山県", "広島県", "山口県",
-  "徳島県", "香川県", "愛媛県", "高知県", "福岡県", "佐賀県", "長崎県",
-  "熊本県", "大分県", "宮崎県", "鹿児島県", "沖縄県", "オンライン"
-];
-
 export default function EditChallengeScreen() {
 
   const { id } = useLocalSearchParams<{ id: string }>();
-  const { user } = useAuth();
   const colors = useColors();
   const utils = trpc.useUtils();
   
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
   const [venue, setVenue] = useState("");
-  const [prefecture, setPrefecture] = useState("");
   const [eventDateStr, setEventDateStr] = useState("");
   const [goalType, setGoalType] = useState("attendance");
   const [goalValue, setGoalValue] = useState(100);
@@ -71,7 +33,6 @@ export default function EditChallengeScreen() {
   const [ticketDoor, setTicketDoor] = useState("");
   const [ticketUrl, setTicketUrl] = useState("");
   const [externalUrl, setExternalUrl] = useState("");
-  const [showPrefectureList, setShowPrefectureList] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
 
   // チャレンジデータを取得
@@ -153,8 +114,6 @@ export default function EditChallengeScreen() {
       ticketUrl: ticketUrl.trim() || undefined,
     });
   };
-
-  const selectedGoalType = goalTypes.find(g => g.id === goalType);
 
   if (isChallengeLoading || isLoading) {
     return (

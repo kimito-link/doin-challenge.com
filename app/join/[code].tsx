@@ -4,17 +4,13 @@
  * v6.10: OGP画像自動生成対応
  */
 import { Text, View, ScrollView, Pressable, Platform } from "react-native";
-import { color, palette } from "@/theme/tokens";
-import { Image } from "expo-image";
-import { useLocalSearchParams, Stack } from "expo-router";
+import { color } from "@/theme/tokens";
+import { useLocalSearchParams } from "expo-router";
 import { navigate } from "@/lib/navigation/app-routes";
-import { useState, useEffect } from "react";
 import { ScreenContainer } from "@/components/organisms/screen-container";
 import { trpc } from "@/lib/trpc";
 import { useAuth } from "@/hooks/use-auth";
 import MaterialIcons from "@expo/vector-icons/MaterialIcons";
-import { LinearGradient } from "expo-linear-gradient";
-import * as Haptics from "expo-haptics";
 import { AppHeader } from "@/components/organisms/app-header";
 import { useColors } from "@/hooks/use-colors";
 import { OptimizedAvatar } from "@/components/molecules/optimized-image";
@@ -23,7 +19,7 @@ import Head from "expo-router/head";
 export default function JoinScreen() {
   const { code } = useLocalSearchParams<{ code: string }>();
 
-  const { user, isAuthenticated } = useAuth();
+  const { isAuthenticated } = useAuth();
   const colors = useColors();
 
   // 招待情報を取得
@@ -74,7 +70,7 @@ export default function JoinScreen() {
     return (
       <ScreenContainer containerClassName="bg-background">
         <View style={{ flex: 1, alignItems: "center", justifyContent: "center", padding: 20 }}>
-          <MaterialIcons name="error-outline" size={64} color="#EF4444" />
+          <MaterialIcons name="error-outline" size={64} color={color.danger} />
           <Text style={{ color: color.textWhite, fontSize: 20, fontWeight: "bold", marginTop: 16 }}>
             招待リンクが無効です
           </Text>

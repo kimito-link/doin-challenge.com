@@ -5,7 +5,7 @@
  */
 
 import { ScreenContainer } from "@/components/organisms/screen-container";
-import { color, palette } from "@/theme/tokens";
+import { color } from "@/theme/tokens";
 import { useColors } from "@/hooks/use-colors";
 import { apiGet, getErrorMessage } from "@/lib/api";
 import { useCallback, useEffect, useState } from "react";
@@ -18,7 +18,7 @@ import {
   RefreshControl,
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
-import { APP_VERSION, getVersionInfo } from "@/shared/version";
+import { getVersionInfo } from "@/shared/version";
 
 interface HealthResponse {
   ok: boolean;

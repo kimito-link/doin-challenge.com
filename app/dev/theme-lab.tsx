@@ -1,6 +1,5 @@
 import { useMemo, useState } from "react";
-import { Pressable, ScrollView, StyleSheet, Text, View , Platform} from "react-native";
-import * as Haptics from "expo-haptics";
+import { Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
 
 import { ScreenContainer } from "@/components/organisms/screen-container";
 import { ThemedView } from "@/components/atoms/themed-view";

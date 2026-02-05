@@ -12,6 +12,7 @@
 
 import { View, Text, Modal, Pressable, Image } from "react-native";
 import { useColors } from "@/hooks/use-colors";
+import { color, palette } from "@/theme/tokens";
 import { Button } from "../ui/button";
 import Animated, { 
   FadeInDown, 
@@ -94,7 +95,7 @@ export function LoginModal({
       <Pressable 
         style={{ 
           flex: 1, 
-          backgroundColor: "rgba(0, 0, 0, 0.5)",
+          backgroundColor: palette.gray900 + "80", // rgba(0, 0, 0, 0.5) の透明度16進数
           justifyContent: "center",
           alignItems: "center",
           padding: 24,
@@ -156,7 +157,7 @@ export function LoginModal({
               borderColor: colors.border,
               padding: 20,
               borderRadius: 16,
-              shadowColor: "#000",
+              shadowColor: palette.gray900,
               shadowOffset: { width: 0, height: 2 },
               shadowOpacity: 0.1,
               shadowRadius: 8,
@@ -190,7 +191,7 @@ export function LoginModal({
             <Button
               onPress={handleConfirm}
               icon="login"
-              style={{ backgroundColor: "#1DA1F2" }}
+              style={{ backgroundColor: color.twitter }}
             >
               Xでログイン
             </Button>

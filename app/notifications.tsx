@@ -1,5 +1,4 @@
-import { Text, View, Pressable, ScrollView, ActivityIndicator, FlatList } from "react-native";
-import * as Haptics from "expo-haptics";
+import { Text, View, Pressable, ScrollView, ActivityIndicator, FlatList, Platform } from "react-native";
 import { color, palette } from "@/theme/tokens";
 import { navigate, navigateBack } from "@/lib/navigation";
 import { useState, useEffect } from "react";
@@ -8,9 +7,7 @@ import { trpc } from "@/lib/trpc";
 import { useAuth } from "@/hooks/use-auth";
 import { useColors } from "@/hooks/use-colors";
 import MaterialIcons from "@expo/vector-icons/MaterialIcons";
-import { LinearGradient } from "expo-linear-gradient";
 import * as Notifications from "expo-notifications";
-import { Platform } from "react-native";
 import { AppHeader } from "@/components/organisms/app-header";
 import { RefreshingIndicator } from "@/components/molecules/refreshing-indicator";
 import { useWebSocket } from "@/lib/websocket-client";
@@ -20,10 +17,10 @@ export default function NotificationsScreen() {
   const colors = useColors();
   const queryClient = useQueryClient();
   
-  const { user, isAuthenticated } = useAuth();
+  const { isAuthenticated } = useAuth();
   
   // WebSocket接続を確立
-  const { status: wsStatus } = useWebSocket({
+  useWebSocket({
     onNotification: (notification) => {
       console.log("[Notifications] New notification received:", notification);
       // 通知一覧を再取得
@@ -32,7 +29,6 @@ export default function NotificationsScreen() {
     enabled: isAuthenticated,
   });
   
-  const [expoPushToken, setExpoPushToken] = useState<string | null>(null);
   const [notificationPermission, setNotificationPermission] = useState(false);
   
   // 通知履歴を取得（無限スクロール対応）
@@ -254,7 +250,7 @@ export default function NotificationsScreen() {
                   navigate.toEventDetail(notification.challengeId);
                 }}
                 style={{
-                  backgroundColor: notification.isRead ? color.surface : "#1E2530",
+                  backgroundColor: notification.isRead ? color.surface : palette.gray800,
                   borderRadius: 12,
                   padding: 16,
                   marginBottom: 12,

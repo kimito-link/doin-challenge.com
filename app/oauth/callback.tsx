@@ -1,4 +1,3 @@
-import { ThemedView } from "@/components/atoms/themed-view";
 import { LoginLoadingScreen } from "@/components/organisms/login-loading-screen";
 import * as Api from "@/lib/_core/api";
 import * as Auth from "@/lib/_core/auth";

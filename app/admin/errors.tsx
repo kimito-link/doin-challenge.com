@@ -6,16 +6,16 @@
  */
 
 import { ScreenContainer } from "@/components/organisms/screen-container";
-import { color, palette } from "@/theme/tokens";
+import { ScreenLoadingState } from "@/components/ui";
+import { color } from "@/theme/tokens";
 import { useColors } from "@/hooks/use-colors";
-import { apiGet, apiPost, apiDelete, getErrorMessage } from "@/lib/api";
+import { apiGet, apiPost, apiDelete } from "@/lib/api";
 import { useCallback, useEffect, useState } from "react";
 import {
   View,
   Text,
   ScrollView,
   Pressable,
-  ActivityIndicator,
   RefreshControl,
   Alert,
   Platform,
@@ -71,7 +71,7 @@ const severityColors: Record<string, string> = {
   low: color.success,
   medium: color.warning,
   high: color.danger,
-  critical: "#DC2626",
+  critical: color.danger,
 };
 
 const severityLabels: Record<string, string> = {
@@ -222,12 +222,7 @@ export default function ErrorLogsScreen() {
   };
 
   if (loading) {
-    return (
-      <ScreenContainer className="flex-1 items-center justify-center">
-        <ActivityIndicator size="large" color={colors.primary} />
-        <Text className="mt-4 text-muted">エラーログを読み込み中...</Text>
-      </ScreenContainer>
-    );
+    return <ScreenLoadingState message="エラーログを読み込み中..." />;
   }
 
   return (
@@ -299,7 +294,7 @@ export default function ErrorLogsScreen() {
                     opacity: pressed ? 0.8 : 1,
                   })}
                 >
-                  <Text style={{ color: selectedCategory === key ? "#FFFFFF" : colors.foreground }}>
+                  <Text style={{ color: selectedCategory === key ? color.textWhite : colors.foreground }}>
                     {label} {stats?.byCategory[key] ? `(${stats.byCategory[key]})` : ""}
                   </Text>
                 </Pressable>

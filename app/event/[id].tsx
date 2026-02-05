@@ -12,6 +12,7 @@ import { useLocalSearchParams } from "expo-router";
 import { navigate } from "@/lib/navigation";
 import { ScreenContainer } from "@/components/organisms/screen-container";
 import { useColors } from "@/hooks/use-colors";
+import { color, palette } from "@/theme/tokens";
 import { AppHeader } from "@/components/organisms/app-header";
 import { EventDetailSkeleton } from "@/components/organisms/event-detail-skeleton";
 import { PrefectureParticipantsModal } from "@/components/molecules/prefecture-participants-modal";
@@ -21,7 +22,6 @@ import { FanProfileModal } from "@/components/organisms/fan-profile-modal";
 import { SharePromptModal } from "@/components/molecules/share-prompt-modal";
 import { RefreshingIndicator } from "@/components/molecules/refreshing-indicator";
 import { LinkSpeech } from "@/components/organisms/link-speech";
-import { shareParticipation } from "@/lib/share";
 import {
   MessagesSection,
   ConfirmationModal,
@@ -322,7 +322,7 @@ export default function ChallengeDetailScreen() {
         onRequestClose={() => participationForm.setShowOneClickConfirm(false)}
       >
         <Pressable
-          style={{ flex: 1, backgroundColor: "rgba(0,0,0,0.5)", justifyContent: "center", padding: 24 }}
+          style={{ flex: 1, backgroundColor: palette.gray900 + "80", justifyContent: "center", padding: 24 }}
           onPress={() => participationForm.setShowOneClickConfirm(false)}
         >
           <Pressable style={{ backgroundColor: colors.surface, borderRadius: 16, padding: 24 }} onPress={(e) => e.stopPropagation()}>
@@ -341,7 +341,7 @@ export default function ChallengeDetailScreen() {
                 disabled={participationForm.isSubmitting}
                 style={{ flex: 1, paddingVertical: 12, borderRadius: 12, alignItems: "center", backgroundColor: colors.primary, opacity: participationForm.isSubmitting ? 0.6 : 1 }}
               >
-                <Text style={{ color: "#fff", fontWeight: "600" }}>{participationForm.isSubmitting ? "送信中..." : "参加表明する"}</Text>
+                <Text style={{ color: color.textWhite, fontWeight: "600" }}>{participationForm.isSubmitting ? "送信中..." : "参加表明する"}</Text>
               </Pressable>
             </View>
           </Pressable>

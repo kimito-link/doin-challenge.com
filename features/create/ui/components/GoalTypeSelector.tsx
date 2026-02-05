@@ -7,6 +7,7 @@
 import { View, Text, ScrollView } from "react-native";
 import MaterialIcons from "@expo/vector-icons/MaterialIcons";
 import { useColors } from "@/hooks/use-colors";
+import { color } from "@/theme/tokens";
 import { createUI, createText, createFont } from "../theme/tokens";
 import { goalTypeOptions } from "@/constants/goal-types";
 import { Button } from "@/components/ui/button";
@@ -60,11 +61,11 @@ export function GoalTypeSelector({
               <MaterialIcons
                 name={type.icon as any}
                 size={16}
-                color={goalType === type.id ? "#fff" : colors.muted}
+                color={goalType === type.id ? color.textWhite : colors.muted}
               />
               <Text
                 style={{
-                  color: goalType === type.id ? "#fff" : colors.muted,
+                  color: goalType === type.id ? color.textWhite : colors.muted,
                   fontSize: createFont.meta,
                   marginLeft: 4,
                 }}

@@ -1,9 +1,9 @@
 import { FlatList, Text, View, Pressable, RefreshControl, Platform } from "react-native";
-import * as Haptics from "expo-haptics";
-import { color, palette } from "@/theme/tokens";
+import { color } from "@/theme/tokens";
 import { Image } from "expo-image";
 import { useState } from "react";
 import { ScreenContainer } from "@/components/organisms/screen-container";
+import { ScreenLoadingState } from "@/components/ui";
 import { trpc } from "@/lib/trpc";
 import MaterialIcons from "@expo/vector-icons/MaterialIcons";
 import { AppHeader } from "@/components/organisms/app-header";
@@ -55,9 +55,7 @@ export default function FollowingScreen() {
       </View>
 
       {isLoading ? (
-        <View style={{ flex: 1, alignItems: "center", justifyContent: "center" }}>
-          <Text style={{ color: color.textMuted }}>読み込み中...</Text>
-        </View>
+        <ScreenLoadingState />
       ) : following && following.length > 0 ? (
         <FlatList
           data={following}

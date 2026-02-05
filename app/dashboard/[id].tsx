@@ -1,5 +1,4 @@
-import { Text, View, Pressable, ScrollView, Dimensions , Platform} from "react-native";
-import * as Haptics from "expo-haptics";
+import { Text, View, Pressable, ScrollView, Dimensions } from "react-native";
 import { color, palette } from "@/theme/tokens";
 import { useLocalSearchParams } from "expo-router";
 import { navigateBack } from "@/lib/navigation/app-routes";
@@ -12,7 +11,6 @@ import { useMemo } from "react";
 import { AppHeader } from "@/components/organisms/app-header";
 import { ExportButton } from "@/components/molecules/export-button";
 import { RefreshingIndicator } from "@/components/molecules/refreshing-indicator";
-import type { ExportData } from "@/lib/export-stats";
 import type { Challenge } from "@/drizzle/schema";
 import { ParticipantRanking } from "@/components/organisms/participant-ranking";
 
@@ -342,7 +340,7 @@ function PrefectureRanking({ participations }: { participations: Participation[]
                 marginRight: 12,
               }}
             >
-              <Text style={{ color: index < 3 ? "#000" : color.textWhite, fontSize: 12, fontWeight: "bold" }}>
+              <Text style={{ color: index < 3 ? palette.gray900 : color.textWhite, fontSize: 12, fontWeight: "bold" }}>
                 {index + 1}
               </Text>
             </View>

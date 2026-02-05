@@ -10,7 +10,10 @@
 
 import { ScreenContainer } from "@/components/organisms/screen-container";
 import { RefreshingIndicator } from "@/components/molecules/refreshing-indicator";
+import { ScreenLoadingState } from "@/components/ui";
 import { useColors } from "@/hooks/use-colors";
+import { useLoadingState } from "@/hooks/use-loading-state";
+import { color } from "@/theme/tokens";
 import { trpc } from "@/lib/trpc";
 import { useCallback, useState } from "react";
 import {
@@ -18,7 +21,6 @@ import {
   Text,
   ScrollView,
   Pressable,
-  ActivityIndicator,
   RefreshControl,
   Alert,
   Platform,
@@ -279,24 +281,22 @@ export default function ParticipationsScreen() {
   
   const isLoading = activeTab === "deleted" ? isLoadingDeleted : isLoadingAudit;
   const isFetching = activeTab === "deleted" ? isFetchingDeleted : isFetchingAudit;
-  const isInitialLoading = isLoading && !hasData;
-  const isRefreshing = isFetching && hasData;
+  const loadingState = useLoadingState({
+    isLoading,
+    isFetching,
+    hasData,
+  });
   
   const error = activeTab === "deleted" ? deletedError : auditError;
 
   // 初回ロード中はスケルトン表示
-  if (isInitialLoading) {
-    return (
-      <ScreenContainer className="flex-1 items-center justify-center">
-        <ActivityIndicator size="large" />
-        <Text className="text-muted mt-4">データを読み込み中...</Text>
-      </ScreenContainer>
-    );
+  if (loadingState.isInitialLoading) {
+    return <ScreenLoadingState message="データを読み込み中..." />;
   }
 
   return (
     <ScreenContainer>
-      {isRefreshing && <RefreshingIndicator isRefreshing={isRefreshing} />}
+      {loadingState.isRefreshing && <RefreshingIndicator isRefreshing={loadingState.isRefreshing} />}
       <ScrollView
         className="flex-1"
         contentContainerStyle={{ padding: 16 }}
@@ -326,7 +326,7 @@ export default function ParticipationsScreen() {
           >
             <Text
               className="text-center font-medium"
-              style={{ color: activeTab === "deleted" ? "#fff" : colors.muted }}
+              style={{ color: activeTab === "deleted" ? color.textWhite : colors.muted }}
             >
               削除済み
             </Text>
@@ -345,7 +345,7 @@ export default function ParticipationsScreen() {
           >
             <Text
               className="text-center font-medium"
-              style={{ color: activeTab === "audit" ? "#fff" : colors.muted }}
+              style={{ color: activeTab === "audit" ? color.textWhite : colors.muted }}
             >
               監査ログ
             </Text>
@@ -444,7 +444,7 @@ export default function ParticipationsScreen() {
                 ]}
               >
                 <View className="flex-row items-center justify-center">
-                  <Ionicons name="refresh" size={16} color="#fff" />
+                  <Ionicons name="refresh" size={16} color={color.textWhite} />
                   <Text className="text-white font-medium ml-2">
                     {bulkRestoreMutation.isPending ? "処理中..." : "一括復元"}
                   </Text>
@@ -464,7 +464,7 @@ export default function ParticipationsScreen() {
                 ]}
               >
                 <View className="flex-row items-center justify-center">
-                  <Ionicons name="trash" size={16} color="#fff" />
+                  <Ionicons name="trash" size={16} color={color.textWhite} />
                   <Text className="text-white font-medium ml-2">
                     {bulkDeleteMutation.isPending ? "処理中..." : "一括削除"}
                   </Text>
@@ -556,7 +556,7 @@ export default function ParticipationsScreen() {
                               ]}
                             >
                               <View className="flex-row items-center justify-center">
-                                <Ionicons name="refresh" size={16} color="#fff" />
+                                <Ionicons name="refresh" size={16} color={color.textWhite} />
                                 <Text className="text-white font-medium ml-2">
                                   {restoreMutation.isPending ? "処理中..." : "この参加を復元"}
                                 </Text>

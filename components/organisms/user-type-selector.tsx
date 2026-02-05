@@ -1,4 +1,4 @@
-import { View, Text, Pressable, StyleSheet, Dimensions } from "react-native";
+import { View, Text, Pressable, StyleSheet, Dimensions, Platform } from "react-native";
 import { color, palette } from "@/theme/tokens";
 import { useEffect } from "react";
 import Animated, {
@@ -8,15 +8,10 @@ import Animated, {
   useSharedValue,
   useAnimatedStyle,
   withSpring,
-  withRepeat,
-  withSequence,
   withTiming,
-  withDelay,
-  Easing,
 } from "react-native-reanimated";
 import { Image } from "expo-image";
 import * as Haptics from "expo-haptics";
-import { Platform } from "react-native";
 import type { UserType } from "@/lib/tutorial-context";
 
 const { width: SCREEN_WIDTH } = Dimensions.get("window");

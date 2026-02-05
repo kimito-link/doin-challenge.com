@@ -6,6 +6,7 @@ import { View, Text } from "react-native";
 import { Image } from "expo-image";
 import { LinearGradient } from "expo-linear-gradient";
 import { useColors } from "@/hooks/use-colors";
+import { color } from "@/theme/tokens";
 import { homeUI, homeText, homeGradient, homeFont } from "@/features/home/ui/theme/tokens";
 
 // キャラクター画像
@@ -35,12 +36,12 @@ export function CatchCopySection() {
           />
           <View style={{ 
             flex: 1, 
-            backgroundColor: "rgba(236, 72, 153, 0.1)",
+            backgroundColor: color.accentPrimary + "1A", // rgba(236, 72, 153, 0.1) の透明度16進数
             borderRadius: 16,
             borderTopLeftRadius: 4,
             padding: 12,
             borderWidth: 1,
-            borderColor: "rgba(236, 72, 153, 0.3)",
+            borderColor: color.accentPrimary + "4D", // rgba(236, 72, 153, 0.3) の透明度16進数
           }}>
             <Text style={{ 
               color: colors.foreground, 
@@ -95,7 +96,7 @@ fontSize: homeFont.body,
 
         {/* ハイライトメッセージ */}
         <View style={{
-          backgroundColor: "rgba(139, 92, 246, 0.1)",
+          backgroundColor: color.accentAlt + "1A", // rgba(139, 92, 246, 0.1) の透明度16進数
           borderRadius: 12,
           padding: 16,
           marginBottom: 20,
@@ -128,7 +129,7 @@ fontSize: homeFont.title,
 
         {/* CTA */}
         <View style={{
-          backgroundColor: "rgba(236, 72, 153, 0.15)",
+          backgroundColor: color.accentPrimary + "26", // rgba(236, 72, 153, 0.15) の透明度16進数
           borderRadius: 12,
           padding: 16,
           alignItems: "center",

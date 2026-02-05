@@ -6,8 +6,6 @@ import { navigate, navigateBack } from "@/lib/navigation";
 import { ScreenContainer } from "@/components/organisms/screen-container";
 import { trpc } from "@/lib/trpc";
 import { useAuth } from "@/hooks/use-auth";
-import * as Haptics from "expo-haptics";
-import { Platform } from "react-native";
 import { AppHeader } from "@/components/organisms/app-header";
 
 type ReminderType = "day_before" | "day_of" | "hour_before" | "custom";
@@ -163,7 +161,7 @@ export default function ReminderSettingsScreen() {
               value={dayBefore}
               onValueChange={(value) => handleToggle("day_before", value)}
               trackColor={{ false: color.borderAlt, true: color.pink400 }}
-              thumbColor={dayBefore ? color.accentPrimary : "#94a3b8"}
+              thumbColor={dayBefore ? color.accentPrimary : palette.gray400}
             />
           </View>
 
@@ -181,7 +179,7 @@ export default function ReminderSettingsScreen() {
               value={dayOf}
               onValueChange={(value) => handleToggle("day_of", value)}
               trackColor={{ false: color.borderAlt, true: color.pink400 }}
-              thumbColor={dayOf ? color.accentPrimary : "#94a3b8"}
+              thumbColor={dayOf ? color.accentPrimary : palette.gray400}
             />
           </View>
 
@@ -199,7 +197,7 @@ export default function ReminderSettingsScreen() {
               value={hourBefore}
               onValueChange={(value) => handleToggle("hour_before", value)}
               trackColor={{ false: color.borderAlt, true: color.pink400 }}
-              thumbColor={hourBefore ? color.accentPrimary : "#94a3b8"}
+              thumbColor={hourBefore ? color.accentPrimary : palette.gray400}
             />
           </View>
         </View>

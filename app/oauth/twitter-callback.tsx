@@ -10,7 +10,7 @@ import { SafeAreaView } from "react-native-safe-area-context";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { saveAccount } from "@/lib/account-manager";
 import { Image } from "expo-image";
-import { BlinkingLink, LINK_CHARACTER_SETS } from "@/components/atoms/blinking-character";
+import { BlinkingLink } from "@/components/atoms/blinking-character";
 import { CelebrationAnimation } from "@/components/molecules/celebration-animation";
 import { PrefectureSelector } from "@/components/ui/prefecture-selector";
 import { trpc } from "@/lib/trpc";
@@ -50,8 +50,6 @@ export default function TwitterOAuthCallback() {
   const [status, setStatus] = useState<"processing" | "success" | "error">("processing");
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [errorType, setErrorType] = useState<ErrorType>("general");
-  const [showFollowSuccessModal, setShowFollowSuccessModal] = useState(false);
-  const [targetAccountInfo, setTargetAccountInfo] = useState<{ username: string; name: string } | null>(null);
   const [savedReturnUrl, setSavedReturnUrl] = useState<string>("/(tabs)/mypage");
   const [needOnboarding, setNeedOnboarding] = useState(false);
   const [onboardingPrefecture, setOnboardingPrefecture] = useState("");
@@ -197,7 +195,7 @@ export default function TwitterOAuthCallback() {
               await Auth.setUserInfo(merged);
               storedInfo = merged;
             }
-          } catch (_) {
+          } catch {
             // Session may not be available yet; useAuth will merge on next fetch
           }
           if (!storedInfo) {
@@ -304,7 +302,7 @@ export default function TwitterOAuthCallback() {
               style={{ marginVertical: 12 }}
             />
             
-            <ActivityIndicator size="large" color="#f97316" />
+            <ActivityIndicator size="large" color={color.accentPrimary} />
             <Text className="mt-2 text-base leading-6 text-center text-foreground">
               認証を完了しています...
             </Text>

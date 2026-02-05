@@ -37,7 +37,7 @@ export default function InviteScreen() {
   const challengeId = parseInt(id || "0", 10);
   const isValidId = !isNaN(challengeId) && challengeId > 0;
 
-  const { data: challenge, isLoading, isFetching, error } = trpc.events.getById.useQuery(
+  const { data: challenge, isLoading, isFetching } = trpc.events.getById.useQuery(
     { id: challengeId },
     { enabled: isValidId }
   );
@@ -95,7 +95,7 @@ export default function InviteScreen() {
     if (id && user && !inviteCode && !showCustomForm) {
       handleCreateInvite();
     }
-  }, [id, user]);
+  }, [id, user, handleCreateInvite, inviteCode, showCustomForm]);
 
   const inviteUrl = inviteCode 
     ? `https://douin-challenge.app/join/${inviteCode}`
@@ -236,7 +236,7 @@ export default function InviteScreen() {
             <Text style={{ color: color.textWhite, fontSize: 24, fontWeight: "bold", marginTop: 12 }}>
               友達を招待
             </Text>
-            <Text style={{ color: "rgba(255,255,255,0.8)", fontSize: 14, marginTop: 4, textAlign: "center" }}>
+            <Text style={{ color: color.textWhite + "CC", fontSize: 14, marginTop: 4, textAlign: "center" }}>
               一緒にチャレンジを盛り上げよう！
             </Text>
           </View>
@@ -543,15 +543,15 @@ export default function InviteScreen() {
               style={{
                 width: 150,
                 height: 150,
-                backgroundColor: "#f0f0f0",
+                backgroundColor: palette.gray200,
                 alignItems: "center",
                 justifyContent: "center",
                 borderRadius: 8,
               }}
             >
-              <MaterialIcons name="qr-code-2" size={100} color="#333" />
+              <MaterialIcons name="qr-code-2" size={100} color={palette.gray700} />
             </View>
-            <Text style={{ color: "#666", fontSize: 12, marginTop: 8 }}>
+            <Text style={{ color: palette.gray500, fontSize: 12, marginTop: 8 }}>
               スキャンして参加
             </Text>
           </View>

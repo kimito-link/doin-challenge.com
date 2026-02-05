@@ -4,18 +4,15 @@
  */
 
 import { useState } from "react";
-import { View, Text, ScrollView, Pressable, Alert, ActivityIndicator } from "react-native";
+import { Text, ScrollView, Pressable, Alert, ActivityIndicator } from "react-native";
 import { ScreenContainer } from "@/components/organisms/screen-container";
 import { AppHeader } from "@/components/organisms/app-header";
-import { useColors } from "@/hooks/use-colors";
 import { trpc } from "@/lib/trpc";
 import { color } from "@/theme/tokens";
-import MaterialIcons from "@expo/vector-icons/MaterialIcons";
 import { navigateBack } from "@/lib/navigation/app-routes";
 import { Input } from "@/components/ui/input";
 
 export default function ReleaseNotesAdminScreen() {
-  const colors = useColors();
   const [version, setVersion] = useState("6.182");
   const [date, setDate] = useState(new Date().toISOString().split("T")[0]);
   const [title, setTitle] = useState("ファクタリング完了 & X APIコスト管理機能の改善");
@@ -126,9 +123,9 @@ export default function ReleaseNotesAdminScreen() {
           }}
         >
           {addReleaseNoteMutation.isPending ? (
-            <ActivityIndicator size="small" color="#fff" />
+            <ActivityIndicator size="small" color={color.textWhite} />
           ) : (
-            <Text style={{ color: "#fff", fontSize: 16, fontWeight: "600" }}>
+            <Text style={{ color: color.textWhite, fontSize: 16, fontWeight: "600" }}>
               リリースノートを追加
             </Text>
           )}

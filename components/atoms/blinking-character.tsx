@@ -4,10 +4,6 @@ import { StyleProp, ViewStyle } from "react-native";
 import Animated, {
   useSharedValue,
   useAnimatedStyle,
-  withTiming,
-  withSequence,
-  withDelay,
-  runOnJS,
 } from "react-native-reanimated";
 
 // キャラクター画像セット（通常、まばたき）

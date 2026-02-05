@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { View, Text, Pressable, Modal , Platform} from "react-native";
 import * as Haptics from "expo-haptics";
-import { color } from "@/theme/tokens";
+import { color, palette } from "@/theme/tokens";
 import { PriceType, priceTypeLabels, priceTypeColors } from "./types";
 import { Input } from "@/components/ui/input";
 
@@ -38,7 +38,7 @@ export function CreateTransferModal({
     <Modal visible={visible} transparent animationType="fade" onRequestClose={onClose}>
       <View style={{
         flex: 1,
-        backgroundColor: "rgba(0,0,0,0.8)",
+        backgroundColor: palette.gray900 + "CC", // rgba(0,0,0,0.8) の透明度16進数
         justifyContent: "center",
         alignItems: "center",
         padding: 20,
@@ -118,7 +118,7 @@ export function CreateTransferModal({
           
           {/* 注意事項 */}
           <View style={{
-            backgroundColor: "rgba(245, 158, 11, 0.1)",
+            backgroundColor: color.warning + "1A", // rgba(245, 158, 11, 0.1) の透明度16進数
             borderRadius: 8,
             padding: 12,
             marginBottom: 20,
@@ -193,7 +193,7 @@ export function WaitlistModal({
     <Modal visible={visible} transparent animationType="fade" onRequestClose={onClose}>
       <View style={{
         flex: 1,
-        backgroundColor: "rgba(0,0,0,0.8)",
+        backgroundColor: palette.gray900 + "CC", // rgba(0,0,0,0.8) の透明度16進数
         justifyContent: "center",
         alignItems: "center",
         padding: 20,

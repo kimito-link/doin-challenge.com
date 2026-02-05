@@ -8,7 +8,7 @@
 import { ScreenContainer } from "@/components/organisms/screen-container";
 import { RefreshingIndicator } from "@/components/molecules/refreshing-indicator";
 import { AppHeader } from "@/components/organisms/app-header";
-import { color, palette } from "@/theme/tokens";
+import { color } from "@/theme/tokens";
 import { useColors } from "@/hooks/use-colors";
 import { useAuth } from "@/hooks/use-auth";
 import { trpc } from "@/lib/trpc";

@@ -7,7 +7,7 @@
 
 import { ScreenContainer } from "@/components/organisms/screen-container";
 import { Input } from "@/components/ui/input";
-import { RetryButton } from "@/components/ui/retry-button";
+import { ScreenLoadingState, ScreenErrorState } from "@/components/ui";
 import { useColors } from "@/hooks/use-colors";
 import { apiGet, getErrorMessage } from "@/lib/api";
 import { navigateBack } from "@/lib/navigation/app-routes";
@@ -18,11 +18,8 @@ import {
   View,
   ScrollView,
   Pressable,
-  ActivityIndicator,
   RefreshControl,
   Switch,
-  Alert,
-  Platform,
 } from "react-native";
 
 interface EndpointStats {
@@ -51,13 +48,13 @@ interface Warning {
 interface DashboardData {
   stats: ApiUsageStats;
   warnings: Warning[];
-  recentHistory: Array<{
+  recentHistory: {
     endpoint: string;
     limit: number;
     remaining: number;
     reset: number;
     timestamp: number;
-  }>;
+  }[];
   monthlyStats?: {
     usage: number;
     cost: number;
@@ -70,7 +67,7 @@ interface DashboardData {
     shouldAlert: boolean;
     shouldStop: boolean;
   };
-  endpointCosts?: Array<{ endpoint: string; count: number; cost: number }>;
+  endpointCosts?: { endpoint: string; count: number; cost: number }[];
 }
 
 export default function ApiUsageDashboard() {
@@ -134,7 +131,7 @@ export default function ApiUsageDashboard() {
       alertEmail: alertEmail.trim() || null,
       autoStop,
     });
-  }, [monthlyLimit, alertThreshold, alertEmail, autoStop]);
+  }, [monthlyLimit, alertThreshold, alertEmail, autoStop, updateCostSettingsMutation]);
 
   const fetchData = useCallback(async () => {
     try {
@@ -179,22 +176,15 @@ export default function ApiUsageDashboard() {
   };
 
   if (loading) {
-    return (
-      <ScreenContainer className="flex-1 items-center justify-center">
-        <ActivityIndicator size="large" color={colors.primary} />
-        <Text className="mt-4 text-muted">読み込み中...</Text>
-      </ScreenContainer>
-    );
+    return <ScreenLoadingState />;
   }
 
   if (error) {
     return (
-      <ScreenContainer className="flex-1 items-center justify-center p-4">
-        <Text className="text-4xl mb-4">⚠️</Text>
-        <Text className="text-lg font-bold text-foreground mb-2">エラー</Text>
-        <Text className="text-muted text-center mb-4">{error}</Text>
-        <RetryButton onPress={fetchData} variant="retry" />
-      </ScreenContainer>
+      <ScreenErrorState
+        errorMessage={error}
+        onRetry={fetchData}
+      />
     );
   }
 
@@ -419,7 +409,7 @@ export default function ApiUsageDashboard() {
                 value={autoStop}
                 onValueChange={setAutoStop}
                 trackColor={{ false: colors.muted, true: colors.primary }}
-                thumbColor="#fff"
+                thumbColor={color.textWhite}
               />
             </View>
             {settingsMessage && (
@@ -454,7 +444,7 @@ export default function ApiUsageDashboard() {
               ]}
             >
               {updateCostSettingsMutation.isPending ? (
-                <ActivityIndicator size="small" color="#fff" />
+                <ActivityIndicator size="small" color={color.textWhite} />
               ) : (
                 <Text className="text-white font-semibold">設定を保存</Text>
               )}

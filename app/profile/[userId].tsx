@@ -1,7 +1,5 @@
-import { Text, View, ScrollView, Pressable, FlatList, RefreshControl, Alert , Platform} from "react-native";
-import * as Haptics from "expo-haptics";
-import { color, palette } from "@/theme/tokens";
-import { Image } from "expo-image";
+import { Text, View, ScrollView, Pressable, RefreshControl, Alert } from "react-native";
+import { color } from "@/theme/tokens";
 import { useLocalSearchParams } from "expo-router";
 import { navigate, navigateBack } from "@/lib/navigation";
 import { useState } from "react";
@@ -14,18 +12,6 @@ import { AppHeader } from "@/components/organisms/app-header";
 import { RefreshingIndicator } from "@/components/molecules/refreshing-indicator";
 import { UserProfileHeader } from "@/components/organisms/user-profile-header";
 
-// バッジアイコンマッピング
-const badgeIcons: Record<string, string> = {
-  "🌟": "star",
-  "🏆": "emoji-events",
-  "🎯": "gps-fixed",
-  "👑": "workspace-premium",
-  "🔥": "local-fire-department",
-  "💎": "diamond",
-  "🎵": "music-note",
-  "🎤": "mic",
-  "🎉": "celebration",
-};
 
 export default function ProfileScreen() {
   const colors = useColors();

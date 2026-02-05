@@ -1,6 +1,5 @@
-import { Text, View, Pressable, ScrollView, Alert, Platform } from "react-native";
-import * as Haptics from "expo-haptics";
-import { color, palette } from "@/theme/tokens";
+import { Text, View, Pressable, ScrollView, Alert } from "react-native";
+import { color } from "@/theme/tokens";
 import { Image } from "expo-image";
 import { useLocalSearchParams } from "expo-router";
 import { navigateBack } from "@/lib/navigation/app-routes";
@@ -10,7 +9,6 @@ import { trpc } from "@/lib/trpc";
 import { useAuth } from "@/hooks/use-auth";
 import { useColors } from "@/hooks/use-colors";
 import MaterialIcons from "@expo/vector-icons/MaterialIcons";
-import { LinearGradient } from "expo-linear-gradient";
 import { AppHeader } from "@/components/organisms/app-header";
 import { Input } from "@/components/ui/input";
 
@@ -226,7 +224,7 @@ function InviteForm({
             <Text style={{ color: colors.foreground, fontSize: 14, fontWeight: role === "co-host" ? "bold" : "normal" }}>
               共同主催者
             </Text>
-            <Text style={{ color: role === "co-host" ? "rgba(255,255,255,0.8)" : color.textSubtle, fontSize: 12, marginTop: 2 }}>
+            <Text style={{ color: role === "co-host" ? color.textWhite + "CC" : color.textSubtle, fontSize: 12, marginTop: 2 }}>
               編集・参加者管理・招待
             </Text>
           </Pressable>
@@ -243,7 +241,7 @@ function InviteForm({
             <Text style={{ color: colors.foreground, fontSize: 14, fontWeight: role === "moderator" ? "bold" : "normal" }}>
               モデレーター
             </Text>
-            <Text style={{ color: role === "moderator" ? "rgba(255,255,255,0.8)" : color.textSubtle, fontSize: 12, marginTop: 2 }}>
+            <Text style={{ color: role === "moderator" ? color.textWhite + "CC" : color.textSubtle, fontSize: 12, marginTop: 2 }}>
               参加者管理のみ
             </Text>
           </Pressable>
@@ -276,7 +274,6 @@ export default function CollaboratorsScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
 
   const { user } = useAuth();
-  const utils = trpc.useUtils();
 
   // チャレンジ詳細を取得
   const { data: challenge, isLoading: challengeLoading } = trpc.events.getById.useQuery(
@@ -325,7 +322,7 @@ export default function CollaboratorsScreen() {
       };
       setCollaborators([...collaborators, newCollaborator]);
       Alert.alert("招待を送信しました", `@${twitterId} に招待を送信しました`);
-    } catch (error) {
+    } catch {
       Alert.alert("エラー", "招待の送信に失敗しました");
     } finally {
       setIsInviting(false);
