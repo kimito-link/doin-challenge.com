@@ -67,6 +67,7 @@ export function AccountSection({
   sessionExpiry,
   otherAccounts,
   onAccountSwitch,
+  onProfileEdit,
   onLogout,
 }: {
   user: User | null;
@@ -74,6 +75,7 @@ export function AccountSection({
   sessionExpiry: SessionExpiryInfo | null;
   otherAccounts: Account[];
   onAccountSwitch: () => void;
+  onProfileEdit?: () => void;
   onLogout: () => void;
 }) {
   return (
@@ -117,6 +119,17 @@ export function AccountSection({
           <MaterialIcons name="person-outline" size={32} color={color.textSubtle} />
           <Text style={styles.notLoggedInText}>ログインしていません</Text>
         </View>
+      )}
+
+      {/* プロフィール編集ボタン */}
+      {isAuthenticated && onProfileEdit && (
+        <MenuItem
+          icon="person"
+          iconColor={color.info}
+          title="プロフィール編集"
+          description="都道府県・性別を変更"
+          onPress={onProfileEdit}
+        />
       )}
 
       {/* アカウント切り替えボタン */}

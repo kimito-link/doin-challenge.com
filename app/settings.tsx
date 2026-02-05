@@ -68,6 +68,11 @@ export default function SettingsScreen() {
     setShowAccountSwitcher(true);
   }, [handleHaptic]);
 
+  const handleProfileEdit = useCallback(() => {
+    handleHaptic();
+    navigate.toProfileEdit();
+  }, [handleHaptic]);
+
   const handleLogout = useCallback(() => {
     handleHaptic();
     navigate.toLogout();
@@ -131,6 +136,7 @@ export default function SettingsScreen() {
           sessionExpiry={sessionExpiry}
           otherAccounts={otherAccounts}
           onAccountSwitch={handleAccountSwitch}
+          onProfileEdit={handleProfileEdit}
           onLogout={handleLogout}
         />
 

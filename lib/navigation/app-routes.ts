@@ -28,6 +28,7 @@ export const STATIC_ROUTES = {
   // 設定関連
   SETTINGS: "/settings",
   NOTIFICATION_SETTINGS: "/notification-settings",
+  PROFILE_EDIT: "/profile/edit",
   HELP: "/help",
   ACHIEVEMENTS: "/achievements",
   API_USAGE: "/admin/api-usage",
@@ -87,6 +88,7 @@ export type RouteParams = {
   [STATIC_ROUTES.LOGOUT]: undefined;
   [STATIC_ROUTES.SETTINGS]: undefined;
   [STATIC_ROUTES.NOTIFICATION_SETTINGS]: undefined;
+  [STATIC_ROUTES.PROFILE_EDIT]: undefined;
   [STATIC_ROUTES.HELP]: undefined;
   [STATIC_ROUTES.ACHIEVEMENTS]: undefined;
   [STATIC_ROUTES.API_USAGE]: undefined;
@@ -161,6 +163,11 @@ export const navigate = {
   toNotificationSettings: () => {
     console.log("[Navigation] Navigating to notification settings");
     router.push(STATIC_ROUTES.NOTIFICATION_SETTINGS as never);
+  },
+  
+  toProfileEdit: () => {
+    console.log("[Navigation] Navigating to profile edit");
+    router.push(STATIC_ROUTES.PROFILE_EDIT as never);
   },
   
   toHelp: () => {
