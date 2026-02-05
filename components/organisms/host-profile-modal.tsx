@@ -45,7 +45,8 @@ export function HostProfileModal({
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  const loadProfile = async () => {
+  const loadProfile = useCallback(async () => {
+    if (!username) return;
     setLoading(true);
     setError(null);
     try {
@@ -56,7 +57,13 @@ export function HostProfileModal({
     } finally {
       setLoading(false);
     }
-  };
+  }, [username]);
+
+  useEffect(() => {
+    if (visible && username) {
+      loadProfile();
+    }
+  }, [visible, username, loadProfile]);
 
   const handleOpenTwitter = () => {
     if (Platform.OS !== "web") {
