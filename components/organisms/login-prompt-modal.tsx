@@ -47,11 +47,10 @@ export function LoginPromptModal({ visible, onLogin, onSkip }: LoginPromptModalP
   useEffect(() => {
     if (visible) {
       // 静的な表示（ちかちかアニメーション削除）
-      // eslint-disable-next-line react-hooks/exhaustive-deps
       bounce.value = withTiming(0, { duration: 300 });
-      // eslint-disable-next-line react-hooks/exhaustive-deps
       sparkle.value = withTiming(1, { duration: 300 });
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [visible]);
   
   const characterAnimatedStyle = useAnimatedStyle(() => ({

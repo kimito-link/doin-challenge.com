@@ -40,14 +40,13 @@ export function JapanRegionBlocks({ prefectureCounts, onPrefecturePress, onRegio
   // ユーザーの地域がある場合、パルスアニメーションを開始
   useEffect(() => {
     if (userRegionId) {
-      // eslint-disable-next-line react-hooks/exhaustive-deps
       pulseScale.value = withTiming(1.03, { duration: 800 });
       const interval = setInterval(() => {
-        // eslint-disable-next-line react-hooks/exhaustive-deps
         pulseScale.value = withTiming(pulseScale.value === 1 ? 1.03 : 1, { duration: 800 });
       }, 800);
       return () => clearInterval(interval);
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [userRegionId]);
   
   // パルスアニメーションスタイル
