@@ -56,67 +56,39 @@ jobs:
           vercel-project-id: ${{ secrets.VERCEL_PROJECT_ID }}
           vercel-args: '--prod'
 
+      # サイト不具合検知: 本番 /api/health がこの push のコミットで正常応答することを厳密に確認する。
       - name: Post-deploy verify (Gate 1)
         env:
           EXPECTED_SHA: ${{ github.sha }}
         run: |
           set -e
           echo "⏳ Waiting for Railway deployment to sync..."
-          echo "Expected commitSha: $EXPECTED_SHA"
-          sleep 420  # 7分待機（Railwayのデプロイは通常3-5分だが、遅延を考慮）
-          
-          git fetch origin main --depth=1
-          LATEST_MAIN=$(git rev-parse origin/main)
-          echo "Latest main commit: $LATEST_MAIN"
-          
-          for i in $(seq 1 30); do
-            echo "Verify attempt $i/30..."
+          echo "Expected commitSha (this deploy): $EXPECTED_SHA"
+          sleep 600  # 10分: Railway のビルド・デプロイ完了を待つ
+          for i in $(seq 1 40); do
+            echo "Verify attempt $i/40..."
             HEALTH=$(curl -s https://doin-challenge.com/api/health || echo "{}")
             HEALTH_SHA=$(echo "$HEALTH" | jq -r '.commitSha // .gitSha // "unknown"')
             OK=$(echo "$HEALTH" | jq -r '.ok // false')
-            
-            echo "Health check response: $HEALTH"
-            echo "Actual commitSha: $HEALTH_SHA"
-            echo "Expected commitSha: $EXPECTED_SHA (or latest main: $LATEST_MAIN)"
-            
-            if [[ "$OK" != "true" ]]; then
-              echo "⚠️ Health check returned ok=false, continuing..."
-            elif [[ "$HEALTH_SHA" == "$EXPECTED_SHA" ]]; then
-              echo "✅ /api/health commitSha matches expected"
+            echo "Actual commitSha: $HEALTH_SHA, ok: $OK"
+            if [[ "$OK" == "true" ]] && [[ "$HEALTH_SHA" == "$EXPECTED_SHA" ]]; then
+              echo "✅ 本番はこの push のコミットで正常に応答しています"
               break
-            elif [[ "$HEALTH_SHA" == "$LATEST_MAIN" ]]; then
-              echo "✅ /api/health is on latest main ($LATEST_MAIN)"
-              break
-            elif [[ "$HEALTH_SHA" != "unknown" ]]; then
-              echo "⚠️ Commit mismatch: expected=$EXPECTED_SHA or $LATEST_MAIN, actual=$HEALTH_SHA"
             fi
-            
-            if [[ $i -eq 30 ]]; then
-              echo "❌ /api/health commitSha mismatch after 30 attempts"
-              echo "Expected: $EXPECTED_SHA or $LATEST_MAIN"
+            if [[ $i -eq 40 ]]; then
+              echo "❌ 本番がこの push のコミットで応答しませんでした（不具合の可能性）"
+              echo "Expected: $EXPECTED_SHA"
               echo "Got: $HEALTH_SHA"
               echo "Last health response: $HEALTH"
               exit 1
             fi
-            sleep 20  # 20秒間隔でリトライ（合計10分）
+            sleep 20
           done
-          # /version.jsonの検証（Vercelのフロントエンド）
           VERSION_JSON=$(curl -s https://doin-challenge.com/version.json || echo "{}")
           VJ_SHA=$(echo "$VERSION_JSON" | jq -r '.commitSha // .gitSha // "unknown"')
-          echo "Version.json response: $VERSION_JSON"
-          echo "Version.json commitSha: $VJ_SHA"
-          
-          if [[ "$VJ_SHA" == "$EXPECTED_SHA" ]]; then
-            echo "✅ /version.json commitSha matches expected"
-          elif [[ "$VJ_SHA" == "$LATEST_MAIN" ]]; then
-            echo "✅ /version.json is on latest main ($LATEST_MAIN)"
-          elif [[ "$VJ_SHA" == "unknown" ]]; then
-            echo "⚠️ /version.json commitSha is unknown (may not be deployed yet)"
-          else
-            echo "⚠️ /version.json commitSha mismatch (non-critical for Railway backend)"
-            echo "Expected: $EXPECTED_SHA or $LATEST_MAIN"
-            echo "Got: $VJ_SHA"
-            # VercelのフロントエンドはRailwayのバックエンドより遅れる可能性があるため、警告のみ
+          echo "Version.json commitSha: $VJ_SHA (reference)"
+          if [[ "$VJ_SHA" != "$EXPECTED_SHA" ]] && [[ "$VJ_SHA" != "unknown" ]]; then
+            echo "⚠️ /version.json は未同期の可能性（Vercel 側の反映遅延）"
           fi
 
       - name: Gate 2 - API smoke

@@ -1,9 +1,15 @@
-# Gate 1: main に push → デプロイ後、本番の commitSha を照合（最小版）
+# サイト不具合検知: main に push 後、本番が「この push のコミット」で正常応答していることを厳密に照合する。
+# 目的: デプロイ失敗・本番が古い/壊れている状態を検知する。
 name: deploy-verify
 
 on:
   push:
     branches: [main]
+
+# 新しい push が来たら前回の verify はキャンセル。検証対象は「直近の push のコミット」のみとする。
+concurrency:
+  group: deploy-verify-main
+  cancel-in-progress: true
 
 jobs:
   verify:
@@ -14,54 +20,31 @@ jobs:
       - name: Wait for deployment
         run: |
           echo "⏳ Waiting for Railway deployment to complete..."
-          echo "Expected commit: ${{ github.sha }}"
-          sleep 420  # 7分待機（Railwayのデプロイは通常3-5分だが、遅延を考慮）
+          echo "Expected commit (this push): ${{ github.sha }}"
+          sleep 600  # 10分: Railway のビルド・デプロイ完了を待ってから照合する
 
       - name: Verify production health matches this commit
         env:
           PROD_URL: https://doin-challenge.com
           SHA: ${{ github.sha }}
         run: |
-          chmod +x scripts/verify-deploy.sh
-          echo "🔍 Starting verification for commit: $SHA"
-          
-          # 最新のmainブランチのコミットも許容する（Railwayのデプロイが少し遅れる場合がある）
-          git fetch origin main --depth=1
-          LATEST_MAIN=$(git rev-parse origin/main)
-          echo "Latest main commit: $LATEST_MAIN"
-          
-          for i in $(seq 1 30); do
-            echo "Verify attempt $i/30..."
-            
-            # ヘルスチェックのレスポンスを取得
+          echo "🔍 サイト不具合検知: 本番の commitSha がこの push のコミットと一致することを確認します"
+          for i in $(seq 1 40); do
+            echo "Verify attempt $i/40..."
             HEALTH_RESPONSE=$(curl -s "$PROD_URL/api/health" || echo "{}")
             ACTUAL_SHA=$(echo "$HEALTH_RESPONSE" | jq -r '.commitSha // .gitSha // "unknown"')
             OK=$(echo "$HEALTH_RESPONSE" | jq -r '.ok // false')
-            
-            echo "Health check response: $HEALTH_RESPONSE"
-            echo "Actual commitSha: $ACTUAL_SHA"
-            echo "Expected commitSha: $SHA (or latest main: $LATEST_MAIN)"
-            
-            # OKがfalseの場合は続行（デプロイ中かもしれない）
-            if [ "$OK" != "true" ]; then
-              echo "⚠️ Health check returned ok=false, continuing..."
-            elif [ "$ACTUAL_SHA" = "$SHA" ]; then
-              echo "✅ Production matches expected commit $SHA"
+            echo "Actual commitSha: $ACTUAL_SHA, ok: $OK (expected commit: $SHA)"
+            if [ "$OK" = "true" ] && [ "$ACTUAL_SHA" = "$SHA" ]; then
+              echo "✅ 本番はこの push のコミットで正常に応答しています"
               exit 0
-            elif [ "$ACTUAL_SHA" = "$LATEST_MAIN" ]; then
-              echo "✅ Production matches latest main commit $LATEST_MAIN"
-              exit 0
-            elif [ "$ACTUAL_SHA" != "unknown" ]; then
-              echo "⚠️ Commit mismatch: expected=$SHA or $LATEST_MAIN, actual=$ACTUAL_SHA"
             fi
-            
-            if [ "$i" -eq 30 ]; then
-              echo "❌ Still mismatch after 30 attempts"
-              echo "Expected: $SHA (or $LATEST_MAIN)"
+            if [ "$i" -eq 40 ]; then
+              echo "❌ 本番がこの push のコミットで応答しませんでした（不具合の可能性）"
+              echo "Expected: $SHA"
               echo "Actual: $ACTUAL_SHA"
               echo "Last health response: $HEALTH_RESPONSE"
               exit 1
             fi
-            
-            sleep 20  # 20秒間隔でリトライ（合計10分）
+            sleep 20
           done

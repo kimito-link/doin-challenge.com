@@ -1,3 +1,5 @@
+# サイト不具合検知を含む Gate 1: diff-check / 品質 / 本番ヘルス照合。
+# 本番照合は「この push のコミットで本番が応答していること」を厳密に確認し、デプロイ失敗や不具合を検知する。
 name: Gate 1 Check
 
 on:
@@ -5,6 +7,11 @@ on:
     branches: [main]
   push:
     branches: [main]
+
+# push 時は直近の push に対する run だけを有効にし、古い run はキャンセルする（誤検知防止）。
+concurrency:
+  group: gate1-${{ github.ref }}
+  cancel-in-progress: true
 
 jobs:
   diff-check:
@@ -131,37 +138,28 @@ jobs:
       - uses: actions/checkout@v4
       
       - name: Wait for deployment
-        run: sleep 300  # Vercel/Railway のデプロイ完了を待つ（5分）
-      
+        run: sleep 420  # 7分: Railway のデプロイ完了を待ってから照合（サイト不具合検知のため）
+
       - name: Check deployed commit SHA
         run: |
           EXPECTED_SHA="${{ github.sha }}"
-          git fetch origin main --depth=1
-          LATEST_MAIN=$(git rev-parse origin/main)
           ACTUAL_SHA="unknown"
+          echo "サイト不具合検知: 本番の commitSha がこの push のコミットと一致することを確認します"
           echo "Expected (this push): $EXPECTED_SHA"
-          echo "Latest main: $LATEST_MAIN"
-          # 最大25回・15秒間隔でポーリング
-          for i in $(seq 1 25); do
-            echo "Health check attempt ${i}/25..."
+          for i in $(seq 1 30); do
+            echo "Health check attempt ${i}/30..."
             RESPONSE=$(curl -s https://doin-challenge.com/api/health || true)
             if [ -n "${RESPONSE}" ]; then
               ACTUAL_SHA=$(echo "${RESPONSE}" | jq -r '.commitSha // .gitSha // "unknown"' 2>/dev/null || echo "unknown")
-              if [ "${ACTUAL_SHA}" != "unknown" ]; then
-                if [ "$EXPECTED_SHA" = "$ACTUAL_SHA" ]; then
-                  echo "✅ Deployed commit matches expected: $EXPECTED_SHA"
-                  exit 0
-                fi
-                if [ "$LATEST_MAIN" = "$ACTUAL_SHA" ]; then
-                  echo "✅ Production is on latest main: $LATEST_MAIN"
-                  exit 0
-                fi
+              OK=$(echo "${RESPONSE}" | jq -r '.ok // false' 2>/dev/null || echo "false")
+              if [ "$OK" = "true" ] && [ "$EXPECTED_SHA" = "$ACTUAL_SHA" ]; then
+                echo "✅ 本番はこの push のコミットで正常に応答しています"
+                exit 0
               fi
             fi
             sleep 15
           done
-          
-          echo "❌ Deployed commit mismatch (timeout)"
-          echo "Expected: $EXPECTED_SHA or latest main $LATEST_MAIN"
+          echo "❌ 本番がこの push のコミットで応答しませんでした（不具合の可能性）"
+          echo "Expected: $EXPECTED_SHA"
           echo "Actual: $ACTUAL_SHA"
           exit 1
