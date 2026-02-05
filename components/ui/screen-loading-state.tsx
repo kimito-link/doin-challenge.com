@@ -10,7 +10,7 @@
  * ```
  */
 
-import { View, Text, ActivityIndicator } from "react-native";
+import { Text, ActivityIndicator } from "react-native";
 import { ScreenContainer } from "@/components/organisms/screen-container";
 import { color } from "@/theme/tokens";
 import { commonCopy } from "@/constants/copy/common";

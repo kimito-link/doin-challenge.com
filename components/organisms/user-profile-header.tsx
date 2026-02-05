@@ -16,7 +16,7 @@ import { View, Text, Pressable } from "react-native";
 import { LinearGradient } from "expo-linear-gradient";
 import MaterialIcons from "@expo/vector-icons/MaterialIcons";
 import { TwitterUserCard, TwitterUserData } from "@/components/molecules/twitter-user-card";
-import { color } from "@/theme/tokens";
+import { color, palette } from "@/theme/tokens";
 
 export interface UserProfileHeaderProps {
   /** ユーザーデータ */
@@ -54,10 +54,10 @@ export function UserProfileHeader({
   // 性別に応じたグラデーション色
   const gradientColors: readonly [string, string, ...string[]] = 
     user.gender === "male"
-      ? ["#1E40AF", "#3B82F6", "#60A5FA"] // 男性: 青系
+      ? [palette.blue600, palette.blue500, palette.blue400] // 男性: 青系
       : user.gender === "female"
-      ? ["#BE185D", "#EC4899", "#F472B6"] // 女性: ピンク系
-      : ["#475569", "#64748B", "#94A3B8"]; // 未指定: グレー系
+      ? [palette.pink600, palette.pink500, palette.red400] // 女性: ピンク系
+      : [palette.gray600, palette.gray500, palette.gray400]; // 未指定: グレー系
 
   return (
     <LinearGradient
@@ -87,12 +87,12 @@ export function UserProfileHeader({
             paddingHorizontal: 28,
             paddingVertical: 14,
             borderRadius: 24,
-            backgroundColor: isFollowing ? "rgba(255,255,255,0.2)" : color.textWhite,
+            backgroundColor: isFollowing ? palette.white + "33" : color.textWhite,
             flexDirection: "row",
             alignItems: "center",
             justifyContent: "center",
             opacity: isFollowPending ? 0.6 : 1,
-            shadowColor: "#000",
+            shadowColor: palette.black,
             shadowOffset: { width: 0, height: 2 },
             shadowOpacity: 0.2,
             shadowRadius: 4,

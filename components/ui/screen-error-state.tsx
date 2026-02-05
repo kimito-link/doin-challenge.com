@@ -17,9 +17,8 @@
 
 import { View, Text } from "react-native";
 import { ScreenContainer } from "@/components/organisms/screen-container";
-import { color } from "@/theme/tokens";
+import { color, palette } from "@/theme/tokens";
 import { RetryButton } from "./retry-button";
-import { commonCopy } from "@/constants/copy/common";
 
 interface ScreenErrorStateProps {
   /** エラーメッセージ */
@@ -44,7 +43,7 @@ export function ScreenErrorState({
         style={{
           marginTop: 24,
           padding: 16,
-          backgroundColor: `${color.danger}20`,
+          backgroundColor: palette.red500 + "20",
           borderRadius: 12,
           borderWidth: 1,
           borderColor: color.danger,
