@@ -2,7 +2,7 @@
  * JapanBlockMap - 47都道府県ブロック表示の日本地図
  * v6.27: 都道府県別ブロック配置、タップ機能、ヒートマップ表示
  */
-import { View, Text, StyleSheet, Pressable, Dimensions, Platform, ScrollView } from "react-native";
+import { View, Text, StyleSheet, Pressable, Platform, ScrollView } from "react-native";
 import * as Haptics from "expo-haptics";
 import { color, palette } from "@/theme/tokens";
 import { MapErrorBoundary } from "@/components/ui/map-error-boundary";
