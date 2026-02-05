@@ -200,7 +200,7 @@ export const styles = StyleSheet.create({
     borderBottomWidth: 6,
     borderBottomColor: "transparent",
     borderRightWidth: 6,
-    borderRightColor: "rgba(255, 255, 255, 0.15)",
+    borderRightColor: palette.white + "26",
   },
   navBubbleTailRight: {
     position: "absolute",
