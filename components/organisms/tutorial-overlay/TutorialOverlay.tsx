@@ -61,14 +61,17 @@ export function TutorialOverlay({
     return () => clearInterval(blinkInterval);
   }, [visible, step.character]);
 
-  // eslint-disable-next-line react-hooks/exhaustive-deps
   useEffect(() => {
     if (visible) {
+      // eslint-disable-next-line react-hooks/exhaustive-deps
       messageOpacity.value = withTiming(1, { duration: 300 });
+      // eslint-disable-next-line react-hooks/exhaustive-deps
       characterBounce.value = 0;
+      // eslint-disable-next-line react-hooks/exhaustive-deps
       previewScale.value = withDelay(200, withSpring(1, { damping: 12 }));
       
       if (step.speech) {
+        // eslint-disable-next-line react-hooks/exhaustive-deps
         speechBubbleScale.value = withDelay(400, withSpring(1, { damping: 10 }));
       }
 
@@ -78,7 +81,9 @@ export function TutorialOverlay({
         setShowSparkles(true);
       }
     } else {
+      // eslint-disable-next-line react-hooks/exhaustive-deps
       previewScale.value = 0;
+      // eslint-disable-next-line react-hooks/exhaustive-deps
       speechBubbleScale.value = 0;
       setShowConfetti(false);
       setShowSparkles(false);

@@ -31,9 +31,9 @@ export function FanEmptyState() {
   const rotation = useSharedValue(0);
   const scale = useSharedValue(1);
   
-  // eslint-disable-next-line react-hooks/exhaustive-deps
   useEffect(() => {
     // 静的な表示（ちかちかアニメーション削除）
+    // eslint-disable-next-line react-hooks/exhaustive-deps
     rotation.value = withTiming(0, { duration: 300 });
     scale.value = withTiming(1, { duration: 300 });
   }, []);
