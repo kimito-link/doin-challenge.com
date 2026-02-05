@@ -7,6 +7,7 @@ import { useCallback, useEffect, useMemo, useState } from "react";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
 import "react-native-reanimated";
 import { Platform, View, ActivityIndicator } from "react-native";
+import { color } from "@/theme/tokens";
 import "@/lib/_core/nativewind-pressable";
 import { ThemeProvider } from "@/lib/theme-provider";
 import { LoginSuccessProvider } from "@/lib/login-success-context";
@@ -96,8 +97,8 @@ function OnboardingWrapper({ children }: { children: React.ReactNode }) {
   // オンボーディング状態が確認中の場合はローディング画面を表示
   if (hasCompletedOnboarding === null) {
     return (
-      <View style={{ flex: 1, backgroundColor: "#0a1628", justifyContent: "center", alignItems: "center" }}>
-        <ActivityIndicator size="large" color="#ffffff" />
+      <View style={{ flex: 1, backgroundColor: color.bg, justifyContent: "center", alignItems: "center" }}>
+        <ActivityIndicator size="large" color={color.textWhite} />
       </View>
     );
   }

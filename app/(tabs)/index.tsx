@@ -4,7 +4,7 @@
  * v6.27: タブナビゲーション追加、UI改善
  */
 
-import { View, Text, FlatList, Platform } from "react-native";
+import { View, FlatList, Platform } from "react-native";
 import { color } from "@/theme/tokens";
 import { useState, useCallback } from "react";
 import { ScreenContainer } from "@/components/organisms/screen-container";
@@ -120,8 +120,8 @@ export default function HomeScreen() {
       numColumns,
       grid.itemWidth,
       user?.twitterId,
-      homeActions.handleChallengePress,
-      homeActions.handleChallengeEdit,
+      homeActions,
+      homeData,
       homeActions.handleChallengeDelete,
       homeData.isFavorite,
       homeData.toggleFavorite,
