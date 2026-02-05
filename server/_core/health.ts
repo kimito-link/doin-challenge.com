@@ -24,10 +24,15 @@ export function readBuildInfo(): {
       if (!commitSha || commitSha === "unknown") {
         throw new Error("invalid build-info");
       }
+      // Railway: ビルド時は SHA が入らないことがあるので、ランタイムの RAILWAY_GIT_COMMIT_SHA で上書き
+      const resolvedSha =
+        process.env.RAILWAY_GIT_COMMIT_SHA && /^(local-|railway-)/.test(commitSha)
+          ? process.env.RAILWAY_GIT_COMMIT_SHA
+          : commitSha;
       return {
         ok: true,
-        commitSha,
-        version,
+        commitSha: resolvedSha,
+        version: resolvedSha,
         builtAt,
       };
     } catch {
