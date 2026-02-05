@@ -317,7 +317,7 @@ const styles = StyleSheet.create({
   
   // グループバージョンのスタイル
   groupContainer: {
-    backgroundColor: "rgba(236, 72, 153, 0.1)",
+    backgroundColor: palette.pink500 + "1A",
     borderRadius: 16,
     padding: 16,
     marginBottom: 16,

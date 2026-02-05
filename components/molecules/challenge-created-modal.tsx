@@ -23,6 +23,7 @@ import * as Haptics from "expo-haptics";
 import { useColors } from "@/hooks/use-colors";
 import { navigate } from "@/lib/navigation";
 import { Checkbox } from "@/components/ui";
+import { palette } from "@/theme/tokens";
 
 interface ChallengeCreatedModalProps {
   visible: boolean;
@@ -195,7 +196,7 @@ ${url}`;
       transparent
       onRequestClose={onClose}
     >
-      <View style={[styles.overlay, { backgroundColor: "rgba(0,0,0,0.8)" }]}>
+      <View style={[styles.overlay, { backgroundColor: palette.black + "CC" }]}>
         <View style={[styles.container, { backgroundColor: colors.background }]}>
           {/* ヘッダー */}
           <View style={styles.header}>

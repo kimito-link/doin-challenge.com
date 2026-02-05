@@ -129,7 +129,7 @@ const styles = StyleSheet.create({
     left: 0,
     right: 0,
     padding: 16,
-    backgroundColor: "rgba(0,0,0,0.5)",
+    backgroundColor: palette.black + "80",
   },
   headerContent: {
     gap: 4,

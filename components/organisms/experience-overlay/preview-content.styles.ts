@@ -320,7 +320,7 @@ export const styles = StyleSheet.create({
     borderRadius: 8,
     padding: 12,
     borderWidth: 1,
-    borderColor: "rgba(255, 255, 255, 0.2)",
+    borderColor: palette.white + "33",
   },
   formInputText: {
     fontSize: 14,
@@ -331,7 +331,7 @@ export const styles = StyleSheet.create({
     borderRadius: 8,
     padding: 12,
     borderWidth: 1,
-    borderColor: "rgba(255, 255, 255, 0.2)",
+    borderColor: palette.white + "33",
     flexDirection: "row",
     justifyContent: "space-between",
     alignItems: "center",
@@ -364,7 +364,7 @@ export const styles = StyleSheet.create({
     paddingHorizontal: 16,
     paddingVertical: 10,
     borderWidth: 1,
-    borderColor: "rgba(255, 255, 255, 0.2)",
+    borderColor: palette.white + "33",
   },
   prefectureButtonSelected: {
     backgroundColor: color.accentPrimary,
@@ -556,7 +556,7 @@ export const styles = StyleSheet.create({
   },
   challengeCardHostName: {
     fontSize: 12,
-    color: "rgba(255, 255, 255, 0.8)",
+    color: palette.white + "CC",
   },
   challengeCardProgress: {
     gap: 8,

@@ -116,7 +116,7 @@ export const styles = StyleSheet.create({
     borderBottomWidth: 8,
     borderBottomColor: "transparent",
     borderRightWidth: 8,
-    borderRightColor: "rgba(255, 255, 255, 0.15)",
+    borderRightColor: palette.white + "26",
   },
   thoughtText: {
     fontSize: 14,
