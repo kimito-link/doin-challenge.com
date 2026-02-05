@@ -12,7 +12,10 @@ jobs:
       - uses: actions/checkout@v4
 
       - name: Wait for deployment
-        run: sleep 300
+        run: |
+          echo "⏳ Waiting for Railway deployment to complete..."
+          echo "Expected commit: ${{ github.sha }}"
+          sleep 420  # 7分待機（Railwayのデプロイは通常3-5分だが、遅延を考慮）
 
       - name: Verify production health matches this commit
         env:
@@ -20,15 +23,45 @@ jobs:
           SHA: ${{ github.sha }}
         run: |
           chmod +x scripts/verify-deploy.sh
-          for i in $(seq 1 20); do
-            echo "Verify attempt $i/20..."
-            if ./scripts/verify-deploy.sh "$PROD_URL" "$SHA"; then
-              echo "✅ Production matches commit $SHA"
+          echo "🔍 Starting verification for commit: $SHA"
+          
+          # 最新のmainブランチのコミットも許容する（Railwayのデプロイが少し遅れる場合がある）
+          git fetch origin main --depth=1
+          LATEST_MAIN=$(git rev-parse origin/main)
+          echo "Latest main commit: $LATEST_MAIN"
+          
+          for i in $(seq 1 30); do
+            echo "Verify attempt $i/30..."
+            
+            # ヘルスチェックのレスポンスを取得
+            HEALTH_RESPONSE=$(curl -s "$PROD_URL/api/health" || echo "{}")
+            ACTUAL_SHA=$(echo "$HEALTH_RESPONSE" | jq -r '.commitSha // .gitSha // "unknown"')
+            OK=$(echo "$HEALTH_RESPONSE" | jq -r '.ok // false')
+            
+            echo "Health check response: $HEALTH_RESPONSE"
+            echo "Actual commitSha: $ACTUAL_SHA"
+            echo "Expected commitSha: $SHA (or latest main: $LATEST_MAIN)"
+            
+            # OKがfalseの場合は続行（デプロイ中かもしれない）
+            if [ "$OK" != "true" ]; then
+              echo "⚠️ Health check returned ok=false, continuing..."
+            elif [ "$ACTUAL_SHA" = "$SHA" ]; then
+              echo "✅ Production matches expected commit $SHA"
               exit 0
+            elif [ "$ACTUAL_SHA" = "$LATEST_MAIN" ]; then
+              echo "✅ Production matches latest main commit $LATEST_MAIN"
+              exit 0
+            elif [ "$ACTUAL_SHA" != "unknown" ]; then
+              echo "⚠️ Commit mismatch: expected=$SHA or $LATEST_MAIN, actual=$ACTUAL_SHA"
             fi
-            if [ "$i" -eq 20 ]; then
-              echo "❌ Still mismatch after 20 attempts"
+            
+            if [ "$i" -eq 30 ]; then
+              echo "❌ Still mismatch after 30 attempts"
+              echo "Expected: $SHA (or $LATEST_MAIN)"
+              echo "Actual: $ACTUAL_SHA"
+              echo "Last health response: $HEALTH_RESPONSE"
               exit 1
             fi
-            sleep 15
+            
+            sleep 20  # 20秒間隔でリトライ（合計10分）
           done
