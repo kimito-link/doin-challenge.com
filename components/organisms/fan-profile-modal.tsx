@@ -4,7 +4,7 @@
  * ファンをクリックした時に表示されるプロフィール情報と推し活状況モーダル
  */
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
 import { color, palette } from "@/theme/tokens";
 import {
   Modal,
@@ -68,13 +68,7 @@ export function FanProfileModal({
     { enabled: visible && (!!userId || !!twitterId) }
   );
 
-  useEffect(() => {
-    if (visible && username) {
-      loadProfile();
-    }
-  }, [visible, username]);
-
-  const loadProfile = async () => {
+  const loadProfile = useCallback(async () => {
     if (!username) return;
     setLoading(true);
     setError(null);
@@ -86,7 +80,13 @@ export function FanProfileModal({
     } finally {
       setLoading(false);
     }
-  };
+  }, [username]);
+
+  useEffect(() => {
+    if (visible && username) {
+      loadProfile();
+    }
+  }, [visible, username, loadProfile]);
 
   const handleOpenTwitter = () => {
     if (!username) return;

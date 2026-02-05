@@ -1,4 +1,4 @@
-import { View, Text, Pressable, useWindowDimensions, Platform } from "react-native";
+import { View, Text, Pressable, Platform } from "react-native";
 import * as Haptics from "expo-haptics";
 import { color, palette } from "@/theme/tokens";
 import { MapErrorBoundary } from "@/components/ui/map-error-boundary";
@@ -9,10 +9,6 @@ function opacityToHex(opacity: number): string {
   const hex = Math.round(opacity * 255).toString(16).padStart(2, "0").toUpperCase();
   return hex;
 }
-
-const MAP_MAX_WIDTH = 480;
-const MAP_MIN_WIDTH = 280;
-const HORIZONTAL_PADDING = 32;
 
 
 // 地図用地域グループ（北海道・東北が分離、近畿は「関西」表記、色付き）

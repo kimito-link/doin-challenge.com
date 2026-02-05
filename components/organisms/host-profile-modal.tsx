@@ -4,7 +4,7 @@
  * 主催者をクリックした時に表示されるプロフィール情報モーダル
  */
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
 import { color, palette } from "@/theme/tokens";
 import {
   Modal,
@@ -44,12 +44,6 @@ export function HostProfileModal({
   const [profile, setProfile] = useState<TwitterProfile | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-
-  useEffect(() => {
-    if (visible && username) {
-      loadProfile();
-    }
-  }, [visible, username]);
 
   const loadProfile = async () => {
     setLoading(true);

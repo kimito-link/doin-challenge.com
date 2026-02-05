@@ -7,10 +7,7 @@ import Animated, {
   SlideOutDown,
   useSharedValue,
   useAnimatedStyle,
-  withRepeat,
-  withSequence,
   withTiming,
-  Easing,
   LinearTransition,
 } from "react-native-reanimated";
 
@@ -43,14 +40,11 @@ export function JapanRegionBlocks({ prefectureCounts, onPrefecturePress, onRegio
   // ユーザーの地域がある場合、パルスアニメーションを開始
   useEffect(() => {
     if (userRegionId) {
-      pulseScale.value = withRepeat(
-        withSequence(
-          withTiming(1.03, { duration: 800, easing: Easing.inOut(Easing.ease) }),
-          withTiming(1, { duration: 800, easing: Easing.inOut(Easing.ease) })
-        ),
-        -1, // 無限リピート
-        true
-      );
+      pulseScale.value = withTiming(1.03, { duration: 800 });
+      const interval = setInterval(() => {
+        pulseScale.value = withTiming(pulseScale.value === 1 ? 1.03 : 1, { duration: 800 });
+      }, 800);
+      return () => clearInterval(interval);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
     // pulseScaleはReanimatedのSharedValueで、依存配列に含めると無限ループが発生する可能性があるため除外
