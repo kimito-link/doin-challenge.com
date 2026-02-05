@@ -224,8 +224,9 @@ export function TwitterUserCard({
               lineHeight: config.descriptionSize * 1.5, 
               color: onGradient ? color.textWhite : color.textMuted, 
               marginTop: 4,
-              flexWrap: 'wrap',
             }}
+            numberOfLines={2}
+            ellipsizeMode="tail"
           >
             {user.description}
           </Text>

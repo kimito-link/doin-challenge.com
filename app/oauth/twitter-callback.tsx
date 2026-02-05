@@ -61,17 +61,38 @@ export default function TwitterOAuthCallback() {
 
   const updateProfileMutation = trpc.profiles.updateMyProfile.useMutation({
     onSuccess: async (data) => {
-      if (data?.user) {
-        const existing = await Auth.getUserInfo();
-        if (existing) {
-          await Auth.setUserInfo({
-            ...existing,
-            prefecture: data.user.prefecture ?? existing.prefecture,
-            gender: data.user.gender ?? existing.gender,
-            role: data.user.role ?? existing.role,
-          });
+      try {
+        if (data?.user) {
+          const existing = await Auth.getUserInfo();
+          if (existing) {
+            await Auth.setUserInfo({
+              ...existing,
+              prefecture: data.user.prefecture ?? existing.prefecture,
+              gender: data.user.gender ?? existing.gender,
+              role: data.user.role ?? existing.role,
+            });
+          }
         }
+        // 状態更新完了後にナビゲーション（根本的解決: 確実に実行される）
+        setNeedOnboarding(false);
+        // 少し待ってからナビゲーション（状態更新の確実な反映を待つ）
+        setTimeout(() => {
+          navigateReplace.withUrl(savedReturnUrl);
+        }, 100);
+      } catch (error) {
+        console.error("[Twitter OAuth] Failed to update user info:", error);
+        // エラーが発生してもナビゲーションは実行（ユーザー体験を優先）
+        setNeedOnboarding(false);
+        navigateReplace.withUrl(savedReturnUrl);
       }
+    },
+    onError: (error) => {
+      console.error("[Twitter OAuth] updateMyProfile mutation failed:", error);
+      // エラー状態を設定してユーザーにフィードバック（根本的解決: エラーを可視化）
+      setErrorMessage(error.message || "プロフィールの更新に失敗しました。もう一度お試しください。");
+      setErrorType("general");
+      // エラーでもオンボーディングを閉じる（ユーザーが「あとで設定する」を選択できるように）
+      // setNeedOnboarding(false); // コメントアウト: エラー時はオンボーディングを継続
     },
   });
   const colors = useColors();
@@ -341,17 +362,12 @@ export default function TwitterOAuthCallback() {
               </View>
             </View>
             <Pressable
-              onPress={async () => {
-                try {
-                  await updateProfileMutation.mutateAsync({
-                    prefecture: onboardingPrefecture || null,
-                    gender: onboardingGender,
-                  });
-                  setNeedOnboarding(false);
-                  navigateReplace.withUrl(savedReturnUrl);
-                } catch (e) {
-                  console.error("[Twitter OAuth] updateMyProfile failed:", e);
-                }
+              onPress={() => {
+                // 根本的解決: onSuccess/onErrorでナビゲーションを処理するため、ここではmutationのみ実行
+                updateProfileMutation.mutate({
+                  prefecture: onboardingPrefecture || null,
+                  gender: onboardingGender,
+                });
               }}
               disabled={updateProfileMutation.isPending}
               style={{
@@ -363,8 +379,18 @@ export default function TwitterOAuthCallback() {
                 opacity: updateProfileMutation.isPending ? 0.6 : 1,
               }}
             >
-              <Text style={{ color: color.textWhite, fontWeight: "600", fontSize: 16 }}>確定</Text>
+              <Text style={{ color: color.textWhite, fontWeight: "600", fontSize: 16 }}>
+                {updateProfileMutation.isPending ? "保存中..." : "確定"}
+              </Text>
             </Pressable>
+            {/* エラーメッセージ表示（根本的解決: エラーを可視化） */}
+            {updateProfileMutation.isError && updateProfileMutation.error && (
+              <View style={{ marginTop: 12, padding: 12, backgroundColor: `${color.danger}20`, borderRadius: 8, borderWidth: 1, borderColor: color.danger }}>
+                <Text style={{ color: color.danger, fontSize: 14, textAlign: "center" }}>
+                  {updateProfileMutation.error.message || "プロフィールの更新に失敗しました"}
+                </Text>
+              </View>
+            )}
             <Pressable
               onPress={() => {
                 setNeedOnboarding(false);
