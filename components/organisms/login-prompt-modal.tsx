@@ -8,10 +8,7 @@ import * as Haptics from "expo-haptics";
 import Animated, { 
   useAnimatedStyle, 
   useSharedValue, 
-  withRepeat, 
   withTiming,
-  withSequence,
-  Easing,
   FadeIn,
   FadeOut,
 } from "react-native-reanimated";
@@ -53,6 +50,8 @@ export function LoginPromptModal({ visible, onLogin, onSkip }: LoginPromptModalP
       bounce.value = withTiming(0, { duration: 300 });
       sparkle.value = withTiming(1, { duration: 300 });
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    // bounceとsparkleはReanimatedのSharedValueで、依存配列に含めると無限ループが発生する可能性があるため除外
   }, [visible]);
   
   const characterAnimatedStyle = useAnimatedStyle(() => ({
@@ -210,7 +209,7 @@ export function LoginPromptModal({ visible, onLogin, onSkip }: LoginPromptModalP
 const styles = StyleSheet.create({
   overlay: {
     flex: 1,
-    backgroundColor: "rgba(0, 0, 0, 0.8)",
+    backgroundColor: palette.black + "CC", // rgba(0, 0, 0, 0.8) = 80% opacity = CC in hex
     justifyContent: "center",
     alignItems: "center",
     padding: 24,
@@ -281,8 +280,8 @@ const styles = StyleSheet.create({
     alignItems: "center",
     borderRadius: 12,
     borderWidth: 1,
-    borderColor: "rgba(255, 255, 255, 0.2)",
-    backgroundColor: "rgba(255, 255, 255, 0.05)",
+    borderColor: palette.white + "33", // rgba(255, 255, 255, 0.2) = 20% opacity = 33 in hex
+    backgroundColor: palette.white + "0D", // rgba(255, 255, 255, 0.05) = 5% opacity = 0D in hex
   },
   loginButtonText: {
     fontSize: 15,
