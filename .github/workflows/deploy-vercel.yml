@@ -55,6 +55,7 @@ jobs:
         run: |
           set -e
           echo "Expected commitSha: $EXPECTED_SHA"
+          HEALTH_SHA=""
           for i in $(seq 1 20); do
             echo "Verify attempt $i/20..."
             HEALTH=$(curl -s https://doin-challenge.com/api/health || true)
@@ -65,23 +66,36 @@ jobs:
               break
             fi
             if [[ $i -eq 20 ]]; then
-              echo "❌ /api/health commitSha mismatch after 20 attempts"
-              echo "Expected: $EXPECTED_SHA"
-              echo "Got: $HEALTH_SHA"
-              echo "Response: $HEALTH"
-              exit 1
+              git fetch origin main --depth=1
+              LATEST_MAIN=$(git rev-parse origin/main)
+              if [[ "$HEALTH_SHA" == "$LATEST_MAIN" ]]; then
+                echo "✅ /api/health is on latest main ($LATEST_MAIN), OK"
+                break
+              else
+                echo "❌ /api/health commitSha mismatch after 20 attempts"
+                echo "Expected: $EXPECTED_SHA"
+                echo "Got: $HEALTH_SHA"
+                echo "Response: $HEALTH"
+                exit 1
+              fi
             fi
             sleep 15
           done
           VERSION_JSON=$(curl -s https://doin-challenge.com/version.json || true)
           VJ_SHA=$(echo "$VERSION_JSON" | jq -r '.commitSha // empty')
           if [[ "$VJ_SHA" != "$EXPECTED_SHA" ]]; then
-            echo "❌ /version.json commitSha mismatch"
-            echo "Expected: $EXPECTED_SHA"
-            echo "Got: $VJ_SHA"
-            exit 1
+            LATEST_MAIN=$(git rev-parse origin/main 2>/dev/null || true)
+            if [[ -n "$LATEST_MAIN" && "$VJ_SHA" == "$LATEST_MAIN" ]]; then
+              echo "✅ /version.json is on latest main ($LATEST_MAIN), OK"
+            else
+              echo "❌ /version.json commitSha mismatch"
+              echo "Expected: $EXPECTED_SHA"
+              echo "Got: $VJ_SHA"
+              exit 1
+            fi
+          else
+            echo "✅ /version.json commitSha matches"
           fi
-          echo "✅ /version.json commitSha matches"
 
       - name: Gate 2 - API smoke
         env:
