@@ -73,7 +73,8 @@ export const styles = StyleSheet.create({
     textAlign: "right",
   },
   
-  // ????????E???E  scrollContent: {
+  // ??????????
+  scrollContent: {
     paddingBottom: 40,
   },
   content: {
