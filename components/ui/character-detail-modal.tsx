@@ -7,7 +7,7 @@ import { View, Text, ScrollView, ImageSourcePropType } from "react-native";
 import { Image } from "expo-image";
 import { Modal } from "./modal";
 import { Button } from "./button";
-import { color } from "@/theme/tokens";
+import { color, palette } from "@/theme/tokens";
 import { useColors } from "@/hooks/use-colors";
 
 export interface CharacterInfo {
@@ -53,7 +53,7 @@ export interface CharacterDetailModalProps {
  *     name: "君斗りんく",
  *     image: require("@/assets/images/link.png"),
  *     description: "動員ちゃれんじのメインキャラクター",
- *     themeColor: "#FF69B4",
+ *     themeColor: palette.pink500,
  *   }}
  * />
  * ```

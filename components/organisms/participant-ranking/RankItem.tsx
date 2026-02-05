@@ -6,7 +6,7 @@
 
 import { View, Text, StyleSheet } from "react-native";
 import MaterialIcons from "@expo/vector-icons/MaterialIcons";
-import { color } from "@/theme/tokens";
+import { color, palette } from "@/theme/tokens";
 import { formatParticipationDate } from "@/lib/format-date";
 import { RANK_COLORS, GENDER_COLORS } from "./constants";
 import { RankBadge } from "./RankBadge";
@@ -75,9 +75,9 @@ const styles = StyleSheet.create({
     gap: 12,
   },
   rankItemTop: {
-    backgroundColor: "rgba(255, 215, 0, 0.05)",
+    backgroundColor: palette.gold + "0D", // rgba(255, 215, 0, 0.05) = 5% opacity = 0D in hex
     borderWidth: 1,
-    borderColor: "rgba(255, 215, 0, 0.2)",
+    borderColor: palette.gold + "33", // rgba(255, 215, 0, 0.2) = 20% opacity = 33 in hex
   },
   userInfo: {
     flex: 1,

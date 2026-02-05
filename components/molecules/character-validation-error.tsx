@@ -256,12 +256,12 @@ export function CharacterGroupValidationError({ errors, visible }: CharacterGrou
 
 const styles = StyleSheet.create({
   container: {
-    backgroundColor: "rgba(236, 72, 153, 0.15)",
+    backgroundColor: palette.pink500 + "26", // rgba(236, 72, 153, 0.15) = 15% opacity = 26 in hex
     borderRadius: 16,
     padding: 16,
     marginBottom: 16,
     borderWidth: 1,
-    borderColor: "rgba(236, 72, 153, 0.3)",
+    borderColor: palette.pink500 + "4D", // rgba(236, 72, 153, 0.3) = 30% opacity = 4D in hex
   },
   content: {
     flexDirection: "row",
@@ -322,7 +322,7 @@ const styles = StyleSheet.create({
     padding: 16,
     marginBottom: 16,
     borderWidth: 1,
-    borderColor: "rgba(236, 72, 153, 0.25)",
+    borderColor: palette.pink500 + "40", // rgba(236, 72, 153, 0.25) = 25% opacity = 40 in hex
   },
   charactersRow: {
     flexDirection: "row",
@@ -377,7 +377,7 @@ const styles = StyleSheet.create({
     borderTopColor: color.accentPrimary,
   },
   errorList: {
-    backgroundColor: "rgba(0, 0, 0, 0.2)",
+    backgroundColor: palette.black + "33", // rgba(0, 0, 0, 0.2) = 20% opacity = 33 in hex
     borderRadius: 8,
     padding: 12,
   },

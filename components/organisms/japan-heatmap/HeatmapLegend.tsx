@@ -5,7 +5,7 @@
  */
 
 import { View, Text, StyleSheet } from "react-native";
-import { color } from "@/theme/tokens";
+import { color, palette } from "@/theme/tokens";
 
 /** 温度グラデーション: 少（ベージュ）→ 多（濃い赤）。最高状態で日本列島が赤く染まる */
 const HEAT_LEVELS = [
@@ -43,7 +43,7 @@ const styles = StyleSheet.create({
     height: 14,
     borderRadius: 2,
     borderWidth: 1,
-    borderColor: "rgba(255,255,255,0.2)",
+    borderColor: palette.white + "33", // rgba(255,255,255,0.2) = 20% opacity = 33 in hex
   },
   legendText: {
     color: color.textMuted,

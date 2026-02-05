@@ -12,19 +12,19 @@ interface ErrorMessageProps {
 
 const typeConfig = {
   error: {
-    bgColor: "rgba(239, 68, 68, 0.1)",
+    bgColor: palette.red500 + "1A", // rgba(239, 68, 68, 0.1) = 10% opacity = 1A in hex
     borderColor: color.danger,
     iconColor: color.danger,
     icon: "error-outline" as const,
   },
   warning: {
-    bgColor: "rgba(245, 158, 11, 0.1)",
+    bgColor: palette.gold + "1A", // rgba(245, 158, 11, 0.1) = 10% opacity = 1A in hex
     borderColor: color.warning,
     iconColor: color.warning,
     icon: "warning" as const,
   },
   info: {
-    bgColor: "rgba(59, 130, 246, 0.1)",
+    bgColor: palette.blue500 + "1A", // rgba(59, 130, 246, 0.1) = 10% opacity = 1A in hex
     borderColor: color.info,
     iconColor: color.info,
     icon: "info-outline" as const,

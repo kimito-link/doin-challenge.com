@@ -228,7 +228,7 @@ export function useErrorDialog(): UseErrorDialogReturn {
 const styles = StyleSheet.create({
   overlay: {
     flex: 1,
-    backgroundColor: "rgba(0, 0, 0, 0.7)",
+    backgroundColor: palette.black + "B3", // rgba(0, 0, 0, 0.7) = 70% opacity = B3 in hex
     justifyContent: "center",
     alignItems: "center",
     padding: 24,
@@ -256,7 +256,7 @@ const styles = StyleSheet.create({
     width: 64,
     height: 64,
     borderRadius: 32,
-    backgroundColor: "rgba(239, 68, 68, 0.1)",
+    backgroundColor: palette.red500 + "1A", // rgba(239, 68, 68, 0.1) = 10% opacity = 1A in hex
     justifyContent: "center",
     alignItems: "center",
     marginBottom: 16,
@@ -276,7 +276,7 @@ const styles = StyleSheet.create({
     marginBottom: 16,
   },
   encourageContainer: {
-    backgroundColor: "rgba(255, 255, 255, 0.05)",
+    backgroundColor: palette.white + "0D", // rgba(255, 255, 255, 0.05) = 5% opacity = 0D in hex
     borderRadius: 12,
     padding: 12,
     marginBottom: 20,

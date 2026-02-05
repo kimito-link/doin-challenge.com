@@ -5,7 +5,7 @@
  * v6.35: スタイルコロケーション対応
  */
 import { StyleSheet, Dimensions } from "react-native";
-import { color } from "@/theme/tokens";
+import { color, palette } from "@/theme/tokens";
 
 const { width: SCREEN_WIDTH } = Dimensions.get("window");
 
@@ -39,7 +39,7 @@ export const styles = StyleSheet.create({
     width: 32,
     height: 32,
     borderRadius: 16,
-    backgroundColor: "rgba(255, 255, 255, 0.2)",
+    backgroundColor: palette.white + "33", // rgba(255, 255, 255, 0.2) = 20% opacity = 33 in hex
     justifyContent: "center",
     alignItems: "center",
   },
@@ -58,7 +58,7 @@ export const styles = StyleSheet.create({
   progressBarWrapper: {
     flex: 1,
     height: 4,
-    backgroundColor: "rgba(255, 255, 255, 0.2)",
+    backgroundColor: palette.white + "33", // rgba(255, 255, 255, 0.2) = 20% opacity = 33 in hex
     borderRadius: 2,
     overflow: "hidden",
   },
@@ -69,7 +69,7 @@ export const styles = StyleSheet.create({
   },
   progressText: {
     fontSize: 12,
-    color: "rgba(255, 255, 255, 0.6)",
+    color: palette.white + "99", // rgba(255, 255, 255, 0.6) = 60% opacity = 99 in hex
     minWidth: 50,
     textAlign: "right",
   },
@@ -100,7 +100,7 @@ export const styles = StyleSheet.create({
   // 思考バブル
   thoughtBubble: {
     flex: 1,
-    backgroundColor: "rgba(255, 255, 255, 0.15)",
+    backgroundColor: palette.white + "26", // rgba(255, 255, 255, 0.15) = 15% opacity = 26 in hex
     borderRadius: 16,
     padding: 12,
     position: "relative",
@@ -142,7 +142,7 @@ export const styles = StyleSheet.create({
   },
   subMessageText: {
     fontSize: 14,
-    color: "rgba(255, 255, 255, 0.8)",
+    color: palette.white + "CC", // rgba(255, 255, 255, 0.8) = 80% opacity = CC in hex
     textAlign: "center",
     marginBottom: 20,
     paddingHorizontal: 20,
@@ -170,7 +170,7 @@ export const styles = StyleSheet.create({
     height: 56,
   },
   navBubble: {
-    backgroundColor: "rgba(255, 255, 255, 0.15)",
+    backgroundColor: palette.white + "26", // rgba(255, 255, 255, 0.15) = 15% opacity = 26 in hex
     borderRadius: 16,
     paddingHorizontal: 16,
     paddingVertical: 10,
@@ -184,7 +184,7 @@ export const styles = StyleSheet.create({
     marginRight: -8,
   },
   navBubbleDisabled: {
-    backgroundColor: "rgba(255, 255, 255, 0.08)",
+    backgroundColor: palette.white + "14", // rgba(255, 255, 255, 0.08) = 8% opacity = 14 in hex
   },
   navBubblePrimary: {
     backgroundColor: color.hotPink,
@@ -221,7 +221,7 @@ export const styles = StyleSheet.create({
     fontWeight: "600",
   },
   navBubbleTextDisabled: {
-    color: "rgba(255, 255, 255, 0.4)",
+    color: palette.white + "66", // rgba(255, 255, 255, 0.4) = 40% opacity = 66 in hex
   },
   navBubbleTextPrimary: {
     color: color.textWhite,

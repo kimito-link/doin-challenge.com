@@ -1,5 +1,5 @@
 import { StyleSheet } from "react-native";
-import { color } from "@/theme/tokens";
+import { color, palette } from "@/theme/tokens";
 
 export const styles = StyleSheet.create({
   container: {
@@ -194,7 +194,7 @@ export const styles = StyleSheet.create({
     borderBottomColor: color.surfaceAlt,
   },
   rankingItemHighlight: {
-    backgroundColor: "rgba(236, 72, 153, 0.1)",
+    backgroundColor: palette.pink500 + "1A", // rgba(236, 72, 153, 0.1) = 10% opacity = 1A in hex
     marginHorizontal: -8,
     paddingHorizontal: 8,
     borderRadius: 8,
@@ -250,11 +250,11 @@ export const styles = StyleSheet.create({
   hotHighlight: {
     flexDirection: "row",
     alignItems: "center",
-    backgroundColor: "rgba(255, 107, 107, 0.15)",
+    backgroundColor: palette.red400 + "26", // rgba(255, 107, 107, 0.15) = 15% opacity = 26 in hex
     borderRadius: 12,
     padding: 12,
     borderWidth: 1,
-    borderColor: "rgba(255, 107, 107, 0.3)",
+    borderColor: palette.red400 + "4D", // rgba(255, 107, 107, 0.3) = 30% opacity = 4D in hex
   },
   hotIcon: {
     fontSize: 32,
@@ -272,7 +272,7 @@ export const styles = StyleSheet.create({
   // モーダルスタイル
   modalOverlay: {
     flex: 1,
-    backgroundColor: "rgba(0, 0, 0, 0.6)",
+    backgroundColor: palette.black + "99", // rgba(0, 0, 0, 0.6) = 60% opacity = 99 in hex
     justifyContent: "flex-end",
   },
   modalContent: {

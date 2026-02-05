@@ -99,7 +99,7 @@ export function GlobalMenu({ isVisible, onClose }: GlobalMenuProps) {
               width: 280,
               height: "100%",
               backgroundColor: color.surface,
-              shadowColor: "#000",
+              shadowColor: palette.black,
               shadowOffset: { width: -2, height: 0 },
               shadowOpacity: 0.3,
               shadowRadius: 10,

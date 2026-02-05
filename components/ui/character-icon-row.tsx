@@ -49,8 +49,8 @@ export interface CharacterIconRowProps {
  * ```tsx
  * <CharacterIconRow
  *   icons={[
- *     { id: "char1", image: require("@/assets/images/char1.png"), size: 56, borderWidth: 2, borderColor: "#FF69B4", name: "キャラ1" },
- *     { id: "char2", image: require("@/assets/images/char2.png"), size: 64, borderWidth: 3, borderColor: "#FFA500", name: "キャラ2" },
+ *     { id: "char1", image: require("@/assets/images/char1.png"), size: 56, borderWidth: 2, borderColor: palette.pink500, name: "キャラ1" },
+ *     { id: "char2", image: require("@/assets/images/char2.png"), size: 64, borderWidth: 3, borderColor: palette.gold, name: "キャラ2" },
  *   ]}
  *   gap={12}
  *   marginBottom={24}

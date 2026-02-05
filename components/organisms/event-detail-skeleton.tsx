@@ -12,7 +12,7 @@ const { width: screenWidth } = Dimensions.get("window");
  */
 export function EventDetailSkeleton() {
   return (
-    <ScreenContainer containerClassName="bg-[#0D1117]">
+    <ScreenContainer containerClassName="bg-background">
       <AppHeader title="" />
       <FadeView visible={true} style={{ flex: 1 }}>
         <ScrollView style={{ flex: 1, backgroundColor: color.bg }}>

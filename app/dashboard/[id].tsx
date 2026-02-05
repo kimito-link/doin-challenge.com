@@ -16,6 +16,12 @@ import { ParticipantRanking } from "@/components/organisms/participant-ranking";
 
 const { width: screenWidth } = Dimensions.get("window");
 
+// 透明度を16進数に変換するヘルパー関数
+function opacityToHex(opacity: number): string {
+  const hex = Math.round(opacity * 255).toString(16).padStart(2, "0").toUpperCase();
+  return hex;
+}
+
 // ダッシュボード用地域グループ（色付き）
 // 注: 共通のdashboardRegionGroupsとは分割が異なる（北海道が単独、東北が別）
 const dashboardRegionGroups = [
@@ -73,7 +79,7 @@ function TimeHeatmap({ participations }: { participations: Participation[] }) {
                 margin: 1,
                 borderRadius: 4,
                 backgroundColor: count > 0 
-                  ? `rgba(236, 72, 153, ${0.2 + intensity * 0.8})` 
+                  ? palette.pink500 + opacityToHex(0.2 + intensity * 0.8) 
                   : color.surface,
                 alignItems: "center",
                 justifyContent: "center",

@@ -134,7 +134,7 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     alignItems: "center",
     gap: 4,
-    backgroundColor: "rgba(245, 158, 11, 0.1)",
+    backgroundColor: palette.gold + "1A", // rgba(245, 158, 11, 0.1) = 10% opacity = 1A in hex (warning color)
     paddingHorizontal: 8,
     paddingVertical: 4,
     borderRadius: 4,

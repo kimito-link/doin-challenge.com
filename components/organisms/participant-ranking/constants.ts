@@ -4,13 +4,13 @@
  * 単一責任: 静的データの定義のみ
  */
 
-import { color } from "@/theme/tokens";
+import { color, palette } from "@/theme/tokens";
 
 /** ランキングバッジの色 */
 export const RANK_COLORS = {
-  1: { bg: color.rankGold, text: "#000", gradient: [color.rankGold, "#FFA500"] as const },
-  2: { bg: color.rankSilver, text: "#000", gradient: ["#E8E8E8", color.rankSilver] as const },
-  3: { bg: color.rankBronze, text: color.textWhite, gradient: [color.rankBronze, "#8B4513"] as const },
+  1: { bg: color.rankGold, text: palette.black, gradient: [color.rankGold, palette.gold] as const },
+  2: { bg: color.rankSilver, text: palette.black, gradient: [palette.gray200, color.rankSilver] as const },
+  3: { bg: color.rankBronze, text: color.textWhite, gradient: [color.rankBronze, palette.bronze] as const },
 } as const;
 
 /** ランキングバッジのアイコン */
@@ -22,8 +22,8 @@ export const RANK_ICONS = {
 
 /** 性別による背景色 */
 export const GENDER_COLORS = {
-  male: { bg: "rgba(59, 130, 246, 0.15)", border: "#3B82F6" },
-  female: { bg: "rgba(236, 72, 153, 0.15)", border: "#EC4899" },
+  male: { bg: palette.blue500 + "26", border: palette.blue500 }, // rgba(59, 130, 246, 0.15) = 15% opacity = 26 in hex
+  female: { bg: palette.pink500 + "26", border: palette.pink500 }, // rgba(236, 72, 153, 0.15) = 15% opacity = 26 in hex
   unspecified: { bg: "transparent", border: "transparent" },
 } as const;
 

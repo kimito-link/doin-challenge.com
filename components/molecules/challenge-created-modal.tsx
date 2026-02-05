@@ -380,7 +380,7 @@ const styles = StyleSheet.create({
     alignItems: "center",
   },
   primaryButtonText: {
-    color: "#fff",
+    color: palette.white,
     fontSize: 16,
     fontWeight: "bold",
   },

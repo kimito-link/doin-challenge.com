@@ -5,6 +5,7 @@
 
 import { View, Text } from "react-native";
 import { Image } from "expo-image";
+import { palette } from "@/theme/tokens";
 
 interface LinkSpeechProps {
   message: string;
@@ -50,7 +51,7 @@ export function LinkSpeech({
         borderColor,
       }}>
         <Text style={{ 
-          color: "#1A1D21", 
+          color: palette.gray900, 
           fontSize: 14, 
           lineHeight: 21,
           fontWeight: "500",

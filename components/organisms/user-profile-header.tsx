@@ -38,11 +38,11 @@ export interface UserProfileHeaderProps {
  * ユーザープロフィールヘッダーコンポーネント
  * 
  * v6.172: 男女別色分け対応
- * - 男性: 青系グラデーション（#1E40AF → #3B82F6 → #60A5FA）
- * - 女性: ピンク系グラデーション（#BE185D → #EC4899 → #F472B6）
+ * - 男性: 青系グラデーション（palette.blue600 → palette.blue500 → palette.blue400）
+ * - 女性: ピンク系グラデーション（palette.pink600 → palette.pink500 → palette.red400）
  * 
  * v6.175: 性別未指定対応
- * - 未指定: グレー系グラデーション（#475569 → #64748B → #94A3B8）
+ * - 未指定: グレー系グラデーション（palette.gray600 → palette.gray500 → palette.gray400）
  */
 export function UserProfileHeader({
   user,

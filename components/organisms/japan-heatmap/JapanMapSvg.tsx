@@ -7,7 +7,7 @@
 import { View, StyleSheet, Platform, useWindowDimensions } from "react-native";
 import Svg, { Path, G, Text as SvgText } from "react-native-svg";
 import * as Haptics from "expo-haptics";
-import { color } from "@/theme/tokens";
+import { color, palette } from "@/theme/tokens";
 import { prefecturesData, prefectureNameToCode } from "@/lib/prefecture-paths";
 import { MAP_CONFIG, PREFECTURE_LABEL_POSITIONS } from "./constants";
 import { getHeatColor, normalizePrefectureName, getShortPrefectureName, getDynamicIcon } from "./utils";
@@ -140,6 +140,6 @@ const styles = StyleSheet.create({
     overflow: "hidden",
     marginBottom: 16,
     borderWidth: 2,
-    borderColor: "#666",
+    borderColor: palette.gray600,
   },
 });

@@ -8,6 +8,7 @@
 
 import { View, Text, Modal } from "react-native";
 import { useColors } from "@/hooks/use-colors";
+import { palette } from "@/theme/tokens";
 import Animated, {
   FadeIn,
   FadeOut,
@@ -85,7 +86,7 @@ export function WelcomeMessage({ visible, onHide, userName }: WelcomeMessageProp
           flex: 1,
           justifyContent: "center",
           alignItems: "center",
-          backgroundColor: "rgba(0, 0, 0, 0.6)",
+          backgroundColor: palette.black + "99", // rgba(0, 0, 0, 0.6) = 60% opacity = 99 in hex
         }}
       >
         <Animated.View
@@ -98,7 +99,7 @@ export function WelcomeMessage({ visible, onHide, userName }: WelcomeMessageProp
             maxWidth: 400,
             width: "90%",
             alignItems: "center",
-            shadowColor: "#000",
+            shadowColor: palette.black,
             shadowOffset: { width: 0, height: 4 },
             shadowOpacity: 0.3,
             shadowRadius: 12,

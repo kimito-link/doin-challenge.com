@@ -266,7 +266,7 @@ export default function EditParticipationScreen() {
                       gap: 8,
                       paddingVertical: 14,
                       borderRadius: 12,
-                      backgroundColor: gender === "male" ? "#3B82F620" : colors.surface,
+                      backgroundColor: gender === "male" ? palette.blue500 + "33" : colors.surface, // #3B82F620 = 20% opacity = 33 in hex
                       borderWidth: 2,
                       borderColor: gender === "male" ? color.info : colors.border,
                     }}
@@ -291,7 +291,7 @@ export default function EditParticipationScreen() {
                       gap: 8,
                       paddingVertical: 14,
                       borderRadius: 12,
-                      backgroundColor: gender === "female" ? "#EC489920" : colors.surface,
+                      backgroundColor: gender === "female" ? palette.pink500 + "33" : colors.surface, // #EC489920 = 20% opacity = 33 in hex
                       borderWidth: 2,
                       borderColor: gender === "female" ? color.accentPrimary : colors.border,
                     }}
