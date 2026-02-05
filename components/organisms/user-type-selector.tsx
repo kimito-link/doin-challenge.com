@@ -15,7 +15,6 @@ import Animated, {
   Easing,
 } from "react-native-reanimated";
 import { Image } from "expo-image";
-import { useColors } from "@/hooks/use-colors";
 import * as Haptics from "expo-haptics";
 import { Platform } from "react-native";
 import type { UserType } from "@/lib/tutorial-context";
@@ -43,8 +42,6 @@ type UserTypeSelectorProps = {
  * - より魅力的なデザイン
  */
 export function UserTypeSelector({ visible, onSelect, onSkip }: UserTypeSelectorProps) {
-  const colors = useColors();
-  
   // アニメーション値
   const fanScale = useSharedValue(1);
   const hostScale = useSharedValue(1);
@@ -63,7 +60,7 @@ export function UserTypeSelector({ visible, onSelect, onSkip }: UserTypeSelector
       sparkle3Opacity.value = withTiming(1, { duration: 300 });
       titleScale.value = withTiming(1, { duration: 300 });
     }
-  }, [visible]);
+  }, [visible, mainCharacterY, sparkle1Opacity, sparkle2Opacity, sparkle3Opacity, titleScale]);
 
   const handlePressIn = (type: UserType) => {
     if (type === "fan") {
@@ -222,7 +219,7 @@ const styles = StyleSheet.create({
   },
   overlay: {
     flex: 1,
-    backgroundColor: "rgba(0, 0, 0, 0.92)",
+    backgroundColor: palette.gray900 + "EB", // rgba(0, 0, 0, 0.92) の透明度16進数
     justifyContent: "center",
     alignItems: "center",
     padding: 20,
@@ -265,7 +262,7 @@ const styles = StyleSheet.create({
     textAlign: "center",
   },
   subtitle: {
-    color: "rgba(255, 255, 255, 0.7)",
+    color: color.textWhite + "B3", // rgba(255, 255, 255, 0.7) の透明度16進数
     fontSize: 18,
     marginBottom: 32,
     textAlign: "center",
@@ -281,7 +278,7 @@ const styles = StyleSheet.create({
     borderRadius: 20,
     padding: 16,
     alignItems: "center",
-    shadowColor: "#000",
+    shadowColor: palette.gray900,
     shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.3,
     shadowRadius: 8,
@@ -291,7 +288,7 @@ const styles = StyleSheet.create({
     width: 70,
     height: 70,
     borderRadius: 35,
-    backgroundColor: "rgba(255, 255, 255, 0.2)",
+    backgroundColor: color.textWhite + "33", // rgba(255, 255, 255, 0.2) の透明度16進数
     justifyContent: "center",
     alignItems: "center",
     marginBottom: 12,
@@ -307,13 +304,13 @@ const styles = StyleSheet.create({
     marginBottom: 4,
   },
   optionDescription: {
-    color: "rgba(255, 255, 255, 0.8)",
+    color: color.textWhite + "CC", // rgba(255, 255, 255, 0.8) の透明度16進数
     fontSize: 12,
     textAlign: "center",
     marginBottom: 8,
   },
   optionBadge: {
-    backgroundColor: "rgba(255, 255, 255, 0.2)",
+    backgroundColor: color.textWhite + "33", // rgba(255, 255, 255, 0.2) の透明度16進数
     paddingHorizontal: 10,
     paddingVertical: 4,
     borderRadius: 10,
@@ -324,7 +321,7 @@ const styles = StyleSheet.create({
     fontWeight: "600",
   },
   helpText: {
-    color: "rgba(255, 255, 255, 0.5)",
+    color: color.textWhite + "80", // rgba(255, 255, 255, 0.5) の透明度16進数
     fontSize: 12,
     marginBottom: 16,
     textAlign: "center",
@@ -334,7 +331,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 24,
   },
   skipText: {
-    color: "rgba(255, 255, 255, 0.5)",
+    color: color.textWhite + "80", // rgba(255, 255, 255, 0.5) の透明度16進数
     fontSize: 14,
   },
 });
