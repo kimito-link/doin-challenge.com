@@ -1,13 +1,15 @@
 /**
  * preview-content.styles.ts
  * 
- * PreviewContent繧ｳ繝ｳ繝昴・繝阪Φ繝亥ｰら畑縺ｮ繧ｹ繧ｿ繧､繝ｫ螳夂ｾｩ
- * v6.35: 繧ｹ繧ｿ繧､繝ｫ繧ｳ繝ｭ繧ｱ繝ｼ繧ｷ繝ｧ繝ｳ蟇ｾ蠢・ */
+ * PreviewContent????????????????
+ * v6.35: ?????????????
+ */
 import { StyleSheet } from "react-native";
 import { color, palette } from "@/theme/tokens";
 
 export const styles = StyleSheet.create({
-  // 繝励Ξ繝薙Η繝ｼ繧ｳ繝ｳ繝・リ・亥・騾夲ｼ・  previewContainer: {
+  // ?????????????
+  previewContainer: {
     backgroundColor: palette.white + "1A", // 10% opacity
     borderRadius: 16,
     padding: 16,
@@ -34,34 +36,34 @@ export const styles = StyleSheet.create({
     gap: 8,
   },
   mapRegion: {
+    width: "48%",
     borderRadius: 8,
-    padding: 12,
-    minWidth: 70,
+    padding: 8,
     alignItems: "center",
   },
   mapRegionName: {
-    fontSize: 12,
+    fontSize: 10,
     color: color.textWhite,
-    fontWeight: "bold",
+    marginBottom: 4,
   },
   mapRegionCount: {
     fontSize: 16,
-    color: color.textWhite,
     fontWeight: "bold",
-    marginTop: 4,
+    color: color.textWhite,
   },
   
-  // Participant styles
+  // Participant preview
   participantRow: {
     flexDirection: "row",
     gap: 8,
+    width: "100%",
   },
   participantCard: {
+    flex: 1,
+    alignItems: "center",
     backgroundColor: palette.white + "1A", // 10% opacity
     borderRadius: 12,
     padding: 12,
-    alignItems: "center",
-    minWidth: 80,
   },
   participantAvatar: {
     width: 40,
@@ -72,14 +74,15 @@ export const styles = StyleSheet.create({
     marginBottom: 8,
   },
   participantInitial: {
+    color: color.textWhite,
     fontSize: 16,
     fontWeight: "bold",
-    color: color.textWhite,
   },
   participantName: {
-    fontSize: 12,
     color: color.textWhite,
-    fontWeight: "bold",
+    fontSize: 12,
+    fontWeight: "600",
+    marginBottom: 2,
   },
   participantPref: {
     fontSize: 10,
@@ -96,20 +99,23 @@ export const styles = StyleSheet.create({
     fontWeight: "bold",
     color: color.textWhite,
     marginBottom: 12,
+    textAlign: "center",
   },
   chartBars: {
     flexDirection: "row",
-    justifyContent: "space-around",
     alignItems: "flex-end",
+    justifyContent: "space-around",
     height: 80,
+    gap: 8,
   },
   chartBarItem: {
+    flex: 1,
     alignItems: "center",
   },
   chartBarFill: {
-    width: 40,
+    width: "100%",
     borderRadius: 4,
-    marginBottom: 8,
+    marginBottom: 4,
   },
   chartBarLabel: {
     fontSize: 10,
@@ -118,25 +124,24 @@ export const styles = StyleSheet.create({
   
   // Notification preview
   notificationPreview: {
-    backgroundColor: color.textWhite,
-    borderRadius: 12,
-    padding: 16,
     flexDirection: "row",
     alignItems: "center",
-    gap: 12,
+    backgroundColor: color.textWhite,
+    borderRadius: 12,
+    padding: 12,
     width: "100%",
-    maxWidth: 320,
   },
   notificationIconContainer: {
-    width: 48,
-    height: 48,
-    borderRadius: 24,
+    width: 40,
+    height: 40,
+    borderRadius: 20,
     backgroundColor: color.accentPrimary,
     justifyContent: "center",
     alignItems: "center",
+    marginRight: 12,
   },
   notificationIconText: {
-    fontSize: 24,
+    fontSize: 20,
   },
   notificationContent: {
     flex: 1,
@@ -145,27 +150,26 @@ export const styles = StyleSheet.create({
     fontSize: 14,
     fontWeight: "bold",
     color: color.overlayDark,
+    marginBottom: 2,
   },
   notificationBody: {
     fontSize: 12,
-    color: palette.gray600,
-    marginTop: 2,
+    color: color.textMuted,
+    marginBottom: 2,
   },
   notificationTime: {
     fontSize: 10,
-    color: palette.gray500,
-    marginTop: 4,
+    color: color.textMuted,
   },
   
-  // Badge/Crown preview
+  // Crown preview
   badgePreview: {
     alignItems: "center",
-    width: "100%",
   },
   crownIcon: {
-    width: 64,
-    height: 64,
-    borderRadius: 32,
+    width: 60,
+    height: 60,
+    borderRadius: 30,
     backgroundColor: color.rankGold,
     justifyContent: "center",
     alignItems: "center",
@@ -187,27 +191,25 @@ export const styles = StyleSheet.create({
   badgeGrid: {
     flexDirection: "row",
     flexWrap: "wrap",
-    gap: 12,
-    justifyContent: "center",
+    gap: 8,
     marginTop: 12,
   },
   badgeItem: {
-    alignItems: "center",
-    padding: 12,
-    backgroundColor: palette.white + "1A", // 10% opacity
+    width: 60,
+    height: 60,
     borderRadius: 12,
-    minWidth: 70,
-  },
-  badgeItemLocked: {
-    opacity: 0.5,
+    backgroundColor: palette.white + "1A", // 10% opacity
+    justifyContent: "center",
+    alignItems: "center",
   },
   badgeEmoji: {
-    fontSize: 28,
+    fontSize: 24,
     marginBottom: 4,
   },
   badgeName: {
     fontSize: 10,
     color: color.textWhite,
+    textAlign: "center",
   },
   
   // Comment preview
@@ -216,39 +218,39 @@ export const styles = StyleSheet.create({
     borderRadius: 16,
     padding: 16,
     width: "100%",
-    maxWidth: 320,
   },
   commentHeader: {
     flexDirection: "row",
     alignItems: "center",
-    gap: 12,
-    marginBottom: 12,
+    marginBottom: 8,
   },
   commentAvatar: {
-    width: 40,
-    height: 40,
-    borderRadius: 20,
+    width: 32,
+    height: 32,
+    borderRadius: 16,
     justifyContent: "center",
     alignItems: "center",
+    marginRight: 8,
   },
   commentAvatarText: {
-    fontSize: 16,
-    fontWeight: "bold",
     color: color.textWhite,
-  },
-  commentName: {
     fontSize: 14,
     fontWeight: "bold",
+  },
+  commentName: {
     color: color.textWhite,
+    fontSize: 12,
+    fontWeight: "600",
+    marginBottom: 2,
   },
   commentTime: {
     fontSize: 10,
     color: palette.white + "80", // 50% opacity
   },
   commentText: {
-    fontSize: 14,
     color: color.textWhite,
-    lineHeight: 22,
+    fontSize: 14,
+    lineHeight: 20,
   },
   
   // Invite preview
@@ -257,16 +259,16 @@ export const styles = StyleSheet.create({
     width: "100%",
   },
   inviteTitle: {
-    fontSize: 16,
+    fontSize: 14,
     fontWeight: "bold",
     color: color.textWhite,
-    marginBottom: 16,
+    marginBottom: 12,
   },
   inviteCounter: {
     flexDirection: "row",
     alignItems: "center",
     gap: 16,
-    marginBottom: 12,
+    marginBottom: 8,
   },
   inviteButton: {
     width: 44,
@@ -277,20 +279,22 @@ export const styles = StyleSheet.create({
     alignItems: "center",
   },
   inviteButtonActive: {
-    backgroundColor: color.successLight,
+    backgroundColor: color.accentPrimary,
   },
   inviteButtonText: {
-    fontSize: 24,
     color: color.textWhite,
+    fontSize: 20,
     fontWeight: "bold",
   },
   inviteButtonTextActive: {
-    color: color.overlayDark,
+    color: color.textWhite,
   },
   inviteCount: {
-    fontSize: 32,
+    fontSize: 24,
     fontWeight: "bold",
-    color: color.successLight,
+    color: color.textWhite,
+    minWidth: 40,
+    textAlign: "center",
   },
   inviteDesc: {
     fontSize: 12,
@@ -303,7 +307,6 @@ export const styles = StyleSheet.create({
     borderRadius: 16,
     padding: 16,
     width: "100%",
-    maxWidth: 320,
   },
   formField: {
     marginBottom: 12,
@@ -318,7 +321,7 @@ export const styles = StyleSheet.create({
     borderRadius: 8,
     padding: 12,
     borderWidth: 1,
-    borderColor: palette.white + "33",
+    borderColor: palette.white + "33", // 20% opacity
   },
   formInputText: {
     fontSize: 14,
@@ -329,7 +332,7 @@ export const styles = StyleSheet.create({
     borderRadius: 8,
     padding: 12,
     borderWidth: 1,
-    borderColor: palette.white + "33",
+    borderColor: palette.white + "33", // 20% opacity
     flexDirection: "row",
     justifyContent: "space-between",
     alignItems: "center",
@@ -349,12 +352,12 @@ export const styles = StyleSheet.create({
     fontWeight: "bold",
     color: color.textWhite,
     marginBottom: 12,
+    textAlign: "center",
   },
   prefectureGrid: {
     flexDirection: "row",
     flexWrap: "wrap",
     gap: 8,
-    justifyContent: "center",
   },
   prefectureButton: {
     backgroundColor: palette.white + "1A", // 10% opacity
@@ -362,7 +365,7 @@ export const styles = StyleSheet.create({
     paddingHorizontal: 16,
     paddingVertical: 10,
     borderWidth: 1,
-    borderColor: palette.white + "33",
+    borderColor: palette.white + "33", // 20% opacity
   },
   prefectureButtonSelected: {
     backgroundColor: color.accentPrimary,
@@ -373,7 +376,6 @@ export const styles = StyleSheet.create({
     color: palette.white + "B3", // 70% opacity
   },
   prefectureTextSelected: {
-    fontSize: 14,
     color: color.textWhite,
     fontWeight: "bold",
   },
@@ -384,33 +386,33 @@ export const styles = StyleSheet.create({
     borderRadius: 16,
     padding: 16,
     width: "100%",
-    maxWidth: 320,
   },
   profileHeader: {
     flexDirection: "row",
-    alignItems: "center",
+    alignItems: "flex-start",
     marginBottom: 12,
   },
   profileAvatar: {
-    width: 48,
-    height: 48,
-    borderRadius: 24,
+    width: 50,
+    height: 50,
+    borderRadius: 25,
     justifyContent: "center",
     alignItems: "center",
     marginRight: 12,
   },
   profileAvatarText: {
+    color: color.textWhite,
     fontSize: 20,
     fontWeight: "bold",
-    color: color.textWhite,
   },
   profileInfo: {
     flex: 1,
   },
   profileName: {
-    fontSize: 14,
+    fontSize: 16,
     fontWeight: "bold",
     color: color.textWhite,
+    marginBottom: 4,
   },
   profileBio: {
     fontSize: 12,
@@ -418,39 +420,39 @@ export const styles = StyleSheet.create({
     marginTop: 2,
   },
   profileFollowers: {
-    fontSize: 12,
-    color: color.rankGold,
+    fontSize: 11,
+    color: palette.white + "B3", // 70% opacity
     marginTop: 4,
   },
   influencerBadge: {
-    backgroundColor: palette.gold + "33", // % opacity
+    backgroundColor: palette.gold + "33", // 20% opacity
     borderRadius: 4,
     paddingHorizontal: 6,
     paddingVertical: 2,
-    alignSelf: "flex-start",
     marginBottom: 4,
   },
   influencerBadgeText: {
     fontSize: 10,
-    color: color.rankGold,
     fontWeight: "bold",
+    color: color.rankGold,
   },
   followButton: {
-    backgroundColor: color.twitter,
+    backgroundColor: color.accentPrimary,
     borderRadius: 20,
+    paddingHorizontal: 24,
     paddingVertical: 10,
     alignItems: "center",
+    marginTop: 12,
   },
   followButtonText: {
+    color: color.textWhite,
     fontSize: 14,
     fontWeight: "bold",
-    color: color.textWhite,
   },
   
   // Gender preview
   genderPreview: {
     width: "100%",
-    maxWidth: 320,
   },
   genderTitle: {
     fontSize: 14,
@@ -471,14 +473,14 @@ export const styles = StyleSheet.create({
     alignItems: "center",
   },
   genderText: {
+    color: color.textWhite,
     fontSize: 12,
     fontWeight: "bold",
-    color: color.textWhite,
   },
   genderLegend: {
     flexDirection: "row",
     justifyContent: "center",
-    gap: 24,
+    gap: 16,
   },
   genderLegendItem: {
     flexDirection: "row",
@@ -497,14 +499,10 @@ export const styles = StyleSheet.create({
   
   // Challenge card preview
   challengeCardPreview: {
-    // Note: LinearGradient縺ｯ繧ｳ繝ｳ繝昴・繝阪Φ繝亥・縺ｧ險ｭ螳壹＆繧後ｋ縺溘ａ縲√％縺薙〒縺ｯ閭梧勹濶ｲ縺ｮ縺ｿ
-    backgroundColor: palette.pink500, // 繧ｰ繝ｩ繝・・繧ｷ繝ｧ繝ｳ縺ｮ髢句ｧ玖牡
-    borderRadius: 16,
-    padding: 16,
     width: "100%",
     maxWidth: 320,
     borderWidth: 1,
-    borderColor: palette.pink500 + "80", // % opacity
+    borderColor: palette.pink500 + "80", // 50% opacity
   },
   challengeCardHeader: {
     flexDirection: "row",
@@ -515,7 +513,7 @@ export const styles = StyleSheet.create({
   challengeCardCategory: {
     fontSize: 12,
     color: color.accentPrimary,
-    backgroundColor: palette.pink500 + "33", // % opacity
+    backgroundColor: palette.pink500 + "33", // 20% opacity
     paddingHorizontal: 8,
     paddingVertical: 4,
     borderRadius: 4,
@@ -532,55 +530,55 @@ export const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: "bold",
     color: color.textWhite,
-    marginBottom: 12,
+    marginBottom: 8,
   },
   challengeCardHost: {
     flexDirection: "row",
     alignItems: "center",
-    gap: 8,
     marginBottom: 12,
   },
   challengeCardAvatar: {
     width: 24,
     height: 24,
     borderRadius: 12,
+    backgroundColor: color.accentPrimary,
     justifyContent: "center",
     alignItems: "center",
+    marginRight: 8,
   },
   challengeCardAvatarText: {
-    fontSize: 12,
-    fontWeight: "bold",
     color: color.textWhite,
+    fontSize: 10,
+    fontWeight: "bold",
   },
   challengeCardHostName: {
     fontSize: 12,
-    color: palette.white + "CC",
+    color: palette.white + "CC", // 80% opacity
   },
   challengeCardProgress: {
-    gap: 8,
+    marginTop: 12,
   },
   challengeCardProgressBar: {
     height: 8,
     backgroundColor: palette.white + "33", // 20% opacity
     borderRadius: 4,
     overflow: "hidden",
+    marginBottom: 4,
   },
   challengeCardProgressFill: {
     height: "100%",
-    backgroundColor: color.successLight,
+    backgroundColor: color.accentPrimary,
     borderRadius: 4,
   },
   challengeCardProgressText: {
-    fontSize: 14,
-    fontWeight: "bold",
+    fontSize: 12,
     color: color.textWhite,
-    textAlign: "center",
+    textAlign: "right",
   },
   
   // Progress bar preview
   progressBarPreview: {
     width: "100%",
-    maxWidth: 320,
   },
   progressBarTitle: {
     fontSize: 14,
@@ -590,7 +588,7 @@ export const styles = StyleSheet.create({
     textAlign: "center",
   },
   progressBarContainer: {
-    marginBottom: 16,
+    marginBottom: 12,
   },
   progressBarTrack: {
     height: 16,
@@ -601,18 +599,18 @@ export const styles = StyleSheet.create({
   },
   progressBarFill: {
     height: "100%",
-    backgroundColor: color.successLight,
+    backgroundColor: color.accentPrimary,
     borderRadius: 8,
   },
   progressBarLabels: {
     flexDirection: "row",
-    justifyContent: "center",
-    alignItems: "baseline",
+    justifyContent: "space-between",
+    alignItems: "center",
   },
   progressBarCurrent: {
-    fontSize: 24,
+    fontSize: 18,
     fontWeight: "bold",
-    color: color.successLight,
+    color: color.textWhite,
   },
   progressBarGoal: {
     fontSize: 16,
@@ -621,6 +619,7 @@ export const styles = StyleSheet.create({
   progressBarMilestones: {
     flexDirection: "row",
     justifyContent: "space-between",
+    gap: 8,
   },
   progressBarMilestone: {
     backgroundColor: palette.white + "1A", // 10% opacity
@@ -629,18 +628,18 @@ export const styles = StyleSheet.create({
     paddingVertical: 4,
   },
   progressBarMilestoneCompleted: {
-    backgroundColor: palette.green400 + "4D", // % opacity
+    backgroundColor: palette.green400 + "4D", // 30% opacity
   },
   progressBarMilestoneText: {
     fontSize: 10,
     color: color.textWhite,
+    fontWeight: "bold",
   },
   
   // Countdown preview
   countdownPreview: {
     alignItems: "center",
     width: "100%",
-    maxWidth: 320,
   },
   countdownTitle: {
     fontSize: 14,
@@ -658,10 +657,10 @@ export const styles = StyleSheet.create({
     backgroundColor: palette.white + "1A", // 10% opacity
     borderRadius: 8,
     padding: 12,
-    minWidth: 60,
+    minWidth: 50,
   },
   countdownNumber: {
-    fontSize: 28,
+    fontSize: 24,
     fontWeight: "bold",
     color: color.textWhite,
   },
@@ -683,22 +682,21 @@ export const styles = StyleSheet.create({
   achievementPreview: {
     alignItems: "center",
     width: "100%",
-    maxWidth: 320,
   },
   achievementIcon: {
-    width: 80,
-    height: 80,
-    borderRadius: 40,
+    width: 60,
+    height: 60,
+    borderRadius: 30,
     backgroundColor: color.rankGold,
     justifyContent: "center",
     alignItems: "center",
     marginBottom: 12,
   },
   achievementEmoji: {
-    fontSize: 40,
+    fontSize: 32,
   },
   achievementTitle: {
-    fontSize: 18,
+    fontSize: 16,
     fontWeight: "bold",
     color: color.textWhite,
     marginBottom: 4,
@@ -731,47 +729,45 @@ export const styles = StyleSheet.create({
   
   // Share preview
   sharePreview: {
-    alignItems: "center",
     width: "100%",
-    maxWidth: 320,
   },
   shareTitle: {
     fontSize: 14,
     fontWeight: "bold",
     color: color.textWhite,
     marginBottom: 12,
+    textAlign: "center",
   },
   shareButtons: {
     flexDirection: "row",
-    gap: 12,
-    marginBottom: 16,
+    gap: 8,
+    marginBottom: 12,
   },
   shareButton: {
+    flex: 1,
     borderRadius: 8,
-    paddingHorizontal: 20,
-    paddingVertical: 12,
+    padding: 12,
+    alignItems: "center",
   },
   shareButtonText: {
+    color: color.textWhite,
     fontSize: 14,
     fontWeight: "bold",
-    color: color.textWhite,
   },
   shareCard: {
     backgroundColor: palette.white + "1A", // 10% opacity
     borderRadius: 8,
     padding: 12,
-    width: "100%",
   },
   shareCardText: {
-    fontSize: 12,
     color: color.textWhite,
-    textAlign: "center",
+    fontSize: 12,
+    lineHeight: 18,
   },
   
   // Ranking preview
   rankingPreview: {
     width: "100%",
-    maxWidth: 320,
   },
   rankingTitle: {
     fontSize: 14,
@@ -789,10 +785,9 @@ export const styles = StyleSheet.create({
     backgroundColor: palette.white + "1A", // 10% opacity
     borderRadius: 8,
     padding: 12,
-    gap: 12,
   },
   rankingItemHighlight: {
-    backgroundColor: palette.pink500 + "4D", // % opacity
+    backgroundColor: palette.pink500 + "4D", // 30% opacity
     borderWidth: 1,
     borderColor: color.accentPrimary,
   },
@@ -800,7 +795,7 @@ export const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: "bold",
     color: color.textWhite,
-    width: 24,
+    width: 30,
     textAlign: "center",
   },
   rankingAvatar: {
@@ -809,27 +804,28 @@ export const styles = StyleSheet.create({
     borderRadius: 16,
     justifyContent: "center",
     alignItems: "center",
+    marginRight: 8,
   },
   rankingAvatarText: {
+    color: color.textWhite,
     fontSize: 14,
     fontWeight: "bold",
-    color: color.textWhite,
   },
   rankingName: {
     flex: 1,
-    fontSize: 14,
+    fontSize: 12,
     color: color.textWhite,
+    fontWeight: "600",
   },
   rankingScore: {
-    fontSize: 14,
+    fontSize: 12,
+    color: color.accentPrimary,
     fontWeight: "bold",
-    color: color.successLight,
   },
   
   // DM preview
   dmPreview: {
     width: "100%",
-    maxWidth: 320,
   },
   dmTitle: {
     fontSize: 14,
@@ -846,26 +842,26 @@ export const styles = StyleSheet.create({
     borderRadius: 12,
     borderTopLeftRadius: 4,
     padding: 12,
-    maxWidth: "80%",
     alignSelf: "flex-start",
+    maxWidth: "80%",
   },
   dmMessageSent: {
     backgroundColor: color.accentPrimary,
     borderRadius: 12,
     borderTopRightRadius: 4,
     padding: 12,
-    maxWidth: "80%",
     alignSelf: "flex-end",
+    maxWidth: "80%",
   },
   dmMessageText: {
-    fontSize: 14,
+    fontSize: 12,
     color: color.textWhite,
+    lineHeight: 18,
   },
   
   // Reminder preview
   reminderPreview: {
     width: "100%",
-    maxWidth: 320,
   },
   reminderTitle: {
     fontSize: 14,
@@ -886,7 +882,7 @@ export const styles = StyleSheet.create({
     padding: 12,
   },
   reminderOptionText: {
-    fontSize: 14,
+    fontSize: 12,
     color: color.textWhite,
   },
   reminderToggle: {
@@ -897,7 +893,7 @@ export const styles = StyleSheet.create({
     padding: 2,
   },
   reminderToggleOn: {
-    backgroundColor: color.successLight,
+    backgroundColor: color.accentPrimary,
   },
   reminderToggleKnob: {
     width: 20,
@@ -909,7 +905,6 @@ export const styles = StyleSheet.create({
   // Ticket preview
   ticketPreview: {
     width: "100%",
-    maxWidth: 320,
   },
   ticketTitle: {
     fontSize: 14,
@@ -931,13 +926,13 @@ export const styles = StyleSheet.create({
     padding: 12,
   },
   ticketType: {
-    fontSize: 14,
+    fontSize: 12,
     color: color.textWhite,
   },
   ticketPrice: {
-    fontSize: 16,
+    fontSize: 14,
     fontWeight: "bold",
-    color: color.successLight,
+    color: color.textWhite,
   },
   ticketButton: {
     backgroundColor: color.accentPrimary,
@@ -946,33 +941,32 @@ export const styles = StyleSheet.create({
     alignItems: "center",
   },
   ticketButtonText: {
+    color: color.textWhite,
     fontSize: 14,
     fontWeight: "bold",
-    color: color.textWhite,
   },
   
   // Cheer preview
   cheerPreview: {
-    alignItems: "center",
     width: "100%",
-    maxWidth: 320,
   },
   cheerTitle: {
     fontSize: 14,
     fontWeight: "bold",
     color: color.textWhite,
     marginBottom: 12,
+    textAlign: "center",
   },
   cheerButtons: {
     flexDirection: "row",
-    gap: 12,
+    justifyContent: "space-around",
+    gap: 8,
   },
   cheerButton: {
     alignItems: "center",
     backgroundColor: palette.white + "1A", // 10% opacity
     borderRadius: 12,
     padding: 12,
-    minWidth: 60,
   },
   cheerEmoji: {
     fontSize: 24,
@@ -984,10 +978,36 @@ export const styles = StyleSheet.create({
     fontWeight: "bold",
   },
   
+  // Badge preview
+  badgeGrid: {
+    flexDirection: "row",
+    flexWrap: "wrap",
+    gap: 8,
+    justifyContent: "center",
+  },
+  badgeItem: {
+    width: 70,
+    alignItems: "center",
+    backgroundColor: palette.white + "1A", // 10% opacity
+    borderRadius: 8,
+    padding: 12,
+  },
+  badgeItemLocked: {
+    opacity: 0.5,
+  },
+  badgeEmoji: {
+    fontSize: 24,
+    marginBottom: 4,
+  },
+  badgeName: {
+    fontSize: 10,
+    color: color.textWhite,
+    textAlign: "center",
+  },
+  
   // Stats preview
   statsPreview: {
     width: "100%",
-    maxWidth: 320,
   },
   statsTitle: {
     fontSize: 14,
@@ -1024,28 +1044,27 @@ export const styles = StyleSheet.create({
   celebrationPreview: {
     alignItems: "center",
     width: "100%",
-    maxWidth: 320,
   },
   celebrationEmoji: {
-    fontSize: 64,
+    fontSize: 48,
     marginBottom: 12,
   },
   celebrationTitle: {
-    fontSize: 24,
+    fontSize: 20,
     fontWeight: "bold",
-    color: color.rankGold,
-    marginBottom: 8,
+    color: color.textWhite,
+    marginBottom: 4,
   },
   celebrationSubtitle: {
     fontSize: 14,
-    color: color.textWhite,
+    color: palette.white + "B3", // 70% opacity
     marginBottom: 16,
   },
   celebrationConfetti: {
     flexDirection: "row",
-    gap: 16,
+    gap: 8,
   },
   confettiItem: {
-    fontSize: 32,
+    fontSize: 24,
   },
 });
