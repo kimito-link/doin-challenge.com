@@ -28,11 +28,11 @@ export function HotPrefectureCard({ prefecture }: HotPrefectureCardProps) {
 
 const styles = StyleSheet.create({
   hotRegionCard: {
-    backgroundColor: palette.red500 + "26", // rgba(239, 68, 68, 0.15) = 15% opacity = 26 in hex
+    backgroundColor: palette.red500 + "26", // 15% opacity
     borderRadius: 12,
     padding: 16,
     borderWidth: 1,
-    borderColor: palette.red500 + "4D", // rgba(239, 68, 68, 0.3) = 30% opacity = 4D in hex
+    borderColor: palette.red500 + "4D", // 30% opacity
     flexDirection: "row",
     alignItems: "center",
     marginBottom: 16,

@@ -307,7 +307,7 @@ export function SharePromptModal({
 const styles = StyleSheet.create({
   overlay: {
     flex: 1,
-    backgroundColor: palette.black + "B3", // rgba(0, 0, 0, 0.7) = 70% opacity = B3 in hex
+    backgroundColor: palette.black + "B3", // 70% opacity
     justifyContent: "center",
     alignItems: "center",
     padding: 24,
@@ -409,7 +409,7 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     alignItems: "center",
     gap: 6,
-    backgroundColor: palette.gold + "1A", // rgba(221, 101, 0, 0.1) = 10% opacity = 1A in hex (warning color)
+    backgroundColor: palette.gold + "1A", // 10% opacity
     paddingHorizontal: 12,
     paddingVertical: 8,
     borderRadius: 8,

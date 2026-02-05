@@ -22,8 +22,8 @@ export const RANK_ICONS = {
 
 /** 性別による背景色 */
 export const GENDER_COLORS = {
-  male: { bg: palette.blue500 + "26", border: palette.blue500 }, // rgba(59, 130, 246, 0.15) = 15% opacity = 26 in hex
-  female: { bg: palette.pink500 + "26", border: palette.pink500 }, // rgba(236, 72, 153, 0.15) = 15% opacity = 26 in hex
+  male: { bg: palette.blue500 + "26", border: palette.blue500 }, // 15% opacity
+  female: { bg: palette.pink500 + "26", border: palette.pink500 }, // 15% opacity
   unspecified: { bg: "transparent", border: "transparent" },
 } as const;
 

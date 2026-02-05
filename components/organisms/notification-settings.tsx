@@ -279,7 +279,7 @@ const styles = StyleSheet.create({
   webNotice: {
     flexDirection: "row",
     alignItems: "center",
-    backgroundColor: palette.gold + "1A", // rgba(245, 158, 11, 0.1) = 10% opacity = 1A in hex
+    backgroundColor: palette.gold + "1A", // 10% opacity
     padding: 12,
     margin: 16,
     borderRadius: 8,

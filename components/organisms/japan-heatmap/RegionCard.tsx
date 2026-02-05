@@ -69,7 +69,7 @@ const styles = StyleSheet.create({
     borderWidth: 1,
   },
   regionCardHot: {
-    backgroundColor: palette.red500 + "1A", // rgba(239, 68, 68, 0.1) = 10% opacity = 1A in hex
+    backgroundColor: palette.red500 + "1A", // 10% opacity
     borderWidth: 2,
   },
   regionCardHeader: {

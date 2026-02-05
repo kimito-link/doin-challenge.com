@@ -228,7 +228,7 @@ export function RegionParticipantsModal({
 const styles = StyleSheet.create({
   overlay: {
     flex: 1,
-    backgroundColor: palette.black + "B3", // rgba(0, 0, 0, 0.7) = 70% opacity = B3 in hex
+    backgroundColor: palette.black + "B3", // 70% opacity
     justifyContent: "flex-end",
   },
   modalContainer: {
@@ -307,7 +307,7 @@ const styles = StyleSheet.create({
     marginLeft: 6,
   },
   prefectureCountSelected: {
-    color: palette.white + "CC", // rgba(255, 255, 255, 0.8) = 80% opacity = CC in hex
+    color: palette.white + "CC", // 80% opacity
   },
   prefectureCountEmpty: {
     color: color.textSubtle,

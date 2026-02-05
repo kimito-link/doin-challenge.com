@@ -153,7 +153,7 @@ export function PrefectureParticipantsModal({
 const styles = StyleSheet.create({
   overlay: {
     flex: 1,
-    backgroundColor: palette.black + "B3", // rgba(0, 0, 0, 0.7) = 70% opacity = B3 in hex
+    backgroundColor: palette.black + "B3", // 70% opacity
     justifyContent: "flex-end",
   },
   modalContainer: {
