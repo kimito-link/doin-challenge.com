@@ -1,5 +1,5 @@
 import { View, Text, Pressable, StyleSheet, Platform } from "react-native";
-import { color, palette } from "@/theme/tokens";
+import { color } from "@/theme/tokens";
 import { Image } from "expo-image";
 import { navigateReplace } from "@/lib/navigation";
 import { useColors } from "@/hooks/use-colors";
@@ -7,10 +7,7 @@ import * as Haptics from "expo-haptics";
 import Animated, { 
   useAnimatedStyle, 
   useSharedValue, 
-  withRepeat, 
   withTiming,
-  withSequence,
-  Easing,
 } from "react-native-reanimated";
 import { useEffect } from "react";
 
@@ -34,6 +31,8 @@ export function FanEmptyState() {
   const rotation = useSharedValue(0);
   const scale = useSharedValue(1);
   
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  // rotationとscaleはReanimatedのSharedValueで、依存配列に含めると無限ループが発生する可能性があるため除外
   useEffect(() => {
     // 静的な表示（ちかちかアニメーション削除）
     rotation.value = withTiming(0, { duration: 300 });
