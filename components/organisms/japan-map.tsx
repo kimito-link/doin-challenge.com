@@ -2,7 +2,6 @@ import { View, Text, Pressable, useWindowDimensions, Platform } from "react-nati
 import * as Haptics from "expo-haptics";
 import { color, palette } from "@/theme/tokens";
 import { MapErrorBoundary } from "@/components/ui/map-error-boundary";
-import Svg, { Path, G, Text as SvgText } from "react-native-svg";
 import { useMemo } from "react";
 
 // 透明度を16進数に変換するヘルパー関数
@@ -17,56 +16,6 @@ const MAP_MAX_WIDTH = 480;
 const MAP_MIN_WIDTH = 280;
 const HORIZONTAL_PADDING = 32;
 
-// 都道府県コードと名前のマッピング
-const prefectureData: { [key: string]: { name: string; x: number; y: number } } = {
-  "北海道": { name: "北海道", x: 320, y: 50 },
-  "青森県": { name: "青森", x: 310, y: 120 },
-  "岩手県": { name: "岩手", x: 330, y: 145 },
-  "宮城県": { name: "宮城", x: 320, y: 175 },
-  "秋田県": { name: "秋田", x: 290, y: 145 },
-  "山形県": { name: "山形", x: 290, y: 175 },
-  "福島県": { name: "福島", x: 300, y: 200 },
-  "茨城県": { name: "茨城", x: 310, y: 230 },
-  "栃木県": { name: "栃木", x: 290, y: 215 },
-  "群馬県": { name: "群馬", x: 265, y: 215 },
-  "埼玉県": { name: "埼玉", x: 275, y: 240 },
-  "千葉県": { name: "千葉", x: 310, y: 255 },
-  "東京都": { name: "東京", x: 285, y: 260 },
-  "神奈川県": { name: "神奈川", x: 280, y: 280 },
-  "新潟県": { name: "新潟", x: 250, y: 180 },
-  "富山県": { name: "富山", x: 215, y: 205 },
-  "石川県": { name: "石川", x: 195, y: 195 },
-  "福井県": { name: "福井", x: 185, y: 225 },
-  "山梨県": { name: "山梨", x: 255, y: 255 },
-  "長野県": { name: "長野", x: 240, y: 230 },
-  "岐阜県": { name: "岐阜", x: 205, y: 245 },
-  "静岡県": { name: "静岡", x: 245, y: 280 },
-  "愛知県": { name: "愛知", x: 210, y: 275 },
-  "三重県": { name: "三重", x: 185, y: 290 },
-  "滋賀県": { name: "滋賀", x: 175, y: 260 },
-  "京都府": { name: "京都", x: 160, y: 245 },
-  "大阪府": { name: "大阪", x: 155, y: 275 },
-  "兵庫県": { name: "兵庫", x: 135, y: 260 },
-  "奈良県": { name: "奈良", x: 170, y: 290 },
-  "和歌山県": { name: "和歌山", x: 155, y: 315 },
-  "鳥取県": { name: "鳥取", x: 115, y: 240 },
-  "島根県": { name: "島根", x: 90, y: 250 },
-  "岡山県": { name: "岡山", x: 115, y: 270 },
-  "広島県": { name: "広島", x: 85, y: 275 },
-  "山口県": { name: "山口", x: 55, y: 285 },
-  "徳島県": { name: "徳島", x: 135, y: 305 },
-  "香川県": { name: "香川", x: 130, y: 290 },
-  "愛媛県": { name: "愛媛", x: 100, y: 305 },
-  "高知県": { name: "高知", x: 110, y: 325 },
-  "福岡県": { name: "福岡", x: 40, y: 295 },
-  "佐賀県": { name: "佐賀", x: 25, y: 305 },
-  "長崎県": { name: "長崎", x: 10, y: 315 },
-  "熊本県": { name: "熊本", x: 35, y: 330 },
-  "大分県": { name: "大分", x: 60, y: 310 },
-  "宮崎県": { name: "宮崎", x: 60, y: 345 },
-  "鹿児島県": { name: "鹿児島", x: 35, y: 365 },
-  "沖縄県": { name: "沖縄", x: 10, y: 420 },
-};
 
 // 地図用地域グループ（北海道・東北が分離、近畿は「関西」表記、色付き）
 const regionGroups = [
@@ -95,8 +44,6 @@ function JapanMapInner({ prefectureCounts, onPrefecturePress, selectedPrefecture
     MAP_MIN_WIDTH,
     Math.min(screenWidth - HORIZONTAL_PADDING, MAP_MAX_WIDTH)
   );
-  const mapHeight = mapWidth * JAPAN_ARCHIPELAGO_ASPECT;
-  const scale = mapWidth / 400;
 
   // 地域ごとの参加者数を集計
   const regionCounts = useMemo(() => {
