@@ -12,7 +12,7 @@
  * - 統一されたデザイン
  */
 
-import { View, Text, Pressable } from "react-native";
+import { Text, Pressable } from "react-native";
 import { LinearGradient } from "expo-linear-gradient";
 import MaterialIcons from "@expo/vector-icons/MaterialIcons";
 import { TwitterUserCard, TwitterUserData } from "@/components/molecules/twitter-user-card";
