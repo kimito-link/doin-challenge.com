@@ -62,8 +62,8 @@ const CARD_COLORS = [
 
 // イベントタイプのバッジ
 const eventTypeBadge: Record<string, { label: string; color: string }> = {
-  solo: { label: "ソロ", color: palette.black + "4D" }, // rgba(0,0,0,0.3) = 30% opacity = 4D in hex
-  group: { label: "グループ", color: palette.black + "4D" }, // rgba(0,0,0,0.3) = 30% opacity = 4D in hex
+  solo: { label: "ソロ", color: palette.black + "4D" }, // 30% opacity
+  group: { label: "グループ", color: palette.black + "4D" }, // 30% opacity
 };
 
 /**
@@ -183,7 +183,7 @@ export function ColorfulChallengeCard({
               <MaterialIcons 
                 name={isFavorite ? "star" : "star-outline"} 
                 size={20} 
-                color={isFavorite ? color.rankGold : palette.white + "99"} // rgba(255,255,255,0.6) = 60% opacity = 99 in hex 
+                color={isFavorite ? color.rankGold : palette.white + "99"} // 60% opacity 
                 style={pressed ? { opacity: 0.6 } : undefined}
               />
             )}
@@ -206,7 +206,7 @@ export function ColorfulChallengeCard({
                 <MaterialIcons 
                   name="more-horiz" 
                   size={20} 
-                  color={isOwner ? palette.white + "E6" : palette.white + "99"} // rgba(255,255,255,0.9) = 90% opacity = E6, rgba(255,255,255,0.6) = 60% opacity = 99 
+                  color={isOwner ? palette.white + "E6" : palette.white + "99"} // 90% opacity or 60% opacity 
                   style={pressed ? { opacity: 0.6 } : undefined}
                 />
                 {/* 運営者バッジ */}
@@ -231,7 +231,7 @@ export function ColorfulChallengeCard({
               <LazyAvatar
                 source={challenge.hostProfileImage ? { uri: challenge.hostProfileImage } : undefined}
                 size={20}
-                fallbackColor={palette.white + "4D"} // rgba(255,255,255,0.3) = 30% opacity = 4D in hex
+                fallbackColor={palette.white + "4D"} // 30% opacity
                 fallbackText={(challenge.hostName || "?").charAt(0)}
               />
               <View style={styles.hostInfo}>
@@ -363,7 +363,7 @@ const styles = StyleSheet.create({
     alignItems: "center",
   },
   ownerBadge: {
-    backgroundColor: palette.white + "4D", // rgba(255,255,255,0.3) = 30% opacity = 4D in hex
+    backgroundColor: palette.white + "4D", // 30% opacity
     paddingHorizontal: 6,
     paddingVertical: 2,
     borderRadius: 8,
@@ -387,7 +387,7 @@ const styles = StyleSheet.create({
     fontWeight: "bold",
     textAlign: "center",
     marginBottom: 8,
-    textShadowColor: palette.black + "33", // rgba(0,0,0,0.2) = 20% opacity = 33 in hex
+    textShadowColor: palette.black + "33", // 20% opacity
     textShadowOffset: { width: 0, height: 1 },
     textShadowRadius: 2,
   },
@@ -423,7 +423,7 @@ const styles = StyleSheet.create({
   },
   progressBar: {
     height: 4,
-    backgroundColor: palette.white + "4D", // rgba(255,255,255,0.3) = 30% opacity = 4D in hex
+    backgroundColor: palette.white + "4D", // 30% opacity
     borderRadius: 2,
     overflow: "hidden",
   },
@@ -440,7 +440,7 @@ const styles = StyleSheet.create({
     alignItems: "center",
   },
   dateText: {
-    color: palette.white + "CC", // rgba(255,255,255,0.8) = 80% opacity = CC in hex
+    color: palette.white + "CC", // 80% opacity
     fontSize: 12,
     marginLeft: 4,
   },
@@ -460,18 +460,18 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   hostName: {
-    color: palette.white + "E6", // rgba(255,255,255,0.9) = 90% opacity = E6 in hex
+    color: palette.white + "E6", // 90% opacity
     fontSize: 12,
     fontWeight: "600",
   },
   hostUsername: {
-    color: palette.white + "B3", // rgba(255,255,255,0.7) = 70% opacity = B3 in hex
+    color: palette.white + "B3", // 70% opacity
     fontSize: 12,
   },
   // モーダルスタイル
   modalOverlay: {
     flex: 1,
-    backgroundColor: palette.black + "80", // rgba(0,0,0,0.5) = 50% opacity = 80 in hex
+    backgroundColor: palette.black + "80", // 50% opacity
     justifyContent: "center",
     alignItems: "center",
     padding: 20,

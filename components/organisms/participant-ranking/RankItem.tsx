@@ -75,9 +75,9 @@ const styles = StyleSheet.create({
     gap: 12,
   },
   rankItemTop: {
-    backgroundColor: palette.gold + "0D", // rgba(255, 215, 0, 0.05) = 5% opacity = 0D in hex
+    backgroundColor: palette.gold + "0D", // 5% opacity
     borderWidth: 1,
-    borderColor: palette.gold + "33", // rgba(255, 215, 0, 0.2) = 20% opacity = 33 in hex
+    borderColor: palette.gold + "33", // 20% opacity
   },
   userInfo: {
     flex: 1,

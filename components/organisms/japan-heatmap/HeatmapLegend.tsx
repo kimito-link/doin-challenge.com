@@ -43,7 +43,7 @@ const styles = StyleSheet.create({
     height: 14,
     borderRadius: 2,
     borderWidth: 1,
-    borderColor: palette.white + "33", // rgba(255,255,255,0.2) = 20% opacity = 33 in hex
+    borderColor: palette.white + "33", // 20% opacity
   },
   legendText: {
     color: color.textMuted,

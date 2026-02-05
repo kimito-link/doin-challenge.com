@@ -86,7 +86,7 @@ export function WelcomeMessage({ visible, onHide, userName }: WelcomeMessageProp
           flex: 1,
           justifyContent: "center",
           alignItems: "center",
-          backgroundColor: palette.black + "99", // rgba(0, 0, 0, 0.6) = 60% opacity = 99 in hex
+          backgroundColor: palette.black + "99", // 60% opacity
         }}
       >
         <Animated.View
