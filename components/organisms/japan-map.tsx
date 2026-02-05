@@ -5,6 +5,12 @@ import { MapErrorBoundary } from "@/components/ui/map-error-boundary";
 import Svg, { Path, G, Text as SvgText } from "react-native-svg";
 import { useMemo } from "react";
 
+// 透明度を16進数に変換するヘルパー関数
+function opacityToHex(opacity: number): string {
+  const hex = Math.round(opacity * 255).toString(16).padStart(2, "0").toUpperCase();
+  return hex;
+}
+
 /** 日本列島のアスペクト比（高さ/幅）。地図の見やすさのため全画面で統一 */
 const JAPAN_ARCHIPELAGO_ASPECT = 1.2;
 const MAP_MAX_WIDTH = 480;
@@ -146,12 +152,12 @@ function JapanMapInner({ prefectureCounts, onPrefecturePress, selectedPrefecture
               }}
               style={({ pressed }) => [{
                 width: "48%",
-                backgroundColor: isHot ? "rgba(236, 72, 153, 0.2)" : color.surface,
+                backgroundColor: isHot ? palette.pink500 + "33" : color.surface, // rgba(236, 72, 153, 0.2) = 20% opacity = 33 in hex
                 borderRadius: 12,
                 padding: 12,
                 marginBottom: 8,
                 borderWidth: isHot ? 2 : 1,
-                borderColor: isHot ? color.accentPrimary : count > 0 ? `rgba(236, 72, 153, ${0.3 + intensity * 0.5})` : color.border,
+                borderColor: isHot ? color.accentPrimary : count > 0 ? palette.pink500 + opacityToHex(0.3 + intensity * 0.5) : color.border,
               }, pressed && { opacity: 0.7, transform: [{ scale: 0.97 }] }]}
             >
               <View style={{ flexDirection: "row", alignItems: "center", justifyContent: "space-between" }}>
@@ -201,11 +207,11 @@ function JapanMapInner({ prefectureCounts, onPrefecturePress, selectedPrefecture
       {/* ホットな地域のハイライト */}
       {hotRegion.count > 0 && (
         <View style={{
-          backgroundColor: "rgba(236, 72, 153, 0.15)",
+          backgroundColor: palette.pink500 + "26", // rgba(236, 72, 153, 0.15) = 15% opacity = 26 in hex
           borderRadius: 12,
           padding: 16,
           borderWidth: 1,
-          borderColor: "rgba(236, 72, 153, 0.3)",
+          borderColor: palette.pink500 + "4D", // rgba(236, 72, 153, 0.3) = 30% opacity = 4D in hex
           flexDirection: "row",
           alignItems: "center",
         }}>
@@ -296,12 +302,12 @@ export function SimpleRegionMap({ prefectureCounts }: { prefectureCounts: Prefec
               key={region.name}
               style={{
                 width: "48%",
-                backgroundColor: isHot ? "rgba(236, 72, 153, 0.2)" : color.surface,
+                backgroundColor: isHot ? palette.pink500 + "33" : color.surface, // rgba(236, 72, 153, 0.2) = 20% opacity = 33 in hex
                 borderRadius: 12,
                 padding: 12,
                 marginBottom: 8,
                 borderWidth: isHot ? 2 : 1,
-                borderColor: isHot ? color.accentPrimary : count > 0 ? `rgba(236, 72, 153, ${0.3 + intensity * 0.5})` : color.border,
+                borderColor: isHot ? color.accentPrimary : count > 0 ? palette.pink500 + opacityToHex(0.3 + intensity * 0.5) : color.border,
               }}
             >
               <View style={{ flexDirection: "row", alignItems: "center", justifyContent: "space-between" }}>
@@ -351,12 +357,12 @@ export function SimpleRegionMap({ prefectureCounts }: { prefectureCounts: Prefec
       {/* ホットな地域のハイライト */}
       {hotRegion.count > 0 && (
         <View style={{
-          backgroundColor: "rgba(236, 72, 153, 0.15)",
+          backgroundColor: palette.pink500 + "26", // rgba(236, 72, 153, 0.15) = 15% opacity = 26 in hex
           borderRadius: 12,
           padding: 14,
           marginTop: 8,
           borderWidth: 1,
-          borderColor: "rgba(236, 72, 153, 0.3)",
+          borderColor: palette.pink500 + "4D", // rgba(236, 72, 153, 0.3) = 30% opacity = 4D in hex
           flexDirection: "row",
           alignItems: "center",
         }}>
