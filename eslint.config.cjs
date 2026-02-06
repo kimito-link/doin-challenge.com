@@ -22,6 +22,9 @@ module.exports = defineConfig([
       },
     },
     rules: {
+      // TypeScriptプロジェクトではno-undefは不要（TypeScriptが型チェックを行うため）
+      "no-undef": "off",
+      "@typescript-eslint/no-undef": "off",
       // 直書き色禁止ルール（theme/tokens を使用してください）
       "no-restricted-syntax": [
         "warn",
