@@ -6,10 +6,10 @@ on:
   push:
     branches: [main]
 
-# 新しい push が来たら前回の verify はキャンセル。検証対象は「直近の push のコミット」のみとする。
+# 新しい push が来ても前回の verify はキャンセルしない（キャンセルすると "The operation was canceled" で終了してしまうため）
 concurrency:
   group: deploy-verify-main
-  cancel-in-progress: true
+  cancel-in-progress: false
 
 jobs:
   verify:
