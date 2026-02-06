@@ -22,7 +22,7 @@ import Animated, {
   withRepeat,
   withSequence,
 } from "react-native-reanimated";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import { useLoginABTest } from "@/hooks/use-login-ab-test";
 
 // キャラクター画像（りんく・こん太・たぬ姉のオリジナル画像）
@@ -44,14 +44,25 @@ export function LoginModal({
   onCancel 
 }: LoginModalProps) {
   const colors = useColors();
-  const { selectMessage, recordConversion, selectedMessage } = useLoginABTest();
-  const [currentMessage, setCurrentMessage] = useState(selectedMessage);
+  const { selectMessage, recordConversion } = useLoginABTest();
+  const [currentMessage, setCurrentMessage] = useState<ReturnType<typeof selectMessage> | null>(null);
+  const wasVisibleRef = useRef(false);
 
-  // モーダルが表示されるたびにメッセージを選択
+  // モーダルが表示されるたびにメッセージを選択（ちらつき防止: 一度だけ選択）
   useEffect(() => {
-    if (visible) {
+    if (visible && !wasVisibleRef.current) {
+      // 初めて表示される時だけメッセージを選択
       const message = selectMessage();
       setCurrentMessage(message);
+      wasVisibleRef.current = true;
+    } else if (!visible && wasVisibleRef.current) {
+      // モーダルが閉じられたらリセット（次回表示時に新しいメッセージを選択）
+      wasVisibleRef.current = false;
+      // ちらつきを防ぐため、少し遅延してクリア
+      const timer = setTimeout(() => {
+        setCurrentMessage(null);
+      }, 300); // フェードアニメーション完了後にクリア
+      return () => clearTimeout(timer);
     }
   }, [visible, selectMessage]);
 
@@ -61,8 +72,11 @@ export function LoginModal({
     onConfirm();
   };
 
-  // キャラクターのバウンスアニメーション
+  // キャラクターのバウンスアニメーション（ちらつき防止: モーダル表示時のみ有効）
   const characterAnimatedStyle = useAnimatedStyle(() => {
+    if (!visible) {
+      return { transform: [{ translateY: 0 }] };
+    }
     return {
       transform: [
         {
@@ -77,10 +91,10 @@ export function LoginModal({
         },
       ],
     };
-  });
+  }, [visible]);
 
-  // メッセージが選択されていない場合は何も表示しない
-  if (!currentMessage) {
+  // モーダルが非表示のときは何もレンダリングしない（ちらつき防止）
+  if (!visible || !currentMessage) {
     return null;
   }
 
