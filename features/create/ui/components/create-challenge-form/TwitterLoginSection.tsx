@@ -8,31 +8,23 @@ import { createFont } from "../../theme/tokens";
 import { useColors } from "@/hooks/use-colors";
 import type { TwitterLoginSectionProps } from "./types";
 import { authCopy } from "@/constants/copy";
+import { CharacterValidationError } from "@/components/molecules/character-validation-error";
 
 /**
  * Twitterログインボタンセクション
- * 未ログイン時に表示されるログインボタン。バリデーションエラー時は吹き出しを表示。
+ * 未ログイン時に表示されるログインボタン。バリデーションエラー時はキャラクター付き吹き出しを表示。
  */
 export function TwitterLoginSection({ onLogin, showHostError, innerRef }: TwitterLoginSectionProps) {
   const colors = useColors();
 
   return (
     <View ref={innerRef} style={{ marginBottom: 16 }}>
+      {/* バリデーションエラー時はキャラクター付きメッセージを表示（コンポーネント化・一貫性のため） */}
       {showHostError && (
-        <View
-          style={{
-            backgroundColor: color.danger,
-            borderRadius: 8,
-            paddingHorizontal: 12,
-            paddingVertical: 8,
-            marginBottom: 8,
-            alignSelf: "flex-start",
-          }}
-        >
-          <Text style={{ color: "#FFF", fontSize: 13 }}>
-            Xでログインしてから作成してください
-          </Text>
-        </View>
+        <CharacterValidationError
+          errors={[{ field: "host" }]}
+          visible={showHostError}
+        />
       )}
       <Pressable
         onPress={onLogin}
