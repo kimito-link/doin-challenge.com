@@ -58,25 +58,44 @@ export default function AdminLayout() {
 
   // 管理者セッションをチェック
   useEffect(() => {
+    let isMounted = true;
+    
     const checkAdminSession = async () => {
       try {
+        console.log("[Admin] Checking admin session...");
         const session = await getAdminSession();
-        setHasAdminSession(session);
+        console.log("[Admin] Admin session result:", session);
+        if (isMounted) {
+          setHasAdminSession(session);
+        }
       } catch (error) {
         console.error("[Admin] Failed to check admin session:", error);
-        setHasAdminSession(false);
+        if (isMounted) {
+          setHasAdminSession(false);
+        }
       } finally {
-        setIsCheckingSession(false);
+        if (isMounted) {
+          console.log("[Admin] Session check completed, setting isCheckingSession to false");
+          setIsCheckingSession(false);
+        }
       }
     };
+    
+    // 即座にセッションチェックを開始
     checkAdminSession();
     
-    // タイムアウト: 5秒後に強制的にローディングを終了
+    // タイムアウト: 2秒後に強制的にローディングを終了（Web環境での確実な表示のため）
     const timeout = setTimeout(() => {
-      setIsCheckingSession(false);
-    }, 5000);
+      if (isMounted) {
+        console.log("[Admin] Timeout reached, forcing isCheckingSession to false");
+        setIsCheckingSession(false);
+      }
+    }, 2000);
     
-    return () => clearTimeout(timeout);
+    return () => {
+      isMounted = false;
+      clearTimeout(timeout);
+    };
   }, []);
 
   // パスワード認証
@@ -117,12 +136,17 @@ export default function AdminLayout() {
       </View>
     );
   }
-  
-  // useAuthのloadingが続いている場合でも、セッションチェックが完了していればパスワード画面を表示
-  // （認証状態の確認は非同期で続行される）
 
   // 管理者権限チェック（role: admin または パスワード認証済み）
   const isAdmin = user?.role === "admin" || hasAdminSession;
+  
+  console.log("[Admin] Auth state:", {
+    hasUser: !!user,
+    userRole: user?.role,
+    hasAdminSession,
+    isAdmin,
+    isCheckingSession,
+  });
 
   // パスワード認証画面（管理者権限がない場合）
   if (!isAdmin) {
