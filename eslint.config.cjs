@@ -15,6 +15,15 @@ module.exports = defineConfig([
     },
   },
   {
+    // TypeScriptファイルに対してno-undefを無効化（TypeScriptが型チェックを行うため）
+    files: ["**/*.ts", "**/*.tsx"],
+    rules: {
+      // TypeScriptプロジェクトではno-undefは不要（TypeScriptが型チェックを行うため）
+      // eslint-config-expoが既に設定している可能性があるが、明示的に無効化
+      "no-undef": "off",
+    },
+  },
+  {
     // ローカルルールをプラグインとして登録
     plugins: {
       "local-rules": {
@@ -22,9 +31,6 @@ module.exports = defineConfig([
       },
     },
     rules: {
-      // TypeScriptプロジェクトではno-undefは不要（TypeScriptが型チェックを行うため）
-      "no-undef": "off",
-      "@typescript-eslint/no-undef": "off",
       // 直書き色禁止ルール（theme/tokens を使用してください）
       "no-restricted-syntax": [
         "warn",
