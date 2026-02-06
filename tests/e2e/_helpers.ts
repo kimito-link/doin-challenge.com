@@ -73,14 +73,13 @@ export async function attachGuards(page: Page, testInfo: TestInfo) {
   return async function assertNoErrors() {
     // 画面内の「エラーっぽい文言」をチェック（軽く全体テキストを見る）
     // 404は正常動作として許容、500のみエラー扱い
-const bodyText = await page.locator("body").innerText().catch(() => "");
-const is404 = bodyText.includes("見つかりません") || bodyText.includes("not found");
-if (!is404) {
-  for (const pat of ERROR_TEXT_PATTERNS) {
-    expect(bodyText, `画面にエラー文言が出ています: ${pat}`).not.toMatch(pat);
-  }
-}
-
+    const bodyText = await page.locator("body").innerText().catch(() => "");
+    const is404 = bodyText.includes("見つかりません") || bodyText.includes("not found");
+    if (!is404) {
+      for (const pat of ERROR_TEXT_PATTERNS) {
+        expect(bodyText, `画面にエラー文言が出ています: ${pat}`).not.toMatch(pat);
+      }
+    }
 
     // console errors/warns（無視パターンを除外済み）
     expect(consoleErrors, `console.error が出ています:\n${consoleErrors.join("\n")}`).toEqual([]);
