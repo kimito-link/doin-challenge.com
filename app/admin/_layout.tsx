@@ -49,7 +49,7 @@ export default function AdminLayout() {
   
   const pathname = usePathname();
   const insets = useSafeAreaInsets();
-  const { user, loading } = useAuth();
+  const { user } = useAuth();
   const [sidebarOpen, setSidebarOpen] = useState(Platform.OS === "web");
   const [password, setPassword] = useState("");
   const [isCheckingSession, setIsCheckingSession] = useState(true);
