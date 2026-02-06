@@ -175,7 +175,7 @@ export async function dismissOnboarding(page: Page) {
       
       // 少し待ってから再試行
       await page.waitForTimeout(1000);
-    } catch (error) {
+    } catch {
       // エラーが発生した場合は、オンボーディングがないと判断
       break;
     }
