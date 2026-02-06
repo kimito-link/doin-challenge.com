@@ -4,7 +4,7 @@
  * 
  * 根本的解決: 主要フローのテストを追加
  */
-import { test, expect } from "@playwright/test";
+import { test } from "@playwright/test";
 
 test.setTimeout(90000);
 
