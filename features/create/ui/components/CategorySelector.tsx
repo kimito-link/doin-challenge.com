@@ -46,7 +46,7 @@ export function CategorySelector({
       </Text>
       <Button
         variant="outline"
-        onPress={canOpen ? onToggleList : undefined}
+        onPress={canOpen ? onToggleList : () => {}}
         disabled={!canOpen}
         style={{
           backgroundColor: colors.background,
