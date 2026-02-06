@@ -29,6 +29,7 @@ jobs:
       
       - name: Lint (with auto-fix attempt)
         run: |
+          set -e
           # 自動修正可能なエラーを修正
           pnpm lint --fix || true
           # 修正後、エラーのみをチェック（警告は無視）
@@ -38,15 +39,36 @@ jobs:
           }
       
       - name: Type check
-        run: pnpm check
+        run: |
+          set -e
+          echo "🔍 Running TypeScript type check..."
+          pnpm check || {
+            echo "❌ Type check failed. Please fix type errors before deploying."
+            exit 1
+          }
+          echo "✅ Type check passed"
       
       - name: Test
-        run: pnpm test
+        run: |
+          set -e
+          echo "🧪 Running tests..."
+          pnpm test || {
+            echo "❌ Tests failed. Please fix failing tests before deploying."
+            exit 1
+          }
+          echo "✅ All tests passed"
       
       - name: Build
         env:
           GITHUB_SHA: ${{ github.sha }}
-        run: pnpm build
+        run: |
+          set -e
+          echo "🔨 Building application..."
+          pnpm build || {
+            echo "❌ Build failed. Please fix build errors before deploying."
+            exit 1
+          }
+          echo "✅ Build completed"
 
       - name: Deploy to Vercel
         uses: amondnet/vercel-action@v25

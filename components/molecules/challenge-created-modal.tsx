@@ -22,7 +22,7 @@ import * as Clipboard from "expo-clipboard";
 import * as Haptics from "expo-haptics";
 import { useColors } from "@/hooks/use-colors";
 import { navigate } from "@/lib/navigation";
-import { Checkbox } from "@/components/ui";
+import { Checkbox } from "@/components/ui/checkbox";
 import { palette } from "@/theme/tokens";
 
 interface ChallengeCreatedModalProps {
