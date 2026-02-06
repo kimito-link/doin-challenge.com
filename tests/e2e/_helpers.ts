@@ -198,8 +198,9 @@ export async function expectAnyHeading(page: Page, candidates: RegExp[]) {
   
   // ページ全体のテキストを取得してデバッグ
   const bodyText = await page.locator("body").innerText().catch(() => "");
-  console.log("Page text:", bodyText.substring(0, 500));
+  // デバッグ用: エラーメッセージに含めるため、console.logは使用しない
+  const pageTextPreview = bodyText.substring(0, 500);
   
   // どれも見つからない場合：デバッグ用にスクショはPlaywrightが自動保存
-  expect(false, `見出し候補が見つかりません: ${candidates.map(String).join(", ")}`).toBeTruthy();
+  expect(false, `見出し候補が見つかりません: ${candidates.map(String).join(", ")}\nページテキスト（最初の500文字）: ${pageTextPreview}`).toBeTruthy();
 }
