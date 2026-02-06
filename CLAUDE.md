@@ -129,6 +129,29 @@ curl -o %1 %2 をラップしたバッチファイルを作って、それを使
 
 ---
 
+# 📤 Git コミット・プッシュ・デプロイ（忘れないこと）
+
+## 必須ルール: push は必ず `all` 権限で実行する
+ユーザーから「コミットしてプッシュして」「デプロイして」「サーバーに反映して」などと依頼された場合：
+
+1. **コミット** … 通常どおり `git add` / `git commit` を実行する（必要に応じて `git_write`）。
+2. **プッシュ** … **必ず `required_permissions: ['all']` を付けて `git push origin main` を実行する。**
+
+### 理由
+- サンドボックス内（`network` + `git_write` のみ）で push すると、Windows の認証情報（Git credential / GitHub ログイン）にアクセスできず **Authentication failed** になる。
+- `all` で実行すると認証情報が使え、push が成功し、Vercel が自動デプロイする。
+
+### 手順の流れ
+```
+git add / git commit（必要なら git_write）
+→ git push origin main（必ず required_permissions: ['all']）
+→ ユーザーに「push 完了。Vercel が自動でデプロイします」と伝える
+```
+
+詳細は **docs/DEPLOY-PUSH-RULE.md** に記載。AIはこのルールを遵守し、依頼があれば push を `all` 権限で実行すること。
+
+---
+
 # 📝 実行ログの記録
 処理の進行状況は以下の形式で自動記録：
 - ⏳ 処理開始

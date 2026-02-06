@@ -44,17 +44,29 @@ function getParentDomain(hostname: string): string | undefined {
   return "." + parts.slice(-2).join(".");
 }
 
+/**
+ * プロキシ経由のときはクライアントのホストを使う（Vercel → Railway で admin_session を doin-challenge.com に送るため）
+ */
+function getEffectiveHostname(req: Request): string {
+  const forwarded = req.headers["x-forwarded-host"];
+  if (forwarded) {
+    const host = Array.isArray(forwarded) ? forwarded[0] : forwarded.split(",")[0];
+    if (host && host.trim()) return host.trim();
+  }
+  return req.hostname;
+}
+
 export function getSessionCookieOptions(
   req: Request,
 ): Pick<CookieOptions, "domain" | "httpOnly" | "path" | "sameSite" | "secure"> {
-  const hostname = req.hostname;
+  const hostname = getEffectiveHostname(req);
   const domain = getParentDomain(hostname);
 
   return {
     domain,
     httpOnly: true,
     path: "/",
-    sameSite: "none",
+    sameSite: "lax", // 同一サイトの /admin から API 呼び出しするため lax で送る
     secure: isSecureRequest(req),
   };
 }

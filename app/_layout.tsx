@@ -2,6 +2,17 @@ import "@/global.css";
 import { QueryClient } from "@tanstack/react-query";
 import { PersistQueryClientProvider } from "@tanstack/react-query-persist-client";
 import { Stack, usePathname } from "expo-router";
+
+/** /admin のときはオーバーレイを出さず管理画面だけ表示する */
+function useIsAdminRoute() {
+  const pathname = usePathname();
+  return typeof pathname === "string" && (pathname === "/admin" || pathname.startsWith("/admin/"));
+}
+
+function ConditionalExperienceOverlay() {
+  if (useIsAdminRoute()) return null;
+  return <ExperienceOverlay />;
+}
 import { StatusBar } from "expo-status-bar";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
@@ -52,9 +63,11 @@ export const unstable_settings = {
 
 /**
  * チュートリアルUI（ユーザータイプ選択 + チュートリアルオーバーレイ）
+ * /admin のときは表示しない（管理画面のパスワード認証を隠さないため）
  */
 function TutorialUI() {
   const tutorial = useTutorial();
+  if (useIsAdminRoute()) return null;
 
   return (
     <>
@@ -218,7 +231,7 @@ export default function RootLayout() {
                         <OfflineBanner />
                         <NetworkToast />
                         <TutorialUI />
-                        <ExperienceOverlay />
+                        <ConditionalExperienceOverlay />
                       </OnboardingWrapper>
                     </ToastProvider>
                   </ExperienceProvider>
