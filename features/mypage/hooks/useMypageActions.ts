@@ -7,7 +7,7 @@
 import { useState, useEffect, useRef } from "react";
 import { navigate } from "@/lib/navigation";
 import { useFollowStatus } from "@/hooks/use-follow-status";
-import { getRandomPattern } from "../components/LoginScreen";
+import { getRandomPattern, loginPatterns } from "../components/LoginScreen";
 
 interface UseMypageActionsOptions {
   user: any;
@@ -70,7 +70,19 @@ export function useMypageActions({
   };
   
   const [isLoggingIn, setIsLoggingIn] = useState(false);
-  const [loginPattern, setLoginPattern] = useState(() => getRandomPattern());
+  const [loginPattern, setLoginPattern] = useState(() => {
+    if (typeof window !== "undefined") {
+      const storedId = window.localStorage?.getItem("e2e_login_pattern_id");
+      const parsedId = storedId ? Number(storedId) : NaN;
+      if (!Number.isNaN(parsedId)) {
+        const pattern = loginPatterns.find((item) => item.id === parsedId);
+        if (pattern) {
+          return pattern;
+        }
+      }
+    }
+    return getRandomPattern();
+  });
   const [showLogoutModal, setShowLogoutModal] = useState(false);
   const [showAccountSwitcher, setShowAccountSwitcher] = useState(false);
   const [showLoginConfirmModal, setShowLoginConfirmModal] = useState(false);

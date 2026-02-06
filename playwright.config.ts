@@ -8,7 +8,13 @@ import { defineConfig, devices } from "@playwright/test";
  * - 失敗時のtrace + screenshot + requestId保存
  */
 
-const baseURL = process.env.PLAYWRIGHT_BASE_URL ?? process.env.E2E_BASE_URL ?? "https://doin-challenge.com";
+const baseURL =
+  process.env.PLAYWRIGHT_BASE_URL ??
+  process.env.E2E_BASE_URL ??
+  "https://doin-challenge.com";
+const localWorkers = process.env.PLAYWRIGHT_WORKERS
+  ? Number(process.env.PLAYWRIGHT_WORKERS)
+  : 1;
 
 // Vercel Deployment Protection bypass header
 const vercelBypassSecret = process.env.VERCEL_AUTOMATION_BYPASS_SECRET;
@@ -22,7 +28,7 @@ export default defineConfig({
   fullyParallel: true,
   forbidOnly: !!process.env.CI,
   retries: process.env.CI ? 2 : 0,
-  workers: process.env.CI ? 1 : undefined,
+  workers: process.env.CI ? 1 : localWorkers,
   reporter: process.env.CI 
     ? [["github"], ["html", { open: "never" }]] 
     : [["list"], ["html", { open: "never" }]],

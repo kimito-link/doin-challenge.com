@@ -12,10 +12,14 @@ import {
 } from "@/features/stats";
 
 export default function StatsScreen() {
-  const { userStats, isLoading, isError, error, refetch } = useStatsData();
+  const { userStats, isLoading, isError, error, refetch, isAuthError } = useStatsData();
 
   if (isLoading) {
     return <StatsLoadingState />;
+  }
+
+  if (isAuthError) {
+    return <StatsEmptyState message="ログインすると統計が表示されます。" />;
   }
 
   if (isError) {

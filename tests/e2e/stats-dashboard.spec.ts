@@ -9,10 +9,12 @@ import { dismissOnboarding } from "./_helpers";
 
 test.setTimeout(60000);
 
+const BASE_URL = process.env.EXPO_WEB_PREVIEW_URL || "http://localhost:8081";
+
 test.describe("Gate 2: 統計ダッシュボード", () => {
   test("統計ダッシュボードが読み込める", async ({ page }) => {
     // 1. 統計ダッシュボードにアクセス
-    await page.goto("/stats", { waitUntil: "networkidle", timeout: 30000 });
+    await page.goto(`${BASE_URL}/stats`, { waitUntil: "networkidle", timeout: 30000 });
     
     // オンボーディング画面をスキップ
     await dismissOnboarding(page);

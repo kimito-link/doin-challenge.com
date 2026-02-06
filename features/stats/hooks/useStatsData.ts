@@ -14,6 +14,7 @@ interface UseStatsDataReturn {
   isLoading: boolean;
   isError: boolean;
   error: Error | null;
+  isAuthError: boolean;
   
   // Actions
   refetch: () => void;
@@ -21,12 +22,15 @@ interface UseStatsDataReturn {
 
 export function useStatsData(): UseStatsDataReturn {
   const { data: userStats, isLoading, isError, error, refetch } = trpc.stats.getUserStats.useQuery();
+  const errorMessage = error?.message ?? "";
+  const isAuthError = /please login|not authenticated|unauthorized|10001/i.test(errorMessage);
 
   return {
-    userStats: userStats as UserStats | undefined,
+    userStats: (isAuthError ? undefined : userStats) as UserStats | undefined,
     isLoading,
-    isError,
-    error: error as Error | null,
+    isError: isAuthError ? false : isError,
+    error: isAuthError ? null : (error as Error | null),
+    isAuthError,
     refetch,
   };
 }
