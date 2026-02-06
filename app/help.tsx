@@ -1,5 +1,5 @@
 import { useState, useCallback } from "react";
-import { color, palette } from "@/theme/tokens";
+import { color } from "@/theme/tokens";
 import {
   View,
   Text,

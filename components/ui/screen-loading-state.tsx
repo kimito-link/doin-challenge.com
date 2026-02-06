@@ -15,7 +15,7 @@ import { ScreenContainer } from "@/components/organisms/screen-container";
 import { color } from "@/theme/tokens";
 import { commonCopy } from "@/constants/copy/common";
 
-interface ScreenLoadingStateProps {
+export interface ScreenLoadingStateProps {
   /** ローディングメッセージ（省略時はデフォルト） */
   message?: string;
   /** インジケーターの色（省略時はデフォルト） */

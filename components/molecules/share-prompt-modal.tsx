@@ -52,7 +52,6 @@ export function SharePromptModal({
   const scaleAnim = useRef(new Animated.Value(0.8)).current;
   const opacityAnim = useRef(new Animated.Value(0)).current;
   const progressAnim = useRef(new Animated.Value(0)).current;
-  const numberAnim = useRef(new Animated.Value(0)).current;
   const [isSharing, setIsSharing] = useState(false);
   const [displayNumber, setDisplayNumber] = useState(0);
 

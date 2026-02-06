@@ -16,6 +16,7 @@ import {
 } from "react-native";
 import { navigate } from "@/lib/navigation/app-routes";
 import { ScreenContainer } from "@/components/organisms/screen-container";
+import { CelebrationAnimation } from "@/components/molecules/celebration-animation";
 import { useColors } from "@/hooks/use-colors";
 import { Ionicons } from "@expo/vector-icons";
 import * as Haptics from "expo-haptics";
@@ -43,6 +44,7 @@ export default function DemoScreen() {
   const [challenge, setChallenge] = useState<(DemoChallenge & { userState: DemoState }) | null>(null);
   const [loading, setLoading] = useState(true);
   const [joining, setJoining] = useState(false);
+  const [showConfetti, setShowConfetti] = useState(false);
 
   // アニメーション値
   const progressWidth = useSharedValue(0);
@@ -204,6 +206,7 @@ export default function DemoScreen() {
 
   return (
     <ScreenContainer>
+      <CelebrationAnimation visible={showConfetti} showConfetti />
       <ScrollView className="flex-1" contentContainerStyle={{ padding: 16 }}>
         {/* デモバナー */}
         <View 

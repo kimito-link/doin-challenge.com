@@ -10,7 +10,8 @@
 
 import { ScreenContainer } from "@/components/organisms/screen-container";
 import { RefreshingIndicator } from "@/components/molecules/refreshing-indicator";
-import { ScreenLoadingState } from "@/components/ui";
+import { ScreenLoadingState, InlineErrorBar } from "@/components/ui";
+import { commonCopy } from "@/constants/copy/common";
 import { useColors } from "@/hooks/use-colors";
 import { useLoadingState } from "@/hooks/use-loading-state";
 import { color } from "@/theme/tokens";
@@ -25,6 +26,7 @@ import {
   Alert,
   Platform,
   TextInput,
+  ActivityIndicator,
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 
@@ -101,7 +103,7 @@ export default function ParticipationsScreen() {
       if (Platform.OS === "web") {
         window.alert(message);
       } else {
-        Alert.alert("成功", message);
+        Alert.alert(commonCopy.alerts.success, message);
       }
     },
     onError: (err) => {
@@ -109,7 +111,7 @@ export default function ParticipationsScreen() {
       if (Platform.OS === "web") {
         window.alert(message);
       } else {
-        Alert.alert("エラー", message);
+        Alert.alert(commonCopy.alerts.error, message);
       }
     },
   });
@@ -123,7 +125,7 @@ export default function ParticipationsScreen() {
       if (Platform.OS === "web") {
         window.alert(message);
       } else {
-        Alert.alert("成功", message);
+        Alert.alert(commonCopy.alerts.success, message);
       }
     },
     onError: (err) => {
@@ -131,7 +133,7 @@ export default function ParticipationsScreen() {
       if (Platform.OS === "web") {
         window.alert(message);
       } else {
-        Alert.alert("エラー", message);
+        Alert.alert(commonCopy.alerts.error, message);
       }
     },
   });
@@ -145,7 +147,7 @@ export default function ParticipationsScreen() {
       if (Platform.OS === "web") {
         window.alert(message);
       } else {
-        Alert.alert("成功", message);
+        Alert.alert(commonCopy.alerts.success, message);
       }
     },
     onError: (err) => {
@@ -153,7 +155,7 @@ export default function ParticipationsScreen() {
       if (Platform.OS === "web") {
         window.alert(message);
       } else {
-        Alert.alert("エラー", message);
+        Alert.alert(commonCopy.alerts.error, message);
       }
     },
   });
@@ -165,7 +167,7 @@ export default function ParticipationsScreen() {
         restoreMutation.mutate({ id });
       }
     } else {
-      Alert.alert("確認", confirmMessage, [
+      Alert.alert(commonCopy.alerts.confirm, confirmMessage, [
         { text: "キャンセル", style: "cancel" },
         { text: "復元", onPress: () => restoreMutation.mutate({ id }) },
       ]);
@@ -178,7 +180,7 @@ export default function ParticipationsScreen() {
       if (Platform.OS === "web") {
         window.alert(message);
       } else {
-        Alert.alert("エラー", message);
+        Alert.alert(commonCopy.alerts.error, message);
       }
       return;
     }
@@ -193,7 +195,7 @@ export default function ParticipationsScreen() {
         });
       }
     } else {
-      Alert.alert("確認", confirmMessage, [
+      Alert.alert(commonCopy.alerts.confirm, confirmMessage, [
         { text: "キャンセル", style: "cancel" },
         {
           text: "一括復元",
@@ -213,7 +215,7 @@ export default function ParticipationsScreen() {
       if (Platform.OS === "web") {
         window.alert(message);
       } else {
-        Alert.alert("エラー", message);
+        Alert.alert(commonCopy.alerts.error, message);
       }
       return;
     }
@@ -227,7 +229,7 @@ export default function ParticipationsScreen() {
         });
       }
     } else {
-      Alert.alert("確認", confirmMessage, [
+      Alert.alert(commonCopy.alerts.confirm, confirmMessage, [
         { text: "キャンセル", style: "cancel" },
         {
           text: "一括削除",
@@ -291,7 +293,7 @@ export default function ParticipationsScreen() {
 
   // 初回ロード中はスケルトン表示
   if (loadingState.isInitialLoading) {
-    return <ScreenLoadingState message="データを読み込み中..." />;
+    return <ScreenLoadingState message={commonCopy.loading.data} />;
   }
 
   return (
@@ -353,12 +355,10 @@ export default function ParticipationsScreen() {
         </View>
 
         {error && (
-          <View className="p-4 rounded-lg mb-4" style={{ backgroundColor: colors.error + "20" }}>
-            <Text style={{ color: colors.error }}>⚠️ {error.message}</Text>
-            <Text className="text-muted text-sm mt-1">
-              管理者権限が必要です。ログインしているアカウントが管理者であることを確認してください。
-            </Text>
-          </View>
+          <InlineErrorBar
+            message={error.message}
+            detail="管理者権限が必要です。ログインしているアカウントが管理者であることを確認してください。"
+          />
         )}
 
         {/* 削除済みタブ */}
@@ -573,7 +573,7 @@ export default function ParticipationsScreen() {
               <View className="bg-surface rounded-xl p-8 items-center border border-border">
                 <Ionicons name="checkmark-circle-outline" size={48} color={colors.success} />
                 <Text className="text-lg font-semibold text-foreground mt-4">
-                  削除済みの参加はありません
+                  {commonCopy.empty.noParticipationsDeleted}
                 </Text>
                 <Text className="text-muted text-center mt-2">
                   ソフトデリートされた参加がここに表示されます
@@ -646,7 +646,7 @@ export default function ParticipationsScreen() {
               <View className="bg-surface rounded-xl p-8 items-center border border-border">
                 <Ionicons name="document-text-outline" size={48} color={colors.muted} />
                 <Text className="text-lg font-semibold text-foreground mt-4">
-                  監査ログがありません
+                  {commonCopy.empty.noAuditLog}
                 </Text>
                 <Text className="text-muted text-center mt-2">
                   参加に関する操作履歴がここに表示されます

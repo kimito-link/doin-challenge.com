@@ -6,7 +6,7 @@ import { View, Text, StyleSheet, Pressable, Platform, ScrollView, Dimensions } f
 import * as Haptics from "expo-haptics";
 import { color, palette } from "@/theme/tokens";
 import { MapErrorBoundary } from "@/components/ui/map-error-boundary";
-import { useMemo } from "react";
+import { useMemo, useCallback } from "react";
 
 const screenWidth = Dimensions.get("window").width;
 

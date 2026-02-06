@@ -14,6 +14,8 @@ import { Input } from "@/components/ui/input";
 import { DatePicker } from "@/components/molecules/date-picker";
 import { NumberStepper } from "@/components/molecules/number-stepper";
 import { showAlert } from "@/lib/web-alert";
+import { commonCopy } from "@/constants/copy/common";
+import { goalTypeOptions } from "@/constants/goal-types";
 
 export default function EditChallengeScreen() {
 
@@ -47,7 +49,6 @@ export default function EditChallengeScreen() {
       setTitle(challenge.title || "");
       setDescription(challenge.description || "");
       setVenue(challenge.venue || "");
-      setPrefecture(challenge.prefecture || "");
       setEventDateStr(challenge.eventDate ? new Date(challenge.eventDate).toISOString().split("T")[0] : "");
       setGoalType(challenge.goalType || "attendance");
       setGoalValue(challenge.goalValue || 100);
@@ -74,27 +75,27 @@ export default function EditChallengeScreen() {
       ]);
     },
     onError: (error) => {
-      showAlert("エラー", error.message);
+      showAlert(commonCopy.alerts.error, error.message);
     },
   });
 
   const handleUpdate = () => {
     if (!title.trim()) {
-      showAlert("エラー", "タイトルを入力してください");
+      showAlert(commonCopy.alerts.error, "タイトルを入力してください");
       return;
     }
     if (!eventDateStr.trim()) {
-      showAlert("エラー", "開催日を入力してください");
+      showAlert(commonCopy.alerts.error, "開催日を入力してください");
       return;
     }
     if (!venue.trim()) {
-      showAlert("エラー", "開催場所を入力してください");
+      showAlert(commonCopy.alerts.error, "開催場所を入力してください");
       return;
     }
 
     const eventDate = new Date(eventDateStr);
     if (isNaN(eventDate.getTime())) {
-      showAlert("エラー", "日付の形式が正しくありません");
+      showAlert(commonCopy.alerts.error, "日付の形式が正しくありません");
       return;
     }
 
@@ -198,7 +199,7 @@ export default function EditChallengeScreen() {
                   目標タイプ
                 </Text>
                 <View style={{ flexDirection: "row", flexWrap: "wrap", gap: 8 }}>
-                  {goalTypes.map((type) => (
+                  {goalTypeOptions.map((type) => (
                     <Pressable
                       key={type.id}
                       onPress={() => {

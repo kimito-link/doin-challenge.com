@@ -99,6 +99,7 @@ export {
   ScreenErrorState,
   type ScreenErrorStateProps,
 } from "./screen-error-state";
+export { InlineErrorBar, type InlineErrorBarProps } from "./inline-error-bar";
 
 // RetryButton系
 export {

@@ -3,7 +3,7 @@ import { color, palette } from "@/theme/tokens";
 import { Image } from "expo-image";
 import { useLocalSearchParams } from "expo-router";
 import { navigateBack } from "@/lib/navigation/app-routes";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { ScreenContainer } from "@/components/organisms/screen-container";
 import { trpc } from "@/lib/trpc";
 import { useAuth } from "@/hooks/use-auth";
@@ -81,14 +81,14 @@ export default function InviteScreen() {
   };
 
   // 招待リンクを作成
-  const handleCreateInvite = () => {
+  const handleCreateInvite = useCallback(() => {
     if (!id || !user) return;
     setIsCreatingInvite(true);
     const payload: { challengeId: number; maxUses?: number; expiresAt?: string } = {
       challengeId: parseInt(id),
     };
     createInviteMutation.mutate(payload);
-  };
+  }, [id, user, createInviteMutation]);
 
   // 初回は自動で招待リンクを作成（カスタムメッセージなし）
   useEffect(() => {

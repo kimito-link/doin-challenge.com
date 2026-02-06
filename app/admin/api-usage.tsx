@@ -8,6 +8,8 @@
 import { ScreenContainer } from "@/components/organisms/screen-container";
 import { Input } from "@/components/ui/input";
 import { ScreenLoadingState, ScreenErrorState } from "@/components/ui";
+import { commonCopy } from "@/constants/copy/common";
+import { color } from "@/theme/tokens";
 import { useColors } from "@/hooks/use-colors";
 import { apiGet, getErrorMessage } from "@/lib/api";
 import { navigateBack } from "@/lib/navigation/app-routes";
@@ -20,6 +22,7 @@ import {
   Pressable,
   RefreshControl,
   Switch,
+  ActivityIndicator,
 } from "react-native";
 
 interface EndpointStats {
@@ -493,7 +496,7 @@ export default function ApiUsageDashboard() {
           ) : (
             <View className="bg-surface p-4 rounded-lg">
               <Text className="text-muted text-center">
-                まだAPIリクエストがありません
+                {commonCopy.empty.noApiRequests}
               </Text>
             </View>
           )}

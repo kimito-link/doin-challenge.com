@@ -1,5 +1,5 @@
-import { RefreshControl, RefreshControlProps, Platform } from "react-native";
-import { color, palette } from "@/theme/tokens";
+import { RefreshControl, RefreshControlProps } from "react-native";
+import { color } from "@/theme/tokens";
 import { haptics } from "@/lib/haptics";
 import { useState, useCallback } from "react";
 
@@ -35,7 +35,7 @@ export function EnhancedRefreshControl({
       if (hapticOnComplete) {
         haptics.success();
       }
-    } catch (error) {
+    } catch {
       // エラー時のフィードバック
       haptics.error();
     } finally {

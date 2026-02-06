@@ -4,6 +4,7 @@
  */
 import { View, Text, Pressable } from "react-native";
 import { useColors } from "@/hooks/use-colors";
+import { palette } from "@/theme/tokens";
 import { PREFECTURE_COLORS } from "@/constants/prefecture-colors";
 import Animated, {
   useSharedValue,
@@ -122,7 +123,7 @@ function PrefectureCell({
         withTiming(0.7, { duration: 300 })
       );
     }
-  }, [isHighlighted]);
+  }, [isHighlighted, opacity, scale]);
 
   const animatedStyle = useAnimatedStyle(() => ({
     transform: [{ scale: scale.value }],

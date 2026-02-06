@@ -20,10 +20,7 @@ interface UseStatsDataReturn {
 }
 
 export function useStatsData(): UseStatsDataReturn {
-  const { data: userStats, isLoading, isError, error, refetch } = trpc.stats.getUserStats.useQuery({
-    retry: 2,
-    retryDelay: 1000,
-  });
+  const { data: userStats, isLoading, isError, error, refetch } = trpc.stats.getUserStats.useQuery();
 
   return {
     userStats: userStats as UserStats | undefined,

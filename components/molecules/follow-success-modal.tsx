@@ -7,9 +7,7 @@ import Animated, {
   useSharedValue,
   useAnimatedStyle,
   withSpring,
-  withSequence,
   withDelay,
-  runOnJS,
 } from "react-native-reanimated";
 import * as Haptics from "expo-haptics";
 

@@ -1,6 +1,6 @@
 import { Text, View } from "react-native";
 import { color, palette } from "@/theme/tokens";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { Image } from "expo-image";
 import { navigateReplace } from "@/lib/navigation/app-routes";
 import { ScreenContainer } from "@/components/organisms/screen-container";
@@ -37,7 +37,7 @@ export default function LogoutScreen() {
   );
 
   // ログアウト処理
-  const handleLogout = async () => {
+  const handleLogout = useCallback(async () => {
     setIsLoggingOut(true);
     try {
       await logout();
@@ -47,7 +47,7 @@ export default function LogoutScreen() {
     } finally {
       setIsLoggingOut(false);
     }
-  };
+  }, [logout]);
 
   // 自動的にログアウト処理を開始
   useEffect(() => {

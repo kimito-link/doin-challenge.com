@@ -1,4 +1,5 @@
 import { Text, View, ScrollView, Pressable, RefreshControl, Alert } from "react-native";
+import { commonCopy } from "@/constants/copy/common";
 import { color } from "@/theme/tokens";
 import { useLocalSearchParams } from "expo-router";
 import { navigate, navigateBack } from "@/lib/navigation";
@@ -60,10 +61,10 @@ export default function ProfileScreen() {
   const followMutation = trpc.follows.follow.useMutation({
     onSuccess: () => {
       refetchFollowStatus();
-      Alert.alert("フォローしました", "新着チャレンジの通知を受け取れます");
+      Alert.alert(commonCopy.alerts.followDone, "新着チャレンジの通知を受け取れます");
     },
     onError: (error) => {
-      Alert.alert("エラー", error.message);
+      Alert.alert(commonCopy.alerts.error, error.message);
     },
   });
 
@@ -72,7 +73,7 @@ export default function ProfileScreen() {
       refetchFollowStatus();
     },
     onError: (error) => {
-      Alert.alert("エラー", error.message);
+      Alert.alert(commonCopy.alerts.error, error.message);
     },
   });
 
@@ -88,7 +89,7 @@ export default function ProfileScreen() {
 
   const handleFollowToggle = () => {
     if (!user) {
-      Alert.alert("ログインが必要です", "フォローするにはログインしてください");
+      Alert.alert(commonCopy.alerts.loginRequired, "フォローするにはログインしてください");
       return;
     }
 
@@ -314,7 +315,7 @@ export default function ProfileScreen() {
             ) : (
               <View style={{ alignItems: "center", padding: 32 }}>
                 <MaterialIcons name="event-busy" size={48} color={color.textSubtle} />
-                <Text style={{ color: color.textMuted, marginTop: 12 }}>参加履歴がありません</Text>
+                <Text style={{ color: color.textMuted, marginTop: 12 }}>{commonCopy.empty.noParticipationHistory}</Text>
               </View>
             )
           ) : (
@@ -354,7 +355,7 @@ export default function ProfileScreen() {
             ) : (
               <View style={{ alignItems: "center", padding: 32 }}>
                 <MaterialIcons name="emoji-events" size={48} color={color.textSubtle} />
-                <Text style={{ color: color.textMuted, marginTop: 12 }}>バッジがありません</Text>
+                <Text style={{ color: color.textMuted, marginTop: 12 }}>{commonCopy.empty.noBadges}</Text>
               </View>
             )
           )}

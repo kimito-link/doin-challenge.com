@@ -1,4 +1,5 @@
-import { View, Text, FlatList, Pressable, Alert } from "react-native";
+import { View, Text, FlatList, Pressable, Alert, Platform } from "react-native";
+import { commonCopy } from "@/constants/copy/common";
 import { color } from "@/theme/tokens";
 import { navigate, navigateBack } from "@/lib/navigation";
 import { ScreenContainer } from "@/components/organisms/screen-container";
@@ -6,7 +7,6 @@ import { trpc } from "@/lib/trpc";
 import { useAuth } from "@/hooks/use-auth";
 import MaterialIcons from "@expo/vector-icons/MaterialIcons";
 import * as Haptics from "expo-haptics";
-import { Platform } from "react-native";
 import { AppHeader } from "@/components/organisms/app-header";
 
 const goalTypeLabels: Record<string, string> = {
@@ -237,7 +237,8 @@ export default function TemplatesScreen() {
                   <View style={{ backgroundColor: color.surface, borderRadius: 12, padding: 24, alignItems: "center" }}>
                     <MaterialIcons name="folder-open" size={48} color={color.textSubtle} />
                     <Text style={{ color: color.textMuted, fontSize: 14, marginTop: 8, textAlign: "center" }}>
-                      保存した設定はまだありません{"\n"}
+                      {commonCopy.empty.noTemplatesSaved}
+                      {"\n"}
                       チャレンジ作成時に保存できます
                     </Text>
                   </View>
@@ -260,7 +261,7 @@ export default function TemplatesScreen() {
                 <View style={{ backgroundColor: color.surface, borderRadius: 12, padding: 24, alignItems: "center" }}>
                   <MaterialIcons name="public" size={48} color={color.textSubtle} />
                   <Text style={{ color: color.textMuted, fontSize: 14, marginTop: 8, textAlign: "center" }}>
-                    公開された設定はまだありません
+                    {commonCopy.empty.noTemplatesPublic}
                   </Text>
                 </View>
               )}

@@ -12,6 +12,7 @@ import { saveAccount } from "@/lib/account-manager";
 import { Image } from "expo-image";
 import { BlinkingLink } from "@/components/atoms/blinking-character";
 import { CelebrationAnimation } from "@/components/molecules/celebration-animation";
+import { FollowSuccessModal } from "@/components/molecules/follow-success-modal";
 import { PrefectureSelector } from "@/components/ui/prefecture-selector";
 import { trpc } from "@/lib/trpc";
 import { useColors } from "@/hooks/use-colors";
@@ -55,6 +56,8 @@ export default function TwitterOAuthCallback() {
   const [onboardingPrefecture, setOnboardingPrefecture] = useState("");
   const [onboardingGender, setOnboardingGender] = useState<Gender>("unspecified");
   const [showPrefectureList, setShowPrefectureList] = useState(false);
+  const [targetAccountInfo, setTargetAccountInfo] = useState<Auth.User["targetAccount"] | null>(null);
+  const [showFollowSuccessModal, setShowFollowSuccessModal] = useState(false);
   const isFollowingRef = useRef(false);
 
   const updateProfileMutation = trpc.profiles.updateMyProfile.useMutation({
@@ -461,6 +464,15 @@ export default function TwitterOAuthCallback() {
         
 
       </View>
+      <FollowSuccessModal
+        visible={showFollowSuccessModal}
+        onClose={() => {
+          setShowFollowSuccessModal(false);
+          navigateReplace.withUrl(savedReturnUrl);
+        }}
+        targetUsername={targetAccountInfo?.username}
+        targetDisplayName={targetAccountInfo?.name}
+      />
     </SafeAreaView>
   );
 }

@@ -6,12 +6,11 @@
  * キャラクターがランダムに選択され、アニメーション付きで表示される
  */
 
-import { View, Text, Modal } from "react-native";
+import { View, Modal } from "react-native";
 import { useColors } from "@/hooks/use-colors";
 import { palette } from "@/theme/tokens";
 import Animated, {
   FadeIn,
-  FadeOut,
   SlideInDown,
   SlideOutDown,
   useAnimatedStyle,

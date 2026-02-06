@@ -8,6 +8,7 @@ import { Text, ScrollView, Pressable, Alert, ActivityIndicator } from "react-nat
 import { ScreenContainer } from "@/components/organisms/screen-container";
 import { AppHeader } from "@/components/organisms/app-header";
 import { trpc } from "@/lib/trpc";
+import { commonCopy } from "@/constants/copy/common";
 import { color } from "@/theme/tokens";
 import { navigateBack } from "@/lib/navigation/app-routes";
 import { Input } from "@/components/ui/input";
@@ -26,11 +27,11 @@ export default function ReleaseNotesAdminScreen() {
 改善: コンポーネント統一: Skeletonコンポーネントを統一`);
   const addReleaseNoteMutation = trpc.releaseNotes.add.useMutation({
     onSuccess: () => {
-      Alert.alert("成功", "リリースノートを追加しました");
+      Alert.alert(commonCopy.alerts.success, "リリースノートを追加しました");
       navigateBack();
     },
     onError: (error) => {
-      Alert.alert("エラー", error.message || "リリースノートの追加に失敗しました");
+      Alert.alert(commonCopy.alerts.error, error.message || "リリースノートの追加に失敗しました");
     },
   });
 
@@ -60,7 +61,7 @@ export default function ReleaseNotesAdminScreen() {
       });
 
     if (changes.length === 0) {
-      Alert.alert("エラー", "変更内容を入力してください");
+      Alert.alert(commonCopy.alerts.error, "変更内容を入力してください");
       return;
     }
 

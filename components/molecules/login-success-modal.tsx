@@ -2,7 +2,7 @@ import { MaterialIcons } from "@expo/vector-icons";
 import { color, palette } from "@/theme/tokens";
 import { LinearGradient } from "expo-linear-gradient";
 import { Image } from "expo-image";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
 import { Animated, Modal, Text, Pressable, View, Easing, Platform } from "react-native";
 import * as Haptics from "expo-haptics";
 
@@ -70,6 +70,26 @@ export function LoginSuccessModal({
   const [fadeAnim] = useState(new Animated.Value(0));
   const [confettiAnim] = useState(new Animated.Value(0));
 
+  const handleClose = useCallback(() => {
+    if (Platform.OS !== "web") {
+      Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+    }
+    Animated.parallel([
+      Animated.timing(scaleAnim, {
+        toValue: 0,
+        duration: 200,
+        useNativeDriver: true,
+      }),
+      Animated.timing(fadeAnim, {
+        toValue: 0,
+        duration: 200,
+        useNativeDriver: true,
+      }),
+    ]).start(() => {
+      onClose();
+    });
+  }, [fadeAnim, onClose, scaleAnim]);
+
   useEffect(() => {
     if (visible) {
       // アニメーションシーケンス
@@ -106,27 +126,7 @@ export function LoginSuccessModal({
 
       return () => clearTimeout(timer);
     }
-  }, [visible]);
-
-  const handleClose = () => {
-    if (Platform.OS !== "web") {
-      Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-    }
-    Animated.parallel([
-      Animated.timing(scaleAnim, {
-        toValue: 0,
-        duration: 200,
-        useNativeDriver: true,
-      }),
-      Animated.timing(fadeAnim, {
-        toValue: 0,
-        duration: 200,
-        useNativeDriver: true,
-      }),
-    ]).start(() => {
-      onClose();
-    });
-  };
+  }, [confettiAnim, fadeAnim, handleClose, scaleAnim, visible]);
 
   if (!visible) return null;
 

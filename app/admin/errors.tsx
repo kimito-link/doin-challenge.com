@@ -7,6 +7,7 @@
 
 import { ScreenContainer } from "@/components/organisms/screen-container";
 import { ScreenLoadingState } from "@/components/ui";
+import { commonCopy } from "@/constants/copy/common";
 import { color } from "@/theme/tokens";
 import { useColors } from "@/hooks/use-colors";
 import { apiGet, apiPost, apiDelete } from "@/lib/api";
@@ -19,6 +20,7 @@ import {
   RefreshControl,
   Alert,
   Platform,
+  ActivityIndicator,
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 
@@ -150,7 +152,7 @@ export default function ErrorLogsScreen() {
     
     if (Platform.OS !== "web") {
       Alert.alert(
-        "確認",
+        commonCopy.alerts.confirm,
         "すべてのエラーを解決済みにしますか？",
         [
           { text: "キャンセル", style: "cancel" },
@@ -183,7 +185,7 @@ export default function ErrorLogsScreen() {
     
     if (Platform.OS !== "web") {
       Alert.alert(
-        "確認",
+        commonCopy.alerts.confirm,
         "すべてのエラーログを削除しますか？この操作は取り消せません。",
         [
           { text: "キャンセル", style: "cancel" },
@@ -222,7 +224,7 @@ export default function ErrorLogsScreen() {
   };
 
   if (loading) {
-    return <ScreenLoadingState message="エラーログを読み込み中..." />;
+    return <ScreenLoadingState message={commonCopy.loading.errors} />;
   }
 
   return (
@@ -280,7 +282,7 @@ export default function ErrorLogsScreen() {
                   すべて
                 </Text>
               </Pressable>
-              {Object.entries(categoryLabels).map(([key, { label, color }]) => (
+              {Object.entries(categoryLabels).map(([key, { label, color: categoryColor }]) => (
                 <Pressable
                   key={key}
                   onPress={() => setSelectedCategory(key)}
@@ -288,9 +290,9 @@ export default function ErrorLogsScreen() {
                     paddingHorizontal: 12,
                     paddingVertical: 6,
                     borderRadius: 16,
-                    backgroundColor: selectedCategory === key ? color : colors.surface,
+                    backgroundColor: selectedCategory === key ? categoryColor : colors.surface,
                     borderWidth: 1,
-                    borderColor: selectedCategory === key ? color : colors.border,
+                    borderColor: selectedCategory === key ? categoryColor : colors.border,
                     opacity: pressed ? 0.8 : 1,
                   })}
                 >
@@ -354,7 +356,7 @@ export default function ErrorLogsScreen() {
           <View className="bg-surface rounded-xl p-8 items-center border border-border">
             <Ionicons name="checkmark-circle" size={48} color={colors.success} />
             <Text className="text-lg font-semibold text-foreground mt-4">
-              エラーはありません
+              {commonCopy.empty.noErrors}
             </Text>
             <Text className="text-muted text-center mt-2">
               システムは正常に動作しています

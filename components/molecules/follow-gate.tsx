@@ -1,12 +1,12 @@
-import { View, Text, Pressable, Modal, Platform } from "react-native";
+import { View, Text, Pressable, Platform } from "react-native";
 import { openExternalUrl } from "@/lib/navigation";
 import { color, palette } from "@/theme/tokens";
 import { useState } from "react";
 import { Image } from "expo-image";
 import MaterialIcons from "@expo/vector-icons/MaterialIcons";
-import { LinearGradient } from "expo-linear-gradient";
 import * as Haptics from "expo-haptics";
-import { Button, IconButton } from "@/components/ui/button";
+import { Modal } from "@/components/ui/modal";
+import { Button } from "@/components/ui/button";
 
 // キャラクター画像
 const characterImages = {
@@ -118,52 +118,17 @@ export function FollowGate({
 
       <Modal
         visible={showModal}
-        transparent
-        animationType="fade"
-        onRequestClose={() => setShowModal(false)}
+        onClose={() => setShowModal(false)}
+        title="プレミアム機能"
+        showCloseButton
+        maxWidth={400}
       >
-        <View
-          style={{
-            flex: 1,
-            backgroundColor: palette.black + "CC",
-            alignItems: "center",
-            justifyContent: "center",
-            padding: 24,
-          }}
-        >
-          <View
-            style={{
-              backgroundColor: color.surface,
-              borderRadius: 24,
-              padding: 24,
-              width: "100%",
-              maxWidth: 400,
-              alignItems: "center",
-            }}
-          >
-            {/* キャラクター */}
-            <Image
-              source={characterImages.linkYukkuri}
-              style={{ width: 80, height: 80, marginBottom: 16 }}
-              contentFit="contain"
-            />
-
-            {/* タイトル */}
-            <View
-              style={{
-                backgroundColor: color.accentPrimary,
-                borderRadius: 20,
-                paddingHorizontal: 16,
-                paddingVertical: 6,
-                marginBottom: 16,
-              }}
-            >
-              <Text style={{ color: color.textWhite, fontSize: 14, fontWeight: "bold" }}>
-                プレミアム機能
-              </Text>
-            </View>
-
-            <Text
+        <Image
+          source={characterImages.linkYukkuri}
+          style={{ width: 80, height: 80, marginBottom: 16, alignSelf: "center" }}
+          contentFit="contain"
+        />
+        <Text
               style={{
                 color: color.textWhite,
                 fontSize: 16,
@@ -214,17 +179,6 @@ export function FollowGate({
                 フォロー済みの方はタップして更新
               </Button>
             </View>
-
-            <View style={{ position: "absolute", top: 16, right: 16 }}>
-              <IconButton
-                onPress={() => setShowModal(false)}
-                icon="close"
-                variant="ghost"
-                accessibilityLabel="閉じる"
-              />
-            </View>
-          </View>
-        </View>
       </Modal>
     </>
   );

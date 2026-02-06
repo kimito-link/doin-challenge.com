@@ -5,10 +5,8 @@ import { color, palette } from "@/theme/tokens";
 import { LinearGradient } from "expo-linear-gradient";
 import MaterialIcons from "@expo/vector-icons/MaterialIcons";
 import { useColors } from "@/hooks/use-colors";
-import { useResponsive } from "@/hooks/use-responsive";
 import { AnimatedCard } from "@/components/molecules/animated-pressable";
 import { LazyAvatar } from "@/components/molecules/lazy-image";
-import { Countdown } from "@/components/atoms/countdown";
 import { goalTypeConfig } from "@/constants/goal-types";
 
 interface Challenge {
@@ -85,7 +83,6 @@ export function ColorfulChallengeCard({
   onDelete,
 }: ColorfulChallengeCardProps) {
   const colors = useColors();
-  const { isDesktop } = useResponsive();
   const eventDate = new Date(challenge.eventDate);
   const formattedDate = `${eventDate.getMonth() + 1}/${eventDate.getDate()}`;
   
@@ -93,7 +90,6 @@ export function ColorfulChallengeCard({
   const goalConfig = goalTypeConfig[challenge.goalType] || goalTypeConfig.custom;
   const typeBadge = eventTypeBadge[challenge.eventType] || eventTypeBadge.solo;
   const unit = challenge.goalUnit || goalConfig.unit;
-  const remaining = Math.max(challenge.goalValue - challenge.currentValue, 0);
 
   // width(px)が来たらそれを使用、来なければ従来互換でフォールバック
   const fallbackCardWidth = numColumns === 3 ? "31%" : numColumns === 2 ? "47%" : "100%";
@@ -107,7 +103,7 @@ export function ColorfulChallengeCard({
     cardColor = { bg: palette.blue600, gradient: [palette.blue600, palette.blue500, palette.blue400] };
   } else if (challenge.hostGender === "female") {
     // 女性: ピンク系グラデーション
-    cardColor = { bg: palette.pink600, gradient: [palette.pink600, palette.pink500, palette.pink400] };
+    cardColor = { bg: palette.pink600, gradient: [palette.pink600, palette.pink500, palette.pink500] };
   } else if (challenge.hostGender === "unspecified") {
     // 未指定: グレー系グラデーション
     cardColor = { bg: palette.gray600, gradient: [palette.gray600, palette.gray500, palette.gray400] };

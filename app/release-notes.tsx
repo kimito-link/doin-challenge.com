@@ -1,11 +1,13 @@
 import { View, Text, ScrollView, Pressable } from "react-native";
+import { commonCopy } from "@/constants/copy/common";
 import { color } from "@/theme/tokens";
 import { navigateBack } from "@/lib/navigation";
 import { ScreenContainer } from "@/components/organisms/screen-container";
-import { AppHeader } from "@/components/organisms/app-header";
 import { LoadingIndicator } from "@/components/molecules/loading-screen";
 import MaterialIcons from "@expo/vector-icons/MaterialIcons";
 import { trpc } from "@/lib/trpc";
+import * as Haptics from "expo-haptics";
+import { APP_VERSION } from "@/shared/version";
 
 // 変更タイプのアイコンと色
 const changeTypeConfig = {
@@ -110,7 +112,7 @@ export default function ReleaseNotesScreen() {
         {!isLoading && releaseNotes?.length === 0 && (
           <View style={{ alignItems: "center", padding: 32 }}>
             <MaterialIcons name="info-outline" size={48} color={color.textMuted} />
-            <Text style={{ color: color.textMuted, marginTop: 16 }}>リリースノートがありません</Text>
+            <Text style={{ color: color.textMuted, marginTop: 16 }}>{commonCopy.empty.noReleaseNotes}</Text>
           </View>
         )}
       </ScrollView>

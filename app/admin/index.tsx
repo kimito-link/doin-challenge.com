@@ -8,6 +8,7 @@
 import { ScreenContainer } from "@/components/organisms/screen-container";
 import { RefreshingIndicator } from "@/components/molecules/refreshing-indicator";
 import { AppHeader } from "@/components/organisms/app-header";
+import { commonCopy } from "@/constants/copy/common";
 import { color } from "@/theme/tokens";
 import { useColors } from "@/hooks/use-colors";
 import { useAuth } from "@/hooks/use-auth";
@@ -134,7 +135,7 @@ export default function AdminDashboard() {
         <View className="flex-1 items-center justify-center p-8">
           <MaterialIcons name="block" size={64} color={colors.error} />
           <Text className="text-xl font-bold text-foreground mt-4 mb-2">
-            アクセス権限がありません
+            {commonCopy.empty.noAccess}
           </Text>
           <Text className="text-sm text-muted text-center mb-6">
             この画面は運営管理者のみアクセスできます
@@ -362,7 +363,7 @@ export default function AdminDashboard() {
           ) : (
             <View className="bg-surface rounded-lg p-8 items-center border border-border">
               <Ionicons name="trophy-outline" size={48} color={colors.muted} />
-              <Text className="text-muted mt-2">チャレンジがありません</Text>
+              <Text className="text-muted mt-2">{commonCopy.empty.noChallenges}</Text>
             </View>
           )}
         </View>

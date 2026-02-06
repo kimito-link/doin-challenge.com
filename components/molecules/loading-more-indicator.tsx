@@ -5,6 +5,7 @@
  */
 
 import { View, Text, ActivityIndicator } from "react-native";
+import { commonCopy } from "@/constants/copy/common";
 import { useColors } from "@/hooks/use-colors";
 
 interface LoadingMoreIndicatorProps {
@@ -36,7 +37,7 @@ export function LoadingMoreIndicator({ isLoadingMore }: LoadingMoreIndicatorProp
           fontWeight: "500",
         }}
       >
-        読み込み中…
+        {commonCopy.loading.loading}
       </Text>
     </View>
   );

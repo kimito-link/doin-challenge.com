@@ -1,4 +1,5 @@
 import { Text, View, Pressable, ScrollView, Dimensions } from "react-native";
+import { commonCopy } from "@/constants/copy/common";
 import { color, palette } from "@/theme/tokens";
 import { useLocalSearchParams } from "expo-router";
 import { navigateBack } from "@/lib/navigation/app-routes";
@@ -254,7 +255,7 @@ function RegionPieChart({ participations }: { participations: Participation[] })
           🗾 地域分布
         </Text>
         <View style={{ backgroundColor: color.surface, borderRadius: 8, padding: 24, alignItems: "center" }}>
-          <Text style={{ color: color.textSubtle }}>地域データがありません</Text>
+          <Text style={{ color: color.textSubtle }}>{commonCopy.empty.noRegionData}</Text>
         </View>
       </View>
     );

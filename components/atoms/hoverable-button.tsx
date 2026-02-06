@@ -2,6 +2,7 @@ import { Pressable, Platform, Text, type PressableProps, type ViewStyle, type Te
 import { useState, useCallback } from "react";
 import Animated, { useAnimatedStyle, withTiming } from "react-native-reanimated";
 import { color, palette } from "@/theme/tokens";
+import * as Haptics from "expo-haptics";
 
 interface HoverableButtonProps extends Omit<PressableProps, "style"> {
   title: string;

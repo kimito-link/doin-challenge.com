@@ -4,6 +4,7 @@
  * v6.10: OGP画像自動生成対応
  */
 import { Text, View, ScrollView, Pressable, Platform } from "react-native";
+import { LinearGradient } from "expo-linear-gradient";
 import { color } from "@/theme/tokens";
 import { useLocalSearchParams } from "expo-router";
 import { navigate } from "@/lib/navigation/app-routes";

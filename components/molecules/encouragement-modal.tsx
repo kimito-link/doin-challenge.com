@@ -4,8 +4,6 @@ import { useEffect, useState, useCallback } from "react";
 import MaterialIcons from "@expo/vector-icons/MaterialIcons";
 import { EmojiIcon } from "@/components/ui/emoji-icon";
 import * as Haptics from "expo-haptics";
-import { LinearGradient } from "expo-linear-gradient";
-import { useColors } from "@/hooks/use-colors";
 
 interface EncouragementModalProps {
   visible: boolean;
@@ -50,7 +48,6 @@ export function EncouragementModal({
   customMessage,
   customEmoji,
 }: EncouragementModalProps) {
-  const colors = useColors();
   const [messageData, setMessageData] = useState<{ title: string; message: string; emoji: string } | null>(null);
 
   // メッセージをランダムに選択
@@ -177,7 +174,7 @@ const styles = StyleSheet.create({
     alignItems: "center",
     position: "relative",
     // シャドウ
-    shadowColor: "#000",
+    shadowColor: palette.black,
     shadowOffset: { width: 0, height: 10 },
     shadowOpacity: 0.25,
     shadowRadius: 20,

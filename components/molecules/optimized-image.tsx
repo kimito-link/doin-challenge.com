@@ -161,7 +161,7 @@ export function OptimizedAvatar({
   fallbackColor = color.info,
   ...props
 }: OptimizedImageProps & { size?: number; fallbackText?: string }) {
-  const [showFallback, setShowFallback] = useState(!props.source);
+  const showFallback = !props.source;
 
   // sourceがない場合はフォールバックを表示
   if (showFallback || !props.source) {

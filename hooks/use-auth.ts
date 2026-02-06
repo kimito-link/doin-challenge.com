@@ -1,5 +1,6 @@
 import * as Api from "@/lib/_core/api";
 import * as Auth from "@/lib/_core/auth";
+import { getApiBaseUrl } from "@/lib/api/config";
 import {
   getRefreshToken,
   getValidAccessToken,
@@ -9,68 +10,11 @@ import {
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { Platform, Linking } from "react-native";
 import AsyncStorage from "@react-native-async-storage/async-storage";
-import Constants from "expo-constants";
 import { USER_INFO_KEY } from "@/constants/oauth";
 
 type UseAuthOptions = {
   autoFetch?: boolean;
 };
-
-// Get API base URL from environment variable or derive from hostname
-// Railway APIのベースURL（ハードコード）
-const RAILWAY_API_URL = "https://doin-challengecom-production.up.railway.app";
-
-function getApiBaseUrl(): string {
-  // Check for environment variable first (production)
-  const envApiUrl = process.env.EXPO_PUBLIC_API_BASE_URL;
-  if (envApiUrl) {
-    console.log("[getApiBaseUrl] Using env var:", envApiUrl);
-    return envApiUrl;
-  }
-  
-  // On web, derive from current hostname
-  if (Platform.OS === "web") {
-    // Try multiple ways to get hostname
-    let hostname = "";
-    let protocol = "https:";
-    
-    // Try window.location first
-    if (typeof window !== "undefined" && window.location) {
-      hostname = window.location.hostname || "";
-      protocol = window.location.protocol || "https:";
-    }
-    // Fallback to global location
-    else if (typeof location !== "undefined") {
-      hostname = location.hostname || "";
-      protocol = location.protocol || "https:";
-    }
-    
-    console.log("[getApiBaseUrl] Web hostname:", hostname, "protocol:", protocol);
-    
-    // Production: doin-challenge.com -> Railway backend
-    if (hostname.includes("doin-challenge.com") || hostname.includes("doin-challengecom.vercel.app")) {
-      console.log("[getApiBaseUrl] Production detected, using Railway API");
-      return RAILWAY_API_URL;
-    }
-    
-    // If hostname is empty or localhost, use Railway API for production
-    if (!hostname || hostname === "localhost" || hostname === "127.0.0.1") {
-      console.log("[getApiBaseUrl] No hostname or localhost, using Railway API");
-      return RAILWAY_API_URL;
-    }
-    
-    // Development: Pattern: 8081-sandboxid.region.domain -> 3000-sandboxid.region.domain
-    const apiHostname = hostname.replace(/^8081-/, "3000-");
-    const url = `${protocol}//${apiHostname}`;
-    console.log("[getApiBaseUrl] Development URL:", url);
-    return url;
-  }
-  
-  // Native fallback
-  const nativeUrl = Constants.expoConfig?.extra?.apiUrl || RAILWAY_API_URL;
-  console.log("[getApiBaseUrl] Native URL:", nativeUrl);
-  return nativeUrl;
-}
 
 // 認証状態のキャッシュ（メモリ内）
 let cachedAuthState: { user: Auth.User | null; timestamp: number } | null = null;

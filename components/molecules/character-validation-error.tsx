@@ -1,13 +1,11 @@
-import { useState, useEffect, useCallback, useRef } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { color, palette } from "@/theme/tokens";
 import { View, Text, StyleSheet, Platform } from "react-native";
 import { Image } from "expo-image";
 import Animated, {
   useSharedValue,
   useAnimatedStyle,
-  withSequence,
   withTiming,
-  withRepeat,
   FadeIn,
   FadeOut,
 } from "react-native-reanimated";
@@ -62,9 +60,7 @@ interface CharacterValidationErrorProps {
 }
 
 export function CharacterValidationError({ errors, visible }: CharacterValidationErrorProps) {
-  const [currentError, setCurrentError] = useState<ValidationError | null>(null);
   const [currentMessage, setCurrentMessage] = useState<{ character: CharacterType; text: string; expression: string } | null>(null);
-  const messageIndex = useRef(0);
   
   const bounceY = useSharedValue(0);
   const shake = useSharedValue(0);
@@ -78,8 +74,6 @@ export function CharacterValidationError({ errors, visible }: CharacterValidatio
   useEffect(() => {
     if (visible && errors.length > 0) {
       const error = errors[0];
-      setCurrentError(error);
-      
       const messages = VALIDATION_MESSAGES[error.field] || VALIDATION_MESSAGES.general;
       const randomIndex = Math.floor(Math.random() * messages.length);
       setCurrentMessage(messages[randomIndex] as { character: CharacterType; text: string; expression: string });
@@ -90,7 +84,6 @@ export function CharacterValidationError({ errors, visible }: CharacterValidatio
       
       triggerHaptic();
     } else {
-      setCurrentError(null);
       setCurrentMessage(null);
     }
   }, [visible, errors, bounceY, shake, triggerHaptic]);

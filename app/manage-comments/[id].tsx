@@ -1,5 +1,6 @@
 import { Text, View, Pressable, ScrollView, Alert } from "react-native";
-import { color } from "@/theme/tokens";
+import { commonCopy } from "@/constants/copy/common";
+import { color, palette } from "@/theme/tokens";
 import { useLocalSearchParams } from "expo-router";
 import { navigateBack } from "@/lib/navigation/app-routes";
 import { useState } from "react";
@@ -325,7 +326,7 @@ export default function ManageCommentsScreen() {
               <View style={{ alignItems: "center", paddingVertical: 40 }}>
                 <MaterialIcons name="chat-bubble-outline" size={64} color={color.textSubtle} />
                 <Text style={{ color: color.textMuted, fontSize: 16, marginTop: 16 }}>
-                  コメントがありません
+                  {commonCopy.empty.noComments}
                 </Text>
               </View>
             )
@@ -435,7 +436,7 @@ export default function ManageCommentsScreen() {
               <View style={{ alignItems: "center", paddingVertical: 40 }}>
                 <MaterialIcons name="star-outline" size={64} color={color.textSubtle} />
                 <Text style={{ color: color.textMuted, fontSize: 16, marginTop: 16 }}>
-                  ピックアップしたコメントはありません
+                  {commonCopy.empty.noPickedComments}
                 </Text>
               </View>
             )

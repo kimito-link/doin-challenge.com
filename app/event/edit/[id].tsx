@@ -1,4 +1,5 @@
 import { View, Text, TextInput, ScrollView, Pressable, KeyboardAvoidingView, Platform, ActivityIndicator } from "react-native";
+import { commonCopy } from "@/constants/copy/common";
 import { color } from "@/theme/tokens";
 import { useLocalSearchParams } from "expo-router";
 import { navigateBack } from "@/lib/navigation/app-routes";
@@ -167,7 +168,7 @@ export default function EditChallengeScreen() {
         <View style={{ flex: 1, justifyContent: "center", alignItems: "center", padding: 20 }}>
           <MaterialIcons name="lock" size={48} color={colors.muted} />
           <Text style={{ color: colors.foreground, fontSize: 18, marginTop: 16 }}>
-            編集権限がありません
+            {commonCopy.empty.noEditPermission}
           </Text>
           <Text style={{ color: colors.muted, fontSize: 14, marginTop: 8, textAlign: "center" }}>
             このチャレンジを編集できるのは作成者のみです

@@ -1,4 +1,5 @@
 import { Text, View, Pressable, ScrollView, Alert } from "react-native";
+import { commonCopy } from "@/constants/copy/common";
 import { color } from "@/theme/tokens";
 import { Image } from "expo-image";
 import { useLocalSearchParams } from "expo-router";
@@ -173,7 +174,7 @@ function InviteForm({
 
   const handleSubmit = () => {
     if (!twitterId.trim()) {
-      Alert.alert("エラー", "Twitter IDを入力してください");
+      Alert.alert(commonCopy.alerts.error, "Twitter IDを入力してください");
       return;
     }
     onInvite(twitterId.replace("@", ""), role);
@@ -321,9 +322,9 @@ export default function CollaboratorsScreen() {
         canInvite: role === "co-host",
       };
       setCollaborators([...collaborators, newCollaborator]);
-      Alert.alert("招待を送信しました", `@${twitterId} に招待を送信しました`);
+      Alert.alert(commonCopy.alerts.inviteSent, `@${twitterId} に招待を送信しました`);
     } catch {
-      Alert.alert("エラー", "招待の送信に失敗しました");
+      Alert.alert(commonCopy.alerts.error, "招待の送信に失敗しました");
     } finally {
       setIsInviting(false);
     }

@@ -1,6 +1,8 @@
 import { View, Text, FlatList, Pressable, Image, Platform } from "react-native";
 import { EmojiIcon } from "@/components/ui/emoji-icon";
+import { LoadingMoreIndicator } from "@/components/molecules/loading-more-indicator";
 import { ScreenLoadingState } from "@/components/ui";
+import { commonCopy } from "@/constants/copy/common";
 import { navigate, navigateBack } from "@/lib/navigation";
 import { ScreenContainer } from "@/components/organisms/screen-container";
 import { trpc } from "@/lib/trpc";
@@ -13,7 +15,8 @@ import { useQueryClient } from "@tanstack/react-query";
 
 export default function MessagesScreen() {
   const queryClient = useQueryClient();
-  
+  const { user } = useAuth();
+
   // WebSocket接続を確立
   useWebSocket({
     onMessage: (message) => {
@@ -159,7 +162,7 @@ export default function MessagesScreen() {
       {/* 会話一覧 */}
       {loadingState.isRefreshing && <RefreshingIndicator isRefreshing={loadingState.isRefreshing} />}
       {loadingState.isInitialLoading ? (
-        <ScreenLoadingState message="メッセージを読み込み中..." />
+        <ScreenLoadingState message={commonCopy.loading.messages} />
       ) : conversations && conversations.length > 0 ? (
         <FlatList
           data={conversations}
@@ -173,13 +176,9 @@ export default function MessagesScreen() {
             }
           }}
           onEndReachedThreshold={0.5}
-          ListFooterComponent={() => 
-            isFetchingNextPage ? (
-              <View className="p-4 items-center">
-                <Text className="text-muted">読み込み中...</Text>
-              </View>
-            ) : null
-          }
+          ListFooterComponent={() => (
+            <LoadingMoreIndicator isLoadingMore={isFetchingNextPage} />
+          )}
           // パフォーマンス最適化
           windowSize={5}
           maxToRenderPerBatch={10}
@@ -193,7 +192,7 @@ export default function MessagesScreen() {
             <EmojiIcon emoji="💬" size={48} />
           </View>
           <Text className="text-lg font-bold text-foreground mb-2">
-            まだメッセージがありません
+            {commonCopy.empty.noMessages}
           </Text>
           <Text className="text-sm text-muted text-center">
             チャレンジの参加者にメッセージを送ってみましょう

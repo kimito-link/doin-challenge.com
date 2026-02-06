@@ -20,7 +20,7 @@ import { ScreenContainer } from "@/components/organisms/screen-container";
 import { color, palette } from "@/theme/tokens";
 import { RetryButton } from "./retry-button";
 
-interface ScreenErrorStateProps {
+export interface ScreenErrorStateProps {
   /** エラーメッセージ */
   errorMessage: string;
   /** 再試行ハンドラー */

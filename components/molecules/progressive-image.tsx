@@ -1,5 +1,5 @@
-import { useState, useEffect } from "react";
-import { color, palette } from "@/theme/tokens";
+import { useState } from "react";
+import { color } from "@/theme/tokens";
 import { View, StyleSheet, ViewStyle } from "react-native";
 import { Image, ImageSource } from "expo-image";
 import Animated, {
@@ -36,7 +36,6 @@ export function ProgressiveImage({
   contentFit = "cover",
   fadeDuration = 300,
 }: ProgressiveImageProps) {
-  const [isLoaded, setIsLoaded] = useState(false);
   const opacity = useSharedValue(0);
 
   const animatedStyle = useAnimatedStyle(() => ({
@@ -44,7 +43,6 @@ export function ProgressiveImage({
   }));
 
   const handleLoad = () => {
-    setIsLoaded(true);
     opacity.value = withTiming(1, {
       duration: fadeDuration,
       easing: Easing.out(Easing.cubic),

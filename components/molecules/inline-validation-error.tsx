@@ -1,5 +1,5 @@
 import { useEffect, useCallback } from "react";
-import { color, palette } from "@/theme/tokens";
+import { color } from "@/theme/tokens";
 import { View, Text, StyleSheet, Platform } from "react-native";
 import { Image } from "expo-image";
 import * as Haptics from "expo-haptics";

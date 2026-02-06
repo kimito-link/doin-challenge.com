@@ -6,6 +6,7 @@
  */
 
 import { Stack, usePathname } from "expo-router";
+import { commonCopy } from "@/constants/copy/common";
 import { navigate, navigateReplace } from "@/lib/navigation";
 import { useColors } from "@/hooks/use-colors";
 import { useAuth } from "@/hooks/use-auth";
@@ -40,7 +41,8 @@ const menuItems: MenuItem[] = [
   { id: "participations", label: "参加管理", icon: "chatbubbles-outline", path: "/admin/participations" },
 ];
 
-const ADMIN_PASSWORD = process.env.EXPO_PUBLIC_ADMIN_PASSWORD || "pass304130";
+const _ADMIN_PASSWORD = process.env.EXPO_PUBLIC_ADMIN_PASSWORD || "pass304130";
+void _ADMIN_PASSWORD; // 環境変数参照のため保持（管理画面認証で将来利用）
 
 export default function AdminLayout() {
   const colors = useColors();
@@ -83,7 +85,7 @@ export default function AdminLayout() {
         setPasswordError("");
         setPassword("");
       } else {
-        setPasswordError(result.error || "パスワードが正しくありません");
+        setPasswordError(result.error || commonCopy.empty.passwordIncorrect);
       }
     } catch (error) {
       console.error("[Admin] Password verification error:", error);

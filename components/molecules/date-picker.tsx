@@ -6,7 +6,7 @@
 import { Platform, View, Text, Pressable, Modal, StyleSheet } from "react-native";
 import * as Haptics from "expo-haptics";
 import { color, palette } from "@/theme/tokens";
-import { useState, useEffect, useId } from "react";
+import { useState, useEffect } from "react";
 import MaterialIcons from "@expo/vector-icons/MaterialIcons";
 
 interface DatePickerProps {
@@ -64,7 +64,6 @@ const triggerHaptic = () => {
 
 export function DatePicker({ value, onChange, placeholder = "日付を選択", minDate, maxDate }: DatePickerProps) {
   const [showCalendar, setShowCalendar] = useState(false);
-  const uniqueId = useId();
   
   // カレンダー表示用の年月
   const today = new Date();

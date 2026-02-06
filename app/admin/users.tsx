@@ -7,6 +7,7 @@
 import { ScreenContainer } from "@/components/organisms/screen-container";
 import { RefreshingIndicator } from "@/components/molecules/refreshing-indicator";
 import { ScreenLoadingState, ScreenErrorState } from "@/components/ui";
+import { commonCopy } from "@/constants/copy/common";
 import { useColors } from "@/hooks/use-colors";
 import { useLoadingState } from "@/hooks/use-loading-state";
 import { trpc } from "@/lib/trpc";
@@ -58,14 +59,14 @@ export default function UsersScreen() {
       if (Platform.OS === "web") {
         window.alert("ユーザー権限を更新しました");
       } else {
-        Alert.alert("成功", "ユーザー権限を更新しました");
+        Alert.alert(commonCopy.alerts.success, "ユーザー権限を更新しました");
       }
     },
     onError: (err) => {
       if (Platform.OS === "web") {
         window.alert(`エラー: ${err.message}`);
       } else {
-        Alert.alert("エラー", err.message);
+        Alert.alert(commonCopy.alerts.error, err.message);
       }
     },
   });
@@ -81,7 +82,7 @@ export default function UsersScreen() {
       }
     } else {
       Alert.alert(
-        "確認",
+        commonCopy.alerts.confirm,
         confirmMessage,
         [
           { text: "キャンセル", style: "cancel" },
@@ -107,7 +108,7 @@ export default function UsersScreen() {
   }, [refetch]);
 
   if (loadingState.isInitialLoading) {
-    return <ScreenLoadingState message="ユーザーを読み込み中..." />;
+    return <ScreenLoadingState message={commonCopy.loading.user} />;
   }
 
   if (error) {
@@ -126,7 +127,7 @@ export default function UsersScreen() {
         className="flex-1"
         contentContainerStyle={{ padding: 16 }}
         refreshControl={
-          <RefreshControl refreshing={isRefreshing} onRefresh={onRefresh} />
+          <RefreshControl refreshing={loadingState.isRefreshing} onRefresh={onRefresh} />
         }
       >
         {/* ヘッダー */}
@@ -136,18 +137,6 @@ export default function UsersScreen() {
             {users?.length || 0} 人のユーザー
           </Text>
         </View>
-
-        {error && (
-          <View
-            className="p-4 rounded-lg mb-4"
-            style={{ backgroundColor: colors.error + "20" }}
-          >
-            <Text style={{ color: colors.error }}>⚠️ {error.message}</Text>
-            <Text className="text-muted text-sm mt-1">
-              管理者権限が必要です。ログインしているアカウントが管理者であることを確認してください。
-            </Text>
-          </View>
-        )}
 
         {/* 統計 */}
         {users && users.length > 0 && (

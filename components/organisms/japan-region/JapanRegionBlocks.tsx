@@ -1,15 +1,14 @@
-import { View, Text, Pressable, Modal, ScrollView, useWindowDimensions } from "react-native";
+import { View, Text, Pressable, ScrollView, useWindowDimensions } from "react-native";
 import { color } from "@/theme/tokens";
 import { useMemo, useState, useEffect } from "react";
-import Animated, { 
-  FadeIn, 
-  SlideInDown, 
-  SlideOutDown,
+import Animated, {
+  FadeIn,
   useSharedValue,
   useAnimatedStyle,
   withTiming,
   LinearTransition,
 } from "react-native-reanimated";
+import { Modal } from "@/components/ui/modal";
 
 // 分割したモジュールからインポート
 import { regions, Region, findRegionByPrefecture } from "./region-data";
@@ -325,32 +324,21 @@ export function JapanRegionBlocks({ prefectureCounts, onPrefecturePress, onRegio
       {/* 地域タップで都道府県詳細モーダル */}
       <Modal
         visible={selectedRegion !== null}
-        transparent
-        animationType="fade"
-        onRequestClose={closeModal}
+        onClose={closeModal}
+        type="bottom"
+        title={selectedRegion?.name ?? ""}
+        showCloseButton
+        maxHeight="85%"
       >
-        <Pressable style={styles.modalOverlay} onPress={closeModal}>
-          <Animated.View 
-            entering={SlideInDown.duration(300)}
-            exiting={SlideOutDown.duration(200)}
-            style={styles.modalContent}
-          >
-            <Pressable onPress={(e) => e.stopPropagation()}>
-              {selectedRegion && (
-                <>
-                  <View style={styles.modalHeader}>
-                    <Text style={styles.modalEmoji}>{selectedRegion.emoji}</Text>
-                    <Text style={styles.modalTitle}>{selectedRegion.name}</Text>
-                    <Pressable onPress={closeModal} style={styles.closeButton}>
-                      <Text style={styles.closeButtonText}>✕</Text>
-                    </Pressable>
-                  </View>
-                  
-                  <Text style={styles.modalSubtitle}>
-                    合計 {regionTotals[selectedRegion.id]}人
-                  </Text>
-
-                  <ScrollView style={styles.prefectureList}>
+        {selectedRegion && (
+          <>
+            <View style={styles.modalHeader}>
+              <Text style={styles.modalEmoji}>{selectedRegion.emoji}</Text>
+            </View>
+            <Text style={styles.modalSubtitle}>
+              合計 {regionTotals[selectedRegion.id]}人
+            </Text>
+            <ScrollView style={styles.prefectureList}>
                     {/* 都道府県別ランキング（参加者数順） */}
                     {(() => {
                       // 参加者数でソート
@@ -434,24 +422,20 @@ export function JapanRegionBlocks({ prefectureCounts, onPrefecturePress, onRegio
                         );
                       });
                     })()}
-                  </ScrollView>
-
-                  <Pressable
-                    style={[styles.viewAllButton, { backgroundColor: selectedRegion.color }]}
-                    onPress={() => {
-                      closeModal();
-                      onRegionPress?.(selectedRegion.name, selectedRegion.prefectures.map(p => p.name));
-                    }}
-                  >
-                    <Text style={styles.viewAllButtonText}>
-                      {selectedRegion.name}の参加者を見る
-                    </Text>
-                  </Pressable>
-                </>
-              )}
+            </ScrollView>
+            <Pressable
+              style={[styles.viewAllButton, { backgroundColor: selectedRegion.color }]}
+              onPress={() => {
+                closeModal();
+                onRegionPress?.(selectedRegion.name, selectedRegion.prefectures.map(p => p.name));
+              }}
+            >
+              <Text style={styles.viewAllButtonText}>
+                {selectedRegion.name}の参加者を見る
+              </Text>
             </Pressable>
-          </Animated.View>
-        </Pressable>
+          </>
+        )}
       </Modal>
     </View>
   );

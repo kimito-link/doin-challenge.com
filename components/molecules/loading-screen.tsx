@@ -1,5 +1,5 @@
 import { View, Text, ActivityIndicator } from "react-native";
-import { color, palette } from "@/theme/tokens";
+import { color } from "@/theme/tokens";
 import { BlinkingLink } from "@/components/atoms/blinking-character";
 
 interface LoadingScreenProps {

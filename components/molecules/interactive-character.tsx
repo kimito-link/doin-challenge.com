@@ -60,7 +60,6 @@ export function InteractiveCharacter({
 }: InteractiveCharacterProps) {
   const [currentExpression, setCurrentExpression] = useState<Expression>("normal");
   const [isAnimating, setIsAnimating] = useState(false);
-  const sequenceIndex = useRef(0);
   const timeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   // アニメーション値

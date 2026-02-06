@@ -12,7 +12,7 @@ interface UseRankingsDataReturn {
   // Data
   contributionRanking: RankingItem[] | undefined;
   hostRanking: RankingItem[] | undefined;
-  myPosition: { position: number | null; totalContribution: number | null } | undefined;
+  myPosition: { position: number | null; totalContribution: number | null; participationCount?: number } | null | undefined;
   
   // State
   period: PeriodType;

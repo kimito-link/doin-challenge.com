@@ -128,8 +128,6 @@ export function TwitterShareButton({
     }
   };
 
-  const iconSize = size === "small" ? 16 : size === "large" ? 24 : 20;
-
   const getButtonStyle = (pressed: boolean): ViewStyle[] => [
     styles.twitterButton,
     size === "small" ? styles.buttonSmall : size === "large" ? styles.buttonLarge : styles.buttonMedium,
@@ -225,7 +223,7 @@ const styles = StyleSheet.create({
     color: color.accentPrimary,
   },
   twitterButton: {
-    backgroundColor: "#000",
+    backgroundColor: palette.black,
     borderRadius: 12,
     alignItems: "center",
     justifyContent: "center",

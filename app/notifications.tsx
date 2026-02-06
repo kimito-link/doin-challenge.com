@@ -1,5 +1,5 @@
-import { Text, View, Pressable, ScrollView, ActivityIndicator, FlatList, Platform } from "react-native";
-import { color, palette } from "@/theme/tokens";
+import { Text, View, Pressable, FlatList, Platform } from "react-native";
+import { color } from "@/theme/tokens";
 import { navigate, navigateBack } from "@/lib/navigation";
 import { useState, useEffect } from "react";
 import { ScreenContainer } from "@/components/organisms/screen-container";
@@ -10,6 +10,10 @@ import MaterialIcons from "@expo/vector-icons/MaterialIcons";
 import * as Notifications from "expo-notifications";
 import { AppHeader } from "@/components/organisms/app-header";
 import { RefreshingIndicator } from "@/components/molecules/refreshing-indicator";
+import { NotificationItemCard, type NotificationListItem } from "@/components/molecules/notification-item-card";
+import { LoadingMoreIndicator } from "@/components/molecules/loading-more-indicator";
+import { ScreenLoadingState } from "@/components/ui";
+import { commonCopy } from "@/constants/copy/common";
 import { useWebSocket } from "@/lib/websocket-client";
 import { useQueryClient } from "@tanstack/react-query";
 
@@ -90,45 +94,13 @@ export default function NotificationsScreen() {
     
     try {
       const token = await Notifications.getExpoPushTokenAsync();
-      setExpoPushToken(token.data);
+      console.log("[Notifications] Push token:", token.data);
     } catch (error) {
       console.error("Failed to get push token:", error);
     }
   };
 
   const unreadCount = notificationList?.filter(n => !n.isRead).length || 0;
-
-  const getNotificationIcon = (type: string) => {
-    switch (type) {
-      case "goal_reached":
-        return "emoji-events";
-      case "milestone_25":
-      case "milestone_50":
-      case "milestone_75":
-        return "flag";
-      case "new_participant":
-        return "person-add";
-      default:
-        return "notifications";
-    }
-  };
-
-  const getNotificationColor = (type: string) => {
-    switch (type) {
-      case "goal_reached":
-        return color.rankGold;
-      case "milestone_25":
-        return color.successLight;
-      case "milestone_50":
-        return color.blue400;
-      case "milestone_75":
-        return color.purple400;
-      case "new_participant":
-        return color.accentPrimary;
-      default:
-        return color.textMuted;
-    }
-  };
 
   if (!isAuthenticated) {
     return (
@@ -227,9 +199,7 @@ export default function NotificationsScreen() {
 
         {/* 通知リスト */}
         {isInitialLoading ? (
-          <View style={{ alignItems: "center", paddingVertical: 40 }}>
-            <ActivityIndicator size="large" color={color.accentPrimary} />
-          </View>
+          <ScreenLoadingState message={commonCopy.loading.notifications} />
         ) : (
           <FlatList
             data={notificationList}
@@ -241,63 +211,16 @@ export default function NotificationsScreen() {
             removeClippedSubviews={Platform.OS !== "web"}
             updateCellsBatchingPeriod={50}
             renderItem={({ item: notification }) => (
-              <Pressable
-                key={notification.id}
+              <NotificationItemCard
+                notification={notification as NotificationListItem}
                 onPress={() => {
                   if (!notification.isRead) {
                     markAsReadMutation.mutate({ id: notification.id });
                   }
                   navigate.toEventDetail(notification.challengeId);
                 }}
-                style={{
-                  backgroundColor: notification.isRead ? color.surface : palette.gray800,
-                  borderRadius: 12,
-                  padding: 16,
-                  marginBottom: 12,
-                  borderWidth: 1,
-                  borderColor: notification.isRead ? color.border : color.accentPrimary,
-                }}
-              >
-                <View style={{ flexDirection: "row", alignItems: "flex-start" }}>
-                  <View
-                    style={{
-                      width: 44,
-                      height: 44,
-                      borderRadius: 22,
-                      backgroundColor: getNotificationColor(notification.type) + "20",
-                      alignItems: "center",
-                      justifyContent: "center",
-                    }}
-                  >
-                    <MaterialIcons
-                      name={getNotificationIcon(notification.type) as any}
-                      size={24}
-                      color={getNotificationColor(notification.type)}
-                    />
-                  </View>
-                  <View style={{ flex: 1, marginLeft: 12 }}>
-                    <Text style={{ color: colors.foreground, fontSize: 14, fontWeight: "bold" }}>
-                      {notification.title}
-                    </Text>
-                    <Text style={{ color: color.textMuted, fontSize: 13, marginTop: 4, lineHeight: 18 }}>
-                      {notification.body}
-                    </Text>
-                    <Text style={{ color: color.textSubtle, fontSize: 12, marginTop: 8 }}>
-                      {new Date(notification.sentAt).toLocaleString("ja-JP")}
-                    </Text>
-                  </View>
-                  {!notification.isRead && (
-                    <View
-                      style={{
-                        width: 8,
-                        height: 8,
-                        borderRadius: 4,
-                        backgroundColor: color.accentPrimary,
-                      }}
-                    />
-                  )}
-                </View>
-              </Pressable>
+                foregroundColor={colors.foreground}
+              />
             )}
             onEndReached={() => {
               if (hasNextPage && !isFetchingNextPage) {
@@ -305,18 +228,14 @@ export default function NotificationsScreen() {
               }
             }}
             onEndReachedThreshold={0.5}
-            ListFooterComponent={() => 
-              isFetchingNextPage ? (
-                <View style={{ padding: 16, alignItems: "center" }}>
-                  <ActivityIndicator color={color.accentPrimary} />
-                </View>
-              ) : null
-            }
+            ListFooterComponent={() => (
+              <LoadingMoreIndicator isLoadingMore={isFetchingNextPage} />
+            )}
             ListEmptyComponent={() => (
               <View style={{ alignItems: "center", paddingVertical: 40 }}>
                 <MaterialIcons name="notifications-none" size={64} color={color.textSubtle} />
                 <Text style={{ color: color.textMuted, fontSize: 16, marginTop: 16 }}>
-                  通知はありません
+                  {commonCopy.empty.noNotifications}
                 </Text>
               </View>
             )}

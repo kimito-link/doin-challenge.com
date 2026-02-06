@@ -202,6 +202,9 @@ export const styles = StyleSheet.create({
     justifyContent: "center",
     alignItems: "center",
   },
+  badgeItemLocked: {
+    opacity: 0.4,
+  },
   badgeEmoji: {
     fontSize: 24,
     marginBottom: 4,

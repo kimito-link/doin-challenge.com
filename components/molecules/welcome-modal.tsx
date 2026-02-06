@@ -67,7 +67,7 @@ export function WelcomeModal({
         }),
       ]).start();
     }
-  }, [visible]);
+  }, [fadeAnim, scaleAnim, visible]);
 
   const handleClose = () => {
     if (Platform.OS !== "web") {

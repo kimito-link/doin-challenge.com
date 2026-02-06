@@ -1,5 +1,5 @@
 import { useState, useCallback, useRef, useEffect } from "react";
-import { color, palette } from "@/theme/tokens";
+import { color } from "@/theme/tokens";
 import { View, Text, Pressable, Platform, StyleSheet, StyleProp, ViewStyle } from "react-native";
 import { Image } from "expo-image";
 import Animated, {
@@ -46,7 +46,7 @@ export const ACHIEVEMENT_MESSAGES = [
 interface TalkingCharacterProps {
   size?: number;
   style?: StyleProp<ViewStyle>;
-  messages?: Array<{ text: string; expression: Expression }>;
+  messages?: { text: string; expression: Expression }[];
   bubblePosition?: "top" | "bottom";
   enableHaptics?: boolean;
 }

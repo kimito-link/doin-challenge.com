@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { View, Text, Pressable, Alert } from "react-native";
 import MaterialIcons from "@expo/vector-icons/MaterialIcons";
+import { commonCopy } from "@/constants/copy/common";
 import { color } from "@/theme/tokens";
 import { trpc } from "@/lib/trpc";
 import { useAuth } from "@/hooks/use-auth";
@@ -38,32 +39,32 @@ export function TicketTransferSection({ challengeId, challengeTitle }: TicketTra
   // 譲渡投稿作成
   const createTransferMutation = (trpc as any).ticketTransfer.create.useMutation({
     onSuccess: () => {
-      Alert.alert("投稿完了", "チケット譲渡の投稿が完了しました");
+      Alert.alert(commonCopy.alerts.postDone, "チケット譲渡の投稿が完了しました");
       setShowCreateModal(false);
       refetchTransfers();
     },
     onError: (error: any) => {
-      Alert.alert("エラー", error.message || "投稿に失敗しました");
+      Alert.alert(commonCopy.alerts.error, error.message || "投稿に失敗しました");
     },
   });
   
   // 待機リスト登録
   const addToWaitlistMutation = (trpc as any).ticketWaitlist.add.useMutation({
     onSuccess: () => {
-      Alert.alert("登録完了", "待機リストに登録しました。新しい譲渡投稿があれば通知します。");
+      Alert.alert(commonCopy.alerts.registerDone, "待機リストに登録しました。新しい譲渡投稿があれば通知します。");
       setShowWaitlistModal(false);
       refetchWaitlist();
       refetchIsInWaitlist();
     },
     onError: (error: any) => {
-      Alert.alert("エラー", error.message || "登録に失敗しました");
+      Alert.alert(commonCopy.alerts.error, error.message || "登録に失敗しました");
     },
   });
   
   // 待機リスト解除
   const removeFromWaitlistMutation = (trpc as any).ticketWaitlist.remove.useMutation({
     onSuccess: () => {
-      Alert.alert("解除完了", "待機リストから解除しました");
+      Alert.alert(commonCopy.alerts.unregisterDone, "待機リストから解除しました");
       refetchWaitlist();
       refetchIsInWaitlist();
     },
@@ -72,7 +73,7 @@ export function TicketTransferSection({ challengeId, challengeTitle }: TicketTra
   // 譲渡投稿キャンセル
   const cancelTransferMutation = (trpc as any).ticketTransfer.cancel.useMutation({
     onSuccess: () => {
-      Alert.alert("キャンセル完了", "譲渡投稿をキャンセルしました");
+      Alert.alert(commonCopy.alerts.cancelDone, "譲渡投稿をキャンセルしました");
       refetchTransfers();
     },
   });
@@ -150,7 +151,7 @@ export function TicketTransferSection({ challengeId, challengeTitle }: TicketTra
           <Pressable
             onPress={() => {
               if (!user) {
-                Alert.alert("ログインが必要です", "チケット譲渡の投稿にはログインが必要です");
+                Alert.alert(commonCopy.alerts.loginRequired, "チケット譲渡の投稿にはログインが必要です");
                 return;
               }
               setShowCreateModal(true);
@@ -180,7 +181,7 @@ export function TicketTransferSection({ challengeId, challengeTitle }: TicketTra
           <Pressable
             onPress={() => {
               if (!user) {
-                Alert.alert("ログインが必要です", "待機リスト登録にはログインが必要です");
+                Alert.alert(commonCopy.alerts.loginRequired, "待機リスト登録にはログインが必要です");
                 return;
               }
               if (isInWaitlist) {

@@ -1,6 +1,8 @@
 import { useState, useEffect } from "react";
+import { commonCopy } from "@/constants/copy/common";
 import { color, palette } from "@/theme/tokens";
-import { View, Text, ScrollView, Pressable, Switch, Alert } from "react-native";
+import { View, Text, ScrollView, Pressable, Switch, Alert, Platform } from "react-native";
+import * as Haptics from "expo-haptics";
 import { useLocalSearchParams } from "expo-router";
 import { navigate, navigateBack } from "@/lib/navigation";
 import { ScreenContainer } from "@/components/organisms/screen-container";
@@ -48,16 +50,16 @@ export default function ReminderSettingsScreen() {
           challengeId,
           reminderType: type,
         });
-        Alert.alert("設定完了", "リマインダーを設定しました");
+        Alert.alert(commonCopy.alerts.settingDone, "リマインダーを設定しました");
       } catch {
-        Alert.alert("エラー", "リマインダーの設定に失敗しました");
+        Alert.alert(commonCopy.alerts.error, "リマインダーの設定に失敗しました");
       }
     } else if (existingReminder) {
       try {
         await deleteReminder.mutateAsync({ id: existingReminder.id });
-        Alert.alert("設定完了", "リマインダーを解除しました");
+        Alert.alert(commonCopy.alerts.settingDone, "リマインダーを解除しました");
       } catch {
-        Alert.alert("エラー", "リマインダーの解除に失敗しました");
+        Alert.alert(commonCopy.alerts.error, "リマインダーの解除に失敗しました");
       }
     }
 

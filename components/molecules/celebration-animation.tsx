@@ -1,4 +1,4 @@
-import { useEffect, useState, useMemo } from "react";
+import { useEffect, useState, useMemo, useCallback } from "react";
 import { color, palette } from "@/theme/tokens";
 import { View, StyleSheet, Platform } from "react-native";
 import { Image } from "expo-image";
@@ -187,16 +187,16 @@ export function CelebrationAnimation({
     confetti11x, confetti11y, confetti11rotation, confetti11opacity, confetti11scale,
   ]);
 
-  const triggerHaptic = () => {
+  const triggerHaptic = useCallback(() => {
     if (Platform.OS !== "web") {
       Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
     }
-  };
+  }, []);
 
-  const handleComplete = () => {
+  const handleComplete = useCallback(() => {
     setIsAnimating(false);
     onComplete?.();
-  };
+  }, [onComplete]);
 
   useEffect(() => {
     if (visible && !isAnimating) {
@@ -276,7 +276,7 @@ export function CelebrationAnimation({
 
       return () => clearTimeout(timeout);
     }
-  }, [visible]);
+  }, [visible, isAnimating, confettiItems, handleComplete, opacity, rotate, scale, showConfetti, translateY, triggerHaptic]);
 
   const characterStyle = useAnimatedStyle(() => ({
     opacity: opacity.value,
@@ -318,12 +318,12 @@ export function ConfettiEffect({
   visible: boolean;
   onComplete?: () => void;
 }) {
-  const [particles, setParticles] = useState<Array<{
+  const [particles, setParticles] = useState<{
     id: number;
     x: number;
     color: string;
     delay: number;
-  }>>([]);
+  }[]>([]);
 
   useEffect(() => {
     if (visible) {
@@ -343,7 +343,7 @@ export function ConfettiEffect({
 
       return () => clearTimeout(timeout);
     }
-  }, [visible]);
+  }, [visible, onComplete]);
 
   if (!visible || particles.length === 0) return null;
 
@@ -381,7 +381,7 @@ function ConfettiParticle({
       withTiming(360 * (Math.random() > 0.5 ? 1 : -1), { duration: 1000 })
     );
     particleOpacity.value = withDelay(delay + 700, withTiming(0, { duration: 300 }));
-  }, []);
+  }, [delay, particleOpacity, rotation, translateX, translateY, x]);
 
   const style = useAnimatedStyle(() => ({
     opacity: particleOpacity.value,

@@ -7,6 +7,7 @@
 import { ScreenContainer } from "@/components/organisms/screen-container";
 import { RefreshingIndicator } from "@/components/molecules/refreshing-indicator";
 import { ScreenLoadingState } from "@/components/ui";
+import { commonCopy } from "@/constants/copy/common";
 import { color } from "@/theme/tokens";
 import { useColors } from "@/hooks/use-colors";
 import { useLoadingState } from "@/hooks/use-loading-state";
@@ -21,6 +22,7 @@ import {
   TextInput,
   Alert,
   Platform,
+  ActivityIndicator,
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 
@@ -68,7 +70,7 @@ export default function CategoriesScreen() {
       setNewDescription("");
     },
     onError: (error) => {
-      Alert.alert("エラー", error.message);
+      Alert.alert(commonCopy.alerts.error, error.message);
     },
   });
 
@@ -79,7 +81,7 @@ export default function CategoriesScreen() {
       setEditingId(null);
     },
     onError: (error) => {
-      Alert.alert("エラー", error.message);
+      Alert.alert(commonCopy.alerts.error, error.message);
     },
   });
 
@@ -89,7 +91,7 @@ export default function CategoriesScreen() {
       refetch();
     },
     onError: (error) => {
-      Alert.alert("エラー", error.message);
+      Alert.alert(commonCopy.alerts.error, error.message);
     },
   });
 
@@ -127,7 +129,7 @@ export default function CategoriesScreen() {
       }
     } else {
       Alert.alert(
-        "削除確認",
+        commonCopy.alerts.deleteConfirm,
         `「${category.name}」を削除しますか？`,
         [
           { text: "キャンセル", style: "cancel" },
@@ -139,7 +141,7 @@ export default function CategoriesScreen() {
 
   const handleCreate = () => {
     if (!newName.trim()) {
-      Alert.alert("エラー", "カテゴリ名を入力してください");
+      Alert.alert(commonCopy.alerts.error, "カテゴリ名を入力してください");
       return;
     }
     
@@ -151,7 +153,7 @@ export default function CategoriesScreen() {
   };
 
   if (loadingState.isInitialLoading) {
-    return <ScreenLoadingState message="カテゴリを読み込み中..." />;
+    return <ScreenLoadingState message={commonCopy.loading.categories} />;
   }
 
   return (
@@ -397,7 +399,7 @@ export default function CategoriesScreen() {
           <View className="bg-surface rounded-xl p-8 items-center border border-border">
             <Ionicons name="pricetags-outline" size={48} color={colors.muted} />
             <Text className="text-lg font-semibold text-foreground mt-4">
-              カテゴリがありません
+              {commonCopy.empty.noCategories}
             </Text>
             <Text className="text-muted text-center mt-2">
               「追加」ボタンから新しいカテゴリを作成してください

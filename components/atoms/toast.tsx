@@ -1,7 +1,8 @@
-import { useEffect, useRef } from "react";
-import { Text, Animated, StyleSheet } from "react-native";
+import { useEffect, useRef, createContext, useContext, useState, useCallback, type ReactNode } from "react";
+import { Text, Animated, StyleSheet, Platform } from "react-native";
 import MaterialIcons from "@expo/vector-icons/MaterialIcons";
 import { color, palette } from "@/theme/tokens";
+import * as Haptics from "expo-haptics";
 
 type ToastType = "success" | "error" | "warning" | "info";
 
@@ -65,6 +66,23 @@ export function Toast({
   const opacity = useRef(new Animated.Value(0)).current;
   const config = toastConfig[type];
 
+  const hideToast = useCallback(() => {
+    Animated.parallel([
+      Animated.timing(translateY, {
+        toValue: -100,
+        duration: 200,
+        useNativeDriver: true,
+      }),
+      Animated.timing(opacity, {
+        toValue: 0,
+        duration: 200,
+        useNativeDriver: true,
+      }),
+    ]).start(() => {
+      onHide();
+    });
+  }, [onHide, opacity, translateY]);
+
   useEffect(() => {
     if (visible) {
       // 触覚フィードバック
@@ -100,24 +118,7 @@ export function Toast({
 
       return () => clearTimeout(timer);
     }
-  }, [visible]);
-
-  const hideToast = () => {
-    Animated.parallel([
-      Animated.timing(translateY, {
-        toValue: -100,
-        duration: 200,
-        useNativeDriver: true,
-      }),
-      Animated.timing(opacity, {
-        toValue: 0,
-        duration: 200,
-        useNativeDriver: true,
-      }),
-    ]).start(() => {
-      onHide();
-    });
-  };
+  }, [duration, hideToast, opacity, translateY, type, visible]);
 
   if (!visible) return null;
 
@@ -181,7 +182,6 @@ const styles = StyleSheet.create({
 });
 
 // トースト状態管理用のコンテキスト
-import { createContext, useContext, useState, useCallback, ReactNode } from "react";
 
 interface ToastContextType {
   showToast: (message: string, type?: ToastType, duration?: number) => void;

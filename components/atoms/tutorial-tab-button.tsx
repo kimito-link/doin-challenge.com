@@ -7,10 +7,7 @@ import { BottomTabBarButtonProps } from "@react-navigation/bottom-tabs";
 import Animated, {
   useSharedValue,
   useAnimatedStyle,
-  withRepeat,
-  withSequence,
   withTiming,
-  Easing,
 } from "react-native-reanimated";
 
 interface TutorialTabButtonProps extends BottomTabBarButtonProps {
@@ -67,7 +64,7 @@ export function TutorialTabButton({
       glowOpacity.value = withTiming(0, { duration: 200 });
       glowScale.value = withTiming(1, { duration: 200 });
     }
-  }, [shouldHighlight]);
+  }, [shouldHighlight, glowOpacity, glowScale, tutorial]);
 
   const glowStyle = useAnimatedStyle(() => ({
     opacity: glowOpacity.value,

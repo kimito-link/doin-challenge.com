@@ -10,20 +10,19 @@
  * - A/Bテスト（表示回数・ログイン成功率の記録）
  */
 
-import { View, Text, Modal, Pressable, Image } from "react-native";
+import { View, Text, Modal, Pressable } from "react-native";
 import { useColors } from "@/hooks/use-colors";
 import { color, palette } from "@/theme/tokens";
 import { Button } from "../ui/button";
-import Animated, { 
-  FadeInDown, 
-  FadeInUp, 
-  BounceIn,
+import Animated, {
+  FadeInDown,
+  FadeInUp,
   useAnimatedStyle,
   withSpring,
   withRepeat,
   withSequence,
 } from "react-native-reanimated";
-import { useEffect, useState, useMemo } from "react";
+import { useEffect, useState } from "react";
 import { useLoginABTest } from "@/hooks/use-login-ab-test";
 
 // キャラクター画像（りんく・こん太・たぬ姉のオリジナル画像）
@@ -54,7 +53,7 @@ export function LoginModal({
       const message = selectMessage();
       setCurrentMessage(message);
     }
-  }, [visible]);
+  }, [visible, selectMessage]);
 
   // ログイン確認時にコンバージョンを記録
   const handleConfirm = () => {

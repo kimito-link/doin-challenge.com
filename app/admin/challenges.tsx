@@ -7,6 +7,7 @@
 import { ScreenContainer } from "@/components/organisms/screen-container";
 import { RefreshingIndicator } from "@/components/molecules/refreshing-indicator";
 import { ScreenLoadingState } from "@/components/ui";
+import { commonCopy } from "@/constants/copy/common";
 import { color } from "@/theme/tokens";
 import { useColors } from "@/hooks/use-colors";
 import { useLoadingState } from "@/hooks/use-loading-state";
@@ -47,7 +48,7 @@ export default function ChallengesScreen() {
       refetch();
     },
     onError: (error) => {
-      Alert.alert("エラー", error.message);
+      Alert.alert(commonCopy.alerts.error, error.message);
     },
   });
 
@@ -57,7 +58,7 @@ export default function ChallengesScreen() {
       refetch();
     },
     onError: (error) => {
-      Alert.alert("エラー", error.message);
+      Alert.alert(commonCopy.alerts.error, error.message);
     },
   });
 
@@ -84,7 +85,7 @@ export default function ChallengesScreen() {
       }
     } else {
       Alert.alert(
-        "削除確認",
+        commonCopy.alerts.deleteConfirm,
         `「${challenge.title}」を削除しますか？この操作は取り消せません。`,
         [
           { text: "キャンセル", style: "cancel" },
@@ -110,7 +111,7 @@ export default function ChallengesScreen() {
   };
 
   if (loadingState.isInitialLoading) {
-    return <ScreenLoadingState message="チャレンジを読み込み中..." />;
+    return <ScreenLoadingState message={commonCopy.loading.challenge} />;
   }
 
   return (
@@ -321,7 +322,7 @@ export default function ChallengesScreen() {
           <View className="bg-surface rounded-xl p-8 items-center border border-border">
             <Ionicons name="trophy-outline" size={48} color={colors.muted} />
             <Text className="text-lg font-semibold text-foreground mt-4">
-              チャレンジがありません
+              {commonCopy.empty.noChallenges}
             </Text>
             <Text className="text-muted text-center mt-2">
               {filter !== "all"
