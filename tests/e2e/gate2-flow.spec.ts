@@ -9,6 +9,7 @@
  * - リトライロジックを改善
  */
 import { test, expect } from "@playwright/test";
+import { dismissOnboarding } from "./_helpers";
 
 test.setTimeout(60000);
 
@@ -16,6 +17,9 @@ test.describe("Gate 2: ホーム→詳細", () => {
   test("ホーム表示 → 詳細表示（参加表明まで届く）", async ({ page }) => {
     // 1. ホーム
     await page.goto("/", { waitUntil: "networkidle", timeout: 30000 });
+    
+    // オンボーディング画面をスキップ
+    await dismissOnboarding(page);
     
     // 根本的解決: 実際のレンダリング完了を待つ（bodyが表示されるまで）
     await expect(page.locator("body")).toBeVisible({ timeout: 10000 });
@@ -31,6 +35,9 @@ test.describe("Gate 2: ホーム→詳細", () => {
 
     // 2. 詳細へ（固定IDで安定化。存在しない場合は「見つかりません」でOK）
     await page.goto("/event/90001", { waitUntil: "networkidle", timeout: 30000 });
+    
+    // オンボーディング画面をスキップ（ページ遷移後に再表示される可能性があるため）
+    await dismissOnboarding(page);
     
     // 根本的解決: 実際のレンダリング完了を待つ
     await expect(page.locator("body")).toBeVisible({ timeout: 10000 });

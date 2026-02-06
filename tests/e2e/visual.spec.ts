@@ -1,5 +1,6 @@
 // tests/e2e/visual.spec.ts
 import { test, expect } from "@playwright/test";
+import { dismissOnboarding } from "./_helpers";
 
 /**
  * Visual Regression Testing
@@ -14,7 +15,7 @@ import { test, expect } from "@playwright/test";
  */
 
 test.describe("Visual Regression Tests", () => {
-  test.setTimeout(30000); // 30秒のタイムアウト
+  test.setTimeout(60000); // 60秒のタイムアウト
   
   test("オンボーディング画面のスクリーンショット", async ({ page }) => {
     // オンボーディング画面に移動
@@ -30,15 +31,14 @@ test.describe("Visual Regression Tests", () => {
   
   test("マイページのスクリーンショット", async ({ page }) => {
     // マイページに移動
-    await page.goto("/mypage", { waitUntil: "domcontentloaded" });
+    await page.goto("/mypage", { waitUntil: "networkidle", timeout: 30000 });
     await page.waitForTimeout(2000);
     
     // オンボーディング画面をスキップ
-    const skipButton = page.getByText(/スキップ/i);
-    if (await skipButton.isVisible({ timeout: 2000 }).catch(() => false)) {
-      await skipButton.click();
-      await page.waitForTimeout(1000);
-    }
+    await dismissOnboarding(page);
+    
+    // ページが完全に読み込まれるまで待機
+    await page.waitForTimeout(2000);
     
     await expect(page).toHaveScreenshot("mypage.png", {
       fullPage: true,
@@ -47,15 +47,14 @@ test.describe("Visual Regression Tests", () => {
   
   test("チャレンジ一覧画面のスクリーンショット", async ({ page }) => {
     // チャレンジ一覧画面に移動
-    await page.goto("/", { waitUntil: "domcontentloaded" });
+    await page.goto("/", { waitUntil: "networkidle", timeout: 30000 });
     await page.waitForTimeout(2000);
     
     // オンボーディング画面をスキップ
-    const skipButton = page.getByText(/スキップ/i);
-    if (await skipButton.isVisible({ timeout: 2000 }).catch(() => false)) {
-      await skipButton.click();
-      await page.waitForTimeout(1000);
-    }
+    await dismissOnboarding(page);
+    
+    // ページが完全に読み込まれるまで待機
+    await page.waitForTimeout(2000);
     
     await expect(page).toHaveScreenshot("challenges.png", {
       fullPage: true,

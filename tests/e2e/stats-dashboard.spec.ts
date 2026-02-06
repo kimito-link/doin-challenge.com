@@ -5,6 +5,7 @@
  * 根本的解決: 主要フローのテストを追加
  */
 import { test, expect } from "@playwright/test";
+import { dismissOnboarding } from "./_helpers";
 
 test.setTimeout(60000);
 
@@ -12,6 +13,9 @@ test.describe("Gate 2: 統計ダッシュボード", () => {
   test("統計ダッシュボードが読み込める", async ({ page }) => {
     // 1. 統計ダッシュボードにアクセス
     await page.goto("/stats", { waitUntil: "networkidle", timeout: 30000 });
+    
+    // オンボーディング画面をスキップ
+    await dismissOnboarding(page);
     
     // 2. ページが表示されることを確認
     await expect(page.locator("body")).toBeVisible({ timeout: 10000 });

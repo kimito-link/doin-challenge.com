@@ -5,6 +5,7 @@
  * 根本的解決: UIコンポーネントの堅牢性を検証
  */
 import { test, expect } from "@playwright/test";
+import { dismissOnboarding } from "./_helpers";
 
 test.setTimeout(60000);
 
@@ -12,6 +13,9 @@ test.describe("Gate 2: チャレンジ作成", () => {
   test("チャレンジ作成画面でプロフィールが正しく表示される", async ({ page }) => {
     // 1. チャレンジ作成画面にアクセス
     await page.goto("/create", { waitUntil: "networkidle", timeout: 30000 });
+    
+    // オンボーディング画面をスキップ
+    await dismissOnboarding(page);
     
     // 2. ページが表示されることを確認
     await expect(page.locator("body")).toBeVisible({ timeout: 10000 });
