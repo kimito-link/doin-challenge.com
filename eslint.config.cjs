@@ -9,6 +9,12 @@ module.exports = defineConfig([
     ignores: ["dist/*", "scripts/*"],
   },
   {
+    files: ["tests/e2e/fixtures.ts"],
+    rules: {
+      "react-hooks/rules-of-hooks": "off",
+    },
+  },
+  {
     // ローカルルールをプラグインとして登録
     plugins: {
       "local-rules": {
