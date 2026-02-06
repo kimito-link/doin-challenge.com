@@ -53,20 +53,38 @@ function getEffectiveHostname(req: Request): string {
     const host = Array.isArray(forwarded) ? forwarded[0] : forwarded.split(",")[0];
     if (host && host.trim()) return host.trim();
   }
+  const origin = req.headers.origin;
+  if (origin) {
+    try {
+      const u = new URL(origin);
+      if (u.hostname) return u.hostname;
+    } catch {
+      // ignore
+    }
+  }
   return req.hostname;
+}
+
+/**
+ * プロキシ経由（Vercel→Railway）のときは Domain を付けない。ブラウザがリクエストホストに紐づけて Cookie を保存する。
+ */
+function getCookieDomain(req: Request, hostname: string): string | undefined {
+  const forwarded = req.headers["x-forwarded-host"] ?? req.headers.origin;
+  if (forwarded) return undefined; // プロキシ経由なら domain 指定しない → doin-challenge.com に保存される
+  return getParentDomain(hostname);
 }
 
 export function getSessionCookieOptions(
   req: Request,
 ): Pick<CookieOptions, "domain" | "httpOnly" | "path" | "sameSite" | "secure"> {
   const hostname = getEffectiveHostname(req);
-  const domain = getParentDomain(hostname);
+  const domain = getCookieDomain(req, hostname);
 
   return {
     domain,
     httpOnly: true,
     path: "/",
-    sameSite: "lax", // 同一サイトの /admin から API 呼び出しするため lax で送る
+    sameSite: "lax",
     secure: isSecureRequest(req),
   };
 }

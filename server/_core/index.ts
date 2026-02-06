@@ -85,115 +85,122 @@ async function startServer() {
   registerTwitterRoutes(app);
 
   app.get("/api/health", async (_req, res) => {
-    // Gate 1: build-info を必ず読む。unknown なら ok=false / 500（UptimeRobot 検知用）
-    const buildInfo = readBuildInfo();
-    const nodeEnv = process.env.NODE_ENV || "development";
-    if (!buildInfo.ok && Sentry) {
-      Sentry.captureException(new Error("unknown version in /api/health"), {
-        extra: { commitSha: buildInfo.commitSha, env: nodeEnv },
-      });
-      console.error("[CRITICAL] unknown version detected:", buildInfo);
-    }
-    const baseInfo = {
-      ...buildInfo,
-      nodeEnv,
-      timestamp: Date.now(),
-    };
-
-    // DB接続確認
-    let dbStatus: { connected: boolean; latency: number; error: string; challengesCount?: number } = { connected: false, latency: 0, error: "" };
     try {
-      const { getDb, sql } = await import("../db");
-      const startTime = Date.now();
-      const db = await getDb();
-      if (db) {
-        await db.execute(sql`SELECT 1`);
-        let challengesCount = 0;
-        try {
-          const r = await db.execute(sql`SELECT COUNT(*) AS c FROM challenges WHERE "isPublic" = true`);
-          const rows = (r as unknown as { rows?: Array<{ c: string }> })?.rows ?? (Array.isArray(r) ? r : []);
-          challengesCount = rows.length ? Number((rows[0] as { c: string })?.c ?? 0) : 0;
-        } catch (_) {
-          // テーブルが無い等は 0 のまま
-        }
-        dbStatus = {
-          connected: true,
-          latency: Date.now() - startTime,
-          error: "",
-          challengesCount,
-        };
-      } else {
-        dbStatus.error = "DATABASE_URLが設定されていません";
+      const buildInfo = readBuildInfo();
+      const nodeEnv = process.env.NODE_ENV || "development";
+      if (!buildInfo.ok && Sentry) {
+        Sentry.captureException(new Error("unknown version in /api/health"), {
+          extra: { commitSha: buildInfo.commitSha, env: nodeEnv },
+        });
+        console.error("[CRITICAL] unknown version detected:", buildInfo);
       }
-    } catch (err) {
-      dbStatus.error = err instanceof Error ? err.message : "接続エラー";
-    }
+      const baseInfo = {
+        ...buildInfo,
+        nodeEnv,
+        timestamp: Date.now(),
+      };
 
-    // クリティカルAPI確認（オプション）
-    const checkCritical = _req.query.critical === "true";
-    let criticalApis: Record<string, { ok: boolean; error?: string }> & { error?: string } = {};
-
-    if (checkCritical && dbStatus.connected) {
+      let dbStatus: { connected: boolean; latency: number; error: string; challengesCount?: number } = { connected: false, latency: 0, error: "" };
       try {
-        const caller = appRouter.createCaller(await createContext({ req: _req as any, res: res as any, info: {} as any }));
-
-        // homeEvents: イベント一覧取得
-        try {
-          await caller.events.list();
-          criticalApis.homeEvents = { ok: true };
-        } catch (err) {
-          criticalApis.homeEvents = { ok: false, error: err instanceof Error ? err.message : String(err) };
-        }
-
-        // rankings: ランキング取得
-        try {
-          await caller.rankings.hosts({ limit: 1 });
-          criticalApis.rankings = { ok: true };
-        } catch (err) {
-          criticalApis.rankings = { ok: false, error: err instanceof Error ? err.message : String(err) };
+        const { getDb, sql } = await import("../db");
+        const startTime = Date.now();
+        const db = await getDb();
+        if (db) {
+          await db.execute(sql`SELECT 1`);
+          let challengesCount = 0;
+          try {
+            const r = await db.execute(sql`SELECT COUNT(*) AS c FROM challenges WHERE "isPublic" = true`);
+            const rows = (r as unknown as { rows?: Array<{ c: string }> })?.rows ?? (Array.isArray(r) ? r : []);
+            challengesCount = rows.length ? Number((rows[0] as { c: string })?.c ?? 0) : 0;
+          } catch (_) {
+            // テーブルが無い等は 0 のまま
+          }
+          dbStatus = {
+            connected: true,
+            latency: Date.now() - startTime,
+            error: "",
+            challengesCount,
+          };
+        } else {
+          dbStatus.error = "DATABASE_URLが設定されていません";
         }
       } catch (err) {
-        criticalApis.error = err instanceof Error ? err.message : String(err);
+        dbStatus.error = err instanceof Error ? err.message : "接続エラー";
       }
-    }
 
-    // スキーマチェックはオプション（?schema=true で有効化）
-    const checkSchema = _req.query.schema === "true";
-    let schemaCheck: SchemaCheckResult | undefined;
+      const checkCritical = _req.query.critical === "true";
+      let criticalApis: Record<string, { ok: boolean; error?: string }> & { error?: string } = {};
 
-    if (checkSchema) {
-      try {
-        schemaCheck = await checkSchemaIntegrity();
-        
-        // スキーマ不整合時は通知
-        if (schemaCheck.status === "mismatch") {
-          await notifySchemaIssue(schemaCheck);
+      if (checkCritical && dbStatus.connected) {
+        try {
+          const caller = appRouter.createCaller(await createContext({ req: _req as any, res: res as any, info: {} as any }));
+
+          try {
+            await caller.events.list();
+            criticalApis.homeEvents = { ok: true };
+          } catch (err) {
+            criticalApis.homeEvents = { ok: false, error: err instanceof Error ? err.message : String(err) };
+          }
+
+          try {
+            await caller.rankings.hosts({ limit: 1 });
+            criticalApis.rankings = { ok: true };
+          } catch (err) {
+            criticalApis.rankings = { ok: false, error: err instanceof Error ? err.message : String(err) };
+          }
+        } catch (err) {
+          criticalApis.error = err instanceof Error ? err.message : String(err);
         }
-      } catch (error) {
-        console.error("[health] Schema check failed:", error);
-        schemaCheck = {
-          status: "error",
-          expectedVersion: "unknown",
-          missingColumns: [],
-          errors: [error instanceof Error ? error.message : String(error)],
-          checkedAt: new Date().toISOString(),
-        };
       }
+
+      const checkSchema = _req.query.schema === "true";
+      let schemaCheck: SchemaCheckResult | undefined;
+
+      if (checkSchema) {
+        try {
+          schemaCheck = await checkSchemaIntegrity();
+          if (schemaCheck.status === "mismatch") {
+            await notifySchemaIssue(schemaCheck);
+          }
+        } catch (error) {
+          console.error("[health] Schema check failed:", error);
+          schemaCheck = {
+            status: "error",
+            expectedVersion: "unknown",
+            missingColumns: [],
+            errors: [error instanceof Error ? error.message : String(error)],
+            checkedAt: new Date().toISOString(),
+          };
+        }
+      }
+
+      // DB 未接続のときだけ 500（UptimeRobot アラート）。build-info のみ不備のときは 200 + ok:false でアラート抑止
+      const overallOk =
+        dbStatus.connected &&
+        buildInfo.ok &&
+        (!checkCritical || Object.values(criticalApis).every(api => typeof api === "object" && "ok" in api && api.ok));
+
+      const statusCode = dbStatus.connected ? 200 : 500;
+      res.status(statusCode).json({
+        ...baseInfo,
+        ok: overallOk,
+        db: dbStatus,
+        ...(checkCritical && { critical: criticalApis }),
+        ...(schemaCheck && { schema: schemaCheck }),
+      });
+    } catch (err) {
+      console.error("[health] Unhandled error:", err);
+      const message = err instanceof Error ? err.message : String(err);
+      res.status(500).json({
+        ok: false,
+        commitSha: "unknown",
+        version: "unknown",
+        builtAt: "unknown",
+        timestamp: Date.now(),
+        error: message,
+        db: { connected: false, latency: 0, error: message },
+      });
     }
-
-    // 全体のok（unknown なら false = UptimeRobot 等で検知可能）
-    const overallOk =
-      buildInfo.ok &&
-      dbStatus.connected &&
-      (!checkCritical || Object.values(criticalApis).every(api => typeof api === "object" && "ok" in api && api.ok));
-
-    res.status(overallOk ? 200 : 500).json({
-      ...baseInfo,
-      ok: overallOk,
-      db: dbStatus,
-      ...(checkCritical && { critical: criticalApis }),
-      ...(schemaCheck && { schema: schemaCheck }),
-    });
   });
 
   // デバッグエンドポイント: 環境変数の確認
