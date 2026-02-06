@@ -46,7 +46,6 @@ void _ADMIN_PASSWORD; // 環境変数参照のため保持（管理画面認証�
 
 export default function AdminLayout() {
   const colors = useColors();
-  
   const pathname = usePathname();
   const insets = useSafeAreaInsets();
   const { user } = useAuth();
@@ -56,26 +55,49 @@ export default function AdminLayout() {
   const [hasAdminSession, setHasAdminSession] = useState(false);
   const [passwordError, setPasswordError] = useState("");
 
-  // 管理者セッションをチェック
+  // 管理者セッションをチェック（根本的解決: Web環境での確実な動作）
   useEffect(() => {
     let isMounted = true;
+    let timeoutId: ReturnType<typeof setTimeout> | null = null;
     
     const checkAdminSession = async () => {
       try {
-        console.log("[Admin] Checking admin session...");
+        // Web環境ではlocalStorageを同期的にチェック（即座に結果を返す）
+        if (Platform.OS === "web" && typeof window !== "undefined" && window.localStorage) {
+          try {
+            const sessionData = window.localStorage.getItem("admin_session");
+            if (sessionData) {
+              const session = JSON.parse(sessionData);
+              // 有効期限チェック
+              if (session.expiry && Date.now() > session.expiry) {
+                window.localStorage.removeItem("admin_session");
+                if (isMounted) {
+                  setHasAdminSession(false);
+                  setIsCheckingSession(false);
+                }
+                return;
+              }
+              if (isMounted) {
+                setHasAdminSession(session.authenticated === true);
+                setIsCheckingSession(false);
+              }
+              return;
+            }
+          } catch (e) {
+            console.warn("[Admin] localStorage parse error:", e);
+          }
+        }
+        
+        // Native環境またはlocalStorageが利用できない場合
         const session = await getAdminSession();
-        console.log("[Admin] Admin session result:", session);
         if (isMounted) {
           setHasAdminSession(session);
+          setIsCheckingSession(false);
         }
       } catch (error) {
         console.error("[Admin] Failed to check admin session:", error);
         if (isMounted) {
           setHasAdminSession(false);
-        }
-      } finally {
-        if (isMounted) {
-          console.log("[Admin] Session check completed, setting isCheckingSession to false");
           setIsCheckingSession(false);
         }
       }
@@ -84,17 +106,18 @@ export default function AdminLayout() {
     // 即座にセッションチェックを開始
     checkAdminSession();
     
-    // タイムアウト: 2秒後に強制的にローディングを終了（Web環境での確実な表示のため）
-    const timeout = setTimeout(() => {
+    // タイムアウト: 500ms後に強制的にローディングを終了（Web環境での確実な表示のため）
+    timeoutId = setTimeout(() => {
       if (isMounted) {
-        console.log("[Admin] Timeout reached, forcing isCheckingSession to false");
         setIsCheckingSession(false);
       }
-    }, 2000);
+    }, 500);
     
     return () => {
       isMounted = false;
-      clearTimeout(timeout);
+      if (timeoutId) {
+        clearTimeout(timeoutId);
+      }
     };
   }, []);
 
