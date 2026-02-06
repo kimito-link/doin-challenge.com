@@ -37,9 +37,21 @@ export async function getAdminSession(): Promise<boolean> {
   try {
     let sessionData: string | null = null;
 
-    if (Platform.OS === "web" && typeof window !== "undefined") {
-      sessionData = window.localStorage.getItem(ADMIN_SESSION_KEY);
+    if (Platform.OS === "web") {
+      // Web環境: windowが存在することを確認
+      if (typeof window !== "undefined" && window.localStorage) {
+        try {
+          sessionData = window.localStorage.getItem(ADMIN_SESSION_KEY);
+        } catch (storageError) {
+          console.warn("[AdminSession] localStorage access failed:", storageError);
+          return false;
+        }
+      } else {
+        console.warn("[AdminSession] window or localStorage not available");
+        return false;
+      }
     } else {
+      // Native環境
       sessionData = await SecureStore.getItemAsync(ADMIN_SESSION_KEY);
     }
 
