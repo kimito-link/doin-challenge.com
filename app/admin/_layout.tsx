@@ -59,11 +59,24 @@ export default function AdminLayout() {
   // 管理者セッションをチェック
   useEffect(() => {
     const checkAdminSession = async () => {
-      const session = await getAdminSession();
-      setHasAdminSession(session);
-      setIsCheckingSession(false);
+      try {
+        const session = await getAdminSession();
+        setHasAdminSession(session);
+      } catch (error) {
+        console.error("[Admin] Failed to check admin session:", error);
+        setHasAdminSession(false);
+      } finally {
+        setIsCheckingSession(false);
+      }
     };
     checkAdminSession();
+    
+    // タイムアウト: 5秒後に強制的にローディングを終了
+    const timeout = setTimeout(() => {
+      setIsCheckingSession(false);
+    }, 5000);
+    
+    return () => clearTimeout(timeout);
   }, []);
 
   // パスワード認証
@@ -94,8 +107,9 @@ export default function AdminLayout() {
     }
   };
 
-  // ローディング中
-  if (loading || isCheckingSession) {
+  // ローディング中（タイムアウト付き）
+  // useAuthのloadingが長く続く場合でも、セッションチェックが完了したらパスワード画面を表示
+  if (isCheckingSession) {
     return (
       <View className="flex-1 items-center justify-center bg-background">
         <ActivityIndicator size="large" color={colors.primary} />
@@ -103,6 +117,9 @@ export default function AdminLayout() {
       </View>
     );
   }
+  
+  // useAuthのloadingが続いている場合でも、セッションチェックが完了していればパスワード画面を表示
+  // （認証状態の確認は非同期で続行される）
 
   // 管理者権限チェック（role: admin または パスワード認証済み）
   const isAdmin = user?.role === "admin" || hasAdminSession;
