@@ -246,12 +246,8 @@ export function HelpSection({
   );
 }
 
-// フッター
-export function SettingsFooter({
-  onTwitter,
-}: {
-  onTwitter: () => void;
-}) {
+// フッター（ロゴと「動員ちゃれんじ」のみ）
+export function SettingsFooter() {
   return (
     <View style={styles.footer}>
       <View style={styles.footerLogoContainer}>
@@ -262,19 +258,6 @@ export function SettingsFooter({
         />
         <Text style={styles.footerAppName}>動員ちゃれんじ</Text>
       </View>
-      <Text style={styles.footerVersion}>v1.0.0</Text>
-      <Text style={styles.footerSubtext}>設定はこのデバイスに保存されます</Text>
-      
-      <View style={styles.footerLinks}>
-        <Button variant="ghost" onPress={onTwitter} style={styles.footerLink}>
-          <MaterialIcons name="alternate-email" size={16} color={color.twitter} />
-          <Text style={styles.footerLinkText}>@doin_challenge</Text>
-        </Button>
-      </View>
-      
-      <Text style={styles.footerCopyright}>
-        © KimitoLink
-      </Text>
     </View>
   );
 }

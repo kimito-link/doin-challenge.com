@@ -30,31 +30,32 @@ export const API_BASE_URL = env.apiBaseUrl;
  * URL pattern: https://PORT-sandboxid.region.domain
  */
 export function getApiBaseUrl(): string {
-  // If API_BASE_URL is set, use it
-  if (API_BASE_URL) {
-    return API_BASE_URL.replace(/\/$/, "");
-  }
-
-  // On web, derive from current hostname
-  // Note: Use global `location` directly instead of `window.location` for Expo Web compatibility
-  // window.location.hostname returns undefined in Expo Web, but location.hostname works
+  // 本番 Web では常に同一オリジン優先（Vercel rewrite を通す）。環境変数より先に判定する。
   if (ReactNative.Platform.OS === "web" && typeof location !== "undefined") {
     const protocol = location.protocol;
     const hostname = location.hostname;
-    
-    // Production: doin-challenge.com -> Railway backend
     if (hostname.includes("doin-challenge.com") || hostname.includes("doin-challengecom.vercel.app")) {
-      return "https://doin-challengecom-production.up.railway.app";
+      return `${protocol}//${hostname}`;
     }
-    
-    // Development: Pattern: 8081-sandboxid.region.domain -> 3000-sandboxid.region.domain
     const apiHostname = hostname.replace(/^8081-/, "3000-");
     if (apiHostname !== hostname) {
       return `${protocol}//${apiHostname}`;
     }
   }
 
-  // Fallback to empty (will use relative URL)
+  if (API_BASE_URL) {
+    return API_BASE_URL.replace(/\/$/, "");
+  }
+
+  if (ReactNative.Platform.OS === "web" && typeof location !== "undefined") {
+    const protocol = location.protocol;
+    const hostname = location.hostname;
+    const apiHostname = hostname.replace(/^8081-/, "3000-");
+    if (apiHostname !== hostname) {
+      return `${protocol}//${apiHostname}`;
+    }
+  }
+
   return "";
 }
 

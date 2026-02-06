@@ -19,7 +19,8 @@ const goalTypeLabels: Record<string, string> = {
 
 export default function TemplatesScreen() {
   
-  const { user } = useAuth();
+  const { user, isAuthReady } = useAuth();
+  const showMyTemplates = isAuthReady && user;
 
   const { data: myTemplates, refetch: refetchMy } = trpc.templates.list.useQuery(undefined, {
     enabled: !!user,
@@ -221,8 +222,8 @@ export default function TemplatesScreen() {
         renderItem={() => null}
         ListHeaderComponent={
           <View style={{ padding: 16 }}>
-            {/* マイテンプレート */}
-            {user && (
+            {/* マイテンプレート（認証確定後のみで点滅防止） */}
+            {showMyTemplates && (
               <View style={{ marginBottom: 24 }}>
                 <Text style={{ color: color.textWhite, fontSize: 18, fontWeight: "bold", marginBottom: 12 }}>
                   自分の設定

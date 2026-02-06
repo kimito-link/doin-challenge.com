@@ -41,14 +41,21 @@ export function CreateChallengeForm({
   validationErrors,
   isPending,
   categoriesData,
+  isCategoriesLoading,
   isDesktop,
   titleInputRef,
   dateInputRef,
+  loginSectionRef,
   onLoginOpen,
 }: CreateChallengeFormProps) {
   
-  const { user, login } = useAuth();
+  const { user, login, isAuthReady } = useAuth();
   const loginAction = onLoginOpen ?? login;
+  const showHostError = validationErrors.some((e) => e.field === "host");
+  const hasCategories = Array.isArray(categoriesData) && categoriesData.length > 0;
+  // 認証確定後のみログイン/ユーザーセクションを切り替えて点滅防止
+  const showLoginSection = isAuthReady && !user;
+  const showUserSection = isAuthReady && user;
 
   return (
     <View
@@ -73,9 +80,16 @@ export function CreateChallengeForm({
       />
 
       <View style={{ padding: 16 }}>
-        {/* ログインセクション（onLoginOpen があれば共通LoginModalを開く） */}
-        {!user && <TwitterLoginSection onLogin={loginAction} />}
-        {user && <UserInfoSection user={user} />}
+        {/* ログインセクション（認証確定後のみ表示して点滅防止） */}
+        {showLoginSection && (
+          <TwitterLoginSection
+            onLogin={loginAction}
+            showHostError={showHostError}
+            innerRef={loginSectionRef}
+          />
+        )}
+        {showUserSection && user && <UserInfoSection user={user} />}
+        {!isAuthReady && <View style={{ height: 1, marginBottom: 15 }} />}
 
         {/* プリセット選択（かんたん設定） */}
         {applyPreset && (
@@ -91,17 +105,20 @@ export function CreateChallengeForm({
           onChange={(v) => updateField("eventType", v)}
         />
 
-        {/* カテゴリ選択 */}
-        <CategorySelector
-          categoryId={state.categoryId}
-          categories={categoriesData}
-          showList={state.showCategoryList}
-          onToggleList={() => updateField("showCategoryList", !state.showCategoryList)}
-          onSelect={(id) => {
-            updateField("categoryId", id);
-            updateField("showCategoryList", false);
-          }}
-        />
+        {/* カテゴリ選択（管理側でカテゴリがある場合のみ表示・活動ジャンルと役割を分離） */}
+        {hasCategories && (
+          <CategorySelector
+            categoryId={state.categoryId}
+            categories={categoriesData}
+            showList={state.showCategoryList}
+            onToggleList={() => updateField("showCategoryList", !state.showCategoryList)}
+            onSelect={(id) => {
+              updateField("categoryId", id);
+              updateField("showCategoryList", false);
+            }}
+            isLoading={isCategoriesLoading}
+          />
+        )}
 
         {/* ジャンル選択 */}
         <GenreSelector
@@ -187,8 +204,8 @@ export function CreateChallengeForm({
           onChange={(v) => updateField("description", v)}
         />
 
-        {/* テンプレート保存オプション */}
-        {user && (
+        {/* テンプレート保存オプション（認証確定後のみで点滅防止） */}
+        {showUserSection && user && (
           <TemplateSaveSection
             saveAsTemplate={state.saveAsTemplate}
             templateName={state.templateName}

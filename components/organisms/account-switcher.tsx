@@ -38,7 +38,7 @@ interface AccountSwitcherProps {
 export function AccountSwitcher({ visible, onClose }: AccountSwitcherProps) {
   const colors = useColors();
   const { accounts, currentAccountId, deleteAccount, refreshAccounts } = useAccounts();
-  const { user, logout, refresh } = useAuth();
+  const { user, logout, refresh, isAuthReady } = useAuth();
   const { showSuccess } = useToast();
   const [isLoading, setIsLoading] = useState(false);
   const [switchingAccountId, setSwitchingAccountId] = useState<string | null>(null);
@@ -221,8 +221,8 @@ export function AccountSwitcher({ visible, onClose }: AccountSwitcherProps) {
           </View>
 
           <ScrollView style={styles.accountList} showsVerticalScrollIndicator={false}>
-            {/* 現在のアカウント */}
-            {user && (
+            {/* 現在のアカウント（認証確定後のみで点滅防止） */}
+            {isAuthReady && user && (
               <View
                 style={[
                   styles.accountItem,

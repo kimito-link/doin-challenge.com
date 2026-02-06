@@ -201,6 +201,8 @@ export function useAuth(options?: UseAuthOptions) {
   }, []);
 
   const isAuthenticated = useMemo(() => Boolean(user), [user]);
+  /** 認証状態が確定済み（loading 完了）。これが true になるまで user 依存の表示を出さず点滅を防ぐ */
+  const isAuthReady = !loading;
 
   useEffect(() => {
     console.log("[useAuth] useEffect triggered, autoFetch:", autoFetch, "platform:", Platform.OS);
@@ -243,6 +245,7 @@ export function useAuth(options?: UseAuthOptions) {
     loading,
     error,
     isAuthenticated,
+    isAuthReady,
     refresh: fetchUser,
     logout,
     login,

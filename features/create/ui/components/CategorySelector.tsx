@@ -21,6 +21,8 @@ interface CategorySelectorProps {
   showList: boolean;
   onToggleList: () => void;
   onSelect: (categoryId: number) => void;
+  /** 読み込み中はリストを開かせない・タップで開けるようにする */
+  isLoading?: boolean;
 }
 
 export function CategorySelector({
@@ -29,10 +31,13 @@ export function CategorySelector({
   showList,
   onToggleList,
   onSelect,
+  isLoading = false,
 }: CategorySelectorProps) {
   const colors = useColors();
 
   const selectedCategory = categories?.find((c) => c.id === categoryId);
+  const hasCategories = Array.isArray(categories) && categories.length > 0;
+  const canOpen = hasCategories && !isLoading;
 
   return (
     <View style={{ marginBottom: 16 }}>
@@ -41,7 +46,8 @@ export function CategorySelector({
       </Text>
       <Button
         variant="outline"
-        onPress={onToggleList}
+        onPress={canOpen ? onToggleList : undefined}
+        disabled={!canOpen}
         style={{
           backgroundColor: colors.background,
           borderRadius: 8,
@@ -54,7 +60,7 @@ export function CategorySelector({
         }}
       >
         <Text style={{ color: categoryId ? colors.foreground : createText.placeholder, fontSize: createFont.body }}>
-          {selectedCategory?.name || "カテゴリを選択"}
+          {isLoading ? "読み込み中..." : selectedCategory?.name || (hasCategories ? "カテゴリを選択" : "カテゴリがありません")}
         </Text>
         <MaterialIcons
           name={showList ? "keyboard-arrow-up" : "keyboard-arrow-down"}

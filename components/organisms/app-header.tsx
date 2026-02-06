@@ -57,9 +57,12 @@ export function AppHeader({
   showLoginButton = false,
 }: AppHeaderProps) {
   
-  const { user } = useAuth();
+  const { user, isAuthReady } = useAuth();
   const [menuVisible, setMenuVisible] = useState(false);
   const { state, tapLogin, confirmYes, confirmNo, retry, backWithoutLogin, hideWelcome } = useAuthUxMachine();
+  // 認証確定後にのみ表示して点滅を防止（ログインボタン・ログイン中バッジとも）
+  const showLoginButtonStable = showLoginButton && isAuthReady && !user;
+  const showLoginStatusStable = showLoginStatus && isAuthReady && user;
   
   const handleTitlePress = () => {
     triggerHaptic();
@@ -155,8 +158,8 @@ export function AppHeader({
           </View>
         </View>
         
-        {/* ログイン状態表示 */}
-        {showLoginStatus && user && (
+        {/* ログイン状態表示（認証確定後のみで点滅防止） */}
+        {showLoginStatusStable && (
           <Pressable 
             onPress={handleMenuPress}
             style={({ pressed }) => [
@@ -193,8 +196,8 @@ export function AppHeader({
           </Text>
         )}
         
-        {/* ログインボタン（未ログイン時のみ表示） */}
-        {showLoginButton && !user && (
+        {/* ログインボタン（未ログイン時のみ表示・認証確定後に表示してチカチカ防止） */}
+        {showLoginButtonStable && (
           <Pressable
             onPress={handleLoginPress}
             style={({ pressed }) => [{

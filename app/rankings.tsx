@@ -25,7 +25,7 @@ import {
 } from "@/features/rankings";
 
 export default function RankingsScreen() {
-  const { user } = useAuth();
+  const { user, isAuthReady } = useAuth();
   const rankingsData = useRankingsData();
   
   // Performance monitoring
@@ -63,8 +63,8 @@ export default function RankingsScreen() {
         <PeriodFilter period={rankingsData.period} onPeriodChange={rankingsData.setPeriod} />
       )}
 
-      {/* 自分の順位 */}
-      {user && rankingsData.myPosition && rankingsData.tab === "contribution" && (
+      {/* 自分の順位（認証確定後のみで点滅防止） */}
+      {isAuthReady && user && rankingsData.myPosition && rankingsData.tab === "contribution" && (
         <MyPositionCard myPosition={rankingsData.myPosition} />
       )}
 

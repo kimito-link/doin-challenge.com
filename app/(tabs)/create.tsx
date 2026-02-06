@@ -27,14 +27,14 @@ const characterImages = {
 };
 
 export default function CreateChallengeScreen() {
-  const { isAuthenticated } = useAuth();
+  const { isAuthenticated, isAuthReady } = useAuth();
   const { isFollowing, targetUsername, targetDisplayName } = useFollowStatus();
   const { isDesktop } = useResponsive();
   const colors = useColors();
   const { state: authState, tapLogin, confirmYes, confirmNo, retry, backWithoutLogin } = useAuthUxMachine();
   
-  // カテゴリ一覧を取得
-  const { data: categoriesData } = trpc.categories.list.useQuery();
+  // カテゴリ一覧を取得（ある場合のみカテゴリ選択UIを表示）
+  const { data: categoriesData, isLoading: isCategoriesLoading } = trpc.categories.list.useQuery();
   
   // チャレンジ作成フック
   const {
@@ -98,8 +98,8 @@ export default function CreateChallengeScreen() {
             <Image source={characterImages.tanune} style={{ width: 50, height: 50 }} contentFit="contain" />
           </View>
 
-          {/* フォロー促進バナー（未フォロー時のみ表示） */}
-          {isAuthenticated && !isFollowing && (
+          {/* フォロー促進バナー（認証確定かつ未フォロー時のみ表示・点滅防止） */}
+          {isAuthReady && isAuthenticated && !isFollowing && (
             <FollowPromptBanner
               isFollowing={isFollowing}
               targetUsername={targetUsername}
@@ -117,9 +117,11 @@ export default function CreateChallengeScreen() {
             validationErrors={validationErrors}
             isPending={isPending}
             categoriesData={categoriesData}
+            isCategoriesLoading={isCategoriesLoading}
             isDesktop={isDesktop}
             titleInputRef={refs.titleInputRef}
             dateInputRef={refs.dateInputRef}
+            loginSectionRef={refs.loginSectionRef}
             onLoginOpen={tapLogin}
           />
 

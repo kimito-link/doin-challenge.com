@@ -2,7 +2,7 @@
 // v6.36: テーマ切り替え機能を削除（ダークモードのみに固定）
 import { useState, useCallback, useEffect } from "react";
 import { ScrollView, Platform } from "react-native";
-import { openTwitterProfile, navigate } from "@/lib/navigation";
+import { navigate } from "@/lib/navigation";
 import * as Haptics from "expo-haptics";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 
@@ -110,11 +110,6 @@ export default function SettingsScreen() {
     }
   }, [handleHaptic]);
 
-  const handleTwitter = useCallback(() => {
-    handleHaptic();
-    openTwitterProfile("doin_challenge");
-  }, [handleHaptic]);
-
   // 他のアカウント（現在のアカウント以外）
   const otherAccounts = accounts.filter((a) => a.id !== currentAccountId);
 
@@ -150,7 +145,7 @@ export default function SettingsScreen() {
           onClearCache={handleClearCache}
         />
 
-        <SettingsFooter onTwitter={handleTwitter} />
+        <SettingsFooter />
       </ScrollView>
 
       <AccountSwitcher

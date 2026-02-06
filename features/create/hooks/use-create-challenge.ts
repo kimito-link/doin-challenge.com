@@ -104,10 +104,11 @@ export function useCreateChallenge() {
   // 状態
   const [state, setState] = useState<CreateChallengeState>(initialState);
   
-  // refs
+  // refs（未ログイン時のバリデーションでスクロール先にするため）
   const scrollViewRef = useRef<ScrollView>(null);
   const titleInputRef = useRef<View>(null);
   const dateInputRef = useRef<View>(null);
+  const loginSectionRef = useRef<View>(null);
   
   // バリデーションエラー
   const validationErrors = useMemo<ValidationError[]>(() => {
@@ -123,27 +124,26 @@ export function useCreateChallenge() {
     return errors;
   }, [state.title, user]);
   
-  // バリデーションエラー表示時にスクロール
+  // バリデーションエラー表示時に該当箇所へスクロール
   useEffect(() => {
-    if (state.showValidationError && scrollViewRef.current) {
-      const firstError = validationErrors[0];
-      if (firstError?.field === "title" && titleInputRef.current) {
-        titleInputRef.current.measureLayout(
-          scrollViewRef.current as any,
-          (x, y) => {
-            scrollViewRef.current?.scrollTo({ y: Math.max(0, y - 100), animated: true });
-          },
-          () => {}
-        );
-      } else if (firstError?.field === "date" && dateInputRef.current) {
-        dateInputRef.current.measureLayout(
-          scrollViewRef.current as any,
-          (x, y) => {
-            scrollViewRef.current?.scrollTo({ y: Math.max(0, y - 100), animated: true });
-          },
-          () => {}
-        );
-      }
+    if (!state.showValidationError || !scrollViewRef.current) return;
+    const firstError = validationErrors[0];
+    const targetRef =
+      firstError?.field === "host"
+        ? loginSectionRef.current
+        : firstError?.field === "title"
+          ? titleInputRef.current
+          : firstError?.field === "date"
+            ? dateInputRef.current
+            : null;
+    if (targetRef) {
+      targetRef.measureLayout(
+        scrollViewRef.current as any,
+        (_x, y) => {
+          scrollViewRef.current?.scrollTo({ y: Math.max(0, y - 100), animated: true });
+        },
+        () => {}
+      );
     }
   }, [state.showValidationError, validationErrors]);
   
@@ -303,6 +303,7 @@ export function useCreateChallenge() {
       scrollViewRef,
       titleInputRef,
       dateInputRef,
+      loginSectionRef,
     },
   };
 }

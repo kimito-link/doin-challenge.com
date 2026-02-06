@@ -35,7 +35,7 @@ interface GlobalMenuProps {
 
 export function GlobalMenu({ isVisible, onClose }: GlobalMenuProps) {
   
-  const { user, isAuthenticated } = useAuth();
+  const { user, isAuthenticated, isAuthReady } = useAuth();
   const [showLogoutModal, setShowLogoutModal] = useState(false);
   const { state, tapLogin, confirmYes, confirmNo, retry, backWithoutLogin, hideWelcome } = useAuthUxMachine();
 
@@ -136,7 +136,7 @@ export function GlobalMenu({ isVisible, onClose }: GlobalMenuProps) {
                 </View>
               </View>
 
-              {/* ユーザー情報 */}
+              {/* ユーザー情報（認証確定後のみ表示して点滅防止） */}
               <View
                 style={{
                   padding: 20,
@@ -144,7 +144,11 @@ export function GlobalMenu({ isVisible, onClose }: GlobalMenuProps) {
                   borderBottomColor: color.borderAlt,
                 }}
               >
-                {isAuthenticated && user ? (
+                {!isAuthReady ? (
+                  <View style={{ minHeight: 48, justifyContent: "center" }}>
+                    <Text style={{ color: color.textMuted, fontSize: 14 }}>読み込み中...</Text>
+                  </View>
+                ) : isAuthenticated && user ? (
                   <View style={{ flexDirection: "row", alignItems: "center" }}>
                     {user.profileImage ? (
                       <Image

@@ -1,7 +1,7 @@
 import "@/global.css";
 import { QueryClient } from "@tanstack/react-query";
 import { PersistQueryClientProvider } from "@tanstack/react-query-persist-client";
-import { Stack } from "expo-router";
+import { Stack, usePathname } from "expo-router";
 import { StatusBar } from "expo-status-bar";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
@@ -89,10 +89,17 @@ function TutorialUI() {
 
 /**
  * オンボーディングラッパー
- * 初回起動時にオンボーディングを表示
+ * 初回起動時にオンボーディングを表示（/admin は常にスキップして管理画面へ）
  */
 function OnboardingWrapper({ children }: { children: React.ReactNode }) {
+  const pathname = usePathname();
   const { hasCompletedOnboarding, completeOnboarding } = useOnboarding();
+
+  // /admin へのアクセスはオンボーディングを出さずに管理画面（パスワード認証）を表示
+  const isAdminRoute = typeof pathname === "string" && (pathname === "/admin" || pathname.startsWith("/admin/"));
+  if (isAdminRoute) {
+    return <>{children}</>;
+  }
   
   // オンボーディング状態が確認中の場合はローディング画面を表示
   if (hasCompletedOnboarding === null) {
