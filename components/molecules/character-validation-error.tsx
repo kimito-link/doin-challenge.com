@@ -61,6 +61,7 @@ interface CharacterValidationErrorProps {
 
 export function CharacterValidationError({ errors, visible }: CharacterValidationErrorProps) {
   const [currentMessage, setCurrentMessage] = useState<{ character: CharacterType; text: string; expression: string } | null>(null);
+  const [imageError, setImageError] = useState(false);
   
   const bounceY = useSharedValue(0);
   const shake = useSharedValue(0);
@@ -115,11 +116,21 @@ export function CharacterValidationError({ errors, visible }: CharacterValidatio
     >
       <View style={styles.content}>
         <Animated.View style={[styles.characterContainer, animatedStyle]}>
-          <Image
-            source={getCharacterImage()}
-            style={styles.character}
-            contentFit="contain"
-          />
+          {!imageError ? (
+            <Image
+              source={getCharacterImage()}
+              style={styles.character}
+              contentFit="contain"
+              onError={() => setImageError(true)}
+              cachePolicy="memory-disk"
+            />
+          ) : (
+            <View style={[styles.character, { borderRadius: 30, backgroundColor: color.accentPrimary, alignItems: "center", justifyContent: "center" }]}>
+              <Text style={{ color: "white", fontSize: 24, fontWeight: "bold" }}>
+                {currentMessage.character === "rinku" ? "り" : currentMessage.character === "konta" ? "こ" : "た"}
+              </Text>
+            </View>
+          )}
         </Animated.View>
         
         <View style={styles.bubbleContainer}>
@@ -153,6 +164,7 @@ export function CharacterGroupValidationError({ errors, visible }: CharacterGrou
   const bounceY = useSharedValue(0);
   const [selectedCharacter, setSelectedCharacter] = useState<CharacterType>("rinku");
   const [message, setMessage] = useState("まだ必要項目が入ってないよ！");
+  const [imageErrors, setImageErrors] = useState<Record<string, boolean>>({});
 
   const triggerHaptic = useCallback(() => {
     if (Platform.OS !== "web") {
@@ -197,11 +209,19 @@ export function CharacterGroupValidationError({ errors, visible }: CharacterGrou
       {/* 3キャラクター表示 */}
       <View style={styles.charactersRow}>
         <View style={[styles.sideCharacter, selectedCharacter !== "konta" && styles.dimmed]}>
-          <Image
-            source={CHARACTER_IMAGES.konta}
-            style={styles.smallCharacter}
-            contentFit="contain"
-          />
+          {!imageErrors.konta ? (
+            <Image
+              source={CHARACTER_IMAGES.konta}
+              style={styles.smallCharacter}
+              contentFit="contain"
+              onError={() => setImageErrors(prev => ({ ...prev, konta: true }))}
+              cachePolicy="memory-disk"
+            />
+          ) : (
+            <View style={[styles.smallCharacter, { borderRadius: 20, backgroundColor: color.accentPrimary, alignItems: "center", justifyContent: "center" }]}>
+              <Text style={{ color: "white", fontSize: 16, fontWeight: "bold" }}>こ</Text>
+            </View>
+          )}
         </View>
         
         <Animated.View style={[styles.mainCharacter, animatedStyle]}>
@@ -210,21 +230,39 @@ export function CharacterGroupValidationError({ errors, visible }: CharacterGrou
             <Text style={styles.groupBubbleText}>{message}</Text>
             <View style={styles.groupBubbleArrow} />
           </View>
-          <Image
-            source={selectedCharacter === "rinku" 
-              ? CHARACTER_IMAGES.rinku.worried 
-              : CHARACTER_IMAGES[selectedCharacter]}
-            style={styles.centerCharacter}
-            contentFit="contain"
-          />
+          {!imageErrors[selectedCharacter] ? (
+            <Image
+              source={selectedCharacter === "rinku" 
+                ? CHARACTER_IMAGES.rinku.worried 
+                : CHARACTER_IMAGES[selectedCharacter]}
+              style={styles.centerCharacter}
+              contentFit="contain"
+              onError={() => setImageErrors(prev => ({ ...prev, [selectedCharacter]: true }))}
+              cachePolicy="memory-disk"
+            />
+          ) : (
+            <View style={[styles.centerCharacter, { borderRadius: 35, backgroundColor: color.accentPrimary, alignItems: "center", justifyContent: "center" }]}>
+              <Text style={{ color: "white", fontSize: 28, fontWeight: "bold" }}>
+                {selectedCharacter === "rinku" ? "り" : selectedCharacter === "konta" ? "こ" : "た"}
+              </Text>
+            </View>
+          )}
         </Animated.View>
         
         <View style={[styles.sideCharacter, selectedCharacter !== "tanune" && styles.dimmed]}>
-          <Image
-            source={CHARACTER_IMAGES.tanune}
-            style={styles.smallCharacter}
-            contentFit="contain"
-          />
+          {!imageErrors.tanune ? (
+            <Image
+              source={CHARACTER_IMAGES.tanune}
+              style={styles.smallCharacter}
+              contentFit="contain"
+              onError={() => setImageErrors(prev => ({ ...prev, tanune: true }))}
+              cachePolicy="memory-disk"
+            />
+          ) : (
+            <View style={[styles.smallCharacter, { borderRadius: 20, backgroundColor: color.accentPrimary, alignItems: "center", justifyContent: "center" }]}>
+              <Text style={{ color: "white", fontSize: 16, fontWeight: "bold" }}>た</Text>
+            </View>
+          )}
         </View>
       </View>
       

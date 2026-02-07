@@ -22,8 +22,11 @@ import Animated, {
   withRepeat,
   withSequence,
 } from "react-native-reanimated";
+import { Image } from "expo-image";
 import { useEffect, useState, useRef } from "react";
 import { useLoginABTest } from "@/hooks/use-login-ab-test";
+
+const AnimatedImage = Animated.createAnimatedComponent(Image);
 
 // キャラクター画像（りんく・こん太・たぬ姉のオリジナル画像）
 const CHARACTER_IMAGES = {
@@ -47,6 +50,7 @@ export function LoginModal({
   const { selectMessage, recordConversion } = useLoginABTest();
   const [currentMessage, setCurrentMessage] = useState<ReturnType<typeof selectMessage> | null>(null);
   const wasVisibleRef = useRef(false);
+  const [imageError, setImageError] = useState(false);
 
   // モーダルが表示されるたびにメッセージを選択（ちらつき防止: 一度だけ選択）
   useEffect(() => {
@@ -177,13 +181,29 @@ export function LoginModal({
               elevation: 2,
             }}
           >
-            <Animated.Image
-              source={CHARACTER_IMAGES[currentMessage.character]}
-              style={[
-                { width: 64, height: 64, marginRight: 12 },
-                characterAnimatedStyle,
-              ]}
-            />
+            {!imageError ? (
+              <AnimatedImage
+                source={CHARACTER_IMAGES[currentMessage.character]}
+                style={[
+                  { width: 64, height: 64, marginRight: 12 },
+                  characterAnimatedStyle,
+                ]}
+                onError={() => setImageError(true)}
+                cachePolicy="memory-disk"
+                contentFit="contain"
+              />
+            ) : (
+              <Animated.View
+                style={[
+                  { width: 64, height: 64, marginRight: 12, borderRadius: 32, backgroundColor: color.accentPrimary, alignItems: "center", justifyContent: "center" },
+                  characterAnimatedStyle,
+                ]}
+              >
+                <Text style={{ color: "white", fontSize: 24, fontWeight: "bold" }}>
+                  {currentMessage.character === "rinku" ? "り" : currentMessage.character === "konta" ? "こ" : "た"}
+                </Text>
+              </Animated.View>
+            )}
             <Animated.View 
               entering={FadeInUp.delay(400).springify()}
               style={{ flex: 1 }}

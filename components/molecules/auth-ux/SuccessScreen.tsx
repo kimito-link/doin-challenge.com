@@ -7,9 +7,10 @@
  */
 
 import { View, Text } from "react-native";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { useColors } from "@/hooks/use-colors";
 import { Image } from "expo-image";
+import { color } from "@/theme/tokens";
 
 const rinkuImage = require("@/assets/images/characters/link/link-yukkuri-smile-mouth-open.png");
 
@@ -19,6 +20,7 @@ export interface SuccessScreenProps {
 
 export function SuccessScreen({ onClose }: SuccessScreenProps) {
   const colors = useColors();
+  const [imageError, setImageError] = useState(false);
 
   // 800ms後に自動でclose
   useEffect(() => {
@@ -40,11 +42,29 @@ export function SuccessScreen({ onClose }: SuccessScreenProps) {
       }}
     >
       {/* りんくキャラクター */}
-      <Image
-        source={rinkuImage}
-        style={{ width: 120, height: 120, marginBottom: 24 }}
-        contentFit="contain"
-      />
+      {!imageError ? (
+        <Image
+          source={rinkuImage}
+          style={{ width: 120, height: 120, marginBottom: 24 }}
+          contentFit="contain"
+          onError={() => setImageError(true)}
+          cachePolicy="memory-disk"
+        />
+      ) : (
+        <View
+          style={{
+            width: 120,
+            height: 120,
+            marginBottom: 24,
+            borderRadius: 60,
+            backgroundColor: color.accentPrimary,
+            alignItems: "center",
+            justifyContent: "center",
+          }}
+        >
+          <Text style={{ color: "white", fontSize: 48, fontWeight: "bold" }}>り</Text>
+        </View>
+      )}
 
       {/* 成功メッセージ */}
       <View

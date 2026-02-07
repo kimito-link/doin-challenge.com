@@ -6,7 +6,7 @@
  * キャラクターがランダムに選択され、アニメーション付きで表示される
  */
 
-import { View, Modal } from "react-native";
+import { View, Modal, Text } from "react-native";
 import { useColors } from "@/hooks/use-colors";
 import { palette } from "@/theme/tokens";
 import Animated, {
@@ -18,8 +18,11 @@ import Animated, {
   withRepeat,
   withSequence,
 } from "react-native-reanimated";
+import { Image } from "expo-image";
 import { useEffect, useState } from "react";
 import { getRandomLoginMessage, type LoginMessage } from "@/constants/login-messages";
+
+const AnimatedImage = Animated.createAnimatedComponent(Image);
 
 // キャラクター画像（りんく・こん太・たぬ姉のオリジナル画像）
 const CHARACTER_IMAGES = {
@@ -37,6 +40,7 @@ interface WelcomeMessageProps {
 export function WelcomeMessage({ visible, onHide, userName }: WelcomeMessageProps) {
   const colors = useColors();
   const [message, setMessage] = useState<LoginMessage | null>(null);
+  const [imageError, setImageError] = useState(false);
 
   // 表示時にランダムなメッセージを選択
   useEffect(() => {
@@ -106,13 +110,29 @@ export function WelcomeMessage({ visible, onHide, userName }: WelcomeMessageProp
           }}
         >
           {/* キャラクター */}
-          <Animated.Image
-            source={CHARACTER_IMAGES[message.character]}
-            style={[
-              { width: 80, height: 80, marginBottom: 20 },
-              characterAnimatedStyle,
-            ]}
-          />
+          {!imageError ? (
+            <AnimatedImage
+              source={CHARACTER_IMAGES[message.character]}
+              style={[
+                { width: 80, height: 80, marginBottom: 20 },
+                characterAnimatedStyle,
+              ]}
+              onError={() => setImageError(true)}
+              cachePolicy="memory-disk"
+              contentFit="contain"
+            />
+          ) : (
+            <Animated.View
+              style={[
+                { width: 80, height: 80, marginBottom: 20, borderRadius: 40, backgroundColor: colors.primary, alignItems: "center", justifyContent: "center" },
+                characterAnimatedStyle,
+              ]}
+            >
+              <Text style={{ color: "white", fontSize: 32, fontWeight: "bold" }}>
+                {message.character === "rinku" ? "り" : message.character === "konta" ? "こ" : "た"}
+              </Text>
+            </Animated.View>
+          )}
 
           {/* ウェルカムメッセージ */}
           <Animated.Text
