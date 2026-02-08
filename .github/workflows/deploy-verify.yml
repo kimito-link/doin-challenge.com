@@ -7,8 +7,11 @@ on:
     branches: [main]
 
 # 新しい push が来ても前回の verify はキャンセルしない（キャンセルすると "The operation was canceled" で終了してしまうため）
+# ただし、待機中のリクエストが複数ある場合、GitHub Actionsが自動的にキャンセルすることがある
+# その場合は、最新のコミットに対してverifyが実行されるため問題ない
+# コミットSHAを含めてグループ化することで、各コミットに対して独立してverifyを実行できるようにする
 concurrency:
-  group: deploy-verify-main
+  group: deploy-verify-main-${{ github.sha }}
   cancel-in-progress: false
 
 jobs:
