@@ -14,6 +14,9 @@ import {
   refreshAccessToken,
 } from "./twitter-oauth2";
 import * as db from "./db";
+import { COOKIE_NAME, ONE_YEAR_MS } from "../shared/const.js";
+import { getSessionCookieOptions } from "./_core/cookies.js";
+import { sdk } from "./_core/sdk.js";
 
 export function registerTwitterRoutes(app: Express) {
   // Step 1: Initiate Twitter OAuth 2.0
@@ -139,9 +142,10 @@ export function registerTwitterRoutes(app: Express) {
       };
       
       // Save user profile to database
+      const openId = `twitter:${userProfile.id}`;
       try {
         await db.upsertUser({
-          openId: `twitter:${userProfile.id}`,
+          openId,
           name: userProfile.name,
           email: null,
           loginMethod: "twitter",
@@ -150,6 +154,20 @@ export function registerTwitterRoutes(app: Express) {
         console.log("[Twitter OAuth 2.0] User profile saved to database");
       } catch (error) {
         console.error("[Twitter OAuth 2.0] Failed to save user profile:", error);
+      }
+
+      // Create session token and set cookie (重要: セッションCookieを設定して認証状態を確立)
+      try {
+        const sessionToken = await sdk.createSessionToken(openId, {
+          name: userProfile.name || "",
+          expiresInMs: ONE_YEAR_MS,
+        });
+        const cookieOptions = getSessionCookieOptions(req);
+        res.cookie(COOKIE_NAME, sessionToken, { ...cookieOptions, maxAge: ONE_YEAR_MS });
+        console.log("[Twitter OAuth 2.0] Session cookie set successfully");
+      } catch (error) {
+        console.error("[Twitter OAuth 2.0] Failed to create session token:", error);
+        // セッション作成に失敗しても続行（フロントエンドで再認証可能）
       }
 
       // Encode user data for redirect
