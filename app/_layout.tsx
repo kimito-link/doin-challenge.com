@@ -2,17 +2,6 @@ import "@/global.css";
 import { QueryClient } from "@tanstack/react-query";
 import { PersistQueryClientProvider } from "@tanstack/react-query-persist-client";
 import { Stack, usePathname } from "expo-router";
-
-/** /admin のときはオーバーレイを出さず管理画面だけ表示する */
-function useIsAdminRoute() {
-  const pathname = usePathname();
-  return typeof pathname === "string" && (pathname === "/admin" || pathname.startsWith("/admin/"));
-}
-
-function ConditionalExperienceOverlay() {
-  if (useIsAdminRoute()) return null;
-  return <ExperienceOverlay />;
-}
 import { StatusBar } from "expo-status-bar";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
@@ -53,6 +42,17 @@ import { ExperienceOverlay } from "@/components/organisms/experience-overlay";
 import { OnboardingScreen, useOnboarding } from "@/features/onboarding";
 import { initSentry } from "@/lib/sentry";
 import { ErrorBoundary } from "@/components/ui";
+
+/** /admin のときはオーバーレイを出さず管理画面だけ表示する */
+function useIsAdminRoute() {
+  const pathname = usePathname();
+  return typeof pathname === "string" && (pathname === "/admin" || pathname.startsWith("/admin/"));
+}
+
+function ConditionalExperienceOverlay() {
+  if (useIsAdminRoute()) return null;
+  return <ExperienceOverlay />;
+}
 
 const DEFAULT_WEB_INSETS: EdgeInsets = { top: 0, right: 0, bottom: 0, left: 0 };
 const DEFAULT_WEB_FRAME: Rect = { x: 0, y: 0, width: 0, height: 0 };
