@@ -22,13 +22,20 @@ export async function getDb() {
       
       _db = drizzle(poolConnection, { schema, mode: "default" });
       
-      // 接続テストを実行
+      // 接続テストを実行（タイムアウト付き）
       try {
-        await poolConnection.query("SELECT 1");
+        // タイムアウトを設定（5秒）
+        const testPromise = poolConnection.query("SELECT 1");
+        const timeoutPromise = new Promise((_, reject) => 
+          setTimeout(() => reject(new Error("Connection test timeout")), 5000)
+        );
+        
+        await Promise.race([testPromise, timeoutPromise]);
         console.log("[Database] Connection pool initialized successfully");
       } catch (testError) {
         console.error("[Database] Connection test failed:", testError);
         // 接続テストに失敗した場合でも、プールは作成済みなので続行
+        // 実際のクエリ実行時にエラーが発生する可能性がある
       }
     } catch (error) {
       console.error("[Database] Failed to create connection pool:", error);

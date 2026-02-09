@@ -192,8 +192,13 @@ async function startServer() {
         const db = await getDb();
         if (db) {
           try {
-            // シンプルな接続テストクエリ
-            await db.execute(sql`SELECT 1`);
+            // シンプルな接続テストクエリ（タイムアウト付き）
+            const queryPromise = db.execute(sql`SELECT 1`);
+            const timeoutPromise = new Promise((_, reject) => 
+              setTimeout(() => reject(new Error("Query timeout after 10 seconds")), 10000)
+            );
+            
+            await Promise.race([queryPromise, timeoutPromise]);
             
             let challengesCount = 0;
             try {
@@ -218,6 +223,7 @@ async function startServer() {
             const cleanMessage = errorMessage
               .replace(/\nparam.*$/g, "")
               .replace(/params:.*$/g, "")
+              .replace(/Failed query:.*$/g, "データベースクエリの実行に失敗しました")
               .trim();
             
             console.error("[health] Database query failed:", {
