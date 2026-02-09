@@ -1,6 +1,6 @@
 import { eq, desc, and, sql, isNull, or, gte, lte, lt, inArray, asc, ne, like, count } from "drizzle-orm";
 import { drizzle } from "drizzle-orm/mysql2";
-import mysql from "mysql2/promise";
+import mysql, { type PoolOptions } from "mysql2/promise";
 import * as schema from "../../drizzle/schema";
 
 import { MySql2Database } from "drizzle-orm/mysql2";
@@ -15,20 +15,14 @@ export async function getDb() {
   if (!_db && process.env.DATABASE_URL) {
     try {
       // 接続プールの設定を追加（タイムアウト、リトライ、接続数の制限）
-      const poolConnection = mysql.createPool(process.env.DATABASE_URL, {
+      const poolOptions: PoolOptions = {
         // 接続プールの設定
         connectionLimit: 10, // 最大接続数
         queueLimit: 0, // キュー制限なし
         
         // タイムアウト設定
         connectTimeout: 10000, // 10秒
-        acquireTimeout: 10000, // 10秒
         timeout: 10000, // 10秒
-        
-        // 接続の再試行
-        reconnect: true,
-        maxReconnects: 3,
-        reconnectDelay: 1000, // 1秒
         
         // 接続の検証
         enableKeepAlive: true,
@@ -36,14 +30,16 @@ export async function getDb() {
         
         // SSL設定（本番環境ではSSL接続を推奨）
         ssl: process.env.NODE_ENV === "production" ? { rejectUnauthorized: false } : undefined,
-      });
+      };
+      
+      const poolConnection = mysql.createPool(process.env.DATABASE_URL, poolOptions);
       
       // 接続エラーのハンドリング
-      poolConnection.on("connection", (connection) => {
+      poolConnection.on("connection", () => {
         console.log("[Database] New connection established");
       });
       
-      poolConnection.on("error", (err) => {
+      poolConnection.on("error", (err: Error & { code?: string }) => {
         console.error("[Database] Pool error:", err);
         // 接続エラーが発生した場合、接続をリセット
         if (err.code === "PROTOCOL_CONNECTION_LOST" || err.code === "ECONNREFUSED") {
