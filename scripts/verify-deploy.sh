@@ -14,7 +14,7 @@ RESP="$(curl -fsSL "$URL/api/health" || echo "{}")"
 echo "📥 Health check response:"
 echo "$RESP" | jq '.' || echo "$RESP"
 
-ACTUAL_SHA="$(echo "$RESP" | jq -r '.commitSha // .gitSha // "unknown"')"
+ACTUAL_SHA="$(echo "$RESP" | jq -r '.commitSha // .commitsha // .gitSha // "unknown"')"
 OK="$(echo "$RESP" | jq -r '.ok // false')"
 
 echo "📊 Actual commitSha: $ACTUAL_SHA"
