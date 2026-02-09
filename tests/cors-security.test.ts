@@ -13,17 +13,30 @@ describe("CORS Security - isAllowedOrigin", () => {
 
   beforeEach(() => {
     vi.resetModules();
-    delete process.env.ALLOWED_ORIGINS;
+    if (originalAllowedOrigins !== undefined) {
+      process.env.ALLOWED_ORIGINS = originalAllowedOrigins;
+    } else {
+      delete process.env.ALLOWED_ORIGINS;
+    }
   });
 
   afterEach(() => {
-    process.env.NODE_ENV = originalEnv;
-    process.env.ALLOWED_ORIGINS = originalAllowedOrigins;
+    if (originalEnv !== undefined) {
+      vi.stubEnv("NODE_ENV", originalEnv);
+    } else {
+      vi.stubEnv("NODE_ENV", undefined);
+    }
+    if (originalAllowedOrigins !== undefined) {
+      process.env.ALLOWED_ORIGINS = originalAllowedOrigins;
+    } else {
+      // ALLOWED_ORIGINSは削除可能
+      delete process.env.ALLOWED_ORIGINS;
+    }
   });
 
   describe("Development environment", () => {
     beforeEach(() => {
-      process.env.NODE_ENV = "development";
+      vi.stubEnv("NODE_ENV", "development");
     });
 
     it("should allow localhost origins", () => {
@@ -46,7 +59,7 @@ describe("CORS Security - isAllowedOrigin", () => {
 
   describe("Production environment", () => {
     beforeEach(() => {
-      process.env.NODE_ENV = "production";
+      vi.stubEnv("NODE_ENV", "production");
     });
 
     it("should allow doin-challenge.com when ALLOWED_ORIGINS is not set", () => {
@@ -79,7 +92,7 @@ describe("CORS Security - isAllowedOrigin", () => {
 
   describe("ALLOWED_ORIGINS environment variable", () => {
     beforeEach(() => {
-      process.env.NODE_ENV = "production";
+      vi.stubEnv("NODE_ENV", "production");
     });
 
     it("should allow origins from ALLOWED_ORIGINS", () => {

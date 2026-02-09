@@ -8,7 +8,7 @@
  * 実際のエンドポイント経由でテストする必要がある
  */
 
-import { describe, it, expect, beforeEach, vi } from "vitest";
+import { describe, it, expect, beforeEach, afterEach, vi } from "vitest";
 import type { Request, Response } from "express";
 import { registerTwitterRoutes } from "../server/twitter-routes";
 
@@ -136,18 +136,22 @@ describe("Twitter Routes Security", () => {
     });
 
     afterEach(() => {
-      process.env.NODE_ENV = originalEnv;
+      if (originalEnv !== undefined) {
+        vi.stubEnv("NODE_ENV", originalEnv);
+      } else {
+        vi.stubEnv("NODE_ENV", undefined);
+      }
     });
 
     it("should exclude stack trace in production", () => {
-      process.env.NODE_ENV = "production";
+      vi.stubEnv("NODE_ENV", "production");
 
       // エラーハンドリング経由でテスト
       // createErrorResponseはprivateなので、実際のエンドポイント経由でテスト
     });
 
     it("should include stack trace in development", () => {
-      process.env.NODE_ENV = "development";
+      vi.stubEnv("NODE_ENV", "development");
 
       // エラーハンドリング経由でテスト
     });
