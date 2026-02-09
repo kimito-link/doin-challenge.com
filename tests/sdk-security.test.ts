@@ -10,19 +10,23 @@ import { sdk } from "../server/_core/sdk";
 
 describe("SDK Security", () => {
   const originalEnv = process.env.JWT_SECRET;
+  const DEFAULT_TEST_SECRET = "test-secret-key-for-testing-only";
 
   beforeEach(() => {
     // JWT_SECRETを設定（テストが失敗しないように）
-    if (!process.env.JWT_SECRET) {
-      process.env.JWT_SECRET = "test-secret-key-for-testing-only";
+    // 空文字列や空白のみの場合も設定する
+    if (!process.env.JWT_SECRET || process.env.JWT_SECRET.trim() === "") {
+      process.env.JWT_SECRET = DEFAULT_TEST_SECRET;
     }
   });
 
   afterEach(() => {
-    if (originalEnv !== undefined) {
+    // テスト後に必ずJWT_SECRETを設定（次のテストのために）
+    if (originalEnv !== undefined && originalEnv.trim() !== "") {
       process.env.JWT_SECRET = originalEnv;
     } else {
-      delete process.env.JWT_SECRET;
+      // originalEnvがundefinedまたは空の場合、デフォルト値を設定
+      process.env.JWT_SECRET = DEFAULT_TEST_SECRET;
     }
   });
 
@@ -111,10 +115,8 @@ describe("SDK Security", () => {
     });
 
     it("should work with valid JWT_SECRET", async () => {
-      // 確実にJWT_SECRETを設定（beforeEachで設定されているはずだが、念のため）
-      if (!process.env.JWT_SECRET || process.env.JWT_SECRET.trim() === "") {
-        process.env.JWT_SECRET = "test-secret-key-12345";
-      }
+      // beforeEachで設定されているはずだが、念のため確実にJWT_SECRETを設定
+      process.env.JWT_SECRET = "test-secret-key-12345";
 
       const token = await sdk.createSessionToken("test-open-id", { name: "Test" });
 
