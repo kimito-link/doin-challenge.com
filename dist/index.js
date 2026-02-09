@@ -696,8 +696,18 @@ async function getDb() {
     try {
       const poolConnection = mysql.createPool(process.env.DATABASE_URL);
       _db = drizzle(poolConnection, { schema: schema_exports, mode: "default" });
+      try {
+        const testPromise = poolConnection.query("SELECT 1");
+        const timeoutPromise = new Promise(
+          (_, reject) => setTimeout(() => reject(new Error("Connection test timeout")), 5e3)
+        );
+        await Promise.race([testPromise, timeoutPromise]);
+        console.log("[Database] Connection pool initialized successfully");
+      } catch (testError) {
+        console.error("[Database] Connection test failed:", testError);
+      }
     } catch (error) {
-      console.warn("[Database] Failed to connect:", error);
+      console.error("[Database] Failed to create connection pool:", error);
       _db = null;
     }
   }
@@ -754,7 +764,6 @@ var init_env = __esm({
       appId: process.env.VITE_APP_ID ?? "",
       cookieSecret: process.env.JWT_SECRET ?? "",
       databaseUrl: process.env.DATABASE_URL ?? "",
-      oAuthServerUrl: process.env.OAUTH_SERVER_URL ?? "",
       ownerOpenId: process.env.OWNER_OPEN_ID ?? "",
       isProduction: process.env.NODE_ENV === "production",
       forgeApiUrl: process.env.BUILT_IN_FORGE_API_URL ?? "",
@@ -3715,12 +3724,8 @@ var BUILT_AT = process.env.EXPO_PUBLIC_BUILT_AT || "unknown";
 // shared/const.ts
 var COOKIE_NAME = "app_session_id";
 var ONE_YEAR_MS = 1e3 * 60 * 60 * 24 * 365;
-var AXIOS_TIMEOUT_MS = 3e4;
 var UNAUTHED_ERR_MSG = "Please login (10001)";
 var NOT_ADMIN_ERR_MSG = "You do not have required permission (10002)";
-
-// server/_core/oauth.ts
-init_db2();
 
 // server/_core/cookies.ts
 var LOCAL_HOSTS = /* @__PURE__ */ new Set(["localhost", "127.0.0.1", "::1"]);
@@ -3763,18 +3768,42 @@ function getEffectiveHostname(req) {
 }
 function getCookieDomain(req, hostname) {
   const forwarded = req.headers["x-forwarded-host"] ?? req.headers.origin;
-  if (forwarded) return void 0;
+  if (forwarded) {
+    return void 0;
+  }
   return getParentDomain(hostname);
 }
-function getSessionCookieOptions(req) {
+function getSessionCookieOptions(req, options) {
   const hostname = getEffectiveHostname(req);
   const domain = getCookieDomain(req, hostname);
+  const isSecure = isSecureRequest(req);
+  if (options?.crossSite) {
+    if (!isSecure) {
+      console.warn(
+        "[Cookies] crossSite=true requires HTTPS. Falling back to sameSite=lax"
+      );
+      return {
+        domain,
+        httpOnly: true,
+        path: "/",
+        sameSite: "lax",
+        secure: false
+      };
+    }
+    return {
+      domain,
+      httpOnly: true,
+      path: "/",
+      sameSite: "none",
+      secure: true
+    };
+  }
   return {
     domain,
     httpOnly: true,
     path: "/",
     sameSite: "lax",
-    secure: isSecureRequest(req)
+    secure: isSecure
   };
 }
 
@@ -3791,94 +3820,11 @@ var ForbiddenError = (msg) => new HttpError(403, msg);
 // server/_core/sdk.ts
 init_db2();
 init_env();
-import axios from "axios";
 import { parse as parseCookieHeader } from "cookie";
 import { SignJWT, jwtVerify as jwtVerify2 } from "jose";
 var isNonEmptyString = (value) => typeof value === "string" && value.length > 0;
-var EXCHANGE_TOKEN_PATH = `/webdev.v1.WebDevAuthPublicService/ExchangeToken`;
-var GET_USER_INFO_PATH = `/webdev.v1.WebDevAuthPublicService/GetUserInfo`;
-var GET_USER_INFO_WITH_JWT_PATH = `/webdev.v1.WebDevAuthPublicService/GetUserInfoWithJwt`;
-var OAuthService = class {
-  constructor(client) {
-    this.client = client;
-    console.log("[OAuth] Initialized with baseURL:", ENV.oAuthServerUrl);
-    if (!ENV.oAuthServerUrl) {
-      console.error(
-        "[OAuth] ERROR: OAUTH_SERVER_URL is not configured! Set OAUTH_SERVER_URL environment variable."
-      );
-    }
-  }
-  decodeState(state) {
-    const redirectUri = atob(state);
-    return redirectUri;
-  }
-  async getTokenByCode(code, state) {
-    const payload = {
-      clientId: ENV.appId,
-      grantType: "authorization_code",
-      code,
-      redirectUri: this.decodeState(state)
-    };
-    const { data } = await this.client.post(EXCHANGE_TOKEN_PATH, payload);
-    return data;
-  }
-  async getUserInfoByToken(token) {
-    const { data } = await this.client.post(GET_USER_INFO_PATH, {
-      accessToken: token.accessToken
-    });
-    return data;
-  }
-};
-var createOAuthHttpClient = () => axios.create({
-  baseURL: ENV.oAuthServerUrl,
-  timeout: AXIOS_TIMEOUT_MS
-});
 var SDKServer = class {
-  client;
-  oauthService;
-  constructor(client = createOAuthHttpClient()) {
-    this.client = client;
-    this.oauthService = new OAuthService(this.client);
-  }
-  deriveLoginMethod(platforms, fallback) {
-    if (fallback && fallback.length > 0) return fallback;
-    if (!Array.isArray(platforms) || platforms.length === 0) return null;
-    const set = new Set(platforms.filter((p) => typeof p === "string"));
-    if (set.has("REGISTERED_PLATFORM_EMAIL")) return "email";
-    if (set.has("REGISTERED_PLATFORM_GOOGLE")) return "google";
-    if (set.has("REGISTERED_PLATFORM_APPLE")) return "apple";
-    if (set.has("REGISTERED_PLATFORM_MICROSOFT") || set.has("REGISTERED_PLATFORM_AZURE"))
-      return "microsoft";
-    if (set.has("REGISTERED_PLATFORM_GITHUB")) return "github";
-    const first = Array.from(set)[0];
-    return first ? first.toLowerCase() : null;
-  }
-  /**
-   * Exchange OAuth authorization code for access token
-   * @example
-   * const tokenResponse = await sdk.exchangeCodeForToken(code, state);
-   */
-  async exchangeCodeForToken(code, state) {
-    return this.oauthService.getTokenByCode(code, state);
-  }
-  /**
-   * Get user information using access token
-   * @example
-   * const userInfo = await sdk.getUserInfo(tokenResponse.accessToken);
-   */
-  async getUserInfo(accessToken) {
-    const data = await this.oauthService.getUserInfoByToken({
-      accessToken
-    });
-    const loginMethod = this.deriveLoginMethod(
-      data?.platforms,
-      data?.platform ?? data.platform ?? null
-    );
-    return {
-      ...data,
-      platform: loginMethod,
-      loginMethod
-    };
+  constructor() {
   }
   parseCookies(cookieHeader) {
     if (!cookieHeader) {
@@ -3888,13 +3834,16 @@ var SDKServer = class {
     return new Map(Object.entries(parsed));
   }
   getSessionSecret() {
-    const secret = ENV.cookieSecret;
+    const secret = process.env.JWT_SECRET ?? ENV.cookieSecret;
+    if (!secret || secret.trim() === "") {
+      throw new Error(
+        "JWT_SECRET environment variable is not set or empty. This is required for session token generation."
+      );
+    }
     return new TextEncoder().encode(secret);
   }
   /**
-   * Create a session token for a Manus user openId
-   * @example
-   * const sessionToken = await sdk.createSessionToken(userInfo.openId);
+   * Create a session token for a user openId
    */
   async createSessionToken(openId, options = {}) {
     return this.signSession(
@@ -3919,7 +3868,6 @@ var SDKServer = class {
   }
   async verifySession(cookieValue) {
     if (!cookieValue) {
-      console.warn("[Auth] Missing session cookie");
       return null;
     }
     try {
@@ -3942,25 +3890,10 @@ var SDKServer = class {
       return null;
     }
   }
-  async getUserInfoWithJwt(jwtToken) {
-    const payload = {
-      jwtToken,
-      projectId: ENV.appId
-    };
-    const { data } = await this.client.post(
-      GET_USER_INFO_WITH_JWT_PATH,
-      payload
-    );
-    const loginMethod = this.deriveLoginMethod(
-      data?.platforms,
-      data?.platform ?? data.platform ?? null
-    );
-    return {
-      ...data,
-      platform: loginMethod,
-      loginMethod
-    };
-  }
+  /**
+   * リクエストからユーザーを認証する。
+   * Bearer トークン or セッション Cookie の JWT を検証し、DB からユーザーを取得する。
+   */
   async authenticateRequest(req) {
     const authHeader = req.headers.authorization || req.headers.Authorization;
     let token;
@@ -3975,24 +3908,9 @@ var SDKServer = class {
     }
     const sessionUserId = session.openId;
     const signedInAt = /* @__PURE__ */ new Date();
-    let user = await getUserByOpenId(sessionUserId);
+    const user = await getUserByOpenId(sessionUserId);
     if (!user) {
-      try {
-        const userInfo = await this.getUserInfoWithJwt(sessionCookie ?? "");
-        await upsertUser({
-          openId: userInfo.openId,
-          name: userInfo.name || null,
-          email: userInfo.email ?? null,
-          loginMethod: userInfo.loginMethod ?? userInfo.platform ?? null,
-          lastSignedIn: signedInAt
-        });
-        user = await getUserByOpenId(userInfo.openId);
-      } catch (error) {
-        console.error("[Auth] Failed to sync user from OAuth:", error);
-        throw ForbiddenError("Failed to sync user info");
-      }
-    }
-    if (!user) {
+      console.error("[Auth] User not found in DB:", sessionUserId);
       throw ForbiddenError("User not found");
     }
     await upsertUser({
@@ -4005,31 +3923,6 @@ var SDKServer = class {
 var sdk = new SDKServer();
 
 // server/_core/oauth.ts
-function getQueryParam(req, key) {
-  const value = req.query[key];
-  return typeof value === "string" ? value : void 0;
-}
-async function syncUser(userInfo) {
-  if (!userInfo.openId) {
-    throw new Error("openId missing from user info");
-  }
-  const lastSignedIn = /* @__PURE__ */ new Date();
-  await upsertUser({
-    openId: userInfo.openId,
-    name: userInfo.name || null,
-    email: userInfo.email ?? null,
-    loginMethod: userInfo.loginMethod ?? userInfo.platform ?? null,
-    lastSignedIn
-  });
-  const saved = await getUserByOpenId(userInfo.openId);
-  return saved ?? {
-    openId: userInfo.openId,
-    name: userInfo.name,
-    email: userInfo.email,
-    loginMethod: userInfo.loginMethod ?? null,
-    lastSignedIn
-  };
-}
 function buildUserResponse(user) {
   const u = user;
   return {
@@ -4045,65 +3938,6 @@ function buildUserResponse(user) {
   };
 }
 function registerOAuthRoutes(app) {
-  app.get("/api/oauth/callback", async (req, res) => {
-    const code = getQueryParam(req, "code");
-    const state = getQueryParam(req, "state");
-    if (!code || !state) {
-      res.status(400).json({ error: "code and state are required" });
-      return;
-    }
-    try {
-      const tokenResponse = await sdk.exchangeCodeForToken(code, state);
-      const userInfo = await sdk.getUserInfo(tokenResponse.accessToken);
-      await syncUser(userInfo);
-      const sessionToken = await sdk.createSessionToken(userInfo.openId, {
-        name: userInfo.name || "",
-        expiresInMs: ONE_YEAR_MS
-      });
-      const cookieOptions = getSessionCookieOptions(req);
-      res.cookie(COOKIE_NAME, sessionToken, { ...cookieOptions, maxAge: ONE_YEAR_MS });
-      const host = req.get("host") || "";
-      const protocol = req.get("x-forwarded-proto") || req.protocol;
-      const forceHttps = protocol === "https" || host.includes("manus.computer") || host.includes("manus.im");
-      let frontendHost;
-      if (host.includes("doin-challenge.com") || host.includes("railway.app")) {
-        frontendHost = host;
-      } else {
-        frontendHost = host.replace(/^3000-/, "8081-");
-      }
-      const frontendUrl = process.env.EXPO_WEB_PREVIEW_URL || process.env.EXPO_PACKAGER_PROXY_URL || (host ? `${forceHttps ? "https" : protocol}://${frontendHost}` : "http://localhost:8081");
-      res.redirect(302, frontendUrl);
-    } catch (error) {
-      console.error("[OAuth] Callback failed", error);
-      res.status(500).json({ error: "OAuth callback failed" });
-    }
-  });
-  app.get("/api/oauth/mobile", async (req, res) => {
-    const code = getQueryParam(req, "code");
-    const state = getQueryParam(req, "state");
-    if (!code || !state) {
-      res.status(400).json({ error: "code and state are required" });
-      return;
-    }
-    try {
-      const tokenResponse = await sdk.exchangeCodeForToken(code, state);
-      const userInfo = await sdk.getUserInfo(tokenResponse.accessToken);
-      const user = await syncUser(userInfo);
-      const sessionToken = await sdk.createSessionToken(userInfo.openId, {
-        name: userInfo.name || "",
-        expiresInMs: ONE_YEAR_MS
-      });
-      const cookieOptions = getSessionCookieOptions(req);
-      res.cookie(COOKIE_NAME, sessionToken, { ...cookieOptions, maxAge: ONE_YEAR_MS });
-      res.json({
-        app_session_id: sessionToken,
-        user: buildUserResponse(user)
-      });
-    } catch (error) {
-      console.error("[OAuth] Mobile exchange failed", error);
-      res.status(500).json({ error: "OAuth mobile exchange failed" });
-    }
-  });
   app.post("/api/auth/logout", (req, res) => {
     const cookieOptions = getSessionCookieOptions(req);
     res.clearCookie(COOKIE_NAME, { ...cookieOptions, maxAge: -1 });
@@ -4127,7 +3961,7 @@ function registerOAuthRoutes(app) {
         return;
       }
       const token = authHeader.slice("Bearer ".length).trim();
-      const cookieOptions = getSessionCookieOptions(req);
+      const cookieOptions = getSessionCookieOptions(req, { crossSite: true });
       res.cookie(COOKIE_NAME, token, { ...cookieOptions, maxAge: ONE_YEAR_MS });
       res.json({ success: true, user: buildUserResponse(user) });
     } catch (error) {
@@ -4589,6 +4423,30 @@ async function getUserProfileByUsername(username) {
 
 // server/twitter-routes.ts
 init_db2();
+function createErrorResponse(error, includeDetails = false) {
+  const isProduction = process.env.NODE_ENV === "production";
+  let errorMessage = "Failed to complete Twitter authentication";
+  let errorDetails = "";
+  if (error instanceof Error) {
+    errorMessage = error.message;
+    errorDetails = includeDetails && !isProduction ? error.stack || "" : "";
+  } else if (typeof error === "string") {
+    errorMessage = error;
+  }
+  return {
+    error: true,
+    message: errorMessage,
+    ...errorDetails && { details: errorDetails.substring(0, 200) }
+  };
+}
+function extractBearerToken(authHeader) {
+  if (!authHeader) return null;
+  const match = authHeader.match(/^Bearer\s+(.+)$/i);
+  if (!match || !match[1]?.trim()) {
+    return null;
+  }
+  return match[1].trim();
+}
 function registerTwitterRoutes(app) {
   app.get("/api/twitter/auth", async (req, res) => {
     try {
@@ -4622,10 +4480,17 @@ function registerTwitterRoutes(app) {
           const expoHost = host2.replace("3000-", "8081-");
           baseUrl2 = `${forceHttps2 ? "https" : protocol2}://${expoHost}`;
         }
+        const errorResponse = createErrorResponse(
+          {
+            message: oauthError === "access_denied" ? "\u8A8D\u8A3C\u304C\u30AD\u30E3\u30F3\u30BB\u30EB\u3055\u308C\u307E\u3057\u305F" : error_description || "Twitter\u8A8D\u8A3C\u4E2D\u306B\u30A8\u30E9\u30FC\u304C\u767A\u751F\u3057\u307E\u3057\u305F",
+            code: oauthError
+          },
+          false
+          // 本番環境では詳細情報を含めない
+        );
         const errorData = encodeURIComponent(JSON.stringify({
-          error: true,
-          code: oauthError,
-          message: oauthError === "access_denied" ? "\u8A8D\u8A3C\u304C\u30AD\u30E3\u30F3\u30BB\u30EB\u3055\u308C\u307E\u3057\u305F" : error_description || "Twitter\u8A8D\u8A3C\u4E2D\u306B\u30A8\u30E9\u30FC\u304C\u767A\u751F\u3057\u307E\u3057\u305F"
+          ...errorResponse,
+          code: oauthError
         }));
         res.redirect(`${baseUrl2}/oauth/twitter-callback?error=${errorData}`);
         return;
@@ -4675,12 +4540,13 @@ function registerTwitterRoutes(app) {
       } catch (error) {
         console.error("[Twitter OAuth 2.0] Failed to save user profile:", error);
       }
+      let sessionToken;
       try {
-        const sessionToken = await sdk.createSessionToken(openId, {
+        sessionToken = await sdk.createSessionToken(openId, {
           name: userProfile.name || "",
           expiresInMs: ONE_YEAR_MS
         });
-        const cookieOptions = getSessionCookieOptions(req);
+        const cookieOptions = getSessionCookieOptions(req, { crossSite: true });
         res.cookie(COOKIE_NAME, sessionToken, { ...cookieOptions, maxAge: ONE_YEAR_MS });
         console.log("[Twitter OAuth 2.0] Session cookie set successfully");
       } catch (error) {
@@ -4697,19 +4563,17 @@ function registerTwitterRoutes(app) {
         const expoHost = host.replace("3000-", "8081-");
         baseUrl = `${forceHttps ? "https" : protocol}://${expoHost}`;
       }
-      const redirectUrl = `${baseUrl}/oauth/twitter-callback?data=${encodedData}`;
+      const redirectParams = new URLSearchParams({
+        data: encodedData
+      });
+      if (sessionToken) {
+        redirectParams.set("sessionToken", sessionToken);
+      }
+      const redirectUrl = `${baseUrl}/oauth/twitter-callback?${redirectParams.toString()}`;
       console.log("[Twitter OAuth 2.0] Redirecting to:", redirectUrl.substring(0, 100) + "...");
       res.redirect(redirectUrl);
     } catch (error) {
       console.error("Twitter callback error:", error);
-      let errorMessage = "Failed to complete Twitter authentication";
-      let errorDetails = "";
-      if (error instanceof Error) {
-        errorMessage = error.message;
-        errorDetails = error.stack || "";
-      } else if (typeof error === "string") {
-        errorMessage = error;
-      }
       const host = req.get("host") || "";
       const protocol = req.get("x-forwarded-proto") || req.protocol;
       const forceHttps = protocol === "https" || host.includes("manus.computer") || host.includes("railway.app");
@@ -4720,23 +4584,19 @@ function registerTwitterRoutes(app) {
         const expoHost = host.replace("3000-", "8081-");
         baseUrl = `${forceHttps ? "https" : protocol}://${expoHost}`;
       }
-      const errorData = encodeURIComponent(JSON.stringify({
-        error: true,
-        message: errorMessage,
-        details: errorDetails.substring(0, 200)
-        // 長すぎる場合は切り詰め
-      }));
+      const errorResponse = createErrorResponse(error, process.env.NODE_ENV !== "production");
+      const errorData = encodeURIComponent(JSON.stringify(errorResponse));
       res.redirect(`${baseUrl}/oauth/twitter-callback?error=${errorData}`);
     }
   });
   app.get("/api/twitter/me", async (req, res) => {
     try {
       const authHeader = req.headers.authorization;
-      if (!authHeader || !authHeader.startsWith("Bearer ")) {
+      const accessToken = extractBearerToken(authHeader);
+      if (!accessToken) {
         res.status(401).json({ error: "Missing or invalid Authorization header" });
         return;
       }
-      const accessToken = authHeader.substring(7);
       const userProfile = await getUserProfile(accessToken);
       res.json({
         twitterId: userProfile.id,
@@ -4755,11 +4615,11 @@ function registerTwitterRoutes(app) {
   app.get("/api/twitter/follow-status", async (req, res) => {
     try {
       const authHeader = req.headers.authorization;
-      if (!authHeader || !authHeader.startsWith("Bearer ")) {
+      const accessToken = extractBearerToken(authHeader);
+      if (!accessToken) {
         res.status(401).json({ error: "Missing or invalid Authorization header" });
         return;
       }
-      const accessToken = authHeader.substring(7);
       const userId = req.query.userId;
       if (!userId) {
         res.status(400).json({ error: "Missing userId parameter" });
@@ -7194,7 +7054,7 @@ async function createContext(opts) {
 init_api_usage_tracker();
 
 // server/ai-error-analyzer.ts
-import axios2 from "axios";
+import axios from "axios";
 var CACHE_TTL = 60 * 60 * 1e3;
 
 // server/error-tracker.ts
@@ -8074,15 +7934,30 @@ function checkRateLimit(ip, path3) {
     resetTime: entry.resetTime
   };
 }
+function getClientIp(req) {
+  const forwardedFor = req.headers["x-forwarded-for"];
+  if (forwardedFor) {
+    const ips = Array.isArray(forwardedFor) ? forwardedFor[0].split(",") : forwardedFor.split(",");
+    const clientIp = ips[0]?.trim();
+    if (clientIp && /^[\d.:]+$/.test(clientIp)) {
+      return clientIp;
+    }
+  }
+  return req.ip || req.connection?.remoteAddress || "unknown";
+}
 function rateLimiterMiddleware(req, res, next) {
-  const ip = req.ip || req.headers["x-forwarded-for"] || req.connection.remoteAddress || "unknown";
+  const ip = getClientIp(req);
   const path3 = req.path || req.url;
   const result = checkRateLimit(ip, path3);
   res.setHeader("X-RateLimit-Limit", result.remaining + (result.allowed ? 1 : 0));
   res.setHeader("X-RateLimit-Remaining", result.remaining);
   res.setHeader("X-RateLimit-Reset", new Date(result.resetTime).toISOString());
   if (!result.allowed) {
-    console.warn(`[RateLimit] Blocked request from ${ip} to ${path3}`);
+    console.warn(`[RateLimit] Blocked request from ${ip} to ${path3}`, {
+      timestamp: (/* @__PURE__ */ new Date()).toISOString(),
+      userAgent: req.headers["user-agent"]?.substring(0, 100)
+      // 長すぎる場合は切り詰め
+    });
     return res.status(429).json({
       error: "Too many requests",
       message: "\u30EA\u30AF\u30A8\u30B9\u30C8\u304C\u591A\u3059\u304E\u307E\u3059\u3002\u3057\u3070\u3089\u304F\u5F85\u3063\u3066\u304B\u3089\u518D\u8A66\u884C\u3057\u3066\u304F\u3060\u3055\u3044\u3002",
@@ -8117,13 +7992,53 @@ async function findAvailablePort(startPort = 3e3) {
   }
   throw new Error(`No available port found starting from ${startPort}`);
 }
+function isAllowedOrigin(origin) {
+  if (!origin) return false;
+  const ALLOWED_ORIGINS = (process.env.ALLOWED_ORIGINS || "").split(",").map((s) => s.trim()).filter(Boolean);
+  if (process.env.NODE_ENV !== "production") {
+    if (origin.includes("localhost") || origin.includes("127.0.0.1")) {
+      return true;
+    }
+  }
+  if (ALLOWED_ORIGINS.length > 0) {
+    return ALLOWED_ORIGINS.some((allowed) => {
+      if (origin === allowed) return true;
+      if (allowed.startsWith(".")) {
+        try {
+          const url = new URL(origin);
+          return url.hostname === allowed.slice(1) || url.hostname.endsWith(allowed);
+        } catch {
+          return origin.endsWith(allowed) || origin === allowed.slice(1);
+        }
+      }
+      try {
+        const originUrl = new URL(origin);
+        const allowedUrl = allowed.startsWith("http") ? new URL(allowed) : null;
+        if (allowedUrl) {
+          return originUrl.origin === allowedUrl.origin;
+        } else {
+          return originUrl.hostname === allowed || originUrl.hostname.endsWith(`.${allowed}`);
+        }
+      } catch {
+        return origin === allowed || origin.endsWith(allowed);
+      }
+    });
+  }
+  try {
+    const url = new URL(origin);
+    const hostname = url.hostname;
+    return hostname === "doin-challenge.com" || hostname.endsWith(".doin-challenge.com");
+  } catch {
+    return origin.includes("doin-challenge.com") && !origin.includes("doin-challenge.com.evil") && !origin.includes("evil-doin-challenge.com");
+  }
+}
 async function startServer() {
   initSentry();
   const app = express();
   const server = createServer(app);
   app.use((req, res, next) => {
     const origin = req.headers.origin;
-    if (origin) {
+    if (origin && isAllowedOrigin(origin)) {
       res.header("Access-Control-Allow-Origin", origin);
     }
     res.header("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS");
@@ -8167,25 +8082,51 @@ async function startServer() {
         const startTime = Date.now();
         const db = await getDb2();
         if (db) {
-          await db.execute(sql5`SELECT 1`);
-          let challengesCount = 0;
           try {
-            const r = await db.execute(sql5`SELECT COUNT(*) AS c FROM challenges WHERE "isPublic" = true`);
-            const rows = r?.rows ?? (Array.isArray(r) ? r : []);
-            challengesCount = rows.length ? Number(rows[0]?.c ?? 0) : 0;
-          } catch (_) {
+            const queryPromise = db.execute(sql5`SELECT 1`);
+            const timeoutPromise = new Promise(
+              (_, reject) => setTimeout(() => reject(new Error("Query timeout after 10 seconds")), 1e4)
+            );
+            await Promise.race([queryPromise, timeoutPromise]);
+            let challengesCount = 0;
+            try {
+              const r = await db.execute(sql5`SELECT COUNT(*) AS c FROM challenges WHERE "isPublic" = true`);
+              const rows = r?.rows ?? (Array.isArray(r) ? r : []);
+              challengesCount = rows.length ? Number(rows[0]?.c ?? 0) : 0;
+            } catch (countErr) {
+              console.warn("[health] Failed to count challenges:", countErr);
+            }
+            dbStatus = {
+              connected: true,
+              latency: Date.now() - startTime,
+              error: "",
+              challengesCount
+            };
+          } catch (queryErr) {
+            const errorMessage = queryErr instanceof Error ? queryErr.message : String(queryErr);
+            const cleanMessage = errorMessage.replace(/\nparam.*$/g, "").replace(/params:.*$/g, "").replace(/Failed query:.*$/g, "\u30C7\u30FC\u30BF\u30D9\u30FC\u30B9\u30AF\u30A8\u30EA\u306E\u5B9F\u884C\u306B\u5931\u6557\u3057\u307E\u3057\u305F").trim();
+            console.error("[health] Database query failed:", {
+              error: cleanMessage,
+              originalError: errorMessage,
+              stack: queryErr instanceof Error ? queryErr.stack : void 0
+            });
+            dbStatus = {
+              connected: false,
+              latency: Date.now() - startTime,
+              error: cleanMessage || "\u30C7\u30FC\u30BF\u30D9\u30FC\u30B9\u30AF\u30A8\u30EA\u306E\u5B9F\u884C\u306B\u5931\u6557\u3057\u307E\u3057\u305F"
+            };
           }
-          dbStatus = {
-            connected: true,
-            latency: Date.now() - startTime,
-            error: "",
-            challengesCount
-          };
         } else {
-          dbStatus.error = "DATABASE_URL\u304C\u8A2D\u5B9A\u3055\u308C\u3066\u3044\u307E\u305B\u3093";
+          const hasDatabaseUrl = !!process.env.DATABASE_URL;
+          dbStatus.error = hasDatabaseUrl ? "\u30C7\u30FC\u30BF\u30D9\u30FC\u30B9\u63A5\u7D9A\u306E\u78BA\u7ACB\u306B\u5931\u6557\u3057\u307E\u3057\u305F" : "DATABASE_URL\u304C\u8A2D\u5B9A\u3055\u308C\u3066\u3044\u307E\u305B\u3093";
         }
       } catch (err) {
-        dbStatus.error = err instanceof Error ? err.message : "\u63A5\u7D9A\u30A8\u30E9\u30FC";
+        const errorMessage = err instanceof Error ? err.message : String(err);
+        console.error("[health] Unexpected database error:", {
+          error: errorMessage,
+          stack: err instanceof Error ? err.stack : void 0
+        });
+        dbStatus.error = errorMessage || "\u63A5\u7D9A\u30A8\u30E9\u30FC";
       }
       const checkCritical = _req.query.critical === "true";
       let criticalApis = {};
@@ -8231,6 +8172,8 @@ async function startServer() {
       const statusCode = dbStatus.connected ? 200 : 500;
       res.status(statusCode).json({
         ...baseInfo,
+        // 後方互換性のため、commitsha（小文字）も含める
+        commitsha: baseInfo.commitSha,
         ok: overallOk,
         db: dbStatus,
         ...checkCritical && { critical: criticalApis },
@@ -8242,6 +8185,8 @@ async function startServer() {
       res.status(500).json({
         ok: false,
         commitSha: "unknown",
+        commitsha: "unknown",
+        // 後方互換性のため
         version: "unknown",
         builtAt: "unknown",
         timestamp: Date.now(),
@@ -8251,13 +8196,21 @@ async function startServer() {
     }
   });
   app.get("/api/debug/env", (_req, res) => {
+    const maskSecret = (value) => {
+      if (!value) return void 0;
+      if (value.length <= 8) return "***";
+      return value.substring(0, 4) + "***" + value.substring(value.length - 4);
+    };
     res.json({
       RAILWAY_GIT_COMMIT_SHA: process.env.RAILWAY_GIT_COMMIT_SHA,
       APP_VERSION: process.env.APP_VERSION,
       GIT_SHA: process.env.GIT_SHA,
       NODE_ENV: process.env.NODE_ENV,
       RAILWAY_ENVIRONMENT: process.env.RAILWAY_ENVIRONMENT,
-      RAILWAY_SERVICE_NAME: process.env.RAILWAY_SERVICE_NAME
+      RAILWAY_SERVICE_NAME: process.env.RAILWAY_SERVICE_NAME,
+      // 機密情報はマスク
+      DATABASE_URL: maskSecret(process.env.DATABASE_URL),
+      JWT_SECRET: maskSecret(process.env.JWT_SECRET)
     });
   });
   app.get("/api/openapi.json", (_req, res) => {
@@ -8409,3 +8362,6 @@ async function startServer() {
   });
 }
 startServer().catch(console.error);
+export {
+  isAllowedOrigin
+};
