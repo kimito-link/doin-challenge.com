@@ -32,19 +32,19 @@ export type User = {
 
 export async function getSessionToken(): Promise<string | null> {
   try {
-    // Web platform uses cookie-based auth, no manual token management needed
     if (Platform.OS === "web") {
-      console.log("[Auth] Web platform uses cookie-based auth, skipping token retrieval");
+      // Web: localStorageからセッショントークンを取得
+      // クロスオリジン（Vercel→Railway）ではCookieが届かないため、
+      // Bearer tokenによる認証が必要
+      if (typeof window !== "undefined") {
+        const token = window.localStorage.getItem(SESSION_TOKEN_KEY);
+        return token;
+      }
       return null;
     }
 
     // Use SecureStore for native
-    console.log("[Auth] Getting session token...");
     const token = await SecureStore.getItemAsync(SESSION_TOKEN_KEY);
-    console.log(
-      "[Auth] Session token retrieved from SecureStore:",
-      token ? `present (${token.substring(0, 20)}...)` : "missing",
-    );
     return token;
   } catch (error) {
     console.error("[Auth] Failed to get session token:", error);
@@ -54,16 +54,19 @@ export async function getSessionToken(): Promise<string | null> {
 
 export async function setSessionToken(token: string): Promise<void> {
   try {
-    // Web platform uses cookie-based auth, no manual token management needed
     if (Platform.OS === "web") {
-      console.log("[Auth] Web platform uses cookie-based auth, skipping token storage");
+      // Web: localStorageにセッショントークンを保存
+      // tRPCクライアントがここからBearerトークンを読み取る
+      if (typeof window !== "undefined") {
+        window.localStorage.setItem(SESSION_TOKEN_KEY, token);
+        console.log("[Auth] Session token stored in localStorage");
+      }
       return;
     }
 
     // Use SecureStore for native
-    console.log("[Auth] Setting session token...", token.substring(0, 20) + "...");
     await SecureStore.setItemAsync(SESSION_TOKEN_KEY, token);
-    console.log("[Auth] Session token stored in SecureStore successfully");
+    console.log("[Auth] Session token stored in SecureStore");
   } catch (error) {
     console.error("[Auth] Failed to set session token:", error);
     throw error;
@@ -72,16 +75,16 @@ export async function setSessionToken(token: string): Promise<void> {
 
 export async function removeSessionToken(): Promise<void> {
   try {
-    // Web platform uses cookie-based auth, logout is handled by server clearing cookie
     if (Platform.OS === "web") {
-      console.log("[Auth] Web platform uses cookie-based auth, skipping token removal");
+      // Web: localStorageからセッショントークンを削除
+      if (typeof window !== "undefined") {
+        window.localStorage.removeItem(SESSION_TOKEN_KEY);
+      }
       return;
     }
 
     // Use SecureStore for native
-    console.log("[Auth] Removing session token...");
     await SecureStore.deleteItemAsync(SESSION_TOKEN_KEY);
-    console.log("[Auth] Session token removed from SecureStore successfully");
   } catch (error) {
     console.error("[Auth] Failed to remove session token:", error);
   }

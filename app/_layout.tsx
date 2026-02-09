@@ -224,7 +224,6 @@ export default function RootLayout() {
                       <OnboardingWrapper>
                         <Stack screenOptions={{ headerShown: false }}>
                           <Stack.Screen name="(tabs)" />
-                          <Stack.Screen name="oauth/callback" />
                         </Stack>
                         <StatusBar style="auto" />
                         <LoginSuccessModalWrapper />

@@ -198,6 +198,8 @@ export default function TwitterOAuthCallback() {
                 if (sessionEstablished) {
                   await Auth.setSessionToken(sessionToken);
                   console.log("[Twitter OAuth] Session established successfully");
+                  // Cookieが確立されるまで少し待つ
+                  await new Promise(resolve => setTimeout(resolve, 300));
                 } else {
                   console.warn("[Twitter OAuth] Failed to establish session");
                 }
@@ -215,8 +217,27 @@ export default function TwitterOAuthCallback() {
 
           // Merge prefecture/gender/role from server (DB) when session is available（getUserInfo は必要時のみ1回）
           let storedInfo: Auth.User | null = null;
-          try {
-            const me = await Api.getMe();
+          
+          // Webプラットフォームの場合、セッション確立後にgetMeを呼び出す
+          if (Platform.OS === "web" && typeof window !== "undefined") {
+            // セッション確立を待つ（最大3回リトライ）
+            let me = null;
+            for (let retry = 0; retry < 3; retry++) {
+              try {
+                await new Promise(resolve => setTimeout(resolve, 500 * (retry + 1)));
+                me = await Api.getMe();
+                if (me) {
+                  console.log("[Twitter OAuth] getMe succeeded on retry", retry + 1);
+                  break;
+                }
+              } catch (getMeError) {
+                console.warn(`[Twitter OAuth] getMe failed on retry ${retry + 1}:`, getMeError);
+                if (retry === 2) {
+                  console.warn("[Twitter OAuth] getMe failed after 3 retries, session may not be available yet");
+                }
+              }
+            }
+            
             if (me && (me.prefecture !== undefined || me.gender !== undefined || me.role !== undefined)) {
               const merged: Auth.User = {
                 ...userInfo,
@@ -227,10 +248,26 @@ export default function TwitterOAuthCallback() {
               await Auth.setUserInfo(merged);
               storedInfo = merged;
             }
-          } catch (getMeError) {
-            console.warn("[Twitter OAuth] getMe failed, session may not be available yet:", getMeError);
-            // Session may not be available yet; useAuth will merge on next fetch
+          } else {
+            // Nativeプラットフォームの場合、通常通りgetMeを呼び出す
+            try {
+              const me = await Api.getMe();
+              if (me && (me.prefecture !== undefined || me.gender !== undefined || me.role !== undefined)) {
+                const merged: Auth.User = {
+                  ...userInfo,
+                  prefecture: me.prefecture ?? userInfo.prefecture ?? null,
+                  gender: me.gender ?? userInfo.gender ?? null,
+                  role: me.role ?? userInfo.role ?? undefined,
+                };
+                await Auth.setUserInfo(merged);
+                storedInfo = merged;
+              }
+            } catch (getMeError) {
+              console.warn("[Twitter OAuth] getMe failed, session may not be available yet:", getMeError);
+              // Session may not be available yet; useAuth will merge on next fetch
+            }
           }
+          
           if (!storedInfo) {
             storedInfo = await Auth.getUserInfo();
           }
@@ -393,7 +430,26 @@ export default function TwitterOAuthCallback() {
               </View>
             </View>
             <Pressable
-              onPress={() => {
+              onPress={async () => {
+                // Webプラットフォームの場合、セッションが確立されているか確認
+                if (Platform.OS === "web" && typeof window !== "undefined") {
+                  try {
+                    // セッションが確立されているか確認
+                    const me = await Api.getMe();
+                    if (!me) {
+                      console.error("[Twitter OAuth] Session not established, cannot update profile");
+                      setErrorMessage("セッションが確立されていません。ページを再読み込みしてください。");
+                      setErrorType("general");
+                      return;
+                    }
+                  } catch (sessionError) {
+                    console.error("[Twitter OAuth] Session check failed:", sessionError);
+                    setErrorMessage("セッションの確認に失敗しました。ページを再読み込みしてください。");
+                    setErrorType("general");
+                    return;
+                  }
+                }
+                
                 // 根本的解決: onSuccess/onErrorでナビゲーションを処理するため、ここではmutationのみ実行
                 updateProfileMutation.mutate({
                   prefecture: onboardingPrefecture || null,
