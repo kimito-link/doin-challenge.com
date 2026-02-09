@@ -1,13 +1,14 @@
 /**
  * APIコスト設定の初期化スクリプト
  * 実行: npx tsx scripts/init-api-cost-settings.ts
- * .env.local または .env の DATABASE_URL (PostgreSQL) を使用します。
+ * .env.local または .env の DATABASE_URL (MySQL/TiDB) を使用します。
  */
 import { config } from "dotenv";
 import path from "path";
 config({ path: path.resolve(process.cwd(), ".env.local") });
 config({ path: path.resolve(process.cwd(), ".env") });
-import { drizzle } from "drizzle-orm/node-postgres";
+import { drizzle } from "drizzle-orm/mysql2";
+import mysql from "mysql2/promise";
 import { apiCostSettings } from "../drizzle/schema";
 import { eq } from "drizzle-orm";
 
@@ -17,7 +18,8 @@ async function initApiCostSettings() {
     process.exit(1);
   }
 
-  const db = drizzle(process.env.DATABASE_URL);
+  const pool = mysql.createPool(process.env.DATABASE_URL);
+  const db = drizzle(pool);
 
   console.log("Initializing API cost settings...");
 

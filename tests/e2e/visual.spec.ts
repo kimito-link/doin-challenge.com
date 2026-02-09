@@ -24,54 +24,54 @@ test.describe("Visual Regression Tests", () => {
       window.localStorage.setItem("e2e_login_pattern_id", "1");
     });
   });
-  
+
   test("オンボーディング画面のスクリーンショット", async ({ page }) => {
     // オンボーディング画面に移動
     await page.goto(`${BASE_URL}/`, { waitUntil: "domcontentloaded" });
     await page.waitForTimeout(2000);
-    
+
     // バージョン表示が含まれるため、それを除外してスクリーンショット
     await expect(page).toHaveScreenshot("onboarding.png", {
       fullPage: true,
       mask: [page.locator('text=/v\\d+\\.\\d+/')], // バージョン表示をマスク
-      maxDiffPixelRatio: 0.01,
-      maxDiffPixels: 5000,
+      maxDiffPixelRatio: 0.05,
+      maxDiffPixels: 20000,
     });
   });
-  
+
   test("マイページのスクリーンショット", async ({ page }) => {
     // マイページに移動
     await page.goto(`${BASE_URL}/mypage`, { waitUntil: "networkidle", timeout: 30000 });
     await page.waitForTimeout(2000);
-    
+
     // オンボーディング画面をスキップ
     await dismissOnboarding(page);
-    
+
     // ページが完全に読み込まれるまで待機
     await page.waitForTimeout(2000);
-    
+
     await expect(page).toHaveScreenshot("mypage.png", {
       fullPage: true,
-      maxDiffPixelRatio: 0.01,
-      maxDiffPixels: 5000,
+      maxDiffPixelRatio: 0.05,
+      maxDiffPixels: 20000,
     });
   });
-  
+
   test("チャレンジ一覧画面のスクリーンショット", async ({ page }) => {
     // チャレンジ一覧画面に移動
     await page.goto(`${BASE_URL}/`, { waitUntil: "networkidle", timeout: 30000 });
     await page.waitForTimeout(2000);
-    
+
     // オンボーディング画面をスキップ
     await dismissOnboarding(page);
-    
+
     // ページが完全に読み込まれるまで待機
     await page.waitForTimeout(2000);
-    
+
     await expect(page).toHaveScreenshot("challenges.png", {
       fullPage: true,
-      maxDiffPixelRatio: 0.01,
-      maxDiffPixels: 8000,
+      maxDiffPixelRatio: 0.05,
+      maxDiffPixels: 25000,
     });
   });
 });

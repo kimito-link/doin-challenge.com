@@ -1,4 +1,9 @@
 import { defineConfig, devices } from "@playwright/test";
+import dotenv from "dotenv";
+import path from "path";
+
+// Load environment variables from .env.local
+dotenv.config({ path: path.resolve(process.cwd(), ".env.local") });
 
 /**
  * Playwright E2E Test Configuration
@@ -29,10 +34,10 @@ export default defineConfig({
   forbidOnly: !!process.env.CI,
   retries: process.env.CI ? 2 : 0,
   workers: process.env.CI ? 1 : localWorkers,
-  reporter: process.env.CI 
-    ? [["github"], ["html", { open: "never" }]] 
+  reporter: process.env.CI
+    ? [["github"], ["html", { open: "never" }]]
     : [["list"], ["html", { open: "never" }]],
-  
+
   use: {
     baseURL,
     trace: "retain-on-failure",
@@ -49,9 +54,9 @@ export default defineConfig({
   outputDir: "test-results",
 
   projects: [
-    { 
-      name: "chromium", 
-      use: { ...devices["Desktop Chrome"] } 
+    {
+      name: "chromium",
+      use: { ...devices["Desktop Chrome"] }
     },
   ],
 
@@ -59,9 +64,9 @@ export default defineConfig({
   webServer: process.env.CI
     ? undefined
     : {
-        command: "pnpm dev:metro",
-        url: "http://localhost:8081",
-        reuseExistingServer: true,
-        timeout: 120000,
-      },
+      command: "pnpm dev:metro",
+      url: "http://localhost:8081",
+      reuseExistingServer: true,
+      timeout: 120000,
+    },
 });

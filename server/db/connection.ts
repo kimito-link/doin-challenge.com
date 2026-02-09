@@ -1,12 +1,21 @@
 import { eq, desc, and, sql, isNull, or, gte, lte, lt, inArray, asc, ne, like, count } from "drizzle-orm";
-import { drizzle } from "drizzle-orm/node-postgres";
-let _db: ReturnType<typeof drizzle> | null = null;
+import { drizzle } from "drizzle-orm/mysql2";
+import mysql from "mysql2/promise";
+import * as schema from "../../drizzle/schema";
+
+import { MySql2Database } from "drizzle-orm/mysql2";
+
+// DB接続プールの型定義
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+type DrizzleDB = MySql2Database<typeof schema>;
+let _db: DrizzleDB | null = null;
 
 // Lazily create the drizzle instance so local tooling can run without a DB.
 export async function getDb() {
   if (!_db && process.env.DATABASE_URL) {
     try {
-      _db = drizzle(process.env.DATABASE_URL);
+      const poolConnection = mysql.createPool(process.env.DATABASE_URL);
+      _db = drizzle(poolConnection, { schema, mode: "default" });
     } catch (error) {
       console.warn("[Database] Failed to connect:", error);
       _db = null;

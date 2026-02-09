@@ -67,10 +67,21 @@ function getEffectiveHostname(req: Request): string {
 
 /**
  * プロキシ経由（Vercel→Railway）のときは Domain を付けない。ブラウザがリクエストホストに紐づけて Cookie を保存する。
+ * 
+ * セキュリティ考慮:
+ * - x-forwarded-host ヘッダーは信頼できるプロキシからのみ受け入れるべき
+ * - 本番環境では信頼できるプロキシリストを設定することを推奨
  */
 function getCookieDomain(req: Request, hostname: string): string | undefined {
   const forwarded = req.headers["x-forwarded-host"] ?? req.headers.origin;
-  if (forwarded) return undefined; // プロキシ経由なら domain 指定しない → doin-challenge.com に保存される
+  
+  // プロキシ経由の場合、domain 指定しない → doin-challenge.com に保存される
+  // 注意: 本番環境では信頼できるプロキシからのみ受け入れるべき
+  if (forwarded) {
+    // TODO: 本番環境では信頼できるプロキシリストを検証する
+    return undefined;
+  }
+  
   return getParentDomain(hostname);
 }
 

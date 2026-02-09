@@ -47,7 +47,7 @@ if (!process.env.DATABASE_URL) {
         process.env.DATABASE_URL = value;
         break;
       }
-    } catch (_) {}
+    } catch (_) { }
   }
 }
 
@@ -66,6 +66,8 @@ const command = args[0] || "push"; // push = generate + migrate
 if (command === "push" || command === "db:push") {
   execSync("npx drizzle-kit generate", { stdio: "inherit", env: process.env });
   execSync("npx drizzle-kit migrate", { stdio: "inherit", env: process.env });
+} else if (command === "force-push") {
+  execSync("npx drizzle-kit push", { stdio: "inherit", env: process.env });
 } else {
   execSync(`npx drizzle-kit ${args.join(" ")}`, { stdio: "inherit", env: process.env });
 }

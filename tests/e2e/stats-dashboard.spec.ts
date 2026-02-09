@@ -13,21 +13,8 @@ const BASE_URL = process.env.EXPO_WEB_PREVIEW_URL || "http://localhost:8081";
 
 test.describe("Gate 2: 統計ダッシュボード", () => {
   test.beforeEach(async ({ page }) => {
-    try {
-      console.log("Starting loginAsUser...");
-      // テスト用ユーザーとしてログイン
-      /*
-      await loginAsUser(page, {
-        openId: "test_user_id",
-        appId: "doin-challenge",
-        name: "Test User",
-      });
-      console.log("loginAsUser completed.");
-      */
-    } catch (e) {
-      console.error("Login failed in beforeEach:", e);
-      throw e;
-    }
+    // 必要に応じてテスト用の認証をここに追加
+    // 現在は認証なしでテストを実行
   });
 
 test("統計ダッシュボードが読み込める", async ({ page }) => {

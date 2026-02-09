@@ -4,15 +4,12 @@
  * 通知設定・履歴・リマインダー関連のテーブル定義
  */
 
-import { pgTable, serial, integer, varchar, text, timestamp, pgEnum, boolean } from "drizzle-orm/pg-core";
+import { mysqlTable, int, varchar, text, timestamp, mysqlEnum, boolean } from "drizzle-orm/mysql-core";
 
-const notificationTypeEnum = pgEnum("notification_type", ["goal_reached", "milestone_25", "milestone_50", "milestone_75", "new_participant"]);
-const reminderTypeEnum = pgEnum("reminderType", ["day_before", "day_of", "hour_before", "custom"]);
-
-export const notificationSettings = pgTable("notification_settings", {
-  id: serial("id").primaryKey(),
-  userId: integer("userId").notNull(),
-  challengeId: integer("challengeId").notNull(),
+export const notificationSettings = mysqlTable("notification_settings", {
+  id: int("id").autoincrement().primaryKey(),
+  userId: int("userId").notNull(),
+  challengeId: int("challengeId").notNull(),
   onGoalReached: boolean("onGoalReached").default(true).notNull(),
   onMilestone25: boolean("onMilestone25").default(true).notNull(),
   onMilestone50: boolean("onMilestone50").default(true).notNull(),
@@ -20,17 +17,17 @@ export const notificationSettings = pgTable("notification_settings", {
   onNewParticipant: boolean("onNewParticipant").default(false).notNull(),
   expoPushToken: text("expoPushToken"),
   createdAt: timestamp("createdAt").defaultNow().notNull(),
-  updatedAt: timestamp("updatedAt").defaultNow().notNull(),
+  updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
 });
 
 export type NotificationSetting = typeof notificationSettings.$inferSelect;
 export type InsertNotificationSetting = typeof notificationSettings.$inferInsert;
 
-export const notifications = pgTable("notifications", {
-  id: serial("id").primaryKey(),
-  userId: integer("userId").notNull(),
-  challengeId: integer("challengeId").notNull(),
-  type: notificationTypeEnum("type").notNull(),
+export const notifications = mysqlTable("notifications", {
+  id: int("id").autoincrement().primaryKey(),
+  userId: int("userId").notNull(),
+  challengeId: int("challengeId").notNull(),
+  type: mysqlEnum("type", ["goal_reached", "milestone_25", "milestone_50", "milestone_75", "new_participant"]).notNull(),
   title: varchar("title", { length: 255 }).notNull(),
   body: text("body").notNull(),
   isRead: boolean("isRead").default(false).notNull(),
@@ -41,11 +38,11 @@ export const notifications = pgTable("notifications", {
 export type Notification = typeof notifications.$inferSelect;
 export type InsertNotification = typeof notifications.$inferInsert;
 
-export const reminders = pgTable("reminders", {
-  id: serial("id").primaryKey(),
-  challengeId: integer("challengeId").notNull(),
-  userId: integer("userId").notNull(),
-  reminderType: reminderTypeEnum("reminderType").default("day_before").notNull(),
+export const reminders = mysqlTable("reminders", {
+  id: int("id").autoincrement().primaryKey(),
+  challengeId: int("challengeId").notNull(),
+  userId: int("userId").notNull(),
+  reminderType: mysqlEnum("reminderType", ["day_before", "day_of", "hour_before", "custom"]).default("day_before").notNull(),
   customTime: timestamp("customTime"),
   isSent: boolean("isSent").default(false).notNull(),
   sentAt: timestamp("sentAt"),

@@ -4,16 +4,16 @@
  * リリースノート（アップデート履歴）のテーブル定義
  */
 
-import { pgTable, serial, varchar, text, timestamp, jsonb } from "drizzle-orm/pg-core";
+import { mysqlTable, int, varchar, text, timestamp, json } from "drizzle-orm/mysql-core";
 
-export const releaseNotes = pgTable("release_notes", {
-  id: serial("id").primaryKey(),
+export const releaseNotes = mysqlTable("release_notes", {
+  id: int("id").autoincrement().primaryKey(),
   version: varchar("version", { length: 32 }).notNull(),
   date: varchar("date", { length: 32 }).notNull(),
   title: text("title").notNull(),
-  changes: jsonb("changes").notNull(),
+  changes: json("changes").notNull(),
   createdAt: timestamp("createdAt").defaultNow().notNull(),
-  updatedAt: timestamp("updatedAt").defaultNow().notNull(),
+  updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
 });
 
 export type ReleaseNote = typeof releaseNotes.$inferSelect;

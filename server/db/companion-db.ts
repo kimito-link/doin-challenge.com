@@ -4,16 +4,17 @@ import { participationCompanions, InsertParticipationCompanion } from "../../dri
 export async function createCompanion(companion: InsertParticipationCompanion) {
   const db = await getDb();
   if (!db) return null;
-  const result = await db.insert(participationCompanions).values(companion).returning({ id: participationCompanions.id });
-  return result[0]?.id ?? null;
+  const [result] = await db.insert(participationCompanions).values(companion);
+  return result.insertId ?? null;
 }
 
 export async function createCompanions(companions: InsertParticipationCompanion[]) {
   const db = await getDb();
   if (!db) return [];
   if (companions.length === 0) return [];
-  const result = await db.insert(participationCompanions).values(companions).returning({ id: participationCompanions.id });
-  return result;
+  const [result] = await db.insert(participationCompanions).values(companions);
+  // Bulk insert returns id of the first inserted row
+  return result.insertId;
 }
 
 export async function getCompanionsForParticipation(participationId: number) {
@@ -44,9 +45,9 @@ export async function deleteCompanionsForParticipation(participationId: number) 
 export async function getCompanionInviteStats(userId: number) {
   const db = await getDb();
   if (!db) return { totalInvited: 0, companions: [] };
-  
+
   const companions = await db.select().from(participationCompanions).where(eq(participationCompanions.invitedByUserId, userId)).orderBy(desc(participationCompanions.createdAt));
-  
+
   return {
     totalInvited: companions.length,
     companions,

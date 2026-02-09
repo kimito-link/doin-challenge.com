@@ -11,10 +11,10 @@ export async function getNotificationSettings(userId: number) {
 export async function upsertNotificationSettings(userId: number, challengeId: number, data: Partial<InsertNotificationSetting>) {
   const db = await getDb();
   if (!db) throw new Error("Database not available");
-  
+
   const existing = await db.select().from(notificationSettings)
     .where(and(eq(notificationSettings.userId, userId), eq(notificationSettings.challengeId, challengeId)));
-  
+
   if (existing.length > 0) {
     await db.update(notificationSettings).set(data)
       .where(and(eq(notificationSettings.userId, userId), eq(notificationSettings.challengeId, challengeId)));
@@ -26,11 +26,11 @@ export async function upsertNotificationSettings(userId: number, challengeId: nu
 export async function getUsersWithNotificationEnabled(challengeId: number, notificationType: "goal" | "milestone" | "participant") {
   const db = await getDb();
   if (!db) return [];
-  
+
   // チャレンジの通知設定を取得
   const settingsList = await db.select().from(notificationSettings)
     .where(eq(notificationSettings.challengeId, challengeId));
-  
+
   return settingsList.filter(s => {
     if (notificationType === "goal") return s.onGoalReached;
     if (notificationType === "milestone") return s.onMilestone25 || s.onMilestone50 || s.onMilestone75;
@@ -42,9 +42,9 @@ export async function getUsersWithNotificationEnabled(challengeId: number, notif
 export async function createNotification(data: InsertNotification) {
   const db = await getDb();
   if (!db) throw new Error("Database not available");
-  const result = await db.insert(notifications).values(data).returning({ id: notifications.id });
-  const notificationId = result[0]?.id ?? null;
-  
+  const [result] = await db.insert(notifications).values(data);
+  const notificationId = result.insertId ?? null;
+
   // WebSocketで通知を配信
   try {
     const { sendNotificationToUser } = await import("../websocket");
@@ -55,7 +55,7 @@ export async function createNotification(data: InsertNotification) {
   } catch (error) {
     console.error("[WebSocket] Failed to send notification:", error);
   }
-  
+
   return notificationId;
 }
 
@@ -66,12 +66,12 @@ export async function getNotificationsByUserId(
 ) {
   const db = await getDb();
   if (!db) return [];
-  
+
   // cursorがある場合は、そのidより小さい通知を取得
-  const conditions = cursor 
+  const conditions = cursor
     ? and(eq(notifications.userId, userId), lt(notifications.id, cursor))
     : eq(notifications.userId, userId);
-  
+
   return db.select().from(notifications)
     .where(conditions)
     .orderBy(desc(notifications.createdAt))

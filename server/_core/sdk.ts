@@ -39,8 +39,15 @@ class OAuthService {
   }
 
   private decodeState(state: string): string {
-    const redirectUri = atob(state);
-    return redirectUri;
+    try {
+      const redirectUri = atob(state);
+      if (!redirectUri || redirectUri.trim() === "") {
+        throw new Error("Invalid state: decoded value is empty");
+      }
+      return redirectUri;
+    } catch (error) {
+      throw new Error(`Failed to decode state parameter: ${error instanceof Error ? error.message : String(error)}`);
+    }
   }
 
   async getTokenByCode(code: string, state: string): Promise<ExchangeTokenResponse> {
@@ -137,6 +144,14 @@ class SDKServer {
 
   private getSessionSecret() {
     const secret = ENV.cookieSecret;
+    
+    if (!secret || secret.trim() === "") {
+      throw new Error(
+        "JWT_SECRET environment variable is not set or empty. " +
+        "This is required for session token generation."
+      );
+    }
+    
     return new TextEncoder().encode(secret);
   }
 

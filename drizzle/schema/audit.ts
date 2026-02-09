@@ -4,23 +4,21 @@
  * 監査ログテーブル定義
  */
 
-import { pgTable, serial, integer, varchar, text, timestamp, pgEnum, jsonb } from "drizzle-orm/pg-core";
+import { mysqlTable, int, varchar, text, timestamp, mysqlEnum, json } from "drizzle-orm/mysql-core";
 
-const auditActionEnum = pgEnum("audit_action", [
-  "CREATE", "EDIT", "DELETE", "RESTORE", "BULK_DELETE", "BULK_RESTORE", "LOGIN", "LOGOUT", "ADMIN_ACTION",
-]);
-
-export const auditLogs = pgTable("audit_logs", {
-  id: serial("id").primaryKey(),
+export const auditLogs = mysqlTable("audit_logs", {
+  id: int("id").autoincrement().primaryKey(),
   requestId: varchar("requestId", { length: 36 }).notNull(),
-  action: auditActionEnum("action").notNull(),
+  action: mysqlEnum("action", [
+    "CREATE", "EDIT", "DELETE", "RESTORE", "BULK_DELETE", "BULK_RESTORE", "LOGIN", "LOGOUT", "ADMIN_ACTION",
+  ]).notNull(),
   entityType: varchar("entityType", { length: 64 }).notNull(),
-  targetId: integer("targetId"),
-  actorId: integer("actorId"),
+  targetId: int("targetId"),
+  actorId: int("actorId"),
   actorName: varchar("actorName", { length: 255 }),
   actorRole: varchar("actorRole", { length: 32 }),
-  beforeData: jsonb("beforeData").$type<Record<string, unknown> | null>(),
-  afterData: jsonb("afterData").$type<Record<string, unknown> | null>(),
+  beforeData: json("beforeData").$type<Record<string, unknown> | null>(),
+  afterData: json("afterData").$type<Record<string, unknown> | null>(),
   reason: text("reason"),
   ipAddress: varchar("ipAddress", { length: 45 }),
   userAgent: text("userAgent"),

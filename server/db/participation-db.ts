@@ -75,9 +75,9 @@ export async function getActiveParticipationById(id: number) {
 export async function createParticipation(data: InsertParticipation) {
   const db = await getDb();
   if (!db) throw new Error("Database not available");
-  const result = await db.insert(participations).values(data).returning({ id: participations.id });
-  const participationId = result[0]?.id ?? null;
-  
+  const [result] = await db.insert(participations).values(data);
+  const participationId = result.insertId;
+
   // challengesのcurrentValueを更新（参加者数 + 同伴者数）
   if (data.challengeId) {
     const contribution = (data.contribution || 1) + (data.companionCount || 0);
@@ -86,7 +86,7 @@ export async function createParticipation(data: InsertParticipation) {
       .where(eq(challenges.id, data.challengeId));
     invalidateEventsCache();
   }
-  
+
   return participationId;
 }
 
@@ -108,15 +108,15 @@ export async function updateParticipation(id: number, data: Partial<InsertPartic
 export async function softDeleteParticipation(id: number, deletedByUserId: number) {
   const db = await getDb();
   if (!db) throw new Error("Database not available");
-  
+
   // 削除前に参加情報を取得
   const participation = await db.select().from(participations).where(eq(participations.id, id));
   const p = participation[0];
-  
+
   if (!p) {
     throw new Error("Participation not found");
   }
-  
+
   // ソフトデリート実行
   await db.update(participations)
     .set({
@@ -124,7 +124,7 @@ export async function softDeleteParticipation(id: number, deletedByUserId: numbe
       deletedBy: deletedByUserId,
     })
     .where(eq(participations.id, id));
-  
+
   // challengesのcurrentValueを減少
   if (p.challengeId) {
     const contribution = (p.contribution || 1) + (p.companionCount || 0);
@@ -133,7 +133,7 @@ export async function softDeleteParticipation(id: number, deletedByUserId: numbe
       .where(eq(challenges.id, p.challengeId));
     invalidateEventsCache();
   }
-  
+
   return { success: true, challengeId: p.challengeId };
 }
 
@@ -143,13 +143,13 @@ export async function softDeleteParticipation(id: number, deletedByUserId: numbe
 export async function deleteParticipation(id: number) {
   const db = await getDb();
   if (!db) throw new Error("Database not available");
-  
+
   // 削除前に参加情報を取得
   const participation = await db.select().from(participations).where(eq(participations.id, id));
   const p = participation[0];
-  
+
   await db.delete(participations).where(eq(participations.id, id));
-  
+
   // challengesのcurrentValueを減少（まだ削除されていない場合のみ）
   if (p && p.challengeId && !p.deletedAt) {
     const contribution = (p.contribution || 1) + (p.companionCount || 0);
@@ -190,19 +190,19 @@ export async function getTotalCompanionCountByEventId(eventId: number) {
 export async function getParticipationsByPrefecture(challengeId: number) {
   const db = await getDb();
   if (!db) return {};
-  
+
   const result = await db.select().from(participations)
     .where(and(
       eq(participations.challengeId, challengeId),
       isNull(participations.deletedAt)
     ));
-  
+
   const prefectureMap: Record<string, number> = {};
   result.forEach(p => {
     const pref = p.prefecture || "未設定";
     prefectureMap[pref] = (prefectureMap[pref] || 0) + (p.contribution || 1);
   });
-  
+
   return prefectureMap;
 }
 
@@ -210,14 +210,14 @@ export async function getParticipationsByPrefecture(challengeId: number) {
 export async function getContributionRanking(challengeId: number, limit = 10) {
   const db = await getDb();
   if (!db) return [];
-  
+
   const result = await db.select().from(participations)
     .where(and(
       eq(participations.challengeId, challengeId),
       isNull(participations.deletedAt)
     ))
     .orderBy(desc(participations.contribution));
-  
+
   return result.slice(0, limit).map((p, index) => ({
     rank: index + 1,
     userId: p.userId,
@@ -234,7 +234,7 @@ export async function getContributionRanking(challengeId: number, limit = 10) {
 export async function getParticipationsByPrefectureFilter(challengeId: number, prefecture: string) {
   const db = await getDb();
   if (!db) return [];
-  
+
   return db.select().from(participations)
     .where(sql`${participations.challengeId} = ${challengeId} AND ${participations.prefecture} = ${prefecture} AND ${participations.deletedAt} IS NULL`)
     .orderBy(desc(participations.createdAt));
@@ -244,27 +244,27 @@ export async function getParticipationsByPrefectureFilter(challengeId: number, p
 export async function getAttendanceTypeCounts(challengeId: number) {
   const db = await getDb();
   if (!db) return { venue: 0, streaming: 0, both: 0, total: 0 };
-  
+
   const result = await db.select().from(participations)
     .where(and(
       eq(participations.challengeId, challengeId),
       isNull(participations.deletedAt)
     ));
-  
+
   const counts = {
     venue: 0,
     streaming: 0,
     both: 0,
     total: result.length,
   };
-  
+
   result.forEach(p => {
     const type = p.attendanceType || "venue";
     if (type === "venue") counts.venue += 1;
     else if (type === "streaming") counts.streaming += 1;
     else if (type === "both") counts.both += 1;
   });
-  
+
   return counts;
 }
 
@@ -272,13 +272,13 @@ export async function getAttendanceTypeCounts(challengeId: number) {
 export async function getPrefectureRanking(challengeId: number) {
   const db = await getDb();
   if (!db) return [];
-  
+
   const result = await db.select().from(participations)
     .where(and(
       eq(participations.challengeId, challengeId),
       isNull(participations.deletedAt)
     ));
-  
+
   const prefectureMap: Record<string, { count: number; contribution: number }> = {};
   result.forEach(p => {
     const pref = p.prefecture || "未設定";
@@ -288,7 +288,7 @@ export async function getPrefectureRanking(challengeId: number) {
     prefectureMap[pref].count += 1;
     prefectureMap[pref].contribution += p.contribution || 1;
   });
-  
+
   return Object.entries(prefectureMap)
     .map(([prefecture, data]) => ({
       prefecture,
@@ -313,10 +313,10 @@ export async function getDeletedParticipations(filters?: {
 }) {
   const db = await getDb();
   if (!db) return [];
-  
+
   let query = db.select().from(participations)
     .where(sql`${participations.deletedAt} IS NOT NULL`);
-  
+
   // フィルタ適用
   const conditions: string[] = [`${participations.deletedAt} IS NOT NULL`];
   if (filters?.challengeId) {
@@ -325,12 +325,12 @@ export async function getDeletedParticipations(filters?: {
   if (filters?.userId) {
     conditions.push(`${participations.userId} = ${filters.userId}`);
   }
-  
+
   const result = await db.select().from(participations)
     .where(sql.raw(conditions.join(' AND ')))
     .orderBy(desc(participations.deletedAt))
     .limit(filters?.limit || 100);
-  
+
   return result;
 }
 
@@ -340,19 +340,19 @@ export async function getDeletedParticipations(filters?: {
 export async function restoreParticipation(id: number) {
   const db = await getDb();
   if (!db) throw new Error("Database not available");
-  
+
   // 復元前に参加情報を取得
   const participation = await db.select().from(participations).where(eq(participations.id, id));
   const p = participation[0];
-  
+
   if (!p) {
     throw new Error("Participation not found");
   }
-  
+
   if (!p.deletedAt) {
     throw new Error("Participation is not deleted");
   }
-  
+
   // 復元実行
   await db.update(participations)
     .set({
@@ -360,7 +360,7 @@ export async function restoreParticipation(id: number) {
       deletedBy: null,
     })
     .where(eq(participations.id, id));
-  
+
   // challengesのcurrentValueを増加
   if (p.challengeId) {
     const contribution = (p.contribution || 1) + (p.companionCount || 0);
@@ -369,7 +369,7 @@ export async function restoreParticipation(id: number) {
       .where(eq(challenges.id, p.challengeId));
     invalidateEventsCache();
   }
-  
+
   return { success: true, challengeId: p.challengeId };
 }
 
@@ -382,11 +382,11 @@ export async function bulkSoftDeleteParticipations(
 ): Promise<{ deletedCount: number; affectedChallengeIds: number[] }> {
   const db = await getDb();
   if (!db) throw new Error("Database not available");
-  
+
   if (!filter.challengeId && !filter.userId) {
     throw new Error("Either challengeId or userId must be specified");
   }
-  
+
   // 削除対象を取得
   const conditions: string[] = [`${participations.deletedAt} IS NULL`];
   if (filter.challengeId) {
@@ -395,14 +395,14 @@ export async function bulkSoftDeleteParticipations(
   if (filter.userId) {
     conditions.push(`${participations.userId} = ${filter.userId}`);
   }
-  
+
   const targets = await db.select().from(participations)
     .where(sql.raw(conditions.join(' AND ')));
-  
+
   if (targets.length === 0) {
     return { deletedCount: 0, affectedChallengeIds: [] };
   }
-  
+
   // 一括ソフトデリート
   const targetIds = targets.map(t => t.id);
   await db.update(participations)
@@ -411,7 +411,7 @@ export async function bulkSoftDeleteParticipations(
       deletedBy: deletedByUserId,
     })
     .where(sql`${participations.id} IN (${sql.raw(targetIds.join(','))})`);
-  
+
   // challengesのcurrentValueを更新
   const challengeContributions: Record<number, number> = {};
   targets.forEach(p => {
@@ -420,15 +420,15 @@ export async function bulkSoftDeleteParticipations(
       challengeContributions[p.challengeId] = (challengeContributions[p.challengeId] || 0) + contribution;
     }
   });
-  
+
   for (const [challengeId, contribution] of Object.entries(challengeContributions)) {
     await db.update(challenges)
       .set({ currentValue: sql`GREATEST(${challenges.currentValue} - ${contribution}, 0)` })
       .where(eq(challenges.id, Number(challengeId)));
   }
-  
+
   invalidateEventsCache();
-  
+
   return {
     deletedCount: targets.length,
     affectedChallengeIds: Object.keys(challengeContributions).map(Number),
@@ -443,11 +443,11 @@ export async function bulkRestoreParticipations(
 ): Promise<{ restoredCount: number; affectedChallengeIds: number[] }> {
   const db = await getDb();
   if (!db) throw new Error("Database not available");
-  
+
   if (!filter.challengeId && !filter.userId) {
     throw new Error("Either challengeId or userId must be specified");
   }
-  
+
   // 復元対象を取得
   const conditions: string[] = [`${participations.deletedAt} IS NOT NULL`];
   if (filter.challengeId) {
@@ -456,14 +456,14 @@ export async function bulkRestoreParticipations(
   if (filter.userId) {
     conditions.push(`${participations.userId} = ${filter.userId}`);
   }
-  
+
   const targets = await db.select().from(participations)
     .where(sql.raw(conditions.join(' AND ')));
-  
+
   if (targets.length === 0) {
     return { restoredCount: 0, affectedChallengeIds: [] };
   }
-  
+
   // 一括復元
   const targetIds = targets.map(t => t.id);
   await db.update(participations)
@@ -472,7 +472,7 @@ export async function bulkRestoreParticipations(
       deletedBy: null,
     })
     .where(sql`${participations.id} IN (${sql.raw(targetIds.join(','))})`);
-  
+
   // challengesのcurrentValueを更新
   const challengeContributions: Record<number, number> = {};
   targets.forEach(p => {
@@ -481,15 +481,15 @@ export async function bulkRestoreParticipations(
       challengeContributions[p.challengeId] = (challengeContributions[p.challengeId] || 0) + contribution;
     }
   });
-  
+
   for (const [challengeId, contribution] of Object.entries(challengeContributions)) {
     await db.update(challenges)
       .set({ currentValue: sql`${challenges.currentValue} + ${contribution}` })
       .where(eq(challenges.id, Number(challengeId)));
   }
-  
+
   invalidateEventsCache();
-  
+
   return {
     restoredCount: targets.length,
     affectedChallengeIds: Object.keys(challengeContributions).map(Number),

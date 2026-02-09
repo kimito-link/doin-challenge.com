@@ -18,6 +18,49 @@ import { COOKIE_NAME, ONE_YEAR_MS } from "../shared/const.js";
 import { getSessionCookieOptions } from "./_core/cookies.js";
 import { sdk } from "./_core/sdk.js";
 
+/**
+ * エラーレスポンスを生成（本番環境では詳細情報を除外）
+ */
+function createErrorResponse(error: unknown, includeDetails: boolean = false): {
+  error: boolean;
+  message: string;
+  details?: string;
+} {
+  const isProduction = process.env.NODE_ENV === "production";
+  
+  let errorMessage = "Failed to complete Twitter authentication";
+  let errorDetails = "";
+  
+  if (error instanceof Error) {
+    errorMessage = error.message;
+    // 本番環境ではスタックトレースを含めない
+    errorDetails = includeDetails && !isProduction ? error.stack || "" : "";
+  } else if (typeof error === "string") {
+    errorMessage = error;
+  }
+  
+  return {
+    error: true,
+    message: errorMessage,
+    ...(errorDetails && { details: errorDetails.substring(0, 200) }),
+  };
+}
+
+/**
+ * Bearerトークンの安全な取得
+ */
+function extractBearerToken(authHeader: string | undefined): string | null {
+  if (!authHeader) return null;
+  
+  // Bearer トークンの形式を検証
+  const match = authHeader.match(/^Bearer\s+(.+)$/i);
+  if (!match || !match[1]?.trim()) {
+    return null;
+  }
+  
+  return match[1].trim();
+}
+
 export function registerTwitterRoutes(app: Express) {
   // Step 1: Initiate Twitter OAuth 2.0
   app.get("/api/twitter/auth", async (req: Request, res: Response) => {
@@ -79,13 +122,19 @@ export function registerTwitterRoutes(app: Express) {
           baseUrl = `${forceHttps ? "https" : protocol}://${expoHost}`;
         }
         
-        // Encode error data for redirect
+        // Encode error data for redirect（本番環境では詳細情報を除外）
+        const errorResponse = createErrorResponse(
+          {
+            message: oauthError === "access_denied" 
+              ? "認証がキャンセルされました" 
+              : error_description || "Twitter認証中にエラーが発生しました",
+            code: oauthError,
+          },
+          false // 本番環境では詳細情報を含めない
+        );
         const errorData = encodeURIComponent(JSON.stringify({
-          error: true,
+          ...errorResponse,
           code: oauthError,
-          message: oauthError === "access_denied" 
-            ? "認証がキャンセルされました" 
-            : error_description || "Twitter認証中にエラーが発生しました",
         }));
         
         // Redirect to Expo app with error
@@ -196,17 +245,6 @@ export function registerTwitterRoutes(app: Express) {
     } catch (error: unknown) {
       console.error("Twitter callback error:", error);
       
-      // エラーメッセージを抽出
-      let errorMessage = "Failed to complete Twitter authentication";
-      let errorDetails = "";
-      
-      if (error instanceof Error) {
-        errorMessage = error.message;
-        errorDetails = error.stack || "";
-      } else if (typeof error === "string") {
-        errorMessage = error;
-      }
-      
       // エラーページにリダイレクト（ユーザーフレンドリーなエラー表示）
       const host = req.get("host") || "";
       const protocol = req.get("x-forwarded-proto") || req.protocol;
@@ -222,12 +260,9 @@ export function registerTwitterRoutes(app: Express) {
         baseUrl = `${forceHttps ? "https" : protocol}://${expoHost}`;
       }
       
-      // エラー情報をエンコードしてリダイレクト
-      const errorData = encodeURIComponent(JSON.stringify({
-        error: true,
-        message: errorMessage,
-        details: errorDetails.substring(0, 200), // 長すぎる場合は切り詰め
-      }));
+      // エラー情報をエンコードしてリダイレクト（本番環境では詳細情報を除外）
+      const errorResponse = createErrorResponse(error, process.env.NODE_ENV !== "production");
+      const errorData = encodeURIComponent(JSON.stringify(errorResponse));
       
       res.redirect(`${baseUrl}/oauth/twitter-callback?error=${errorData}`);
     }
@@ -238,12 +273,13 @@ export function registerTwitterRoutes(app: Express) {
     try {
       // Get access token from Authorization header
       const authHeader = req.headers.authorization;
-      if (!authHeader || !authHeader.startsWith("Bearer ")) {
+      const accessToken = extractBearerToken(authHeader);
+      
+      if (!accessToken) {
         res.status(401).json({ error: "Missing or invalid Authorization header" });
         return;
       }
 
-      const accessToken = authHeader.substring(7);
       const userProfile = await getUserProfile(accessToken);
       
       res.json({
@@ -266,12 +302,12 @@ export function registerTwitterRoutes(app: Express) {
     try {
       // Get access token from Authorization header
       const authHeader = req.headers.authorization;
-      if (!authHeader || !authHeader.startsWith("Bearer ")) {
+      const accessToken = extractBearerToken(authHeader);
+      
+      if (!accessToken) {
         res.status(401).json({ error: "Missing or invalid Authorization header" });
         return;
       }
-
-      const accessToken = authHeader.substring(7);
       const userId = req.query.userId as string;
       
       if (!userId) {

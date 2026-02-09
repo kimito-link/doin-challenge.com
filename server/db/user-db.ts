@@ -56,8 +56,7 @@ export async function upsertUser(user: InsertUser): Promise<void> {
       updateSet.lastSignedIn = new Date();
     }
 
-    await db.insert(users).values(values).onConflictDoUpdate({
-      target: users.openId,
+    await db.insert(users).values(values).onDuplicateKeyUpdate({
       set: updateSet,
     });
   } catch (error) {
@@ -106,14 +105,14 @@ export async function updateUserRole(userId: number, role: "user" | "admin") {
 export async function getUserByTwitterId(twitterId: string) {
   const db = await getDb();
   if (!db) return null;
-  
+
   const openId = `twitter:${twitterId}`;
   const result = await db.select().from(users).where(eq(users.openId, openId)).limit(1);
-  
+
   if (result.length === 0) return null;
-  
+
   const user = result[0];
-  
+
   // twitterUsernameを取得するためにtwitterFollowStatusを確認
   const { twitterFollowStatus } = await import("../../drizzle/schema");
   const followStatus = await db
@@ -121,7 +120,7 @@ export async function getUserByTwitterId(twitterId: string) {
     .from(twitterFollowStatus)
     .where(eq(twitterFollowStatus.userId, user.id))
     .limit(1);
-  
+
   return {
     id: user.id,
     name: user.name,

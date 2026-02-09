@@ -2,7 +2,8 @@
  * バッジの初期データをシードするスクリプト
  * 実行: npx tsx scripts/seed-badges.ts
  */
-import { drizzle } from "drizzle-orm/node-postgres";
+import { drizzle } from "drizzle-orm/mysql2";
+import mysql from "mysql2/promise";
 import { badges } from "../drizzle/schema";
 
 const badgeData = [
@@ -72,7 +73,8 @@ async function seedBadges() {
     process.exit(1);
   }
 
-  const db = drizzle(process.env.DATABASE_URL!);
+  const pool = mysql.createPool(process.env.DATABASE_URL!);
+  const db = drizzle(pool);
 
   console.log("Seeding badges...");
 

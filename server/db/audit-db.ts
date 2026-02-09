@@ -22,10 +22,10 @@ export async function createAuditLog(data: InsertAuditLog) {
     console.warn("[AuditLog] Database not available, skipping audit log");
     return null;
   }
-  
+
   try {
-    const result = await db.insert(auditLogs).values(data).returning({ id: auditLogs.id });
-    return result[0]?.id ?? null;
+    const [result] = await db.insert(auditLogs).values(data);
+    return result.insertId ?? null;
   } catch (error) {
     // 監査ログの記録失敗は本体の処理を止めない
     console.error("[AuditLog] Failed to create audit log:", error);
@@ -85,16 +85,16 @@ export async function getAuditLogs(options?: {
 }) {
   const db = await getDb();
   if (!db) return [];
-  
+
   const limit = options?.limit || 100;
   const offset = options?.offset || 0;
-  
+
   // 基本クエリ
   let query = db.select().from(auditLogs);
-  
+
   // フィルタ条件を構築
   const conditions = [];
-  
+
   if (options?.entityType) {
     conditions.push(eq(auditLogs.entityType, options.entityType));
   }
@@ -110,16 +110,16 @@ export async function getAuditLogs(options?: {
   if (options?.endDate) {
     conditions.push(lte(auditLogs.createdAt, options.endDate));
   }
-  
+
   if (conditions.length > 0) {
     query = query.where(and(...conditions)) as typeof query;
   }
-  
+
   const result = await query
     .orderBy(desc(auditLogs.createdAt))
     .limit(limit)
     .offset(offset);
-  
+
   return result;
 }
 
@@ -129,7 +129,7 @@ export async function getAuditLogs(options?: {
 export async function getAuditLogsByRequestId(requestId: string) {
   const db = await getDb();
   if (!db) return [];
-  
+
   return db.select()
     .from(auditLogs)
     .where(eq(auditLogs.requestId, requestId))
@@ -142,7 +142,7 @@ export async function getAuditLogsByRequestId(requestId: string) {
 export async function getEntityAuditHistory(entityType: string, targetId: number) {
   const db = await getDb();
   if (!db) return [];
-  
+
   return db.select()
     .from(auditLogs)
     .where(and(
@@ -158,7 +158,7 @@ export async function getEntityAuditHistory(entityType: string, targetId: number
 export async function getUserAuditHistory(actorId: number, limit = 100) {
   const db = await getDb();
   if (!db) return [];
-  
+
   return db.select()
     .from(auditLogs)
     .where(eq(auditLogs.actorId, actorId))

@@ -7,8 +7,8 @@ import { ticketTransfers, ticketWaitlist, participations, participationCompanion
 export async function createTicketTransfer(transfer: InsertTicketTransfer) {
   const db = await getDb();
   if (!db) return null;
-  const result = await db.insert(ticketTransfers).values(transfer).returning({ id: ticketTransfers.id });
-  return result[0]?.id ?? null;
+  const [result] = await db.insert(ticketTransfers).values(transfer);
+  return result.insertId ?? null;
 }
 
 // 譲渡投稿を取得（チャレンジ別）
@@ -55,7 +55,7 @@ export async function cancelTicketTransfer(id: number, userId: number) {
 export async function addToTicketWaitlist(waitlist: InsertTicketWaitlist) {
   const db = await getDb();
   if (!db) return null;
-  
+
   // 既に登録済みかチェック
   const existing = await db.select().from(ticketWaitlist)
     .where(and(
@@ -64,13 +64,13 @@ export async function addToTicketWaitlist(waitlist: InsertTicketWaitlist) {
       eq(ticketWaitlist.isActive, true)
     ))
     .limit(1);
-  
+
   if (existing.length > 0) {
     return existing[0].id; // 既に登録済み
   }
-  
-  const result = await db.insert(ticketWaitlist).values(waitlist).returning({ id: ticketWaitlist.id });
-  return result[0]?.id ?? null;
+
+  const [result] = await db.insert(ticketWaitlist).values(waitlist);
+  return result.insertId ?? null;
 }
 
 // 待機リストから削除
@@ -142,7 +142,7 @@ export async function getWaitlistUsersForNotification(challengeId: number) {
 export async function cancelParticipation(participationId: number, userId: number) {
   const db = await getDb();
   if (!db) return { success: false, error: "Database not available" };
-  
+
   // 参加情報を取得
   const participation = await db.select().from(participations)
     .where(and(
@@ -150,23 +150,23 @@ export async function cancelParticipation(participationId: number, userId: numbe
       eq(participations.userId, userId)
     ))
     .limit(1);
-  
+
   if (participation.length === 0) {
     return { success: false, error: "Participation not found" };
   }
-  
+
   const p = participation[0];
-  
+
   // 参加を削除
   await db.delete(participations).where(eq(participations.id, participationId));
-  
+
   // 同伴者も削除
   await db.delete(participationCompanions).where(eq(participationCompanions.participationId, participationId));
-  
+
   // チャレンジの現在値を更新
   await db.update(challenges)
     .set({ currentValue: sql`${challenges.currentValue} - ${p.contribution}` })
     .where(eq(challenges.id, p.challengeId));
-  
+
   return { success: true, challengeId: p.challengeId, contribution: p.contribution };
 }

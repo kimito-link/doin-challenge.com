@@ -101,11 +101,32 @@ export function checkRateLimit(ip: string, path: string): {
 }
 
 /**
+ * IPアドレスを安全に取得（プロキシ経由を考慮）
+ */
+function getClientIp(req: any): string {
+  // 1. 信頼できるプロキシからの x-forwarded-for を優先
+  const forwardedFor = req.headers['x-forwarded-for'];
+  if (forwardedFor) {
+    // x-forwarded-for は "client, proxy1, proxy2" の形式
+    const ips = Array.isArray(forwardedFor) 
+      ? forwardedFor[0].split(',') 
+      : forwardedFor.split(',');
+    // 最初のIP（クライアントのIP）を取得
+    const clientIp = ips[0]?.trim();
+    if (clientIp && /^[\d.:]+$/.test(clientIp)) {
+      return clientIp;
+    }
+  }
+  
+  // 2. 直接接続の場合
+  return req.ip || req.connection?.remoteAddress || 'unknown';
+}
+
+/**
  * Express/Fastifyミドルウェア
  */
 export function rateLimiterMiddleware(req: any, res: any, next: any) {
-  // IPアドレスを取得
-  const ip = req.ip || req.headers['x-forwarded-for'] || req.connection.remoteAddress || 'unknown';
+  const ip = getClientIp(req);
   const path = req.path || req.url;
 
   const result = checkRateLimit(ip, path);
@@ -116,7 +137,12 @@ export function rateLimiterMiddleware(req: any, res: any, next: any) {
   res.setHeader('X-RateLimit-Reset', new Date(result.resetTime).toISOString());
 
   if (!result.allowed) {
-    console.warn(`[RateLimit] Blocked request from ${ip} to ${path}`);
+    // セキュリティログ（機密情報は含めない）
+    console.warn(`[RateLimit] Blocked request from ${ip} to ${path}`, {
+      timestamp: new Date().toISOString(),
+      userAgent: req.headers['user-agent']?.substring(0, 100), // 長すぎる場合は切り詰め
+    });
+    
     return res.status(429).json({
       error: 'Too many requests',
       message: 'リクエストが多すぎます。しばらく待ってから再試行してください。',

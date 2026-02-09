@@ -70,8 +70,8 @@ async function sendNotification(
     // Discord Webhook format
     payload = {
       embeds: [{
-        title: type === "success" 
-          ? "✅ Migration Successful" 
+        title: type === "success"
+          ? "✅ Migration Successful"
           : "❌ Migration Failed",
         description: message,
         color,
@@ -88,8 +88,8 @@ async function sendNotification(
     payload = {
       attachments: [{
         color: type === "success" ? "good" : "danger",
-        title: type === "success" 
-          ? "✅ Migration Successful" 
+        title: type === "success"
+          ? "✅ Migration Successful"
           : "❌ Migration Failed",
         text: message,
         ts: Math.floor(Date.now() / 1000),
@@ -156,7 +156,7 @@ async function runMigration(): Promise<void> {
 
   } catch (error) {
     const errorMessage = error instanceof Error ? error.message : String(error);
-    
+
     console.error("\n" + "=".repeat(60));
     console.error("[migrate] ❌ Migration FAILED!");
     console.error("[migrate] Error:", errorMessage);

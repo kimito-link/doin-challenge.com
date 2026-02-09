@@ -8,84 +8,28 @@ var __export = (target, all) => {
     __defProp(target, name, { get: all[name], enumerable: true });
 };
 
-// server/db/connection.ts
-import { eq, desc, and, sql, isNull, or, gte, lte, lt, inArray, asc, ne, like, count } from "drizzle-orm";
-import { drizzle } from "drizzle-orm/node-postgres";
-async function getDb() {
-  if (!_db && process.env.DATABASE_URL) {
-    try {
-      _db = drizzle(process.env.DATABASE_URL);
-    } catch (error) {
-      console.warn("[Database] Failed to connect:", error);
-      _db = null;
-    }
-  }
-  return _db;
-}
-function generateSlug(title) {
-  const translations = {
-    "\u751F\u8A95\u796D": "birthday",
-    "\u30E9\u30A4\u30D6": "live",
-    "\u30EF\u30F3\u30DE\u30F3": "oneman",
-    "\u52D5\u54E1": "attendance",
-    "\u30C1\u30E3\u30EC\u30F3\u30B8": "challenge",
-    "\u30D5\u30A9\u30ED\u30EF\u30FC": "followers",
-    "\u540C\u6642\u8996\u8074": "viewers",
-    "\u914D\u4FE1": "stream",
-    "\u30B0\u30EB\u30FC\u30D7": "group",
-    "\u30BD\u30ED": "solo",
-    "\u30D5\u30A7\u30B9": "fes",
-    "\u5BFE\u30D0\u30F3": "taiban",
-    "\u30D5\u30A1\u30F3\u30DF\u30FC\u30C6\u30A3\u30F3\u30B0": "fanmeeting",
-    "\u30EA\u30EA\u30FC\u30B9": "release",
-    "\u30A4\u30D9\u30F3\u30C8": "event",
-    "\u4EBA": "",
-    "\u4E07": "0000"
-  };
-  let slug = title.toLowerCase();
-  for (const [jp, en] of Object.entries(translations)) {
-    slug = slug.replace(new RegExp(jp, "g"), en);
-  }
-  const words = slug.match(/[a-z]+|\d+/g) || [];
-  slug = words.join("-");
-  slug = slug.replace(/-+/g, "-");
-  slug = slug.replace(/^-|-$/g, "");
-  if (!slug) {
-    slug = `challenge-${Date.now()}`;
-  }
-  return slug;
-}
-var _db;
-var init_connection = __esm({
-  "server/db/connection.ts"() {
-    "use strict";
-    _db = null;
-  }
-});
-
 // drizzle/schema/users.ts
-import { pgTable, serial, integer, varchar, text, timestamp, pgEnum, boolean } from "drizzle-orm/pg-core";
-var roleEnum, genderEnum, users, twitterFollowStatus, oauthPkceData, twitterUserCache;
+import { mysqlTable, int, varchar, text, timestamp, mysqlEnum, boolean } from "drizzle-orm/mysql-core";
+var users, twitterFollowStatus, oauthPkceData, twitterUserCache;
 var init_users = __esm({
   "drizzle/schema/users.ts"() {
     "use strict";
-    roleEnum = pgEnum("role", ["user", "admin"]);
-    genderEnum = pgEnum("gender", ["male", "female", "unspecified"]);
-    users = pgTable("users", {
-      id: serial("id").primaryKey(),
+    users = mysqlTable("users", {
+      id: int("id").autoincrement().primaryKey(),
       openId: varchar("openId", { length: 64 }).notNull().unique(),
       name: text("name"),
       email: varchar("email", { length: 320 }),
       loginMethod: varchar("loginMethod", { length: 64 }),
-      role: roleEnum("role").default("user").notNull(),
-      gender: genderEnum("gender").default("unspecified").notNull(),
+      role: mysqlEnum("role", ["user", "admin"]).default("user").notNull(),
+      gender: mysqlEnum("gender", ["male", "female", "unspecified"]).default("unspecified").notNull(),
+      prefecture: varchar("prefecture", { length: 32 }),
       createdAt: timestamp("createdAt").defaultNow().notNull(),
-      updatedAt: timestamp("updatedAt").defaultNow().notNull(),
+      updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
       lastSignedIn: timestamp("lastSignedIn").defaultNow().notNull()
     });
-    twitterFollowStatus = pgTable("twitter_follow_status", {
-      id: serial("id").primaryKey(),
-      userId: integer("userId").notNull(),
+    twitterFollowStatus = mysqlTable("twitter_follow_status", {
+      id: int("id").autoincrement().primaryKey(),
+      userId: int("userId").notNull(),
       twitterId: varchar("twitterId", { length: 64 }).notNull(),
       twitterUsername: varchar("twitterUsername", { length: 255 }),
       targetTwitterId: varchar("targetTwitterId", { length: 64 }).notNull(),
@@ -93,187 +37,181 @@ var init_users = __esm({
       isFollowing: boolean("isFollowing").default(false).notNull(),
       lastCheckedAt: timestamp("lastCheckedAt").defaultNow().notNull(),
       createdAt: timestamp("createdAt").defaultNow().notNull(),
-      updatedAt: timestamp("updatedAt").defaultNow().notNull()
+      updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull()
     });
-    oauthPkceData = pgTable("oauth_pkce_data", {
-      id: serial("id").primaryKey(),
+    oauthPkceData = mysqlTable("oauth_pkce_data", {
+      id: int("id").autoincrement().primaryKey(),
       state: varchar("state", { length: 64 }).notNull().unique(),
       codeVerifier: varchar("codeVerifier", { length: 128 }).notNull(),
       callbackUrl: text("callbackUrl").notNull(),
       expiresAt: timestamp("expiresAt").notNull(),
       createdAt: timestamp("createdAt").defaultNow().notNull()
     });
-    twitterUserCache = pgTable("twitter_user_cache", {
-      id: serial("id").primaryKey(),
+    twitterUserCache = mysqlTable("twitter_user_cache", {
+      id: int("id").autoincrement().primaryKey(),
       twitterUsername: varchar("twitterUsername", { length: 255 }).notNull().unique(),
       twitterId: varchar("twitterId", { length: 64 }),
       displayName: varchar("displayName", { length: 255 }),
       profileImage: text("profileImage"),
-      followersCount: integer("followersCount").default(0),
+      followersCount: int("followersCount").default(0),
       description: text("description"),
       cachedAt: timestamp("cachedAt").defaultNow().notNull(),
       expiresAt: timestamp("expiresAt").notNull(),
       createdAt: timestamp("createdAt").defaultNow().notNull(),
-      updatedAt: timestamp("updatedAt").defaultNow().notNull()
+      updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull()
     });
   }
 });
 
 // drizzle/schema/challenges.ts
-import { pgTable as pgTable2, serial as serial2, integer as integer2, varchar as varchar2, text as text2, timestamp as timestamp2, pgEnum as pgEnum2, boolean as boolean2, jsonb } from "drizzle-orm/pg-core";
-var goalTypeEnum, eventTypeEnum, statusEnum, challenges, events, categories, challengeTemplates, challengeStats, challengeMembers;
+import { mysqlTable as mysqlTable2, int as int2, varchar as varchar2, text as text2, timestamp as timestamp2, mysqlEnum as mysqlEnum2, boolean as boolean2, json } from "drizzle-orm/mysql-core";
+var challenges, events, categories, challengeTemplates, challengeStats, challengeMembers;
 var init_challenges = __esm({
   "drizzle/schema/challenges.ts"() {
     "use strict";
-    goalTypeEnum = pgEnum2("goalType", ["attendance", "followers", "viewers", "points", "custom"]);
-    eventTypeEnum = pgEnum2("eventType", ["solo", "group"]);
-    statusEnum = pgEnum2("status", ["upcoming", "active", "ended"]);
-    challenges = pgTable2("challenges", {
-      id: serial2("id").primaryKey(),
-      hostUserId: integer2("hostUserId"),
+    challenges = mysqlTable2("challenges", {
+      id: int2("id").autoincrement().primaryKey(),
+      hostUserId: int2("hostUserId"),
       hostTwitterId: varchar2("hostTwitterId", { length: 64 }),
       hostName: varchar2("hostName", { length: 255 }).notNull(),
       hostUsername: varchar2("hostUsername", { length: 255 }),
       hostProfileImage: text2("hostProfileImage"),
-      hostFollowersCount: integer2("hostFollowersCount").default(0),
+      hostFollowersCount: int2("hostFollowersCount").default(0),
       hostDescription: text2("hostDescription"),
       title: varchar2("title", { length: 255 }).notNull(),
       slug: varchar2("slug", { length: 255 }),
       description: text2("description"),
-      goalType: goalTypeEnum("goalType").default("attendance").notNull(),
-      goalValue: integer2("goalValue").default(100).notNull(),
+      goalType: mysqlEnum2("goalType", ["attendance", "followers", "viewers", "points", "custom"]).default("attendance").notNull(),
+      goalValue: int2("goalValue").default(100).notNull(),
       goalUnit: varchar2("goalUnit", { length: 32 }).default("\u4EBA").notNull(),
-      currentValue: integer2("currentValue").default(0).notNull(),
-      eventType: eventTypeEnum("eventType").default("solo").notNull(),
-      categoryId: integer2("categoryId"),
+      currentValue: int2("currentValue").default(0).notNull(),
+      eventType: mysqlEnum2("eventType", ["solo", "group"]).default("solo").notNull(),
+      categoryId: int2("categoryId"),
       eventDate: timestamp2("eventDate").notNull(),
       venue: varchar2("venue", { length: 255 }),
       prefecture: varchar2("prefecture", { length: 32 }),
-      ticketPresale: integer2("ticketPresale"),
-      ticketDoor: integer2("ticketDoor"),
+      ticketPresale: int2("ticketPresale"),
+      ticketDoor: int2("ticketDoor"),
       ticketSaleStart: timestamp2("ticketSaleStart"),
       ticketUrl: text2("ticketUrl"),
       externalUrl: text2("externalUrl"),
-      status: statusEnum("status").default("active").notNull(),
+      status: mysqlEnum2("status", ["upcoming", "active", "ended"]).default("active").notNull(),
       isPublic: boolean2("isPublic").default(true).notNull(),
       createdAt: timestamp2("createdAt").defaultNow().notNull(),
-      updatedAt: timestamp2("updatedAt").defaultNow().notNull(),
+      updatedAt: timestamp2("updatedAt").defaultNow().onUpdateNow().notNull(),
       aiSummary: text2("aiSummary"),
-      intentTags: jsonb("intentTags").$type(),
-      regionSummary: jsonb("regionSummary").$type(),
-      participantSummary: jsonb("participantSummary").$type(),
+      intentTags: json("intentTags").$type(),
+      regionSummary: json("regionSummary").$type(),
+      participantSummary: json("participantSummary").$type(),
       aiSummaryUpdatedAt: timestamp2("aiSummaryUpdatedAt")
     });
     events = challenges;
-    categories = pgTable2("categories", {
-      id: serial2("id").primaryKey(),
+    categories = mysqlTable2("categories", {
+      id: int2("id").autoincrement().primaryKey(),
       name: varchar2("name", { length: 64 }).notNull(),
       slug: varchar2("slug", { length: 64 }).notNull().unique(),
       icon: varchar2("icon", { length: 32 }).default("\u{1F3A4}").notNull(),
       color: varchar2("color", { length: 16 }).default("#EC4899").notNull(),
       description: text2("description"),
-      sortOrder: integer2("sortOrder").default(0).notNull(),
+      sortOrder: int2("sortOrder").default(0).notNull(),
       isActive: boolean2("isActive").default(true).notNull(),
       createdAt: timestamp2("createdAt").defaultNow().notNull()
     });
-    challengeTemplates = pgTable2("challenge_templates", {
-      id: serial2("id").primaryKey(),
-      userId: integer2("userId").notNull(),
+    challengeTemplates = mysqlTable2("challenge_templates", {
+      id: int2("id").autoincrement().primaryKey(),
+      userId: int2("userId").notNull(),
       name: varchar2("name", { length: 255 }).notNull(),
       description: text2("description"),
-      goalType: goalTypeEnum("goalType").default("attendance").notNull(),
-      goalValue: integer2("goalValue").default(100).notNull(),
+      goalType: mysqlEnum2("goalType", ["attendance", "followers", "viewers", "points", "custom"]).default("attendance").notNull(),
+      goalValue: int2("goalValue").default(100).notNull(),
       goalUnit: varchar2("goalUnit", { length: 32 }).default("\u4EBA").notNull(),
-      eventType: eventTypeEnum("eventType").default("solo").notNull(),
-      ticketPresale: integer2("ticketPresale"),
-      ticketDoor: integer2("ticketDoor"),
+      eventType: mysqlEnum2("eventType", ["solo", "group"]).default("solo").notNull(),
+      ticketPresale: int2("ticketPresale"),
+      ticketDoor: int2("ticketDoor"),
       isPublic: boolean2("isPublic").default(false).notNull(),
-      useCount: integer2("useCount").default(0).notNull(),
+      useCount: int2("useCount").default(0).notNull(),
       createdAt: timestamp2("createdAt").defaultNow().notNull(),
-      updatedAt: timestamp2("updatedAt").defaultNow().notNull()
+      updatedAt: timestamp2("updatedAt").defaultNow().onUpdateNow().notNull()
     });
-    challengeStats = pgTable2("challenge_stats", {
-      id: serial2("id").primaryKey(),
-      challengeId: integer2("challengeId").notNull(),
+    challengeStats = mysqlTable2("challenge_stats", {
+      id: int2("id").autoincrement().primaryKey(),
+      challengeId: int2("challengeId").notNull(),
       recordedAt: timestamp2("recordedAt").defaultNow().notNull(),
       recordDate: varchar2("recordDate", { length: 10 }).notNull(),
-      recordHour: integer2("recordHour").default(0).notNull(),
-      participantCount: integer2("participantCount").default(0).notNull(),
-      totalContribution: integer2("totalContribution").default(0).notNull(),
-      newParticipants: integer2("newParticipants").default(0).notNull(),
+      recordHour: int2("recordHour").default(0).notNull(),
+      participantCount: int2("participantCount").default(0).notNull(),
+      totalContribution: int2("totalContribution").default(0).notNull(),
+      newParticipants: int2("newParticipants").default(0).notNull(),
       prefectureData: text2("prefectureData"),
+      // Keeps JSON string or text content
       createdAt: timestamp2("createdAt").defaultNow().notNull()
     });
-    challengeMembers = pgTable2("challenge_members", {
-      id: serial2("id").primaryKey(),
-      challengeId: integer2("challengeId").notNull(),
+    challengeMembers = mysqlTable2("challenge_members", {
+      id: int2("id").autoincrement().primaryKey(),
+      challengeId: int2("challengeId").notNull(),
       twitterUsername: varchar2("twitterUsername", { length: 255 }).notNull(),
       twitterId: varchar2("twitterId", { length: 64 }),
       displayName: varchar2("displayName", { length: 255 }),
       profileImage: text2("profileImage"),
-      followersCount: integer2("followersCount").default(0),
-      sortOrder: integer2("sortOrder").default(0).notNull(),
+      followersCount: int2("followersCount").default(0),
+      sortOrder: int2("sortOrder").default(0).notNull(),
       createdAt: timestamp2("createdAt").defaultNow().notNull(),
-      updatedAt: timestamp2("updatedAt").defaultNow().notNull()
+      updatedAt: timestamp2("updatedAt").defaultNow().onUpdateNow().notNull()
     });
   }
 });
 
 // drizzle/schema/participations.ts
-import { pgTable as pgTable3, serial as serial3, integer as integer3, varchar as varchar3, text as text3, timestamp as timestamp3, pgEnum as pgEnum3, boolean as boolean3 } from "drizzle-orm/pg-core";
-var genderEnum2, attendanceTypeEnum, participations, participationCompanions;
+import { mysqlTable as mysqlTable3, int as int3, varchar as varchar3, text as text3, timestamp as timestamp3, mysqlEnum as mysqlEnum3, boolean as boolean3 } from "drizzle-orm/mysql-core";
+var participations, participationCompanions;
 var init_participations = __esm({
   "drizzle/schema/participations.ts"() {
     "use strict";
-    genderEnum2 = pgEnum3("gender", ["male", "female", "unspecified"]);
-    attendanceTypeEnum = pgEnum3("attendanceType", ["venue", "streaming", "both"]);
-    participations = pgTable3("participations", {
-      id: serial3("id").primaryKey(),
-      challengeId: integer3("challengeId").notNull(),
-      userId: integer3("userId"),
+    participations = mysqlTable3("participations", {
+      id: int3("id").autoincrement().primaryKey(),
+      challengeId: int3("challengeId").notNull(),
+      userId: int3("userId"),
       twitterId: varchar3("twitterId", { length: 64 }),
       displayName: varchar3("displayName", { length: 255 }).notNull(),
       username: varchar3("username", { length: 255 }),
       profileImage: text3("profileImage"),
-      followersCount: integer3("followersCount").default(0),
+      followersCount: int3("followersCount").default(0),
       message: text3("message"),
-      companionCount: integer3("companionCount").default(0).notNull(),
+      companionCount: int3("companionCount").default(0).notNull(),
       prefecture: varchar3("prefecture", { length: 32 }),
-      gender: genderEnum2("gender").default("unspecified").notNull(),
-      contribution: integer3("contribution").default(1).notNull(),
+      gender: mysqlEnum3("gender", ["male", "female", "unspecified"]).default("unspecified").notNull(),
+      contribution: int3("contribution").default(1).notNull(),
       isAnonymous: boolean3("isAnonymous").default(false).notNull(),
-      attendanceType: attendanceTypeEnum("attendanceType").default("venue").notNull(),
+      attendanceType: mysqlEnum3("attendanceType", ["venue", "streaming", "both"]).default("venue").notNull(),
       createdAt: timestamp3("createdAt").defaultNow().notNull(),
-      updatedAt: timestamp3("updatedAt").defaultNow().notNull(),
+      updatedAt: timestamp3("updatedAt").defaultNow().onUpdateNow().notNull(),
       deletedAt: timestamp3("deletedAt"),
-      deletedBy: integer3("deletedBy")
+      deletedBy: int3("deletedBy")
     });
-    participationCompanions = pgTable3("participation_companions", {
-      id: serial3("id").primaryKey(),
-      participationId: integer3("participationId").notNull(),
-      challengeId: integer3("challengeId").notNull(),
+    participationCompanions = mysqlTable3("participation_companions", {
+      id: int3("id").autoincrement().primaryKey(),
+      participationId: int3("participationId").notNull(),
+      challengeId: int3("challengeId").notNull(),
       displayName: varchar3("displayName", { length: 255 }).notNull(),
       twitterUsername: varchar3("twitterUsername", { length: 255 }),
       twitterId: varchar3("twitterId", { length: 64 }),
       profileImage: text3("profileImage"),
-      invitedByUserId: integer3("invitedByUserId"),
+      invitedByUserId: int3("invitedByUserId"),
       createdAt: timestamp3("createdAt").defaultNow().notNull()
     });
   }
 });
 
 // drizzle/schema/notifications.ts
-import { pgTable as pgTable4, serial as serial4, integer as integer4, varchar as varchar4, text as text4, timestamp as timestamp4, pgEnum as pgEnum4, boolean as boolean4 } from "drizzle-orm/pg-core";
-var notificationTypeEnum, reminderTypeEnum, notificationSettings, notifications, reminders;
+import { mysqlTable as mysqlTable4, int as int4, varchar as varchar4, text as text4, timestamp as timestamp4, mysqlEnum as mysqlEnum4, boolean as boolean4 } from "drizzle-orm/mysql-core";
+var notificationSettings, notifications, reminders;
 var init_notifications = __esm({
   "drizzle/schema/notifications.ts"() {
     "use strict";
-    notificationTypeEnum = pgEnum4("notification_type", ["goal_reached", "milestone_25", "milestone_50", "milestone_75", "new_participant"]);
-    reminderTypeEnum = pgEnum4("reminderType", ["day_before", "day_of", "hour_before", "custom"]);
-    notificationSettings = pgTable4("notification_settings", {
-      id: serial4("id").primaryKey(),
-      userId: integer4("userId").notNull(),
-      challengeId: integer4("challengeId").notNull(),
+    notificationSettings = mysqlTable4("notification_settings", {
+      id: int4("id").autoincrement().primaryKey(),
+      userId: int4("userId").notNull(),
+      challengeId: int4("challengeId").notNull(),
       onGoalReached: boolean4("onGoalReached").default(true).notNull(),
       onMilestone25: boolean4("onMilestone25").default(true).notNull(),
       onMilestone50: boolean4("onMilestone50").default(true).notNull(),
@@ -281,24 +219,24 @@ var init_notifications = __esm({
       onNewParticipant: boolean4("onNewParticipant").default(false).notNull(),
       expoPushToken: text4("expoPushToken"),
       createdAt: timestamp4("createdAt").defaultNow().notNull(),
-      updatedAt: timestamp4("updatedAt").defaultNow().notNull()
+      updatedAt: timestamp4("updatedAt").defaultNow().onUpdateNow().notNull()
     });
-    notifications = pgTable4("notifications", {
-      id: serial4("id").primaryKey(),
-      userId: integer4("userId").notNull(),
-      challengeId: integer4("challengeId").notNull(),
-      type: notificationTypeEnum("type").notNull(),
+    notifications = mysqlTable4("notifications", {
+      id: int4("id").autoincrement().primaryKey(),
+      userId: int4("userId").notNull(),
+      challengeId: int4("challengeId").notNull(),
+      type: mysqlEnum4("type", ["goal_reached", "milestone_25", "milestone_50", "milestone_75", "new_participant"]).notNull(),
       title: varchar4("title", { length: 255 }).notNull(),
       body: text4("body").notNull(),
       isRead: boolean4("isRead").default(false).notNull(),
       sentAt: timestamp4("sentAt").defaultNow().notNull(),
       createdAt: timestamp4("createdAt").defaultNow().notNull()
     });
-    reminders = pgTable4("reminders", {
-      id: serial4("id").primaryKey(),
-      challengeId: integer4("challengeId").notNull(),
-      userId: integer4("userId").notNull(),
-      reminderType: reminderTypeEnum("reminderType").default("day_before").notNull(),
+    reminders = mysqlTable4("reminders", {
+      id: int4("id").autoincrement().primaryKey(),
+      challengeId: int4("challengeId").notNull(),
+      userId: int4("userId").notNull(),
+      reminderType: mysqlEnum4("reminderType", ["day_before", "day_of", "hour_before", "custom"]).default("day_before").notNull(),
       customTime: timestamp4("customTime"),
       isSent: boolean4("isSent").default(false).notNull(),
       sentAt: timestamp4("sentAt"),
@@ -308,55 +246,55 @@ var init_notifications = __esm({
 });
 
 // drizzle/schema/social.ts
-import { pgTable as pgTable5, serial as serial5, integer as integer5, varchar as varchar5, text as text5, timestamp as timestamp5, boolean as boolean5 } from "drizzle-orm/pg-core";
+import { mysqlTable as mysqlTable5, int as int5, varchar as varchar5, text as text5, timestamp as timestamp5, boolean as boolean5 } from "drizzle-orm/mysql-core";
 var cheers, follows, directMessages, searchHistory, favoriteArtists;
 var init_social = __esm({
   "drizzle/schema/social.ts"() {
     "use strict";
-    cheers = pgTable5("cheers", {
-      id: serial5("id").primaryKey(),
-      fromUserId: integer5("fromUserId").notNull(),
+    cheers = mysqlTable5("cheers", {
+      id: int5("id").autoincrement().primaryKey(),
+      fromUserId: int5("fromUserId").notNull(),
       fromUserName: varchar5("fromUserName", { length: 255 }).notNull(),
       fromUserImage: text5("fromUserImage"),
-      toParticipationId: integer5("toParticipationId").notNull(),
-      toUserId: integer5("toUserId"),
+      toParticipationId: int5("toParticipationId").notNull(),
+      toUserId: int5("toUserId"),
       message: text5("message"),
       emoji: varchar5("emoji", { length: 32 }).default("\u{1F44F}").notNull(),
-      challengeId: integer5("challengeId").notNull(),
+      challengeId: int5("challengeId").notNull(),
       createdAt: timestamp5("createdAt").defaultNow().notNull()
     });
-    follows = pgTable5("follows", {
-      id: serial5("id").primaryKey(),
-      followerId: integer5("followerId").notNull(),
+    follows = mysqlTable5("follows", {
+      id: int5("id").autoincrement().primaryKey(),
+      followerId: int5("followerId").notNull(),
       followerName: varchar5("followerName", { length: 255 }),
-      followeeId: integer5("followeeId").notNull(),
+      followeeId: int5("followeeId").notNull(),
       followeeName: varchar5("followeeName", { length: 255 }),
       followeeImage: text5("followeeImage"),
       notifyNewChallenge: boolean5("notifyNewChallenge").default(true).notNull(),
       createdAt: timestamp5("createdAt").defaultNow().notNull()
     });
-    directMessages = pgTable5("direct_messages", {
-      id: serial5("id").primaryKey(),
-      fromUserId: integer5("fromUserId").notNull(),
+    directMessages = mysqlTable5("direct_messages", {
+      id: int5("id").autoincrement().primaryKey(),
+      fromUserId: int5("fromUserId").notNull(),
       fromUserName: varchar5("fromUserName", { length: 255 }).notNull(),
       fromUserImage: text5("fromUserImage"),
-      toUserId: integer5("toUserId").notNull(),
+      toUserId: int5("toUserId").notNull(),
       message: text5("message").notNull(),
-      challengeId: integer5("challengeId").notNull(),
+      challengeId: int5("challengeId").notNull(),
       isRead: boolean5("isRead").default(false).notNull(),
       readAt: timestamp5("readAt"),
       createdAt: timestamp5("createdAt").defaultNow().notNull()
     });
-    searchHistory = pgTable5("search_history", {
-      id: serial5("id").primaryKey(),
-      userId: integer5("userId").notNull(),
+    searchHistory = mysqlTable5("search_history", {
+      id: int5("id").autoincrement().primaryKey(),
+      userId: int5("userId").notNull(),
       query: varchar5("query", { length: 255 }).notNull(),
-      resultCount: integer5("resultCount").default(0).notNull(),
+      resultCount: int5("resultCount").default(0).notNull(),
       createdAt: timestamp5("createdAt").defaultNow().notNull()
     });
-    favoriteArtists = pgTable5("favorite_artists", {
-      id: serial5("id").primaryKey(),
-      userId: integer5("userId").notNull(),
+    favoriteArtists = mysqlTable5("favorite_artists", {
+      id: int5("id").autoincrement().primaryKey(),
+      userId: int5("userId").notNull(),
       userTwitterId: varchar5("userTwitterId", { length: 64 }),
       artistTwitterId: varchar5("artistTwitterId", { length: 64 }).notNull(),
       artistName: varchar5("artistName", { length: 255 }),
@@ -365,112 +303,107 @@ var init_social = __esm({
       notifyNewChallenge: boolean5("notifyNewChallenge").default(true).notNull(),
       expoPushToken: text5("expoPushToken"),
       createdAt: timestamp5("createdAt").defaultNow().notNull(),
-      updatedAt: timestamp5("updatedAt").defaultNow().notNull()
+      updatedAt: timestamp5("updatedAt").defaultNow().onUpdateNow().notNull()
     });
   }
 });
 
 // drizzle/schema/gamification.ts
-import { pgTable as pgTable6, serial as serial6, integer as integer6, varchar as varchar6, text as text6, timestamp as timestamp6, pgEnum as pgEnum5, boolean as boolean6 } from "drizzle-orm/pg-core";
-var badgeTypeEnum, badgeConditionTypeEnum, achievementTypeEnum, achievementConditionTypeEnum, rarityEnum, badges, userBadges, achievements, userAchievements, achievementPages, pickedComments;
+import { mysqlTable as mysqlTable6, int as int6, varchar as varchar6, text as text6, timestamp as timestamp6, mysqlEnum as mysqlEnum5, boolean as boolean6 } from "drizzle-orm/mysql-core";
+var badges, userBadges, achievements, userAchievements, achievementPages, pickedComments;
 var init_gamification = __esm({
   "drizzle/schema/gamification.ts"() {
     "use strict";
-    badgeTypeEnum = pgEnum5("badge_type", ["participation", "achievement", "milestone", "special"]);
-    badgeConditionTypeEnum = pgEnum5("badge_condition_type", [
-      "first_participation",
-      "goal_reached",
-      "milestone_25",
-      "milestone_50",
-      "milestone_75",
-      "contribution_5",
-      "contribution_10",
-      "contribution_20",
-      "host_challenge",
-      "special",
-      "follower_badge"
-    ]);
-    achievementTypeEnum = pgEnum5("achievement_type", ["participation", "hosting", "invitation", "contribution", "streak", "special"]);
-    achievementConditionTypeEnum = pgEnum5("achievement_condition_type", [
-      "first_participation",
-      "participate_5",
-      "participate_10",
-      "participate_25",
-      "participate_50",
-      "first_host",
-      "host_5",
-      "host_10",
-      "invite_1",
-      "invite_5",
-      "invite_10",
-      "invite_25",
-      "contribution_10",
-      "contribution_50",
-      "contribution_100",
-      "streak_3",
-      "streak_7",
-      "streak_30",
-      "goal_reached",
-      "special"
-    ]);
-    rarityEnum = pgEnum5("rarity", ["common", "uncommon", "rare", "epic", "legendary"]);
-    badges = pgTable6("badges", {
-      id: serial6("id").primaryKey(),
+    badges = mysqlTable6("badges", {
+      id: int6("id").autoincrement().primaryKey(),
       name: varchar6("name", { length: 100 }).notNull(),
       description: text6("description"),
       iconUrl: text6("iconUrl"),
-      type: badgeTypeEnum("type").default("participation").notNull(),
-      conditionType: badgeConditionTypeEnum("conditionType").notNull(),
+      type: mysqlEnum5("type", ["participation", "achievement", "milestone", "special"]).default("participation").notNull(),
+      conditionType: mysqlEnum5("conditionType", [
+        "first_participation",
+        "goal_reached",
+        "milestone_25",
+        "milestone_50",
+        "milestone_75",
+        "contribution_5",
+        "contribution_10",
+        "contribution_20",
+        "host_challenge",
+        "special",
+        "follower_badge"
+      ]).notNull(),
       createdAt: timestamp6("createdAt").defaultNow().notNull()
     });
-    userBadges = pgTable6("user_badges", {
-      id: serial6("id").primaryKey(),
-      userId: integer6("userId").notNull(),
-      badgeId: integer6("badgeId").notNull(),
-      challengeId: integer6("challengeId"),
+    userBadges = mysqlTable6("user_badges", {
+      id: int6("id").autoincrement().primaryKey(),
+      userId: int6("userId").notNull(),
+      badgeId: int6("badgeId").notNull(),
+      challengeId: int6("challengeId"),
       earnedAt: timestamp6("earnedAt").defaultNow().notNull()
     });
-    achievements = pgTable6("achievements", {
-      id: serial6("id").primaryKey(),
+    achievements = mysqlTable6("achievements", {
+      id: int6("id").autoincrement().primaryKey(),
       name: varchar6("name", { length: 100 }).notNull(),
       description: text6("description"),
       iconUrl: text6("iconUrl"),
       icon: varchar6("icon", { length: 32 }).default("\u{1F3C6}").notNull(),
-      type: achievementTypeEnum("type").default("participation").notNull(),
-      conditionType: achievementConditionTypeEnum("conditionType").notNull(),
-      conditionValue: integer6("conditionValue").default(1).notNull(),
-      points: integer6("points").default(10).notNull(),
-      rarity: rarityEnum("rarity").default("common").notNull(),
+      type: mysqlEnum5("type", ["participation", "hosting", "invitation", "contribution", "streak", "special"]).default("participation").notNull(),
+      conditionType: mysqlEnum5("conditionType", [
+        "first_participation",
+        "participate_5",
+        "participate_10",
+        "participate_25",
+        "participate_50",
+        "first_host",
+        "host_5",
+        "host_10",
+        "invite_1",
+        "invite_5",
+        "invite_10",
+        "invite_25",
+        "contribution_10",
+        "contribution_50",
+        "contribution_100",
+        "streak_3",
+        "streak_7",
+        "streak_30",
+        "goal_reached",
+        "special"
+      ]).notNull(),
+      conditionValue: int6("conditionValue").default(1).notNull(),
+      points: int6("points").default(10).notNull(),
+      rarity: mysqlEnum5("rarity", ["common", "uncommon", "rare", "epic", "legendary"]).default("common").notNull(),
       isActive: boolean6("isActive").default(true).notNull(),
       createdAt: timestamp6("createdAt").defaultNow().notNull()
     });
-    userAchievements = pgTable6("user_achievements", {
-      id: serial6("id").primaryKey(),
-      userId: integer6("userId").notNull(),
-      achievementId: integer6("achievementId").notNull(),
-      progress: integer6("progress").default(0).notNull(),
+    userAchievements = mysqlTable6("user_achievements", {
+      id: int6("id").autoincrement().primaryKey(),
+      userId: int6("userId").notNull(),
+      achievementId: int6("achievementId").notNull(),
+      progress: int6("progress").default(0).notNull(),
       isCompleted: boolean6("isCompleted").default(false).notNull(),
       completedAt: timestamp6("completedAt"),
       createdAt: timestamp6("createdAt").defaultNow().notNull(),
-      updatedAt: timestamp6("updatedAt").defaultNow().notNull()
+      updatedAt: timestamp6("updatedAt").defaultNow().onUpdateNow().notNull()
     });
-    achievementPages = pgTable6("achievement_pages", {
-      id: serial6("id").primaryKey(),
-      challengeId: integer6("challengeId").notNull(),
+    achievementPages = mysqlTable6("achievement_pages", {
+      id: int6("id").autoincrement().primaryKey(),
+      challengeId: int6("challengeId").notNull(),
       achievedAt: timestamp6("achievedAt").notNull(),
-      finalValue: integer6("finalValue").notNull(),
-      goalValue: integer6("goalValue").notNull(),
-      totalParticipants: integer6("totalParticipants").notNull(),
+      finalValue: int6("finalValue").notNull(),
+      goalValue: int6("goalValue").notNull(),
+      totalParticipants: int6("totalParticipants").notNull(),
       title: varchar6("title", { length: 255 }).notNull(),
       message: text6("message"),
       isPublic: boolean6("isPublic").default(true).notNull(),
       createdAt: timestamp6("createdAt").defaultNow().notNull()
     });
-    pickedComments = pgTable6("picked_comments", {
-      id: serial6("id").primaryKey(),
-      participationId: integer6("participationId").notNull(),
-      challengeId: integer6("challengeId").notNull(),
-      pickedBy: integer6("pickedBy").notNull(),
+    pickedComments = mysqlTable6("picked_comments", {
+      id: int6("id").autoincrement().primaryKey(),
+      participationId: int6("participationId").notNull(),
+      challengeId: int6("challengeId").notNull(),
+      pickedBy: int6("pickedBy").notNull(),
       reason: text6("reason"),
       isUsedInVideo: boolean6("isUsedInVideo").default(false).notNull(),
       pickedAt: timestamp6("pickedAt").defaultNow().notNull()
@@ -479,68 +412,64 @@ var init_gamification = __esm({
 });
 
 // drizzle/schema/invitations.ts
-import { pgTable as pgTable7, serial as serial7, integer as integer7, varchar as varchar7, text as text7, timestamp as timestamp7, pgEnum as pgEnum6, boolean as boolean7 } from "drizzle-orm/pg-core";
-var collaboratorRoleEnum, collaboratorStatusEnum, collaboratorInviteRoleEnum, collaboratorInviteStatusEnum, invitations, invitationUses, collaborators, collaboratorInvitations;
+import { mysqlTable as mysqlTable7, int as int7, varchar as varchar7, text as text7, timestamp as timestamp7, mysqlEnum as mysqlEnum6, boolean as boolean7 } from "drizzle-orm/mysql-core";
+var invitations, invitationUses, collaborators, collaboratorInvitations;
 var init_invitations = __esm({
   "drizzle/schema/invitations.ts"() {
     "use strict";
-    collaboratorRoleEnum = pgEnum6("collaborator_role", ["owner", "co-host", "moderator"]);
-    collaboratorStatusEnum = pgEnum6("collaborator_status", ["pending", "accepted", "declined"]);
-    collaboratorInviteRoleEnum = pgEnum6("collaborator_invite_role", ["co-host", "moderator"]);
-    collaboratorInviteStatusEnum = pgEnum6("collaborator_invite_status", ["pending", "accepted", "declined", "expired"]);
-    invitations = pgTable7("invitations", {
-      id: serial7("id").primaryKey(),
-      challengeId: integer7("challengeId").notNull(),
-      inviterId: integer7("inviterId").notNull(),
+    invitations = mysqlTable7("invitations", {
+      id: int7("id").autoincrement().primaryKey(),
+      challengeId: int7("challengeId").notNull(),
+      inviterId: int7("inviterId").notNull(),
       inviterName: varchar7("inviterName", { length: 255 }),
       code: varchar7("code", { length: 32 }).notNull().unique(),
       customMessage: text7("customMessage"),
       customTitle: varchar7("customTitle", { length: 255 }),
-      maxUses: integer7("maxUses").default(0),
-      useCount: integer7("useCount").default(0).notNull(),
+      maxUses: int7("maxUses").default(0),
+      useCount: int7("useCount").default(0).notNull(),
       expiresAt: timestamp7("expiresAt"),
       isActive: boolean7("isActive").default(true).notNull(),
       createdAt: timestamp7("createdAt").defaultNow().notNull()
     });
-    invitationUses = pgTable7("invitation_uses", {
-      id: serial7("id").primaryKey(),
-      invitationId: integer7("invitationId").notNull(),
-      userId: integer7("userId"),
+    invitationUses = mysqlTable7("invitation_uses", {
+      id: int7("id").autoincrement().primaryKey(),
+      invitationId: int7("invitationId").notNull(),
+      userId: int7("userId"),
       displayName: varchar7("displayName", { length: 255 }),
       twitterId: varchar7("twitterId", { length: 64 }),
       twitterUsername: varchar7("twitterUsername", { length: 255 }),
-      participationId: integer7("participationId"),
+      participationId: int7("participationId"),
       isConfirmed: boolean7("isConfirmed").default(false).notNull(),
       confirmedAt: timestamp7("confirmedAt"),
       createdAt: timestamp7("createdAt").defaultNow().notNull()
     });
-    collaborators = pgTable7("collaborators", {
-      id: serial7("id").primaryKey(),
-      challengeId: integer7("challengeId").notNull(),
-      userId: integer7("userId").notNull(),
+    collaborators = mysqlTable7("collaborators", {
+      id: int7("id").autoincrement().primaryKey(),
+      challengeId: int7("challengeId").notNull(),
+      userId: int7("userId").notNull(),
       userName: varchar7("userName", { length: 255 }).notNull(),
       userImage: text7("userImage"),
-      role: collaboratorRoleEnum("role").default("co-host").notNull(),
+      role: mysqlEnum6("role", ["owner", "co-host", "moderator"]).default("co-host").notNull(),
       canEdit: boolean7("canEdit").default(true).notNull(),
       canManageParticipants: boolean7("canManageParticipants").default(true).notNull(),
       canInvite: boolean7("canInvite").default(true).notNull(),
-      status: collaboratorStatusEnum("status").default("pending").notNull(),
+      status: mysqlEnum6("status", ["pending", "accepted", "declined"]).default("pending").notNull(),
       invitedAt: timestamp7("invitedAt").defaultNow().notNull(),
       respondedAt: timestamp7("respondedAt"),
       createdAt: timestamp7("createdAt").defaultNow().notNull(),
-      updatedAt: timestamp7("updatedAt").defaultNow().notNull()
+      updatedAt: timestamp7("updatedAt").defaultNow().onUpdateNow().notNull()
     });
-    collaboratorInvitations = pgTable7("collaborator_invitations", {
-      id: serial7("id").primaryKey(),
-      challengeId: integer7("challengeId").notNull(),
-      inviterId: integer7("inviterId").notNull(),
+    collaboratorInvitations = mysqlTable7("collaborator_invitations", {
+      id: int7("id").autoincrement().primaryKey(),
+      challengeId: int7("challengeId").notNull(),
+      inviterId: int7("inviterId").notNull(),
       inviterName: varchar7("inviterName", { length: 255 }),
-      inviteeId: integer7("inviteeId"),
+      inviteeId: int7("inviteeId"),
       inviteeEmail: varchar7("inviteeEmail", { length: 320 }),
       inviteeTwitterId: varchar7("inviteeTwitterId", { length: 64 }),
       code: varchar7("code", { length: 32 }).notNull().unique(),
-      role: collaboratorInviteRoleEnum("role").default("co-host").notNull(),
-      status: collaboratorInviteStatusEnum("status").default("pending").notNull(),
+      role: mysqlEnum6("role", ["co-host", "moderator"]).default("co-host").notNull(),
+      status: mysqlEnum6("status", ["pending", "accepted", "declined", "expired"]).default("pending").notNull(),
       expiresAt: timestamp7("expiresAt"),
       createdAt: timestamp7("createdAt").defaultNow().notNull()
     });
@@ -548,71 +477,68 @@ var init_invitations = __esm({
 });
 
 // drizzle/schema/tickets.ts
-import { pgTable as pgTable8, serial as serial8, integer as integer8, varchar as varchar8, text as text8, timestamp as timestamp8, pgEnum as pgEnum7, boolean as boolean8 } from "drizzle-orm/pg-core";
-var priceTypeEnum, ticketStatusEnum, ticketTransfers, ticketWaitlist;
+import { mysqlTable as mysqlTable8, int as int8, varchar as varchar8, text as text8, timestamp as timestamp8, mysqlEnum as mysqlEnum7, boolean as boolean8 } from "drizzle-orm/mysql-core";
+var ticketTransfers, ticketWaitlist;
 var init_tickets = __esm({
   "drizzle/schema/tickets.ts"() {
     "use strict";
-    priceTypeEnum = pgEnum7("priceType", ["face_value", "negotiable", "free"]);
-    ticketStatusEnum = pgEnum7("ticket_status", ["available", "reserved", "completed", "cancelled"]);
-    ticketTransfers = pgTable8("ticket_transfers", {
-      id: serial8("id").primaryKey(),
-      challengeId: integer8("challengeId").notNull(),
-      userId: integer8("userId").notNull(),
+    ticketTransfers = mysqlTable8("ticket_transfers", {
+      id: int8("id").autoincrement().primaryKey(),
+      challengeId: int8("challengeId").notNull(),
+      userId: int8("userId").notNull(),
       userName: varchar8("userName", { length: 255 }).notNull(),
       userUsername: varchar8("userUsername", { length: 255 }),
       userImage: text8("userImage"),
-      ticketCount: integer8("ticketCount").default(1).notNull(),
-      priceType: priceTypeEnum("priceType").default("face_value").notNull(),
+      ticketCount: int8("ticketCount").default(1).notNull(),
+      priceType: mysqlEnum7("priceType", ["face_value", "negotiable", "free"]).default("face_value").notNull(),
       comment: text8("comment"),
-      status: ticketStatusEnum("status").default("available").notNull(),
+      status: mysqlEnum7("status", ["available", "reserved", "completed", "cancelled"]).default("available").notNull(),
       createdAt: timestamp8("createdAt").defaultNow().notNull(),
-      updatedAt: timestamp8("updatedAt").defaultNow().notNull()
+      updatedAt: timestamp8("updatedAt").defaultNow().onUpdateNow().notNull()
     });
-    ticketWaitlist = pgTable8("ticket_waitlist", {
-      id: serial8("id").primaryKey(),
-      challengeId: integer8("challengeId").notNull(),
-      userId: integer8("userId").notNull(),
+    ticketWaitlist = mysqlTable8("ticket_waitlist", {
+      id: int8("id").autoincrement().primaryKey(),
+      challengeId: int8("challengeId").notNull(),
+      userId: int8("userId").notNull(),
       userName: varchar8("userName", { length: 255 }).notNull(),
       userUsername: varchar8("userUsername", { length: 255 }),
       userImage: text8("userImage"),
-      desiredCount: integer8("desiredCount").default(1).notNull(),
+      desiredCount: int8("desiredCount").default(1).notNull(),
       notifyOnNew: boolean8("notifyOnNew").default(true).notNull(),
       isActive: boolean8("isActive").default(true).notNull(),
       createdAt: timestamp8("createdAt").defaultNow().notNull(),
-      updatedAt: timestamp8("updatedAt").defaultNow().notNull()
+      updatedAt: timestamp8("updatedAt").defaultNow().onUpdateNow().notNull()
     });
   }
 });
 
 // drizzle/schema/audit.ts
-import { pgTable as pgTable9, serial as serial9, integer as integer9, varchar as varchar9, text as text9, timestamp as timestamp9, pgEnum as pgEnum8, jsonb as jsonb2 } from "drizzle-orm/pg-core";
-var auditActionEnum, auditLogs, AUDIT_ACTIONS, ENTITY_TYPES;
+import { mysqlTable as mysqlTable9, int as int9, varchar as varchar9, text as text9, timestamp as timestamp9, mysqlEnum as mysqlEnum8, json as json2 } from "drizzle-orm/mysql-core";
+var auditLogs, AUDIT_ACTIONS, ENTITY_TYPES;
 var init_audit = __esm({
   "drizzle/schema/audit.ts"() {
     "use strict";
-    auditActionEnum = pgEnum8("audit_action", [
-      "CREATE",
-      "EDIT",
-      "DELETE",
-      "RESTORE",
-      "BULK_DELETE",
-      "BULK_RESTORE",
-      "LOGIN",
-      "LOGOUT",
-      "ADMIN_ACTION"
-    ]);
-    auditLogs = pgTable9("audit_logs", {
-      id: serial9("id").primaryKey(),
+    auditLogs = mysqlTable9("audit_logs", {
+      id: int9("id").autoincrement().primaryKey(),
       requestId: varchar9("requestId", { length: 36 }).notNull(),
-      action: auditActionEnum("action").notNull(),
+      action: mysqlEnum8("action", [
+        "CREATE",
+        "EDIT",
+        "DELETE",
+        "RESTORE",
+        "BULK_DELETE",
+        "BULK_RESTORE",
+        "LOGIN",
+        "LOGOUT",
+        "ADMIN_ACTION"
+      ]).notNull(),
       entityType: varchar9("entityType", { length: 64 }).notNull(),
-      targetId: integer9("targetId"),
-      actorId: integer9("actorId"),
+      targetId: int9("targetId"),
+      actorId: int9("actorId"),
       actorName: varchar9("actorName", { length: 255 }),
       actorRole: varchar9("actorRole", { length: 32 }),
-      beforeData: jsonb2("beforeData").$type(),
-      afterData: jsonb2("afterData").$type(),
+      beforeData: json2("beforeData").$type(),
+      afterData: json2("afterData").$type(),
       reason: text9("reason"),
       ipAddress: varchar9("ipAddress", { length: 45 }),
       userAgent: text9("userAgent"),
@@ -641,38 +567,38 @@ var init_audit = __esm({
 });
 
 // drizzle/schema/release-notes.ts
-import { pgTable as pgTable10, serial as serial10, varchar as varchar10, text as text10, timestamp as timestamp10, jsonb as jsonb3 } from "drizzle-orm/pg-core";
+import { mysqlTable as mysqlTable10, int as int10, varchar as varchar10, text as text10, timestamp as timestamp10, json as json3 } from "drizzle-orm/mysql-core";
 var releaseNotes;
 var init_release_notes = __esm({
   "drizzle/schema/release-notes.ts"() {
     "use strict";
-    releaseNotes = pgTable10("release_notes", {
-      id: serial10("id").primaryKey(),
+    releaseNotes = mysqlTable10("release_notes", {
+      id: int10("id").autoincrement().primaryKey(),
       version: varchar10("version", { length: 32 }).notNull(),
       date: varchar10("date", { length: 32 }).notNull(),
       title: text10("title").notNull(),
-      changes: jsonb3("changes").notNull(),
+      changes: json3("changes").notNull(),
       createdAt: timestamp10("createdAt").defaultNow().notNull(),
-      updatedAt: timestamp10("updatedAt").defaultNow().notNull()
+      updatedAt: timestamp10("updatedAt").defaultNow().onUpdateNow().notNull()
     });
   }
 });
 
 // drizzle/schema/api-usage.ts
-import { pgTable as pgTable11, serial as serial11, integer as integer10, varchar as varchar11, timestamp as timestamp11, numeric, jsonb as jsonb4, index } from "drizzle-orm/pg-core";
+import { mysqlTable as mysqlTable11, int as int11, varchar as varchar11, timestamp as timestamp11, decimal, json as json4, index } from "drizzle-orm/mysql-core";
 var apiUsage, apiCostSettings;
 var init_api_usage = __esm({
   "drizzle/schema/api-usage.ts"() {
     "use strict";
-    apiUsage = pgTable11(
+    apiUsage = mysqlTable11(
       "api_usage",
       {
-        id: serial11("id").primaryKey(),
+        id: int11("id").autoincrement().primaryKey(),
         endpoint: varchar11("endpoint", { length: 255 }).notNull(),
         method: varchar11("method", { length: 10 }).default("GET").notNull(),
-        success: integer10("success").default(1).notNull(),
-        cost: numeric("cost", { precision: 10, scale: 4 }).default("0").notNull(),
-        rateLimitInfo: jsonb4("rateLimitInfo"),
+        success: int11("success").default(1).notNull(),
+        cost: decimal("cost", { precision: 10, scale: 4 }).default("0").notNull(),
+        rateLimitInfo: json4("rateLimitInfo"),
         month: varchar11("month", { length: 7 }).notNull(),
         createdAt: timestamp11("createdAt").defaultNow().notNull()
       },
@@ -682,14 +608,14 @@ var init_api_usage = __esm({
         createdAtIdx: index("created_at_idx").on(table.createdAt)
       })
     );
-    apiCostSettings = pgTable11("api_cost_settings", {
-      id: serial11("id").primaryKey(),
-      monthlyLimit: numeric("monthlyLimit", { precision: 10, scale: 2 }).default("10.00").notNull(),
-      alertThreshold: numeric("alertThreshold", { precision: 10, scale: 2 }).default("8.00").notNull(),
+    apiCostSettings = mysqlTable11("api_cost_settings", {
+      id: int11("id").autoincrement().primaryKey(),
+      monthlyLimit: decimal("monthlyLimit", { precision: 10, scale: 2 }).default("10.00").notNull(),
+      alertThreshold: decimal("alertThreshold", { precision: 10, scale: 2 }).default("8.00").notNull(),
       alertEmail: varchar11("alertEmail", { length: 320 }),
-      autoStop: integer10("autoStop").default(0).notNull(),
+      autoStop: int11("autoStop").default(0).notNull(),
       createdAt: timestamp11("createdAt").defaultNow().notNull(),
-      updatedAt: timestamp11("updatedAt").defaultNow().notNull()
+      updatedAt: timestamp11("updatedAt").defaultNow().onUpdateNow().notNull()
     });
   }
 });
@@ -761,6 +687,64 @@ var init_schema2 = __esm({
   }
 });
 
+// server/db/connection.ts
+import { eq, desc, and, sql, isNull, or, gte, lte, lt, inArray, asc, ne, like, count } from "drizzle-orm";
+import { drizzle } from "drizzle-orm/mysql2";
+import mysql from "mysql2/promise";
+async function getDb() {
+  if (!_db && process.env.DATABASE_URL) {
+    try {
+      const poolConnection = mysql.createPool(process.env.DATABASE_URL);
+      _db = drizzle(poolConnection, { schema: schema_exports, mode: "default" });
+    } catch (error) {
+      console.warn("[Database] Failed to connect:", error);
+      _db = null;
+    }
+  }
+  return _db;
+}
+function generateSlug(title) {
+  const translations = {
+    "\u751F\u8A95\u796D": "birthday",
+    "\u30E9\u30A4\u30D6": "live",
+    "\u30EF\u30F3\u30DE\u30F3": "oneman",
+    "\u52D5\u54E1": "attendance",
+    "\u30C1\u30E3\u30EC\u30F3\u30B8": "challenge",
+    "\u30D5\u30A9\u30ED\u30EF\u30FC": "followers",
+    "\u540C\u6642\u8996\u8074": "viewers",
+    "\u914D\u4FE1": "stream",
+    "\u30B0\u30EB\u30FC\u30D7": "group",
+    "\u30BD\u30ED": "solo",
+    "\u30D5\u30A7\u30B9": "fes",
+    "\u5BFE\u30D0\u30F3": "taiban",
+    "\u30D5\u30A1\u30F3\u30DF\u30FC\u30C6\u30A3\u30F3\u30B0": "fanmeeting",
+    "\u30EA\u30EA\u30FC\u30B9": "release",
+    "\u30A4\u30D9\u30F3\u30C8": "event",
+    "\u4EBA": "",
+    "\u4E07": "0000"
+  };
+  let slug = title.toLowerCase();
+  for (const [jp, en] of Object.entries(translations)) {
+    slug = slug.replace(new RegExp(jp, "g"), en);
+  }
+  const words = slug.match(/[a-z]+|\d+/g) || [];
+  slug = words.join("-");
+  slug = slug.replace(/-+/g, "-");
+  slug = slug.replace(/^-|-$/g, "");
+  if (!slug) {
+    slug = `challenge-${Date.now()}`;
+  }
+  return slug;
+}
+var _db;
+var init_connection = __esm({
+  "server/db/connection.ts"() {
+    "use strict";
+    init_schema2();
+    _db = null;
+  }
+});
+
 // server/_core/env.ts
 var ENV;
 var init_env = __esm({
@@ -794,7 +778,7 @@ async function upsertUser(user) {
       openId: user.openId
     };
     const updateSet = {};
-    const textFields = ["name", "email", "loginMethod"];
+    const textFields = ["name", "email", "loginMethod", "prefecture"];
     const assignNullable = (field) => {
       const value = user[field];
       if (value === void 0) return;
@@ -824,8 +808,7 @@ async function upsertUser(user) {
     if (Object.keys(updateSet).length === 0) {
       updateSet.lastSignedIn = /* @__PURE__ */ new Date();
     }
-    await db.insert(users).values(values).onConflictDoUpdate({
-      target: users.openId,
+    await db.insert(users).values(values).onDuplicateKeyUpdate({
       set: updateSet
     });
   } catch (error) {
@@ -894,36 +877,43 @@ async function getAllEvents() {
   }
   const db = await getDb();
   if (!db) return eventsCache.data ?? [];
-  const result = await db.select({
-    id: events2.id,
-    hostUserId: events2.hostUserId,
-    hostTwitterId: events2.hostTwitterId,
-    hostName: events2.hostName,
-    hostUsername: events2.hostUsername,
-    hostProfileImage: events2.hostProfileImage,
-    hostFollowersCount: events2.hostFollowersCount,
-    hostDescription: events2.hostDescription,
-    hostGender: users.gender,
-    // 主催者の性別
-    title: events2.title,
-    slug: events2.slug,
-    description: events2.description,
-    goalType: events2.goalType,
-    goalValue: events2.goalValue,
-    goalUnit: events2.goalUnit,
-    currentValue: events2.currentValue,
-    eventType: events2.eventType,
-    categoryId: events2.categoryId,
-    eventDate: events2.eventDate,
-    venue: events2.venue,
-    prefecture: events2.prefecture,
-    status: events2.status,
-    isPublic: events2.isPublic,
-    createdAt: events2.createdAt,
-    updatedAt: events2.updatedAt
-  }).from(events2).leftJoin(users, eq2(events2.hostUserId, users.id)).where(eq2(events2.isPublic, true)).orderBy(desc2(events2.eventDate));
-  eventsCache = { data: result, timestamp: now };
-  return result;
+  try {
+    const result = await db.select({
+      id: events2.id,
+      hostUserId: events2.hostUserId,
+      hostTwitterId: events2.hostTwitterId,
+      hostName: events2.hostName,
+      hostUsername: events2.hostUsername,
+      hostProfileImage: events2.hostProfileImage,
+      hostFollowersCount: events2.hostFollowersCount,
+      hostDescription: events2.hostDescription,
+      hostGender: users.gender,
+      // 主催者の性別
+      title: events2.title,
+      slug: events2.slug,
+      description: events2.description,
+      goalType: events2.goalType,
+      goalValue: events2.goalValue,
+      goalUnit: events2.goalUnit,
+      currentValue: events2.currentValue,
+      eventType: events2.eventType,
+      categoryId: events2.categoryId,
+      eventDate: events2.eventDate,
+      venue: events2.venue,
+      prefecture: events2.prefecture,
+      status: events2.status,
+      isPublic: events2.isPublic,
+      createdAt: events2.createdAt,
+      updatedAt: events2.updatedAt
+    }).from(events2).leftJoin(users, eq2(events2.hostUserId, users.id)).where(eq2(events2.isPublic, true)).orderBy(desc2(events2.eventDate));
+    eventsCache = { data: result, timestamp: now };
+    return result;
+  } catch (err) {
+    console.warn("[getAllEvents] JOIN query failed, falling back to challenges only:", err?.message);
+    const fallback = await db.select().from(events2).where(eq2(events2.isPublic, true)).orderBy(desc2(events2.eventDate));
+    eventsCache = { data: fallback, timestamp: now };
+    return fallback;
+  }
 }
 function invalidateEventsCache() {
   eventsCache = { data: null, timestamp: 0 };
@@ -1069,8 +1059,8 @@ async function getActiveParticipationById(id) {
 async function createParticipation(data) {
   const db = await getDb();
   if (!db) throw new Error("Database not available");
-  const result = await db.insert(participations).values(data).returning({ id: participations.id });
-  const participationId = result[0]?.id ?? null;
+  const [result] = await db.insert(participations).values(data);
+  const participationId = result.insertId;
   if (data.challengeId) {
     const contribution = (data.contribution || 1) + (data.companionCount || 0);
     await db.update(challenges).set({ currentValue: sql`${challenges.currentValue} + ${contribution}` }).where(eq(challenges.id, data.challengeId));
@@ -1497,8 +1487,8 @@ async function getUsersWithNotificationEnabled(challengeId, notificationType) {
 async function createNotification(data) {
   const db = await getDb();
   if (!db) throw new Error("Database not available");
-  const result = await db.insert(notifications).values(data).returning({ id: notifications.id });
-  const notificationId = result[0]?.id ?? null;
+  const [result] = await db.insert(notifications).values(data);
+  const notificationId = result.insertId ?? null;
   try {
     const { sendNotificationToUser: sendNotificationToUser2 } = await Promise.resolve().then(() => (init_websocket(), websocket_exports));
     sendNotificationToUser2(data.userId.toString(), {
@@ -1549,8 +1539,8 @@ async function getBadgeById(id) {
 async function createBadge(data) {
   const db = await getDb();
   if (!db) throw new Error("Database not available");
-  const result = await db.insert(badges).values(data).returning({ id: badges.id });
-  return result[0]?.id ?? null;
+  const [result] = await db.insert(badges).values(data);
+  return result.insertId ?? null;
 }
 async function getUserBadges(userId) {
   const db = await getDb();
@@ -1572,12 +1562,12 @@ async function awardBadge(userId, badgeId, challengeId) {
   if (!db) throw new Error("Database not available");
   const existing = await db.select().from(userBadges).where(and(eq(userBadges.userId, userId), eq(userBadges.badgeId, badgeId)));
   if (existing.length > 0) return null;
-  const result = await db.insert(userBadges).values({
+  const [result] = await db.insert(userBadges).values({
     userId,
     badgeId,
     challengeId
-  }).returning({ id: userBadges.id });
-  return result[0]?.id ?? null;
+  });
+  return result.insertId ?? null;
 }
 async function checkAndAwardBadges(userId, challengeId, contribution) {
   const db = await getDb();
@@ -1618,8 +1608,8 @@ async function awardFollowerBadge(userId) {
       description: "\u30DB\u30B9\u30C8\u3092\u30D5\u30A9\u30ED\u30FC\u3057\u3066\u5FDC\u63F4\u3057\u3066\u3044\u307E\u3059\uFF01",
       type: "special",
       conditionType: "follower_badge"
-    }).returning({ id: badges.id });
-    followerBadge = await db.select().from(badges).where(eq(badges.id, result[0].id));
+    });
+    followerBadge = await db.select().from(badges).where(eq(badges.id, result[0].insertId));
   }
   if (followerBadge.length === 0) return null;
   return awardBadge(userId, followerBadge[0].id);
@@ -1653,13 +1643,13 @@ async function pickComment(participationId, challengeId, pickedBy, reason) {
   if (!db) throw new Error("Database not available");
   const existing = await db.select().from(pickedComments).where(eq(pickedComments.participationId, participationId));
   if (existing.length > 0) return null;
-  const result = await db.insert(pickedComments).values({
+  const [result] = await db.insert(pickedComments).values({
     participationId,
     challengeId,
     pickedBy,
     reason
-  }).returning({ id: pickedComments.id });
-  return result[0]?.id ?? null;
+  });
+  return result.insertId ?? null;
 }
 async function unpickComment(participationId) {
   const db = await getDb();
@@ -1680,8 +1670,8 @@ async function isCommentPicked(participationId) {
 async function sendCheer(cheer) {
   const db = await getDb();
   if (!db) return null;
-  const result = await db.insert(cheers).values(cheer).returning({ id: cheers.id });
-  return result[0]?.id ?? null;
+  const [result] = await db.insert(cheers).values(cheer);
+  return result.insertId ?? null;
 }
 async function getCheersForParticipation(participationId) {
   const db = await getDb();
@@ -1712,8 +1702,8 @@ async function getCheersSentByUser(userId) {
 async function createAchievementPage(page) {
   const db = await getDb();
   if (!db) return null;
-  const result = await db.insert(achievementPages).values(page).returning({ id: achievementPages.id });
-  return result[0]?.id ?? null;
+  const [result] = await db.insert(achievementPages).values(page);
+  return result.insertId ?? null;
 }
 async function getAchievementPage(challengeId) {
   const db = await getDb();
@@ -1743,8 +1733,8 @@ var init_social_db = __esm({
 async function createReminder(reminder) {
   const db = await getDb();
   if (!db) return null;
-  const result = await db.insert(reminders).values(reminder).returning({ id: reminders.id });
-  return result[0]?.id ?? null;
+  const [result] = await db.insert(reminders).values(reminder);
+  return result.insertId ?? null;
 }
 async function getRemindersForUser(userId) {
   const db = await getDb();
@@ -1785,8 +1775,8 @@ async function markReminderAsSent(id) {
 async function sendDirectMessage(dm) {
   const db = await getDb();
   if (!db) return null;
-  const result = await db.insert(directMessages).values(dm).returning({ id: directMessages.id });
-  const messageId = result[0]?.id ?? null;
+  const [result] = await db.insert(directMessages).values(dm);
+  const messageId = result.insertId ?? null;
   try {
     const { sendMessageToUser: sendMessageToUser2 } = await Promise.resolve().then(() => (init_websocket(), websocket_exports));
     sendMessageToUser2(dm.toUserId.toString(), {
@@ -1846,8 +1836,8 @@ async function getConversationList(userId, limit = 20, cursor) {
 async function createChallengeTemplate(template) {
   const db = await getDb();
   if (!db) return null;
-  const result = await db.insert(challengeTemplates).values(template).returning({ id: challengeTemplates.id });
-  return result[0]?.id ?? null;
+  const [result] = await db.insert(challengeTemplates).values(template);
+  return result.insertId ?? null;
 }
 async function getChallengeTemplatesForUser(userId) {
   const db = await getDb();
@@ -1892,8 +1882,8 @@ var init_messaging_db = __esm({
 async function saveSearchHistory(history) {
   const db = await getDb();
   if (!db) return null;
-  const result = await db.insert(searchHistory).values(history).returning({ id: searchHistory.id });
-  return result[0]?.id ?? null;
+  const [result] = await db.insert(searchHistory).values(history);
+  return result.insertId ?? null;
 }
 async function getSearchHistoryForUser(userId, limit = 10) {
   const db = await getDb();
@@ -1910,9 +1900,9 @@ async function followUser(follow) {
   if (!db) return null;
   const existing = await db.select().from(follows).where(and(eq(follows.followerId, follow.followerId), eq(follows.followeeId, follow.followeeId)));
   if (existing.length > 0) return null;
-  const result = await db.insert(follows).values(follow).returning({ id: follows.id });
+  const [result] = await db.insert(follows).values(follow);
   await awardFollowerBadge(follow.followerId);
-  return result[0]?.id ?? null;
+  return result.insertId ?? null;
 }
 async function unfollowUser(followerId, followeeId) {
   const db = await getDb();
@@ -2071,8 +2061,8 @@ async function getCategoryBySlug(slug) {
 async function createCategory(category) {
   const db = await getDb();
   if (!db) return null;
-  const result = await db.insert(categories).values(category).returning({ id: categories.id });
-  return result[0]?.id ?? null;
+  const [result] = await db.insert(categories).values(category);
+  return result.insertId ?? null;
 }
 async function getChallengesByCategory(categoryId) {
   const db = await getDb();
@@ -2106,8 +2096,8 @@ var init_category_db = __esm({
 async function createInvitation(invitation) {
   const db = await getDb();
   if (!db) return null;
-  const result = await db.insert(invitations).values(invitation).returning({ id: invitations.id });
-  return result[0]?.id ?? null;
+  const [result] = await db.insert(invitations).values(invitation);
+  return result.insertId ?? null;
 }
 async function getInvitationByCode(code) {
   const db = await getDb();
@@ -2138,8 +2128,8 @@ async function deactivateInvitation(id) {
 async function recordInvitationUse(use) {
   const db = await getDb();
   if (!db) return null;
-  const result = await db.insert(invitationUses).values(use).returning({ id: invitationUses.id });
-  return result[0]?.id ?? null;
+  const [result] = await db.insert(invitationUses).values(use);
+  return result.insertId ?? null;
 }
 async function confirmInvitationUse(invitationId, userId, participationId) {
   const db = await getDb();
@@ -2341,15 +2331,15 @@ var init_profile_db = __esm({
 async function createCompanion(companion) {
   const db = await getDb();
   if (!db) return null;
-  const result = await db.insert(participationCompanions).values(companion).returning({ id: participationCompanions.id });
-  return result[0]?.id ?? null;
+  const [result] = await db.insert(participationCompanions).values(companion);
+  return result.insertId ?? null;
 }
 async function createCompanions(companions) {
   const db = await getDb();
   if (!db) return [];
   if (companions.length === 0) return [];
-  const result = await db.insert(participationCompanions).values(companions).returning({ id: participationCompanions.id });
-  return result;
+  const [result] = await db.insert(participationCompanions).values(companions);
+  return result.insertId;
 }
 async function getCompanionsForParticipation(participationId) {
   const db = await getDb();
@@ -2567,8 +2557,8 @@ var init_ai_db = __esm({
 async function createTicketTransfer(transfer) {
   const db = await getDb();
   if (!db) return null;
-  const result = await db.insert(ticketTransfers).values(transfer).returning({ id: ticketTransfers.id });
-  return result[0]?.id ?? null;
+  const [result] = await db.insert(ticketTransfers).values(transfer);
+  return result.insertId ?? null;
 }
 async function getTicketTransfersForChallenge(challengeId) {
   const db = await getDb();
@@ -2605,8 +2595,8 @@ async function addToTicketWaitlist(waitlist) {
   if (existing.length > 0) {
     return existing[0].id;
   }
-  const result = await db.insert(ticketWaitlist).values(waitlist).returning({ id: ticketWaitlist.id });
-  return result[0]?.id ?? null;
+  const [result] = await db.insert(ticketWaitlist).values(waitlist);
+  return result.insertId ?? null;
 }
 async function removeFromTicketWaitlist(challengeId, userId) {
   const db = await getDb();
@@ -2908,8 +2898,8 @@ async function createAuditLog(data) {
     return null;
   }
   try {
-    const result = await db.insert(auditLogs).values(data).returning({ id: auditLogs.id });
-    return result[0]?.id ?? null;
+    const [result] = await db.insert(auditLogs).values(data);
+    return result.insertId ?? null;
   } catch (error) {
     console.error("[AuditLog] Failed to create audit log:", error);
     return null;
@@ -3231,8 +3221,8 @@ async function recordApiUsage(usage) {
       rateLimitInfo: usage.rateLimitInfo ?? null,
       month
     };
-    const result = await db.insert(apiUsage).values(insertData).returning({ id: apiUsage.id });
-    return result[0]?.id ?? null;
+    const [result] = await db.insert(apiUsage).values(insertData);
+    return result.insertId ?? null;
   } catch (error) {
     console.error("[API Usage] Failed to record usage:", error);
     return null;
@@ -3640,12 +3630,16 @@ function getWarningsSummary() {
 async function getDashboardSummary() {
   const monthlyStats = await getCurrentMonthStats();
   const costLimit = await checkCostLimit();
+  const now = /* @__PURE__ */ new Date();
+  const month = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}`;
+  const endpointCosts = await getUsageByEndpoint(month, 20);
   return {
     stats: getApiUsageStats(),
     warnings: getWarningsSummary(),
     recentHistory: getRecentUsageHistory(20),
     monthlyStats,
-    costLimit
+    costLimit,
+    endpointCosts
   };
 }
 var usageHistory, stats, MAX_HISTORY_SIZE;
@@ -3670,7 +3664,53 @@ import "dotenv/config";
 import express from "express";
 import { createServer } from "http";
 import net from "net";
+import path2 from "path";
+import { fileURLToPath as fileURLToPath2 } from "url";
 import { createExpressMiddleware } from "@trpc/server/adapters/express";
+
+// server/_core/health.ts
+import fs from "fs";
+import path from "path";
+import { fileURLToPath } from "url";
+var __dirname = path.dirname(fileURLToPath(import.meta.url));
+function readBuildInfo() {
+  const candidates = [
+    path.join(process.cwd(), "dist", "build-info.json"),
+    path.join(__dirname, "build-info.json")
+  ];
+  for (const p of candidates) {
+    try {
+      if (!fs.existsSync(p)) continue;
+      const raw = JSON.parse(fs.readFileSync(p, "utf-8"));
+      const commitSha = raw.commitSha ?? raw.version ?? "unknown";
+      const version = raw.version ?? raw.commitSha ?? "unknown";
+      const builtAt = raw.builtAt ?? raw.buildTime ?? (/* @__PURE__ */ new Date()).toISOString();
+      if (!commitSha || commitSha === "unknown") {
+        throw new Error("invalid build-info");
+      }
+      const resolvedSha = process.env.RAILWAY_GIT_COMMIT_SHA && /^(local-|railway-)/.test(commitSha) ? process.env.RAILWAY_GIT_COMMIT_SHA : commitSha;
+      return {
+        ok: true,
+        commitSha: resolvedSha,
+        version: resolvedSha,
+        builtAt
+      };
+    } catch {
+      continue;
+    }
+  }
+  return {
+    ok: false,
+    commitSha: "unknown",
+    version: "unknown",
+    builtAt: "unknown"
+  };
+}
+
+// shared/version.ts
+var APP_VERSION = "6.182";
+var GIT_SHA = process.env.EXPO_PUBLIC_GIT_SHA || "unknown";
+var BUILT_AT = process.env.EXPO_PUBLIC_BUILT_AT || "unknown";
 
 // shared/const.ts
 var COOKIE_NAME = "app_session_id";
@@ -3705,14 +3745,35 @@ function getParentDomain(hostname) {
   }
   return "." + parts.slice(-2).join(".");
 }
+function getEffectiveHostname(req) {
+  const forwarded = req.headers["x-forwarded-host"];
+  if (forwarded) {
+    const host = Array.isArray(forwarded) ? forwarded[0] : forwarded.split(",")[0];
+    if (host && host.trim()) return host.trim();
+  }
+  const origin = req.headers.origin;
+  if (origin) {
+    try {
+      const u = new URL(origin);
+      if (u.hostname) return u.hostname;
+    } catch {
+    }
+  }
+  return req.hostname;
+}
+function getCookieDomain(req, hostname) {
+  const forwarded = req.headers["x-forwarded-host"] ?? req.headers.origin;
+  if (forwarded) return void 0;
+  return getParentDomain(hostname);
+}
 function getSessionCookieOptions(req) {
-  const hostname = req.hostname;
-  const domain = getParentDomain(hostname);
+  const hostname = getEffectiveHostname(req);
+  const domain = getCookieDomain(req, hostname);
   return {
     domain,
     httpOnly: true,
     path: "/",
-    sameSite: "none",
+    sameSite: "lax",
     secure: isSecureRequest(req)
   };
 }
@@ -3970,13 +4031,17 @@ async function syncUser(userInfo) {
   };
 }
 function buildUserResponse(user) {
+  const u = user;
   return {
-    id: user?.id ?? null,
+    id: u?.id ?? null,
     openId: user?.openId ?? null,
     name: user?.name ?? null,
     email: user?.email ?? null,
     loginMethod: user?.loginMethod ?? null,
-    lastSignedIn: (user?.lastSignedIn ?? /* @__PURE__ */ new Date()).toISOString()
+    lastSignedIn: (user?.lastSignedIn ?? /* @__PURE__ */ new Date()).toISOString(),
+    prefecture: u?.prefecture ?? null,
+    gender: u?.gender ?? null,
+    role: u?.role ?? null
   };
 }
 function registerOAuthRoutes(app) {
@@ -4279,8 +4344,8 @@ async function getUserProfile(accessToken) {
     console.error("User profile error:", text11);
     throw new Error(`Failed to get user profile: ${text11}`);
   }
-  const json = await response.json();
-  return json.data;
+  const json5 = await response.json();
+  return json5.data;
 }
 async function refreshAccessToken(refreshToken) {
   const url = "https://api.twitter.com/2/oauth2/token";
@@ -4379,7 +4444,11 @@ async function deletePKCEData(state) {
 }
 var pkceMemoryStore = /* @__PURE__ */ new Map();
 var TARGET_TWITTER_USERNAME = "idolfunch";
-var FOLLOW_STATUS_CACHE_TTL_MS = 24 * 60 * 60 * 1e3;
+var FOLLOW_STATUS_CACHE_TTL_HOURS = parseInt(
+  process.env.FOLLOW_STATUS_CACHE_TTL_HOURS || "24",
+  10
+);
+var FOLLOW_STATUS_CACHE_TTL_MS = FOLLOW_STATUS_CACHE_TTL_HOURS * 60 * 60 * 1e3;
 var followStatusCache = /* @__PURE__ */ new Map();
 function getFollowStatusCacheKey(sourceUserId, targetUsername) {
   return `${sourceUserId}:${targetUsername}`;
@@ -4593,9 +4662,10 @@ function registerTwitterRoutes(app) {
         isFollowingTarget,
         targetAccount
       };
+      const openId = `twitter:${userProfile.id}`;
       try {
         await upsertUser({
-          openId: `twitter:${userProfile.id}`,
+          openId,
           name: userProfile.name,
           email: null,
           loginMethod: "twitter",
@@ -4604,6 +4674,17 @@ function registerTwitterRoutes(app) {
         console.log("[Twitter OAuth 2.0] User profile saved to database");
       } catch (error) {
         console.error("[Twitter OAuth 2.0] Failed to save user profile:", error);
+      }
+      try {
+        const sessionToken = await sdk.createSessionToken(openId, {
+          name: userProfile.name || "",
+          expiresInMs: ONE_YEAR_MS
+        });
+        const cookieOptions = getSessionCookieOptions(req);
+        res.cookie(COOKIE_NAME, sessionToken, { ...cookieOptions, maxAge: ONE_YEAR_MS });
+        console.log("[Twitter OAuth 2.0] Session cookie set successfully");
+      } catch (error) {
+        console.error("[Twitter OAuth 2.0] Failed to create session token:", error);
       }
       const encodedData = encodeURIComponent(JSON.stringify(userData));
       const host = req.get("host") || "";
@@ -6325,7 +6406,25 @@ var invitationsRouter = router({
 // server/routers/profiles.ts
 import { z as z18 } from "zod";
 init_db2();
+var genderSchema = z18.enum(["male", "female", "unspecified"]);
 var profilesRouter = router({
+  // 認証中ユーザーの自分用プロフィール取得（auth.me と同様だが profiles 名前空間）
+  me: publicProcedure.query((opts) => opts.ctx.user),
+  // 自分のプロフィール（都道府県・性別）を更新
+  updateMyProfile: protectedProcedure.input(
+    z18.object({
+      prefecture: z18.string().max(32).nullable().optional(),
+      gender: genderSchema.optional()
+    })
+  ).mutation(async ({ ctx, input }) => {
+    await upsertUser({
+      openId: ctx.user.openId,
+      ...input.prefecture !== void 0 && { prefecture: input.prefecture },
+      ...input.gender !== void 0 && { gender: input.gender }
+    });
+    const updated = await getUserByOpenId(ctx.user.openId);
+    return { user: updated ?? null };
+  }),
   // ユーザーの公開プロフィールを取得
   get: publicProcedure.input(z18.object({ userId: z18.number() })).query(async ({ input }) => {
     return getUserPublicProfile(input.userId);
@@ -6986,6 +7085,26 @@ var releaseNotesRouter = router({
     const db = await getDb();
     if (!db) return [];
     return db.select().from(releaseNotes).orderBy(desc(releaseNotes.date)).limit(input.limit);
+  }),
+  // リリースノートを追加（管理者のみ）
+  add: protectedProcedure.input(z26.object({
+    version: z26.string(),
+    date: z26.string(),
+    title: z26.string(),
+    changes: z26.array(z26.object({
+      type: z26.enum(["new", "improve", "fix", "change"]),
+      text: z26.string()
+    }))
+  })).mutation(async ({ ctx, input }) => {
+    if (ctx.user.role !== "admin") {
+      throw new Error("\u7BA1\u7406\u8005\u6A29\u9650\u304C\u5FC5\u8981\u3067\u3059");
+    }
+    const db = await getDb();
+    if (!db) {
+      throw new Error("\u30C7\u30FC\u30BF\u30D9\u30FC\u30B9\u63A5\u7D9A\u306B\u5931\u6557\u3057\u307E\u3057\u305F");
+    }
+    await db.insert(releaseNotes).values(input);
+    return { success: true };
   })
 });
 
@@ -7021,12 +7140,48 @@ var appRouter = router({
 });
 
 // server/_core/context.ts
+var ADMIN_SESSION_COOKIE = "admin_session";
+function parseCookies(cookieHeader) {
+  const cookies = /* @__PURE__ */ new Map();
+  if (!cookieHeader) return cookies;
+  cookieHeader.split(";").forEach((cookie) => {
+    const [name, value] = cookie.trim().split("=");
+    if (name && value) {
+      cookies.set(name, decodeURIComponent(value));
+    }
+  });
+  return cookies;
+}
+function hasAdminSession(req) {
+  const cookies = parseCookies(req.headers.cookie);
+  return cookies.get(ADMIN_SESSION_COOKIE) === "authenticated";
+}
 async function createContext(opts) {
   let user = null;
   try {
     user = await sdk.authenticateRequest(opts.req);
   } catch (error) {
     user = null;
+  }
+  if (!user && hasAdminSession(opts.req)) {
+    user = {
+      id: 0,
+      openId: "admin_password_auth",
+      name: "\u7BA1\u7406\u8005\uFF08\u30D1\u30B9\u30EF\u30FC\u30C9\u8A8D\u8A3C\uFF09",
+      email: null,
+      loginMethod: "password",
+      role: "admin",
+      gender: "unspecified",
+      prefecture: null,
+      createdAt: /* @__PURE__ */ new Date(),
+      updatedAt: /* @__PURE__ */ new Date(),
+      lastSignedIn: /* @__PURE__ */ new Date()
+    };
+  } else if (user && hasAdminSession(opts.req)) {
+    user = {
+      ...user,
+      role: "admin"
+    };
   }
   return {
     req: opts.req,
@@ -7882,15 +8037,15 @@ var PATH_CONFIGS = {
     // 10リクエスト
   }
 };
-function checkRateLimit(ip, path) {
+function checkRateLimit(ip, path3) {
   let config = DEFAULT_CONFIG;
   for (const [pathPrefix, pathConfig] of Object.entries(PATH_CONFIGS)) {
-    if (path.startsWith(pathPrefix)) {
+    if (path3.startsWith(pathPrefix)) {
       config = pathConfig;
       break;
     }
   }
-  const key = `${ip}:${path}`;
+  const key = `${ip}:${path3}`;
   const now = Date.now();
   const entry = rateLimitStore.get(key);
   if (!entry || entry.resetTime < now) {
@@ -7921,13 +8076,13 @@ function checkRateLimit(ip, path) {
 }
 function rateLimiterMiddleware(req, res, next) {
   const ip = req.ip || req.headers["x-forwarded-for"] || req.connection.remoteAddress || "unknown";
-  const path = req.path || req.url;
-  const result = checkRateLimit(ip, path);
+  const path3 = req.path || req.url;
+  const result = checkRateLimit(ip, path3);
   res.setHeader("X-RateLimit-Limit", result.remaining + (result.allowed ? 1 : 0));
   res.setHeader("X-RateLimit-Remaining", result.remaining);
   res.setHeader("X-RateLimit-Reset", new Date(result.resetTime).toISOString());
   if (!result.allowed) {
-    console.warn(`[RateLimit] Blocked request from ${ip} to ${path}`);
+    console.warn(`[RateLimit] Blocked request from ${ip} to ${path3}`);
     return res.status(429).json({
       error: "Too many requests",
       message: "\u30EA\u30AF\u30A8\u30B9\u30C8\u304C\u591A\u3059\u304E\u307E\u3059\u3002\u3057\u3070\u3089\u304F\u5F85\u3063\u3066\u304B\u3089\u518D\u8A66\u884C\u3057\u3066\u304F\u3060\u3055\u3044\u3002",
@@ -7937,7 +8092,14 @@ function rateLimiterMiddleware(req, res, next) {
   next();
 }
 
+// server/admin-password-auth.ts
+var ADMIN_PASSWORD = process.env.ADMIN_PASSWORD || "pass304130";
+function verifyAdminPassword(password) {
+  return password === ADMIN_PASSWORD;
+}
+
 // server/_core/index.ts
+var __dirname2 = path2.dirname(fileURLToPath2(import.meta.url));
 function isPortAvailable(port) {
   return new Promise((resolve) => {
     const server = net.createServer();
@@ -7982,97 +8144,111 @@ async function startServer() {
   registerOAuthRoutes(app);
   registerTwitterRoutes(app);
   app.get("/api/health", async (_req, res) => {
-    let versionInfo = {
-      version: process.env.RAILWAY_GIT_COMMIT_SHA || process.env.APP_VERSION || "unknown",
-      commitSha: process.env.RAILWAY_GIT_COMMIT_SHA || process.env.GIT_SHA || "unknown",
-      gitSha: process.env.RAILWAY_GIT_COMMIT_SHA || process.env.GIT_SHA || "unknown",
-      builtAt: process.env.BUILT_AT || (/* @__PURE__ */ new Date()).toISOString()
-    };
-    if (versionInfo.version === "unknown" || versionInfo.commitSha === "unknown") {
-      const error = new Error("unknown version detected in /api/health");
-      if (Sentry) {
-        Sentry.captureException(error, {
-          extra: {
-            version: versionInfo.version,
-            commitSha: versionInfo.commitSha,
-            env: process.env.NODE_ENV
-          }
-        });
-      }
-      console.error("[CRITICAL] unknown version detected:", versionInfo);
-    }
-    const baseInfo = {
-      ok: true,
-      timestamp: Date.now(),
-      ...versionInfo,
-      nodeEnv: process.env.NODE_ENV || "development"
-    };
-    let dbStatus = { connected: false, latency: 0, error: "" };
     try {
-      const { getDb: getDb2 } = await Promise.resolve().then(() => (init_db2(), db_exports));
-      const startTime = Date.now();
-      const db = await getDb2();
-      if (db) {
-        await db.execute("SELECT 1");
-        dbStatus = {
-          connected: true,
-          latency: Date.now() - startTime,
-          error: ""
-        };
-      } else {
-        dbStatus.error = "DATABASE_URL\u304C\u8A2D\u5B9A\u3055\u308C\u3066\u3044\u307E\u305B\u3093";
+      const buildInfo = readBuildInfo();
+      const nodeEnv = process.env.NODE_ENV || "development";
+      const displayVersion = APP_VERSION || buildInfo.version || "unknown";
+      if (!buildInfo.ok && Sentry) {
+        Sentry.captureException(new Error("unknown version in /api/health"), {
+          extra: { commitSha: buildInfo.commitSha, env: nodeEnv }
+        });
+        console.error("[CRITICAL] unknown version detected:", buildInfo);
       }
-    } catch (err) {
-      dbStatus.error = err instanceof Error ? err.message : "\u63A5\u7D9A\u30A8\u30E9\u30FC";
-    }
-    const checkCritical = _req.query.critical === "true";
-    let criticalApis = {};
-    if (checkCritical && dbStatus.connected) {
+      const baseInfo = {
+        ...buildInfo,
+        version: displayVersion,
+        // Override/Ensure version is set
+        nodeEnv,
+        timestamp: Date.now()
+      };
+      let dbStatus = { connected: false, latency: 0, error: "" };
       try {
-        const caller = appRouter.createCaller(await createContext({ req: _req, res, info: {} }));
-        try {
-          await caller.events.list();
-          criticalApis.homeEvents = { ok: true };
-        } catch (err) {
-          criticalApis.homeEvents = { ok: false, error: err instanceof Error ? err.message : String(err) };
-        }
-        try {
-          await caller.rankings.hosts({ limit: 1 });
-          criticalApis.rankings = { ok: true };
-        } catch (err) {
-          criticalApis.rankings = { ok: false, error: err instanceof Error ? err.message : String(err) };
+        const { getDb: getDb2, sql: sql5 } = await Promise.resolve().then(() => (init_db2(), db_exports));
+        const startTime = Date.now();
+        const db = await getDb2();
+        if (db) {
+          await db.execute(sql5`SELECT 1`);
+          let challengesCount = 0;
+          try {
+            const r = await db.execute(sql5`SELECT COUNT(*) AS c FROM challenges WHERE "isPublic" = true`);
+            const rows = r?.rows ?? (Array.isArray(r) ? r : []);
+            challengesCount = rows.length ? Number(rows[0]?.c ?? 0) : 0;
+          } catch (_) {
+          }
+          dbStatus = {
+            connected: true,
+            latency: Date.now() - startTime,
+            error: "",
+            challengesCount
+          };
+        } else {
+          dbStatus.error = "DATABASE_URL\u304C\u8A2D\u5B9A\u3055\u308C\u3066\u3044\u307E\u305B\u3093";
         }
       } catch (err) {
-        criticalApis.error = err instanceof Error ? err.message : String(err);
+        dbStatus.error = err instanceof Error ? err.message : "\u63A5\u7D9A\u30A8\u30E9\u30FC";
       }
-    }
-    const checkSchema = _req.query.schema === "true";
-    let schemaCheck;
-    if (checkSchema) {
-      try {
-        schemaCheck = await checkSchemaIntegrity();
-        if (schemaCheck.status === "mismatch") {
-          await notifySchemaIssue(schemaCheck);
+      const checkCritical = _req.query.critical === "true";
+      let criticalApis = {};
+      if (checkCritical && dbStatus.connected) {
+        try {
+          const caller = appRouter.createCaller(await createContext({ req: _req, res, info: {} }));
+          try {
+            await caller.events.list();
+            criticalApis.homeEvents = { ok: true };
+          } catch (err) {
+            criticalApis.homeEvents = { ok: false, error: err instanceof Error ? err.message : String(err) };
+          }
+          try {
+            await caller.rankings.hosts({ limit: 1 });
+            criticalApis.rankings = { ok: true };
+          } catch (err) {
+            criticalApis.rankings = { ok: false, error: err instanceof Error ? err.message : String(err) };
+          }
+        } catch (err) {
+          criticalApis.error = err instanceof Error ? err.message : String(err);
         }
-      } catch (error) {
-        console.error("[health] Schema check failed:", error);
-        schemaCheck = {
-          status: "error",
-          expectedVersion: "unknown",
-          missingColumns: [],
-          errors: [error instanceof Error ? error.message : String(error)],
-          checkedAt: (/* @__PURE__ */ new Date()).toISOString()
-        };
       }
+      const checkSchema = _req.query.schema === "true";
+      let schemaCheck;
+      if (checkSchema) {
+        try {
+          schemaCheck = await checkSchemaIntegrity();
+          if (schemaCheck.status === "mismatch") {
+            await notifySchemaIssue(schemaCheck);
+          }
+        } catch (error) {
+          console.error("[health] Schema check failed:", error);
+          schemaCheck = {
+            status: "error",
+            expectedVersion: "unknown",
+            missingColumns: [],
+            errors: [error instanceof Error ? error.message : String(error)],
+            checkedAt: (/* @__PURE__ */ new Date()).toISOString()
+          };
+        }
+      }
+      const overallOk = dbStatus.connected && buildInfo.ok && (!checkCritical || Object.values(criticalApis).every((api) => typeof api === "object" && "ok" in api && api.ok));
+      const statusCode = dbStatus.connected ? 200 : 500;
+      res.status(statusCode).json({
+        ...baseInfo,
+        ok: overallOk,
+        db: dbStatus,
+        ...checkCritical && { critical: criticalApis },
+        ...schemaCheck && { schema: schemaCheck }
+      });
+    } catch (err) {
+      console.error("[health] Unhandled error:", err);
+      const message = err instanceof Error ? err.message : String(err);
+      res.status(500).json({
+        ok: false,
+        commitSha: "unknown",
+        version: "unknown",
+        builtAt: "unknown",
+        timestamp: Date.now(),
+        error: message,
+        db: { connected: false, latency: 0, error: message }
+      });
     }
-    const overallOk = dbStatus.connected && (!checkCritical || Object.values(criticalApis).every((api) => typeof api === "object" && "ok" in api && api.ok));
-    res.json({
-      ...baseInfo,
-      ok: overallOk,
-      db: dbStatus,
-      ...checkCritical && { critical: criticalApis },
-      ...schemaCheck && { schema: schemaCheck }
-    });
   });
   app.get("/api/debug/env", (_req, res) => {
     res.json({
@@ -8188,6 +8364,29 @@ async function startServer() {
   app.delete("/api/admin/errors", (_req, res) => {
     const count3 = clearErrorLogs();
     res.json({ success: true, count: count3 });
+  });
+  app.post("/api/admin/verify-password", async (req, res) => {
+    try {
+      const { password } = req.body;
+      if (!password) {
+        res.status(400).json({ error: "\u30D1\u30B9\u30EF\u30FC\u30C9\u304C\u5FC5\u8981\u3067\u3059" });
+        return;
+      }
+      if (verifyAdminPassword(password)) {
+        const ADMIN_SESSION_COOKIE2 = "admin_session";
+        const cookieOptions = getSessionCookieOptions(req);
+        res.cookie(ADMIN_SESSION_COOKIE2, "authenticated", {
+          ...cookieOptions,
+          maxAge: ONE_YEAR_MS
+        });
+        res.json({ success: true });
+      } else {
+        res.status(401).json({ error: "\u30D1\u30B9\u30EF\u30FC\u30C9\u304C\u6B63\u3057\u304F\u3042\u308A\u307E\u305B\u3093" });
+      }
+    } catch (error) {
+      console.error("[Admin] Password verification error:", error);
+      res.status(500).json({ error: "\u8A8D\u8A3C\u306B\u5931\u6557\u3057\u307E\u3057\u305F" });
+    }
   });
   app.use(
     "/api/trpc",

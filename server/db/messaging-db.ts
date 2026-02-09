@@ -6,8 +6,8 @@ import { reminders, directMessages, challengeTemplates, InsertReminder, InsertDi
 export async function createReminder(reminder: InsertReminder) {
   const db = await getDb();
   if (!db) return null;
-  const result = await db.insert(reminders).values(reminder).returning({ id: reminders.id });
-  return result[0]?.id ?? null;
+  const [result] = await db.insert(reminders).values(reminder);
+  return result.insertId ?? null;
 }
 
 export async function getRemindersForUser(userId: number) {
@@ -58,9 +58,9 @@ export async function markReminderAsSent(id: number) {
 export async function sendDirectMessage(dm: InsertDirectMessage) {
   const db = await getDb();
   if (!db) return null;
-  const result = await db.insert(directMessages).values(dm).returning({ id: directMessages.id });
-  const messageId = result[0]?.id ?? null;
-  
+  const [result] = await db.insert(directMessages).values(dm);
+  const messageId = result.insertId ?? null;
+
   // WebSocketでメッセージを配信（受信者にのみ）
   try {
     const { sendMessageToUser } = await import("../websocket");
@@ -71,7 +71,7 @@ export async function sendDirectMessage(dm: InsertDirectMessage) {
   } catch (error) {
     console.error("[WebSocket] Failed to send message:", error);
   }
-  
+
   return messageId;
 }
 
@@ -122,18 +122,18 @@ export async function getConversationList(
 ) {
   const db = await getDb();
   if (!db) return [];
-  
+
   // cursorがある場合は、そのidより小さいメッセージを取得
   const conditions = cursor
     ? sql`(${directMessages.fromUserId} = ${userId} OR ${directMessages.toUserId} = ${userId}) AND ${directMessages.id} < ${cursor}`
     : sql`${directMessages.fromUserId} = ${userId} OR ${directMessages.toUserId} = ${userId}`;
-  
+
   // 最新のメッセージを持つ会話相手のリストを取得
   const messages = await db.select().from(directMessages)
     .where(conditions)
     .orderBy(desc(directMessages.createdAt))
     .limit(limit * 3); // ユニークな会話を十分に取得するために多めに取得
-  
+
   // ユニークな会話相手を抽出
   const conversationMap = new Map<string, typeof messages[0]>();
   for (const msg of messages) {
@@ -144,7 +144,7 @@ export async function getConversationList(
       conversationMap.set(key, msg);
     }
   }
-  
+
   return Array.from(conversationMap.values());
 }
 
@@ -153,8 +153,8 @@ export async function getConversationList(
 export async function createChallengeTemplate(template: InsertChallengeTemplate) {
   const db = await getDb();
   if (!db) return null;
-  const result = await db.insert(challengeTemplates).values(template).returning({ id: challengeTemplates.id });
-  return result[0]?.id ?? null;
+  const [result] = await db.insert(challengeTemplates).values(template);
+  return result.insertId ?? null;
 }
 
 export async function getChallengeTemplatesForUser(userId: number) {

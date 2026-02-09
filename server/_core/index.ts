@@ -6,6 +6,7 @@ import path from "path";
 import { fileURLToPath } from "url";
 import { createExpressMiddleware } from "@trpc/server/adapters/express";
 import { readBuildInfo } from "./health";
+import { APP_VERSION } from "../../shared/version";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 import { registerOAuthRoutes } from "./oauth";
@@ -47,19 +48,43 @@ async function findAvailablePort(startPort: number = 3000): Promise<number> {
 async function startServer() {
   // Initialize Sentry for error tracking
   initSentry();
-  
+
   const app = express();
   const server = createServer(app);
-  
+
   // Sentry request handler must be the first middleware (no-op for now)
   // Error handler will be added at the end
+
+  // 信頼できるオリジンのリスト（環境変数から取得可能）
+  const ALLOWED_ORIGINS = (process.env.ALLOWED_ORIGINS || "").split(",").filter(Boolean);
+
+  function isAllowedOrigin(origin: string | undefined): boolean {
+    if (!origin) return false;
+    
+    // 開発環境では localhost を許可
+    if (process.env.NODE_ENV !== "production") {
+      if (origin.includes("localhost") || origin.includes("127.0.0.1")) {
+        return true;
+      }
+    }
+    
+    // 本番環境ではホワイトリストをチェック
+    if (ALLOWED_ORIGINS.length > 0) {
+      return ALLOWED_ORIGINS.some(allowed => origin === allowed || origin.endsWith(allowed));
+    }
+    
+    // ホワイトリストが設定されていない場合は、doin-challenge.com のみ許可
+    return origin.includes("doin-challenge.com");
+  }
 
   // Enable CORS for all routes - reflect the request origin to support credentials
   app.use((req, res, next) => {
     const origin = req.headers.origin;
-    if (origin) {
+    
+    if (origin && isAllowedOrigin(origin)) {
       res.header("Access-Control-Allow-Origin", origin);
     }
+    
     res.header("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS");
     res.header(
       "Access-Control-Allow-Headers",
@@ -84,10 +109,20 @@ async function startServer() {
   registerOAuthRoutes(app);
   registerTwitterRoutes(app);
 
+  // ... (existing imports)
+
+  // ...
+
   app.get("/api/health", async (_req, res) => {
     try {
       const buildInfo = readBuildInfo();
       const nodeEnv = process.env.NODE_ENV || "development";
+
+      // Use imported APP_VERSION as the authoritative version
+      // Fallback to buildInfo.version or "unknown" only if needed, 
+      // but ideally we want the semantic version from shared/version.ts
+      const displayVersion = APP_VERSION || buildInfo.version || "unknown";
+
       if (!buildInfo.ok && Sentry) {
         Sentry.captureException(new Error("unknown version in /api/health"), {
           extra: { commitSha: buildInfo.commitSha, env: nodeEnv },
@@ -96,6 +131,7 @@ async function startServer() {
       }
       const baseInfo = {
         ...buildInfo,
+        version: displayVersion, // Override/Ensure version is set
         nodeEnv,
         timestamp: Date.now(),
       };
@@ -205,6 +241,13 @@ async function startServer() {
 
   // デバッグエンドポイント: 環境変数の確認
   app.get("/api/debug/env", (_req, res) => {
+    // 機密情報をマスク
+    const maskSecret = (value: string | undefined) => {
+      if (!value) return undefined;
+      if (value.length <= 8) return "***";
+      return value.substring(0, 4) + "***" + value.substring(value.length - 4);
+    };
+    
     res.json({
       RAILWAY_GIT_COMMIT_SHA: process.env.RAILWAY_GIT_COMMIT_SHA,
       APP_VERSION: process.env.APP_VERSION,
@@ -212,6 +255,9 @@ async function startServer() {
       NODE_ENV: process.env.NODE_ENV,
       RAILWAY_ENVIRONMENT: process.env.RAILWAY_ENVIRONMENT,
       RAILWAY_SERVICE_NAME: process.env.RAILWAY_SERVICE_NAME,
+      // 機密情報はマスク
+      DATABASE_URL: maskSecret(process.env.DATABASE_URL),
+      JWT_SECRET: maskSecret(process.env.JWT_SECRET),
     });
   });
 
@@ -231,7 +277,7 @@ async function startServer() {
   app.get("/api/admin/system-status", async (_req, res) => {
     try {
       const { getDb } = await import("../db");
-      
+
       // データベース接続確認
       let dbStatus = { connected: false, latency: 0, error: "" };
       try {
@@ -323,14 +369,14 @@ async function startServer() {
     const category = req.query.category as string | undefined;
     const limit = req.query.limit ? parseInt(req.query.limit as string) : undefined;
     const resolved = req.query.resolved === "true" ? true : req.query.resolved === "false" ? false : undefined;
-    
+
     const logs = getErrorLogs({
       category: category as any,
       limit,
       resolved,
     });
     const stats = getErrorStats();
-    
+
     res.json({ logs, stats });
   });
 
@@ -356,7 +402,7 @@ async function startServer() {
   app.post("/api/admin/verify-password", async (req: Request, res: Response) => {
     try {
       const { password } = req.body;
-      
+
       if (!password) {
         res.status(400).json({ error: "パスワードが必要です" });
         return;
@@ -366,12 +412,12 @@ async function startServer() {
         // パスワードが正しい場合、管理者セッションCookieを設定（1年間有効）
         const ADMIN_SESSION_COOKIE = "admin_session";
         const cookieOptions = getSessionCookieOptions(req);
-        
+
         res.cookie(ADMIN_SESSION_COOKIE, "authenticated", {
           ...cookieOptions,
           maxAge: ONE_YEAR_MS,
         });
-        
+
         res.json({ success: true });
       } else {
         res.status(401).json({ error: "パスワードが正しくありません" });
