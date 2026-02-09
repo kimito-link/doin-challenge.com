@@ -7,7 +7,7 @@
  * getUserInfo, getUserInfoWithJwt）は現在使用されていないため削除済み。
  * ログインは Twitter OAuth 2.0 のみ使用し、ユーザー情報は直接 DB に保存される。
  */
-import { COOKIE_NAME, ONE_YEAR_MS } from "../../shared/const.js";
+import { COOKIE_NAME, SESSION_MAX_AGE_MS } from "../../shared/const.js";
 import { ForbiddenError } from "../../shared/_core/errors.js";
 import { parse as parseCookieHeader } from "cookie";
 import type { Request } from "express";
@@ -76,7 +76,7 @@ class SDKServer {
     options: { expiresInMs?: number } = {},
   ): Promise<string> {
     const issuedAt = Date.now();
-    const expiresInMs = options.expiresInMs ?? ONE_YEAR_MS;
+    const expiresInMs = options.expiresInMs ?? SESSION_MAX_AGE_MS;
     const expirationSeconds = Math.floor((issuedAt + expiresInMs) / 1000);
     const secretKey = this.getSessionSecret();
 

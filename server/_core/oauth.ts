@@ -5,15 +5,16 @@
  * 現在使用されていないため削除済み。ログインはTwitter OAuth 2.0のみ使用。
  * 
  * 残存ルート:
- * - POST /api/auth/logout - ログアウト
+ * - POST /api/auth/logout - ログアウト（サーバーサイドトークン無効化を含む）
  * - GET  /api/auth/me     - 現在の認証ユーザー取得
  * - POST /api/auth/session - Bearerトークンからセッション Cookie を確立
  */
-import { COOKIE_NAME, ONE_YEAR_MS } from "../../shared/const.js";
+import { COOKIE_NAME, SESSION_MAX_AGE_MS } from "../../shared/const.js";
 import type { Express, Request, Response } from "express";
 import { getUserByOpenId } from "../db";
 import { getSessionCookieOptions } from "./cookies";
 import { sdk } from "./sdk";
+import { revokeAccessToken } from "../twitter-oauth2";
 
 function buildUserResponse(
   user:
@@ -44,9 +45,21 @@ function buildUserResponse(
 }
 
 export function registerOAuthRoutes(app: Express) {
-  app.post("/api/auth/logout", (req: Request, res: Response) => {
+  app.post("/api/auth/logout", async (req: Request, res: Response) => {
+    // 1. セッションCookieをクリア
     const cookieOptions = getSessionCookieOptions(req);
     res.clearCookie(COOKIE_NAME, { ...cookieOptions, maxAge: -1 });
+    // admin_session も同時にクリア
+    res.clearCookie("admin_session", { ...cookieOptions, maxAge: -1 });
+
+    // 2. リクエストボディにTwitterアクセストークンがあればリボーク
+    //    クライアントからトークンが送られなくてもログアウト自体は成功させる
+    const twitterAccessToken = req.body?.twitterAccessToken;
+    if (twitterAccessToken && typeof twitterAccessToken === "string") {
+      // fire-and-forget: リボーク失敗してもログアウトはブロックしない
+      revokeAccessToken(twitterAccessToken).catch(() => {});
+    }
+
     res.json({ success: true });
   });
 
@@ -76,7 +89,7 @@ export function registerOAuthRoutes(app: Express) {
 
       // Webプラットフォームからのリクエストの場合、クロスサイトリクエストに対応
       const cookieOptions = getSessionCookieOptions(req, { crossSite: true });
-      res.cookie(COOKIE_NAME, token, { ...cookieOptions, maxAge: ONE_YEAR_MS });
+      res.cookie(COOKIE_NAME, token, { ...cookieOptions, maxAge: SESSION_MAX_AGE_MS });
 
       res.json({ success: true, user: buildUserResponse(user) });
     } catch (error) {

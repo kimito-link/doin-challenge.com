@@ -55,18 +55,12 @@ export async function getSessionToken(): Promise<string | null> {
 export async function setSessionToken(token: string): Promise<void> {
   try {
     if (Platform.OS === "web") {
-      // Web: localStorageにセッショントークンを保存
-      // tRPCクライアントがここからBearerトークンを読み取る
       if (typeof window !== "undefined") {
         window.localStorage.setItem(SESSION_TOKEN_KEY, token);
-        console.log("[Auth] Session token stored in localStorage");
       }
       return;
     }
-
-    // Use SecureStore for native
     await SecureStore.setItemAsync(SESSION_TOKEN_KEY, token);
-    console.log("[Auth] Session token stored in SecureStore");
   } catch (error) {
     console.error("[Auth] Failed to set session token:", error);
     throw error;
@@ -92,24 +86,14 @@ export async function removeSessionToken(): Promise<void> {
 
 export async function getUserInfo(): Promise<User | null> {
   try {
-    console.log("[Auth] Getting user info...");
-
     let info: string | null = null;
     if (Platform.OS === "web") {
-      // Use localStorage for web
       info = window.localStorage.getItem(USER_INFO_KEY);
     } else {
-      // Use SecureStore for native
       info = await SecureStore.getItemAsync(USER_INFO_KEY);
     }
-
-    if (!info) {
-      console.log("[Auth] No user info found");
-      return null;
-    }
-    const user = JSON.parse(info);
-    console.log("[Auth] User info retrieved:", user);
-    return user;
+    if (!info) return null;
+    return JSON.parse(info);
   } catch (error) {
     console.error("[Auth] Failed to get user info:", error);
     return null;
@@ -118,15 +102,11 @@ export async function getUserInfo(): Promise<User | null> {
 
 export async function setUserInfo(user: User): Promise<void> {
   try {
-    // Get existing user info to preserve fields that might not be in the new user object
+    // 既存ユーザー情報とマージ（Twitter固有フィールドを保持）
     const existingUser = await getUserInfo();
-    
-    // Merge existing user with new user, preserving Twitter-specific fields
-    // New user data takes precedence, but existing fields are preserved if not present in new data
     const mergedUser: User = existingUser ? {
       ...existingUser,
       ...user,
-      // Explicitly preserve profile and Twitter-specific fields if they exist in either object
       prefecture: user.prefecture ?? existingUser.prefecture,
       gender: user.gender ?? existingUser.gender,
       description: user.description ?? existingUser.description,
@@ -138,24 +118,13 @@ export async function setUserInfo(user: User): Promise<void> {
       isFollowingTarget: user.isFollowingTarget ?? existingUser.isFollowingTarget,
       targetAccount: user.targetAccount ?? existingUser.targetAccount,
     } : user;
-    
-    console.log("[Auth] Setting user info...", {
-      id: mergedUser.id,
-      name: mergedUser.name,
-      hasDescription: !!mergedUser.description,
-      descriptionPreview: mergedUser.description?.substring(0, 30),
-    });
 
+    const serialized = JSON.stringify(mergedUser);
     if (Platform.OS === "web") {
-      // Use localStorage for web
-      window.localStorage.setItem(USER_INFO_KEY, JSON.stringify(mergedUser));
-      console.log("[Auth] User info stored in localStorage successfully");
-      return;
+      window.localStorage.setItem(USER_INFO_KEY, serialized);
+    } else {
+      await SecureStore.setItemAsync(USER_INFO_KEY, serialized);
     }
-
-    // Use SecureStore for native
-    await SecureStore.setItemAsync(USER_INFO_KEY, JSON.stringify(mergedUser));
-    console.log("[Auth] User info stored in SecureStore successfully");
   } catch (error) {
     console.error("[Auth] Failed to set user info:", error);
   }

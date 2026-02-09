@@ -588,3 +588,45 @@ export async function getUserProfileByUsername(username: string): Promise<{
     return null;
   }
 }
+
+/**
+ * Twitter OAuth 2.0 アクセストークンをリボーク（無効化）する
+ * ログアウト時にサーバーサイドでトークンを確実に無効化するために使用
+ * 
+ * @see https://developer.twitter.com/en/docs/authentication/oauth-2-0/authorization-code
+ */
+export async function revokeAccessToken(accessToken: string): Promise<boolean> {
+  if (!accessToken) return false;
+
+  const url = "https://api.twitter.com/2/oauth2/revoke";
+  const credentials = Buffer.from(`${TWITTER_CLIENT_ID}:${TWITTER_CLIENT_SECRET}`).toString("base64");
+
+  try {
+    const params = new URLSearchParams({
+      token: accessToken,
+      token_type_hint: "access_token",
+    });
+
+    const response = await fetch(url, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/x-www-form-urlencoded",
+        "Authorization": `Basic ${credentials}`,
+      },
+      body: params.toString(),
+    });
+
+    if (response.ok) {
+      console.log("[Twitter OAuth 2.0] Access token revoked successfully");
+      return true;
+    }
+
+    // リボーク失敗はログに記録するが、ログアウト自体は成功させる
+    console.warn(`[Twitter OAuth 2.0] Token revoke returned ${response.status}`);
+    return false;
+  } catch (error) {
+    // ネットワークエラー等でもログアウト自体は成功させる
+    console.warn("[Twitter OAuth 2.0] Token revoke failed:", error instanceof Error ? error.message : String(error));
+    return false;
+  }
+}

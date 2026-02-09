@@ -5,11 +5,11 @@
 
 import * as SecureStore from "expo-secure-store";
 import { Platform } from "react-native";
-import { ONE_YEAR_MS } from "@/shared/const";
+import { SESSION_MAX_AGE_MS } from "@/shared/const";
 
 const ADMIN_SESSION_KEY = "admin_session";
-// 1年間有効（通常のOAuthセッションと同じ）
-const ADMIN_SESSION_EXPIRY = ONE_YEAR_MS;
+// 30日間有効（セキュリティベストプラクティスに基づき短縮）
+const ADMIN_SESSION_EXPIRY = SESSION_MAX_AGE_MS;
 
 /**
  * 管理者セッションを保存

@@ -14,7 +14,7 @@ import {
   refreshAccessToken,
 } from "./twitter-oauth2";
 import * as db from "./db";
-import { COOKIE_NAME, ONE_YEAR_MS } from "../shared/const.js";
+import { COOKIE_NAME, SESSION_MAX_AGE_MS } from "../shared/const.js";
 import { getSessionCookieOptions } from "./_core/cookies.js";
 import { sdk } from "./_core/sdk.js";
 
@@ -228,10 +228,10 @@ export function registerTwitterRoutes(app: Express) {
         try {
           sessionToken = await sdk.createSessionToken(openId, {
             name: userProfile.name || "",
-            expiresInMs: ONE_YEAR_MS,
+            expiresInMs: SESSION_MAX_AGE_MS,
           });
           const cookieOptions = getSessionCookieOptions(req, { crossSite: true });
-          res.cookie(COOKIE_NAME, sessionToken, { ...cookieOptions, maxAge: ONE_YEAR_MS });
+          res.cookie(COOKIE_NAME, sessionToken, { ...cookieOptions, maxAge: SESSION_MAX_AGE_MS });
           console.log("[Twitter OAuth 2.0] Session cookie set successfully");
           break;
         } catch (error) {

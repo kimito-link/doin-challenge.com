@@ -34,10 +34,8 @@ export async function saveRefreshToken(refreshToken: string): Promise<void> {
   try {
     if (Platform.OS === "web") {
       window.localStorage.setItem(REFRESH_TOKEN_KEY, refreshToken);
-      console.log("[TokenManager] Refresh token saved to localStorage");
     } else {
       await SecureStore.setItemAsync(REFRESH_TOKEN_KEY, refreshToken);
-      console.log("[TokenManager] Refresh token saved to SecureStore");
     }
   } catch (error) {
     console.error("[TokenManager] Failed to save refresh token:", error);
@@ -70,7 +68,6 @@ export async function removeRefreshToken(): Promise<void> {
     } else {
       await SecureStore.deleteItemAsync(REFRESH_TOKEN_KEY);
     }
-    console.log("[TokenManager] Refresh token removed");
   } catch (error) {
     console.error("[TokenManager] Failed to remove refresh token:", error);
   }
@@ -87,7 +84,6 @@ export async function saveTokenExpiresAt(expiresAt: number): Promise<void> {
     } else {
       await SecureStore.setItemAsync(TOKEN_EXPIRES_AT_KEY, expiresAtStr);
     }
-    console.log("[TokenManager] Token expires at:", new Date(expiresAt * 1000).toISOString());
   } catch (error) {
     console.error("[TokenManager] Failed to save token expires at:", error);
   }
@@ -166,8 +162,6 @@ export async function saveTokenData(data: {
   // 有効期限を計算して保存
   const expiresAt = Math.floor(Date.now() / 1000) + expiresIn;
   await saveTokenExpiresAt(expiresAt);
-  
-  console.log("[TokenManager] Token data saved, expires at:", new Date(expiresAt * 1000).toISOString());
 }
 
 /**
@@ -183,7 +177,6 @@ export async function clearAllTokenData(): Promise<void> {
     await SecureStore.deleteItemAsync(SESSION_TOKEN_KEY);
   }
   
-  console.log("[TokenManager] All token data cleared");
 }
 
 /**
@@ -196,11 +189,7 @@ export async function refreshAccessToken(): Promise<{
   expiresIn: number;
 } | null> {
   const refreshToken = await getRefreshToken();
-  
-  if (!refreshToken) {
-    console.log("[TokenManager] No refresh token available");
-    return null;
-  }
+  if (!refreshToken) return null;
   
   const maxAttempts = 2;
   for (let attempt = 0; attempt < maxAttempts; attempt++) {
@@ -214,38 +203,26 @@ export async function refreshAccessToken(): Promise<{
       });
       
       if (!result.ok) {
-        console.error(`[TokenManager] Token refresh failed (attempt ${attempt + 1}):`, result.error);
-        
-        // リフレッシュトークンが無効な場合はクリアして即座に終了（リトライしない）
+        // リフレッシュトークンが無効 → クリアして即終了（リトライしない）
         if (result.status === 401 || result.status === 400) {
-          console.warn("[TokenManager] Refresh token invalid, clearing all token data");
           await clearAllTokenData();
           return null;
         }
-        
-        // サーバーエラー(5xx)の場合はリトライ
+        // サーバーエラー(5xx) → リトライ
         if (result.status && result.status >= 500 && attempt < maxAttempts - 1) {
-          console.warn("[TokenManager] Server error, retrying in 1s...");
           await new Promise(resolve => setTimeout(resolve, 1000));
           continue;
         }
-        
         return null;
       }
       
-      if (!result.data) {
-        console.error("[TokenManager] No data in response");
-        return null;
-      }
+      if (!result.data) return null;
       
-      // 新しいトークンデータを保存
       await saveTokenData({
         accessToken: result.data.access_token,
         refreshToken: result.data.refresh_token,
         expiresIn: result.data.expires_in,
       });
-      
-      console.log("[TokenManager] Token refreshed successfully");
       
       return {
         accessToken: result.data.access_token,
@@ -255,13 +232,10 @@ export async function refreshAccessToken(): Promise<{
     } catch (error) {
       const isNetworkError = error instanceof Error && 
         (error.message.includes("fetch") || error.message.includes("network") || error.message.includes("Failed"));
-      
       if (isNetworkError && attempt < maxAttempts - 1) {
-        console.warn(`[TokenManager] Network error on attempt ${attempt + 1}, retrying in 1s...`);
         await new Promise(resolve => setTimeout(resolve, 1000));
         continue;
       }
-      
       console.error("[TokenManager] Token refresh error:", error);
       return null;
     }
@@ -335,29 +309,15 @@ export async function getValidAccessToken(): Promise<string | null> {
     accessToken = await SecureStore.getItemAsync(SESSION_TOKEN_KEY);
   }
   
-  if (!accessToken) {
-    console.log("[TokenManager] No access token available");
-    return null;
-  }
+  if (!accessToken) return null;
   
-  // 期限切れかどうかをチェック
   const isExpired = await isAccessTokenExpired();
+  if (!isExpired) return accessToken;
   
-  if (!isExpired) {
-    console.log("[TokenManager] Access token is still valid");
-    return accessToken;
-  }
-  
-  console.log("[TokenManager] Access token expired, attempting refresh...");
-  
-  // リフレッシュを試行
+  // 期限切れ → リフレッシュ試行
   const refreshResult = await refreshAccessToken();
+  if (refreshResult) return refreshResult.accessToken;
   
-  if (refreshResult) {
-    return refreshResult.accessToken;
-  }
-  
-  // リフレッシュに失敗した場合は現在のトークンを返す（サーバー側で検証）
-  console.log("[TokenManager] Refresh failed, returning current token");
+  // リフレッシュ失敗 → 現在のトークンを返す（サーバー側で検証）
   return accessToken;
 }

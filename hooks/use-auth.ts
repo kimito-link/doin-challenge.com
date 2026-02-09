@@ -20,18 +20,14 @@ type UseAuthOptions = {
 let cachedAuthState: { user: Auth.User | null; timestamp: number } | null = null;
 const AUTH_CACHE_TTL = 5 * 60 * 1000; // 5分
 
-// Webの場合、初期化時にlocalStorageから同期的にユーザー情報を読み込む
+// Web: 初期化時にlocalStorageから同期的にユーザー情報を読み込む
 function getInitialUserFromLocalStorage(): Auth.User | null {
   if (Platform.OS === "web" && typeof window !== "undefined") {
     try {
       const info = window.localStorage.getItem(USER_INFO_KEY);
-      if (info) {
-        const user = JSON.parse(info);
-        console.log("[useAuth] Initial user loaded from localStorage:", user?.name);
-        return user;
-      }
-    } catch (e) {
-      console.error("[useAuth] Failed to parse localStorage user:", e);
+      if (info) return JSON.parse(info);
+    } catch {
+      // localStorageパースエラーは無視
     }
   }
   return null;
@@ -42,7 +38,6 @@ if (!cachedAuthState) {
   const initialUser = getInitialUserFromLocalStorage();
   if (initialUser) {
     cachedAuthState = { user: initialUser, timestamp: Date.now() };
-    console.log("[useAuth] Cache initialized from localStorage");
   }
 }
 
@@ -57,45 +52,32 @@ export function useAuth(options?: UseAuthOptions) {
   const [error, setError] = useState<Error | null>(null);
 
   const fetchUser = useCallback(async () => {
-    console.log("[useAuth] fetchUser called");
     try {
       setLoading(true);
       setError(null);
 
-      // Web platform: check localStorage first for Twitter auth, then try API
+      // Web: localStorageキャッシュ → API の順で認証状態を取得
       if (Platform.OS === "web") {
-        console.log("[useAuth] Web platform: checking localStorage for cached user...");
-        
-        // First check localStorage for Twitter auth data
         const cachedUser = await Auth.getUserInfo();
         if (cachedUser) {
-          console.log("[useAuth] Web: Found cached user in localStorage:", cachedUser);
           setUser(cachedUser);
           cachedAuthState = { user: cachedUser, timestamp: Date.now() };
           return;
         }
         
-        // If no cached user, try API (for server-side session auth)
-        // ネットワークエラーの場合は1回リトライ
-        console.log("[useAuth] Web platform: fetching user from API...");
+        // キャッシュなし → APIで認証確認（ネットワークエラー時1回リトライ）
         let apiUser = null;
-        let lastApiError: unknown = null;
         for (let attempt = 0; attempt < 2; attempt++) {
           try {
             apiUser = await Api.getMe();
-            console.log("[useAuth] API user response (attempt " + (attempt + 1) + "):", apiUser ? "found" : "null");
-            lastApiError = null;
             break;
           } catch (apiError) {
-            lastApiError = apiError;
             const isNetworkError = apiError instanceof Error && 
               (apiError.message.includes("fetch") || apiError.message.includes("network") || apiError.message.includes("Failed"));
             if (isNetworkError && attempt === 0) {
-              console.warn("[useAuth] Network error, retrying in 1s...");
               await new Promise(resolve => setTimeout(resolve, 1000));
               continue;
             }
-            console.log("[useAuth] Web: API call failed:", apiError);
             break;
           }
         }
@@ -114,44 +96,27 @@ export function useAuth(options?: UseAuthOptions) {
           };
           setUser(userInfo);
           cachedAuthState = { user: userInfo, timestamp: Date.now() };
-          // Cache user info in localStorage for faster subsequent loads
           await Auth.setUserInfo(userInfo);
-          console.log("[useAuth] Web user set from API:", userInfo.name);
         } else {
-          if (lastApiError) {
-            console.log("[useAuth] Web: API call failed after retries, no user authenticated");
-          } else {
-            console.log("[useAuth] Web: No authenticated user from API");
-          }
           setUser(null);
           cachedAuthState = { user: null, timestamp: Date.now() };
         }
         return;
       }
 
-      // Native platform: use token-based auth
-      console.log("[useAuth] Native platform: checking for session token...");
+      // Native: トークンベース認証
       const sessionToken = await Auth.getSessionToken();
-      console.log(
-        "[useAuth] Session token:",
-        sessionToken ? `present (${sessionToken.substring(0, 20)}...)` : "missing",
-      );
       if (!sessionToken) {
-        console.log("[useAuth] No session token, setting user to null");
         setUser(null);
         cachedAuthState = { user: null, timestamp: Date.now() };
         return;
       }
 
-      // Use cached user info for native (token validates the session)
       const cachedUser = await Auth.getUserInfo();
-      console.log("[useAuth] Cached user:", cachedUser);
       if (cachedUser) {
-        console.log("[useAuth] Using cached user info");
         setUser(cachedUser);
         cachedAuthState = { user: cachedUser, timestamp: Date.now() };
       } else {
-        console.log("[useAuth] No cached user, setting user to null");
         setUser(null);
         cachedAuthState = { user: null, timestamp: Date.now() };
       }
@@ -160,25 +125,27 @@ export function useAuth(options?: UseAuthOptions) {
       console.error("[useAuth] fetchUser error:", error);
       setError(error);
       setUser(null);
-      // エラー時もキャッシュを更新（未認証状態をキャッシュ）
       cachedAuthState = { user: null, timestamp: Date.now() };
     } finally {
       setLoading(false);
-      console.log("[useAuth] fetchUser completed, loading:", false);
     }
   }, []);
 
   const logout = useCallback(async () => {
     try {
-      await Api.logout();
+      // ログアウト前にアクセストークンを取得（サーバー側でリボークするため）
+      const accessToken = await getValidAccessToken();
+      await Api.logout(accessToken || undefined);
     } catch (err) {
       console.error("[Auth] Logout API call failed:", err);
-      // Continue with logout even if API call fails
+      // API呼び出しが失敗してもローカルのクリーンアップは続行
     } finally {
       await Auth.removeSessionToken();
       await Auth.clearUserInfo();
-      // Clear all token data including refresh token
+      // リフレッシュトークン含むすべてのトークンデータをクリア
       await clearAllTokenData();
+      // メモリキャッシュもクリア
+      cachedAuthState = null;
       setUser(null);
       setError(null);
     }
@@ -223,40 +190,24 @@ export function useAuth(options?: UseAuthOptions) {
   const isAuthReady = !loading;
 
   useEffect(() => {
-    console.log("[useAuth] useEffect triggered, autoFetch:", autoFetch, "platform:", Platform.OS);
     if (autoFetch) {
       if (Platform.OS === "web") {
-        // Web: fetch user from API directly (user will login manually if needed)
-        console.log("[useAuth] Web: fetching user from API...");
         fetchUser();
       } else {
-        // Native: check for cached user info first for faster initial load
+        // Native: キャッシュがあれば即座に表示、なければAPI
         Auth.getUserInfo().then((cachedUser) => {
-          console.log("[useAuth] Native cached user check:", cachedUser);
           if (cachedUser) {
-            console.log("[useAuth] Native: setting cached user immediately");
             setUser(cachedUser);
             setLoading(false);
           } else {
-            // No cached user, check session token
             fetchUser();
           }
         });
       }
     } else {
-      console.log("[useAuth] autoFetch disabled, setting loading to false");
       setLoading(false);
     }
   }, [autoFetch, fetchUser]);
-
-  useEffect(() => {
-    console.log("[useAuth] State updated:", {
-      hasUser: !!user,
-      loading,
-      isAuthenticated,
-      error: error?.message,
-    });
-  }, [user, loading, isAuthenticated, error]);
 
   return {
     user,

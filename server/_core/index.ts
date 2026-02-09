@@ -24,7 +24,7 @@ import { rateLimiterMiddleware } from "./rate-limiter";
 import { verifyAdminPassword } from "../admin-password-auth";
 import { getSessionCookieOptions } from "./cookies";
 import type { Request, Response } from "express";
-import { ONE_YEAR_MS } from "../../shared/const";
+import { SESSION_MAX_AGE_MS } from "../../shared/const";
 
 function isPortAvailable(port: number): Promise<boolean> {
   return new Promise((resolve) => {
@@ -151,6 +151,24 @@ async function startServer() {
 
   app.use(express.json({ limit: "50mb" }));
   app.use(express.urlencoded({ limit: "50mb", extended: true }));
+
+  // セキュリティヘッダー（RFC 9700 / OWASP推奨）
+  app.use((_req, res, next) => {
+    // クリックジャッキング防止
+    res.setHeader("X-Frame-Options", "DENY");
+    res.setHeader("Content-Security-Policy", "frame-ancestors 'none'");
+    // MIMEスニッフィング防止
+    res.setHeader("X-Content-Type-Options", "nosniff");
+    // Refererヘッダー経由のトークン漏洩防止
+    res.setHeader("Referrer-Policy", "strict-origin-when-cross-origin");
+    // HTTPS強制（本番のみ）
+    if (process.env.NODE_ENV === "production") {
+      res.setHeader("Strict-Transport-Security", "max-age=31536000; includeSubDomains");
+    }
+    // XSS保護（レガシーブラウザ向け）
+    res.setHeader("X-XSS-Protection", "1; mode=block");
+    next();
+  });
 
   // Rate Limiter Middleware（不正アクセスを自動ブロック）
   app.use(rateLimiterMiddleware);
@@ -509,7 +527,7 @@ async function startServer() {
 
         res.cookie(ADMIN_SESSION_COOKIE, "authenticated", {
           ...cookieOptions,
-          maxAge: ONE_YEAR_MS,
+          maxAge: SESSION_MAX_AGE_MS,
         });
 
         res.json({ success: true });
