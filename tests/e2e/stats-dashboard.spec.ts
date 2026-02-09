@@ -6,7 +6,6 @@
  */
 import { test, expect } from "@playwright/test";
 import { dismissOnboarding } from "./_helpers";
-import { loginAsUser } from "./_auth";
 
 test.setTimeout(60000);
 
