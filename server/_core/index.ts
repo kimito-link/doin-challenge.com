@@ -268,6 +268,8 @@ async function startServer() {
       const statusCode = dbStatus.connected ? 200 : 500;
       res.status(statusCode).json({
         ...baseInfo,
+        // 後方互換性のため、commitsha（小文字）も含める
+        commitsha: baseInfo.commitSha,
         ok: overallOk,
         db: dbStatus,
         ...(checkCritical && { critical: criticalApis }),
@@ -279,6 +281,7 @@ async function startServer() {
       res.status(500).json({
         ok: false,
         commitSha: "unknown",
+        commitsha: "unknown", // 後方互換性のため
         version: "unknown",
         builtAt: "unknown",
         timestamp: Date.now(),
