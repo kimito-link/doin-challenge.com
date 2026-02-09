@@ -8,10 +8,11 @@ on:
   push:
     branches: [main]
 
-# push 時は直近の push に対する run だけを有効にし、古い run はキャンセルする（誤検知防止）。
+# push 時は各コミットごとに独立して実行（deploy-verify.ymlと同様の戦略）
+# PR時は最新のPR更新のみを実行（古いrunはキャンセル）
 concurrency:
-  group: gate1-${{ github.ref }}
-  cancel-in-progress: true
+  group: gate1-${{ github.ref }}-${{ github.event_name == 'pull_request' && github.event.pull_request.number || github.sha }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
 
 jobs:
   diff-check:
