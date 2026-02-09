@@ -10,125 +10,56 @@
 
 import { describe, it, expect, beforeEach, afterEach, vi } from "vitest";
 import type { Request, Response } from "express";
-import { registerTwitterRoutes } from "../server/twitter-routes";
+import { registerTwitterRoutes, extractBearerToken, createErrorResponse } from "../server/twitter-routes";
 
 describe("Twitter Routes Security", () => {
-  describe("extractBearerToken (via /api/twitter/me endpoint)", () => {
-    it("should extract token from valid Bearer header", async () => {
-      const req = {
-        headers: {
-          authorization: "Bearer valid-token-12345",
-        },
-      } as unknown as Request;
-
-      const res = {
-        status: vi.fn().mockReturnThis(),
-        json: vi.fn(),
-      } as unknown as Response;
-
-      // getUserProfileをモック
-      vi.mock("../server/twitter-oauth2", () => ({
-        getUserProfile: vi.fn().mockResolvedValue({
-          id: "123",
-          name: "Test User",
-          username: "testuser",
-        }),
-      }));
-
-      // エンドポイントを直接呼び出すか、統合テストとして実装
+  describe("extractBearerToken", () => {
+    it("should extract token from valid Bearer header", () => {
+      const token = extractBearerToken("Bearer valid-token-12345");
+      
+      expect(token).toBe("valid-token-12345");
     });
 
-    it("should return 401 for missing Authorization header", async () => {
-      const req = {
-        headers: {},
-      } as unknown as Request;
-
-      const res = {
-        status: vi.fn().mockReturnThis(),
-        json: vi.fn(),
-      } as unknown as Response;
-
-      // エンドポイントのテスト実装が必要
+    it("should return null for missing Authorization header", () => {
+      const token = extractBearerToken(undefined);
+      
+      expect(token).toBeNull();
     });
 
-    it("should return 401 for invalid Bearer format (no space)", async () => {
-      const req = {
-        headers: {
-          authorization: "Bearervalid-token-12345",
-        },
-      } as unknown as Request;
-
-      const res = {
-        status: vi.fn().mockReturnThis(),
-        json: vi.fn(),
-      } as unknown as Response;
-
-      // エンドポイントのテスト実装が必要
+    it("should return null for invalid Bearer format (no space)", () => {
+      const token = extractBearerToken("Bearervalid-token-12345");
+      
+      expect(token).toBeNull();
     });
 
-    it("should return 401 for invalid Bearer format (lowercase bearer)", async () => {
-      const req = {
-        headers: {
-          authorization: "bearer valid-token-12345",
-        },
-      } as unknown as Request;
-
-      const res = {
-        status: vi.fn().mockReturnThis(),
-        json: vi.fn(),
-      } as unknown as Response;
-
-      // 小文字のbearerも受け入れるべき（実装を確認）
+    it("should accept lowercase bearer (case-insensitive)", () => {
+      const token = extractBearerToken("bearer valid-token-12345");
+      
+      expect(token).toBe("valid-token-12345");
     });
 
-    it("should return 401 for empty token", async () => {
-      const req = {
-        headers: {
-          authorization: "Bearer ",
-        },
-      } as unknown as Request;
-
-      const res = {
-        status: vi.fn().mockReturnThis(),
-        json: vi.fn(),
-      } as unknown as Response;
-
-      // エンドポイントのテスト実装が必要
+    it("should return null for empty token", () => {
+      const token = extractBearerToken("Bearer ");
+      
+      expect(token).toBeNull();
     });
 
-    it("should handle token with whitespace", async () => {
-      const req = {
-        headers: {
-          authorization: "Bearer  token-with-spaces  ",
-        },
-      } as unknown as Request;
-
-      const res = {
-        status: vi.fn().mockReturnThis(),
-        json: vi.fn(),
-      } as unknown as Response;
-
-      // トリムされることを確認
+    it("should trim token with whitespace", () => {
+      const token = extractBearerToken("Bearer  token-with-spaces  ");
+      
+      expect(token).toBe("token-with-spaces");
     });
 
-    it("should handle very long token", async () => {
+    it("should handle very long token", () => {
       const longToken = "A".repeat(10000);
-      const req = {
-        headers: {
-          authorization: `Bearer ${longToken}`,
-        },
-      } as unknown as Request;
-
-      const res = {
-        status: vi.fn().mockReturnThis(),
-        json: vi.fn(),
-      } as unknown as Response;
-
-      // 非常に長いトークンでも処理できることを確認
+      const token = extractBearerToken(`Bearer ${longToken}`);
+      
+      expect(token).toBe(longToken);
+      expect(token?.length).toBe(10000);
     });
   });
 
-  describe("createErrorResponse (via error handling)", () => {
+  describe("createErrorResponse", () => {
     const originalEnv = process.env.NODE_ENV;
 
     beforeEach(() => {
@@ -146,41 +77,69 @@ describe("Twitter Routes Security", () => {
     it("should exclude stack trace in production", () => {
       vi.stubEnv("NODE_ENV", "production");
 
-      // エラーハンドリング経由でテスト
-      // createErrorResponseはprivateなので、実際のエンドポイント経由でテスト
+      const error = new Error("Test error");
+      error.stack = "Error: Test error\n    at test.js:1:1";
+      
+      const response = createErrorResponse(error, true);
+      
+      expect(response.error).toBe(true);
+      expect(response.message).toBe("Test error");
+      expect(response.details).toBeUndefined();
     });
 
     it("should include stack trace in development", () => {
       vi.stubEnv("NODE_ENV", "development");
 
-      // エラーハンドリング経由でテスト
+      const error = new Error("Test error");
+      error.stack = "Error: Test error\n    at test.js:1:1";
+      
+      const response = createErrorResponse(error, true);
+      
+      expect(response.error).toBe(true);
+      expect(response.message).toBe("Test error");
+      expect(response.details).toBeDefined();
+      expect(response.details?.length).toBeLessThanOrEqual(200);
     });
 
     it("should handle Error objects", () => {
       const error = new Error("Test error");
       error.stack = "Error: Test error\n    at test.js:1:1";
-
-      // エラーハンドリング経由でテスト
+      
+      const response = createErrorResponse(error, false);
+      
+      expect(response.error).toBe(true);
+      expect(response.message).toBe("Test error");
     });
 
     it("should handle string errors", () => {
       const error = "String error message";
-
-      // エラーハンドリング経由でテスト
+      
+      const response = createErrorResponse(error, false);
+      
+      expect(response.error).toBe(true);
+      expect(response.message).toBe("String error message");
     });
 
     it("should handle unknown error types", () => {
       const error = { custom: "error object" };
-
-      // エラーハンドリング経由でテスト
+      
+      const response = createErrorResponse(error, false);
+      
+      expect(response.error).toBe(true);
+      expect(response.message).toBe("Failed to complete Twitter authentication");
     });
 
     it("should truncate long error details", () => {
+      vi.stubEnv("NODE_ENV", "development");
+      
       const longStack = "A".repeat(500);
       const error = new Error("Test");
       error.stack = longStack;
-
-      // エラーハンドリング経由でテスト（200文字で切り詰められることを確認）
+      
+      const response = createErrorResponse(error, true);
+      
+      expect(response.details).toBeDefined();
+      expect(response.details?.length).toBeLessThanOrEqual(200);
     });
   });
 });

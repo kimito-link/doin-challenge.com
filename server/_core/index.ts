@@ -45,6 +45,33 @@ async function findAvailablePort(startPort: number = 3000): Promise<number> {
   throw new Error(`No available port found starting from ${startPort}`);
 }
 
+/**
+ * 信頼できるオリジンかどうかをチェック
+ * 
+ * @internal テスト用にexport（本来はprivate関数）
+ */
+export function isAllowedOrigin(origin: string | undefined): boolean {
+  if (!origin) return false;
+  
+  // 信頼できるオリジンのリスト（環境変数から取得可能）
+  const ALLOWED_ORIGINS = (process.env.ALLOWED_ORIGINS || "").split(",").filter(Boolean);
+  
+  // 開発環境では localhost を許可
+  if (process.env.NODE_ENV !== "production") {
+    if (origin.includes("localhost") || origin.includes("127.0.0.1")) {
+      return true;
+    }
+  }
+  
+  // 本番環境ではホワイトリストをチェック
+  if (ALLOWED_ORIGINS.length > 0) {
+    return ALLOWED_ORIGINS.some(allowed => origin === allowed || origin.endsWith(allowed));
+  }
+  
+  // ホワイトリストが設定されていない場合は、doin-challenge.com のみ許可
+  return origin.includes("doin-challenge.com");
+}
+
 async function startServer() {
   // Initialize Sentry for error tracking
   initSentry();
@@ -54,28 +81,6 @@ async function startServer() {
 
   // Sentry request handler must be the first middleware (no-op for now)
   // Error handler will be added at the end
-
-  // 信頼できるオリジンのリスト（環境変数から取得可能）
-  const ALLOWED_ORIGINS = (process.env.ALLOWED_ORIGINS || "").split(",").filter(Boolean);
-
-  function isAllowedOrigin(origin: string | undefined): boolean {
-    if (!origin) return false;
-    
-    // 開発環境では localhost を許可
-    if (process.env.NODE_ENV !== "production") {
-      if (origin.includes("localhost") || origin.includes("127.0.0.1")) {
-        return true;
-      }
-    }
-    
-    // 本番環境ではホワイトリストをチェック
-    if (ALLOWED_ORIGINS.length > 0) {
-      return ALLOWED_ORIGINS.some(allowed => origin === allowed || origin.endsWith(allowed));
-    }
-    
-    // ホワイトリストが設定されていない場合は、doin-challenge.com のみ許可
-    return origin.includes("doin-challenge.com");
-  }
 
   // Enable CORS for all routes - reflect the request origin to support credentials
   app.use((req, res, next) => {

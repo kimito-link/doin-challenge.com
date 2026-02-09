@@ -20,8 +20,10 @@ import { sdk } from "./_core/sdk.js";
 
 /**
  * エラーレスポンスを生成（本番環境では詳細情報を除外）
+ * 
+ * @internal テスト用にexport（本来はprivate関数）
  */
-function createErrorResponse(error: unknown, includeDetails: boolean = false): {
+export function createErrorResponse(error: unknown, includeDetails: boolean = false): {
   error: boolean;
   message: string;
   details?: string;
@@ -48,8 +50,10 @@ function createErrorResponse(error: unknown, includeDetails: boolean = false): {
 
 /**
  * Bearerトークンの安全な取得
+ * 
+ * @internal テスト用にexport（本来はprivate関数）
  */
-function extractBearerToken(authHeader: string | undefined): string | null {
+export function extractBearerToken(authHeader: string | undefined): string | null {
   if (!authHeader) return null;
   
   // Bearer トークンの形式を検証

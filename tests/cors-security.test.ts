@@ -6,6 +6,7 @@
  */
 
 import { describe, it, expect, beforeEach, afterEach, vi } from "vitest";
+import { isAllowedOrigin } from "../server/_core/index";
 
 describe("CORS Security - isAllowedOrigin", () => {
   const originalEnv = process.env.NODE_ENV;
@@ -40,20 +41,24 @@ describe("CORS Security - isAllowedOrigin", () => {
     });
 
     it("should allow localhost origins", () => {
-      // isAllowedOriginはprivateなので、CORSミドルウェア経由でテスト
-      // または、テスト用にexportする必要がある
+      expect(isAllowedOrigin("http://localhost:3000")).toBe(true);
+      expect(isAllowedOrigin("http://localhost:8081")).toBe(true);
     });
 
     it("should allow 127.0.0.1 origins", () => {
-      // テスト実装が必要
+      expect(isAllowedOrigin("http://127.0.0.1:3000")).toBe(true);
+      expect(isAllowedOrigin("http://127.0.0.1:8081")).toBe(true);
     });
 
     it("should allow localhost with port", () => {
-      // http://localhost:3000 など
+      expect(isAllowedOrigin("http://localhost:3000")).toBe(true);
+      expect(isAllowedOrigin("http://localhost:8081")).toBe(true);
+      expect(isAllowedOrigin("https://localhost:3000")).toBe(true);
     });
 
     it("should reject non-localhost origins when ALLOWED_ORIGINS is not set", () => {
-      // 開発環境でも、localhost以外は拒否されるべき
+      expect(isAllowedOrigin("https://evil.com")).toBe(false);
+      expect(isAllowedOrigin("https://example.com")).toBe(false);
     });
   });
 
@@ -63,30 +68,39 @@ describe("CORS Security - isAllowedOrigin", () => {
     });
 
     it("should allow doin-challenge.com when ALLOWED_ORIGINS is not set", () => {
-      // テスト実装が必要
+      expect(isAllowedOrigin("https://doin-challenge.com")).toBe(true);
+      expect(isAllowedOrigin("https://www.doin-challenge.com")).toBe(true);
     });
 
     it("should allow https://doin-challenge.com", () => {
-      // テスト実装が必要
+      expect(isAllowedOrigin("https://doin-challenge.com")).toBe(true);
     });
 
     it("should allow subdomains of doin-challenge.com", () => {
-      // www.doin-challenge.com など
+      expect(isAllowedOrigin("https://www.doin-challenge.com")).toBe(true);
+      expect(isAllowedOrigin("https://app.doin-challenge.com")).toBe(true);
     });
 
     it("should reject localhost in production", () => {
-      // 本番環境ではlocalhostを拒否
+      vi.stubEnv("NODE_ENV", "production");
+      
+      expect(isAllowedOrigin("http://localhost:3000")).toBe(false);
+      expect(isAllowedOrigin("http://127.0.0.1:3000")).toBe(false);
     });
 
     it("should reject malicious origins", () => {
+      vi.stubEnv("NODE_ENV", "production");
+      
       const maliciousOrigins = [
         "https://evil.com",
         "https://doin-challenge.com.evil.com",
         "https://evil-doin-challenge.com",
-        "http://doin-challenge.com",
+        "http://doin-challenge.com", // HTTPは拒否（HTTPSのみ許可）
       ];
 
-      // すべて拒否されることを確認
+      maliciousOrigins.forEach(origin => {
+        expect(isAllowedOrigin(origin)).toBe(false);
+      });
     });
   });
 
@@ -96,45 +110,55 @@ describe("CORS Security - isAllowedOrigin", () => {
     });
 
     it("should allow origins from ALLOWED_ORIGINS", () => {
+      vi.stubEnv("NODE_ENV", "production");
       process.env.ALLOWED_ORIGINS = "https://example.com,https://app.example.com";
 
-      // テスト実装が必要
+      expect(isAllowedOrigin("https://example.com")).toBe(true);
+      expect(isAllowedOrigin("https://app.example.com")).toBe(true);
     });
 
     it("should allow origins that end with ALLOWED_ORIGINS entry", () => {
+      vi.stubEnv("NODE_ENV", "production");
       process.env.ALLOWED_ORIGINS = ".example.com";
 
-      // https://app.example.com が許可されることを確認
+      expect(isAllowedOrigin("https://app.example.com")).toBe(true);
+      expect(isAllowedOrigin("https://api.example.com")).toBe(true);
     });
 
     it("should handle empty ALLOWED_ORIGINS", () => {
+      vi.stubEnv("NODE_ENV", "production");
       process.env.ALLOWED_ORIGINS = "";
 
-      // doin-challenge.comのみ許可されることを確認
+      expect(isAllowedOrigin("https://doin-challenge.com")).toBe(true);
+      expect(isAllowedOrigin("https://example.com")).toBe(false);
     });
 
     it("should handle ALLOWED_ORIGINS with spaces", () => {
+      vi.stubEnv("NODE_ENV", "production");
       process.env.ALLOWED_ORIGINS = " https://example.com , https://app.example.com ";
 
-      // トリムされることを確認
+      expect(isAllowedOrigin("https://example.com")).toBe(true);
+      expect(isAllowedOrigin("https://app.example.com")).toBe(true);
     });
   });
 
   describe("Edge cases", () => {
     it("should reject undefined origin", () => {
-      // テスト実装が必要
+      expect(isAllowedOrigin(undefined)).toBe(false);
     });
 
     it("should reject empty string origin", () => {
-      // テスト実装が必要
+      expect(isAllowedOrigin("")).toBe(false);
     });
 
     it("should handle origin with path", () => {
-      // https://doin-challenge.com/path など
+      expect(isAllowedOrigin("https://doin-challenge.com/path")).toBe(true);
+      expect(isAllowedOrigin("https://doin-challenge.com/api/test")).toBe(true);
     });
 
     it("should handle origin with query parameters", () => {
-      // https://doin-challenge.com?param=value など
+      expect(isAllowedOrigin("https://doin-challenge.com?param=value")).toBe(true);
+      expect(isAllowedOrigin("https://doin-challenge.com?foo=bar&baz=qux")).toBe(true);
     });
   });
 });

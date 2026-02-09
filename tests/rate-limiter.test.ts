@@ -6,10 +6,7 @@
  */
 
 import { describe, it, expect, beforeEach, vi } from "vitest";
-import { checkRateLimit, rateLimiterMiddleware, getRateLimitStats } from "../server/_core/rate-limiter";
-
-// getClientIp関数はprivateなので、rateLimiterMiddleware経由でテスト
-// または、テスト用にexportする必要がある
+import { checkRateLimit, rateLimiterMiddleware, getRateLimitStats, getClientIp } from "../server/_core/rate-limiter";
 
 describe("Rate Limiter", () => {
   beforeEach(() => {

@@ -102,8 +102,10 @@ export function checkRateLimit(ip: string, path: string): {
 
 /**
  * IPアドレスを安全に取得（プロキシ経由を考慮）
+ * 
+ * @internal テスト用にexport（本来はprivate関数）
  */
-function getClientIp(req: any): string {
+export function getClientIp(req: any): string {
   // 1. 信頼できるプロキシからの x-forwarded-for を優先
   const forwardedFor = req.headers['x-forwarded-for'];
   if (forwardedFor) {
