@@ -194,35 +194,61 @@ export function registerTwitterRoutes(app: Express) {
         targetAccount,
       };
       
-      // Save user profile to database
+      // Save user profile to database（リトライ付き）
       const openId = `twitter:${userProfile.id}`;
-      try {
-        await db.upsertUser({
-          openId,
-          name: userProfile.name,
-          email: null,
-          loginMethod: "twitter",
-          lastSignedIn: new Date(),
-        });
-        console.log("[Twitter OAuth 2.0] User profile saved to database");
-      } catch (error) {
-        console.error("[Twitter OAuth 2.0] Failed to save user profile:", error);
+      let dbSaveSuccess = false;
+      for (let dbRetry = 0; dbRetry < 2; dbRetry++) {
+        try {
+          await db.upsertUser({
+            openId,
+            name: userProfile.name,
+            email: null,
+            loginMethod: "twitter",
+            lastSignedIn: new Date(),
+          });
+          console.log("[Twitter OAuth 2.0] User profile saved to database");
+          dbSaveSuccess = true;
+          break;
+        } catch (error) {
+          console.error(`[Twitter OAuth 2.0] Failed to save user profile (attempt ${dbRetry + 1}/2):`, error);
+          if (dbRetry === 0) {
+            await new Promise(resolve => setTimeout(resolve, 500));
+          }
+        }
+      }
+      if (!dbSaveSuccess) {
+        console.warn("[Twitter OAuth 2.0] DB save failed after retries, continuing with session creation");
       }
 
       // Create session token and set cookie (重要: セッションCookieを設定して認証状態を確立)
       // Twitter OAuthも外部サイトからのリダイレクトなので、クロスサイトリクエストに対応
       let sessionToken: string | undefined;
-      try {
-        sessionToken = await sdk.createSessionToken(openId, {
-          name: userProfile.name || "",
-          expiresInMs: ONE_YEAR_MS,
-        });
-        const cookieOptions = getSessionCookieOptions(req, { crossSite: true });
-        res.cookie(COOKIE_NAME, sessionToken, { ...cookieOptions, maxAge: ONE_YEAR_MS });
-        console.log("[Twitter OAuth 2.0] Session cookie set successfully");
-      } catch (error) {
-        console.error("[Twitter OAuth 2.0] Failed to create session token:", error);
-        // セッション作成に失敗しても続行（フロントエンドで再認証可能）
+      let sessionError: string | undefined;
+      for (let sessionRetry = 0; sessionRetry < 2; sessionRetry++) {
+        try {
+          sessionToken = await sdk.createSessionToken(openId, {
+            name: userProfile.name || "",
+            expiresInMs: ONE_YEAR_MS,
+          });
+          const cookieOptions = getSessionCookieOptions(req, { crossSite: true });
+          res.cookie(COOKIE_NAME, sessionToken, { ...cookieOptions, maxAge: ONE_YEAR_MS });
+          console.log("[Twitter OAuth 2.0] Session cookie set successfully");
+          break;
+        } catch (error) {
+          const msg = error instanceof Error ? error.message : String(error);
+          console.error(`[Twitter OAuth 2.0] Failed to create session token (attempt ${sessionRetry + 1}/2):`, msg);
+          sessionError = msg;
+          if (sessionRetry === 0) {
+            await new Promise(resolve => setTimeout(resolve, 300));
+          }
+        }
+      }
+      
+      // セッション作成に完全に失敗した場合はエラーとしてリダイレクト
+      if (!sessionToken) {
+        console.error("[Twitter OAuth 2.0] Session creation failed after retries:", sessionError);
+        // ユーザーデータはあるが、セッション無しの警告付きでリダイレクト
+        // フロントエンドで再認証フローを促す
       }
 
       // Encode user data for redirect

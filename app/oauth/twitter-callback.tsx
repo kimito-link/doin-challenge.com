@@ -185,33 +185,50 @@ export default function TwitterOAuthCallback() {
 
           await Auth.setUserInfo(userInfo);
 
-          // Webプラットフォームの場合、セッションCookieを確立
+          // Webプラットフォームの場合、セッションCookieを確立（リトライ付き）
           if (Platform.OS === "web" && typeof window !== "undefined") {
-            try {
-              // セッショントークンがURLパラメータにある場合は使用
-              const sessionToken = params.sessionToken;
-              
-              if (sessionToken) {
-                // セッショントークンがURLパラメータにある場合、Cookieを確立
-                console.log("[Twitter OAuth] Establishing session with token from URL");
-                const sessionEstablished = await Api.establishSession(sessionToken);
-                if (sessionEstablished) {
-                  await Auth.setSessionToken(sessionToken);
-                  console.log("[Twitter OAuth] Session established successfully");
-                  // Cookieが確立されるまで少し待つ
-                  await new Promise(resolve => setTimeout(resolve, 300));
-                } else {
-                  console.warn("[Twitter OAuth] Failed to establish session");
+            const sessionToken = params.sessionToken;
+            let sessionEstablished = false;
+            
+            if (sessionToken) {
+              // セッショントークンがURLパラメータにある場合、Cookieを確立（最大2回リトライ）
+              for (let sessionRetry = 0; sessionRetry < 2; sessionRetry++) {
+                try {
+                  console.log(`[Twitter OAuth] Establishing session (attempt ${sessionRetry + 1}/2)...`);
+                  const result = await Promise.race([
+                    Api.establishSession(sessionToken),
+                    new Promise<false>((resolve) => setTimeout(() => resolve(false), 5000)),
+                  ]);
+                  
+                  if (result) {
+                    await Auth.setSessionToken(sessionToken);
+                    sessionEstablished = true;
+                    console.log("[Twitter OAuth] Session established successfully");
+                    await new Promise(resolve => setTimeout(resolve, 300));
+                    break;
+                  } else {
+                    console.warn(`[Twitter OAuth] Session establishment ${sessionRetry === 0 ? "timed out" : "failed"}, ${sessionRetry < 1 ? "retrying..." : "continuing without session"}`);
+                    if (sessionRetry === 0) {
+                      await new Promise(resolve => setTimeout(resolve, 500));
+                    }
+                  }
+                } catch (sessionError) {
+                  console.warn(`[Twitter OAuth] Session establish error (attempt ${sessionRetry + 1}):`, sessionError);
+                  if (sessionRetry === 0) {
+                    await new Promise(resolve => setTimeout(resolve, 500));
+                  }
                 }
-              } else {
-                // セッショントークンがない場合、サーバー側で設定されたCookieを使用
-                // 少し待ってからgetMeを呼び出す（Cookieが確立されるまで）
-                console.log("[Twitter OAuth] No session token in URL, using server-set cookie");
-                await new Promise(resolve => setTimeout(resolve, 500));
               }
-            } catch (sessionError) {
-              console.warn("[Twitter OAuth] Failed to establish session:", sessionError);
-              // セッション確立に失敗しても続行（useAuthが再試行する）
+              
+              // セッション確立に失敗しても、トークンは保存しておく（useAuthが再試行する）
+              if (!sessionEstablished) {
+                console.warn("[Twitter OAuth] Session establishment failed after retries, saving token for later");
+                await Auth.setSessionToken(sessionToken);
+              }
+            } else {
+              // セッショントークンがない場合、サーバー側で設定されたCookieを使用
+              console.log("[Twitter OAuth] No session token in URL, using server-set cookie");
+              await new Promise(resolve => setTimeout(resolve, 500));
             }
           }
 
@@ -220,20 +237,25 @@ export default function TwitterOAuthCallback() {
           
           // Webプラットフォームの場合、セッション確立後にgetMeを呼び出す
           if (Platform.OS === "web" && typeof window !== "undefined") {
-            // セッション確立を待つ（最大3回リトライ）
+            // セッション確立を待つ（最大3回リトライ、各リトライにタイムアウト付き）
             let me = null;
             for (let retry = 0; retry < 3; retry++) {
               try {
                 await new Promise(resolve => setTimeout(resolve, 500 * (retry + 1)));
-                me = await Api.getMe();
+                // 各リトライに5秒のタイムアウトを設定
+                me = await Promise.race([
+                  Api.getMe(),
+                  new Promise<null>((resolve) => setTimeout(() => resolve(null), 5000)),
+                ]);
                 if (me) {
-                  console.log("[Twitter OAuth] getMe succeeded on retry", retry + 1);
+                  console.log("[Twitter OAuth] getMe succeeded on attempt", retry + 1);
                   break;
                 }
+                console.warn(`[Twitter OAuth] getMe returned null on attempt ${retry + 1}`);
               } catch (getMeError) {
-                console.warn(`[Twitter OAuth] getMe failed on retry ${retry + 1}:`, getMeError);
+                console.warn(`[Twitter OAuth] getMe failed on attempt ${retry + 1}:`, getMeError);
                 if (retry === 2) {
-                  console.warn("[Twitter OAuth] getMe failed after 3 retries, session may not be available yet");
+                  console.warn("[Twitter OAuth] getMe failed after 3 attempts, session may not be available yet");
                 }
               }
             }

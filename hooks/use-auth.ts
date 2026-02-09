@@ -76,35 +76,53 @@ export function useAuth(options?: UseAuthOptions) {
         }
         
         // If no cached user, try API (for server-side session auth)
+        // ネットワークエラーの場合は1回リトライ
         console.log("[useAuth] Web platform: fetching user from API...");
-        try {
-          const apiUser = await Api.getMe();
-          console.log("[useAuth] API user response:", apiUser);
+        let apiUser = null;
+        let lastApiError: unknown = null;
+        for (let attempt = 0; attempt < 2; attempt++) {
+          try {
+            apiUser = await Api.getMe();
+            console.log("[useAuth] API user response (attempt " + (attempt + 1) + "):", apiUser ? "found" : "null");
+            lastApiError = null;
+            break;
+          } catch (apiError) {
+            lastApiError = apiError;
+            const isNetworkError = apiError instanceof Error && 
+              (apiError.message.includes("fetch") || apiError.message.includes("network") || apiError.message.includes("Failed"));
+            if (isNetworkError && attempt === 0) {
+              console.warn("[useAuth] Network error, retrying in 1s...");
+              await new Promise(resolve => setTimeout(resolve, 1000));
+              continue;
+            }
+            console.log("[useAuth] Web: API call failed:", apiError);
+            break;
+          }
+        }
 
-          if (apiUser) {
-            const userInfo: Auth.User = {
-              id: apiUser.id,
-              openId: apiUser.openId,
-              name: apiUser.name,
-              email: apiUser.email,
-              loginMethod: apiUser.loginMethod,
-              lastSignedIn: new Date(apiUser.lastSignedIn),
-              prefecture: apiUser.prefecture ?? null,
-              gender: apiUser.gender ?? null,
-              role: apiUser.role ?? undefined,
-            };
-            setUser(userInfo);
-            cachedAuthState = { user: userInfo, timestamp: Date.now() };
-            // Cache user info in localStorage for faster subsequent loads
-            await Auth.setUserInfo(userInfo);
-            console.log("[useAuth] Web user set from API:", userInfo);
+        if (apiUser) {
+          const userInfo: Auth.User = {
+            id: apiUser.id,
+            openId: apiUser.openId,
+            name: apiUser.name,
+            email: apiUser.email,
+            loginMethod: apiUser.loginMethod,
+            lastSignedIn: new Date(apiUser.lastSignedIn),
+            prefecture: apiUser.prefecture ?? null,
+            gender: apiUser.gender ?? null,
+            role: apiUser.role ?? undefined,
+          };
+          setUser(userInfo);
+          cachedAuthState = { user: userInfo, timestamp: Date.now() };
+          // Cache user info in localStorage for faster subsequent loads
+          await Auth.setUserInfo(userInfo);
+          console.log("[useAuth] Web user set from API:", userInfo.name);
+        } else {
+          if (lastApiError) {
+            console.log("[useAuth] Web: API call failed after retries, no user authenticated");
           } else {
             console.log("[useAuth] Web: No authenticated user from API");
-            setUser(null);
-            cachedAuthState = { user: null, timestamp: Date.now() };
           }
-        } catch (apiError) {
-          console.log("[useAuth] Web: API call failed, no user authenticated");
           setUser(null);
           cachedAuthState = { user: null, timestamp: Date.now() };
         }

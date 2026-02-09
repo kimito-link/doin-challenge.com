@@ -57,6 +57,65 @@ export function buildAuthorizationUrl(
   return `https://twitter.com/i/oauth2/authorize?${params.toString()}`;
 }
 
+// リトライ付きfetch（指数バックオフ）
+async function fetchWithRetry(
+  url: string,
+  options: RequestInit,
+  config: { maxRetries?: number; initialDelayMs?: number; timeoutMs?: number; label?: string } = {}
+): Promise<Response> {
+  const { maxRetries = 2, initialDelayMs = 500, timeoutMs = 15000, label = "API" } = config;
+  
+  for (let attempt = 0; attempt <= maxRetries; attempt++) {
+    try {
+      const controller = new AbortController();
+      const timeout = setTimeout(() => controller.abort(), timeoutMs);
+      
+      const response = await fetch(url, {
+        ...options,
+        signal: controller.signal,
+      });
+      clearTimeout(timeout);
+      
+      // レート制限（429）の場合はリトライ
+      if (response.status === 429 && attempt < maxRetries) {
+        const retryAfter = response.headers.get("retry-after");
+        const waitMs = retryAfter ? parseInt(retryAfter, 10) * 1000 : initialDelayMs * Math.pow(2, attempt);
+        console.warn(`[${label}] Rate limited (429), retrying in ${waitMs}ms (attempt ${attempt + 1}/${maxRetries})`);
+        await new Promise(resolve => setTimeout(resolve, waitMs));
+        continue;
+      }
+      
+      // 5xx サーバーエラーの場合はリトライ
+      if (response.status >= 500 && attempt < maxRetries) {
+        const waitMs = initialDelayMs * Math.pow(2, attempt);
+        console.warn(`[${label}] Server error (${response.status}), retrying in ${waitMs}ms (attempt ${attempt + 1}/${maxRetries})`);
+        await new Promise(resolve => setTimeout(resolve, waitMs));
+        continue;
+      }
+      
+      return response;
+    } catch (error) {
+      const isAbort = error instanceof Error && error.name === "AbortError";
+      const isNetwork = error instanceof TypeError && error.message.includes("fetch");
+      
+      if ((isAbort || isNetwork) && attempt < maxRetries) {
+        const waitMs = initialDelayMs * Math.pow(2, attempt);
+        console.warn(`[${label}] ${isAbort ? "Timeout" : "Network error"}, retrying in ${waitMs}ms (attempt ${attempt + 1}/${maxRetries})`);
+        await new Promise(resolve => setTimeout(resolve, waitMs));
+        continue;
+      }
+      
+      if (isAbort) {
+        throw new Error(`[${label}] Request timed out after ${timeoutMs}ms`);
+      }
+      throw error;
+    }
+  }
+  
+  // ここには到達しないが型安全のため
+  throw new Error(`[${label}] All retry attempts exhausted`);
+}
+
 // Exchange authorization code for tokens
 export async function exchangeCodeForTokens(
   code: string,
@@ -82,19 +141,27 @@ export async function exchangeCodeForTokens(
   // Create Basic auth header
   const credentials = Buffer.from(`${TWITTER_CLIENT_ID}:${TWITTER_CLIENT_SECRET}`).toString("base64");
   
-  const response = await fetch(url, {
+  const response = await fetchWithRetry(url, {
     method: "POST",
     headers: {
       "Content-Type": "application/x-www-form-urlencoded",
       "Authorization": `Basic ${credentials}`,
     },
     body: params.toString(),
-  });
+  }, { maxRetries: 2, timeoutMs: 15000, label: "TokenExchange" });
   
   if (!response.ok) {
     const text = await response.text();
-    console.error("Token exchange error:", text);
-    throw new Error(`Failed to exchange code for tokens: ${text}`);
+    console.error("[TokenExchange] Error:", response.status, text);
+    
+    // エラー種別に応じた分かりやすいメッセージ
+    if (response.status === 400) {
+      throw new Error("認証コードが無効または期限切れです。もう一度ログインしてください。");
+    }
+    if (response.status === 401) {
+      throw new Error("Twitter API認証に失敗しました。サーバー設定を確認してください。");
+    }
+    throw new Error(`Twitter認証トークンの取得に失敗しました (${response.status})`);
   }
   
   return response.json();
@@ -117,20 +184,32 @@ export async function getUserProfile(accessToken: string): Promise<{
   const params = "user.fields=profile_image_url,public_metrics,description";
   const fullUrl = `${url}?${params}`;
   
-  const response = await fetch(fullUrl, {
+  const response = await fetchWithRetry(fullUrl, {
     method: "GET",
     headers: {
       "Authorization": `Bearer ${accessToken}`,
     },
-  });
+  }, { maxRetries: 2, timeoutMs: 10000, label: "UserProfile" });
   
   if (!response.ok) {
     const text = await response.text();
-    console.error("User profile error:", text);
-    throw new Error(`Failed to get user profile: ${text}`);
+    console.error("[UserProfile] Error:", response.status, text);
+    
+    if (response.status === 401) {
+      throw new Error("アクセストークンが無効です。もう一度ログインしてください。");
+    }
+    if (response.status === 429) {
+      throw new Error("Twitter APIのレート制限に達しました。しばらく待ってから再試行してください。");
+    }
+    throw new Error(`ユーザープロフィールの取得に失敗しました (${response.status})`);
   }
   
   const json = await response.json();
+  
+  if (!json.data) {
+    throw new Error("ユーザープロフィールデータが空です。Twitterアカウントの状態を確認してください。");
+  }
+  
   return json.data;
 }
 
@@ -152,18 +231,23 @@ export async function refreshAccessToken(refreshToken: string): Promise<{
   
   const credentials = Buffer.from(`${TWITTER_CLIENT_ID}:${TWITTER_CLIENT_SECRET}`).toString("base64");
   
-  const response = await fetch(url, {
+  const response = await fetchWithRetry(url, {
     method: "POST",
     headers: {
       "Content-Type": "application/x-www-form-urlencoded",
       "Authorization": `Basic ${credentials}`,
     },
     body: params.toString(),
-  });
+  }, { maxRetries: 1, timeoutMs: 10000, label: "TokenRefresh" });
   
   if (!response.ok) {
     const text = await response.text();
-    throw new Error(`Failed to refresh token: ${text}`);
+    console.error("[TokenRefresh] Error:", response.status, text);
+    
+    if (response.status === 400 || response.status === 401) {
+      throw new Error(`INVALID_REFRESH_TOKEN: リフレッシュトークンが無効です。再ログインしてください。`);
+    }
+    throw new Error(`トークンの更新に失敗しました (${response.status})`);
   }
   
   return response.json();
