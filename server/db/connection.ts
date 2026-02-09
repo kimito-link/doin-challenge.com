@@ -1,6 +1,6 @@
 import { eq, desc, and, sql, isNull, or, gte, lte, lt, inArray, asc, ne, like, count } from "drizzle-orm";
 import { drizzle } from "drizzle-orm/mysql2";
-import mysql, { type PoolOptions } from "mysql2/promise";
+import mysql from "mysql2/promise";
 import * as schema from "../../drizzle/schema";
 
 import { MySql2Database } from "drizzle-orm/mysql2";
@@ -14,25 +14,11 @@ let _db: DrizzleDB | null = null;
 export async function getDb() {
   if (!_db && process.env.DATABASE_URL) {
     try {
-      // 接続プールの設定を追加（タイムアウト、リトライ、接続数の制限）
+      // 接続プールの作成
       // mysql2/promiseのcreatePoolはURL文字列のみ、または設定オブジェクトのみを受け取る
       // URL文字列を使用する場合は、オプションを直接指定できないため、
       // シンプルにURL文字列のみを使用
       const poolConnection = mysql.createPool(process.env.DATABASE_URL);
-      
-      // 接続エラーのハンドリング
-      // Pool型のonメソッドは型定義が厳密なため、型アサーションを使用
-      (poolConnection as any).on("connection", () => {
-        console.log("[Database] New connection established");
-      });
-      
-      (poolConnection as any).on("error", (err: Error & { code?: string }) => {
-        console.error("[Database] Pool error:", err);
-        // 接続エラーが発生した場合、接続をリセット
-        if (err.code === "PROTOCOL_CONNECTION_LOST" || err.code === "ECONNREFUSED") {
-          _db = null;
-        }
-      });
       
       _db = drizzle(poolConnection, { schema, mode: "default" });
       
