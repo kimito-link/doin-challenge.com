@@ -12,11 +12,18 @@ describe("SDK Security", () => {
   const originalEnv = process.env.JWT_SECRET;
 
   beforeEach(() => {
-    vi.resetModules();
+    // JWT_SECRETを設定（テストが失敗しないように）
+    if (!process.env.JWT_SECRET) {
+      process.env.JWT_SECRET = "test-secret-key-for-testing-only";
+    }
   });
 
   afterEach(() => {
-    process.env.JWT_SECRET = originalEnv;
+    if (originalEnv !== undefined) {
+      process.env.JWT_SECRET = originalEnv;
+    } else {
+      delete process.env.JWT_SECRET;
+    }
   });
 
   describe("decodeState", () => {
@@ -48,12 +55,19 @@ describe("SDK Security", () => {
 
   describe("getSessionSecret", () => {
     it("should throw error when JWT_SECRET is not set", async () => {
+      // このテストの前にJWT_SECRETを削除
+      const savedJwtSecret = process.env.JWT_SECRET;
       delete process.env.JWT_SECRET;
 
       // createSessionToken経由でテスト
       await expect(
         sdk.createSessionToken("test-open-id", { name: "Test" })
       ).rejects.toThrow("JWT_SECRET");
+      
+      // テスト後に復元
+      if (savedJwtSecret !== undefined) {
+        process.env.JWT_SECRET = savedJwtSecret;
+      }
     });
 
     it("should throw error when JWT_SECRET is empty string", async () => {
