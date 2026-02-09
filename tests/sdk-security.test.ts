@@ -59,34 +59,59 @@ describe("SDK Security", () => {
       const savedJwtSecret = process.env.JWT_SECRET;
       delete process.env.JWT_SECRET;
 
-      // createSessionToken経由でテスト
-      await expect(
-        sdk.createSessionToken("test-open-id", { name: "Test" })
-      ).rejects.toThrow("JWT_SECRET");
-      
-      // テスト後に復元
-      if (savedJwtSecret !== undefined) {
-        process.env.JWT_SECRET = savedJwtSecret;
+      try {
+        // createSessionToken経由でテスト
+        await expect(
+          sdk.createSessionToken("test-open-id", { name: "Test" })
+        ).rejects.toThrow("JWT_SECRET");
+      } finally {
+        // テスト後に必ず復元
+        if (savedJwtSecret !== undefined) {
+          process.env.JWT_SECRET = savedJwtSecret;
+        } else {
+          process.env.JWT_SECRET = "test-secret-key-for-testing-only";
+        }
       }
     });
 
     it("should throw error when JWT_SECRET is empty string", async () => {
+      const savedJwtSecret = process.env.JWT_SECRET;
       process.env.JWT_SECRET = "";
 
-      await expect(
-        sdk.createSessionToken("test-open-id", { name: "Test" })
-      ).rejects.toThrow("JWT_SECRET");
+      try {
+        await expect(
+          sdk.createSessionToken("test-open-id", { name: "Test" })
+        ).rejects.toThrow("JWT_SECRET");
+      } finally {
+        // テスト後に復元
+        if (savedJwtSecret !== undefined) {
+          process.env.JWT_SECRET = savedJwtSecret;
+        } else {
+          process.env.JWT_SECRET = "test-secret-key-for-testing-only";
+        }
+      }
     });
 
     it("should throw error when JWT_SECRET is whitespace only", async () => {
+      const savedJwtSecret = process.env.JWT_SECRET;
       process.env.JWT_SECRET = "   ";
 
-      await expect(
-        sdk.createSessionToken("test-open-id", { name: "Test" })
-      ).rejects.toThrow("JWT_SECRET");
+      try {
+        await expect(
+          sdk.createSessionToken("test-open-id", { name: "Test" })
+        ).rejects.toThrow("JWT_SECRET");
+      } finally {
+        // テスト後に復元
+        if (savedJwtSecret !== undefined) {
+          process.env.JWT_SECRET = savedJwtSecret;
+        } else {
+          process.env.JWT_SECRET = "test-secret-key-for-testing-only";
+        }
+      }
     });
 
     it("should work with valid JWT_SECRET", async () => {
+      // 確実にJWT_SECRETを設定
       process.env.JWT_SECRET = "test-secret-key-12345";
 
       const token = await sdk.createSessionToken("test-open-id", { name: "Test" });

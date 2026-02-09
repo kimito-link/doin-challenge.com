@@ -137,10 +137,9 @@ describe("CORS Security - isAllowedOrigin", () => {
 
     it("should handle ALLOWED_ORIGINS with spaces", () => {
       vi.stubEnv("NODE_ENV", "production");
-      // ALLOWED_ORIGINSはsplit(",").filter(Boolean)で処理されるため、
-      // スペースは含まれたままになる可能性がある
-      // 実装を確認: server/_core/index.ts の ALLOWED_ORIGINS 処理
-      process.env.ALLOWED_ORIGINS = "https://example.com,https://app.example.com";
+      // ALLOWED_ORIGINSはsplit(",").map(s => s.trim()).filter(Boolean)で処理されるため、
+      // スペースはトリムされる
+      process.env.ALLOWED_ORIGINS = " https://example.com , https://app.example.com ";
 
       expect(isAllowedOrigin("https://example.com")).toBe(true);
       expect(isAllowedOrigin("https://app.example.com")).toBe(true);

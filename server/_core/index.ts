@@ -54,7 +54,10 @@ export function isAllowedOrigin(origin: string | undefined): boolean {
   if (!origin) return false;
   
   // 信頼できるオリジンのリスト（環境変数から取得可能）
-  const ALLOWED_ORIGINS = (process.env.ALLOWED_ORIGINS || "").split(",").filter(Boolean);
+  const ALLOWED_ORIGINS = (process.env.ALLOWED_ORIGINS || "")
+    .split(",")
+    .map(s => s.trim())
+    .filter(Boolean);
   
   // 開発環境では localhost を許可
   if (process.env.NODE_ENV !== "production") {
@@ -65,11 +68,32 @@ export function isAllowedOrigin(origin: string | undefined): boolean {
   
   // 本番環境ではホワイトリストをチェック
   if (ALLOWED_ORIGINS.length > 0) {
-    return ALLOWED_ORIGINS.some(allowed => origin === allowed || origin.endsWith(allowed));
+    return ALLOWED_ORIGINS.some(allowed => {
+      // 完全一致
+      if (origin === allowed) return true;
+      // .example.com のような形式の場合、example.com で終わるかチェック
+      if (allowed.startsWith(".")) {
+        return origin.endsWith(allowed) || origin === allowed.slice(1);
+      }
+      // 通常のドメインの場合、完全一致のみ
+      return false;
+    });
   }
   
   // ホワイトリストが設定されていない場合は、doin-challenge.com のみ許可
-  return origin.includes("doin-challenge.com");
+  // より厳密にチェック: doin-challenge.com で終わる、または完全一致
+  try {
+    const url = new URL(origin);
+    const hostname = url.hostname;
+    // doin-challenge.com で終わる、かつ evil.com のようなサブドメイン攻撃を防ぐ
+    return hostname === "doin-challenge.com" || 
+           hostname.endsWith(".doin-challenge.com");
+  } catch {
+    // URL解析に失敗した場合は、includes でフォールバック
+    return origin.includes("doin-challenge.com") && 
+           !origin.includes("doin-challenge.com.evil") &&
+           !origin.includes("evil-doin-challenge.com");
+  }
 }
 
 async function startServer() {
