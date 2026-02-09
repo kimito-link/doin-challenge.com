@@ -159,8 +159,8 @@ async function startServer() {
     res.setHeader("Content-Security-Policy", "frame-ancestors 'none'");
     // MIMEスニッフィング防止
     res.setHeader("X-Content-Type-Options", "nosniff");
-    // Refererヘッダー経由のトークン漏洩防止
-    res.setHeader("Referrer-Policy", "strict-origin-when-cross-origin");
+    // Refererヘッダー経由のトークン漏洩防止（OAuth BCP推奨: no-referrer）
+    res.setHeader("Referrer-Policy", "no-referrer");
     // HTTPS強制（本番のみ）
     if (process.env.NODE_ENV === "production") {
       res.setHeader("Strict-Transport-Security", "max-age=31536000; includeSubDomains");

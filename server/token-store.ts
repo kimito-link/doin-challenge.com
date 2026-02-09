@@ -124,8 +124,14 @@ export async function storeTokens(
       },
     });
   } catch (error) {
-    // DB保存失敗してもメモリキャッシュがあるので続行
-    console.error("[TokenStore] DB save failed:", error instanceof Error ? error.message : "unknown");
+    const msg = error instanceof Error ? error.message : "unknown";
+    // テーブル不存在エラーを検出し、メモリキャッシュのみで続行
+    if (msg.includes("doesn't exist") || msg.includes("ER_NO_SUCH_TABLE") || msg.includes("1146")) {
+      console.warn("[TokenStore] Table not found, using memory-only mode. Run migration to create user_twitter_tokens table.");
+    } else {
+      console.error("[TokenStore] DB save failed:", msg);
+    }
+    // いずれの場合もメモリキャッシュがあるので続行
   }
 }
 
@@ -160,7 +166,12 @@ export async function getTokens(openId: string): Promise<TokenCacheEntry | null>
     tokenCache.set(openId, entry);
     return entry;
   } catch (error) {
-    console.error("[TokenStore] DB read failed:", error instanceof Error ? error.message : "unknown");
+    const msg = error instanceof Error ? error.message : "unknown";
+    if (msg.includes("doesn't exist") || msg.includes("ER_NO_SUCH_TABLE") || msg.includes("1146")) {
+      // テーブル未作成：メモリキャッシュのみで動作
+      return null;
+    }
+    console.error("[TokenStore] DB read failed:", msg);
     return null;
   }
 }
@@ -181,12 +192,12 @@ export async function getValidAccessToken(openId: string): Promise<string | null
   // リフレッシュトークンがなければ現在のトークンを返す
   if (!entry.refreshToken) return entry.accessToken;
 
-  // サーバーサイドでリフレッシュ
+  // サーバーサイドでリフレッシュ（トークンローテーション）
   try {
-    const { refreshAccessToken } = await import("./twitter-oauth2");
+    const { refreshAccessToken, sanitizeToken } = await import("./twitter-oauth2");
     const newTokens = await refreshAccessToken(entry.refreshToken);
     
-    // 新しいトークンを保存（ローテーション: 新しいrefresh_tokenで上書き）
+    // 新しいトークンを保存（ローテーション: 新しいrefresh_tokenで上書き → 古いものは無効化）
     await storeTokens(openId, {
       accessToken: newTokens.access_token,
       refreshToken: newTokens.refresh_token,
@@ -194,6 +205,7 @@ export async function getValidAccessToken(openId: string): Promise<string | null
       scope: newTokens.scope,
     });
 
+    console.log(`[TokenStore] Auto-refresh success for ${openId.substring(0, 8)}... new token: ${sanitizeToken(newTokens.access_token)}`);
     return newTokens.access_token;
   } catch (error) {
     console.error("[TokenStore] Auto-refresh failed:", error instanceof Error ? error.message : "unknown");
@@ -213,6 +225,11 @@ export async function deleteTokens(openId: string): Promise<void> {
     if (!db) return;
     await db.delete(userTwitterTokens).where(eq(userTwitterTokens.openId, openId));
   } catch (error) {
-    console.error("[TokenStore] DB delete failed:", error instanceof Error ? error.message : "unknown");
+    const msg = error instanceof Error ? error.message : "unknown";
+    if (msg.includes("doesn't exist") || msg.includes("ER_NO_SUCH_TABLE") || msg.includes("1146")) {
+      // テーブル未作成時は無視
+      return;
+    }
+    console.error("[TokenStore] DB delete failed:", msg);
   }
 }

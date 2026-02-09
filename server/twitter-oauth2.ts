@@ -23,8 +23,9 @@ export function generatePKCE(): { codeVerifier: string; codeChallenge: string } 
 }
 
 // Generate state for CSRF protection
+// 32バイト (256ビット) のエントロピー（ZIPリファレンス準拠 / ガイド推奨: 128ビット以上）
 export function generateState(): string {
-  return crypto.randomBytes(16).toString("hex");
+  return crypto.randomBytes(32).toString("hex");
 }
 
 // Build authorization URL
@@ -258,8 +259,10 @@ export async function refreshAccessToken(refreshToken: string): Promise<{
 // メモリに即座に保存し、バックグラウンドでデータベースにも保存
 export async function storePKCEData(state: string, codeVerifier: string, callbackUrl: string): Promise<void> {
   // メモリに即座に保存（高速）
+  // ガイド推奨: state有効期限は10分（タイミング攻撃・リプレイ攻撃ウィンドウ制限）
+  const STATE_TTL_MS = 10 * 60 * 1000; // 10分
   pkceMemoryStore.set(state, { codeVerifier, callbackUrl });
-  setTimeout(() => pkceMemoryStore.delete(state), 30 * 60 * 1000);
+  setTimeout(() => pkceMemoryStore.delete(state), STATE_TTL_MS);
   console.log("[PKCE] Stored PKCE data in memory for state:", state.substring(0, 8) + "...");
   
   // バックグラウンドでデータベースにも保存（失敗してもメモリがあるのでOK）
@@ -271,8 +274,8 @@ export async function storePKCEData(state: string, codeVerifier: string, callbac
         return;
       }
       
-      // Set expiration to 30 minutes from now
-      const expiresAt = new Date(Date.now() + 30 * 60 * 1000);
+      // Set expiration to 10 minutes from now (guide: 5-10 minutes)
+      const expiresAt = new Date(Date.now() + STATE_TTL_MS);
       
       // Clean up expired entries first (non-blocking)
       await db.delete(oauthPkceData).where(lt(oauthPkceData.expiresAt, new Date())).catch(() => {});
@@ -590,22 +593,36 @@ export async function getUserProfileByUsername(username: string): Promise<{
   }
 }
 
+// =============================================================================
+// トークンログ用サニタイザー（先頭4文字のみ表示 → デバッグと安全を両立）
+// =============================================================================
+export function sanitizeToken(token: string | null | undefined): string {
+  if (!token) return "[empty]";
+  return `${token.substring(0, 4)}...****`;
+}
+
 /**
- * Twitter OAuth 2.0 アクセストークンをリボーク（無効化）する
- * ログアウト時にサーバーサイドでトークンを確実に無効化するために使用
+ * Twitter OAuth 2.0 トークンをリボーク（無効化）する
+ * access_token / refresh_token の両方に対応
  * 
+ * @param token - リボーク対象のトークン
+ * @param tokenTypeHint - "access_token" または "refresh_token"
  * @see https://developer.twitter.com/en/docs/authentication/oauth-2-0/authorization-code
  */
-export async function revokeAccessToken(accessToken: string): Promise<boolean> {
-  if (!accessToken) return false;
+export async function revokeToken(
+  token: string,
+  tokenTypeHint: "access_token" | "refresh_token" = "access_token"
+): Promise<boolean> {
+  if (!token) return false;
 
   const url = "https://api.twitter.com/2/oauth2/revoke";
   const credentials = Buffer.from(`${TWITTER_CLIENT_ID}:${TWITTER_CLIENT_SECRET}`).toString("base64");
 
   try {
     const params = new URLSearchParams({
-      token: accessToken,
-      token_type_hint: "access_token",
+      token,
+      token_type_hint: tokenTypeHint,
+      client_id: TWITTER_CLIENT_ID,
     });
 
     const response = await fetch(url, {
@@ -618,16 +635,17 @@ export async function revokeAccessToken(accessToken: string): Promise<boolean> {
     });
 
     if (response.ok) {
-      console.log("[Twitter OAuth 2.0] Access token revoked successfully");
+      console.log(`[Twitter OAuth 2.0] ${tokenTypeHint} revoked: ${sanitizeToken(token)}`);
       return true;
     }
 
-    // リボーク失敗はログに記録するが、ログアウト自体は成功させる
-    console.warn(`[Twitter OAuth 2.0] Token revoke returned ${response.status}`);
+    console.warn(`[Twitter OAuth 2.0] Token revoke returned ${response.status} for ${tokenTypeHint}`);
     return false;
   } catch (error) {
-    // ネットワークエラー等でもログアウト自体は成功させる
     console.warn("[Twitter OAuth 2.0] Token revoke failed:", error instanceof Error ? error.message : String(error));
     return false;
   }
 }
+
+/** 後方互換: revokeAccessToken は revokeToken のエイリアス */
+export const revokeAccessToken = (accessToken: string) => revokeToken(accessToken, "access_token");

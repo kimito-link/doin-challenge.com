@@ -14,8 +14,9 @@ import type { Express, Request, Response } from "express";
 import { getUserByOpenId } from "../db";
 import { getSessionCookieOptions } from "./cookies";
 import { sdk } from "./sdk";
-import { revokeAccessToken } from "../twitter-oauth2";
+import { revokeToken } from "../twitter-oauth2";
 import { getTokens, deleteTokens } from "../token-store";
+import { clearActivity } from "./sdk";
 
 function buildUserResponse(
   user:
@@ -57,12 +58,18 @@ export function registerOAuthRoutes(app: Express) {
       const user = await sdk.authenticateRequest(req).catch(() => null);
       if (user) {
         const storedTokens = await getTokens(user.openId);
+        // fire-and-forget: refresh_token → access_token の順にリボーク
+        // ZIPリファレンス準拠: 両トークンを確実に無効化
+        if (storedTokens?.refreshToken) {
+          revokeToken(storedTokens.refreshToken, "refresh_token").catch(() => {});
+        }
         if (storedTokens?.accessToken) {
-          // fire-and-forget: リボーク失敗してもログアウトはブロックしない
-          revokeAccessToken(storedTokens.accessToken).catch(() => {});
+          revokeToken(storedTokens.accessToken, "access_token").catch(() => {});
         }
         // サーバーサイドのトークンストアから削除
         await deleteTokens(user.openId).catch(() => {});
+        // アイドルタイムアウト記録もクリア
+        clearActivity(user.openId);
       }
     } catch {
       // ログアウト自体は必ず成功させる

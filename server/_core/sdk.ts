@@ -142,12 +142,16 @@ class SDKServer {
     }
 
     const sessionUserId = session.openId;
+
+    // アイドルタイムアウトチェック（ガイド推奨）
+    if (!checkAndUpdateActivity(sessionUserId)) {
+      throw ForbiddenError("Session expired due to inactivity");
+    }
+
     const signedInAt = new Date();
     const user = await db.getUserByOpenId(sessionUserId);
 
     if (!user) {
-      // ユーザーが DB にいない場合はエラー
-      // （以前は Manus OAuth Server にフォールバックしていたが、現在は不要）
       console.error("[Auth] User not found in DB:", sessionUserId);
       throw ForbiddenError("User not found");
     }
@@ -160,6 +164,54 @@ class SDKServer {
 
     return user;
   }
+}
+
+// =============================================================================
+// セッションアイドルタイムアウト（ガイド推奨: 非アクティブユーザーの自動ログアウト）
+// JWTの絶対タイムアウト(72h)に加え、操作がない場合にセッションを無効化
+// =============================================================================
+
+const SESSION_IDLE_TIMEOUT_MS = 4 * 60 * 60 * 1000; // 4時間（操作なし）
+const lastActivityMap = new Map<string, number>();
+
+// メモリリーク防止: 古いエントリを定期的にクリーンアップ
+setInterval(() => {
+  const now = Date.now();
+  for (const [key, ts] of lastActivityMap.entries()) {
+    if (now - ts > SESSION_IDLE_TIMEOUT_MS * 2) {
+      lastActivityMap.delete(key);
+    }
+  }
+}, 60 * 60 * 1000); // 1時間ごとにクリーンアップ
+
+/**
+ * アイドルタイムアウトのチェックと更新
+ * @returns false = タイムアウトしている (セッション無効)
+ */
+export function checkAndUpdateActivity(openId: string): boolean {
+  const now = Date.now();
+  const lastActivity = lastActivityMap.get(openId);
+  
+  // 初回アクセスは常にOK
+  if (lastActivity === undefined) {
+    lastActivityMap.set(openId, now);
+    return true;
+  }
+  
+  // アイドルタイムアウトチェック
+  if (now - lastActivity > SESSION_IDLE_TIMEOUT_MS) {
+    lastActivityMap.delete(openId);
+    return false; // タイムアウト
+  }
+  
+  // 最終アクティビティを更新
+  lastActivityMap.set(openId, now);
+  return true;
+}
+
+/** ログアウト時にアクティビティ記録を削除 */
+export function clearActivity(openId: string): void {
+  lastActivityMap.delete(openId);
 }
 
 export const sdk = new SDKServer();

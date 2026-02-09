@@ -180,68 +180,36 @@ export async function clearAllTokenData(): Promise<void> {
 }
 
 /**
- * リフレッシュトークンを使用してアクセストークンを更新
- * ネットワークエラー時は1回リトライ。トークン無効(401/400)はリトライしない。
+ * サーバーサイドでトークンをリフレッシュ（BFFパターン）
+ * 
+ * BFF: トークンはサーバーで管理されるため、クライアントは
+ * サーバーにリフレッシュを依頼するだけ。トークン自体は返されない。
  */
 export async function refreshAccessToken(): Promise<{
   accessToken: string;
   refreshToken?: string;
   expiresIn: number;
 } | null> {
-  const refreshToken = await getRefreshToken();
-  if (!refreshToken) return null;
-  
-  const maxAttempts = 2;
-  for (let attempt = 0; attempt < maxAttempts; attempt++) {
-    try {
-      const result = await apiPost<{
-        access_token: string;
-        refresh_token: string;
-        expires_in: number;
-      }>("/api/twitter/refresh", {
-        body: { refreshToken },
-      });
-      
-      if (!result.ok) {
-        // リフレッシュトークンが無効 → クリアして即終了（リトライしない）
-        if (result.status === 401 || result.status === 400) {
-          await clearAllTokenData();
-          return null;
-        }
-        // サーバーエラー(5xx) → リトライ
-        if (result.status && result.status >= 500 && attempt < maxAttempts - 1) {
-          await new Promise(resolve => setTimeout(resolve, 1000));
-          continue;
-        }
-        return null;
+  try {
+    const result = await apiPost<{ success: boolean }>("/api/twitter/refresh", {});
+    
+    if (!result.ok) {
+      if (result.status === 401 || result.status === 400) {
+        await clearAllTokenData();
       }
-      
-      if (!result.data) return null;
-      
-      await saveTokenData({
-        accessToken: result.data.access_token,
-        refreshToken: result.data.refresh_token,
-        expiresIn: result.data.expires_in,
-      });
-      
-      return {
-        accessToken: result.data.access_token,
-        refreshToken: result.data.refresh_token,
-        expiresIn: result.data.expires_in,
-      };
-    } catch (error) {
-      const isNetworkError = error instanceof Error && 
-        (error.message.includes("fetch") || error.message.includes("network") || error.message.includes("Failed"));
-      if (isNetworkError && attempt < maxAttempts - 1) {
-        await new Promise(resolve => setTimeout(resolve, 1000));
-        continue;
-      }
-      console.error("[TokenManager] Token refresh error:", error);
       return null;
     }
+
+    // BFF: サーバーがリフレッシュ完了。クライアントのセッションは維持される。
+    // トークン値は返さないが、互換性のためダミー値を返す
+    return {
+      accessToken: "server-managed",
+      expiresIn: 7200,
+    };
+  } catch (error) {
+    console.error("[TokenManager] Server-side refresh error:", error instanceof Error ? error.message : "unknown");
+    return null;
   }
-  
-  return null;
 }
 
 /**
