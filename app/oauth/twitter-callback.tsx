@@ -5,7 +5,7 @@ import { saveTokenData } from "@/lib/token-manager";
 import { useLocalSearchParams } from "expo-router";
 import { navigateReplace } from "@/lib/navigation/app-routes";
 import { useEffect, useState, useRef } from "react";
-import { ActivityIndicator, Text, View, Pressable, ScrollView } from "react-native";
+import { ActivityIndicator, Text, View, Pressable, ScrollView, Platform } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { saveAccount } from "@/lib/account-manager";
@@ -47,6 +47,7 @@ export default function TwitterOAuthCallback() {
   const params = useLocalSearchParams<{
     data?: string;
     error?: string;
+    sessionToken?: string;
   }>();
   const [status, setStatus] = useState<"processing" | "success" | "error">("processing");
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
@@ -184,6 +185,34 @@ export default function TwitterOAuthCallback() {
 
           await Auth.setUserInfo(userInfo);
 
+          // Webプラットフォームの場合、セッションCookieを確立
+          if (Platform.OS === "web" && typeof window !== "undefined") {
+            try {
+              // セッショントークンがURLパラメータにある場合は使用
+              const sessionToken = params.sessionToken;
+              
+              if (sessionToken) {
+                // セッショントークンがURLパラメータにある場合、Cookieを確立
+                console.log("[Twitter OAuth] Establishing session with token from URL");
+                const sessionEstablished = await Api.establishSession(sessionToken);
+                if (sessionEstablished) {
+                  await Auth.setSessionToken(sessionToken);
+                  console.log("[Twitter OAuth] Session established successfully");
+                } else {
+                  console.warn("[Twitter OAuth] Failed to establish session");
+                }
+              } else {
+                // セッショントークンがない場合、サーバー側で設定されたCookieを使用
+                // 少し待ってからgetMeを呼び出す（Cookieが確立されるまで）
+                console.log("[Twitter OAuth] No session token in URL, using server-set cookie");
+                await new Promise(resolve => setTimeout(resolve, 500));
+              }
+            } catch (sessionError) {
+              console.warn("[Twitter OAuth] Failed to establish session:", sessionError);
+              // セッション確立に失敗しても続行（useAuthが再試行する）
+            }
+          }
+
           // Merge prefecture/gender/role from server (DB) when session is available（getUserInfo は必要時のみ1回）
           let storedInfo: Auth.User | null = null;
           try {
@@ -198,7 +227,8 @@ export default function TwitterOAuthCallback() {
               await Auth.setUserInfo(merged);
               storedInfo = merged;
             }
-          } catch {
+          } catch (getMeError) {
+            console.warn("[Twitter OAuth] getMe failed, session may not be available yet:", getMeError);
             // Session may not be available yet; useAuth will merge on next fetch
           }
           if (!storedInfo) {

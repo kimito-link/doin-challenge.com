@@ -211,8 +211,9 @@ export function registerTwitterRoutes(app: Express) {
 
       // Create session token and set cookie (重要: セッションCookieを設定して認証状態を確立)
       // Twitter OAuthも外部サイトからのリダイレクトなので、クロスサイトリクエストに対応
+      let sessionToken: string | undefined;
       try {
-        const sessionToken = await sdk.createSessionToken(openId, {
+        sessionToken = await sdk.createSessionToken(openId, {
           name: userProfile.name || "",
           expiresInMs: ONE_YEAR_MS,
         });
@@ -242,8 +243,15 @@ export function registerTwitterRoutes(app: Express) {
         baseUrl = `${forceHttps ? "https" : protocol}://${expoHost}`;
       }
       
-      // Redirect to Expo app callback page with user data
-      const redirectUrl = `${baseUrl}/oauth/twitter-callback?data=${encodedData}`;
+      // Redirect to Expo app callback page with user data and session token
+      // WebプラットフォームでCookieが正しく設定されない場合に備えて、セッショントークンもURLパラメータとして渡す
+      const redirectParams = new URLSearchParams({
+        data: encodedData,
+      });
+      if (sessionToken) {
+        redirectParams.set("sessionToken", sessionToken);
+      }
+      const redirectUrl = `${baseUrl}/oauth/twitter-callback?${redirectParams.toString()}`;
       console.log("[Twitter OAuth 2.0] Redirecting to:", redirectUrl.substring(0, 100) + "...");
       
       res.redirect(redirectUrl);
