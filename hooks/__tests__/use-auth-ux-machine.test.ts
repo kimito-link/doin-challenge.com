@@ -75,7 +75,7 @@ describe("useAuthUxMachine (PR-3: idle → confirm → redirecting → waitingRe
     expect(result.current.state.name).toBe("idle");
   });
 
-  it("confirmYes で confirm → redirecting → waitingReturn に遷移（PR-3）", async () => {
+  it("Web: confirmYes で confirm → redirecting に遷移（waitingReturnはスキップ）", async () => {
     const { result } = renderHook(() => useAuthUxMachine());
 
     // idle → confirm
@@ -84,37 +84,11 @@ describe("useAuthUxMachine (PR-3: idle → confirm → redirecting → waitingRe
     });
     expect(result.current.state.name).toBe("confirm");
 
-    // confirmYes → redirecting → waitingReturn
+    // confirmYes → redirecting（Web版はwaitingReturnに遷移しない）
     await act(async () => {
       await result.current.confirmYes();
     });
-    expect(result.current.state.name).toBe("waitingReturn");
-    if (result.current.state.name === "waitingReturn") {
-      expect(result.current.state.startedAt).toBeGreaterThan(0);
-      expect(result.current.state.timeoutMs).toBe(30000);
-    }
-  });
-
-  it("waitingReturn 状態から30秒後にタイムアウトで cancel に遷移", async () => {
-    vi.useFakeTimers();
-    const { result } = renderHook(() => useAuthUxMachine());
-
-    // idle → confirm → waitingReturn
-    act(() => {
-      result.current.tapLogin();
-    });
-    await act(async () => {
-      await result.current.confirmYes();
-    });
-    expect(result.current.state.name).toBe("waitingReturn");
-
-    // 30秒後にタイムアウト
-    act(() => {
-      vi.advanceTimersByTime(30000);
-    });
-    expect(result.current.state.name).toBe("idle"); // cancel → idle
-
-    vi.useRealTimers();
+    expect(result.current.state.name).toBe("redirecting");
   });
 
   it("reset で任意の状態から idle に戻る", () => {
