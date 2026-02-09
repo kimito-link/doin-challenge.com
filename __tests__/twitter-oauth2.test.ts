@@ -34,8 +34,8 @@ describe("Twitter OAuth 2.0 Configuration", () => {
     // Code challenge should be base64url encoded SHA256 hash
     expect(codeChallenge.length).toBeGreaterThan(0);
     
-    // State should be a hex string
-    expect(state.length).toBe(32); // 16 bytes = 32 hex chars
+    // State should be a hex string (32 bytes = 64 hex chars, 256-bit entropy)
+    expect(state.length).toBe(64); // 32 bytes = 64 hex chars
     
     console.log("PKCE parameters generated successfully");
   });

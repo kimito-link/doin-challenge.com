@@ -152,11 +152,25 @@ async function startServer() {
   app.use(express.json({ limit: "50mb" }));
   app.use(express.urlencoded({ limit: "50mb", extended: true }));
 
-  // セキュリティヘッダー（RFC 9700 / OWASP推奨）
+  // セキュリティヘッダー（RFC 9700 / OWASP / 拡張版要件定義書準拠）
   app.use((_req, res, next) => {
     // クリックジャッキング防止
     res.setHeader("X-Frame-Options", "DENY");
-    res.setHeader("Content-Security-Policy", "frame-ancestors 'none'");
+    // CSP厳格化: script-src/style-src/connect-src で XSS を根本ブロック
+    // 'unsafe-inline' は style-src のみ許可（React/Expo のインラインスタイル用）
+    // API サーバーなので script 実行は 'self' のみ許可
+    const cspDirectives = [
+      "default-src 'self'",
+      "script-src 'self'",
+      "style-src 'self' 'unsafe-inline'",
+      "img-src 'self' https://pbs.twimg.com https://abs.twimg.com data:",
+      "connect-src 'self' https://api.twitter.com https://api.x.com",
+      "font-src 'self'",
+      "frame-ancestors 'none'",
+      "base-uri 'self'",
+      "form-action 'self'",
+    ].join("; ");
+    res.setHeader("Content-Security-Policy", cspDirectives);
     // MIMEスニッフィング防止
     res.setHeader("X-Content-Type-Options", "nosniff");
     // Refererヘッダー経由のトークン漏洩防止（OAuth BCP推奨: no-referrer）
@@ -167,6 +181,8 @@ async function startServer() {
     }
     // XSS保護（レガシーブラウザ向け）
     res.setHeader("X-XSS-Protection", "1; mode=block");
+    // Permissions-Policy: 不要なブラウザ機能を無効化
+    res.setHeader("Permissions-Policy", "camera=(), microphone=(), geolocation=()");
     next();
   });
 

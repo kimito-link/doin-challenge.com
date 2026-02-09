@@ -71,9 +71,13 @@ interface TokenCacheEntry {
   refreshToken: string | null;
   expiresAt: Date;
   scope: string | null;
+  createdAt: Date; // リフレッシュトークン最大寿命チェック用
 }
 
 const tokenCache = new Map<string, TokenCacheEntry>();
+
+// リフレッシュトークンの最大寿命（拡張版要件定義書: 90日で再ログイン要求）
+const REFRESH_TOKEN_MAX_LIFETIME_MS = 90 * 24 * 60 * 60 * 1000; // 90日
 
 // =============================================================================
 // トークンCRUD操作
@@ -93,12 +97,14 @@ export async function storeTokens(
 ): Promise<void> {
   const expiresAt = new Date(Date.now() + tokens.expiresIn * 1000);
   
-  // メモリキャッシュに即保存
+  // メモリキャッシュに即保存（既存エントリのcreatedAtを引き継ぎ）
+  const existingEntry = tokenCache.get(openId);
   tokenCache.set(openId, {
     accessToken: tokens.accessToken,
     refreshToken: tokens.refreshToken || null,
     expiresAt,
     scope: tokens.scope || null,
+    createdAt: existingEntry?.createdAt || new Date(), // 初回のみ記録
   });
 
   // DBに暗号化して保存（バックグラウンド）
@@ -160,6 +166,7 @@ export async function getTokens(openId: string): Promise<TokenCacheEntry | null>
       refreshToken: row.encryptedRefreshToken ? decryptToken(row.encryptedRefreshToken) : null,
       expiresAt: new Date(row.tokenExpiresAt),
       scope: row.scope,
+      createdAt: new Date(row.createdAt), // DB の createdAt をそのまま使用
     };
 
     // メモリキャッシュに載せる
@@ -182,6 +189,14 @@ export async function getTokens(openId: string): Promise<TokenCacheEntry | null>
 export async function getValidAccessToken(openId: string): Promise<string | null> {
   const entry = await getTokens(openId);
   if (!entry) return null;
+
+  // リフレッシュトークン最大寿命チェック（拡張版要件定義書: 90日で強制再ログイン）
+  const tokenAge = Date.now() - entry.createdAt.getTime();
+  if (tokenAge > REFRESH_TOKEN_MAX_LIFETIME_MS) {
+    console.log(`[TokenStore] Token max lifetime exceeded for ${openId.substring(0, 8)}... (${Math.floor(tokenAge / 86400000)}d), requiring re-login`);
+    await deleteTokens(openId);
+    return null; // 再ログインが必要
+  }
 
   // 有効期限の5分前からリフレッシュ（バッファ）
   const bufferMs = 5 * 60 * 1000;
