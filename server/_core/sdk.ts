@@ -143,7 +143,8 @@ class SDKServer {
   }
 
   private getSessionSecret() {
-    const secret = ENV.cookieSecret;
+    // テストで環境変数を変更できるように、ENV.cookieSecretではなくprocess.env.JWT_SECRETを直接参照
+    const secret = process.env.JWT_SECRET ?? ENV.cookieSecret;
     
     if (!secret || secret.trim() === "") {
       throw new Error(
