@@ -9,6 +9,11 @@ import { describe, it, expect, vi, beforeEach } from "vitest";
 import { renderHook, act } from "@testing-library/react";
 import { useAuthUxMachine } from "../use-auth-ux-machine";
 
+// react-native をモック
+vi.mock("react-native", () => ({
+  Platform: { OS: "web" },
+}));
+
 // useAuth をモック
 vi.mock("@/hooks/use-auth", () => ({
   useAuth: () => ({
