@@ -14,11 +14,22 @@ let _db: DrizzleDB | null = null;
 export async function getDb() {
   if (!_db && process.env.DATABASE_URL) {
     try {
-      // 接続プールの作成
-      // mysql2/promiseのcreatePoolはURL文字列のみ、または設定オブジェクトのみを受け取る
-      // URL文字列を使用する場合は、オプションを直接指定できないため、
-      // シンプルにURL文字列のみを使用
-      const poolConnection = mysql.createPool(process.env.DATABASE_URL);
+      // 接続プールの作成（タイムアウト設定付き）
+      const dbUrl = new URL(process.env.DATABASE_URL);
+      const poolConnection = mysql.createPool({
+        host: dbUrl.hostname,
+        port: Number(dbUrl.port) || 3306,
+        user: decodeURIComponent(dbUrl.username),
+        password: decodeURIComponent(dbUrl.password),
+        database: dbUrl.pathname.slice(1),
+        ssl: dbUrl.searchParams.get("ssl") === "true" ? {} : undefined,
+        connectTimeout: 10000,       // 接続タイムアウト 10秒
+        waitForConnections: true,
+        connectionLimit: 5,          // プールサイズ
+        queueLimit: 0,
+        enableKeepAlive: true,
+        keepAliveInitialDelay: 10000, // 10秒ごとにKeepAlive
+      });
       
       _db = drizzle(poolConnection, { schema, mode: "default" });
       

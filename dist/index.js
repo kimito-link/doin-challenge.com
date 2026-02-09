@@ -694,7 +694,24 @@ import mysql from "mysql2/promise";
 async function getDb() {
   if (!_db && process.env.DATABASE_URL) {
     try {
-      const poolConnection = mysql.createPool(process.env.DATABASE_URL);
+      const dbUrl = new URL(process.env.DATABASE_URL);
+      const poolConnection = mysql.createPool({
+        host: dbUrl.hostname,
+        port: Number(dbUrl.port) || 3306,
+        user: decodeURIComponent(dbUrl.username),
+        password: decodeURIComponent(dbUrl.password),
+        database: dbUrl.pathname.slice(1),
+        ssl: dbUrl.searchParams.get("ssl") === "true" ? {} : void 0,
+        connectTimeout: 1e4,
+        // 接続タイムアウト 10秒
+        waitForConnections: true,
+        connectionLimit: 5,
+        // プールサイズ
+        queueLimit: 0,
+        enableKeepAlive: true,
+        keepAliveInitialDelay: 1e4
+        // 10秒ごとにKeepAlive
+      });
       _db = drizzle(poolConnection, { schema: schema_exports, mode: "default" });
       try {
         const testPromise = poolConnection.query("SELECT 1");
@@ -3697,7 +3714,8 @@ function readBuildInfo() {
       if (!commitSha || commitSha === "unknown") {
         throw new Error("invalid build-info");
       }
-      const resolvedSha = process.env.RAILWAY_GIT_COMMIT_SHA && /^(local-|railway-)/.test(commitSha) ? process.env.RAILWAY_GIT_COMMIT_SHA : commitSha;
+      const railwaySha = process.env.RAILWAY_GIT_COMMIT_SHA;
+      const resolvedSha = railwaySha && /^[0-9a-f]{40}$/i.test(railwaySha) ? railwaySha : commitSha;
       return {
         ok: true,
         commitSha: resolvedSha,
