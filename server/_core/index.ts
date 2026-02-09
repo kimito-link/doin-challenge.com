@@ -69,14 +69,34 @@ export function isAllowedOrigin(origin: string | undefined): boolean {
   // 本番環境ではホワイトリストをチェック
   if (ALLOWED_ORIGINS.length > 0) {
     return ALLOWED_ORIGINS.some(allowed => {
-      // 完全一致
+      // 完全一致（originは完全なURL、allowedも完全なURLまたはドメイン）
       if (origin === allowed) return true;
-      // .example.com のような形式の場合、example.com で終わるかチェック
+      
+      // .example.com のような形式の場合、originのhostnameがexample.comで終わるかチェック
       if (allowed.startsWith(".")) {
-        return origin.endsWith(allowed) || origin === allowed.slice(1);
+        try {
+          const url = new URL(origin);
+          return url.hostname === allowed.slice(1) || url.hostname.endsWith(allowed);
+        } catch {
+          return origin.endsWith(allowed) || origin === allowed.slice(1);
+        }
       }
-      // 通常のドメインの場合、完全一致のみ
-      return false;
+      
+      // allowedがURL形式の場合、完全一致をチェック
+      // allowedがドメインのみの場合、originのhostnameと比較
+      try {
+        const originUrl = new URL(origin);
+        const allowedUrl = allowed.startsWith("http") ? new URL(allowed) : null;
+        if (allowedUrl) {
+          return originUrl.origin === allowedUrl.origin;
+        } else {
+          // allowedがドメインのみの場合
+          return originUrl.hostname === allowed || originUrl.hostname.endsWith(`.${allowed}`);
+        }
+      } catch {
+        // URL解析に失敗した場合は文字列比較
+        return origin === allowed || origin.endsWith(allowed);
+      }
     });
   }
   

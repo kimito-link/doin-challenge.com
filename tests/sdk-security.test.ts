@@ -111,8 +111,10 @@ describe("SDK Security", () => {
     });
 
     it("should work with valid JWT_SECRET", async () => {
-      // 確実にJWT_SECRETを設定
-      process.env.JWT_SECRET = "test-secret-key-12345";
+      // 確実にJWT_SECRETを設定（beforeEachで設定されているはずだが、念のため）
+      if (!process.env.JWT_SECRET || process.env.JWT_SECRET.trim() === "") {
+        process.env.JWT_SECRET = "test-secret-key-12345";
+      }
 
       const token = await sdk.createSessionToken("test-open-id", { name: "Test" });
 
