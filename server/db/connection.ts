@@ -15,37 +15,18 @@ export async function getDb() {
   if (!_db && process.env.DATABASE_URL) {
     try {
       // 接続プールの設定を追加（タイムアウト、リトライ、接続数の制限）
-      // mysql2/promiseのcreatePoolはURL文字列とオプションの両方を受け取れるが、
-      // 型定義が厳密なため、型アサーションを使用
-      const poolOptions: PoolOptions = {
-        // 接続プールの設定
-        connectionLimit: 10, // 最大接続数
-        queueLimit: 0, // キュー制限なし
-        
-        // タイムアウト設定
-        connectTimeout: 10000, // 10秒
-        timeout: 10000, // 10秒
-        
-        // 接続の検証
-        enableKeepAlive: true,
-        keepAliveInitialDelay: 0,
-        
-        // SSL設定（本番環境ではSSL接続を推奨）
-        ssl: process.env.NODE_ENV === "production" ? { rejectUnauthorized: false } : undefined,
-      };
-      
-      // URL文字列とオプションの両方を渡す（型定義の制約を回避）
-      const poolConnection = mysql.createPool(
-        process.env.DATABASE_URL,
-        poolOptions as any
-      );
+      // mysql2/promiseのcreatePoolはURL文字列のみ、または設定オブジェクトのみを受け取る
+      // URL文字列を使用する場合は、オプションを直接指定できないため、
+      // シンプルにURL文字列のみを使用
+      const poolConnection = mysql.createPool(process.env.DATABASE_URL);
       
       // 接続エラーのハンドリング
-      poolConnection.on("connection", () => {
+      // Pool型のonメソッドは型定義が厳密なため、型アサーションを使用
+      (poolConnection as any).on("connection", () => {
         console.log("[Database] New connection established");
       });
       
-      poolConnection.on("error", (err: Error & { code?: string }) => {
+      (poolConnection as any).on("error", (err: Error & { code?: string }) => {
         console.error("[Database] Pool error:", err);
         // 接続エラーが発生した場合、接続をリセット
         if (err.code === "PROTOCOL_CONNECTION_LOST" || err.code === "ECONNREFUSED") {
