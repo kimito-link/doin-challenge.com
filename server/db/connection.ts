@@ -15,6 +15,8 @@ export async function getDb() {
   if (!_db && process.env.DATABASE_URL) {
     try {
       // 接続プールの設定を追加（タイムアウト、リトライ、接続数の制限）
+      // mysql2/promiseのcreatePoolはURL文字列とオプションの両方を受け取れるが、
+      // 型定義が厳密なため、型アサーションを使用
       const poolOptions: PoolOptions = {
         // 接続プールの設定
         connectionLimit: 10, // 最大接続数
@@ -32,7 +34,11 @@ export async function getDb() {
         ssl: process.env.NODE_ENV === "production" ? { rejectUnauthorized: false } : undefined,
       };
       
-      const poolConnection = mysql.createPool(process.env.DATABASE_URL, poolOptions);
+      // URL文字列とオプションの両方を渡す（型定義の制約を回避）
+      const poolConnection = mysql.createPool(
+        process.env.DATABASE_URL,
+        poolOptions as any
+      );
       
       // 接続エラーのハンドリング
       poolConnection.on("connection", () => {
