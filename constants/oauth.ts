@@ -1,5 +1,6 @@
 import * as Linking from "expo-linking";
 import * as ReactNative from "react-native";
+import { getApiBaseUrl as getApiBaseUrlFromConfig } from "@/lib/api/config";
 
 // Extract scheme from bundle ID (last segment timestamp, prefixed with "manus")
 // e.g., "space.manus.my.app.t20240115103045" -> "manus20240115103045"
@@ -25,38 +26,15 @@ export const OWNER_NAME = env.ownerName;
 export const API_BASE_URL = env.apiBaseUrl;
 
 /**
- * Get the API base URL, deriving from current hostname if not set.
- * Metro runs on 8081, API server runs on 3000.
- * URL pattern: https://PORT-sandboxid.region.domain
+ * Get the API base URL for OAuth redirect URIs.
+ * Uses the centralized API config to ensure consistency.
+ * 
+ * For OAuth redirect URIs, we need the actual backend URL (Railway) in production,
+ * not the frontend URL (Vercel), because Manus OAuth portal needs to redirect to the backend.
  */
 export function getApiBaseUrl(): string {
-  // 本番 Web では常に同一オリジン優先（Vercel rewrite を通す）。環境変数より先に判定する。
-  if (ReactNative.Platform.OS === "web" && typeof location !== "undefined") {
-    const protocol = location.protocol;
-    const hostname = location.hostname;
-    if (hostname.includes("doin-challenge.com") || hostname.includes("doin-challengecom.vercel.app")) {
-      return `${protocol}//${hostname}`;
-    }
-    const apiHostname = hostname.replace(/^8081-/, "3000-");
-    if (apiHostname !== hostname) {
-      return `${protocol}//${apiHostname}`;
-    }
-  }
-
-  if (API_BASE_URL) {
-    return API_BASE_URL.replace(/\/$/, "");
-  }
-
-  if (ReactNative.Platform.OS === "web" && typeof location !== "undefined") {
-    const protocol = location.protocol;
-    const hostname = location.hostname;
-    const apiHostname = hostname.replace(/^8081-/, "3000-");
-    if (apiHostname !== hostname) {
-      return `${protocol}//${apiHostname}`;
-    }
-  }
-
-  return "";
+  // Use the centralized API config function
+  return getApiBaseUrlFromConfig();
 }
 
 export const SESSION_TOKEN_KEY = "app_session_token";
@@ -81,7 +59,26 @@ export const getLoginUrl = () => {
   if (ReactNative.Platform.OS === "web") {
     // Web platform: redirect to API server callback (not Metro bundler)
     // The API server will then redirect back to the frontend with the session token
-    redirectUri = `${getApiBaseUrl()}/api/oauth/callback`;
+    const apiBaseUrl = getApiBaseUrl();
+    
+    // リダイレクトURIが空の場合はエラー
+    if (!apiBaseUrl) {
+      console.error("[OAuth] API base URL is empty, cannot generate redirect URI");
+      throw new Error("API base URL is not configured");
+    }
+    
+    redirectUri = `${apiBaseUrl}/api/oauth/callback`;
+    
+    // モバイルブラウザでのデバッグ用ログ
+    if (typeof window !== "undefined") {
+      const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
+      if (isMobile || __DEV__) {
+        console.log("[OAuth] Platform: web, redirectUri:", redirectUri);
+        console.log("[OAuth] API base URL:", apiBaseUrl);
+        console.log("[OAuth] Current hostname:", window.location.hostname);
+        console.log("[OAuth] Is mobile:", isMobile);
+      }
+    }
   } else {
     // Native platform: use deep link scheme for mobile OAuth callback
     // This allows the OS to redirect back to the app after authentication
@@ -98,5 +95,14 @@ export const getLoginUrl = () => {
   url.searchParams.set("state", state);
   url.searchParams.set("type", "signIn");
 
-  return url.toString();
+  const loginUrl = url.toString();
+  
+  // デバッグ用ログ
+  if (__DEV__) {
+    console.log("[OAuth] Generated login URL:", loginUrl);
+    console.log("[OAuth] Redirect URI:", redirectUri);
+    console.log("[OAuth] OAuth Portal URL:", OAUTH_PORTAL_URL);
+  }
+
+  return loginUrl;
 };
