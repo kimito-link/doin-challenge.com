@@ -15,6 +15,7 @@ import { getUserByOpenId } from "../db";
 import { getSessionCookieOptions } from "./cookies";
 import { sdk } from "./sdk";
 import { revokeAccessToken } from "../twitter-oauth2";
+import { getTokens, deleteTokens } from "../token-store";
 
 function buildUserResponse(
   user:
@@ -49,15 +50,22 @@ export function registerOAuthRoutes(app: Express) {
     // 1. セッションCookieをクリア
     const cookieOptions = getSessionCookieOptions(req);
     res.clearCookie(COOKIE_NAME, { ...cookieOptions, maxAge: -1 });
-    // admin_session も同時にクリア
     res.clearCookie("admin_session", { ...cookieOptions, maxAge: -1 });
 
-    // 2. リクエストボディにTwitterアクセストークンがあればリボーク
-    //    クライアントからトークンが送られなくてもログアウト自体は成功させる
-    const twitterAccessToken = req.body?.twitterAccessToken;
-    if (twitterAccessToken && typeof twitterAccessToken === "string") {
-      // fire-and-forget: リボーク失敗してもログアウトはブロックしない
-      revokeAccessToken(twitterAccessToken).catch(() => {});
+    // 2. サーバーサイドのTwitterトークンをリボーク + 削除（BFFパターン）
+    try {
+      const user = await sdk.authenticateRequest(req).catch(() => null);
+      if (user) {
+        const storedTokens = await getTokens(user.openId);
+        if (storedTokens?.accessToken) {
+          // fire-and-forget: リボーク失敗してもログアウトはブロックしない
+          revokeAccessToken(storedTokens.accessToken).catch(() => {});
+        }
+        // サーバーサイドのトークンストアから削除
+        await deleteTokens(user.openId).catch(() => {});
+      }
+    } catch {
+      // ログアウト自体は必ず成功させる
     }
 
     res.json({ success: true });
@@ -69,7 +77,8 @@ export function registerOAuthRoutes(app: Express) {
       const user = await sdk.authenticateRequest(req);
       res.json({ user: buildUserResponse(user) });
     } catch (error) {
-      console.error("[Auth] /api/auth/me failed:", error);
+      // 内部エラー詳細はユーザーに露出しない
+      console.error("[Auth] /api/auth/me failed:", error instanceof Error ? error.message : "unknown");
       res.status(401).json({ error: "Not authenticated", user: null });
     }
   });
@@ -93,7 +102,7 @@ export function registerOAuthRoutes(app: Express) {
 
       res.json({ success: true, user: buildUserResponse(user) });
     } catch (error) {
-      console.error("[Auth] /api/auth/session failed:", error);
+      console.error("[Auth] /api/auth/session failed:", error instanceof Error ? error.message : "unknown");
       res.status(401).json({ error: "Invalid token" });
     }
   });

@@ -59,13 +59,10 @@ export async function apiCall<T>(endpoint: string, options: RequestInit = {}): P
   }
 }
 
-// Logout - サーバーサイドでセッション無効化 + Twitterトークンリボーク
-export async function logout(twitterAccessToken?: string): Promise<void> {
+// Logout - BFFパターン: サーバーが自動でトークンリボーク+削除
+export async function logout(): Promise<void> {
   await apiCall<void>("/api/auth/logout", {
     method: "POST",
-    body: JSON.stringify({
-      ...(twitterAccessToken ? { twitterAccessToken } : {}),
-    }),
   });
 }
 
@@ -116,9 +113,8 @@ export async function establishSession(token: string): Promise<boolean> {
 }
 
 
-// Check Twitter follow status (called after login)
+// Check Twitter follow status (BFFパターン: サーバーが保管トークンを使用)
 export async function checkFollowStatus(
-  accessToken: string,
   userId: string
 ): Promise<{
   isFollowing: boolean;
@@ -129,8 +125,7 @@ export async function checkFollowStatus(
   } | null;
 }> {
   try {
-    console.log("[API] checkFollowStatus: checking follow status...");
-    
+    // セッションCookie/Bearerトークンで認証、サーバーがTwitterトークンを使用
     const result = await apiGet<{
       isFollowing: boolean;
       targetAccount: {
@@ -138,24 +133,18 @@ export async function checkFollowStatus(
         name: string;
         username: string;
       } | null;
-    }>(`/api/twitter/follow-status?userId=${encodeURIComponent(userId)}`, {
-      headers: {
-        Authorization: `Bearer ${accessToken}`,
-      },
-    });
+    }>(`/api/twitter/follow-status?userId=${encodeURIComponent(userId)}`);
 
     if (!result.ok || !result.data) {
-      console.error("[API] checkFollowStatus failed:", result.status, result.error);
       return { isFollowing: false, targetAccount: null };
     }
 
-    console.log("[API] checkFollowStatus result:", result.data);
     return {
       isFollowing: result.data.isFollowing || false,
       targetAccount: result.data.targetAccount || null,
     };
   } catch (error) {
-    console.error("[API] checkFollowStatus error:", error);
+    console.error("[API] checkFollowStatus error:", error instanceof Error ? error.message : "unknown");
     return { isFollowing: false, targetAccount: null };
   }
 }

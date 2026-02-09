@@ -8,7 +8,7 @@ import { Platform } from "react-native";
 import { SESSION_MAX_AGE_MS } from "@/shared/const";
 
 const ADMIN_SESSION_KEY = "admin_session";
-// 30日間有効（セキュリティベストプラクティスに基づき短縮）
+// 72時間有効（堅牢設計ガイドに基づき短縮）
 const ADMIN_SESSION_EXPIRY = SESSION_MAX_AGE_MS;
 
 /**

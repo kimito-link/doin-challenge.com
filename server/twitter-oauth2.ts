@@ -152,7 +152,8 @@ export async function exchangeCodeForTokens(
   
   if (!response.ok) {
     const text = await response.text();
-    console.error("[TokenExchange] Error:", response.status, text);
+    // トークン値を含む可能性があるため、ステータスコードのみログに出力
+    console.error("[TokenExchange] Error:", response.status);
     
     // エラー種別に応じた分かりやすいメッセージ
     if (response.status === 400) {
@@ -192,8 +193,8 @@ export async function getUserProfile(accessToken: string): Promise<{
   }, { maxRetries: 2, timeoutMs: 10000, label: "UserProfile" });
   
   if (!response.ok) {
-    const text = await response.text();
-    console.error("[UserProfile] Error:", response.status, text);
+    await response.text(); // consume body
+    console.error("[UserProfile] Error:", response.status);
     
     if (response.status === 401) {
       throw new Error("アクセストークンが無効です。もう一度ログインしてください。");
@@ -241,8 +242,8 @@ export async function refreshAccessToken(refreshToken: string): Promise<{
   }, { maxRetries: 1, timeoutMs: 10000, label: "TokenRefresh" });
   
   if (!response.ok) {
-    const text = await response.text();
-    console.error("[TokenRefresh] Error:", response.status, text);
+    await response.text(); // consume body
+    console.error("[TokenRefresh] Error:", response.status);
     
     if (response.status === 400 || response.status === 401) {
       throw new Error(`INVALID_REFRESH_TOKEN: リフレッシュトークンが無効です。再ログインしてください。`);

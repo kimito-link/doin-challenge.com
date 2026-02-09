@@ -12,13 +12,12 @@ export type User = {
   // Profile (for 1-Click participation)
   prefecture?: string | null;
   gender?: "male" | "female" | "unspecified" | null;
-  // Twitter/X specific fields
+  // Twitter/X specific fields (プロフィール情報のみ、トークンは含まない)
   username?: string;
   profileImage?: string;
   followersCount?: number;
   description?: string; // Twitter bio/自己紹介
   twitterId?: string;
-  twitterAccessToken?: string;
   // Follow status for premium features
   isFollowingTarget?: boolean;
   targetAccount?: {
@@ -114,7 +113,6 @@ export async function setUserInfo(user: User): Promise<void> {
       profileImage: user.profileImage ?? existingUser.profileImage,
       followersCount: user.followersCount ?? existingUser.followersCount,
       twitterId: user.twitterId ?? existingUser.twitterId,
-      twitterAccessToken: user.twitterAccessToken ?? existingUser.twitterAccessToken,
       isFollowingTarget: user.isFollowingTarget ?? existingUser.isFollowingTarget,
       targetAccount: user.targetAccount ?? existingUser.targetAccount,
     } : user;

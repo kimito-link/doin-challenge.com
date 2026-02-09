@@ -4,7 +4,7 @@ import { Page } from "@playwright/test";
 const COOKIE_NAME = "app_session_id";
 // server/_core/env.ts defaults to empty string if JWT_SECRET is not set
 const JWT_SECRET = process.env.JWT_SECRET || "";
-const SESSION_MAX_AGE_MS = 1000 * 60 * 60 * 24 * 30; // 30日
+const SESSION_MAX_AGE_MS = 1000 * 60 * 60 * 72; // 72時間
 
 export async function loginAsUser(page: Page, user: { openId: string; appId: string; name: string }) {
     const secretKey = new TextEncoder().encode(JWT_SECRET);

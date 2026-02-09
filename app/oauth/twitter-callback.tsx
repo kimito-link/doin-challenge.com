@@ -1,7 +1,6 @@
 // v5.39: description field support
 
 import * as Auth from "@/lib/_core/auth";
-import { saveTokenData } from "@/lib/token-manager";
 import { useLocalSearchParams } from "expo-router";
 import { navigateReplace } from "@/lib/navigation/app-routes";
 import { useEffect, useState, useRef } from "react";
@@ -165,6 +164,7 @@ export default function TwitterOAuthCallback() {
           });
 
           // Convert Twitter user data to Auth.User format
+          // BFFパターン: トークンはサーバー側で管理するため、クライアントには渡さない
           const userInfo: Auth.User = {
             id: parseInt(userData.twitterId) || 0,
             openId: `twitter:${userData.twitterId}`,
@@ -172,13 +172,12 @@ export default function TwitterOAuthCallback() {
             email: null,
             loginMethod: "twitter",
             lastSignedIn: new Date(),
-            // Twitter specific fields
+            // Twitter specific fields (プロフィール情報のみ、トークンは含まない)
             username: userData.username,
             profileImage: userData.profileImage,
             followersCount: userData.followersCount,
-            description: userData.description, // Twitter bio/自己紹介
+            description: userData.description,
             twitterId: userData.twitterId,
-            twitterAccessToken: userData.accessToken,
             isFollowingTarget: userData.isFollowingTarget,
             targetAccount: userData.targetAccount,
           };
@@ -294,15 +293,7 @@ export default function TwitterOAuthCallback() {
             storedInfo = await Auth.getUserInfo();
           }
 
-          // Store token data for auto-refresh (if available)
-          if (userData.accessToken) {
-            await saveTokenData({
-              accessToken: userData.accessToken,
-              refreshToken: userData.refreshToken,
-              expiresIn: 7200, // 2 hours
-            });
-            console.log("[Twitter OAuth] Token data stored for auto-refresh");
-          }
+          // BFFパターン: トークンはサーバー側で管理（クライアントに保存しない）
 
           // アカウントを保存（複数アカウント切り替え用）
           await saveAccount({

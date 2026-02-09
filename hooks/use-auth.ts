@@ -2,9 +2,6 @@ import * as Api from "@/lib/_core/api";
 import * as Auth from "@/lib/_core/auth";
 import { getApiBaseUrl } from "@/lib/api/config";
 import {
-  getRefreshToken,
-  getValidAccessToken,
-  isAccessTokenExpired,
   clearAllTokenData,
 } from "@/lib/token-manager";
 import { useCallback, useEffect, useMemo, useState } from "react";
@@ -133,18 +130,14 @@ export function useAuth(options?: UseAuthOptions) {
 
   const logout = useCallback(async () => {
     try {
-      // ログアウト前にアクセストークンを取得（サーバー側でリボークするため）
-      const accessToken = await getValidAccessToken();
-      await Api.logout(accessToken || undefined);
+      // BFFパターン: サーバーが自動でトークンリボーク+削除するため、トークン送信不要
+      await Api.logout();
     } catch (err) {
       console.error("[Auth] Logout API call failed:", err);
-      // API呼び出しが失敗してもローカルのクリーンアップは続行
     } finally {
       await Auth.removeSessionToken();
       await Auth.clearUserInfo();
-      // リフレッシュトークン含むすべてのトークンデータをクリア
       await clearAllTokenData();
-      // メモリキャッシュもクリア
       cachedAuthState = null;
       setUser(null);
       setError(null);

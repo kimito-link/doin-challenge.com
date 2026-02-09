@@ -17,6 +17,17 @@ import * as db from "./db";
 import { COOKIE_NAME, SESSION_MAX_AGE_MS } from "../shared/const.js";
 import { getSessionCookieOptions } from "./_core/cookies.js";
 import { sdk } from "./_core/sdk.js";
+import { storeTokens, getValidAccessToken as getStoredAccessToken, deleteTokens } from "./token-store";
+import {
+  getClientIp,
+  getClientUserAgent,
+  writeLoginAuditLog,
+  isLoginLocked,
+  recordLoginFailure,
+  resetLoginFailures,
+  setLoginCooldown,
+  isInLoginCooldown,
+} from "./login-security";
 
 /**
  * エラーレスポンスを生成（本番環境では詳細情報を除外）
@@ -69,6 +80,16 @@ export function registerTwitterRoutes(app: Express) {
   // Step 1: Initiate Twitter OAuth 2.0
   app.get("/api/twitter/auth", async (req: Request, res: Response) => {
     try {
+      // ログイン失敗回数制限チェック
+      const clientIp = getClientIp(req);
+      const lockStatus = isLoginLocked(clientIp);
+      if (lockStatus.locked) {
+        res.status(429).json({
+          error: `ログイン試行回数が上限に達しました。${lockStatus.remainingSeconds}秒後に再試行してください。`,
+        });
+        return;
+      }
+
       // 別のアカウントでログインするかどうかのフラグ
       const forceLogin = req.query.force === "true" || req.query.switch === "true";
       
@@ -87,18 +108,19 @@ export function registerTwitterRoutes(app: Express) {
       // Build authorization URL (forceLoginで別アカウントでログイン可能)
       const authUrl = buildAuthorizationUrl(callbackUrl, state, codeChallenge, forceLogin);
       
-      console.log("[Twitter OAuth 2.0] Redirecting to:", authUrl);
-      
-      // Redirect to Twitter authorization page
+      // Redirect to Twitter authorization page（URLはトークン漏洩防止のためログに出さない）
       res.redirect(authUrl);
     } catch (error) {
-      console.error("Twitter auth error:", error);
-      res.status(500).json({ error: "Failed to initiate Twitter authentication" });
+      console.error("[Twitter Auth] Init error:", error instanceof Error ? error.message : "unknown");
+      res.status(500).json({ error: "ログインの開始に失敗しました" });
     }
   });
 
   // Step 2: Handle Twitter OAuth 2.0 callback
   app.get("/api/twitter/callback", async (req: Request, res: Response) => {
+    const callbackIp = getClientIp(req);
+    const callbackUa = getClientUserAgent(req);
+
     try {
       const { code, state, error: oauthError, error_description } = req.query as {
         code?: string;
@@ -109,7 +131,15 @@ export function registerTwitterRoutes(app: Express) {
 
       // Handle OAuth errors (e.g., user cancelled authorization)
       if (oauthError) {
-        console.error("Twitter OAuth error:", oauthError, error_description);
+        // 監査ログ: OAuth認証エラー
+        writeLoginAuditLog({
+          openId: "unknown",
+          success: false,
+          ip: callbackIp,
+          userAgent: callbackUa,
+          failureReason: `OAuth error: ${oauthError}`,
+        }).catch(() => {});
+        if (oauthError !== "access_denied") recordLoginFailure(callbackIp);
         
         // Build redirect URL to frontend app with error info
         const host = req.get("host") || "";
@@ -147,6 +177,8 @@ export function registerTwitterRoutes(app: Express) {
       }
 
       if (!code || !state) {
+        recordLoginFailure(callbackIp);
+        writeLoginAuditLog({ openId: "unknown", success: false, ip: callbackIp, userAgent: callbackUa, failureReason: "Missing code/state" }).catch(() => {});
         res.status(400).json({ error: "Missing code or state parameter" });
         return;
       }
@@ -154,6 +186,8 @@ export function registerTwitterRoutes(app: Express) {
       // Retrieve stored PKCE data
       const pkceData = await getPKCEData(state);
       if (!pkceData) {
+        recordLoginFailure(callbackIp);
+        writeLoginAuditLog({ openId: "unknown", success: false, ip: callbackIp, userAgent: callbackUa, failureReason: "Invalid/expired state" }).catch(() => {});
         res.status(400).json({ error: "Invalid or expired state parameter" });
         return;
       }
@@ -163,7 +197,7 @@ export function registerTwitterRoutes(app: Express) {
       // Exchange authorization code for tokens
       const tokens = await exchangeCodeForTokens(code, callbackUrl, codeVerifier);
       
-      console.log("[Twitter OAuth 2.0] Token exchange successful");
+      // トークン交換成功（トークン値はログに出力しない）
 
       // Clean up stored PKCE data (background, don't wait)
       setImmediate(() => deletePKCEData(state).catch(() => {}));
@@ -171,15 +205,15 @@ export function registerTwitterRoutes(app: Express) {
       // Get user profile using access token
       const userProfile = await getUserProfile(tokens.access_token);
       
-      console.log("[Twitter OAuth 2.0] User profile retrieved:", userProfile.username);
+      // ユーザープロフィール取得成功
 
       // フォローチェックはログイン後に非同期で行うため、ここではスキップ
       // フロントエンドから /api/twitter/follow-status を呼び出して確認する
       const isFollowingTarget = false; // 後で確認
       const targetAccount = null; // 後で確認
-      console.log("[Twitter OAuth 2.0] Skipping follow check for faster login");
+      // フォローチェックはログイン後に非同期実行
       
-      // Build user data object
+      // Build user data object（BFFパターン: トークンはクライアントに渡さない）
       const userData = {
         twitterId: userProfile.id,
         name: userProfile.name,
@@ -188,14 +222,21 @@ export function registerTwitterRoutes(app: Express) {
         followersCount: userProfile.public_metrics?.followers_count || 0,
         followingCount: userProfile.public_metrics?.following_count || 0,
         description: userProfile.description || "",
-        accessToken: tokens.access_token,
-        refreshToken: tokens.refresh_token,
+        // 注意: accessToken, refreshToken はセキュリティ上クライアントに送らない
         isFollowingTarget,
         targetAccount,
       };
       
       // Save user profile to database（リトライ付き）
       const openId = `twitter:${userProfile.id}`;
+
+      // BFFパターン: トークンをサーバーサイドで暗号化して保存
+      await storeTokens(openId, {
+        accessToken: tokens.access_token,
+        refreshToken: tokens.refresh_token,
+        expiresIn: tokens.expires_in,
+        scope: tokens.scope,
+      });
       let dbSaveSuccess = false;
       for (let dbRetry = 0; dbRetry < 2; dbRetry++) {
         try {
@@ -206,19 +247,31 @@ export function registerTwitterRoutes(app: Express) {
             loginMethod: "twitter",
             lastSignedIn: new Date(),
           });
-          console.log("[Twitter OAuth 2.0] User profile saved to database");
+          // DB保存成功
           dbSaveSuccess = true;
           break;
         } catch (error) {
-          console.error(`[Twitter OAuth 2.0] Failed to save user profile (attempt ${dbRetry + 1}/2):`, error);
+          console.error(`[Twitter Auth] DB save failed (attempt ${dbRetry + 1}/2):`, error instanceof Error ? error.message : "unknown");
           if (dbRetry === 0) {
             await new Promise(resolve => setTimeout(resolve, 500));
           }
         }
       }
       if (!dbSaveSuccess) {
-        console.warn("[Twitter OAuth 2.0] DB save failed after retries, continuing with session creation");
+        console.warn("[Twitter Auth] DB save failed after retries, continuing");
       }
+
+      // ログイン成功: 監査ログ + 失敗カウンターリセット + API連打防止クールダウン
+      resetLoginFailures(callbackIp);
+      setLoginCooldown(openId);
+      writeLoginAuditLog({
+        openId,
+        twitterId: userProfile.id,
+        twitterUsername: userProfile.username,
+        success: true,
+        ip: callbackIp,
+        userAgent: callbackUa,
+      }).catch(() => {});
 
       // Create session token and set cookie (重要: セッションCookieを設定して認証状態を確立)
       // Twitter OAuthも外部サイトからのリダイレクトなので、クロスサイトリクエストに対応
@@ -232,11 +285,11 @@ export function registerTwitterRoutes(app: Express) {
           });
           const cookieOptions = getSessionCookieOptions(req, { crossSite: true });
           res.cookie(COOKIE_NAME, sessionToken, { ...cookieOptions, maxAge: SESSION_MAX_AGE_MS });
-          console.log("[Twitter OAuth 2.0] Session cookie set successfully");
+          // セッションCookie設定完了
           break;
         } catch (error) {
           const msg = error instanceof Error ? error.message : String(error);
-          console.error(`[Twitter OAuth 2.0] Failed to create session token (attempt ${sessionRetry + 1}/2):`, msg);
+          console.error(`[Twitter Auth] Session creation failed (attempt ${sessionRetry + 1}/2):`, msg);
           sessionError = msg;
           if (sessionRetry === 0) {
             await new Promise(resolve => setTimeout(resolve, 300));
@@ -246,7 +299,7 @@ export function registerTwitterRoutes(app: Express) {
       
       // セッション作成に完全に失敗した場合はエラーとしてリダイレクト
       if (!sessionToken) {
-        console.error("[Twitter OAuth 2.0] Session creation failed after retries:", sessionError);
+        console.error("[Twitter Auth] Session creation failed after retries");
         // ユーザーデータはあるが、セッション無しの警告付きでリダイレクト
         // フロントエンドで再認証フローを促す
       }
@@ -278,11 +331,10 @@ export function registerTwitterRoutes(app: Express) {
         redirectParams.set("sessionToken", sessionToken);
       }
       const redirectUrl = `${baseUrl}/oauth/twitter-callback?${redirectParams.toString()}`;
-      console.log("[Twitter OAuth 2.0] Redirecting to:", redirectUrl.substring(0, 100) + "...");
-      
+      // リダイレクトURLはトークン漏洩防止のため詳細をログに出さない
       res.redirect(redirectUrl);
     } catch (error: unknown) {
-      console.error("Twitter callback error:", error);
+      console.error("[Twitter Auth] Callback error:", error instanceof Error ? error.message : "unknown");
       
       // エラーページにリダイレクト（ユーザーフレンドリーなエラー表示）
       const host = req.get("host") || "";
@@ -307,15 +359,17 @@ export function registerTwitterRoutes(app: Express) {
     }
   });
 
-  // API endpoint to get user profile (for testing)
+  // API endpoint to get user profile (BFFパターン: サーバー保存トークンを使用)
   app.get("/api/twitter/me", async (req: Request, res: Response) => {
     try {
-      // Get access token from Authorization header
-      const authHeader = req.headers.authorization;
-      const accessToken = extractBearerToken(authHeader);
-      
+      // セッションからユーザーを認証
+      const user = await sdk.authenticateRequest(req);
+      const openId = user.openId;
+
+      // サーバーサイドで保管したトークンを使用
+      const accessToken = await getStoredAccessToken(openId);
       if (!accessToken) {
-        res.status(401).json({ error: "Missing or invalid Authorization header" });
+        res.status(401).json({ error: "Twitter token not found. Please re-login." });
         return;
       }
 
@@ -331,26 +385,34 @@ export function registerTwitterRoutes(app: Express) {
         description: userProfile.description || "",
       });
     } catch (error) {
-      console.error("Twitter profile error:", error);
+      console.error("Twitter profile error:", error instanceof Error ? error.message : "unknown");
       res.status(500).json({ error: "Failed to get Twitter profile" });
     }
   });
 
-  // API endpoint to check follow status
+  // API endpoint to check follow status (BFFパターン: サーバー保存トークンを使用)
   app.get("/api/twitter/follow-status", async (req: Request, res: Response) => {
     try {
-      // Get access token from Authorization header
-      const authHeader = req.headers.authorization;
-      const accessToken = extractBearerToken(authHeader);
-      
-      if (!accessToken) {
-        res.status(401).json({ error: "Missing or invalid Authorization header" });
-        return;
-      }
+      // セッションからユーザーを認証
+      const user = await sdk.authenticateRequest(req);
+      const openId = user.openId;
       const userId = req.query.userId as string;
       
       if (!userId) {
         res.status(400).json({ error: "Missing userId parameter" });
+        return;
+      }
+
+      // ログイン直後のAPI連打防止（X API凍結リスク回避）
+      if (isInLoginCooldown(openId)) {
+        res.status(429).json({ error: "ログイン直後はしばらくお待ちください" });
+        return;
+      }
+
+      // サーバーサイドで保管したトークンを使用（自動リフレッシュ付き）
+      const accessToken = await getStoredAccessToken(openId);
+      if (!accessToken) {
+        res.status(401).json({ error: "Twitter token not found. Please re-login." });
         return;
       }
 
@@ -365,7 +427,7 @@ export function registerTwitterRoutes(app: Express) {
         },
       });
     } catch (error) {
-      console.error("Follow status error:", error);
+      console.error("Follow status error:", error instanceof Error ? error.message : "unknown");
       res.status(500).json({ error: "Failed to check follow status" });
     }
   });
@@ -409,8 +471,8 @@ export function registerTwitterRoutes(app: Express) {
         followingCount: profile.public_metrics?.following_count || 0,
       });
     } catch (error) {
-      console.error("Twitter user lookup error:", error);
-      res.status(500).json({ error: "Failed to lookup Twitter user" });
+      console.error("[Twitter] User lookup error:", error instanceof Error ? error.message : "unknown");
+      res.status(500).json({ error: "ユーザー検索に失敗しました" });
     }
   });
 
@@ -433,41 +495,38 @@ export function registerTwitterRoutes(app: Express) {
       // Build authorization URL
       const authUrl = buildAuthorizationUrl(callbackUrl, state, codeChallenge);
       
-      console.log("[Twitter OAuth 2.0] Refresh follow status - Redirecting to:", authUrl);
-      
       // Redirect to Twitter authorization page
       res.redirect(authUrl);
     } catch (error) {
-      console.error("Twitter refresh follow status error:", error);
-      res.status(500).json({ error: "Failed to initiate follow status refresh" });
+      console.error("[Twitter Auth] Refresh follow status error:", error instanceof Error ? error.message : "unknown");
+      res.status(500).json({ error: "フォロー状態の更新に失敗しました" });
     }
   });
 
-  // Token refresh endpoint
+  // Token refresh endpoint (BFFパターン: サーバーサイドで完結)
+  // クライアントはリフレッシュトークンを持たない。セッションCookieで認証し、
+  // サーバーが保管したリフレッシュトークンで自動更新する。
   app.post("/api/twitter/refresh", async (req: Request, res: Response) => {
     try {
-      const { refreshToken } = req.body as { refreshToken?: string };
+      // セッションからユーザーを認証
+      const user = await sdk.authenticateRequest(req);
+      const openId = user.openId;
+
+      // サーバーサイドでトークンをリフレッシュ（getValidAccessTokenが自動で行う）
+      const accessToken = await getStoredAccessToken(openId);
       
-      if (!refreshToken) {
-        res.status(400).json({ error: "Refresh token is required" });
+      if (!accessToken) {
+        res.status(401).json({ error: "Token not found. Please re-login." });
         return;
       }
-      
-      console.log("[Twitter OAuth 2.0] Refreshing access token...");
-      
-      const tokens = await refreshAccessToken(refreshToken);
-      
-      console.log("[Twitter OAuth 2.0] Token refresh successful");
-      
+
+      // クライアントにはトークンの有無だけ返す（トークン自体は返さない）
       res.json({
-        access_token: tokens.access_token,
-        refresh_token: tokens.refresh_token,
-        expires_in: tokens.expires_in,
-        token_type: tokens.token_type,
-        scope: tokens.scope,
+        success: true,
+        message: "Token refreshed server-side",
       });
     } catch (error) {
-      console.error("Twitter token refresh error:", error);
+      console.error("Twitter token refresh error:", error instanceof Error ? error.message : "unknown");
       res.status(401).json({ error: "Failed to refresh token" });
     }
   });
@@ -499,8 +558,8 @@ export function registerTwitterRoutes(app: Express) {
         followingCount: profile.public_metrics?.following_count || 0,
       });
     } catch (error) {
-      console.error("Twitter user lookup error:", error);
-      res.status(500).json({ error: "Failed to lookup Twitter user" });
+      console.error("[Twitter] Lookup error:", error instanceof Error ? error.message : "unknown");
+      res.status(500).json({ error: "ユーザー検索に失敗しました" });
     }
   });
 }

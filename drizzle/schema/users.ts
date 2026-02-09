@@ -96,3 +96,34 @@ export const twitterUserCache = mysqlTable("twitter_user_cache", {
 
 export type TwitterUserCache = typeof twitterUserCache.$inferSelect;
 export type InsertTwitterUserCache = typeof twitterUserCache.$inferInsert;
+
+// =============================================================================
+// User Twitter Tokens Table (BFF Pattern - サーバーサイドトークン管理)
+// =============================================================================
+
+/**
+ * Twitter OAuth 2.0 トークンをサーバーサイドで安全に保管するテーブル
+ * 
+ * セキュリティ要件:
+ * - トークンはAES-256-GCMで暗号化して保存
+ * - クライアント（ブラウザ/モバイル）には一切トークンを渡さない
+ * - セッションCookie（HttpOnly）経由で認証し、サーバーがトークンを利用
+ */
+export const userTwitterTokens = mysqlTable("user_twitter_tokens", {
+  id: int("id").autoincrement().primaryKey(),
+  /** users.openId と紐付け（例: "twitter:12345"） */
+  openId: varchar("openId", { length: 64 }).notNull().unique(),
+  /** AES-256-GCM 暗号化済みアクセストークン (hex: iv + authTag + ciphertext) */
+  encryptedAccessToken: text("encryptedAccessToken").notNull(),
+  /** AES-256-GCM 暗号化済みリフレッシュトークン */
+  encryptedRefreshToken: text("encryptedRefreshToken"),
+  /** アクセストークン有効期限 */
+  tokenExpiresAt: timestamp("tokenExpiresAt").notNull(),
+  /** 付与されたスコープ */
+  scope: varchar("scope", { length: 255 }),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+  updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
+});
+
+export type UserTwitterTokens = typeof userTwitterTokens.$inferSelect;
+export type InsertUserTwitterTokens = typeof userTwitterTokens.$inferInsert;

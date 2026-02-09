@@ -118,17 +118,16 @@ export function useFollowStatus() {
         return false;
       }
 
-      // Twitterアクセストークンとユーザー情報を取得
-      const twitterAccessToken = userInfo.twitterAccessToken;
+      // BFFパターン: トークンはサーバーで管理、twitterIdのみ必要
       const twitterId = userInfo.twitterId;
 
-      if (!twitterAccessToken || !twitterId) {
-        console.log("[useFollowStatus] No Twitter credentials, cannot check follow status");
+      if (!twitterId) {
+        console.log("[useFollowStatus] No Twitter ID, cannot check follow status");
         return false;
       }
 
-      // APIを呼び出してフォローステータスを確認
-      const result = await Api.checkFollowStatus(twitterAccessToken, twitterId);
+      // APIを呼び出してフォローステータスを確認（サーバーが保管トークンを使用）
+      const result = await Api.checkFollowStatus(twitterId);
       
       if (result.isFollowing !== undefined) {
         const data: FollowStatusData = {

@@ -33,7 +33,7 @@ var __toESM = (mod, isNodeMode, target) => (target = mod != null ? __create(__ge
 
 // drizzle/schema/users.ts
 import { mysqlTable, int, varchar, text, timestamp, mysqlEnum, boolean } from "drizzle-orm/mysql-core";
-var users, twitterFollowStatus, oauthPkceData, twitterUserCache;
+var users, twitterFollowStatus, oauthPkceData, twitterUserCache, userTwitterTokens;
 var init_users = __esm({
   "drizzle/schema/users.ts"() {
     "use strict";
@@ -80,6 +80,21 @@ var init_users = __esm({
       description: text("description"),
       cachedAt: timestamp("cachedAt").defaultNow().notNull(),
       expiresAt: timestamp("expiresAt").notNull(),
+      createdAt: timestamp("createdAt").defaultNow().notNull(),
+      updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull()
+    });
+    userTwitterTokens = mysqlTable("user_twitter_tokens", {
+      id: int("id").autoincrement().primaryKey(),
+      /** users.openId と紐付け（例: "twitter:12345"） */
+      openId: varchar("openId", { length: 64 }).notNull().unique(),
+      /** AES-256-GCM 暗号化済みアクセストークン (hex: iv + authTag + ciphertext) */
+      encryptedAccessToken: text("encryptedAccessToken").notNull(),
+      /** AES-256-GCM 暗号化済みリフレッシュトークン */
+      encryptedRefreshToken: text("encryptedRefreshToken"),
+      /** アクセストークン有効期限 */
+      tokenExpiresAt: timestamp("tokenExpiresAt").notNull(),
+      /** 付与されたスコープ */
+      scope: varchar("scope", { length: 255 }),
       createdAt: timestamp("createdAt").defaultNow().notNull(),
       updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull()
     });
@@ -701,6 +716,7 @@ __export(schema_exports, {
   twitterUserCache: () => twitterUserCache,
   userAchievements: () => userAchievements,
   userBadges: () => userBadges,
+  userTwitterTokens: () => userTwitterTokens,
   users: () => users
 });
 var init_schema2 = __esm({
@@ -3708,6 +3724,572 @@ var init_api_usage_tracker = __esm({
   }
 });
 
+// server/rate-limit-handler.ts
+function extractRateLimitInfo(headers) {
+  const limit = headers.get("x-rate-limit-limit");
+  const remaining = headers.get("x-rate-limit-remaining");
+  const reset = headers.get("x-rate-limit-reset");
+  if (!limit || !remaining || !reset) {
+    return null;
+  }
+  return {
+    limit: parseInt(limit, 10),
+    remaining: parseInt(remaining, 10),
+    reset: parseInt(reset, 10)
+  };
+}
+function calculateWaitTime(resetTimestamp) {
+  const now = Math.floor(Date.now() / 1e3);
+  const waitSeconds = Math.max(0, resetTimestamp - now + 1);
+  return waitSeconds * 1e3;
+}
+function calculateExponentialBackoff(attempt, initialDelayMs, maxDelayMs) {
+  const delay = initialDelayMs * Math.pow(2, attempt);
+  const jitter = Math.random() * 0.3 * delay;
+  return Math.min(delay + jitter, maxDelayMs);
+}
+function sleep(ms) {
+  return new Promise((resolve) => setTimeout(resolve, ms));
+}
+async function withExponentialBackoff(requestFn, options = {}) {
+  const opts = { ...DEFAULT_OPTIONS, ...options };
+  let lastError = null;
+  for (let attempt = 0; attempt < opts.maxRetries; attempt++) {
+    try {
+      const response = await requestFn();
+      const rateLimitInfo = extractRateLimitInfo(response.headers);
+      if (rateLimitInfo && rateLimitInfo.remaining < 10) {
+        console.warn(
+          `[RateLimit] Warning: Only ${rateLimitInfo.remaining}/${rateLimitInfo.limit} requests remaining. Resets at ${new Date(rateLimitInfo.reset * 1e3).toISOString()}`
+        );
+      }
+      if (response.status === 429) {
+        let waitTime;
+        if (rateLimitInfo) {
+          waitTime = calculateWaitTime(rateLimitInfo.reset);
+          console.log(
+            `[RateLimit] Rate limit exceeded. Waiting ${Math.ceil(waitTime / 1e3)}s until reset...`
+          );
+        } else {
+          waitTime = calculateExponentialBackoff(attempt, opts.initialDelayMs, opts.maxDelayMs);
+          console.log(
+            `[RateLimit] Rate limit exceeded. Exponential backoff: waiting ${Math.ceil(waitTime / 1e3)}s...`
+          );
+        }
+        await sleep(waitTime);
+        continue;
+      }
+      if (response.status >= 500) {
+        const waitTime = calculateExponentialBackoff(attempt, opts.initialDelayMs, opts.maxDelayMs);
+        console.log(
+          `[RateLimit] Server error (${response.status}). Exponential backoff: waiting ${Math.ceil(waitTime / 1e3)}s...`
+        );
+        await sleep(waitTime);
+        continue;
+      }
+      const data = await response.json();
+      return { response, data, rateLimitInfo };
+    } catch (error46) {
+      lastError = error46 instanceof Error ? error46 : new Error(String(error46));
+      if (attempt < opts.maxRetries - 1) {
+        const waitTime = calculateExponentialBackoff(attempt, opts.initialDelayMs, opts.maxDelayMs);
+        console.log(
+          `[RateLimit] Network error: ${lastError.message}. Retrying in ${Math.ceil(waitTime / 1e3)}s...`
+        );
+        await sleep(waitTime);
+        continue;
+      }
+    }
+  }
+  throw new Error(
+    `Failed after ${opts.maxRetries} attempts. Last error: ${lastError?.message || "Unknown error"}`
+  );
+}
+async function twitterApiFetch(url2, options = {}, retryOptions = {}) {
+  try {
+    const { isApiCallAllowed: isApiCallAllowed2 } = await Promise.resolve().then(() => (init_api_usage_db(), api_usage_db_exports));
+    const isAllowed = await isApiCallAllowed2();
+    if (!isAllowed) {
+      console.warn("[RateLimit] API call blocked due to cost limit exceeded");
+      throw new Error("API\u547C\u3073\u51FA\u3057\u306F\u30B3\u30B9\u30C8\u4E0A\u9650\u306B\u3088\u308A\u505C\u6B62\u3055\u308C\u3066\u3044\u307E\u3059\u3002\u7BA1\u7406\u753B\u9762\u3067\u8A2D\u5B9A\u3092\u78BA\u8A8D\u3057\u3066\u304F\u3060\u3055\u3044\u3002");
+    }
+    Promise.resolve().then(() => (init_api_cost_alert(), api_cost_alert_exports)).then((alert) => {
+      alert.checkAndSendCostAlert().catch(() => {
+      });
+    }).catch(() => {
+    });
+  } catch (error46) {
+    if (error46 instanceof Error && error46.message.includes("\u30B3\u30B9\u30C8\u4E0A\u9650")) {
+      throw error46;
+    }
+    console.warn("[RateLimit] Cost limit check failed, continuing:", error46);
+  }
+  const result = await withExponentialBackoff(
+    () => fetch(url2, options),
+    retryOptions
+  );
+  const success2 = result.response.ok || result.response.status === 429;
+  const method = options.method || "GET";
+  const urlObj = new URL(url2);
+  const endpoint = urlObj.pathname;
+  Promise.resolve().then(() => (init_api_usage_tracker(), api_usage_tracker_exports)).then((tracker) => {
+    tracker.recordApiUsage(
+      endpoint,
+      result.rateLimitInfo,
+      success2,
+      method
+    ).catch((error46) => {
+      console.error("[RateLimit] Failed to record API usage:", error46);
+    });
+  }).catch(() => {
+  });
+  if (!result.response.ok && result.response.status !== 429) {
+    const errorText = JSON.stringify(result.data);
+    throw new Error(`Twitter API error (${result.response.status}): ${errorText}`);
+  }
+  return {
+    data: result.data,
+    rateLimitInfo: result.rateLimitInfo
+  };
+}
+var DEFAULT_OPTIONS;
+var init_rate_limit_handler = __esm({
+  "server/rate-limit-handler.ts"() {
+    "use strict";
+    DEFAULT_OPTIONS = {
+      maxRetries: 5,
+      initialDelayMs: 1e3,
+      maxDelayMs: 6e4
+    };
+  }
+});
+
+// server/twitter-oauth2.ts
+var twitter_oauth2_exports = {};
+__export(twitter_oauth2_exports, {
+  buildAuthorizationUrl: () => buildAuthorizationUrl,
+  checkFollowStatus: () => checkFollowStatus,
+  deletePKCEData: () => deletePKCEData,
+  exchangeCodeForTokens: () => exchangeCodeForTokens,
+  generatePKCE: () => generatePKCE,
+  generateState: () => generateState,
+  getPKCEData: () => getPKCEData,
+  getTargetAccountInfo: () => getTargetAccountInfo,
+  getUserProfile: () => getUserProfile,
+  getUserProfileByUsername: () => getUserProfileByUsername,
+  refreshAccessToken: () => refreshAccessToken,
+  revokeAccessToken: () => revokeAccessToken,
+  storePKCEData: () => storePKCEData
+});
+import crypto from "crypto";
+import { eq as eq5, lt as lt3 } from "drizzle-orm";
+function generatePKCE() {
+  const codeVerifier = crypto.randomBytes(32).toString("base64url");
+  const codeChallenge = crypto.createHash("sha256").update(codeVerifier).digest("base64url");
+  return { codeVerifier, codeChallenge };
+}
+function generateState() {
+  return crypto.randomBytes(16).toString("hex");
+}
+function buildAuthorizationUrl(callbackUrl, state, codeChallenge, forceLogin = false) {
+  const params = new URLSearchParams({
+    response_type: "code",
+    client_id: TWITTER_CLIENT_ID,
+    redirect_uri: callbackUrl,
+    scope: "users.read tweet.read follows.read offline.access",
+    state,
+    code_challenge: codeChallenge,
+    code_challenge_method: "S256"
+  });
+  if (forceLogin) {
+    params.set("prompt", "login");
+    params.set("t", Date.now().toString());
+  }
+  return `https://twitter.com/i/oauth2/authorize?${params.toString()}`;
+}
+async function fetchWithRetry(url2, options, config2 = {}) {
+  const { maxRetries = 2, initialDelayMs = 500, timeoutMs = 15e3, label = "API" } = config2;
+  for (let attempt = 0; attempt <= maxRetries; attempt++) {
+    try {
+      const controller = new AbortController();
+      const timeout = setTimeout(() => controller.abort(), timeoutMs);
+      const response = await fetch(url2, {
+        ...options,
+        signal: controller.signal
+      });
+      clearTimeout(timeout);
+      if (response.status === 429 && attempt < maxRetries) {
+        const retryAfter = response.headers.get("retry-after");
+        const waitMs = retryAfter ? parseInt(retryAfter, 10) * 1e3 : initialDelayMs * Math.pow(2, attempt);
+        console.warn(`[${label}] Rate limited (429), retrying in ${waitMs}ms (attempt ${attempt + 1}/${maxRetries})`);
+        await new Promise((resolve) => setTimeout(resolve, waitMs));
+        continue;
+      }
+      if (response.status >= 500 && attempt < maxRetries) {
+        const waitMs = initialDelayMs * Math.pow(2, attempt);
+        console.warn(`[${label}] Server error (${response.status}), retrying in ${waitMs}ms (attempt ${attempt + 1}/${maxRetries})`);
+        await new Promise((resolve) => setTimeout(resolve, waitMs));
+        continue;
+      }
+      return response;
+    } catch (error46) {
+      const isAbort = error46 instanceof Error && error46.name === "AbortError";
+      const isNetwork = error46 instanceof TypeError && error46.message.includes("fetch");
+      if ((isAbort || isNetwork) && attempt < maxRetries) {
+        const waitMs = initialDelayMs * Math.pow(2, attempt);
+        console.warn(`[${label}] ${isAbort ? "Timeout" : "Network error"}, retrying in ${waitMs}ms (attempt ${attempt + 1}/${maxRetries})`);
+        await new Promise((resolve) => setTimeout(resolve, waitMs));
+        continue;
+      }
+      if (isAbort) {
+        throw new Error(`[${label}] Request timed out after ${timeoutMs}ms`);
+      }
+      throw error46;
+    }
+  }
+  throw new Error(`[${label}] All retry attempts exhausted`);
+}
+async function exchangeCodeForTokens(code, callbackUrl, codeVerifier) {
+  const url2 = "https://api.twitter.com/2/oauth2/token";
+  const params = new URLSearchParams({
+    code,
+    grant_type: "authorization_code",
+    client_id: TWITTER_CLIENT_ID,
+    redirect_uri: callbackUrl,
+    code_verifier: codeVerifier
+  });
+  const credentials = Buffer.from(`${TWITTER_CLIENT_ID}:${TWITTER_CLIENT_SECRET}`).toString("base64");
+  const response = await fetchWithRetry(url2, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/x-www-form-urlencoded",
+      "Authorization": `Basic ${credentials}`
+    },
+    body: params.toString()
+  }, { maxRetries: 2, timeoutMs: 15e3, label: "TokenExchange" });
+  if (!response.ok) {
+    const text11 = await response.text();
+    console.error("[TokenExchange] Error:", response.status);
+    if (response.status === 400) {
+      throw new Error("\u8A8D\u8A3C\u30B3\u30FC\u30C9\u304C\u7121\u52B9\u307E\u305F\u306F\u671F\u9650\u5207\u308C\u3067\u3059\u3002\u3082\u3046\u4E00\u5EA6\u30ED\u30B0\u30A4\u30F3\u3057\u3066\u304F\u3060\u3055\u3044\u3002");
+    }
+    if (response.status === 401) {
+      throw new Error("Twitter API\u8A8D\u8A3C\u306B\u5931\u6557\u3057\u307E\u3057\u305F\u3002\u30B5\u30FC\u30D0\u30FC\u8A2D\u5B9A\u3092\u78BA\u8A8D\u3057\u3066\u304F\u3060\u3055\u3044\u3002");
+    }
+    throw new Error(`Twitter\u8A8D\u8A3C\u30C8\u30FC\u30AF\u30F3\u306E\u53D6\u5F97\u306B\u5931\u6557\u3057\u307E\u3057\u305F (${response.status})`);
+  }
+  return response.json();
+}
+async function getUserProfile(accessToken) {
+  const url2 = "https://api.twitter.com/2/users/me";
+  const params = "user.fields=profile_image_url,public_metrics,description";
+  const fullUrl = `${url2}?${params}`;
+  const response = await fetchWithRetry(fullUrl, {
+    method: "GET",
+    headers: {
+      "Authorization": `Bearer ${accessToken}`
+    }
+  }, { maxRetries: 2, timeoutMs: 1e4, label: "UserProfile" });
+  if (!response.ok) {
+    await response.text();
+    console.error("[UserProfile] Error:", response.status);
+    if (response.status === 401) {
+      throw new Error("\u30A2\u30AF\u30BB\u30B9\u30C8\u30FC\u30AF\u30F3\u304C\u7121\u52B9\u3067\u3059\u3002\u3082\u3046\u4E00\u5EA6\u30ED\u30B0\u30A4\u30F3\u3057\u3066\u304F\u3060\u3055\u3044\u3002");
+    }
+    if (response.status === 429) {
+      throw new Error("Twitter API\u306E\u30EC\u30FC\u30C8\u5236\u9650\u306B\u9054\u3057\u307E\u3057\u305F\u3002\u3057\u3070\u3089\u304F\u5F85\u3063\u3066\u304B\u3089\u518D\u8A66\u884C\u3057\u3066\u304F\u3060\u3055\u3044\u3002");
+    }
+    throw new Error(`\u30E6\u30FC\u30B6\u30FC\u30D7\u30ED\u30D5\u30A3\u30FC\u30EB\u306E\u53D6\u5F97\u306B\u5931\u6557\u3057\u307E\u3057\u305F (${response.status})`);
+  }
+  const json6 = await response.json();
+  if (!json6.data) {
+    throw new Error("\u30E6\u30FC\u30B6\u30FC\u30D7\u30ED\u30D5\u30A3\u30FC\u30EB\u30C7\u30FC\u30BF\u304C\u7A7A\u3067\u3059\u3002Twitter\u30A2\u30AB\u30A6\u30F3\u30C8\u306E\u72B6\u614B\u3092\u78BA\u8A8D\u3057\u3066\u304F\u3060\u3055\u3044\u3002");
+  }
+  return json6.data;
+}
+async function refreshAccessToken(refreshToken) {
+  const url2 = "https://api.twitter.com/2/oauth2/token";
+  const params = new URLSearchParams({
+    refresh_token: refreshToken,
+    grant_type: "refresh_token",
+    client_id: TWITTER_CLIENT_ID
+  });
+  const credentials = Buffer.from(`${TWITTER_CLIENT_ID}:${TWITTER_CLIENT_SECRET}`).toString("base64");
+  const response = await fetchWithRetry(url2, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/x-www-form-urlencoded",
+      "Authorization": `Basic ${credentials}`
+    },
+    body: params.toString()
+  }, { maxRetries: 1, timeoutMs: 1e4, label: "TokenRefresh" });
+  if (!response.ok) {
+    await response.text();
+    console.error("[TokenRefresh] Error:", response.status);
+    if (response.status === 400 || response.status === 401) {
+      throw new Error(`INVALID_REFRESH_TOKEN: \u30EA\u30D5\u30EC\u30C3\u30B7\u30E5\u30C8\u30FC\u30AF\u30F3\u304C\u7121\u52B9\u3067\u3059\u3002\u518D\u30ED\u30B0\u30A4\u30F3\u3057\u3066\u304F\u3060\u3055\u3044\u3002`);
+    }
+    throw new Error(`\u30C8\u30FC\u30AF\u30F3\u306E\u66F4\u65B0\u306B\u5931\u6557\u3057\u307E\u3057\u305F (${response.status})`);
+  }
+  return response.json();
+}
+async function storePKCEData(state, codeVerifier, callbackUrl) {
+  pkceMemoryStore.set(state, { codeVerifier, callbackUrl });
+  setTimeout(() => pkceMemoryStore.delete(state), 30 * 60 * 1e3);
+  console.log("[PKCE] Stored PKCE data in memory for state:", state.substring(0, 8) + "...");
+  setImmediate(async () => {
+    try {
+      const db = await getDb();
+      if (!db) {
+        console.log("[PKCE] Database not available, memory-only mode");
+        return;
+      }
+      const expiresAt = new Date(Date.now() + 30 * 60 * 1e3);
+      await db.delete(oauthPkceData).where(lt3(oauthPkceData.expiresAt, /* @__PURE__ */ new Date())).catch(() => {
+      });
+      await db.insert(oauthPkceData).values({
+        state,
+        codeVerifier,
+        callbackUrl,
+        expiresAt
+      });
+      console.log("[PKCE] Also stored PKCE data in database for state:", state.substring(0, 8) + "...");
+    } catch (error46) {
+      console.log("[PKCE] Database storage failed (memory fallback active):", error46 instanceof Error ? error46.message : error46);
+    }
+  });
+}
+async function getPKCEData(state) {
+  const memoryData = pkceMemoryStore.get(state);
+  if (memoryData) {
+    console.log("[PKCE] Retrieved PKCE data from memory for state:", state.substring(0, 8) + "...");
+    return memoryData;
+  }
+  const db = await getDb();
+  if (!db) {
+    console.warn("[PKCE] Database not available");
+    return void 0;
+  }
+  try {
+    const result = await db.select().from(oauthPkceData).where(eq5(oauthPkceData.state, state)).limit(1);
+    if (result.length === 0) {
+      console.log("[PKCE] No PKCE data found for state:", state.substring(0, 8) + "...");
+      return void 0;
+    }
+    const data = result[0];
+    if (new Date(data.expiresAt) < /* @__PURE__ */ new Date()) {
+      console.log("[PKCE] PKCE data expired for state:", state.substring(0, 8) + "...");
+      await deletePKCEData(state);
+      return void 0;
+    }
+    console.log("[PKCE] Retrieved PKCE data for state:", state.substring(0, 8) + "...");
+    return {
+      codeVerifier: data.codeVerifier,
+      callbackUrl: data.callbackUrl
+    };
+  } catch (error46) {
+    console.error("[PKCE] Failed to get from database:", error46);
+    return void 0;
+  }
+}
+async function deletePKCEData(state) {
+  pkceMemoryStore.delete(state);
+  const db = await getDb();
+  if (!db) {
+    console.warn("[PKCE] Database not available for delete");
+    return;
+  }
+  try {
+    await db.delete(oauthPkceData).where(eq5(oauthPkceData.state, state));
+    console.log("[PKCE] Deleted PKCE data for state:", state.substring(0, 8) + "...");
+  } catch (error46) {
+    console.error("[PKCE] Failed to delete from database:", error46);
+  }
+}
+function getFollowStatusCacheKey(sourceUserId, targetUsername) {
+  return `${sourceUserId}:${targetUsername}`;
+}
+async function checkFollowStatus(accessToken, sourceUserId, targetUsername = TARGET_TWITTER_USERNAME) {
+  const cacheKey = getFollowStatusCacheKey(sourceUserId, targetUsername);
+  const cached2 = followStatusCache.get(cacheKey);
+  const now = Date.now();
+  if (cached2 && now - cached2.lastCheckedAt < FOLLOW_STATUS_CACHE_TTL_MS) {
+    console.log("[Twitter API] Follow status cache hit for", sourceUserId);
+    return {
+      isFollowing: cached2.isFollowing,
+      targetUser: cached2.targetUser
+    };
+  }
+  try {
+    const userLookupUrl = `https://api.twitter.com/2/users/by/username/${targetUsername}`;
+    const { data: userData, rateLimitInfo: userRateLimitInfo } = await twitterApiFetch(
+      userLookupUrl,
+      {
+        method: "GET",
+        headers: {
+          "Authorization": `Bearer ${accessToken}`
+        }
+      },
+      { maxRetries: 2, initialDelayMs: 500, maxDelayMs: 5e3 }
+      // リトライを減らして高速化
+    );
+    if (userRateLimitInfo && userRateLimitInfo.remaining <= 0) {
+      console.log("[Twitter API] Rate limit reached, skipping follow check");
+      return { isFollowing: false, targetUser: null, skipped: true };
+    }
+    const targetUser = userData.data;
+    if (!targetUser) {
+      console.error("Target user not found:", targetUsername);
+      return { isFollowing: false, targetUser: null };
+    }
+    const followCheckUrl = `https://api.twitter.com/2/users/${sourceUserId}/following`;
+    const params = new URLSearchParams({
+      "user.fields": "id,name,username",
+      "max_results": "1000"
+    });
+    const { data: followData, rateLimitInfo: followRateLimitInfo } = await twitterApiFetch(
+      `${followCheckUrl}?${params}`,
+      {
+        method: "GET",
+        headers: {
+          "Authorization": `Bearer ${accessToken}`
+        }
+      },
+      { maxRetries: 2, initialDelayMs: 500, maxDelayMs: 5e3 }
+      // リトライを減らして高速化
+    );
+    if (followRateLimitInfo) {
+      console.log(
+        `[Twitter API] Follow check rate limit: ${followRateLimitInfo.remaining}/${followRateLimitInfo.limit} remaining`
+      );
+    }
+    const following = followData.data || [];
+    const isFollowing2 = following.some((user) => user.id === targetUser.id);
+    const targetUserInfo = {
+      id: targetUser.id,
+      name: targetUser.name,
+      username: targetUser.username
+    };
+    followStatusCache.set(cacheKey, {
+      isFollowing: isFollowing2,
+      targetUser: targetUserInfo,
+      lastCheckedAt: now
+    });
+    return {
+      isFollowing: isFollowing2,
+      targetUser: targetUserInfo
+    };
+  } catch (error46) {
+    const errorMessage = error46 instanceof Error ? error46.message : String(error46);
+    if (errorMessage.includes("429") || errorMessage.includes("rate limit")) {
+      console.log("[Twitter API] Rate limit error, skipping follow check");
+      return { isFollowing: false, targetUser: null, skipped: true };
+    }
+    console.error("Follow status check error:", error46);
+    return { isFollowing: false, targetUser: null };
+  }
+}
+function getTargetAccountInfo() {
+  return {
+    username: TARGET_TWITTER_USERNAME,
+    displayName: "\u541B\u6597\u308A\u3093\u304F",
+    profileUrl: `https://twitter.com/${TARGET_TWITTER_USERNAME}`
+  };
+}
+async function getUserProfileByUsername(username) {
+  let cleanUsername = username.trim();
+  const urlMatch = cleanUsername.match(/(?:https?:\/\/)?(?:x\.com|twitter\.com)\/([a-zA-Z0-9_]+)/i);
+  if (urlMatch) {
+    cleanUsername = urlMatch[1];
+  }
+  cleanUsername = cleanUsername.replace(/^@/, "");
+  if (!cleanUsername) {
+    return null;
+  }
+  try {
+    const bearerToken = process.env.TWITTER_BEARER_TOKEN;
+    if (!bearerToken) {
+      console.error("TWITTER_BEARER_TOKEN is not set");
+      return null;
+    }
+    const url2 = `https://api.twitter.com/2/users/by/username/${cleanUsername}`;
+    const params = "user.fields=profile_image_url,public_metrics,description";
+    const fullUrl = `${url2}?${params}`;
+    const { data, rateLimitInfo } = await twitterApiFetch(
+      fullUrl,
+      {
+        method: "GET",
+        headers: {
+          "Authorization": `Bearer ${bearerToken}`
+        }
+      }
+    );
+    if (!data.data) {
+      console.error("Twitter user not found:", cleanUsername);
+      return null;
+    }
+    const profileImageUrl = data.data.profile_image_url?.replace("_normal", "_400x400") || "";
+    return {
+      id: data.data.id,
+      name: data.data.name,
+      username: data.data.username,
+      profile_image_url: profileImageUrl,
+      description: data.data.description,
+      public_metrics: data.data.public_metrics
+    };
+  } catch (error46) {
+    console.error("Error fetching Twitter user profile:", error46);
+    return null;
+  }
+}
+async function revokeAccessToken(accessToken) {
+  if (!accessToken) return false;
+  const url2 = "https://api.twitter.com/2/oauth2/revoke";
+  const credentials = Buffer.from(`${TWITTER_CLIENT_ID}:${TWITTER_CLIENT_SECRET}`).toString("base64");
+  try {
+    const params = new URLSearchParams({
+      token: accessToken,
+      token_type_hint: "access_token"
+    });
+    const response = await fetch(url2, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/x-www-form-urlencoded",
+        "Authorization": `Basic ${credentials}`
+      },
+      body: params.toString()
+    });
+    if (response.ok) {
+      console.log("[Twitter OAuth 2.0] Access token revoked successfully");
+      return true;
+    }
+    console.warn(`[Twitter OAuth 2.0] Token revoke returned ${response.status}`);
+    return false;
+  } catch (error46) {
+    console.warn("[Twitter OAuth 2.0] Token revoke failed:", error46 instanceof Error ? error46.message : String(error46));
+    return false;
+  }
+}
+var TWITTER_CLIENT_ID, TWITTER_CLIENT_SECRET, pkceMemoryStore, TARGET_TWITTER_USERNAME, FOLLOW_STATUS_CACHE_TTL_HOURS, FOLLOW_STATUS_CACHE_TTL_MS, followStatusCache;
+var init_twitter_oauth2 = __esm({
+  "server/twitter-oauth2.ts"() {
+    "use strict";
+    init_db2();
+    init_schema2();
+    init_rate_limit_handler();
+    TWITTER_CLIENT_ID = process.env.TWITTER_CLIENT_ID || "";
+    TWITTER_CLIENT_SECRET = process.env.TWITTER_CLIENT_SECRET || "";
+    pkceMemoryStore = /* @__PURE__ */ new Map();
+    TARGET_TWITTER_USERNAME = "idolfunch";
+    FOLLOW_STATUS_CACHE_TTL_HOURS = parseInt(
+      process.env.FOLLOW_STATUS_CACHE_TTL_HOURS || "24",
+      10
+    );
+    FOLLOW_STATUS_CACHE_TTL_MS = FOLLOW_STATUS_CACHE_TTL_HOURS * 60 * 60 * 1e3;
+    followStatusCache = /* @__PURE__ */ new Map();
+  }
+});
+
 // node_modules/superjson/dist/double-indexed-kv.js
 var require_double_indexed_kv = __commonJS({
   "node_modules/superjson/dist/double-indexed-kv.js"(exports) {
@@ -5097,7 +5679,7 @@ var BUILT_AT = process.env.EXPO_PUBLIC_BUILT_AT || "unknown";
 // shared/const.ts
 var COOKIE_NAME = "app_session_id";
 var ONE_YEAR_MS = 1e3 * 60 * 60 * 24 * 365;
-var SESSION_MAX_AGE_MS = 1e3 * 60 * 60 * 24 * 30;
+var SESSION_MAX_AGE_MS = 1e3 * 60 * 60 * 72;
 var UNAUTHED_ERR_MSG = "Please login (10001)";
 var NOT_ADMIN_ERR_MSG = "You do not have required permission (10002)";
 
@@ -5296,542 +5878,127 @@ var SDKServer = class {
 };
 var sdk = new SDKServer();
 
-// server/twitter-oauth2.ts
+// server/_core/oauth.ts
+init_twitter_oauth2();
+
+// server/token-store.ts
 init_db2();
 init_schema2();
-import crypto from "crypto";
-import { eq as eq5, lt as lt3 } from "drizzle-orm";
-
-// server/rate-limit-handler.ts
-var DEFAULT_OPTIONS = {
-  maxRetries: 5,
-  initialDelayMs: 1e3,
-  maxDelayMs: 6e4
-};
-function extractRateLimitInfo(headers) {
-  const limit = headers.get("x-rate-limit-limit");
-  const remaining = headers.get("x-rate-limit-remaining");
-  const reset = headers.get("x-rate-limit-reset");
-  if (!limit || !remaining || !reset) {
-    return null;
+import crypto2 from "crypto";
+import { eq as eq6 } from "drizzle-orm";
+var ALGORITHM = "aes-256-gcm";
+var IV_LENGTH = 12;
+var AUTH_TAG_LENGTH = 16;
+function getEncryptionKey() {
+  const rawKey = process.env.TOKEN_ENCRYPTION_KEY || process.env.JWT_SECRET || "";
+  if (!rawKey) {
+    throw new Error("TOKEN_ENCRYPTION_KEY or JWT_SECRET must be set for token encryption");
   }
-  return {
-    limit: parseInt(limit, 10),
-    remaining: parseInt(remaining, 10),
-    reset: parseInt(reset, 10)
-  };
+  return crypto2.createHash("sha256").update(rawKey).digest();
 }
-function calculateWaitTime(resetTimestamp) {
-  const now = Math.floor(Date.now() / 1e3);
-  const waitSeconds = Math.max(0, resetTimestamp - now + 1);
-  return waitSeconds * 1e3;
+function encryptToken(plaintext) {
+  const key = getEncryptionKey();
+  const iv = crypto2.randomBytes(IV_LENGTH);
+  const cipher = crypto2.createCipheriv(ALGORITHM, key, iv);
+  const encrypted = Buffer.concat([cipher.update(plaintext, "utf8"), cipher.final()]);
+  const authTag = cipher.getAuthTag();
+  return Buffer.concat([iv, authTag, encrypted]).toString("hex");
 }
-function calculateExponentialBackoff(attempt, initialDelayMs, maxDelayMs) {
-  const delay = initialDelayMs * Math.pow(2, attempt);
-  const jitter = Math.random() * 0.3 * delay;
-  return Math.min(delay + jitter, maxDelayMs);
+function decryptToken(encryptedHex) {
+  const key = getEncryptionKey();
+  const data = Buffer.from(encryptedHex, "hex");
+  const iv = data.subarray(0, IV_LENGTH);
+  const authTag = data.subarray(IV_LENGTH, IV_LENGTH + AUTH_TAG_LENGTH);
+  const ciphertext = data.subarray(IV_LENGTH + AUTH_TAG_LENGTH);
+  const decipher = crypto2.createDecipheriv(ALGORITHM, key, iv);
+  decipher.setAuthTag(authTag);
+  return decipher.update(ciphertext) + decipher.final("utf8");
 }
-function sleep(ms) {
-  return new Promise((resolve) => setTimeout(resolve, ms));
-}
-async function withExponentialBackoff(requestFn, options = {}) {
-  const opts = { ...DEFAULT_OPTIONS, ...options };
-  let lastError = null;
-  for (let attempt = 0; attempt < opts.maxRetries; attempt++) {
-    try {
-      const response = await requestFn();
-      const rateLimitInfo = extractRateLimitInfo(response.headers);
-      if (rateLimitInfo && rateLimitInfo.remaining < 10) {
-        console.warn(
-          `[RateLimit] Warning: Only ${rateLimitInfo.remaining}/${rateLimitInfo.limit} requests remaining. Resets at ${new Date(rateLimitInfo.reset * 1e3).toISOString()}`
-        );
-      }
-      if (response.status === 429) {
-        let waitTime;
-        if (rateLimitInfo) {
-          waitTime = calculateWaitTime(rateLimitInfo.reset);
-          console.log(
-            `[RateLimit] Rate limit exceeded. Waiting ${Math.ceil(waitTime / 1e3)}s until reset...`
-          );
-        } else {
-          waitTime = calculateExponentialBackoff(attempt, opts.initialDelayMs, opts.maxDelayMs);
-          console.log(
-            `[RateLimit] Rate limit exceeded. Exponential backoff: waiting ${Math.ceil(waitTime / 1e3)}s...`
-          );
-        }
-        await sleep(waitTime);
-        continue;
-      }
-      if (response.status >= 500) {
-        const waitTime = calculateExponentialBackoff(attempt, opts.initialDelayMs, opts.maxDelayMs);
-        console.log(
-          `[RateLimit] Server error (${response.status}). Exponential backoff: waiting ${Math.ceil(waitTime / 1e3)}s...`
-        );
-        await sleep(waitTime);
-        continue;
-      }
-      const data = await response.json();
-      return { response, data, rateLimitInfo };
-    } catch (error46) {
-      lastError = error46 instanceof Error ? error46 : new Error(String(error46));
-      if (attempt < opts.maxRetries - 1) {
-        const waitTime = calculateExponentialBackoff(attempt, opts.initialDelayMs, opts.maxDelayMs);
-        console.log(
-          `[RateLimit] Network error: ${lastError.message}. Retrying in ${Math.ceil(waitTime / 1e3)}s...`
-        );
-        await sleep(waitTime);
-        continue;
-      }
-    }
-  }
-  throw new Error(
-    `Failed after ${opts.maxRetries} attempts. Last error: ${lastError?.message || "Unknown error"}`
-  );
-}
-async function twitterApiFetch(url2, options = {}, retryOptions = {}) {
+var tokenCache = /* @__PURE__ */ new Map();
+async function storeTokens(openId, tokens) {
+  const expiresAt = new Date(Date.now() + tokens.expiresIn * 1e3);
+  tokenCache.set(openId, {
+    accessToken: tokens.accessToken,
+    refreshToken: tokens.refreshToken || null,
+    expiresAt,
+    scope: tokens.scope || null
+  });
   try {
-    const { isApiCallAllowed: isApiCallAllowed2 } = await Promise.resolve().then(() => (init_api_usage_db(), api_usage_db_exports));
-    const isAllowed = await isApiCallAllowed2();
-    if (!isAllowed) {
-      console.warn("[RateLimit] API call blocked due to cost limit exceeded");
-      throw new Error("API\u547C\u3073\u51FA\u3057\u306F\u30B3\u30B9\u30C8\u4E0A\u9650\u306B\u3088\u308A\u505C\u6B62\u3055\u308C\u3066\u3044\u307E\u3059\u3002\u7BA1\u7406\u753B\u9762\u3067\u8A2D\u5B9A\u3092\u78BA\u8A8D\u3057\u3066\u304F\u3060\u3055\u3044\u3002");
-    }
-    Promise.resolve().then(() => (init_api_cost_alert(), api_cost_alert_exports)).then((alert) => {
-      alert.checkAndSendCostAlert().catch(() => {
-      });
-    }).catch(() => {
+    const db = await getDb();
+    if (!db) return;
+    const encryptedAccess = encryptToken(tokens.accessToken);
+    const encryptedRefresh = tokens.refreshToken ? encryptToken(tokens.refreshToken) : null;
+    await db.insert(userTwitterTokens).values({
+      openId,
+      encryptedAccessToken: encryptedAccess,
+      encryptedRefreshToken: encryptedRefresh,
+      tokenExpiresAt: expiresAt,
+      scope: tokens.scope || null
+    }).onDuplicateKeyUpdate({
+      set: {
+        encryptedAccessToken: encryptedAccess,
+        encryptedRefreshToken: encryptedRefresh,
+        tokenExpiresAt: expiresAt,
+        scope: tokens.scope || null
+      }
     });
   } catch (error46) {
-    if (error46 instanceof Error && error46.message.includes("\u30B3\u30B9\u30C8\u4E0A\u9650")) {
-      throw error46;
-    }
-    console.warn("[RateLimit] Cost limit check failed, continuing:", error46);
+    console.error("[TokenStore] DB save failed:", error46 instanceof Error ? error46.message : "unknown");
   }
-  const result = await withExponentialBackoff(
-    () => fetch(url2, options),
-    retryOptions
-  );
-  const success2 = result.response.ok || result.response.status === 429;
-  const method = options.method || "GET";
-  const urlObj = new URL(url2);
-  const endpoint = urlObj.pathname;
-  Promise.resolve().then(() => (init_api_usage_tracker(), api_usage_tracker_exports)).then((tracker) => {
-    tracker.recordApiUsage(
-      endpoint,
-      result.rateLimitInfo,
-      success2,
-      method
-    ).catch((error46) => {
-      console.error("[RateLimit] Failed to record API usage:", error46);
-    });
-  }).catch(() => {
-  });
-  if (!result.response.ok && result.response.status !== 429) {
-    const errorText = JSON.stringify(result.data);
-    throw new Error(`Twitter API error (${result.response.status}): ${errorText}`);
-  }
-  return {
-    data: result.data,
-    rateLimitInfo: result.rateLimitInfo
-  };
 }
-
-// server/twitter-oauth2.ts
-var TWITTER_CLIENT_ID = process.env.TWITTER_CLIENT_ID || "";
-var TWITTER_CLIENT_SECRET = process.env.TWITTER_CLIENT_SECRET || "";
-function generatePKCE() {
-  const codeVerifier = crypto.randomBytes(32).toString("base64url");
-  const codeChallenge = crypto.createHash("sha256").update(codeVerifier).digest("base64url");
-  return { codeVerifier, codeChallenge };
-}
-function generateState() {
-  return crypto.randomBytes(16).toString("hex");
-}
-function buildAuthorizationUrl(callbackUrl, state, codeChallenge, forceLogin = false) {
-  const params = new URLSearchParams({
-    response_type: "code",
-    client_id: TWITTER_CLIENT_ID,
-    redirect_uri: callbackUrl,
-    scope: "users.read tweet.read follows.read offline.access",
-    state,
-    code_challenge: codeChallenge,
-    code_challenge_method: "S256"
-  });
-  if (forceLogin) {
-    params.set("prompt", "login");
-    params.set("t", Date.now().toString());
-  }
-  return `https://twitter.com/i/oauth2/authorize?${params.toString()}`;
-}
-async function fetchWithRetry(url2, options, config2 = {}) {
-  const { maxRetries = 2, initialDelayMs = 500, timeoutMs = 15e3, label = "API" } = config2;
-  for (let attempt = 0; attempt <= maxRetries; attempt++) {
-    try {
-      const controller = new AbortController();
-      const timeout = setTimeout(() => controller.abort(), timeoutMs);
-      const response = await fetch(url2, {
-        ...options,
-        signal: controller.signal
-      });
-      clearTimeout(timeout);
-      if (response.status === 429 && attempt < maxRetries) {
-        const retryAfter = response.headers.get("retry-after");
-        const waitMs = retryAfter ? parseInt(retryAfter, 10) * 1e3 : initialDelayMs * Math.pow(2, attempt);
-        console.warn(`[${label}] Rate limited (429), retrying in ${waitMs}ms (attempt ${attempt + 1}/${maxRetries})`);
-        await new Promise((resolve) => setTimeout(resolve, waitMs));
-        continue;
-      }
-      if (response.status >= 500 && attempt < maxRetries) {
-        const waitMs = initialDelayMs * Math.pow(2, attempt);
-        console.warn(`[${label}] Server error (${response.status}), retrying in ${waitMs}ms (attempt ${attempt + 1}/${maxRetries})`);
-        await new Promise((resolve) => setTimeout(resolve, waitMs));
-        continue;
-      }
-      return response;
-    } catch (error46) {
-      const isAbort = error46 instanceof Error && error46.name === "AbortError";
-      const isNetwork = error46 instanceof TypeError && error46.message.includes("fetch");
-      if ((isAbort || isNetwork) && attempt < maxRetries) {
-        const waitMs = initialDelayMs * Math.pow(2, attempt);
-        console.warn(`[${label}] ${isAbort ? "Timeout" : "Network error"}, retrying in ${waitMs}ms (attempt ${attempt + 1}/${maxRetries})`);
-        await new Promise((resolve) => setTimeout(resolve, waitMs));
-        continue;
-      }
-      if (isAbort) {
-        throw new Error(`[${label}] Request timed out after ${timeoutMs}ms`);
-      }
-      throw error46;
-    }
-  }
-  throw new Error(`[${label}] All retry attempts exhausted`);
-}
-async function exchangeCodeForTokens(code, callbackUrl, codeVerifier) {
-  const url2 = "https://api.twitter.com/2/oauth2/token";
-  const params = new URLSearchParams({
-    code,
-    grant_type: "authorization_code",
-    client_id: TWITTER_CLIENT_ID,
-    redirect_uri: callbackUrl,
-    code_verifier: codeVerifier
-  });
-  const credentials = Buffer.from(`${TWITTER_CLIENT_ID}:${TWITTER_CLIENT_SECRET}`).toString("base64");
-  const response = await fetchWithRetry(url2, {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/x-www-form-urlencoded",
-      "Authorization": `Basic ${credentials}`
-    },
-    body: params.toString()
-  }, { maxRetries: 2, timeoutMs: 15e3, label: "TokenExchange" });
-  if (!response.ok) {
-    const text11 = await response.text();
-    console.error("[TokenExchange] Error:", response.status, text11);
-    if (response.status === 400) {
-      throw new Error("\u8A8D\u8A3C\u30B3\u30FC\u30C9\u304C\u7121\u52B9\u307E\u305F\u306F\u671F\u9650\u5207\u308C\u3067\u3059\u3002\u3082\u3046\u4E00\u5EA6\u30ED\u30B0\u30A4\u30F3\u3057\u3066\u304F\u3060\u3055\u3044\u3002");
-    }
-    if (response.status === 401) {
-      throw new Error("Twitter API\u8A8D\u8A3C\u306B\u5931\u6557\u3057\u307E\u3057\u305F\u3002\u30B5\u30FC\u30D0\u30FC\u8A2D\u5B9A\u3092\u78BA\u8A8D\u3057\u3066\u304F\u3060\u3055\u3044\u3002");
-    }
-    throw new Error(`Twitter\u8A8D\u8A3C\u30C8\u30FC\u30AF\u30F3\u306E\u53D6\u5F97\u306B\u5931\u6557\u3057\u307E\u3057\u305F (${response.status})`);
-  }
-  return response.json();
-}
-async function getUserProfile(accessToken) {
-  const url2 = "https://api.twitter.com/2/users/me";
-  const params = "user.fields=profile_image_url,public_metrics,description";
-  const fullUrl = `${url2}?${params}`;
-  const response = await fetchWithRetry(fullUrl, {
-    method: "GET",
-    headers: {
-      "Authorization": `Bearer ${accessToken}`
-    }
-  }, { maxRetries: 2, timeoutMs: 1e4, label: "UserProfile" });
-  if (!response.ok) {
-    const text11 = await response.text();
-    console.error("[UserProfile] Error:", response.status, text11);
-    if (response.status === 401) {
-      throw new Error("\u30A2\u30AF\u30BB\u30B9\u30C8\u30FC\u30AF\u30F3\u304C\u7121\u52B9\u3067\u3059\u3002\u3082\u3046\u4E00\u5EA6\u30ED\u30B0\u30A4\u30F3\u3057\u3066\u304F\u3060\u3055\u3044\u3002");
-    }
-    if (response.status === 429) {
-      throw new Error("Twitter API\u306E\u30EC\u30FC\u30C8\u5236\u9650\u306B\u9054\u3057\u307E\u3057\u305F\u3002\u3057\u3070\u3089\u304F\u5F85\u3063\u3066\u304B\u3089\u518D\u8A66\u884C\u3057\u3066\u304F\u3060\u3055\u3044\u3002");
-    }
-    throw new Error(`\u30E6\u30FC\u30B6\u30FC\u30D7\u30ED\u30D5\u30A3\u30FC\u30EB\u306E\u53D6\u5F97\u306B\u5931\u6557\u3057\u307E\u3057\u305F (${response.status})`);
-  }
-  const json6 = await response.json();
-  if (!json6.data) {
-    throw new Error("\u30E6\u30FC\u30B6\u30FC\u30D7\u30ED\u30D5\u30A3\u30FC\u30EB\u30C7\u30FC\u30BF\u304C\u7A7A\u3067\u3059\u3002Twitter\u30A2\u30AB\u30A6\u30F3\u30C8\u306E\u72B6\u614B\u3092\u78BA\u8A8D\u3057\u3066\u304F\u3060\u3055\u3044\u3002");
-  }
-  return json6.data;
-}
-async function refreshAccessToken(refreshToken) {
-  const url2 = "https://api.twitter.com/2/oauth2/token";
-  const params = new URLSearchParams({
-    refresh_token: refreshToken,
-    grant_type: "refresh_token",
-    client_id: TWITTER_CLIENT_ID
-  });
-  const credentials = Buffer.from(`${TWITTER_CLIENT_ID}:${TWITTER_CLIENT_SECRET}`).toString("base64");
-  const response = await fetchWithRetry(url2, {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/x-www-form-urlencoded",
-      "Authorization": `Basic ${credentials}`
-    },
-    body: params.toString()
-  }, { maxRetries: 1, timeoutMs: 1e4, label: "TokenRefresh" });
-  if (!response.ok) {
-    const text11 = await response.text();
-    console.error("[TokenRefresh] Error:", response.status, text11);
-    if (response.status === 400 || response.status === 401) {
-      throw new Error(`INVALID_REFRESH_TOKEN: \u30EA\u30D5\u30EC\u30C3\u30B7\u30E5\u30C8\u30FC\u30AF\u30F3\u304C\u7121\u52B9\u3067\u3059\u3002\u518D\u30ED\u30B0\u30A4\u30F3\u3057\u3066\u304F\u3060\u3055\u3044\u3002`);
-    }
-    throw new Error(`\u30C8\u30FC\u30AF\u30F3\u306E\u66F4\u65B0\u306B\u5931\u6557\u3057\u307E\u3057\u305F (${response.status})`);
-  }
-  return response.json();
-}
-async function storePKCEData(state, codeVerifier, callbackUrl) {
-  pkceMemoryStore.set(state, { codeVerifier, callbackUrl });
-  setTimeout(() => pkceMemoryStore.delete(state), 30 * 60 * 1e3);
-  console.log("[PKCE] Stored PKCE data in memory for state:", state.substring(0, 8) + "...");
-  setImmediate(async () => {
-    try {
-      const db = await getDb();
-      if (!db) {
-        console.log("[PKCE] Database not available, memory-only mode");
-        return;
-      }
-      const expiresAt = new Date(Date.now() + 30 * 60 * 1e3);
-      await db.delete(oauthPkceData).where(lt3(oauthPkceData.expiresAt, /* @__PURE__ */ new Date())).catch(() => {
-      });
-      await db.insert(oauthPkceData).values({
-        state,
-        codeVerifier,
-        callbackUrl,
-        expiresAt
-      });
-      console.log("[PKCE] Also stored PKCE data in database for state:", state.substring(0, 8) + "...");
-    } catch (error46) {
-      console.log("[PKCE] Database storage failed (memory fallback active):", error46 instanceof Error ? error46.message : error46);
-    }
-  });
-}
-async function getPKCEData(state) {
-  const memoryData = pkceMemoryStore.get(state);
-  if (memoryData) {
-    console.log("[PKCE] Retrieved PKCE data from memory for state:", state.substring(0, 8) + "...");
-    return memoryData;
-  }
-  const db = await getDb();
-  if (!db) {
-    console.warn("[PKCE] Database not available");
-    return void 0;
-  }
+async function getTokens(openId) {
+  const cached2 = tokenCache.get(openId);
+  if (cached2) return cached2;
   try {
-    const result = await db.select().from(oauthPkceData).where(eq5(oauthPkceData.state, state)).limit(1);
-    if (result.length === 0) {
-      console.log("[PKCE] No PKCE data found for state:", state.substring(0, 8) + "...");
-      return void 0;
-    }
-    const data = result[0];
-    if (new Date(data.expiresAt) < /* @__PURE__ */ new Date()) {
-      console.log("[PKCE] PKCE data expired for state:", state.substring(0, 8) + "...");
-      await deletePKCEData(state);
-      return void 0;
-    }
-    console.log("[PKCE] Retrieved PKCE data for state:", state.substring(0, 8) + "...");
-    return {
-      codeVerifier: data.codeVerifier,
-      callbackUrl: data.callbackUrl
+    const db = await getDb();
+    if (!db) return null;
+    const result = await db.select().from(userTwitterTokens).where(eq6(userTwitterTokens.openId, openId)).limit(1);
+    if (result.length === 0) return null;
+    const row = result[0];
+    const entry = {
+      accessToken: decryptToken(row.encryptedAccessToken),
+      refreshToken: row.encryptedRefreshToken ? decryptToken(row.encryptedRefreshToken) : null,
+      expiresAt: new Date(row.tokenExpiresAt),
+      scope: row.scope
     };
+    tokenCache.set(openId, entry);
+    return entry;
   } catch (error46) {
-    console.error("[PKCE] Failed to get from database:", error46);
-    return void 0;
-  }
-}
-async function deletePKCEData(state) {
-  pkceMemoryStore.delete(state);
-  const db = await getDb();
-  if (!db) {
-    console.warn("[PKCE] Database not available for delete");
-    return;
-  }
-  try {
-    await db.delete(oauthPkceData).where(eq5(oauthPkceData.state, state));
-    console.log("[PKCE] Deleted PKCE data for state:", state.substring(0, 8) + "...");
-  } catch (error46) {
-    console.error("[PKCE] Failed to delete from database:", error46);
-  }
-}
-var pkceMemoryStore = /* @__PURE__ */ new Map();
-var TARGET_TWITTER_USERNAME = "idolfunch";
-var FOLLOW_STATUS_CACHE_TTL_HOURS = parseInt(
-  process.env.FOLLOW_STATUS_CACHE_TTL_HOURS || "24",
-  10
-);
-var FOLLOW_STATUS_CACHE_TTL_MS = FOLLOW_STATUS_CACHE_TTL_HOURS * 60 * 60 * 1e3;
-var followStatusCache = /* @__PURE__ */ new Map();
-function getFollowStatusCacheKey(sourceUserId, targetUsername) {
-  return `${sourceUserId}:${targetUsername}`;
-}
-async function checkFollowStatus(accessToken, sourceUserId, targetUsername = TARGET_TWITTER_USERNAME) {
-  const cacheKey = getFollowStatusCacheKey(sourceUserId, targetUsername);
-  const cached2 = followStatusCache.get(cacheKey);
-  const now = Date.now();
-  if (cached2 && now - cached2.lastCheckedAt < FOLLOW_STATUS_CACHE_TTL_MS) {
-    console.log("[Twitter API] Follow status cache hit for", sourceUserId);
-    return {
-      isFollowing: cached2.isFollowing,
-      targetUser: cached2.targetUser
-    };
-  }
-  try {
-    const userLookupUrl = `https://api.twitter.com/2/users/by/username/${targetUsername}`;
-    const { data: userData, rateLimitInfo: userRateLimitInfo } = await twitterApiFetch(
-      userLookupUrl,
-      {
-        method: "GET",
-        headers: {
-          "Authorization": `Bearer ${accessToken}`
-        }
-      },
-      { maxRetries: 2, initialDelayMs: 500, maxDelayMs: 5e3 }
-      // リトライを減らして高速化
-    );
-    if (userRateLimitInfo && userRateLimitInfo.remaining <= 0) {
-      console.log("[Twitter API] Rate limit reached, skipping follow check");
-      return { isFollowing: false, targetUser: null, skipped: true };
-    }
-    const targetUser = userData.data;
-    if (!targetUser) {
-      console.error("Target user not found:", targetUsername);
-      return { isFollowing: false, targetUser: null };
-    }
-    const followCheckUrl = `https://api.twitter.com/2/users/${sourceUserId}/following`;
-    const params = new URLSearchParams({
-      "user.fields": "id,name,username",
-      "max_results": "1000"
-    });
-    const { data: followData, rateLimitInfo: followRateLimitInfo } = await twitterApiFetch(
-      `${followCheckUrl}?${params}`,
-      {
-        method: "GET",
-        headers: {
-          "Authorization": `Bearer ${accessToken}`
-        }
-      },
-      { maxRetries: 2, initialDelayMs: 500, maxDelayMs: 5e3 }
-      // リトライを減らして高速化
-    );
-    if (followRateLimitInfo) {
-      console.log(
-        `[Twitter API] Follow check rate limit: ${followRateLimitInfo.remaining}/${followRateLimitInfo.limit} remaining`
-      );
-    }
-    const following = followData.data || [];
-    const isFollowing2 = following.some((user) => user.id === targetUser.id);
-    const targetUserInfo = {
-      id: targetUser.id,
-      name: targetUser.name,
-      username: targetUser.username
-    };
-    followStatusCache.set(cacheKey, {
-      isFollowing: isFollowing2,
-      targetUser: targetUserInfo,
-      lastCheckedAt: now
-    });
-    return {
-      isFollowing: isFollowing2,
-      targetUser: targetUserInfo
-    };
-  } catch (error46) {
-    const errorMessage = error46 instanceof Error ? error46.message : String(error46);
-    if (errorMessage.includes("429") || errorMessage.includes("rate limit")) {
-      console.log("[Twitter API] Rate limit error, skipping follow check");
-      return { isFollowing: false, targetUser: null, skipped: true };
-    }
-    console.error("Follow status check error:", error46);
-    return { isFollowing: false, targetUser: null };
-  }
-}
-function getTargetAccountInfo() {
-  return {
-    username: TARGET_TWITTER_USERNAME,
-    displayName: "\u541B\u6597\u308A\u3093\u304F",
-    profileUrl: `https://twitter.com/${TARGET_TWITTER_USERNAME}`
-  };
-}
-async function getUserProfileByUsername(username) {
-  let cleanUsername = username.trim();
-  const urlMatch = cleanUsername.match(/(?:https?:\/\/)?(?:x\.com|twitter\.com)\/([a-zA-Z0-9_]+)/i);
-  if (urlMatch) {
-    cleanUsername = urlMatch[1];
-  }
-  cleanUsername = cleanUsername.replace(/^@/, "");
-  if (!cleanUsername) {
-    return null;
-  }
-  try {
-    const bearerToken = process.env.TWITTER_BEARER_TOKEN;
-    if (!bearerToken) {
-      console.error("TWITTER_BEARER_TOKEN is not set");
-      return null;
-    }
-    const url2 = `https://api.twitter.com/2/users/by/username/${cleanUsername}`;
-    const params = "user.fields=profile_image_url,public_metrics,description";
-    const fullUrl = `${url2}?${params}`;
-    const { data, rateLimitInfo } = await twitterApiFetch(
-      fullUrl,
-      {
-        method: "GET",
-        headers: {
-          "Authorization": `Bearer ${bearerToken}`
-        }
-      }
-    );
-    if (!data.data) {
-      console.error("Twitter user not found:", cleanUsername);
-      return null;
-    }
-    const profileImageUrl = data.data.profile_image_url?.replace("_normal", "_400x400") || "";
-    return {
-      id: data.data.id,
-      name: data.data.name,
-      username: data.data.username,
-      profile_image_url: profileImageUrl,
-      description: data.data.description,
-      public_metrics: data.data.public_metrics
-    };
-  } catch (error46) {
-    console.error("Error fetching Twitter user profile:", error46);
+    console.error("[TokenStore] DB read failed:", error46 instanceof Error ? error46.message : "unknown");
     return null;
   }
 }
-async function revokeAccessToken(accessToken) {
-  if (!accessToken) return false;
-  const url2 = "https://api.twitter.com/2/oauth2/revoke";
-  const credentials = Buffer.from(`${TWITTER_CLIENT_ID}:${TWITTER_CLIENT_SECRET}`).toString("base64");
+async function getValidAccessToken(openId) {
+  const entry = await getTokens(openId);
+  if (!entry) return null;
+  const bufferMs = 5 * 60 * 1e3;
+  if (entry.expiresAt.getTime() - bufferMs > Date.now()) {
+    return entry.accessToken;
+  }
+  if (!entry.refreshToken) return entry.accessToken;
   try {
-    const params = new URLSearchParams({
-      token: accessToken,
-      token_type_hint: "access_token"
+    const { refreshAccessToken: refreshAccessToken3 } = await Promise.resolve().then(() => (init_twitter_oauth2(), twitter_oauth2_exports));
+    const newTokens = await refreshAccessToken3(entry.refreshToken);
+    await storeTokens(openId, {
+      accessToken: newTokens.access_token,
+      refreshToken: newTokens.refresh_token,
+      expiresIn: newTokens.expires_in,
+      scope: newTokens.scope
     });
-    const response = await fetch(url2, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/x-www-form-urlencoded",
-        "Authorization": `Basic ${credentials}`
-      },
-      body: params.toString()
-    });
-    if (response.ok) {
-      console.log("[Twitter OAuth 2.0] Access token revoked successfully");
-      return true;
-    }
-    console.warn(`[Twitter OAuth 2.0] Token revoke returned ${response.status}`);
-    return false;
+    return newTokens.access_token;
   } catch (error46) {
-    console.warn("[Twitter OAuth 2.0] Token revoke failed:", error46 instanceof Error ? error46.message : String(error46));
-    return false;
+    console.error("[TokenStore] Auto-refresh failed:", error46 instanceof Error ? error46.message : "unknown");
+    return entry.accessToken;
+  }
+}
+async function deleteTokens(openId) {
+  tokenCache.delete(openId);
+  try {
+    const db = await getDb();
+    if (!db) return;
+    await db.delete(userTwitterTokens).where(eq6(userTwitterTokens.openId, openId));
+  } catch (error46) {
+    console.error("[TokenStore] DB delete failed:", error46 instanceof Error ? error46.message : "unknown");
   }
 }
 
@@ -5855,10 +6022,18 @@ function registerOAuthRoutes(app) {
     const cookieOptions = getSessionCookieOptions(req);
     res.clearCookie(COOKIE_NAME, { ...cookieOptions, maxAge: -1 });
     res.clearCookie("admin_session", { ...cookieOptions, maxAge: -1 });
-    const twitterAccessToken = req.body?.twitterAccessToken;
-    if (twitterAccessToken && typeof twitterAccessToken === "string") {
-      revokeAccessToken(twitterAccessToken).catch(() => {
-      });
+    try {
+      const user = await sdk.authenticateRequest(req).catch(() => null);
+      if (user) {
+        const storedTokens = await getTokens(user.openId);
+        if (storedTokens?.accessToken) {
+          revokeAccessToken(storedTokens.accessToken).catch(() => {
+          });
+        }
+        await deleteTokens(user.openId).catch(() => {
+        });
+      }
+    } catch {
     }
     res.json({ success: true });
   });
@@ -5867,7 +6042,7 @@ function registerOAuthRoutes(app) {
       const user = await sdk.authenticateRequest(req);
       res.json({ user: buildUserResponse(user) });
     } catch (error46) {
-      console.error("[Auth] /api/auth/me failed:", error46);
+      console.error("[Auth] /api/auth/me failed:", error46 instanceof Error ? error46.message : "unknown");
       res.status(401).json({ error: "Not authenticated", user: null });
     }
   });
@@ -5884,14 +6059,127 @@ function registerOAuthRoutes(app) {
       res.cookie(COOKIE_NAME, token, { ...cookieOptions, maxAge: SESSION_MAX_AGE_MS });
       res.json({ success: true, user: buildUserResponse(user) });
     } catch (error46) {
-      console.error("[Auth] /api/auth/session failed:", error46);
+      console.error("[Auth] /api/auth/session failed:", error46 instanceof Error ? error46.message : "unknown");
       res.status(401).json({ error: "Invalid token" });
     }
   });
 }
 
 // server/twitter-routes.ts
+init_twitter_oauth2();
 init_db2();
+
+// server/login-security.ts
+init_db2();
+init_schema2();
+import crypto3 from "crypto";
+function getClientIp(req) {
+  const forwarded = req.headers["x-forwarded-for"];
+  if (forwarded) {
+    const firstIp = Array.isArray(forwarded) ? forwarded[0] : forwarded.split(",")[0];
+    return firstIp?.trim() || "unknown";
+  }
+  const realIp = req.headers["x-real-ip"];
+  if (realIp) {
+    return Array.isArray(realIp) ? realIp[0] : realIp;
+  }
+  return req.ip || req.socket.remoteAddress || "unknown";
+}
+function getClientUserAgent(req) {
+  return (req.headers["user-agent"] || "unknown").substring(0, 500);
+}
+async function writeLoginAuditLog(entry) {
+  try {
+    const db = await getDb();
+    if (!db) return;
+    await db.insert(auditLogs).values({
+      requestId: crypto3.randomUUID(),
+      action: "LOGIN",
+      entityType: "user",
+      actorName: entry.twitterUsername || entry.openId,
+      reason: entry.success ? "Login successful" : `Login failed: ${entry.failureReason || "unknown"}`,
+      ipAddress: entry.ip.substring(0, 45),
+      userAgent: entry.userAgent.substring(0, 500),
+      afterData: {
+        openId: entry.openId,
+        twitterId: entry.twitterId,
+        success: entry.success
+      }
+    });
+  } catch (error46) {
+    console.error("[LoginSecurity] Audit log write failed:", error46 instanceof Error ? error46.message : "unknown");
+  }
+}
+var MAX_FAILED_ATTEMPTS = 5;
+var LOCK_DURATION_MS = 10 * 60 * 1e3;
+var FAILED_WINDOW_MS = 15 * 60 * 1e3;
+var failedLoginStore = /* @__PURE__ */ new Map();
+setInterval(() => {
+  const now = Date.now();
+  for (const [key, entry] of failedLoginStore.entries()) {
+    if (now - entry.firstFailedAt > FAILED_WINDOW_MS * 2) {
+      failedLoginStore.delete(key);
+    }
+  }
+}, 60 * 60 * 1e3);
+function isLoginLocked(ip) {
+  const entry = failedLoginStore.get(ip);
+  if (!entry || !entry.lockedUntil) {
+    return { locked: false, remainingSeconds: 0 };
+  }
+  const now = Date.now();
+  if (now >= entry.lockedUntil) {
+    failedLoginStore.delete(ip);
+    return { locked: false, remainingSeconds: 0 };
+  }
+  return {
+    locked: true,
+    remainingSeconds: Math.ceil((entry.lockedUntil - now) / 1e3)
+  };
+}
+function recordLoginFailure(ip) {
+  const now = Date.now();
+  const entry = failedLoginStore.get(ip);
+  if (!entry || now - entry.firstFailedAt > FAILED_WINDOW_MS) {
+    failedLoginStore.set(ip, {
+      count: 1,
+      firstFailedAt: now,
+      lockedUntil: null
+    });
+    return;
+  }
+  entry.count++;
+  if (entry.count >= MAX_FAILED_ATTEMPTS) {
+    entry.lockedUntil = now + LOCK_DURATION_MS;
+    console.warn(`[LoginSecurity] IP ${ip.substring(0, 10)}... locked for ${LOCK_DURATION_MS / 1e3}s after ${entry.count} failures`);
+  }
+}
+function resetLoginFailures(ip) {
+  failedLoginStore.delete(ip);
+}
+var loginCooldownStore = /* @__PURE__ */ new Map();
+function setLoginCooldown(openId) {
+  loginCooldownStore.set(openId, Date.now() + 30 * 1e3);
+}
+function isInLoginCooldown(openId) {
+  const until = loginCooldownStore.get(openId);
+  if (!until) return false;
+  if (Date.now() >= until) {
+    loginCooldownStore.delete(openId);
+    return false;
+  }
+  return true;
+}
+setInterval(() => {
+  const now = Date.now();
+  for (const [key, until] of loginCooldownStore.entries()) {
+    if (now >= until) {
+      loginCooldownStore.delete(key);
+    }
+  }
+}, 5 * 60 * 1e3);
+
+// server/twitter-routes.ts
 function createErrorResponse(error46, includeDetails = false) {
   const isProduction = process.env.NODE_ENV === "production";
   let errorMessage = "Failed to complete Twitter authentication";
@@ -5908,17 +6196,17 @@ function createErrorResponse(error46, includeDetails = false) {
     ...errorDetails && { details: errorDetails.substring(0, 200) }
   };
 }
-function extractBearerToken(authHeader) {
-  if (!authHeader) return null;
-  const match = authHeader.match(/^Bearer\s+(.+)$/i);
-  if (!match || !match[1]?.trim()) {
-    return null;
-  }
-  return match[1].trim();
-}
 function registerTwitterRoutes(app) {
   app.get("/api/twitter/auth", async (req, res) => {
     try {
+      const clientIp = getClientIp(req);
+      const lockStatus = isLoginLocked(clientIp);
+      if (lockStatus.locked) {
+        res.status(429).json({
+          error: `\u30ED\u30B0\u30A4\u30F3\u8A66\u884C\u56DE\u6570\u304C\u4E0A\u9650\u306B\u9054\u3057\u307E\u3057\u305F\u3002${lockStatus.remainingSeconds}\u79D2\u5F8C\u306B\u518D\u8A66\u884C\u3057\u3066\u304F\u3060\u3055\u3044\u3002`
+        });
+        return;
+      }
       const forceLogin = req.query.force === "true" || req.query.switch === "true";
       const protocol = req.get("x-forwarded-proto") || req.protocol;
       const forceHttps = protocol === "https" || req.get("host")?.includes("manus.computer");
@@ -5927,18 +6215,27 @@ function registerTwitterRoutes(app) {
       const state = generateState();
       await storePKCEData(state, codeVerifier, callbackUrl);
       const authUrl = buildAuthorizationUrl(callbackUrl, state, codeChallenge, forceLogin);
-      console.log("[Twitter OAuth 2.0] Redirecting to:", authUrl);
       res.redirect(authUrl);
     } catch (error46) {
-      console.error("Twitter auth error:", error46);
-      res.status(500).json({ error: "Failed to initiate Twitter authentication" });
+      console.error("[Twitter Auth] Init error:", error46 instanceof Error ? error46.message : "unknown");
+      res.status(500).json({ error: "\u30ED\u30B0\u30A4\u30F3\u306E\u958B\u59CB\u306B\u5931\u6557\u3057\u307E\u3057\u305F" });
     }
   });
   app.get("/api/twitter/callback", async (req, res) => {
+    const callbackIp = getClientIp(req);
+    const callbackUa = getClientUserAgent(req);
     try {
       const { code, state, error: oauthError, error_description } = req.query;
       if (oauthError) {
-        console.error("Twitter OAuth error:", oauthError, error_description);
+        writeLoginAuditLog({
+          openId: "unknown",
+          success: false,
+          ip: callbackIp,
+          userAgent: callbackUa,
+          failureReason: `OAuth error: ${oauthError}`
+        }).catch(() => {
+        });
+        if (oauthError !== "access_denied") recordLoginFailure(callbackIp);
         const host2 = req.get("host") || "";
         const protocol2 = req.get("x-forwarded-proto") || req.protocol;
         const forceHttps2 = protocol2 === "https" || host2.includes("manus.computer") || host2.includes("railway.app");
@@ -5965,24 +6262,27 @@ function registerTwitterRoutes(app) {
         return;
       }
       if (!code || !state) {
+        recordLoginFailure(callbackIp);
+        writeLoginAuditLog({ openId: "unknown", success: false, ip: callbackIp, userAgent: callbackUa, failureReason: "Missing code/state" }).catch(() => {
+        });
         res.status(400).json({ error: "Missing code or state parameter" });
         return;
       }
       const pkceData = await getPKCEData(state);
       if (!pkceData) {
+        recordLoginFailure(callbackIp);
+        writeLoginAuditLog({ openId: "unknown", success: false, ip: callbackIp, userAgent: callbackUa, failureReason: "Invalid/expired state" }).catch(() => {
+        });
         res.status(400).json({ error: "Invalid or expired state parameter" });
         return;
       }
       const { codeVerifier, callbackUrl } = pkceData;
       const tokens = await exchangeCodeForTokens(code, callbackUrl, codeVerifier);
-      console.log("[Twitter OAuth 2.0] Token exchange successful");
       setImmediate(() => deletePKCEData(state).catch(() => {
       }));
       const userProfile = await getUserProfile(tokens.access_token);
-      console.log("[Twitter OAuth 2.0] User profile retrieved:", userProfile.username);
       const isFollowingTarget = false;
       const targetAccount = null;
-      console.log("[Twitter OAuth 2.0] Skipping follow check for faster login");
       const userData = {
         twitterId: userProfile.id,
         name: userProfile.name,
@@ -5991,12 +6291,17 @@ function registerTwitterRoutes(app) {
         followersCount: userProfile.public_metrics?.followers_count || 0,
         followingCount: userProfile.public_metrics?.following_count || 0,
         description: userProfile.description || "",
-        accessToken: tokens.access_token,
-        refreshToken: tokens.refresh_token,
+        // 注意: accessToken, refreshToken はセキュリティ上クライアントに送らない
         isFollowingTarget,
         targetAccount
       };
       const openId = `twitter:${userProfile.id}`;
+      await storeTokens(openId, {
+        accessToken: tokens.access_token,
+        refreshToken: tokens.refresh_token,
+        expiresIn: tokens.expires_in,
+        scope: tokens.scope
+      });
       let dbSaveSuccess = false;
       for (let dbRetry = 0; dbRetry < 2; dbRetry++) {
         try {
@@ -6007,19 +6312,29 @@ function registerTwitterRoutes(app) {
             loginMethod: "twitter",
             lastSignedIn: /* @__PURE__ */ new Date()
           });
-          console.log("[Twitter OAuth 2.0] User profile saved to database");
           dbSaveSuccess = true;
           break;
         } catch (error46) {
-          console.error(`[Twitter OAuth 2.0] Failed to save user profile (attempt ${dbRetry + 1}/2):`, error46);
+          console.error(`[Twitter Auth] DB save failed (attempt ${dbRetry + 1}/2):`, error46 instanceof Error ? error46.message : "unknown");
           if (dbRetry === 0) {
             await new Promise((resolve) => setTimeout(resolve, 500));
           }
         }
       }
       if (!dbSaveSuccess) {
-        console.warn("[Twitter OAuth 2.0] DB save failed after retries, continuing with session creation");
+        console.warn("[Twitter Auth] DB save failed after retries, continuing");
       }
+      resetLoginFailures(callbackIp);
+      setLoginCooldown(openId);
+      writeLoginAuditLog({
+        openId,
+        twitterId: userProfile.id,
+        twitterUsername: userProfile.username,
+        success: true,
+        ip: callbackIp,
+        userAgent: callbackUa
+      }).catch(() => {
+      });
       let sessionToken;
       let sessionError;
       for (let sessionRetry = 0; sessionRetry < 2; sessionRetry++) {
@@ -6030,11 +6345,10 @@ function registerTwitterRoutes(app) {
           });
           const cookieOptions = getSessionCookieOptions(req, { crossSite: true });
           res.cookie(COOKIE_NAME, sessionToken, { ...cookieOptions, maxAge: SESSION_MAX_AGE_MS });
-          console.log("[Twitter OAuth 2.0] Session cookie set successfully");
           break;
         } catch (error46) {
           const msg = error46 instanceof Error ? error46.message : String(error46);
-          console.error(`[Twitter OAuth 2.0] Failed to create session token (attempt ${sessionRetry + 1}/2):`, msg);
+          console.error(`[Twitter Auth] Session creation failed (attempt ${sessionRetry + 1}/2):`, msg);
           sessionError = msg;
           if (sessionRetry === 0) {
             await new Promise((resolve) => setTimeout(resolve, 300));
@@ -6042,7 +6356,7 @@ function registerTwitterRoutes(app) {
         }
       }
       if (!sessionToken) {
-        console.error("[Twitter OAuth 2.0] Session creation failed after retries:", sessionError);
+        console.error("[Twitter Auth] Session creation failed after retries");
       }
       const encodedData = encodeURIComponent(JSON.stringify(userData));
       const host = req.get("host") || "";
@@ -6062,10 +6376,9 @@ function registerTwitterRoutes(app) {
         redirectParams.set("sessionToken", sessionToken);
       }
       const redirectUrl = `${baseUrl}/oauth/twitter-callback?${redirectParams.toString()}`;
-      console.log("[Twitter OAuth 2.0] Redirecting to:", redirectUrl.substring(0, 100) + "...");
       res.redirect(redirectUrl);
     } catch (error46) {
-      console.error("Twitter callback error:", error46);
+      console.error("[Twitter Auth] Callback error:", error46 instanceof Error ? error46.message : "unknown");
       const host = req.get("host") || "";
       const protocol = req.get("x-forwarded-proto") || req.protocol;
       const forceHttps = protocol === "https" || host.includes("manus.computer") || host.includes("railway.app");
@@ -6083,10 +6396,11 @@ function registerTwitterRoutes(app) {
   });
   app.get("/api/twitter/me", async (req, res) => {
     try {
-      const authHeader = req.headers.authorization;
-      const accessToken = extractBearerToken(authHeader);
+      const user = await sdk.authenticateRequest(req);
+      const openId = user.openId;
+      const accessToken = await getValidAccessToken(openId);
       if (!accessToken) {
-        res.status(401).json({ error: "Missing or invalid Authorization header" });
+        res.status(401).json({ error: "Twitter token not found. Please re-login." });
         return;
       }
       const userProfile = await getUserProfile(accessToken);
@@ -6100,21 +6414,26 @@ function registerTwitterRoutes(app) {
         description: userProfile.description || ""
       });
     } catch (error46) {
-      console.error("Twitter profile error:", error46);
+      console.error("Twitter profile error:", error46 instanceof Error ? error46.message : "unknown");
       res.status(500).json({ error: "Failed to get Twitter profile" });
     }
   });
   app.get("/api/twitter/follow-status", async (req, res) => {
     try {
-      const authHeader = req.headers.authorization;
-      const accessToken = extractBearerToken(authHeader);
-      if (!accessToken) {
-        res.status(401).json({ error: "Missing or invalid Authorization header" });
-        return;
-      }
+      const user = await sdk.authenticateRequest(req);
+      const openId = user.openId;
       const userId = req.query.userId;
       if (!userId) {
         res.status(400).json({ error: "Missing userId parameter" });
+        return;
+      }
+      if (isInLoginCooldown(openId)) {
+        res.status(429).json({ error: "\u30ED\u30B0\u30A4\u30F3\u76F4\u5F8C\u306F\u3057\u3070\u3089\u304F\u304A\u5F85\u3061\u304F\u3060\u3055\u3044" });
+        return;
+      }
+      const accessToken = await getValidAccessToken(openId);
+      if (!accessToken) {
+        res.status(401).json({ error: "Twitter token not found. Please re-login." });
         return;
       }
       const followStatus = await checkFollowStatus(accessToken, userId);
@@ -6127,7 +6446,7 @@ function registerTwitterRoutes(app) {
         }
       });
     } catch (error46) {
-      console.error("Follow status error:", error46);
+      console.error("Follow status error:", error46 instanceof Error ? error46.message : "unknown");
       res.status(500).json({ error: "Failed to check follow status" });
     }
   });
@@ -6162,8 +6481,8 @@ function registerTwitterRoutes(app) {
         followingCount: profile.public_metrics?.following_count || 0
       });
     } catch (error46) {
-      console.error("Twitter user lookup error:", error46);
-      res.status(500).json({ error: "Failed to lookup Twitter user" });
+      console.error("[Twitter] User lookup error:", error46 instanceof Error ? error46.message : "unknown");
+      res.status(500).json({ error: "\u30E6\u30FC\u30B6\u30FC\u691C\u7D22\u306B\u5931\u6557\u3057\u307E\u3057\u305F" });
     }
   });
   app.get("/api/twitter/refresh-follow-status", async (req, res) => {
@@ -6175,32 +6494,27 @@ function registerTwitterRoutes(app) {
       const state = generateState();
       await storePKCEData(state, codeVerifier, callbackUrl);
       const authUrl = buildAuthorizationUrl(callbackUrl, state, codeChallenge);
-      console.log("[Twitter OAuth 2.0] Refresh follow status - Redirecting to:", authUrl);
       res.redirect(authUrl);
     } catch (error46) {
-      console.error("Twitter refresh follow status error:", error46);
-      res.status(500).json({ error: "Failed to initiate follow status refresh" });
+      console.error("[Twitter Auth] Refresh follow status error:", error46 instanceof Error ? error46.message : "unknown");
+      res.status(500).json({ error: "\u30D5\u30A9\u30ED\u30FC\u72B6\u614B\u306E\u66F4\u65B0\u306B\u5931\u6557\u3057\u307E\u3057\u305F" });
     }
   });
   app.post("/api/twitter/refresh", async (req, res) => {
     try {
-      const { refreshToken } = req.body;
-      if (!refreshToken) {
-        res.status(400).json({ error: "Refresh token is required" });
+      const user = await sdk.authenticateRequest(req);
+      const openId = user.openId;
+      const accessToken = await getValidAccessToken(openId);
+      if (!accessToken) {
+        res.status(401).json({ error: "Token not found. Please re-login." });
         return;
       }
-      console.log("[Twitter OAuth 2.0] Refreshing access token...");
-      const tokens = await refreshAccessToken(refreshToken);
-      console.log("[Twitter OAuth 2.0] Token refresh successful");
       res.json({
-        access_token: tokens.access_token,
-        refresh_token: tokens.refresh_token,
-        expires_in: tokens.expires_in,
-        token_type: tokens.token_type,
-        scope: tokens.scope
+        success: true,
+        message: "Token refreshed server-side"
       });
     } catch (error46) {
-      console.error("Twitter token refresh error:", error46);
+      console.error("Twitter token refresh error:", error46 instanceof Error ? error46.message : "unknown");
       res.status(401).json({ error: "Failed to refresh token" });
     }
   });
@@ -6226,8 +6540,8 @@ function registerTwitterRoutes(app) {
         followingCount: profile.public_metrics?.following_count || 0
       });
     } catch (error46) {
-      console.error("Twitter user lookup error:", error46);
-      res.status(500).json({ error: "Failed to lookup Twitter user" });
+      console.error("[Twitter] Lookup error:", error46 instanceof Error ? error46.message : "unknown");
+      res.status(500).json({ error: "\u30E6\u30FC\u30B6\u30FC\u691C\u7D22\u306B\u5931\u6557\u3057\u307E\u3057\u305F" });
     }
   });
 }
@@ -21798,7 +22112,7 @@ var adminRouter = router({
 // server/routers/stats.ts
 init_connection();
 init_schema2();
-import { eq as eq6, and as and4, gte as gte3, desc as desc5, sql as sql4, count as count2 } from "drizzle-orm";
+import { eq as eq7, and as and4, gte as gte3, desc as desc5, sql as sql4, count as count2 } from "drizzle-orm";
 var statsRouter = router({
   /**
    * ユーザー統計を取得
@@ -21807,8 +22121,8 @@ var statsRouter = router({
     const db = await getDb();
     if (!db) throw new Error("\u30C7\u30FC\u30BF\u30D9\u30FC\u30B9\u306B\u63A5\u7D9A\u3067\u304D\u307E\u305B\u3093");
     const userId = ctx.user.id;
-    const totalParticipations = await db.select({ count: count2() }).from(participations).where(eq6(participations.userId, userId));
-    const completedParticipations = await db.select({ count: count2() }).from(participations).where(eq6(participations.userId, userId));
+    const totalParticipations = await db.select({ count: count2() }).from(participations).where(eq7(participations.userId, userId));
+    const completedParticipations = await db.select({ count: count2() }).from(participations).where(eq7(participations.userId, userId));
     const total = totalParticipations[0]?.count || 0;
     const completed = completedParticipations[0]?.count || 0;
     const completionRate = total > 0 ? completed / total * 100 : 0;
@@ -21818,7 +22132,7 @@ var statsRouter = router({
       createdAt: participations.createdAt,
       updatedAt: participations.updatedAt,
       eventTitle: challenges.title
-    }).from(participations).leftJoin(challenges, eq6(participations.challengeId, challenges.id)).where(eq6(participations.userId, userId)).orderBy(desc5(participations.createdAt)).limit(10);
+    }).from(participations).leftJoin(challenges, eq7(participations.challengeId, challenges.id)).where(eq7(participations.userId, userId)).orderBy(desc5(participations.createdAt)).limit(10);
     const sixMonthsAgo = /* @__PURE__ */ new Date();
     sixMonthsAgo.setMonth(sixMonthsAgo.getMonth() - 6);
     const monthlyStats = await db.select({
@@ -21826,7 +22140,7 @@ var statsRouter = router({
       count: count2()
     }).from(participations).where(
       and4(
-        eq6(participations.userId, userId),
+        eq7(participations.userId, userId),
         gte3(participations.createdAt, sixMonthsAgo)
       )
     ).groupBy(sql4`DATE_FORMAT(${participations.createdAt}, '%Y-%m')`).orderBy(sql4`DATE_FORMAT(${participations.createdAt}, '%Y-%m')`);
@@ -21837,7 +22151,7 @@ var statsRouter = router({
       count: count2()
     }).from(participations).where(
       and4(
-        eq6(participations.userId, userId),
+        eq7(participations.userId, userId),
         gte3(participations.createdAt, fourWeeksAgo)
       )
     ).groupBy(sql4`DATE_FORMAT(${participations.createdAt}, '%Y-W%u')`).orderBy(sql4`DATE_FORMAT(${participations.createdAt}, '%Y-W%u')`);
@@ -21879,14 +22193,14 @@ var statsRouter = router({
       userId: participations.userId,
       userName: users.name,
       completedChallenges: count2()
-    }).from(participations).leftJoin(users, eq6(participations.userId, users.id)).groupBy(participations.userId, users.name).orderBy(desc5(count2())).limit(10);
+    }).from(participations).leftJoin(users, eq7(participations.userId, users.id)).groupBy(participations.userId, users.name).orderBy(desc5(count2())).limit(10);
     const eventStats = await db.select({
       challengeId: participations.challengeId,
       eventTitle: challenges.title,
       totalAttempts: count2(),
       completedAttempts: count2()
       // 全ての参加を達成とみなす
-    }).from(participations).leftJoin(challenges, eq6(participations.challengeId, challenges.id)).groupBy(participations.challengeId, challenges.title).orderBy(desc5(count2()));
+    }).from(participations).leftJoin(challenges, eq7(participations.challengeId, challenges.id)).groupBy(participations.challengeId, challenges.title).orderBy(desc5(count2()));
     const thirtyDaysAgo = /* @__PURE__ */ new Date();
     thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
     const dailyActivity = await db.select({
@@ -22924,7 +23238,7 @@ function checkRateLimit(ip, path3) {
     resetTime: entry.resetTime
   };
 }
-function getClientIp(req) {
+function getClientIp2(req) {
   const forwardedFor = req.headers["x-forwarded-for"];
   if (forwardedFor) {
     const ips = Array.isArray(forwardedFor) ? forwardedFor[0].split(",") : forwardedFor.split(",");
@@ -22936,7 +23250,7 @@ function getClientIp(req) {
   return req.ip || req.connection?.remoteAddress || "unknown";
 }
 function rateLimiterMiddleware(req, res, next) {
-  const ip = getClientIp(req);
+  const ip = getClientIp2(req);
   const path3 = req.path || req.url;
   const result = checkRateLimit(ip, path3);
   res.setHeader("X-RateLimit-Limit", result.remaining + (result.allowed ? 1 : 0));
