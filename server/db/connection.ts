@@ -14,10 +14,55 @@ let _db: DrizzleDB | null = null;
 export async function getDb() {
   if (!_db && process.env.DATABASE_URL) {
     try {
-      const poolConnection = mysql.createPool(process.env.DATABASE_URL);
+      // 接続プールの設定を追加（タイムアウト、リトライ、接続数の制限）
+      const poolConnection = mysql.createPool(process.env.DATABASE_URL, {
+        // 接続プールの設定
+        connectionLimit: 10, // 最大接続数
+        queueLimit: 0, // キュー制限なし
+        
+        // タイムアウト設定
+        connectTimeout: 10000, // 10秒
+        acquireTimeout: 10000, // 10秒
+        timeout: 10000, // 10秒
+        
+        // 接続の再試行
+        reconnect: true,
+        maxReconnects: 3,
+        reconnectDelay: 1000, // 1秒
+        
+        // 接続の検証
+        enableKeepAlive: true,
+        keepAliveInitialDelay: 0,
+        
+        // SSL設定（本番環境ではSSL接続を推奨）
+        ssl: process.env.NODE_ENV === "production" ? { rejectUnauthorized: false } : undefined,
+      });
+      
+      // 接続エラーのハンドリング
+      poolConnection.on("connection", (connection) => {
+        console.log("[Database] New connection established");
+      });
+      
+      poolConnection.on("error", (err) => {
+        console.error("[Database] Pool error:", err);
+        // 接続エラーが発生した場合、接続をリセット
+        if (err.code === "PROTOCOL_CONNECTION_LOST" || err.code === "ECONNREFUSED") {
+          _db = null;
+        }
+      });
+      
       _db = drizzle(poolConnection, { schema, mode: "default" });
+      
+      // 接続テストを実行
+      try {
+        await poolConnection.query("SELECT 1");
+        console.log("[Database] Connection pool initialized successfully");
+      } catch (testError) {
+        console.error("[Database] Connection test failed:", testError);
+        // 接続テストに失敗した場合でも、プールは作成済みなので続行
+      }
     } catch (error) {
-      console.warn("[Database] Failed to connect:", error);
+      console.error("[Database] Failed to create connection pool:", error);
       _db = null;
     }
   }

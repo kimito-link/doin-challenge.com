@@ -210,12 +210,13 @@ export function registerTwitterRoutes(app: Express) {
       }
 
       // Create session token and set cookie (重要: セッションCookieを設定して認証状態を確立)
+      // Twitter OAuthも外部サイトからのリダイレクトなので、クロスサイトリクエストに対応
       try {
         const sessionToken = await sdk.createSessionToken(openId, {
           name: userProfile.name || "",
           expiresInMs: ONE_YEAR_MS,
         });
-        const cookieOptions = getSessionCookieOptions(req);
+        const cookieOptions = getSessionCookieOptions(req, { crossSite: true });
         res.cookie(COOKIE_NAME, sessionToken, { ...cookieOptions, maxAge: ONE_YEAR_MS });
         console.log("[Twitter OAuth 2.0] Session cookie set successfully");
       } catch (error) {

@@ -87,15 +87,50 @@ function getCookieDomain(req: Request, hostname: string): string | undefined {
 
 export function getSessionCookieOptions(
   req: Request,
+  options?: {
+    /**
+     * OAuthコールバックなど、クロスサイトリクエストでCookieを送信する必要がある場合にtrue
+     * sameSite: "none" を使用し、secure: true が必須になる
+     */
+    crossSite?: boolean;
+  },
 ): Pick<CookieOptions, "domain" | "httpOnly" | "path" | "sameSite" | "secure"> {
   const hostname = getEffectiveHostname(req);
   const domain = getCookieDomain(req, hostname);
+  const isSecure = isSecureRequest(req);
 
+  // OAuthコールバックなど、クロスサイトリクエストの場合
+  // sameSite: "none" を使用（secure: true が必須）
+  if (options?.crossSite) {
+    // HTTPS環境でのみ動作（sameSite: "none" には secure: true が必須）
+    if (!isSecure) {
+      console.warn(
+        "[Cookies] crossSite=true requires HTTPS. Falling back to sameSite=lax",
+      );
+      return {
+        domain,
+        httpOnly: true,
+        path: "/",
+        sameSite: "lax",
+        secure: false,
+      };
+    }
+
+    return {
+      domain,
+      httpOnly: true,
+      path: "/",
+      sameSite: "none",
+      secure: true,
+    };
+  }
+
+  // 通常のセッション管理（sameSite: "lax" で十分）
   return {
     domain,
     httpOnly: true,
     path: "/",
     sameSite: "lax",
-    secure: isSecureRequest(req),
+    secure: isSecure,
   };
 }

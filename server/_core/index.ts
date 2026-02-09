@@ -191,26 +191,62 @@ async function startServer() {
         const startTime = Date.now();
         const db = await getDb();
         if (db) {
-          await db.execute(sql`SELECT 1`);
-          let challengesCount = 0;
           try {
-            const r = await db.execute(sql`SELECT COUNT(*) AS c FROM challenges WHERE "isPublic" = true`);
-            const rows = (r as unknown as { rows?: Array<{ c: string }> })?.rows ?? (Array.isArray(r) ? r : []);
-            challengesCount = rows.length ? Number((rows[0] as { c: string })?.c ?? 0) : 0;
-          } catch (_) {
-            // テーブルが無い等は 0 のまま
+            // シンプルな接続テストクエリ
+            await db.execute(sql`SELECT 1`);
+            
+            let challengesCount = 0;
+            try {
+              const r = await db.execute(sql`SELECT COUNT(*) AS c FROM challenges WHERE "isPublic" = true`);
+              const rows = (r as unknown as { rows?: Array<{ c: string }> })?.rows ?? (Array.isArray(r) ? r : []);
+              challengesCount = rows.length ? Number((rows[0] as { c: string })?.c ?? 0) : 0;
+            } catch (countErr) {
+              // テーブルが無い等は 0 のまま
+              console.warn("[health] Failed to count challenges:", countErr);
+            }
+            
+            dbStatus = {
+              connected: true,
+              latency: Date.now() - startTime,
+              error: "",
+              challengesCount,
+            };
+          } catch (queryErr) {
+            // クエリ実行エラー
+            const errorMessage = queryErr instanceof Error ? queryErr.message : String(queryErr);
+            // エラーメッセージから不要な部分を削除（\nparamなど）
+            const cleanMessage = errorMessage
+              .replace(/\nparam.*$/g, "")
+              .replace(/params:.*$/g, "")
+              .trim();
+            
+            console.error("[health] Database query failed:", {
+              error: cleanMessage,
+              originalError: errorMessage,
+              stack: queryErr instanceof Error ? queryErr.stack : undefined,
+            });
+            
+            dbStatus = {
+              connected: false,
+              latency: Date.now() - startTime,
+              error: cleanMessage || "データベースクエリの実行に失敗しました",
+            };
           }
-          dbStatus = {
-            connected: true,
-            latency: Date.now() - startTime,
-            error: "",
-            challengesCount,
-          };
         } else {
-          dbStatus.error = "DATABASE_URLが設定されていません";
+          // DATABASE_URLが設定されていない、または接続に失敗
+          const hasDatabaseUrl = !!process.env.DATABASE_URL;
+          dbStatus.error = hasDatabaseUrl
+            ? "データベース接続の確立に失敗しました"
+            : "DATABASE_URLが設定されていません";
         }
       } catch (err) {
-        dbStatus.error = err instanceof Error ? err.message : "接続エラー";
+        // 予期しないエラー（インポートエラーなど）
+        const errorMessage = err instanceof Error ? err.message : String(err);
+        console.error("[health] Unexpected database error:", {
+          error: errorMessage,
+          stack: err instanceof Error ? err.stack : undefined,
+        });
+        dbStatus.error = errorMessage || "接続エラー";
       }
 
       const checkCritical = _req.query.critical === "true";

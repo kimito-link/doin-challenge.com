@@ -87,7 +87,9 @@ export function registerOAuthRoutes(app: Express) {
         expiresInMs: ONE_YEAR_MS,
       });
 
-      const cookieOptions = getSessionCookieOptions(req);
+      // OAuthコールバックは外部サイト（Google）からのリダイレクトなので、
+      // クロスサイトリクエストに対応するため sameSite: "none" を使用
+      const cookieOptions = getSessionCookieOptions(req, { crossSite: true });
       res.cookie(COOKIE_NAME, sessionToken, { ...cookieOptions, maxAge: ONE_YEAR_MS });
 
       // Redirect to the frontend URL (Expo web on port 8081)
@@ -136,7 +138,9 @@ export function registerOAuthRoutes(app: Express) {
         expiresInMs: ONE_YEAR_MS,
       });
 
-      const cookieOptions = getSessionCookieOptions(req);
+      // OAuthモバイルコールバックも外部サイトからのリダイレクトの可能性があるため、
+      // クロスサイトリクエストに対応するため sameSite: "none" を使用
+      const cookieOptions = getSessionCookieOptions(req, { crossSite: true });
       res.cookie(COOKIE_NAME, sessionToken, { ...cookieOptions, maxAge: ONE_YEAR_MS });
 
       res.json({
