@@ -109,7 +109,7 @@ export async function getEventsPaginated(params: {
     const conditions: any[] = [eq(events.isPublic, true)];
 
     if (filter && filter !== "all") {
-      conditions.push(eq(events.eventType, filter));
+      conditions.push(eq(events.eventType, filter as "solo" | "group"));
     }
 
     if (search && search.trim()) {
