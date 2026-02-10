@@ -1,14 +1,14 @@
 import { getDb } from "./connection";
 import { generateSlug } from "./connection";
 import { challenges, InsertChallenge, users } from "../../drizzle/schema";
-import { sql, eq, desc } from "drizzle-orm";
+import { sql, eq, desc, and, like, or } from "drizzle-orm";
 // 後方互換性のためのエイリアス
 const events = challenges;
 type InsertEvent = InsertChallenge;
 
 // サーバーサイドメモリキャッシュ（パフォーマンス最適化）
 let eventsCache: { data: any[] | null; timestamp: number } = { data: null, timestamp: 0 };
-const EVENTS_CACHE_TTL = 30 * 1000; // 30秒
+const EVENTS_CACHE_TTL = 5 * 60 * 1000; // 5分（イベント作成/更新時は invalidateEventsCache() で即時無効化される）
 
 export async function getAllEvents() {
   const now = Date.now();
@@ -73,6 +73,109 @@ export async function getAllEvents() {
 // キャッシュを無効化（イベント作成/更新/削除時に呼び出す）
 export function invalidateEventsCache() {
   eventsCache = { data: null, timestamp: 0 };
+}
+
+/**
+ * DB側でフィルタ・ページネーションを行うイベント一覧取得
+ * 全件取得→メモリフィルタをやめ、WHERE+LIMIT+OFFSETでDB側で絞る
+ */
+export async function getEventsPaginated(params: {
+  cursor: number;
+  limit: number;
+  filter?: string;
+  search?: string;
+}): Promise<{ items: any[]; nextCursor: number | undefined; totalCount: number }> {
+  const { cursor, limit, filter, search } = params;
+
+  // キャッシュが有効 & フィルタ/検索なしの場合はメモリキャッシュを使用
+  const noFilter = (!filter || filter === "all") && (!search || !search.trim());
+  const now = Date.now();
+  if (noFilter && eventsCache.data && (now - eventsCache.timestamp) < EVENTS_CACHE_TTL) {
+    const items = eventsCache.data.slice(cursor, cursor + limit);
+    const nextCursor = cursor + limit < eventsCache.data.length ? cursor + limit : undefined;
+    return { items, nextCursor, totalCount: eventsCache.data.length };
+  }
+
+  const db = await getDb();
+  if (!db) {
+    // DB接続不可時はキャッシュフォールバック
+    const fallback = eventsCache.data ?? [];
+    const items = fallback.slice(cursor, cursor + limit);
+    return { items, nextCursor: cursor + limit < fallback.length ? cursor + limit : undefined, totalCount: fallback.length };
+  }
+
+  try {
+    // WHERE条件を構築
+    const conditions: any[] = [eq(events.isPublic, true)];
+
+    if (filter && filter !== "all") {
+      conditions.push(eq(events.eventType, filter));
+    }
+
+    if (search && search.trim()) {
+      const searchPattern = `%${search.trim()}%`;
+      conditions.push(
+        or(
+          like(events.title, searchPattern),
+          like(events.description, searchPattern),
+          like(events.venue, searchPattern),
+          like(events.hostName, searchPattern),
+        )
+      );
+    }
+
+    const whereClause = conditions.length === 1 ? conditions[0] : and(...conditions);
+
+    // COUNT クエリ（totalCount用）
+    const countResult = await db
+      .select({ count: sql<number>`COUNT(*)` })
+      .from(events)
+      .where(whereClause);
+    const totalCount = Number(countResult[0]?.count ?? 0);
+
+    // データ取得（LIMIT + OFFSET をDB側で実行）
+    const items = await db
+      .select({
+        id: events.id,
+        hostUserId: events.hostUserId,
+        hostTwitterId: events.hostTwitterId,
+        hostName: events.hostName,
+        hostUsername: events.hostUsername,
+        hostProfileImage: events.hostProfileImage,
+        hostFollowersCount: events.hostFollowersCount,
+        // 一覧では hostDescription を省略（レスポンスサイズ削減: A-3）
+        title: events.title,
+        slug: events.slug,
+        // 一覧では description を先頭100文字に切り詰め（レスポンスサイズ削減: A-3）
+        description: sql<string>`LEFT(${events.description}, 100)`.as("description"),
+        goalType: events.goalType,
+        goalValue: events.goalValue,
+        goalUnit: events.goalUnit,
+        currentValue: events.currentValue,
+        eventType: events.eventType,
+        categoryId: events.categoryId,
+        eventDate: events.eventDate,
+        venue: events.venue,
+        prefecture: events.prefecture,
+        status: events.status,
+        isPublic: events.isPublic,
+        createdAt: events.createdAt,
+        updatedAt: events.updatedAt,
+      })
+      .from(events)
+      .where(whereClause)
+      .orderBy(desc(events.eventDate))
+      .limit(limit)
+      .offset(cursor);
+
+    const nextCursor = cursor + limit < totalCount ? cursor + limit : undefined;
+    return { items, nextCursor, totalCount };
+  } catch (err) {
+    console.warn("[getEventsPaginated] Query failed, falling back to cache:", (err as Error)?.message);
+    const fallback = eventsCache.data ?? [];
+    const items = fallback.slice(cursor, cursor + limit);
+    return { items, nextCursor: cursor + limit < fallback.length ? cursor + limit : undefined, totalCount: fallback.length };
+  }
 }
 
 export async function getEventById(id: number) {

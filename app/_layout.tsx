@@ -42,6 +42,19 @@ import { ExperienceOverlay } from "@/components/organisms/experience-overlay";
 import { OnboardingScreen, useOnboarding } from "@/features/onboarding";
 import { initSentry } from "@/lib/sentry";
 import { ErrorBoundary } from "@/components/ui";
+import { usePrefetchHome } from "@/hooks/use-prefetch";
+
+/**
+ * マウント時にホーム画面のデータをプリフェッチ（D-1: 初回表示前倒し）
+ * tRPC Provider 内で使用し、ルートマウント時に即座にデータ取得を開始する
+ */
+function EarlyPrefetch() {
+  const { prefetch } = usePrefetchHome();
+  useEffect(() => {
+    prefetch();
+  }, [prefetch]);
+  return null;
+}
 
 /** /admin のときはオーバーレイを出さず管理画面だけ表示する */
 function useIsAdminRoute() {
@@ -216,6 +229,7 @@ export default function RootLayout() {
             client={queryClient}
             persistOptions={{ persister: asyncStoragePersister }}
           >
+            <EarlyPrefetch />
             <AutoLoginProvider>
               <LoginSuccessProvider>
                 <TutorialProvider>

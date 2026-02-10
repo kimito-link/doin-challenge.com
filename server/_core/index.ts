@@ -254,11 +254,19 @@ async function startServer() {
             // クエリ実行エラー
             const errorMessage = queryErr instanceof Error ? queryErr.message : String(queryErr);
             // エラーメッセージから不要な部分を削除（\nparamなど）
-            const cleanMessage = errorMessage
+            let cleanMessage = errorMessage
               .replace(/\nparam.*$/g, "")
               .replace(/params:.*$/g, "")
-              .replace(/Failed query:.*$/g, "データベースクエリの実行に失敗しました")
+              .replace(/Failed query:.*$/g, "")
               .trim();
+            
+            // タイムアウトエラーの場合は明確なメッセージに
+            if (cleanMessage.includes("timeout") || cleanMessage.includes("タイムアウト")) {
+              cleanMessage = "データベース接続がタイムアウトしました";
+            } else if (!cleanMessage || cleanMessage.length < 5) {
+              // メッセージが空または短すぎる場合はデフォルトメッセージ
+              cleanMessage = "データベースクエリの実行に失敗しました";
+            }
             
             console.error("[health] Database query failed:", {
               error: cleanMessage,
@@ -269,7 +277,7 @@ async function startServer() {
             dbStatus = {
               connected: false,
               latency: Date.now() - startTime,
-              error: cleanMessage || "データベースクエリの実行に失敗しました",
+              error: cleanMessage,
             };
           }
         } else {

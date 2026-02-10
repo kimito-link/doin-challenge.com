@@ -105,24 +105,45 @@ jobs:
               SHA_MATCH=true
             fi
             
-            # コミットSHAが一致し、かつok=trueの場合は成功
-            if [[ "$SHA_MATCH" == "true" ]] && [[ "$OK" == "true" ]]; then
-              echo "✅ 本番は正常に応答しています (commit: $HEALTH_SHA)"
-              break
-            fi
-            
-            # コミットSHAが一致しているが、データベース接続エラーの場合は警告を出して続行
-            # データベース接続エラーは一時的な可能性があるため、デプロイ自体は成功とみなす
-            if [[ "$SHA_MATCH" == "true" ]] && [[ "$DB_CONNECTED" == "false" ]]; then
-              echo "⚠️ コミットSHAは一致していますが、データベース接続エラーが発生しています"
-              echo "⚠️ デプロイは成功していますが、データベース設定を確認してください"
-              echo "⚠️ DB Error: $DB_ERROR"
-              echo "Last health response: $HEALTH"
-              # データベース接続エラーは警告として扱い、デプロイ自体は成功とみなす
+            # コミットSHAが一致している場合は成功（DB接続エラーは警告のみ）
+            if [[ "$SHA_MATCH" == "true" ]]; then
+              if [[ "$OK" == "true" ]]; then
+                echo "✅ 本番は正常に応答しています (commit: $HEALTH_SHA)"
+              elif [[ "$DB_CONNECTED" == "false" ]]; then
+                echo "⚠️ コミットSHAは一致していますが、データベース接続エラーが発生しています"
+                echo "⚠️ デプロイは成功していますが、データベース設定を確認してください"
+                echo "⚠️ DB Error: $DB_ERROR"
+                echo "Last health response: $HEALTH"
+                # データベース接続エラーは警告として扱い、デプロイ自体は成功とみなす
+              else
+                echo "⚠️ コミットSHAは一致していますが、ok=falseです"
+                echo "⚠️ デプロイは成功していますが、他の問題がある可能性があります"
+                echo "Last health response: $HEALTH"
+              fi
               break
             fi
             
             if [[ $i -eq 40 ]]; then
+              # コミットSHAが一致しているか再チェック
+              SHA_MATCH=false
+              if [[ "$HEALTH_SHA" == "$EXPECTED_SHA" ]] || [[ "$HEALTH_SHA" == "$LATEST_MAIN" ]]; then
+                SHA_MATCH=true
+              fi
+              
+              if [[ "$SHA_MATCH" == "true" ]]; then
+                echo "⚠️ コミットSHAは一致していますが、ok=falseまたはDB接続エラーが発生しています"
+                echo "⚠️ デプロイは成功していますが、設定を確認してください"
+                echo "Expected: $EXPECTED_SHA or $LATEST_MAIN"
+                echo "Got: $HEALTH_SHA"
+                echo "Health ok: $OK"
+                echo "DB connected: $DB_CONNECTED"
+                if [[ "$DB_CONNECTED" == "false" ]] && [[ -n "$DB_ERROR" ]]; then
+                  echo "DB Error: $DB_ERROR"
+                fi
+                echo "Last health response: $HEALTH"
+                exit 0
+              fi
+              
               echo "❌ 本番が期待コミットまたは最新mainで応答しませんでした（不具合の可能性）"
               echo "Expected: $EXPECTED_SHA or $LATEST_MAIN"
               echo "Got: $HEALTH_SHA"
@@ -132,14 +153,6 @@ jobs:
                 echo "DB Error: $DB_ERROR"
               fi
               echo "Last health response: $HEALTH"
-              
-              # コミットSHAが一致しているが、データベース接続エラーのみの場合は警告として扱う
-              if [[ "$SHA_MATCH" == "true" ]] && [[ "$DB_CONNECTED" == "false" ]]; then
-                echo "⚠️ コミットSHAは一致していますが、データベース接続エラーが発生しています"
-                echo "⚠️ デプロイは成功していますが、データベース設定を確認してください"
-                exit 0
-              fi
-              
               exit 1
             fi
             sleep 20

@@ -178,29 +178,36 @@ export async function getParticipationCountByEventId(eventId: number) {
 export async function getTotalCompanionCountByEventId(eventId: number) {
   const db = await getDb();
   if (!db) return 0;
-  const result = await db.select().from(participations)
+  const result = await db
+    .select({ total: sql<number>`COALESCE(SUM(COALESCE(${participations.contribution}, 1)), 0)` })
+    .from(participations)
     .where(and(
       eq(participations.challengeId, eventId),
       isNull(participations.deletedAt)
     ));
-  return result.reduce((sum, p) => sum + (p.contribution || 1), 0);
+  return Number(result[0]?.total ?? 0);
 }
 
-// 地域別の参加者数を取得
+// 地域別の参加者数を取得（SQL GROUP BY で集計）
 export async function getParticipationsByPrefecture(challengeId: number) {
   const db = await getDb();
   if (!db) return {};
 
-  const result = await db.select().from(participations)
+  const result = await db
+    .select({
+      prefecture: sql<string>`COALESCE(${participations.prefecture}, '未設定')`.as("prefecture"),
+      total: sql<number>`COALESCE(SUM(COALESCE(${participations.contribution}, 1)), 0)`.as("total"),
+    })
+    .from(participations)
     .where(and(
       eq(participations.challengeId, challengeId),
       isNull(participations.deletedAt)
-    ));
+    ))
+    .groupBy(sql`COALESCE(${participations.prefecture}, '未設定')`);
 
   const prefectureMap: Record<string, number> = {};
-  result.forEach(p => {
-    const pref = p.prefecture || "未設定";
-    prefectureMap[pref] = (prefectureMap[pref] || 0) + (p.contribution || 1);
+  result.forEach(r => {
+    prefectureMap[r.prefecture] = Number(r.total);
   });
 
   return prefectureMap;
@@ -240,29 +247,31 @@ export async function getParticipationsByPrefectureFilter(challengeId: number, p
     .orderBy(desc(participations.createdAt));
 }
 
-// 参加方法別集計を取得
+// 参加方法別集計を取得（SQL GROUP BY で集計）
 export async function getAttendanceTypeCounts(challengeId: number) {
   const db = await getDb();
   if (!db) return { venue: 0, streaming: 0, both: 0, total: 0 };
 
-  const result = await db.select().from(participations)
+  const result = await db
+    .select({
+      attendanceType: sql<string>`COALESCE(${participations.attendanceType}, 'venue')`.as("attendanceType"),
+      cnt: sql<number>`COUNT(*)`.as("cnt"),
+    })
+    .from(participations)
     .where(and(
       eq(participations.challengeId, challengeId),
       isNull(participations.deletedAt)
-    ));
+    ))
+    .groupBy(sql`COALESCE(${participations.attendanceType}, 'venue')`);
 
-  const counts = {
-    venue: 0,
-    streaming: 0,
-    both: 0,
-    total: result.length,
-  };
-
-  result.forEach(p => {
-    const type = p.attendanceType || "venue";
-    if (type === "venue") counts.venue += 1;
-    else if (type === "streaming") counts.streaming += 1;
-    else if (type === "both") counts.both += 1;
+  const counts = { venue: 0, streaming: 0, both: 0, total: 0 };
+  result.forEach(r => {
+    const type = r.attendanceType as string;
+    const c = Number(r.cnt);
+    if (type === "venue") counts.venue = c;
+    else if (type === "streaming") counts.streaming = c;
+    else if (type === "both") counts.both = c;
+    counts.total += c;
   });
 
   return counts;

@@ -50,8 +50,13 @@ export function useAuth(options?: UseAuthOptions) {
 
   const fetchUser = useCallback(async () => {
     try {
-      setLoading(true);
       setError(null);
+      // C-2: 既にユーザー情報がある場合はバックグラウンドリフレッシュとしてloading=trueにしない
+      // これにより、画面のスケルトン表示をブロックしない
+      const isBackgroundRefresh = user !== null || cachedAuthState?.user !== null;
+      if (!isBackgroundRefresh) {
+        setLoading(true);
+      }
 
       // Web: localStorageキャッシュ → API の順で認証状態を取得
       if (Platform.OS === "web") {
@@ -126,7 +131,7 @@ export function useAuth(options?: UseAuthOptions) {
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [user]);
 
   const logout = useCallback(async () => {
     try {

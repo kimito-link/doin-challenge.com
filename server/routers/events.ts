@@ -14,7 +14,7 @@ export const eventsRouter = router({
     return db.getAllEvents();
   }),
 
-  // ページネーション対応のイベント一覧取得
+  // ページネーション対応のイベント一覧取得（DB側でフィルタ・ページネーション）
   listPaginated: publicProcedure
     .input(z.object({
       cursor: z.number().optional(),
@@ -24,39 +24,8 @@ export const eventsRouter = router({
     }))
     .query(async ({ input }) => {
       const { cursor = 0, limit, filter, search } = input;
-      const allEvents = await db.getAllEvents();
-      
-      let filteredEvents = allEvents;
-      
-      // フィルター適用
-      if (filter && filter !== "all") {
-        filteredEvents = filteredEvents.filter((e: any) => e.eventType === filter);
-      }
-      
-      // 全文検索適用（タイトル、説明、会場、ホスト名）
-      if (search && search.trim()) {
-        const searchLower = search.toLowerCase();
-        filteredEvents = filteredEvents.filter((e: any) => {
-          const title = (e.title || "").toLowerCase();
-          const description = (e.description || "").toLowerCase();
-          const venue = (e.venue || "").toLowerCase();
-          const hostName = (e.hostName || "").toLowerCase();
-          
-          return title.includes(searchLower) ||
-                 description.includes(searchLower) ||
-                 venue.includes(searchLower) ||
-                 hostName.includes(searchLower);
-        });
-      }
-      
-      const items = filteredEvents.slice(cursor, cursor + limit);
-      const nextCursor = cursor + limit < filteredEvents.length ? cursor + limit : undefined;
-      
-      return {
-        items,
-        nextCursor,
-        totalCount: filteredEvents.length,
-      };
+      const result = await db.getEventsPaginated({ cursor, limit, filter, search });
+      return result;
     }),
 
   // イベント詳細取得
