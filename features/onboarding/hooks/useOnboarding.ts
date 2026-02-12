@@ -51,22 +51,32 @@ export function useOnboarding(): UseOnboardingReturn {
   
   // ネイティブ環境: 初回起動時にAsyncStorageからオンボーディング完了状態を確認
   // Web環境: 初期値がnullの場合のフォールバック（通常は同期取得済み）
+  // シークレットモード対応: タイムアウトでブロックを防止
   useEffect(() => {
     if (hasCompletedOnboarding !== null) return; // 既に同期取得済み
 
+    const RESTORE_TIMEOUT_MS = 2000;
+    const timeoutId = setTimeout(() => {
+      setHasCompletedOnboarding((prev) => (prev === null ? false : prev));
+    }, RESTORE_TIMEOUT_MS);
+
     const checkOnboardingStatus = async () => {
       try {
-        const completed = await AsyncStorage.getItem(ONBOARDING_STORAGE_KEY);
-        // 明示的に"true"が保存されている場合のみ完了とみなす
+        const completed = await Promise.race([
+          AsyncStorage.getItem(ONBOARDING_STORAGE_KEY),
+          new Promise<string | null>((resolve) => setTimeout(() => resolve(null), RESTORE_TIMEOUT_MS)),
+        ]);
         setHasCompletedOnboarding(completed === "true");
       } catch (error) {
         console.error("Failed to check onboarding status:", error);
-        // エラー時はオンボーディングを表示
         setHasCompletedOnboarding(false);
+      } finally {
+        clearTimeout(timeoutId);
       }
     };
-    
+
     checkOnboardingStatus();
+    return () => clearTimeout(timeoutId);
   }, [hasCompletedOnboarding]);
   
   const goToNextSlide = useCallback(() => {

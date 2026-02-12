@@ -74,17 +74,32 @@ export default function TwitterOAuthCallback() {
             });
           }
         }
-        // 状態更新完了後にナビゲーション（根本的解決: 確実に実行される）
         setNeedOnboarding(false);
-        // 少し待ってからナビゲーション（状態更新の確実な反映を待つ）
+        const url = savedReturnUrl;
         setTimeout(() => {
-          navigateReplace.withUrl(savedReturnUrl);
+          navigateReplace.withUrl(url);
+          // Web: router.replace が効かない場合のフォールバック
+          if (Platform.OS === "web" && typeof window !== "undefined") {
+            const targetPath = url.startsWith("/(tabs)/") ? url.replace("/(tabs)/", "/") : url;
+            setTimeout(() => {
+              if (window.location.pathname.includes("oauth")) {
+                window.location.href = targetPath || "/mypage";
+              }
+            }, 400);
+          }
         }, 100);
       } catch (error) {
         console.error("[Twitter OAuth] Failed to update user info:", error);
-        // エラーが発生してもナビゲーションは実行（ユーザー体験を優先）
         setNeedOnboarding(false);
         navigateReplace.withUrl(savedReturnUrl);
+        if (Platform.OS === "web" && typeof window !== "undefined") {
+          const targetPath = savedReturnUrl.startsWith("/(tabs)/") ? savedReturnUrl.replace("/(tabs)/", "/") : savedReturnUrl;
+          setTimeout(() => {
+            if (window.location.pathname.includes("oauth")) {
+              window.location.href = targetPath || "/mypage";
+            }
+          }, 400);
+        }
       }
     },
     onError: (error) => {
@@ -444,10 +459,10 @@ export default function TwitterOAuthCallback() {
             </View>
             <Pressable
               onPress={async () => {
+                setShowPrefectureList(false); // ドロップダウンを閉じてクリック領域を確保
                 // Webプラットフォームの場合、セッションが確立されているか確認
                 if (Platform.OS === "web" && typeof window !== "undefined") {
                   try {
-                    // セッションが確立されているか確認
                     const me = await Api.getMe();
                     if (!me) {
                       console.error("[Twitter OAuth] Session not established, cannot update profile");
@@ -462,22 +477,23 @@ export default function TwitterOAuthCallback() {
                     return;
                   }
                 }
-                
-                // 根本的解決: onSuccess/onErrorでナビゲーションを処理するため、ここではmutationのみ実行
+
                 updateProfileMutation.mutate({
                   prefecture: onboardingPrefecture || null,
                   gender: onboardingGender,
                 });
               }}
               disabled={updateProfileMutation.isPending}
-              style={{
+              style={({ pressed }) => ({
                 backgroundColor: color.accentPrimary,
                 paddingVertical: 14,
                 borderRadius: 12,
                 alignItems: "center",
                 marginTop: 8,
-                opacity: updateProfileMutation.isPending ? 0.6 : 1,
-              }}
+                opacity: updateProfileMutation.isPending ? 0.6 : pressed ? 0.9 : 1,
+                minHeight: 48,
+                cursor: Platform.OS === "web" ? "pointer" : undefined,
+              })}
             >
               <Text style={{ color: color.textWhite, fontWeight: "600", fontSize: 16 }}>
                 {updateProfileMutation.isPending ? "保存中..." : "確定"}
@@ -493,12 +509,29 @@ export default function TwitterOAuthCallback() {
             )}
             <Pressable
               onPress={() => {
+                setShowPrefectureList(false);
                 setNeedOnboarding(false);
                 navigateReplace.withUrl(savedReturnUrl);
+                // Web: router.replace が効かない場合のフォールバック（500ms後に強制遷移）
+                if (Platform.OS === "web" && typeof window !== "undefined") {
+                  const targetPath = savedReturnUrl.startsWith("/(tabs)/") ? savedReturnUrl.replace("/(tabs)/", "/") : savedReturnUrl;
+                  setTimeout(() => {
+                    if (window.location.pathname.includes("oauth")) {
+                      window.location.href = targetPath || "/mypage";
+                    }
+                  }, 500);
+                }
               }}
-              style={{ alignItems: "center", marginTop: 16 }}
+              style={({ pressed }) => ({
+                alignItems: "center",
+                marginTop: 16,
+                paddingVertical: 12,
+                minHeight: 44,
+                opacity: pressed ? 0.8 : 1,
+                cursor: Platform.OS === "web" ? "pointer" : undefined,
+              })}
             >
-              <Text style={{ color: color.accentPrimary, fontSize: 14 }}>あとで設定する</Text>
+              <Text style={{ color: color.accentPrimary, fontSize: 14, fontWeight: "600" }}>あとで設定する</Text>
             </Pressable>
           </ScrollView>
         )}
