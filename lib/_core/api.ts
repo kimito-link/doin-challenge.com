@@ -87,6 +87,31 @@ export async function getMe(): Promise<{
   }
 }
 
+// Get Twitter profile (profileImage, username, description, followersCount) for display in create form etc.
+export async function getTwitterProfile(): Promise<{
+  twitterId?: string;
+  name?: string;
+  username?: string;
+  profileImage?: string;
+  followersCount?: number;
+  description?: string;
+} | null> {
+  try {
+    const result = await apiCall<{
+      twitterId?: string;
+      name?: string;
+      username?: string;
+      profileImage?: string;
+      followersCount?: number;
+      description?: string;
+    }>("/api/twitter/me");
+    return result || null;
+  } catch (error) {
+    console.error("[API] getTwitterProfile failed:", error);
+    return null;
+  }
+}
+
 // Establish session cookie on the backend (3000-xxx domain)
 // Called after receiving token via postMessage to get a proper Set-Cookie from the backend
 export async function establishSession(token: string): Promise<boolean> {

@@ -64,6 +64,23 @@ export function useAuth(options?: UseAuthOptions) {
         if (cachedUser) {
           setUser(cachedUser);
           cachedAuthState = { user: cachedUser, timestamp: Date.now() };
+          // キャッシュにプロフィールが無い場合、バックグラウンドで取得して補完
+          if (!cachedUser.profileImage && !cachedUser.username) {
+            Api.getTwitterProfile().then((twitterProfile) => {
+              if (twitterProfile) {
+                const enriched: Auth.User = {
+                  ...cachedUser,
+                  username: twitterProfile.username ?? cachedUser.username,
+                  profileImage: twitterProfile.profileImage ?? cachedUser.profileImage,
+                  followersCount: twitterProfile.followersCount ?? cachedUser.followersCount,
+                  description: twitterProfile.description ?? cachedUser.description,
+                };
+                setUser(enriched);
+                cachedAuthState = { user: enriched, timestamp: Date.now() };
+                Auth.setUserInfo(enriched);
+              }
+            });
+          }
           return;
         }
         
@@ -85,16 +102,22 @@ export function useAuth(options?: UseAuthOptions) {
         }
 
         if (apiUser) {
+          // チャレンジ作成画面などのプロフィール表示用に Twitter プロフィールを取得
+          const twitterProfile = await Api.getTwitterProfile();
           const userInfo: Auth.User = {
             id: apiUser.id,
             openId: apiUser.openId,
-            name: apiUser.name,
+            name: apiUser.name ?? twitterProfile?.name ?? null,
             email: apiUser.email,
             loginMethod: apiUser.loginMethod,
             lastSignedIn: new Date(apiUser.lastSignedIn),
             prefecture: apiUser.prefecture ?? null,
             gender: apiUser.gender ?? null,
             role: apiUser.role ?? undefined,
+            username: twitterProfile?.username,
+            profileImage: twitterProfile?.profileImage,
+            followersCount: twitterProfile?.followersCount,
+            description: twitterProfile?.description,
           };
           setUser(userInfo);
           cachedAuthState = { user: userInfo, timestamp: Date.now() };

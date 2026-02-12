@@ -220,30 +220,42 @@ async function startServer() {
       };
 
       let dbStatus: { connected: boolean; latency: number; error: string; challengesCount?: number } = { connected: false, latency: 0, error: "" };
+      const DB_CHECK_RETRIES = 2; // 一時的な接続ブレ対策（cold start、ネットワーク揺れ）
       try {
         const { getDb, sql } = await import("../db");
         const startTime = Date.now();
         const db = await getDb();
         if (db) {
           try {
-            // シンプルな接続テストクエリ（タイムアウト付き）
-            const queryPromise = db.execute(sql`SELECT 1`);
-            const timeoutPromise = new Promise((_, reject) => 
-              setTimeout(() => reject(new Error("Query timeout after 10 seconds")), 10000)
-            );
-            
-            await Promise.race([queryPromise, timeoutPromise]);
-            
+            let lastErr: Error | null = null;
+            for (let attempt = 1; attempt <= DB_CHECK_RETRIES; attempt++) {
+              try {
+                const queryPromise = db.execute(sql`SELECT 1`);
+                const timeoutPromise = new Promise((_, reject) =>
+                  setTimeout(() => reject(new Error("Query timeout after 10 seconds")), 10000)
+                );
+                await Promise.race([queryPromise, timeoutPromise]);
+                lastErr = null;
+                break;
+              } catch (queryErr) {
+                lastErr = queryErr instanceof Error ? queryErr : new Error(String(queryErr));
+                if (attempt < DB_CHECK_RETRIES) {
+                  console.warn("[health] DB check attempt", attempt, "failed, retrying in 2s:", lastErr.message);
+                  await new Promise((r) => setTimeout(r, 2000));
+                }
+              }
+            }
+            if (lastErr) throw lastErr;
+
             let challengesCount = 0;
             try {
               const r = await db.execute(sql`SELECT COUNT(*) AS c FROM challenges WHERE "isPublic" = true`);
               const rows = (r as unknown as { rows?: Array<{ c: string }> })?.rows ?? (Array.isArray(r) ? r : []);
               challengesCount = rows.length ? Number((rows[0] as { c: string })?.c ?? 0) : 0;
             } catch (countErr) {
-              // テーブルが無い等は 0 のまま
               console.warn("[health] Failed to count challenges:", countErr);
             }
-            
+
             dbStatus = {
               connected: true,
               latency: Date.now() - startTime,
@@ -272,6 +284,7 @@ async function startServer() {
               error: cleanMessage,
               originalError: errorMessage,
               stack: queryErr instanceof Error ? queryErr.stack : undefined,
+              timestamp: new Date().toISOString(), // インシデント調査用
             });
             
             dbStatus = {

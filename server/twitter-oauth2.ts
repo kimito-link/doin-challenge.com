@@ -259,8 +259,8 @@ export async function refreshAccessToken(refreshToken: string): Promise<{
 // メモリに即座に保存し、バックグラウンドでデータベースにも保存
 export async function storePKCEData(state: string, codeVerifier: string, callbackUrl: string): Promise<void> {
   // メモリに即座に保存（高速）
-  // ガイド推奨: state有効期限は10分（タイミング攻撃・リプレイ攻撃ウィンドウ制限）
-  const STATE_TTL_MS = 10 * 60 * 1000; // 10分
+  // ガイド推奨: 5-10分。ユーザー体験のため30分に延長（Invalid or expired state 対策）
+  const STATE_TTL_MS = 30 * 60 * 1000; // 30分
   pkceMemoryStore.set(state, { codeVerifier, callbackUrl });
   setTimeout(() => pkceMemoryStore.delete(state), STATE_TTL_MS);
   console.log("[PKCE] Stored PKCE data in memory for state:", state.substring(0, 8) + "...");
@@ -274,7 +274,7 @@ export async function storePKCEData(state: string, codeVerifier: string, callbac
         return;
       }
       
-      // Set expiration to 10 minutes from now (guide: 5-10 minutes)
+      // Set expiration to 30 minutes from now (user experience; guide allows 5-10 min)
       const expiresAt = new Date(Date.now() + STATE_TTL_MS);
       
       // Clean up expired entries first (non-blocking)
