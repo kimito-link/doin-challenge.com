@@ -9,7 +9,7 @@ type InsertEvent = InsertChallenge;
 /**
  * 本番DBに確実に存在するカラムのみを指定するセーフセレクト
  * aiSummary, intentTags, regionSummary, participantSummary, aiSummaryUpdatedAt は
- * 本番DBに存在しない可能性があるため除外
+ * 本番DBに存在しない可能性があるため、NULLリテラルで返す（型互換性を維持）
  */
 const safeEventColumns = {
   id: events.id,
@@ -41,6 +41,12 @@ const safeEventColumns = {
   isPublic: events.isPublic,
   createdAt: events.createdAt,
   updatedAt: events.updatedAt,
+  // AI関連カラム: 本番DBに存在しない可能性があるため、NULLリテラルで返す
+  aiSummary: sql<string | null>`NULL`.as("aiSummary"),
+  intentTags: sql<string[] | null>`NULL`.as("intentTags"),
+  regionSummary: sql<Record<string, number> | null>`NULL`.as("regionSummary"),
+  participantSummary: sql<{ totalCount: number; topContributors: Array<{ name: string; contribution: number; message?: string }>; recentMessages: Array<{ name: string; message: string; createdAt: string }>; hotRegion?: string } | null>`NULL`.as("participantSummary"),
+  aiSummaryUpdatedAt: sql<Date | null>`NULL`.as("aiSummaryUpdatedAt"),
 } as const;
 
 // サーバーサイドメモリキャッシュ（パフォーマンス最適化）
