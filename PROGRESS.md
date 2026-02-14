@@ -30,21 +30,29 @@
      - 連続タップ防止
    - UI/UX改善チェックリスト作成 (`UI_UX_IMPROVEMENTS.md`)
 
+4. **UI状態表示コンポーネントの作成** (進行中)
+   - エラー状態コンポーネント (`components/ui/error-state.tsx`)
+     - ErrorState, NetworkErrorState, DataErrorState, PermissionErrorState
+   - 空の状態コンポーネント (`components/ui/empty-state.tsx`)
+     - EmptyState, NoChallengesState, NoSearchResultsState, NoFavoritesState, NoParticipationsState
+   - ローディング状態コンポーネント (`components/ui/loading-state.tsx`)
+     - LoadingState, SkeletonPlaceholder, CardSkeleton, ListSkeleton
+
 #### 次の作業予定
 
-1. **既存のPressableをTouchableに置き換え**
-   - 390箇所のPressableを段階的に置き換え
-   - 優先順位: ボタン → カード → アイコン
+1. **既存の画面にUI状態コンポーネントを適用**
+   - ホーム画面、チャレンジ詳細、マイページなど
+   - エラー時の再試行ボタンを追加
+   - 空の状態に適切なメッセージとアクションを表示
 
 2. **フォーム入力の改善**
    - KeyboardAvoidingViewの最適化
    - エラーメッセージの表示位置調整
    - プレースホルダーテキストの具体化
 
-3. **エラーハンドリングの強化**
-   - ネットワークエラー時の再試行ボタン
-   - 空の状態に適切なメッセージ
-   - ローディング状態の明確化
+3. **既存のPressableをTouchableに置き換え**
+   - 390箇所のPressableを段階的に置き換え
+   - 優先順位: ボタン → カード → アイコン
 
 #### 技術的な課題
 
