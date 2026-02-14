@@ -127,14 +127,8 @@ function OnboardingWrapper({ children }: { children: React.ReactNode }) {
     return <>{children}</>;
   }
   
-  // オンボーディング状態が確認中の場合はローディング画面を表示
-  if (hasCompletedOnboarding === null) {
-    return (
-      <View style={{ flex: 1, backgroundColor: color.bg, justifyContent: "center", alignItems: "center" }}>
-        <ActivityIndicator size="large" color={color.textWhite} />
-      </View>
-    );
-  }
+  // オンボーディング状態が確認中の場合もアプリを表示（ブロッキング回避）
+  // ※ Web環境ではlocalStorageから同期取得されるためnullになることは稀
   
   // オンボーディング未完了の場合はオンボーディング画面を表示
   if (!hasCompletedOnboarding) {
@@ -154,8 +148,8 @@ export default function RootLayout() {
 
   // Initialize Manus runtime for cookie injection from parent container
   useEffect(() => {
-    // Initialize Sentry for error tracking
-    initSentry();
+    // Sentry初期化を遅延実行（初期レンダリングをブロックしない）
+    const sentryTimer = setTimeout(() => { initSentry(); }, 2000);
     initManusRuntime();
     // 重要な画像をプリロード（キャラクター等）
     preloadCriticalImages();
@@ -168,6 +162,7 @@ export default function RootLayout() {
     // APIオフラインキューのネットワーク監視を開始
     startNetworkMonitoring();
     return () => {
+      clearTimeout(sentryTimer);
       unsubscribeSync();
       stopNetworkMonitoring();
     };

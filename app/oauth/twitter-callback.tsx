@@ -378,7 +378,7 @@ export default function TwitterOAuthCallback() {
     };
 
     handleCallback();
-  }, [params.data, params.error]);
+  }, [params.data, params.error, params.sessionToken]);
 
   return (
     <SafeAreaView className="flex-1 bg-background" edges={["top", "bottom", "left", "right"]}>
