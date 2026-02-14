@@ -10,6 +10,8 @@ import { useColors } from "@/hooks/use-colors";
 import { AppHeader } from "@/components/organisms/app-header";
 import { LogoutConfirmModal } from "@/components/molecules/logout-confirm-modal";
 import { LoginModal } from "@/components/common/LoginModal";
+import { DataErrorState } from "@/components/ui/error-state";
+import { NoChallengesState, NoParticipationsState } from "@/components/ui/empty-state";
 import { MypageSkeleton } from "@/components/organisms/mypage-skeleton";
 import { AccountSwitcher } from "@/components/organisms/account-switcher";
 import { 
@@ -71,6 +73,9 @@ export default function MyPageScreen() {
           onLogin={mypageActions.handleLogin}
           onPatternChange={mypageActions.setLoginPattern}
         />
+      ) : mypageData.hasError ? (
+        // エラー状態
+        <DataErrorState onRetry={() => mypageData.refetch()} />
       ) : (
         // ログイン済み状態
         <AuthenticatedContent

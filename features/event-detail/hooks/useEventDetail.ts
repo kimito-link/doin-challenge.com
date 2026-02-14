@@ -55,6 +55,10 @@ interface UseEventDetailReturn {
   challengeLoading: boolean;
   participationsLoading: boolean;
   
+  // Error states
+  hasError: boolean;
+  error: Error | null;
+  
   // User & Auth
   user: ReturnType<typeof useAuth>["user"];
   login: ReturnType<typeof useAuth>["login"];
@@ -82,14 +86,18 @@ export function useEventDetail({ challengeId }: UseEventDetailOptions): UseEvent
   const { 
     data: challenge, 
     isLoading: challengeLoading,
-    isFetching: challengeFetching
+    isFetching: challengeFetching,
+    error: challengeError,
+    isError: hasChallengeError
   } = trpc.events.getById.useQuery({ id: challengeId });
   
   const { 
     data: participations, 
     isLoading: participationsLoading,
     isFetching: participationsFetching,
-    refetch: refetchParticipations 
+    refetch: refetchParticipations,
+    error: participationsError,
+    isError: hasParticipationsError
   } = trpc.participations.listByEvent.useQuery({ eventId: challengeId });
   
   // 参加方法別集計
@@ -248,6 +256,10 @@ export function useEventDetail({ challengeId }: UseEventDetailOptions): UseEvent
     isLoading: (challengeLoading || participationsLoading) && !challenge,
     challengeLoading,
     participationsLoading,
+    
+    // Error states
+    hasError: hasChallengeError || hasParticipationsError,
+    error: (challengeError || participationsError) as Error | null,
     
     // User & Auth
     user,

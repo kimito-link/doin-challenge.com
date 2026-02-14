@@ -22,6 +22,7 @@ import { FanProfileModal } from "@/components/organisms/fan-profile-modal";
 import { SharePromptModal } from "@/components/molecules/share-prompt-modal";
 import { RefreshingIndicator } from "@/components/molecules/refreshing-indicator";
 import { LinkSpeech } from "@/components/organisms/link-speech";
+import { DataErrorState } from "@/components/ui/error-state";
 import {
   MessagesSection,
   ConfirmationModal,
@@ -88,6 +89,16 @@ export default function ChallengeDetailScreen() {
     refetch: eventDetail.refetch,
   });
 
+  // Error state
+  if (eventDetail.hasError && !eventDetail.hasData) {
+    return (
+      <ScreenContainer containerClassName="bg-background">
+        <AppHeader title="チャレンジ詳細" showBackButton />
+        <DataErrorState onRetry={() => eventDetail.refetch()} />
+      </ScreenContainer>
+    );
+  }
+  
   // Loading state (初回のみスケルトン表示)
   if (eventDetail.isInitialLoading) {
     return <EventDetailSkeleton />;

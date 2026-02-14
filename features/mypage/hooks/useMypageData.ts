@@ -21,16 +21,31 @@ interface UseMypageDataReturn {
   myBadges: any[] | undefined;
   invitationStats: any | undefined;
   totalContribution: number;
+  
+  // Error states
+  hasError: boolean;
+  error: Error | null;
+  refetch: () => Promise<void>;
 }
 
 export function useMypageData(): UseMypageDataReturn {
   const { user, loading, login, logout, isAuthenticated } = useAuth();
   
-  const { data: myChallenges } = trpc.events.myEvents.useQuery(undefined, {
+  const { 
+    data: myChallenges,
+    error: challengesError,
+    isError: hasChallengesError,
+    refetch: refetchChallenges
+  } = trpc.events.myEvents.useQuery(undefined, {
     enabled: isAuthenticated,
   });
 
-  const { data: myParticipations } = trpc.participations.myParticipations.useQuery(undefined, {
+  const { 
+    data: myParticipations,
+    error: participationsError,
+    isError: hasParticipationsError,
+    refetch: refetchParticipations
+  } = trpc.participations.myParticipations.useQuery(undefined, {
     enabled: isAuthenticated,
   });
 
@@ -47,6 +62,13 @@ export function useMypageData(): UseMypageDataReturn {
     return myParticipations?.reduce((sum, p) => sum + (p.contribution || 1), 0) || 0;
   }, [myParticipations]);
 
+  const refetch = async () => {
+    await Promise.all([
+      refetchChallenges(),
+      refetchParticipations(),
+    ]);
+  };
+  
   return {
     // Auth
     user,
@@ -61,5 +83,10 @@ export function useMypageData(): UseMypageDataReturn {
     myBadges,
     invitationStats,
     totalContribution,
+    
+    // Error states
+    hasError: hasChallengesError || hasParticipationsError,
+    error: (challengesError || participationsError) as Error | null,
+    refetch,
   };
 }

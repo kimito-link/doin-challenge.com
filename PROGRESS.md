@@ -38,16 +38,21 @@
    - ローディング状態コンポーネント (`components/ui/loading-state.tsx`)
      - LoadingState, SkeletonPlaceholder, CardSkeleton, ListSkeleton
 
-5. **ホーム画面にUI状態コンポーネントを適用** (進行中)
+5. **ホーム画面にUI状態コンポーネントを適用** (完了)
    - useHomeDataフックにエラーハンドリングを追加 (hasError, error)
    - ホーム画面にDataErrorStateとLoadingStateを追加
    - エラー時の再試行ボタンを実装
 
+6. **チャレンジ詳細画面とマイページにUI状態コンポーネントを適用** (完了)
+   - useEventDetailフックにエラーハンドリングを追加 (hasError, error)
+   - チャレンジ詳細画面にDataErrorStateを追加
+   - useMypageDataフックにエラーハンドリングとrefetchを追加
+   - マイページにDataErrorStateを追加
+
 #### 次の作業予定
 
-1. **他の画面にUI状態コンポーネントを適用**
-   - チャレンジ詳細、マイページ、検索画面など
-   - 空の状態に適切なメッセージとアクションを表示
+1. **検索画面に空の状態表示を追加**
+   - NoSearchResultsStateを表示し、検索条件の変更を促す
 
 2. **フォーム入力の改善**
    - KeyboardAvoidingViewの最適化
