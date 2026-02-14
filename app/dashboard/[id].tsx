@@ -1,5 +1,5 @@
-import { Text, View, Pressable, ScrollView, Dimensions , Platform} from "react-native";
-import * as Haptics from "expo-haptics";
+import { Text, View, Pressable, ScrollView, Dimensions } from "react-native";
+import { commonCopy } from "@/constants/copy/common";
 import { color, palette } from "@/theme/tokens";
 import { useLocalSearchParams } from "expo-router";
 import { navigateBack } from "@/lib/navigation/app-routes";
@@ -12,11 +12,16 @@ import { useMemo } from "react";
 import { AppHeader } from "@/components/organisms/app-header";
 import { ExportButton } from "@/components/molecules/export-button";
 import { RefreshingIndicator } from "@/components/molecules/refreshing-indicator";
-import type { ExportData } from "@/lib/export-stats";
 import type { Challenge } from "@/drizzle/schema";
 import { ParticipantRanking } from "@/components/organisms/participant-ranking";
 
 const { width: screenWidth } = Dimensions.get("window");
+
+// 透明度を16進数に変換するヘルパー関数
+function opacityToHex(opacity: number): string {
+  const hex = Math.round(opacity * 255).toString(16).padStart(2, "0").toUpperCase();
+  return hex;
+}
 
 // ダッシュボード用地域グループ（色付き）
 // 注: 共通のdashboardRegionGroupsとは分割が異なる（北海道が単独、東北が別）
@@ -75,17 +80,17 @@ function TimeHeatmap({ participations }: { participations: Participation[] }) {
                 margin: 1,
                 borderRadius: 4,
                 backgroundColor: count > 0 
-                  ? `rgba(236, 72, 153, ${0.2 + intensity * 0.8})` 
+                  ? palette.pink500 + opacityToHex(0.2 + intensity * 0.8) 
                   : color.surface,
                 alignItems: "center",
                 justifyContent: "center",
               }}
             >
-              <Text style={{ color: count > 0 ? color.textWhite : color.textSubtle, fontSize: 10 }}>
+              <Text style={{ color: count > 0 ? color.textWhite : color.textSubtle, fontSize: 11 }}>
                 {hour}時
               </Text>
               {count > 0 && (
-                <Text style={{ color: color.textWhite, fontSize: 10, fontWeight: "bold" }}>
+                <Text style={{ color: color.textWhite, fontSize: 11, fontWeight: "bold" }}>
                   {count}
                 </Text>
               )}
@@ -178,17 +183,17 @@ function DailyTrendChart({ participations }: { participations: Participation[] }
           {dailyData.length <= 7 ? (
             dailyData.map((d, index) => (
               <View key={d.date} style={{ flex: 1, alignItems: "center" }}>
-                <Text style={{ color: color.textSubtle, fontSize: 8 }}>
+                <Text style={{ color: color.textSubtle, fontSize: 11 }}>
                   {d.date.slice(5)}
                 </Text>
               </View>
             ))
           ) : (
             <>
-              <Text style={{ color: color.textSubtle, fontSize: 10, flex: 1 }}>
+              <Text style={{ color: color.textSubtle, fontSize: 11, flex: 1 }}>
                 {dailyData[0]?.date.slice(5)}
               </Text>
-              <Text style={{ color: color.textSubtle, fontSize: 10, flex: 1, textAlign: "right" }}>
+              <Text style={{ color: color.textSubtle, fontSize: 11, flex: 1, textAlign: "right" }}>
                 {dailyData[dailyData.length - 1]?.date.slice(5)}
               </Text>
             </>
@@ -250,7 +255,7 @@ function RegionPieChart({ participations }: { participations: Participation[] })
           🗾 地域分布
         </Text>
         <View style={{ backgroundColor: color.surface, borderRadius: 8, padding: 24, alignItems: "center" }}>
-          <Text style={{ color: color.textSubtle }}>地域データがありません</Text>
+          <Text style={{ color: color.textSubtle }}>{commonCopy.empty.noRegionData}</Text>
         </View>
       </View>
     );
@@ -342,7 +347,7 @@ function PrefectureRanking({ participations }: { participations: Participation[]
                 marginRight: 12,
               }}
             >
-              <Text style={{ color: index < 3 ? "#000" : color.textWhite, fontSize: 12, fontWeight: "bold" }}>
+              <Text style={{ color: index < 3 ? palette.gray900 : color.textWhite, fontSize: 12, fontWeight: "bold" }}>
                 {index + 1}
               </Text>
             </View>

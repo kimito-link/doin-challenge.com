@@ -1,5 +1,5 @@
 import { Tabs } from "expo-router";
-import { color, palette } from "@/theme/tokens";
+import { color } from "@/theme/tokens";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 import { HapticTab } from "@/components/atoms/haptic-tab";

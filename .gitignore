@@ -42,12 +42,15 @@ app-example
 /ios
 /android
 
-# IDE
+# IDE / 一時ファイル
 .vscode/
 .idea/
+.claude/
 *.swp
 *.swo
 *~
+*.bak
+*.backup
 
 # Logs
 logs

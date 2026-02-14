@@ -109,10 +109,12 @@ describe("useOfflineChallenge", () => {
         await result.current.submit(mockChallengeData);
       });
 
+      // events.create は認証必須のため hostTwitterId はサーバー側で ctx.user から取得（クライアントでは渡さない）
       expect(mockMutate).toHaveBeenCalledWith(
         expect.objectContaining({
           title: mockChallengeData.title,
-          hostTwitterId: mockChallengeData.hostTwitterId,
+          hostName: mockChallengeData.hostName,
+          eventDate: mockChallengeData.eventDate,
         })
       );
     });

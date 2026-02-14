@@ -1,11 +1,11 @@
 import { View, Text, Pressable, Modal, StyleSheet, Platform, Alert } from "react-native";
+import { commonCopy } from "@/constants/copy/common";
 import { color, palette } from "@/theme/tokens";
 import { useState, useCallback } from "react";
 import MaterialIcons from "@expo/vector-icons/MaterialIcons";
 import * as Haptics from "expo-haptics";
 import {
   generateCSV,
-  generateTextReport,
   shareCSV,
   shareTextReport,
   copyToClipboard,
@@ -60,7 +60,7 @@ export function ExportButton({ data, disabled = false }: ExportButtonProps) {
             if (Platform.OS !== "web") {
               Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
             }
-            Alert.alert("コピー完了", "統計データをクリップボードにコピーしました");
+            Alert.alert(commonCopy.alerts.copyDone, "統計データをクリップボードにコピーしました");
           }
           break;
       }
@@ -70,7 +70,7 @@ export function ExportButton({ data, disabled = false }: ExportButtonProps) {
       }
     } catch (error) {
       console.error("[ExportButton] Export failed:", error);
-      Alert.alert("エラー", "エクスポートに失敗しました");
+      Alert.alert(commonCopy.alerts.error, "エクスポートに失敗しました");
     } finally {
       setExporting(false);
     }
@@ -227,7 +227,7 @@ const styles = StyleSheet.create({
   },
   modalOverlay: {
     flex: 1,
-    backgroundColor: "rgba(0, 0, 0, 0.7)",
+    backgroundColor: palette.black + "B3",
     justifyContent: "center",
     alignItems: "center",
     padding: 24,
@@ -292,7 +292,7 @@ const styles = StyleSheet.create({
     left: 0,
     right: 0,
     bottom: 0,
-    backgroundColor: "rgba(0, 0, 0, 0.8)",
+    backgroundColor: palette.black + "CC",
     alignItems: "center",
     justifyContent: "center",
   },

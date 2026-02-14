@@ -7,11 +7,13 @@
  */
 
 import { View, Text } from "react-native";
+import { useState } from "react";
 import { useColors } from "@/hooks/use-colors";
 import { Image } from "expo-image";
 import { Button } from "@/components/ui/button";
+import { color } from "@/theme/tokens";
 
-const rinkuImage = require("@/assets/images/characters/rinku.png");
+const rinkuImage = require("@/assets/images/characters/link/link-yukkuri-smile-mouth-open.png");
 
 export interface ErrorScreenProps {
   message?: string;
@@ -21,6 +23,7 @@ export interface ErrorScreenProps {
 
 export function ErrorScreen({ message, onRetry, onBack }: ErrorScreenProps) {
   const colors = useColors();
+  const [imageError, setImageError] = useState(false);
 
   const displayMessage = message || "ログイン中にエラーが発生しました。もう一度お試しください。";
 
@@ -35,11 +38,29 @@ export function ErrorScreen({ message, onRetry, onBack }: ErrorScreenProps) {
       }}
     >
       {/* りんくキャラクター */}
-      <Image
-        source={rinkuImage}
-        style={{ width: 120, height: 120, marginBottom: 24 }}
-        contentFit="contain"
-      />
+      {!imageError ? (
+        <Image
+          source={rinkuImage}
+          style={{ width: 120, height: 120, marginBottom: 24 }}
+          contentFit="contain"
+          onError={() => setImageError(true)}
+          cachePolicy="memory-disk"
+        />
+      ) : (
+        <View
+          style={{
+            width: 120,
+            height: 120,
+            marginBottom: 24,
+            borderRadius: 60,
+            backgroundColor: color.accentPrimary,
+            alignItems: "center",
+            justifyContent: "center",
+          }}
+        >
+          <Text style={{ color: "white", fontSize: 48, fontWeight: "bold" }}>り</Text>
+        </View>
+      )}
 
       {/* エラーメッセージ */}
       <View

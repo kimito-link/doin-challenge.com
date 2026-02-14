@@ -1,8 +1,9 @@
 import { useState, useEffect } from "react";
 import { View, Text, Pressable, Platform } from "react-native";
 import AsyncStorage from "@react-native-async-storage/async-storage";
-import { useRouter } from "expo-router";
 import { useColors } from "@/hooks/use-colors";
+import { color, palette } from "@/theme/tokens";
+import { navigate } from "@/lib/navigation";
 
 const STORAGE_KEY = "@install_prompt_dismissed";
 
@@ -17,7 +18,6 @@ const STORAGE_KEY = "@install_prompt_dismissed";
 export function InstallPrompt() {
   const [showPrompt, setShowPrompt] = useState(false);
   const [isStandalone, setIsStandalone] = useState(false);
-  const router = useRouter();
   const colors = useColors();
 
   useEffect(() => {
@@ -54,7 +54,7 @@ export function InstallPrompt() {
   };
 
   const handleShowInstructions = () => {
-    router.push("/install-instructions" as any);
+    navigate.toInstallInstructions();
   };
 
   if (!showPrompt || isStandalone) {
@@ -71,7 +71,7 @@ export function InstallPrompt() {
         backgroundColor: colors.primary,
         borderRadius: 12,
         padding: 16,
-        shadowColor: "#000",
+        shadowColor: palette.gray900,
         shadowOffset: { width: 0, height: 4 },
         shadowOpacity: 0.3,
         shadowRadius: 8,
@@ -81,10 +81,10 @@ export function InstallPrompt() {
     >
       <View style={{ flexDirection: "row", justifyContent: "space-between", alignItems: "flex-start" }}>
         <View style={{ flex: 1 }}>
-          <Text style={{ fontSize: 16, fontWeight: "bold", color: "#fff", marginBottom: 4 }}>
+          <Text style={{ fontSize: 16, fontWeight: "bold", color: color.textWhite, marginBottom: 4 }}>
             📱 ホーム画面に追加
           </Text>
-          <Text style={{ fontSize: 14, color: "#fff", opacity: 0.9 }}>
+          <Text style={{ fontSize: 14, color: color.textWhite + "E6" }}>
             アプリのように使えます
           </Text>
         </View>
@@ -95,7 +95,7 @@ export function InstallPrompt() {
             opacity: pressed ? 0.6 : 1,
           })}
         >
-          <Text style={{ fontSize: 20, color: "#fff", fontWeight: "bold" }}>×</Text>
+          <Text style={{ fontSize: 20, color: color.textWhite, fontWeight: "bold" }}>×</Text>
         </Pressable>
       </View>
 
@@ -104,7 +104,7 @@ export function InstallPrompt() {
           onPress={handleShowInstructions}
           style={({ pressed }) => ({
             flex: 1,
-            backgroundColor: "#fff",
+            backgroundColor: color.textWhite,
             paddingVertical: 10,
             paddingHorizontal: 16,
             borderRadius: 8,
@@ -123,7 +123,7 @@ export function InstallPrompt() {
             flex: 1,
             backgroundColor: "transparent",
             borderWidth: 1,
-            borderColor: "#fff",
+            borderColor: color.textWhite,
             paddingVertical: 10,
             paddingHorizontal: 16,
             borderRadius: 8,
@@ -131,7 +131,7 @@ export function InstallPrompt() {
             opacity: pressed ? 0.8 : 1,
           })}
         >
-          <Text style={{ color: "#fff", fontWeight: "600", fontSize: 14 }}>
+          <Text style={{ color: color.textWhite, fontWeight: "600", fontSize: 14 }}>
             後で
           </Text>
         </Pressable>

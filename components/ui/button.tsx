@@ -11,7 +11,6 @@ import {
   Platform, 
   StyleSheet,
   type ViewStyle,
-  type TextStyle,
 } from "react-native";
 import MaterialIcons from "@expo/vector-icons/MaterialIcons";
 import * as Haptics from "expo-haptics";
@@ -19,7 +18,6 @@ import Animated, {
   useSharedValue, 
   useAnimatedStyle, 
   withSpring,
-  withTiming,
 } from "react-native-reanimated";
 import { color, palette } from "@/theme/tokens";
 
@@ -66,22 +64,22 @@ const variantStyles = {
     bg: "transparent",
     text: color.accentPrimary,
     border: color.accentPrimary,
-    activeBg: "rgba(236, 72, 153, 0.1)",
-    hoverBg: "rgba(236, 72, 153, 0.15)",
+    activeBg: color.accentPrimary + "1A", // 10% opacity
+    hoverBg: color.accentPrimary + "26", // 15% opacity
   },
   ghost: {
     bg: "transparent",
     text: color.textMuted,
     border: "transparent",
-    activeBg: "rgba(255, 255, 255, 0.1)",
-    hoverBg: "rgba(255, 255, 255, 0.05)",
+    activeBg: color.textWhite + "1A", // 10% opacity
+    hoverBg: color.textWhite + "0D", // 5% opacity
   },
   destructive: {
     bg: color.danger,
     text: color.textWhite,
     border: "transparent",
     activeBg: color.dangerDark,
-    hoverBg: "#dc2626",
+    hoverBg: palette.red600, // #dc2626
   },
 };
 
@@ -478,7 +476,7 @@ const styles = StyleSheet.create({
     backgroundColor: color.accentPrimary,
     alignItems: "center",
     justifyContent: "center",
-    shadowColor: "#000",
+    shadowColor: palette.gray900, // #000 → 黒ベースの背景色
     shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.3,
     shadowRadius: 8,
@@ -490,7 +488,7 @@ const styles = StyleSheet.create({
     paddingVertical: 6,
     borderRadius: 8,
     marginRight: 12,
-    shadowColor: "#000",
+    shadowColor: palette.gray900, // #000 → 黒ベースの背景色
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.2,
     shadowRadius: 4,

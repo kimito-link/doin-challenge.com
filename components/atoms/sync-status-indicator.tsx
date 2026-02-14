@@ -1,11 +1,10 @@
 import React, { useEffect, useState } from "react";
-import { View, Text, Pressable, StyleSheet, Platform } from "react-native";
+import { View, Text, Pressable, StyleSheet } from "react-native";
 import Animated, {
   useSharedValue,
   useAnimatedStyle,
   withRepeat,
   withTiming,
-  withSequence,
   Easing,
 } from "react-native-reanimated";
 import { useOfflineSync } from "@/hooks/use-offline-sync";

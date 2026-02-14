@@ -5,7 +5,8 @@
 import { View, Text } from "react-native";
 import { Image } from "expo-image";
 import { useColors } from "@/hooks/use-colors";
-import { homeUI, homeText } from "@/features/home/ui/theme/tokens";
+import { color } from "@/theme/tokens";
+import { homeUI, homeText, homeFont } from "@/features/home/ui/theme/tokens";
 import { useResponsive } from "@/hooks/use-responsive";
 import { useExperience } from "@/lib/experience-context";
 import { Button } from "@/components/ui/button";
@@ -26,7 +27,7 @@ export function ExperienceBanner() {
       }}>
         <Text style={{ 
           color: colors.foreground, 
-          fontSize: 16, 
+          fontSize: homeFont.title, 
           fontWeight: "bold",
           marginBottom: 12,
           textAlign: "center",
@@ -35,7 +36,7 @@ export function ExperienceBanner() {
         </Text>
         <Text style={{ 
           color: homeText.muted, 
-          fontSize: 13,
+          fontSize: homeFont.meta,
           lineHeight: 20,
           textAlign: "center",
           marginBottom: 16,
@@ -45,7 +46,7 @@ export function ExperienceBanner() {
         </Text>
         
         <View style={{ flexDirection: "row", gap: 12 }}>
-          {/* 主催者視点 - りんくちゃん */}
+          {/* りんくといっしょに主催者体験（りんく主役・左） */}
           <Button
             variant="ghost"
             onPress={() => startExperience("organizer")}
@@ -66,23 +67,23 @@ export function ExperienceBanner() {
               contentFit="contain"
             />
             <Text style={{ 
-              color: "#fff", 
-              fontSize: 14, 
+              color: color.textWhite, 
+              fontSize: homeFont.body,
               fontWeight: "bold",
               marginBottom: 4,
             }}>
-              主催者の追体験
+              りんくと主催者体験
             </Text>
             <Text style={{ 
-              color: "rgba(255,255,255,0.8)", 
-              fontSize: 11,
+              color: color.textWhite + "CC", // rgba(255,255,255,0.8) の透明度16進数
+              fontSize: homeFont.meta,
               textAlign: "center",
             }}>
               チャレンジを{"\n"}作る側の体験
             </Text>
           </Button>
           
-          {/* ファン視点 - こん太 */}
+          {/* りんくといっしょにファン体験（りんく主役） */}
           <Button
             variant="ghost"
             onPress={() => startExperience("fan")}
@@ -98,21 +99,21 @@ export function ExperienceBanner() {
             }}
           >
             <Image
-              source={require("@/assets/images/characters/konta/kitsune-yukkuri-smile-mouth-open.png")}
+              source={require("@/assets/images/characters/link/link-yukkuri-smile-mouth-open.png")}
               style={{ width: 48, height: 48, marginBottom: 8 }}
               contentFit="contain"
             />
             <Text style={{ 
-              color: "#fff", 
-              fontSize: 14, 
+              color: color.textWhite, 
+              fontSize: homeFont.body,
               fontWeight: "bold",
               marginBottom: 4,
             }}>
-              ファンの追体験
+              りんくとファン体験
             </Text>
             <Text style={{ 
-              color: "rgba(255,255,255,0.8)", 
-              fontSize: 11,
+              color: color.textWhite + "CC", // rgba(255,255,255,0.8) の透明度16進数
+              fontSize: homeFont.meta,
               textAlign: "center",
             }}>
               参加表明する{"\n"}側の体験

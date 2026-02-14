@@ -5,28 +5,27 @@
  */
 
 import { View, Text, StyleSheet } from "react-native";
-import { color } from "@/theme/tokens";
+import { color, palette } from "@/theme/tokens";
+
+/** 温度グラデーション: 少（ベージュ）→ 多（濃い赤）。最高状態で日本列島が赤く染まる */
+const HEAT_LEVELS = [
+  color.heatmapLevel1,
+  color.heatmapLevel2,
+  color.heatmapLevel3,
+  color.heatmapLevel4,
+  color.heatmapLevel5,
+  color.heatmapLevel6,
+  color.heatmapLevel7,
+] as const;
 
 export function HeatmapLegend() {
   return (
     <View style={styles.legend}>
-      <View style={styles.legendItem}>
-        <View style={[styles.legendColor, { backgroundColor: color.heatmapLevel1 }]} />
-        <Text style={styles.legendText}>少</Text>
-      </View>
-      <View style={styles.legendItem}>
-        <View style={[styles.legendColor, { backgroundColor: color.heatmapLevel2 }]} />
-      </View>
-      <View style={styles.legendItem}>
-        <View style={[styles.legendColor, { backgroundColor: color.heatmapLevel4 }]} />
-      </View>
-      <View style={styles.legendItem}>
-        <View style={[styles.legendColor, { backgroundColor: color.heatmapLevel6 }]} />
-      </View>
-      <View style={styles.legendItem}>
-        <View style={[styles.legendColor, { backgroundColor: color.heatmapLevel7 }]} />
-        <Text style={styles.legendText}>多</Text>
-      </View>
+      <Text style={styles.legendText}>少</Text>
+      {HEAT_LEVELS.map((c, i) => (
+        <View key={i} style={[styles.legendColor, { backgroundColor: c }]} />
+      ))}
+      <Text style={styles.legendText}>多</Text>
     </View>
   );
 }
@@ -37,23 +36,18 @@ const styles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "center",
     marginBottom: 16,
-    gap: 4,
-  },
-  legendItem: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 4,
+    gap: 2,
   },
   legendColor: {
-    width: 24,
-    height: 16,
+    width: 20,
+    height: 14,
     borderRadius: 2,
     borderWidth: 1,
-    borderColor: "#666",
+    borderColor: palette.white + "33", // 20% opacity
   },
   legendText: {
     color: color.textMuted,
-    fontSize: 11,
+    fontSize: 12,
     marginHorizontal: 4,
   },
 });

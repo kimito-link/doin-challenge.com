@@ -33,8 +33,8 @@ export const participationsRouter = router({
     return db.getParticipationsByUserId(ctx.user.id);
   }),
 
-  // 参加登録
-  create: publicProcedure
+  // 参加登録（認証必須 - BUG-006修正）
+  create: protectedProcedure
     .input(z.object({
       challengeId: z.number(),
       message: z.string().optional(),
@@ -42,7 +42,6 @@ export const participationsRouter = router({
       prefecture: z.string().optional(),
       gender: z.enum(["male", "female", "unspecified"]).optional(),
       attendanceType: z.enum(["venue", "streaming", "both"]).default("venue"),
-      twitterId: z.string().optional(),
       displayName: z.string(),
       username: z.string().optional(),
       profileImage: z.string().optional(),
@@ -56,15 +55,12 @@ export const participationsRouter = router({
       invitationCode: z.string().optional(),
     }))
     .mutation(async ({ ctx, input }) => {
-      if (!input.twitterId) {
-        throw new Error("ログインが必要です。Twitterでログインしてください。");
-      }
       
       try {
         const participationId = await db.createParticipation({
           challengeId: input.challengeId,
-          userId: ctx.user?.id,
-          twitterId: input.twitterId,
+          userId: ctx.user.id,
+          twitterId: ctx.user.openId,
           displayName: input.displayName,
           username: input.username,
           profileImage: input.profileImage,

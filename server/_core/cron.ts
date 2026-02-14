@@ -66,6 +66,19 @@ export async function aggregateStats() {
 }
 
 /**
+ * 日次レポートを送信
+ */
+export async function sendDailyApiReport() {
+  try {
+    const { sendDailyReport } = await import("../../server/api-daily-report");
+    await sendDailyReport();
+    console.log("[Cron] Daily API report sent");
+  } catch (error) {
+    console.error("[Cron] Failed to send daily API report:", error);
+  }
+}
+
+/**
  * cron設定を初期化
  * 
  * Note: Vercelではcronジョブは使用できないため、Vercel Cronを使用する必要があります。
@@ -84,6 +97,9 @@ export function initCron() {
   cleanupExpiredOAuthData();
   cleanupExpiredTwitterCache();
   aggregateStats();
+  
+  // 日次レポートは本番環境ではVercel Cron Jobsで実行
+  // 開発環境では手動実行のみ
 
   console.log("[Cron] Cron jobs initialized");
 }

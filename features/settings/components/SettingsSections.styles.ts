@@ -171,7 +171,7 @@ export const settingsStyles = StyleSheet.create({
   },
   moreAccountsText: {
     color: color.textMuted,
-    fontSize: 10,
+    fontSize: 12,
     fontWeight: "600",
   },
   logoutItem: {
@@ -257,7 +257,7 @@ export const settingsStyles = StyleSheet.create({
   },
   footerCopyright: {
     color: color.textSubtle,
-    fontSize: 11,
+    fontSize: 12,
     marginTop: 16,
   },
 });

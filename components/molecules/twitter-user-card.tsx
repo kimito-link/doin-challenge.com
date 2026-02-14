@@ -1,8 +1,35 @@
+/**
+ * Twitterユーザーカード関連コンポーネント（一元管理）
+ *
+ * 使用箇所:
+ * - EventHeaderSection: 主催者表示（TwitterUserCard）
+ * - create UserInfoSection: 作成フォームのユーザー表示（TwitterUserCard）
+ * - user-profile-header: プロフィールヘッダ（TwitterUserCard）
+ * - mypage ProfileCard: マイページプロフィール（TwitterUserCard）
+ * - event-detail UserInfoSection: 参加表明フォームの参加者（TwitterUserCard）
+ * - ConfirmationModal: 参加者・同伴者（TwitterUserCard / TwitterUserCompact）
+ * - SettingsSections: 現在のアカウント（TwitterUserCard）
+ * - TwitterSearchForm: 検索結果プロフィール（TwitterUserCompact）
+ * - admin/components: コンポーネントカタログ
+ *
+ * 他レイアウト（匿名対応・性別・都道府県等）: MessageCard, ParticipantsList, ContributionRanking は
+ * 専用UIのためそのまま。toTwitterUserData で API 型を渡す場合は共通利用可能。
+ */
 import { View, Text, Pressable, StyleSheet } from "react-native";
 import { Image } from "expo-image";
 import { Ionicons } from "@expo/vector-icons";
 import { cn } from "@/lib/utils";
 import { color } from "@/theme/tokens";
+import { palette } from "@/theme/tokens/palette";
+
+/** 性別に応じたアバター枠の色（男=青・女=赤・未設定=透明） */
+function getGenderBorderColor(gender?: "male" | "female" | "unspecified"): string {
+  return gender === "male"
+    ? palette.genderMale
+    : gender === "female"
+      ? palette.genderFemale
+      : "transparent";
+}
 
 export interface TwitterUserData {
   /** Twitter ID (例: "1867512383713030149") */
@@ -17,6 +44,8 @@ export interface TwitterUserData {
   followersCount?: number;
   /** プロフィール文（description） */
   description?: string;
+  /** 性別（アバター枠の色: 男=青・女=赤） */
+  gender?: "male" | "female" | "unspecified";
 }
 
 export interface TwitterUserCardProps {
@@ -94,7 +123,7 @@ export function TwitterUserCard({
 
   const content = (
     <View className={cn("flex-row items-center", className)} style={{ gap: config.gap }}>
-      {/* プロフィール画像 */}
+      {/* プロフィール画像（性別ボーダー: 男=青・女=赤） */}
       <Image
         source={{ uri: user.profileImage || "https://abs.twimg.com/sticky/default_profile_images/default_profile_normal.png" }}
         style={[
@@ -103,6 +132,8 @@ export function TwitterUserCard({
             width: config.avatarSize,
             height: config.avatarSize,
             borderRadius: config.avatarSize / 2,
+            borderWidth: 2,
+            borderColor: getGenderBorderColor(user.gender),
           },
         ]}
         contentFit="cover"
@@ -193,8 +224,9 @@ export function TwitterUserCard({
               lineHeight: config.descriptionSize * 1.5, 
               color: onGradient ? color.textWhite : color.textMuted, 
               marginTop: 4,
-              flexWrap: 'wrap',
             }}
+            numberOfLines={2}
+            ellipsizeMode="tail"
           >
             {user.description}
           </Text>
@@ -243,6 +275,8 @@ export function TwitterUserCompact({
           height: avatarSize,
           borderRadius: avatarSize / 2,
           backgroundColor: color.surfaceDark,
+          borderWidth: 2,
+          borderColor: getGenderBorderColor(user.gender),
         }}
         contentFit="cover"
         transition={200}
@@ -293,6 +327,8 @@ export function TwitterAvatar({
         height: size,
         borderRadius: size / 2,
         backgroundColor: color.surfaceDark,
+        borderWidth: 2,
+        borderColor: getGenderBorderColor(user.gender),
       }}
       contentFit="cover"
       transition={200}
@@ -314,6 +350,30 @@ export function TwitterAvatar({
   }
 
   return image;
+}
+
+/**
+ * API・フォームのユーザー型を TwitterUserData に変換するヘルパー
+ * 参加者・同伴者・設定アカウントなどで共通利用
+ */
+export function toTwitterUserData(o: {
+  name?: string | null;
+  username?: string | null;
+  displayName?: string | null;
+  profileImage?: string | null;
+  followersCount?: number | null;
+  description?: string | null;
+  twitterUsername?: string | null;
+  gender?: "male" | "female" | "unspecified" | null;
+}): TwitterUserData {
+  return {
+    name: (o.name ?? o.displayName ?? "名前未設定") as string,
+    username: (o.username ?? o.twitterUsername ?? undefined) as string | undefined,
+    profileImage: o.profileImage ?? undefined,
+    followersCount: o.followersCount ?? undefined,
+    description: o.description ?? undefined,
+    gender: o.gender ?? undefined,
+  };
 }
 
 const styles = StyleSheet.create({

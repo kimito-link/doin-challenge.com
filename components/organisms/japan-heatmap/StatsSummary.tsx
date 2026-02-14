@@ -54,7 +54,7 @@ const styles = StyleSheet.create({
   },
   statLabel: {
     color: color.textMuted,
-    fontSize: 11,
+    fontSize: 12,
     marginTop: 2,
   },
   statDivider: {

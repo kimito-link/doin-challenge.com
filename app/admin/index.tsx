@@ -2,26 +2,21 @@
  * 運営管理者ダッシュボード
  * 
  * サイト全体を管理するための管理画面
- * アクセス制限: 特定のTwitterアカウント（管理者）のみ
+ * アクセス制限: 管理者セッションまたは管理者権限
  */
 
 import { ScreenContainer } from "@/components/organisms/screen-container";
 import { RefreshingIndicator } from "@/components/molecules/refreshing-indicator";
 import { AppHeader } from "@/components/organisms/app-header";
-import { color, palette } from "@/theme/tokens";
+import { commonCopy } from "@/constants/copy/common";
+import { color } from "@/theme/tokens";
 import { useColors } from "@/hooks/use-colors";
 import { useAuth } from "@/hooks/use-auth";
 import { trpc } from "@/lib/trpc";
-import { View, Text, ScrollView, Pressable, ActivityIndicator, Platform } from "react-native";
+import { View, Text, ScrollView, Pressable, ActivityIndicator } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import MaterialIcons from "@expo/vector-icons/MaterialIcons";
-import * as Haptics from "expo-haptics";
 import { navigate } from "@/lib/navigation/app-routes";
-
-// 管理者のTwitter ID
-const ADMIN_TWITTER_IDS = [
-  "kimito_link", // 君斗りんく
-];
 
 interface StatCard {
   title: string;
@@ -33,16 +28,7 @@ interface StatCard {
 
 export default function AdminDashboard() {
   const colors = useColors();
-  const { user, loading: authLoading } = useAuth();
-
-  const handleHaptic = () => {
-    if (Platform.OS !== "web") {
-      Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-    }
-  };
-
-  // 管理者チェック
-  const isAdmin = user?.username && ADMIN_TWITTER_IDS.includes(user.username);
+  const { user } = useAuth();
 
   // 統計データを取得
   const { data: challenges, isLoading: loadingChallenges, isFetching: fetchingChallenges } = trpc.events.list.useQuery();
@@ -87,72 +73,6 @@ export default function AdminDashboard() {
     },
   ];
 
-  // ローディング中
-  if (authLoading) {
-    return (
-      <ScreenContainer containerClassName="bg-background">
-        <AppHeader title="管理ダッシュボード" />
-        <View className="flex-1 items-center justify-center">
-          <ActivityIndicator size="large" color={color.hostAccentLegacy} />
-        </View>
-      </ScreenContainer>
-    );
-  }
-
-  // 未ログイン
-  if (!user) {
-    return (
-      <ScreenContainer containerClassName="bg-background">
-        <AppHeader title="管理ダッシュボード" />
-        <View className="flex-1 items-center justify-center p-8">
-          <MaterialIcons name="lock" size={64} color={colors.muted} />
-          <Text className="text-xl font-bold text-foreground mt-4 mb-2">
-            ログインが必要です
-          </Text>
-          <Text className="text-sm text-muted text-center mb-6">
-            管理画面にアクセスするにはログインしてください
-          </Text>
-          <Pressable
-            onPress={() => {
-              handleHaptic();
-              navigate.toMypageTab();
-            }}
-            className="bg-primary px-6 py-3 rounded-xl"
-          >
-            <Text className="text-white font-semibold">ログインする</Text>
-          </Pressable>
-        </View>
-      </ScreenContainer>
-    );
-  }
-
-  // 管理者でない
-  if (!isAdmin) {
-    return (
-      <ScreenContainer containerClassName="bg-background">
-        <AppHeader title="管理ダッシュボード" />
-        <View className="flex-1 items-center justify-center p-8">
-          <MaterialIcons name="block" size={64} color={colors.error} />
-          <Text className="text-xl font-bold text-foreground mt-4 mb-2">
-            アクセス権限がありません
-          </Text>
-          <Text className="text-sm text-muted text-center mb-6">
-            この画面は運営管理者のみアクセスできます
-          </Text>
-          <Pressable
-            onPress={() => {
-              handleHaptic();
-              navigate.toHome();
-            }}
-            className="bg-primary px-6 py-3 rounded-xl"
-          >
-            <Text className="text-white font-semibold">ホームに戻る</Text>
-          </Pressable>
-        </View>
-      </ScreenContainer>
-    );
-  }
-
   return (
     <ScreenContainer containerClassName="bg-background">
       <AppHeader title="管理ダッシュボード" />
@@ -164,7 +84,7 @@ export default function AdminDashboard() {
         >
           <MaterialIcons name="admin-panel-settings" size={20} color={color.rankGold} />
           <Text style={{ color: color.rankGold, fontWeight: "600" }}>
-            管理者: @{user.username}
+            管理者: {user?.username ? `@${user.username}` : "未ログイン"}
           </Text>
         </View>
 
@@ -362,7 +282,7 @@ export default function AdminDashboard() {
           ) : (
             <View className="bg-surface rounded-lg p-8 items-center border border-border">
               <Ionicons name="trophy-outline" size={48} color={colors.muted} />
-              <Text className="text-muted mt-2">チャレンジがありません</Text>
+              <Text className="text-muted mt-2">{commonCopy.empty.noChallenges}</Text>
             </View>
           )}
         </View>

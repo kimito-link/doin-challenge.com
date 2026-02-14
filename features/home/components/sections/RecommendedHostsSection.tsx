@@ -7,7 +7,7 @@ import { View, Text, ScrollView } from "react-native";
 import { useState, useEffect } from "react";
 import { navigate } from "@/lib/navigation";
 import { useColors } from "@/hooks/use-colors";
-import { homeUI, homeText } from "@/features/home/ui/theme/tokens";
+import { homeUI, homeText, homeFont } from "@/features/home/ui/theme/tokens";
 import { trpc } from "@/lib/trpc";
 import { OptimizedAvatar } from "@/components/molecules/optimized-image";
 import { Button } from "@/components/ui/button";
@@ -39,7 +39,7 @@ export function RecommendedHostsSection() {
         borderWidth: 1,
         borderColor: homeUI.border,
       }}>
-        <Text style={{ color: homeUI.iconBgPurple, fontSize: 16, fontWeight: "bold", marginBottom: 12 }}>
+        <Text style={{ color: homeUI.iconBgPurple, fontSize: homeFont.title, fontWeight: "bold", marginBottom: 12 }}>
           ✨ おすすめの主催者
         </Text>
         <ScrollView horizontal showsHorizontalScrollIndicator={false}>
@@ -57,15 +57,15 @@ export function RecommendedHostsSection() {
                   fallbackColor={homeUI.iconBgPurple}
                   fallbackText={(host.name || "?").charAt(0)}
                 />
-                <Text style={{ color: colors.foreground, fontSize: 12, marginTop: 6, textAlign: "center" }} numberOfLines={1}>
+                <Text style={{ color: colors.foreground, fontSize: homeFont.meta, marginTop: 6, textAlign: "center" }} numberOfLines={1}>
                   {host.name || "主催者"}
                 </Text>
                 {host.username && (
-                  <Text style={{ color: homeText.muted, fontSize: 10 }} numberOfLines={1}>
+                  <Text style={{ color: homeText.muted, fontSize: homeFont.small }} numberOfLines={1}>
                     @{host.username}
                   </Text>
                 )}
-                <Text style={{ color: homeUI.iconBgPurple, fontSize: 9, marginTop: 2 }}>
+                <Text style={{ color: homeUI.iconBgPurple, fontSize: homeFont.small, marginTop: 2 }}>
                   {host.challengeCount}チャレンジ
                 </Text>
               </Button>

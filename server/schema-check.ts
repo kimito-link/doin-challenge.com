@@ -15,7 +15,7 @@ import { getDb, sql } from "./db";
 // 新しいマイグレーションを追加したら、ここも更新する
 // カラム名はdrizzleスキーマの定義と一致させること
 const EXPECTED_SCHEMA = {
-  version: "0023", // 最新のマイグレーション番号
+  version: "0027", // 最新のマイグレーション番号（api_usage 含む）
   tables: {
     // participationsテーブル: 参加登録
     participations: {
@@ -73,6 +73,31 @@ const EXPECTED_SCHEMA = {
         "updatedAt",
       ],
     },
+    // api_usage: X API 使用量記録（0027）
+    api_usage: {
+      requiredColumns: [
+        "id",
+        "endpoint",
+        "method",
+        "success",
+        "cost",
+        "rateLimitInfo",
+        "month",
+        "createdAt",
+      ],
+    },
+    // api_cost_settings: コスト上限設定（0027）
+    api_cost_settings: {
+      requiredColumns: [
+        "id",
+        "monthlyLimit",
+        "alertThreshold",
+        "alertEmail",
+        "autoStop",
+        "createdAt",
+        "updatedAt",
+      ],
+    },
   },
 };
 
@@ -111,20 +136,19 @@ export async function checkSchemaIntegrity(): Promise<SchemaCheckResult> {
     // 各テーブルのカラムをチェック
     for (const [tableName, tableSpec] of Object.entries(EXPECTED_SCHEMA.tables)) {
       try {
-        // テーブルのカラム情報を取得
+        // テーブルのカラム情報を取得（PostgreSQL）
         const columnsResult = await db.execute(
-          sql`SELECT COLUMN_NAME FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = ${tableName}`
+          sql`SELECT column_name FROM information_schema.columns WHERE table_schema = 'public' AND table_name = ${tableName}`
         );
-
-        // mysql2のexecute結果は[rows, fields]の配列
-        const rows = Array.isArray(columnsResult) ? columnsResult[0] : columnsResult;
+        const raw = columnsResult as unknown as { rows?: Array<{ column_name: string }> } | Array<unknown>;
+        const rows = Array.isArray(raw) ? raw[0] : raw?.rows ?? raw;
         const existingColumns = new Set(
-          (rows as unknown as Array<{ COLUMN_NAME: string }>).map((c) => c.COLUMN_NAME)
+          (rows as unknown as Array<{ column_name: string }>).map((c) => (c.column_name || (c as unknown as { COLUMN_NAME: string }).COLUMN_NAME || "").toLowerCase())
         );
 
-        // 期待するカラムが存在するかチェック
+        // 期待するカラムが存在するかチェック（PostgreSQLは小文字で返すことがある）
         for (const requiredColumn of tableSpec.requiredColumns) {
-          if (!existingColumns.has(requiredColumn)) {
+          if (!existingColumns.has(requiredColumn.toLowerCase())) {
             result.missingColumns.push({
               table: tableName,
               column: requiredColumn,
@@ -138,13 +162,16 @@ export async function checkSchemaIntegrity(): Promise<SchemaCheckResult> {
       }
     }
 
-    // マイグレーション履歴テーブルから最新バージョンを取得
+    // マイグレーション履歴テーブルから最新バージョンを取得（PostgreSQL）
     try {
-      const [migrations] = await db.execute(
-        `SELECT hash FROM __drizzle_migrations ORDER BY created_at DESC LIMIT 1`
+      const migrationsResult = await db.execute(
+        sql`SELECT hash FROM __drizzle_migrations ORDER BY created_at DESC LIMIT 1`
       );
-      if (Array.isArray(migrations) && migrations.length > 0) {
-        result.actualVersion = (migrations[0] as { hash: string }).hash?.slice(0, 8) || "unknown";
+      const migRaw = migrationsResult as unknown as { rows?: Array<{ hash: string }> } | Array<unknown>;
+      const migRows = Array.isArray(migRaw) ? migRaw[0] : migRaw?.rows ?? migRaw;
+      const migList = Array.isArray(migRows) ? migRows : [migRows];
+      if (migList.length > 0) {
+        result.actualVersion = (migList[0] as { hash: string }).hash?.slice(0, 8) || "unknown";
       }
     } catch {
       // マイグレーション履歴テーブルが存在しない場合は無視

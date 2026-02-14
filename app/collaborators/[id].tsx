@@ -1,6 +1,6 @@
-import { Text, View, Pressable, ScrollView, TextInput, Alert , Platform} from "react-native";
-import * as Haptics from "expo-haptics";
-import { color, palette } from "@/theme/tokens";
+import { Text, View, Pressable, ScrollView, Alert } from "react-native";
+import { commonCopy } from "@/constants/copy/common";
+import { color } from "@/theme/tokens";
 import { Image } from "expo-image";
 import { useLocalSearchParams } from "expo-router";
 import { navigateBack } from "@/lib/navigation/app-routes";
@@ -10,8 +10,8 @@ import { trpc } from "@/lib/trpc";
 import { useAuth } from "@/hooks/use-auth";
 import { useColors } from "@/hooks/use-colors";
 import MaterialIcons from "@expo/vector-icons/MaterialIcons";
-import { LinearGradient } from "expo-linear-gradient";
 import { AppHeader } from "@/components/organisms/app-header";
+import { Input } from "@/components/ui/input";
 
 // 権限の日本語名（初心者向けに簡素化）
 const ROLE_NAMES: Record<string, string> = {
@@ -94,7 +94,7 @@ function CollaboratorCard({
                 marginLeft: 8,
               }}
             >
-              <Text style={{ color: colors.foreground, fontSize: 10, fontWeight: "bold" }}>
+              <Text style={{ color: colors.foreground, fontSize: 12, fontWeight: "bold" }}>
                 {ROLE_NAMES[collaborator.role] || collaborator.role}
               </Text>
             </View>
@@ -108,19 +108,19 @@ function CollaboratorCard({
           {collaborator.canEdit && (
             <View style={{ flexDirection: "row", alignItems: "center", marginBottom: 2 }}>
               <MaterialIcons name="edit" size={12} color={color.successDark} />
-              <Text style={{ color: color.successDark, fontSize: 10, marginLeft: 2 }}>編集可</Text>
+              <Text style={{ color: color.successDark, fontSize: 12, marginLeft: 2 }}>編集可</Text>
             </View>
           )}
           {collaborator.canManageParticipants && (
             <View style={{ flexDirection: "row", alignItems: "center", marginBottom: 2 }}>
               <MaterialIcons name="people" size={12} color={color.info} />
-              <Text style={{ color: color.info, fontSize: 10, marginLeft: 2 }}>参加者管理</Text>
+              <Text style={{ color: color.info, fontSize: 12, marginLeft: 2 }}>参加者管理</Text>
             </View>
           )}
           {collaborator.canInvite && (
             <View style={{ flexDirection: "row", alignItems: "center" }}>
               <MaterialIcons name="person-add" size={12} color={color.warning} />
-              <Text style={{ color: color.warning, fontSize: 10, marginLeft: 2 }}>招待可</Text>
+              <Text style={{ color: color.warning, fontSize: 12, marginLeft: 2 }}>招待可</Text>
             </View>
           )}
         </View>
@@ -174,7 +174,7 @@ function InviteForm({
 
   const handleSubmit = () => {
     if (!twitterId.trim()) {
-      Alert.alert("エラー", "Twitter IDを入力してください");
+      Alert.alert(commonCopy.alerts.error, "Twitter IDを入力してください");
       return;
     }
     onInvite(twitterId.replace("@", ""), role);
@@ -197,23 +197,11 @@ function InviteForm({
       </Text>
       
       <View style={{ marginBottom: 12 }}>
-        <Text style={{ color: color.textMuted, fontSize: 12, marginBottom: 4 }}>
-          Twitter ID（@なし）
-        </Text>
-        <TextInput
+        <Input
+          label="Twitter ID（@なし）"
           value={twitterId}
           onChangeText={setTwitterId}
           placeholder="例: idolfunch"
-          placeholderTextColor={color.textSubtle}
-          style={{
-            backgroundColor: colors.background,
-            borderRadius: 8,
-            padding: 12,
-            color: colors.foreground,
-            fontSize: 16,
-            borderWidth: 1,
-            borderColor: color.border,
-          }}
           autoCapitalize="none"
           autoCorrect={false}
         />
@@ -237,7 +225,7 @@ function InviteForm({
             <Text style={{ color: colors.foreground, fontSize: 14, fontWeight: role === "co-host" ? "bold" : "normal" }}>
               共同主催者
             </Text>
-            <Text style={{ color: role === "co-host" ? "rgba(255,255,255,0.8)" : color.textSubtle, fontSize: 10, marginTop: 2 }}>
+            <Text style={{ color: role === "co-host" ? color.textWhite + "CC" : color.textSubtle, fontSize: 12, marginTop: 2 }}>
               編集・参加者管理・招待
             </Text>
           </Pressable>
@@ -254,7 +242,7 @@ function InviteForm({
             <Text style={{ color: colors.foreground, fontSize: 14, fontWeight: role === "moderator" ? "bold" : "normal" }}>
               モデレーター
             </Text>
-            <Text style={{ color: role === "moderator" ? "rgba(255,255,255,0.8)" : color.textSubtle, fontSize: 10, marginTop: 2 }}>
+            <Text style={{ color: role === "moderator" ? color.textWhite + "CC" : color.textSubtle, fontSize: 12, marginTop: 2 }}>
               参加者管理のみ
             </Text>
           </Pressable>
@@ -287,7 +275,6 @@ export default function CollaboratorsScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
 
   const { user } = useAuth();
-  const utils = trpc.useUtils();
 
   // チャレンジ詳細を取得
   const { data: challenge, isLoading: challengeLoading } = trpc.events.getById.useQuery(
@@ -335,9 +322,9 @@ export default function CollaboratorsScreen() {
         canInvite: role === "co-host",
       };
       setCollaborators([...collaborators, newCollaborator]);
-      Alert.alert("招待を送信しました", `@${twitterId} に招待を送信しました`);
-    } catch (error) {
-      Alert.alert("エラー", "招待の送信に失敗しました");
+      Alert.alert(commonCopy.alerts.inviteSent, `@${twitterId} に招待を送信しました`);
+    } catch {
+      Alert.alert(commonCopy.alerts.error, "招待の送信に失敗しました");
     } finally {
       setIsInviting(false);
     }

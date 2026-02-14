@@ -39,6 +39,7 @@ export function MapErrorBoundary({
   onError,
   onReset,
 }: MapErrorBoundaryProps) {
+  const screenName = `Map:${mapType}`;
   const fallbackRender = useCallback(
     ({ error, resetErrorBoundary }: { error: Error; resetErrorBoundary: () => void }) => (
       <MapErrorFallback
@@ -53,6 +54,7 @@ export function MapErrorBoundary({
 
   return (
     <ErrorBoundary
+      screenName={screenName}
       fallbackRender={fallbackRender}
       onError={onError}
       onReset={onReset}

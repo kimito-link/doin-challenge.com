@@ -2,7 +2,13 @@ import "dotenv/config";
 import express from "express";
 import { createServer } from "http";
 import net from "net";
+import path from "path";
+import { fileURLToPath } from "url";
 import { createExpressMiddleware } from "@trpc/server/adapters/express";
+import { readBuildInfo } from "./health";
+import { APP_VERSION } from "../../shared/version";
+
+const __dirname = path.dirname(fileURLToPath(import.meta.url));
 import { registerOAuthRoutes } from "./oauth";
 import { registerTwitterRoutes } from "../twitter-routes";
 import { appRouter } from "../routers";
@@ -15,6 +21,10 @@ import swaggerUi from "swagger-ui-express";
 import { initWebSocketServer } from "../websocket";
 import { initSentry, Sentry } from "./sentry";
 import { rateLimiterMiddleware } from "./rate-limiter";
+import { verifyAdminPassword } from "../admin-password-auth";
+import { getSessionCookieOptions } from "./cookies";
+import type { Request, Response } from "express";
+import { SESSION_MAX_AGE_MS } from "../../shared/const";
 
 function isPortAvailable(port: number): Promise<boolean> {
   return new Promise((resolve) => {
@@ -35,22 +45,95 @@ async function findAvailablePort(startPort: number = 3000): Promise<number> {
   throw new Error(`No available port found starting from ${startPort}`);
 }
 
+/**
+ * 信頼できるオリジンかどうかをチェック
+ * 
+ * @internal テスト用にexport（本来はprivate関数）
+ */
+export function isAllowedOrigin(origin: string | undefined): boolean {
+  if (!origin) return false;
+  
+  // 信頼できるオリジンのリスト（環境変数から取得可能）
+  const ALLOWED_ORIGINS = (process.env.ALLOWED_ORIGINS || "")
+    .split(",")
+    .map(s => s.trim())
+    .filter(Boolean);
+  
+  // 開発環境では localhost を許可
+  if (process.env.NODE_ENV !== "production") {
+    if (origin.includes("localhost") || origin.includes("127.0.0.1")) {
+      return true;
+    }
+  }
+  
+  // 本番環境ではホワイトリストをチェック
+  if (ALLOWED_ORIGINS.length > 0) {
+    return ALLOWED_ORIGINS.some(allowed => {
+      // 完全一致（originは完全なURL、allowedも完全なURLまたはドメイン）
+      if (origin === allowed) return true;
+      
+      // .example.com のような形式の場合、originのhostnameがexample.comで終わるかチェック
+      if (allowed.startsWith(".")) {
+        try {
+          const url = new URL(origin);
+          return url.hostname === allowed.slice(1) || url.hostname.endsWith(allowed);
+        } catch {
+          return origin.endsWith(allowed) || origin === allowed.slice(1);
+        }
+      }
+      
+      // allowedがURL形式の場合、完全一致をチェック
+      // allowedがドメインのみの場合、originのhostnameと比較
+      try {
+        const originUrl = new URL(origin);
+        const allowedUrl = allowed.startsWith("http") ? new URL(allowed) : null;
+        if (allowedUrl) {
+          return originUrl.origin === allowedUrl.origin;
+        } else {
+          // allowedがドメインのみの場合
+          return originUrl.hostname === allowed || originUrl.hostname.endsWith(`.${allowed}`);
+        }
+      } catch {
+        // URL解析に失敗した場合は文字列比較
+        return origin === allowed || origin.endsWith(allowed);
+      }
+    });
+  }
+  
+  // ホワイトリストが設定されていない場合は、doin-challenge.com のみ許可
+  // より厳密にチェック: doin-challenge.com で終わる、または完全一致
+  try {
+    const url = new URL(origin);
+    const hostname = url.hostname;
+    // doin-challenge.com で終わる、かつ evil.com のようなサブドメイン攻撃を防ぐ
+    return hostname === "doin-challenge.com" || 
+           hostname.endsWith(".doin-challenge.com");
+  } catch {
+    // URL解析に失敗した場合は、includes でフォールバック
+    return origin.includes("doin-challenge.com") && 
+           !origin.includes("doin-challenge.com.evil") &&
+           !origin.includes("evil-doin-challenge.com");
+  }
+}
+
 async function startServer() {
   // Initialize Sentry for error tracking
   initSentry();
-  
+
   const app = express();
   const server = createServer(app);
-  
+
   // Sentry request handler must be the first middleware (no-op for now)
   // Error handler will be added at the end
 
   // Enable CORS for all routes - reflect the request origin to support credentials
   app.use((req, res, next) => {
     const origin = req.headers.origin;
-    if (origin) {
+    
+    if (origin && isAllowedOrigin(origin)) {
       res.header("Access-Control-Allow-Origin", origin);
     }
+    
     res.header("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS");
     res.header(
       "Access-Control-Allow-Headers",
@@ -69,131 +152,251 @@ async function startServer() {
   app.use(express.json({ limit: "50mb" }));
   app.use(express.urlencoded({ limit: "50mb", extended: true }));
 
+  // セキュリティヘッダー（RFC 9700 / OWASP / 拡張版要件定義書準拠）
+  app.use((_req, res, next) => {
+    // クリックジャッキング防止
+    res.setHeader("X-Frame-Options", "DENY");
+    // CSP厳格化: script-src/style-src/connect-src で XSS を根本ブロック
+    // 'unsafe-inline' は style-src のみ許可（React/Expo のインラインスタイル用）
+    // API サーバーなので script 実行は 'self' のみ許可
+    const cspDirectives = [
+      "default-src 'self'",
+      "script-src 'self'",
+      "style-src 'self' 'unsafe-inline'",
+      "img-src 'self' https://pbs.twimg.com https://abs.twimg.com data:",
+      "connect-src 'self' https://api.twitter.com https://api.x.com",
+      "font-src 'self'",
+      "frame-ancestors 'none'",
+      "base-uri 'self'",
+      "form-action 'self'",
+    ].join("; ");
+    res.setHeader("Content-Security-Policy", cspDirectives);
+    // MIMEスニッフィング防止
+    res.setHeader("X-Content-Type-Options", "nosniff");
+    // Refererヘッダー経由のトークン漏洩防止（OAuth BCP推奨: no-referrer）
+    res.setHeader("Referrer-Policy", "no-referrer");
+    // HTTPS強制（本番のみ）
+    if (process.env.NODE_ENV === "production") {
+      res.setHeader("Strict-Transport-Security", "max-age=31536000; includeSubDomains");
+    }
+    // XSS保護（レガシーブラウザ向け）
+    res.setHeader("X-XSS-Protection", "1; mode=block");
+    // Permissions-Policy: 不要なブラウザ機能を無効化
+    res.setHeader("Permissions-Policy", "camera=(), microphone=(), geolocation=()");
+    next();
+  });
+
   // Rate Limiter Middleware（不正アクセスを自動ブロック）
   app.use(rateLimiterMiddleware);
 
   registerOAuthRoutes(app);
   registerTwitterRoutes(app);
 
+  // ... (existing imports)
+
+  // ...
+
   app.get("/api/health", async (_req, res) => {
-    // バージョン情報を取得（優先順位: 環境変数 > build-info.json）
-    let versionInfo = {
-      version: process.env.RAILWAY_GIT_COMMIT_SHA || process.env.APP_VERSION || "unknown",
-      commitSha: process.env.RAILWAY_GIT_COMMIT_SHA || process.env.GIT_SHA || "unknown",
-      gitSha: process.env.RAILWAY_GIT_COMMIT_SHA || process.env.GIT_SHA || "unknown",
-      builtAt: process.env.BUILT_AT || new Date().toISOString(),
-    };
-
-    // Gate 1: "unknown version"検知（Sentry通知対象）
-    if (versionInfo.version === "unknown" || versionInfo.commitSha === "unknown") {
-      const error = new Error("unknown version detected in /api/health");
-      if (Sentry) {
-        Sentry.captureException(error, {
-          extra: {
-            version: versionInfo.version,
-            commitSha: versionInfo.commitSha,
-            env: process.env.NODE_ENV,
-          },
-        });
-      }
-      console.error("[CRITICAL] unknown version detected:", versionInfo);
-    }
-
-    // 基本情報
-    const baseInfo = {
-      ok: true,
-      timestamp: Date.now(),
-      ...versionInfo,
-      nodeEnv: process.env.NODE_ENV || "development",
-    };
-
-    // DB接続確認
-    let dbStatus = { connected: false, latency: 0, error: "" };
     try {
-      const { getDb } = await import("../db");
-      const startTime = Date.now();
-      const db = await getDb();
-      if (db) {
-        await db.execute("SELECT 1");
-        dbStatus = {
-          connected: true,
-          latency: Date.now() - startTime,
-          error: "",
-        };
-      } else {
-        dbStatus.error = "DATABASE_URLが設定されていません";
+      const buildInfo = readBuildInfo();
+      const nodeEnv = process.env.NODE_ENV || "development";
+
+      // Use imported APP_VERSION as the authoritative version
+      // Fallback to buildInfo.version or "unknown" only if needed, 
+      // but ideally we want the semantic version from shared/version.ts
+      const displayVersion = APP_VERSION || buildInfo.version || "unknown";
+
+      if (!buildInfo.ok && Sentry) {
+        Sentry.captureException(new Error("unknown version in /api/health"), {
+          extra: { commitSha: buildInfo.commitSha, env: nodeEnv },
+        });
+        console.error("[CRITICAL] unknown version detected:", buildInfo);
       }
-    } catch (err) {
-      dbStatus.error = err instanceof Error ? err.message : "接続エラー";
-    }
+      const baseInfo = {
+        ...buildInfo,
+        version: displayVersion, // Override/Ensure version is set
+        nodeEnv,
+        timestamp: Date.now(),
+      };
 
-    // クリティカルAPI確認（オプション）
-    const checkCritical = _req.query.critical === "true";
-    let criticalApis: Record<string, { ok: boolean; error?: string }> & { error?: string } = {};
-
-    if (checkCritical && dbStatus.connected) {
+      let dbStatus: { connected: boolean; latency: number; error: string; challengesCount?: number } = { connected: false, latency: 0, error: "" };
+      const DB_CHECK_RETRIES = 2; // 一時的な接続ブレ対策（cold start、ネットワーク揺れ）
       try {
-        const caller = appRouter.createCaller(await createContext({ req: _req as any, res: res as any, info: {} as any }));
+        const { getDb, sql } = await import("../db");
+        const startTime = Date.now();
+        const db = await getDb();
+        if (db) {
+          try {
+            let lastErr: Error | null = null;
+            for (let attempt = 1; attempt <= DB_CHECK_RETRIES; attempt++) {
+              try {
+                const queryPromise = db.execute(sql`SELECT 1`);
+                const timeoutPromise = new Promise((_, reject) =>
+                  setTimeout(() => reject(new Error("Query timeout after 10 seconds")), 10000)
+                );
+                await Promise.race([queryPromise, timeoutPromise]);
+                lastErr = null;
+                break;
+              } catch (queryErr) {
+                lastErr = queryErr instanceof Error ? queryErr : new Error(String(queryErr));
+                if (attempt < DB_CHECK_RETRIES) {
+                  console.warn("[health] DB check attempt", attempt, "failed, retrying in 2s:", lastErr.message);
+                  await new Promise((r) => setTimeout(r, 2000));
+                }
+              }
+            }
+            if (lastErr) throw lastErr;
 
-        // homeEvents: イベント一覧取得
-        try {
-          await caller.events.list();
-          criticalApis.homeEvents = { ok: true };
-        } catch (err) {
-          criticalApis.homeEvents = { ok: false, error: err instanceof Error ? err.message : String(err) };
-        }
+            let challengesCount = 0;
+            try {
+              const r = await db.execute(sql`SELECT COUNT(*) AS c FROM challenges WHERE "isPublic" = true`);
+              const rows = (r as unknown as { rows?: Array<{ c: string }> })?.rows ?? (Array.isArray(r) ? r : []);
+              challengesCount = rows.length ? Number((rows[0] as { c: string })?.c ?? 0) : 0;
+            } catch (countErr) {
+              console.warn("[health] Failed to count challenges:", countErr);
+            }
 
-        // rankings: ランキング取得
-        try {
-          await caller.rankings.hosts({ limit: 1 });
-          criticalApis.rankings = { ok: true };
-        } catch (err) {
-          criticalApis.rankings = { ok: false, error: err instanceof Error ? err.message : String(err) };
+            dbStatus = {
+              connected: true,
+              latency: Date.now() - startTime,
+              error: "",
+              challengesCount,
+            };
+          } catch (queryErr) {
+            // クエリ実行エラー
+            const errorMessage = queryErr instanceof Error ? queryErr.message : String(queryErr);
+            // エラーメッセージから不要な部分を削除（\nparamなど）
+            let cleanMessage = errorMessage
+              .replace(/\nparam.*$/g, "")
+              .replace(/params:.*$/g, "")
+              .replace(/Failed query:.*$/g, "")
+              .trim();
+            
+            // タイムアウトエラーの場合は明確なメッセージに
+            if (cleanMessage.includes("timeout") || cleanMessage.includes("タイムアウト")) {
+              cleanMessage = "データベース接続がタイムアウトしました";
+            } else if (!cleanMessage || cleanMessage.length < 5) {
+              // メッセージが空または短すぎる場合はデフォルトメッセージ
+              cleanMessage = "データベースクエリの実行に失敗しました";
+            }
+            
+            console.error("[health] Database query failed:", {
+              error: cleanMessage,
+              originalError: errorMessage,
+              stack: queryErr instanceof Error ? queryErr.stack : undefined,
+              timestamp: new Date().toISOString(), // インシデント調査用
+            });
+            
+            dbStatus = {
+              connected: false,
+              latency: Date.now() - startTime,
+              error: cleanMessage,
+            };
+          }
+        } else {
+          // DATABASE_URLが設定されていない、または接続に失敗
+          const hasDatabaseUrl = !!process.env.DATABASE_URL;
+          dbStatus.error = hasDatabaseUrl
+            ? "データベース接続の確立に失敗しました"
+            : "DATABASE_URLが設定されていません";
         }
       } catch (err) {
-        criticalApis.error = err instanceof Error ? err.message : String(err);
+        // 予期しないエラー（インポートエラーなど）
+        const errorMessage = err instanceof Error ? err.message : String(err);
+        console.error("[health] Unexpected database error:", {
+          error: errorMessage,
+          stack: err instanceof Error ? err.stack : undefined,
+        });
+        dbStatus.error = errorMessage || "接続エラー";
       }
-    }
 
-    // スキーマチェックはオプション（?schema=true で有効化）
-    const checkSchema = _req.query.schema === "true";
-    let schemaCheck: SchemaCheckResult | undefined;
+      const checkCritical = _req.query.critical === "true";
+      let criticalApis: Record<string, { ok: boolean; error?: string }> & { error?: string } = {};
 
-    if (checkSchema) {
-      try {
-        schemaCheck = await checkSchemaIntegrity();
-        
-        // スキーマ不整合時は通知
-        if (schemaCheck.status === "mismatch") {
-          await notifySchemaIssue(schemaCheck);
+      if (checkCritical && dbStatus.connected) {
+        try {
+          const caller = appRouter.createCaller(await createContext({ req: _req as any, res: res as any, info: {} as any }));
+
+          try {
+            await caller.events.list();
+            criticalApis.homeEvents = { ok: true };
+          } catch (err) {
+            criticalApis.homeEvents = { ok: false, error: err instanceof Error ? err.message : String(err) };
+          }
+
+          try {
+            await caller.rankings.hosts({ limit: 1 });
+            criticalApis.rankings = { ok: true };
+          } catch (err) {
+            criticalApis.rankings = { ok: false, error: err instanceof Error ? err.message : String(err) };
+          }
+        } catch (err) {
+          criticalApis.error = err instanceof Error ? err.message : String(err);
         }
-      } catch (error) {
-        console.error("[health] Schema check failed:", error);
-        schemaCheck = {
-          status: "error",
-          expectedVersion: "unknown",
-          missingColumns: [],
-          errors: [error instanceof Error ? error.message : String(error)],
-          checkedAt: new Date().toISOString(),
-        };
       }
+
+      const checkSchema = _req.query.schema === "true";
+      let schemaCheck: SchemaCheckResult | undefined;
+
+      if (checkSchema) {
+        try {
+          schemaCheck = await checkSchemaIntegrity();
+          if (schemaCheck.status === "mismatch") {
+            await notifySchemaIssue(schemaCheck);
+          }
+        } catch (error) {
+          console.error("[health] Schema check failed:", error);
+          schemaCheck = {
+            status: "error",
+            expectedVersion: "unknown",
+            missingColumns: [],
+            errors: [error instanceof Error ? error.message : String(error)],
+            checkedAt: new Date().toISOString(),
+          };
+        }
+      }
+
+      // DB 未接続のときだけ 500（UptimeRobot アラート）。build-info のみ不備のときは 200 + ok:false でアラート抑止
+      const overallOk =
+        dbStatus.connected &&
+        buildInfo.ok &&
+        (!checkCritical || Object.values(criticalApis).every(api => typeof api === "object" && "ok" in api && api.ok));
+
+      const statusCode = dbStatus.connected ? 200 : 500;
+      res.status(statusCode).json({
+        ...baseInfo,
+        // 後方互換性のため、commitsha（小文字）も含める
+        commitsha: baseInfo.commitSha,
+        ok: overallOk,
+        db: dbStatus,
+        ...(checkCritical && { critical: criticalApis }),
+        ...(schemaCheck && { schema: schemaCheck }),
+      });
+    } catch (err) {
+      console.error("[health] Unhandled error:", err);
+      const message = err instanceof Error ? err.message : String(err);
+      res.status(500).json({
+        ok: false,
+        commitSha: "unknown",
+        commitsha: "unknown", // 後方互換性のため
+        version: "unknown",
+        builtAt: "unknown",
+        timestamp: Date.now(),
+        error: message,
+        db: { connected: false, latency: 0, error: message },
+      });
     }
-
-    // 全体のokステータス
-    const overallOk = dbStatus.connected && 
-      (!checkCritical || Object.values(criticalApis).every(api => typeof api === 'object' && 'ok' in api && api.ok));
-
-    res.json({
-      ...baseInfo,
-      ok: overallOk,
-      db: dbStatus,
-      ...(checkCritical && { critical: criticalApis }),
-      ...(schemaCheck && { schema: schemaCheck }),
-    });
   });
 
   // デバッグエンドポイント: 環境変数の確認
   app.get("/api/debug/env", (_req, res) => {
+    // 機密情報をマスク
+    const maskSecret = (value: string | undefined) => {
+      if (!value) return undefined;
+      if (value.length <= 8) return "***";
+      return value.substring(0, 4) + "***" + value.substring(value.length - 4);
+    };
+    
     res.json({
       RAILWAY_GIT_COMMIT_SHA: process.env.RAILWAY_GIT_COMMIT_SHA,
       APP_VERSION: process.env.APP_VERSION,
@@ -201,6 +404,9 @@ async function startServer() {
       NODE_ENV: process.env.NODE_ENV,
       RAILWAY_ENVIRONMENT: process.env.RAILWAY_ENVIRONMENT,
       RAILWAY_SERVICE_NAME: process.env.RAILWAY_SERVICE_NAME,
+      // 機密情報はマスク
+      DATABASE_URL: maskSecret(process.env.DATABASE_URL),
+      JWT_SECRET: maskSecret(process.env.JWT_SECRET),
     });
   });
 
@@ -220,7 +426,7 @@ async function startServer() {
   app.get("/api/admin/system-status", async (_req, res) => {
     try {
       const { getDb } = await import("../db");
-      
+
       // データベース接続確認
       let dbStatus = { connected: false, latency: 0, error: "" };
       try {
@@ -290,10 +496,15 @@ async function startServer() {
     }
   });
 
-  app.get("/api/admin/api-usage", (_req, res) => {
+  app.get("/api/admin/api-usage", async (_req, res) => {
     // TODO: 管理者認証を追加
-    const summary = getDashboardSummary();
-    res.json(summary);
+    try {
+      const summary = await getDashboardSummary();
+      res.json(summary);
+    } catch (error) {
+      console.error("[Admin] API usage error:", error);
+      res.status(500).json({ error: "API使用量の取得に失敗しました" });
+    }
   });
 
   app.get("/api/admin/api-usage/stats", (_req, res) => {
@@ -307,14 +518,14 @@ async function startServer() {
     const category = req.query.category as string | undefined;
     const limit = req.query.limit ? parseInt(req.query.limit as string) : undefined;
     const resolved = req.query.resolved === "true" ? true : req.query.resolved === "false" ? false : undefined;
-    
+
     const logs = getErrorLogs({
       category: category as any,
       limit,
       resolved,
     });
     const stats = getErrorStats();
-    
+
     res.json({ logs, stats });
   });
 
@@ -334,6 +545,36 @@ async function startServer() {
   app.delete("/api/admin/errors", (_req, res) => {
     const count = clearErrorLogs();
     res.json({ success: true, count });
+  });
+
+  // 管理者パスワード認証
+  app.post("/api/admin/verify-password", async (req: Request, res: Response) => {
+    try {
+      const { password } = req.body;
+
+      if (!password) {
+        res.status(400).json({ error: "パスワードが必要です" });
+        return;
+      }
+
+      if (verifyAdminPassword(password)) {
+        // パスワードが正しい場合、管理者セッションCookieを設定（1年間有効）
+        const ADMIN_SESSION_COOKIE = "admin_session";
+        const cookieOptions = getSessionCookieOptions(req);
+
+        res.cookie(ADMIN_SESSION_COOKIE, "authenticated", {
+          ...cookieOptions,
+          maxAge: SESSION_MAX_AGE_MS,
+        });
+
+        res.json({ success: true });
+      } else {
+        res.status(401).json({ error: "パスワードが正しくありません" });
+      }
+    } catch (error) {
+      console.error("[Admin] Password verification error:", error);
+      res.status(500).json({ error: "認証に失敗しました" });
+    }
   });
 
   app.use(

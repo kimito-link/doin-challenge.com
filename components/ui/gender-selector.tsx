@@ -6,14 +6,16 @@
 import { View, Text, Pressable } from "react-native";
 import { color } from "@/theme/tokens";
 import { useColors } from "@/hooks/use-colors";
+import type { Gender } from "@/types/participation";
 
-export type Gender = "male" | "female" | "";
+// フォーム用のGender型（未選択状態を含む）
+export type FormGender = Gender | "";
 
 export interface GenderSelectorProps {
   /** 選択された性別 */
-  value: Gender;
+  value: FormGender;
   /** 値変更時のコールバック */
-  onChange: (value: Gender) => void;
+  onChange: (value: FormGender) => void;
   /** ラベルテキスト */
   label?: string;
   /** 必須フィールドかどうか */
@@ -38,7 +40,6 @@ export function GenderSelector({
   maleLabel = "男性",
   femaleLabel = "女性",
 }: GenderSelectorProps) {
-  const colors = useColors();
   const showError = required && value === "";
   
   return (

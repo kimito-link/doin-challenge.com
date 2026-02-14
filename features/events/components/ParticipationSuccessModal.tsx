@@ -12,12 +12,13 @@ import MaterialIcons from "@expo/vector-icons/MaterialIcons";
 import { LinearGradient } from "expo-linear-gradient";
 import * as Haptics from "expo-haptics";
 import { Platform } from "react-native";
-import { color } from "@/theme/tokens";
+import { color, palette } from "@/theme/tokens";
 import { useColors } from "@/hooks/use-colors";
 import { LinkSpeech } from "@/components/organisms/link-speech";
 import { RegionMap } from "@/features/events/components/RegionMap";
 import { ATTENDANCE_MESSAGES } from "@/types/attendance";
 import type { AttendanceType } from "@/types/attendance";
+import { eventDetailCopy } from "@/constants/copy";
 
 export interface ParticipationSuccessModalProps {
   visible: boolean;
@@ -82,7 +83,7 @@ export function ParticipationSuccessModal({
 
             {/* タイトル */}
             <Text style={[styles.title, { color: colors.foreground }]}>
-              参加表明完了！
+              {eventDetailCopy.success.participated}
             </Text>
 
             {/* りんく吹き出し */}
@@ -143,7 +144,7 @@ export function ParticipationSuccessModal({
 const styles = StyleSheet.create({
   overlay: {
     flex: 1,
-    backgroundColor: "rgba(0, 0, 0, 0.7)",
+    backgroundColor: palette.gray900 + "B3", // rgba(0, 0, 0, 0.7) の透明度16進数
     justifyContent: "center",
     alignItems: "center",
     padding: 20,
@@ -156,7 +157,7 @@ const styles = StyleSheet.create({
     borderRadius: 24,
     padding: 32,
     alignItems: "center",
-    shadowColor: "#000",
+    shadowColor: palette.gray900,
     shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.3,
     shadowRadius: 8,

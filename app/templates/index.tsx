@@ -1,12 +1,12 @@
-import { View, Text, FlatList, Pressable, Alert } from "react-native";
-import { color, palette } from "@/theme/tokens";
+import { View, Text, FlatList, Pressable, Alert, Platform } from "react-native";
+import { commonCopy } from "@/constants/copy/common";
+import { color } from "@/theme/tokens";
 import { navigate, navigateBack } from "@/lib/navigation";
 import { ScreenContainer } from "@/components/organisms/screen-container";
 import { trpc } from "@/lib/trpc";
 import { useAuth } from "@/hooks/use-auth";
 import MaterialIcons from "@expo/vector-icons/MaterialIcons";
 import * as Haptics from "expo-haptics";
-import { Platform } from "react-native";
 import { AppHeader } from "@/components/organisms/app-header";
 
 const goalTypeLabels: Record<string, string> = {
@@ -19,7 +19,8 @@ const goalTypeLabels: Record<string, string> = {
 
 export default function TemplatesScreen() {
   
-  const { user } = useAuth();
+  const { user, isAuthReady } = useAuth();
+  const showMyTemplates = isAuthReady && user;
 
   const { data: myTemplates, refetch: refetchMy } = trpc.templates.list.useQuery(undefined, {
     enabled: !!user,
@@ -83,7 +84,7 @@ export default function TemplatesScreen() {
         </Text>
         {item.isPublic && (
           <View style={{ backgroundColor: color.success, borderRadius: 4, paddingHorizontal: 6, paddingVertical: 2 }}>
-            <Text style={{ color: color.textWhite, fontSize: 10 }}>公開中</Text>
+            <Text style={{ color: color.textWhite, fontSize: 12 }}>公開中</Text>
           </View>
         )}
       </View>
@@ -221,8 +222,8 @@ export default function TemplatesScreen() {
         renderItem={() => null}
         ListHeaderComponent={
           <View style={{ padding: 16 }}>
-            {/* マイテンプレート */}
-            {user && (
+            {/* マイテンプレート（認証確定後のみで点滅防止） */}
+            {showMyTemplates && (
               <View style={{ marginBottom: 24 }}>
                 <Text style={{ color: color.textWhite, fontSize: 18, fontWeight: "bold", marginBottom: 12 }}>
                   自分の設定
@@ -237,7 +238,8 @@ export default function TemplatesScreen() {
                   <View style={{ backgroundColor: color.surface, borderRadius: 12, padding: 24, alignItems: "center" }}>
                     <MaterialIcons name="folder-open" size={48} color={color.textSubtle} />
                     <Text style={{ color: color.textMuted, fontSize: 14, marginTop: 8, textAlign: "center" }}>
-                      保存した設定はまだありません{"\n"}
+                      {commonCopy.empty.noTemplatesSaved}
+                      {"\n"}
                       チャレンジ作成時に保存できます
                     </Text>
                   </View>
@@ -260,7 +262,7 @@ export default function TemplatesScreen() {
                 <View style={{ backgroundColor: color.surface, borderRadius: 12, padding: 24, alignItems: "center" }}>
                   <MaterialIcons name="public" size={48} color={color.textSubtle} />
                   <Text style={{ color: color.textMuted, fontSize: 14, marginTop: 8, textAlign: "center" }}>
-                    公開された設定はまだありません
+                    {commonCopy.empty.noTemplatesPublic}
                   </Text>
                 </View>
               )}

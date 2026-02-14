@@ -44,17 +44,93 @@ function getParentDomain(hostname: string): string | undefined {
   return "." + parts.slice(-2).join(".");
 }
 
+/**
+ * プロキシ経由のときはクライアントのホストを使う（Vercel → Railway で admin_session を doin-challenge.com に送るため）
+ */
+function getEffectiveHostname(req: Request): string {
+  const forwarded = req.headers["x-forwarded-host"];
+  if (forwarded) {
+    const host = Array.isArray(forwarded) ? forwarded[0] : forwarded.split(",")[0];
+    if (host && host.trim()) return host.trim();
+  }
+  const origin = req.headers.origin;
+  if (origin) {
+    try {
+      const u = new URL(origin);
+      if (u.hostname) return u.hostname;
+    } catch {
+      // ignore
+    }
+  }
+  return req.hostname;
+}
+
+/**
+ * プロキシ経由（Vercel→Railway）のときは Domain を付けない。ブラウザがリクエストホストに紐づけて Cookie を保存する。
+ * 
+ * セキュリティ考慮:
+ * - x-forwarded-host ヘッダーは信頼できるプロキシからのみ受け入れるべき
+ * - 本番環境では信頼できるプロキシリストを設定することを推奨
+ */
+function getCookieDomain(req: Request, hostname: string): string | undefined {
+  const forwarded = req.headers["x-forwarded-host"] ?? req.headers.origin;
+  
+  // プロキシ経由の場合、domain 指定しない → doin-challenge.com に保存される
+  // 注意: 本番環境では信頼できるプロキシからのみ受け入れるべき
+  if (forwarded) {
+    // TODO: 本番環境では信頼できるプロキシリストを検証する
+    return undefined;
+  }
+  
+  return getParentDomain(hostname);
+}
+
 export function getSessionCookieOptions(
   req: Request,
+  options?: {
+    /**
+     * OAuthコールバックなど、クロスサイトリクエストでCookieを送信する必要がある場合にtrue
+     * sameSite: "none" を使用し、secure: true が必須になる
+     */
+    crossSite?: boolean;
+  },
 ): Pick<CookieOptions, "domain" | "httpOnly" | "path" | "sameSite" | "secure"> {
-  const hostname = req.hostname;
-  const domain = getParentDomain(hostname);
+  const hostname = getEffectiveHostname(req);
+  const domain = getCookieDomain(req, hostname);
+  const isSecure = isSecureRequest(req);
 
+  // OAuthコールバックなど、クロスサイトリクエストの場合
+  // sameSite: "none" を使用（secure: true が必須）
+  if (options?.crossSite) {
+    // HTTPS環境でのみ動作（sameSite: "none" には secure: true が必須）
+    if (!isSecure) {
+      console.warn(
+        "[Cookies] crossSite=true requires HTTPS. Falling back to sameSite=lax",
+      );
+      return {
+        domain,
+        httpOnly: true,
+        path: "/",
+        sameSite: "lax",
+        secure: false,
+      };
+    }
+
+    return {
+      domain,
+      httpOnly: true,
+      path: "/",
+      sameSite: "none",
+      secure: true,
+    };
+  }
+
+  // 通常のセッション管理（sameSite: "lax" で十分）
   return {
     domain,
     httpOnly: true,
     path: "/",
-    sameSite: "none",
-    secure: isSecureRequest(req),
+    sameSite: "lax",
+    secure: isSecure,
   };
 }

@@ -158,16 +158,65 @@ export async function withExponentialBackoff<T>(
 /**
  * Twitter API用のfetchラッパー
  * レート制限対応と指数バックオフを自動適用
+ * API使用量も自動記録
+ * コスト上限チェックも実行
  */
 export async function twitterApiFetch<T = unknown>(
   url: string,
   options: RequestInit = {},
   retryOptions: RetryOptions = {}
 ): Promise<{ data: T; rateLimitInfo: RateLimitInfo | null }> {
+  // コスト上限チェック（同期的に実行）
+  try {
+    const { isApiCallAllowed } = await import("./db/api-usage-db");
+    const isAllowed = await isApiCallAllowed();
+    if (!isAllowed) {
+      console.warn("[RateLimit] API call blocked due to cost limit exceeded");
+      throw new Error("API呼び出しはコスト上限により停止されています。管理画面で設定を確認してください。");
+    }
+
+    // アラートチェック（非同期、エラーは無視）
+    import("./api-cost-alert").then((alert) => {
+      alert.checkAndSendCostAlert().catch(() => {
+        // エラーは無視
+      });
+    }).catch(() => {
+      // モジュール読み込みエラーは無視
+    });
+  } catch (error) {
+    // コスト上限による停止の場合はエラーをスロー
+    if (error instanceof Error && error.message.includes("コスト上限")) {
+      throw error;
+    }
+    // その他のエラー（DB接続エラーなど）は無視してAPI呼び出しを継続
+    console.warn("[RateLimit] Cost limit check failed, continuing:", error);
+  }
+
   const result = await withExponentialBackoff<T>(
     () => fetch(url, options),
     retryOptions
   );
+
+  const success = result.response.ok || result.response.status === 429;
+  const method = options.method || "GET";
+  
+  // エンドポイント名を抽出（例: /2/users/by/username/:username）
+  const urlObj = new URL(url);
+  const endpoint = urlObj.pathname;
+
+  // API使用量を記録（非同期、エラーは無視）
+  import("./api-usage-tracker").then((tracker) => {
+    tracker.recordApiUsage(
+      endpoint,
+      result.rateLimitInfo,
+      success,
+      method
+    ).catch((error) => {
+      console.error("[RateLimit] Failed to record API usage:", error);
+    });
+  }).catch(() => {
+    // モジュール読み込みエラーは無視
+  });
 
   if (!result.response.ok && result.response.status !== 429) {
     const errorText = JSON.stringify(result.data);

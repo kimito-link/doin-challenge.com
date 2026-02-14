@@ -4,8 +4,9 @@
  */
 
 import { View, Text } from "react-native";
-import { useColors } from "@/hooks/use-colors";
-import { mypageUI, mypageText } from "../../ui/theme/tokens";
+import { SectionHeader, EmptyState } from "@/components/ui";
+import { mypageUI, mypageText, mypageFont } from "../../ui/theme/tokens";
+import { typography } from "@/theme/tokens";
 
 interface Badge {
   id: number;
@@ -20,14 +21,9 @@ interface BadgeSectionProps {
 }
 
 export function BadgeSection({ badges }: BadgeSectionProps) {
-  const colors = useColors();
-
   return (
     <View style={{ paddingHorizontal: 16, marginBottom: 24 }}>
-      <Text style={{ color: colors.foreground, fontSize: 18, fontWeight: "bold", marginBottom: 12 }}>
-        獲得バッジ
-      </Text>
-      
+      <SectionHeader title="獲得バッジ" />
       {badges && badges.length > 0 ? (
         <View style={{ flexDirection: "row", flexWrap: "wrap", gap: 12 }}>
           {badges.map((userBadge) => (
@@ -43,29 +39,19 @@ export function BadgeSection({ badges }: BadgeSectionProps) {
                 borderColor: mypageUI.cardBorder,
               }}
             >
-              <Text style={{ fontSize: 32 }}>{userBadge.badge?.icon || "🏅"}</Text>
-              <Text style={{ color: mypageText.muted, fontSize: 10, marginTop: 4, textAlign: "center" }}>
+              <Text style={{ fontSize: mypageFont.display }}>{userBadge.badge?.icon || "🏅"}</Text>
+              <Text style={{ color: mypageText.muted, fontSize: typography.fontSize.xs, marginTop: 4, textAlign: "center" }}>
                 {userBadge.badge?.name || "バッジ"}
               </Text>
             </View>
           ))}
         </View>
       ) : (
-        <View
-          style={{
-            backgroundColor: mypageUI.cardBg,
-            borderRadius: 12,
-            padding: 24,
-            alignItems: "center",
-            borderWidth: 1,
-            borderColor: mypageUI.cardBorder,
-          }}
-        >
-          <Text style={{ fontSize: 32, marginBottom: 8 }}>🏅</Text>
-          <Text style={{ color: mypageText.muted, fontSize: 14 }}>
-            まだバッジを獲得していません
-          </Text>
-        </View>
+        <EmptyState
+          icon="emoji-events"
+          title="まだバッジを獲得していません"
+          style={{ minHeight: 160, paddingVertical: 24 }}
+        />
       )}
     </View>
   );

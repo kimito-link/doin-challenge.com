@@ -1,8 +1,7 @@
 import { View, Text, Pressable, StyleSheet, ScrollView, Platform } from "react-native";
-import { color, palette } from "@/theme/tokens";
+import { color } from "@/theme/tokens";
 import { useCallback } from "react";
 import * as Haptics from "expo-haptics";
-import { useColors } from "@/hooks/use-colors";
 
 interface FilterTab {
   id: string;
@@ -35,8 +34,6 @@ export function FilterTabs({
   variant = "shabetta",
   size = "medium",
 }: FilterTabsProps) {
-  const colors = useColors();
-
   const handleTabPress = useCallback((tabId: string) => {
     triggerHaptic();
     onTabChange(tabId);

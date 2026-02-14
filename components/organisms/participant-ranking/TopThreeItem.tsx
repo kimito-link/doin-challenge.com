@@ -7,7 +7,7 @@
 import { View, Text, StyleSheet } from "react-native";
 import { Image } from "expo-image";
 import MaterialIcons from "@expo/vector-icons/MaterialIcons";
-import { color } from "@/theme/tokens";
+import { color, palette } from "@/theme/tokens";
 import { RANK_COLORS } from "./constants";
 import type { TopThreeItemProps } from "./types";
 import type { Gender } from "@/types/participation";
@@ -15,9 +15,9 @@ import { getGenderIcon } from "@/types/participation";
 
 // v6.176: 性別に応じた色を取得
 function getGenderColor(gender: Gender | null | undefined): string {
-  if (gender === "male") return "#3B82F6"; // 男性: 青
-  if (gender === "female") return "#EC4899"; // 女性: ピンク
-  return "#64748B"; // 未指定: グレー
+  if (gender === "male") return palette.blue500; // 男性: 青
+  if (gender === "female") return palette.pink500; // 女性: ピンク
+  return palette.gray500; // 未指定: グレー
 }
 
 export function TopThreeItem({ participant, rank, isFirst = false }: TopThreeItemProps) {
@@ -107,7 +107,7 @@ const styles = StyleSheet.create({
     borderRadius: 16,
   },
   topThreeBadgeText: {
-    color: "#000",
+    color: palette.black,
     fontSize: 12,
     fontWeight: "bold",
   },
@@ -171,7 +171,7 @@ const styles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "center",
     borderWidth: 2,
-    borderColor: "#fff",
+    borderColor: palette.white,
   },
   genderBadgeFirst: {
     width: 24,
@@ -179,7 +179,7 @@ const styles = StyleSheet.create({
     borderRadius: 12,
   },
   genderBadgeText: {
-    color: "#fff",
+    color: palette.white,
     fontSize: 12,
     fontWeight: "bold",
   },

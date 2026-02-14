@@ -3,7 +3,7 @@
 import { View, Text, Pressable, StyleSheet } from "react-native";
 import MaterialIcons from "@expo/vector-icons/MaterialIcons";
 import { useColors } from "@/hooks/use-colors";
-import { homeText, homeUI } from "@/features/home/ui/theme/tokens";
+import { homeText, homeUI, homeFont } from "@/features/home/ui/theme/tokens";
 import { regions } from "@/components/organisms/japan-region/region-data";
 
 type RegionCount = {
@@ -151,11 +151,11 @@ const styles = StyleSheet.create({
     gap: 8,
   },
   title: {
-    fontSize: 14,
+    fontSize: homeFont.body,
     fontWeight: "600",
   },
   totalCount: {
-    fontSize: 18,
+    fontSize: homeFont.lg,
     fontWeight: "bold",
     color: homeText.accent,
   },
@@ -176,17 +176,17 @@ const styles = StyleSheet.create({
     minHeight: 60,
   },
   emoji: {
-    fontSize: 16,
+    fontSize: homeFont.title,
     marginBottom: 2,
   },
   regionName: {
-    fontSize: 10,
+    fontSize: homeFont.meta,
     fontWeight: "600",
     color: "#555",
     textAlign: "center",
   },
   count: {
-    fontSize: 11,
+    fontSize: homeFont.meta,
     color: "#999",
     marginTop: 2,
   },
@@ -202,6 +202,6 @@ const styles = StyleSheet.create({
     paddingTop: 4,
   },
   footerText: {
-    fontSize: 12,
+    fontSize: homeFont.meta,
   },
 });

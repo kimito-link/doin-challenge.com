@@ -12,10 +12,10 @@ export async function getPickedCommentsByChallengeId(challengeId: number) {
 export async function getPickedCommentsWithParticipation(challengeId: number) {
   const db = await getDb();
   if (!db) return [];
-  
+
   const picked = await db.select().from(pickedComments).where(eq(pickedComments.challengeId, challengeId));
   const participationList = await db.select().from(participations).where(eq(participations.challengeId, challengeId));
-  
+
   return picked.map(p => ({
     ...p,
     participation: participationList.find(part => part.id === p.participationId),
@@ -25,20 +25,20 @@ export async function getPickedCommentsWithParticipation(challengeId: number) {
 export async function pickComment(participationId: number, challengeId: number, pickedBy: number, reason?: string) {
   const db = await getDb();
   if (!db) throw new Error("Database not available");
-  
+
   // 既にピックアップされているかチェック
   const existing = await db.select().from(pickedComments)
     .where(eq(pickedComments.participationId, participationId));
-  
+
   if (existing.length > 0) return null; // 既にピックアップ済み
-  
-  const result = await db.insert(pickedComments).values({
+
+  const [result] = await db.insert(pickedComments).values({
     participationId,
     challengeId,
     pickedBy,
     reason,
   });
-  return result[0].insertId;
+  return result.insertId ?? null;
 }
 
 export async function unpickComment(participationId: number) {
@@ -65,8 +65,8 @@ export async function isCommentPicked(participationId: number) {
 export async function sendCheer(cheer: InsertCheer) {
   const db = await getDb();
   if (!db) return null;
-  const result = await db.insert(cheers).values(cheer);
-  return result[0].insertId;
+  const [result] = await db.insert(cheers).values(cheer);
+  return result.insertId ?? null;
 }
 
 export async function getCheersForParticipation(participationId: number) {
@@ -105,8 +105,8 @@ export async function getCheersSentByUser(userId: number) {
 export async function createAchievementPage(page: InsertAchievementPage) {
   const db = await getDb();
   if (!db) return null;
-  const result = await db.insert(achievementPages).values(page);
-  return result[0].insertId;
+  const [result] = await db.insert(achievementPages).values(page);
+  return result.insertId ?? null;
 }
 
 export async function getAchievementPage(challengeId: number) {

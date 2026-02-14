@@ -93,7 +93,7 @@ export function OptimizedImage({
               ]}
             >
               <LinearGradient
-                colors={["transparent", "rgba(255,255,255,0.1)", "transparent"]}
+                colors={["transparent", palette.white + "1A", "transparent"]}
                 start={{ x: 0, y: 0 }}
                 end={{ x: 1, y: 0 }}
                 style={styles.gradient}
@@ -161,7 +161,7 @@ export function OptimizedAvatar({
   fallbackColor = color.info,
   ...props
 }: OptimizedImageProps & { size?: number; fallbackText?: string }) {
-  const [showFallback, setShowFallback] = useState(!props.source);
+  const showFallback = !props.source;
 
   // sourceがない場合はフォールバックを表示
   if (showFallback || !props.source) {

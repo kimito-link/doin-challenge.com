@@ -10,26 +10,29 @@
  * - A/Bテスト（表示回数・ログイン成功率の記録）
  */
 
-import { View, Text, Modal, Pressable, Image } from "react-native";
+import { View, Text, Modal, Pressable } from "react-native";
 import { useColors } from "@/hooks/use-colors";
+import { color, palette } from "@/theme/tokens";
 import { Button } from "../ui/button";
-import Animated, { 
-  FadeInDown, 
-  FadeInUp, 
-  BounceIn,
+import Animated, {
+  FadeInDown,
+  FadeInUp,
   useAnimatedStyle,
   withSpring,
   withRepeat,
   withSequence,
 } from "react-native-reanimated";
-import { useEffect, useState, useMemo } from "react";
+import { Image } from "expo-image";
+import { useEffect, useState, useRef } from "react";
 import { useLoginABTest } from "@/hooks/use-login-ab-test";
 
-// キャラクター画像の静的マッピング（動的require()を避けるため）
+const AnimatedImage = Animated.createAnimatedComponent(Image);
+
+// キャラクター画像（りんく・こん太・たぬ姉のオリジナル画像）
 const CHARACTER_IMAGES = {
-  rinku: require("@/assets/images/characters/rinku.png"),
-  konta: require("@/assets/images/characters/konta.png"),
-  tanune: require("@/assets/images/characters/tanune.png"),
+  rinku: require("@/assets/images/characters/link/link-yukkuri-smile-mouth-open.png"),
+  konta: require("@/assets/images/characters/konta/kitsune-yukkuri-smile-mouth-open.png"),
+  tanune: require("@/assets/images/characters/tanunee/tanuki-yukkuri-smile-mouth-open.png"),
 };
 
 interface LoginModalProps {
@@ -44,16 +47,28 @@ export function LoginModal({
   onCancel 
 }: LoginModalProps) {
   const colors = useColors();
-  const { selectMessage, recordConversion, selectedMessage } = useLoginABTest();
-  const [currentMessage, setCurrentMessage] = useState(selectedMessage);
+  const { selectMessage, recordConversion } = useLoginABTest();
+  const [currentMessage, setCurrentMessage] = useState<ReturnType<typeof selectMessage> | null>(null);
+  const wasVisibleRef = useRef(false);
+  const [imageError, setImageError] = useState(false);
 
-  // モーダルが表示されるたびにメッセージを選択
+  // モーダルが表示されるたびにメッセージを選択（ちらつき防止: 一度だけ選択）
   useEffect(() => {
-    if (visible) {
+    if (visible && !wasVisibleRef.current) {
+      // 初めて表示される時だけメッセージを選択
       const message = selectMessage();
       setCurrentMessage(message);
+      wasVisibleRef.current = true;
+    } else if (!visible && wasVisibleRef.current) {
+      // モーダルが閉じられたらリセット（次回表示時に新しいメッセージを選択）
+      wasVisibleRef.current = false;
+      // ちらつきを防ぐため、少し遅延してクリア
+      const timer = setTimeout(() => {
+        setCurrentMessage(null);
+      }, 300); // フェードアニメーション完了後にクリア
+      return () => clearTimeout(timer);
     }
-  }, [visible]);
+  }, [visible, selectMessage]);
 
   // ログイン確認時にコンバージョンを記録
   const handleConfirm = () => {
@@ -61,8 +76,11 @@ export function LoginModal({
     onConfirm();
   };
 
-  // キャラクターのバウンスアニメーション
+  // キャラクターのバウンスアニメーション（ちらつき防止: モーダル表示時のみ有効）
   const characterAnimatedStyle = useAnimatedStyle(() => {
+    if (!visible) {
+      return { transform: [{ translateY: 0 }] };
+    }
     return {
       transform: [
         {
@@ -77,10 +95,10 @@ export function LoginModal({
         },
       ],
     };
-  });
+  }, [visible]);
 
-  // メッセージが選択されていない場合は何も表示しない
-  if (!currentMessage) {
+  // モーダルが非表示のときは何もレンダリングしない（ちらつき防止）
+  if (!visible || !currentMessage) {
     return null;
   }
 
@@ -94,7 +112,7 @@ export function LoginModal({
       <Pressable 
         style={{ 
           flex: 1, 
-          backgroundColor: "rgba(0, 0, 0, 0.5)",
+          backgroundColor: palette.gray900 + "80", // 50% opacity
           justifyContent: "center",
           alignItems: "center",
           padding: 24,
@@ -151,23 +169,41 @@ export function LoginModal({
               flexDirection: "row", 
               alignItems: "flex-start", 
               marginBottom: 28,
-              backgroundColor: "#FFF5F0",
+              backgroundColor: colors.surface,
+              borderWidth: 1,
+              borderColor: colors.border,
               padding: 20,
               borderRadius: 16,
-              shadowColor: "#000",
+              shadowColor: palette.gray900,
               shadowOffset: { width: 0, height: 2 },
-              shadowOpacity: 0.05,
+              shadowOpacity: 0.1,
               shadowRadius: 8,
               elevation: 2,
             }}
           >
-            <Animated.Image
-              source={CHARACTER_IMAGES[currentMessage.character]}
-              style={[
-                { width: 64, height: 64, marginRight: 12 },
-                characterAnimatedStyle,
-              ]}
-            />
+            {!imageError ? (
+              <AnimatedImage
+                source={CHARACTER_IMAGES[currentMessage.character]}
+                style={[
+                  { width: 64, height: 64, marginRight: 12 },
+                  characterAnimatedStyle,
+                ]}
+                onError={() => setImageError(true)}
+                cachePolicy="memory-disk"
+                contentFit="contain"
+              />
+            ) : (
+              <Animated.View
+                style={[
+                  { width: 64, height: 64, marginRight: 12, borderRadius: 32, backgroundColor: color.accentPrimary, alignItems: "center", justifyContent: "center" },
+                  characterAnimatedStyle,
+                ]}
+              >
+                <Text style={{ color: "white", fontSize: 24, fontWeight: "bold" }}>
+                  {currentMessage.character === "rinku" ? "り" : currentMessage.character === "konta" ? "こ" : "た"}
+                </Text>
+              </Animated.View>
+            )}
             <Animated.View 
               entering={FadeInUp.delay(400).springify()}
               style={{ flex: 1 }}
@@ -188,7 +224,7 @@ export function LoginModal({
             <Button
               onPress={handleConfirm}
               icon="login"
-              style={{ backgroundColor: "#1DA1F2" }}
+              style={{ backgroundColor: color.twitter }}
             >
               Xでログイン
             </Button>

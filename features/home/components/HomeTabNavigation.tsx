@@ -6,7 +6,7 @@ import { View, Text, Pressable, StyleSheet, ScrollView, Platform } from "react-n
 import MaterialIcons from "@expo/vector-icons/MaterialIcons";
 import * as Haptics from "expo-haptics";
 import { useColors } from "@/hooks/use-colors";
-import { homeText, homeUI } from "@/features/home/ui/theme/tokens";
+import { homeText, homeUI, homeFont } from "@/features/home/ui/theme/tokens";
 
 export type HomeTabType = "all" | "solo" | "group" | "favorite";
 
@@ -118,10 +118,10 @@ const styles = StyleSheet.create({
     borderWidth: 2,
   },
   tabEmoji: {
-    fontSize: 16,
+    fontSize: homeFont.title,
   },
   tabLabel: {
-    fontSize: 14,
+    fontSize: homeFont.body,
     fontWeight: "600",
   },
   countBadge: {
@@ -133,7 +133,7 @@ const styles = StyleSheet.create({
     alignItems: "center",
   },
   countText: {
-    fontSize: 10,
+    fontSize: homeFont.meta,
     fontWeight: "bold",
     color: homeText.muted,
   },

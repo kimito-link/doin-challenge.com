@@ -65,7 +65,7 @@ export function ContributionDisplay({
 
       {/* 説明テキスト */}
       {showDescription && (
-        <Text style={{ color: color.textHint, fontSize: 11, marginTop: 8 }}>
+        <Text style={{ color: color.textHint, fontSize: 12, marginTop: 8 }}>
           {description}
         </Text>
       )}

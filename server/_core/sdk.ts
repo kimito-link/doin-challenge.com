@@ -1,19 +1,21 @@
-import { AXIOS_TIMEOUT_MS, COOKIE_NAME, ONE_YEAR_MS } from "../../shared/const.js";
+/**
+ * セッション管理 SDK
+ * 
+ * JWT ベースのセッショントークン生成・検証と、リクエスト認証を行う。
+ * 
+ * 注意: Manus OAuth Server との通信（OAuthService, exchangeCodeForToken,
+ * getUserInfo, getUserInfoWithJwt）は現在使用されていないため削除済み。
+ * ログインは Twitter OAuth 2.0 のみ使用し、ユーザー情報は直接 DB に保存される。
+ */
+import { COOKIE_NAME, SESSION_MAX_AGE_MS } from "../../shared/const.js";
 import { ForbiddenError } from "../../shared/_core/errors.js";
-import axios, { type AxiosInstance } from "axios";
 import { parse as parseCookieHeader } from "cookie";
 import type { Request } from "express";
 import { SignJWT, jwtVerify } from "jose";
 import type { User } from "../../drizzle/schema";
 import * as db from "../db";
 import { ENV } from "./env";
-import type {
-  ExchangeTokenRequest,
-  ExchangeTokenResponse,
-  GetUserInfoResponse,
-  GetUserInfoWithJwtRequest,
-  GetUserInfoWithJwtResponse,
-} from "./types/manusTypes";
+
 // Utility function
 const isNonEmptyString = (value: unknown): value is string =>
   typeof value === "string" && value.length > 0;
@@ -24,106 +26,9 @@ export type SessionPayload = {
   name: string;
 };
 
-const EXCHANGE_TOKEN_PATH = `/webdev.v1.WebDevAuthPublicService/ExchangeToken`;
-const GET_USER_INFO_PATH = `/webdev.v1.WebDevAuthPublicService/GetUserInfo`;
-const GET_USER_INFO_WITH_JWT_PATH = `/webdev.v1.WebDevAuthPublicService/GetUserInfoWithJwt`;
-
-class OAuthService {
-  constructor(private client: ReturnType<typeof axios.create>) {
-    console.log("[OAuth] Initialized with baseURL:", ENV.oAuthServerUrl);
-    if (!ENV.oAuthServerUrl) {
-      console.error(
-        "[OAuth] ERROR: OAUTH_SERVER_URL is not configured! Set OAUTH_SERVER_URL environment variable.",
-      );
-    }
-  }
-
-  private decodeState(state: string): string {
-    const redirectUri = atob(state);
-    return redirectUri;
-  }
-
-  async getTokenByCode(code: string, state: string): Promise<ExchangeTokenResponse> {
-    const payload: ExchangeTokenRequest = {
-      clientId: ENV.appId,
-      grantType: "authorization_code",
-      code,
-      redirectUri: this.decodeState(state),
-    };
-
-    const { data } = await this.client.post<ExchangeTokenResponse>(EXCHANGE_TOKEN_PATH, payload);
-
-    return data;
-  }
-
-  async getUserInfoByToken(token: ExchangeTokenResponse): Promise<GetUserInfoResponse> {
-    const { data } = await this.client.post<GetUserInfoResponse>(GET_USER_INFO_PATH, {
-      accessToken: token.accessToken,
-    });
-
-    return data;
-  }
-}
-
-const createOAuthHttpClient = (): AxiosInstance =>
-  axios.create({
-    baseURL: ENV.oAuthServerUrl,
-    timeout: AXIOS_TIMEOUT_MS,
-  });
-
 class SDKServer {
-  private readonly client: AxiosInstance;
-  private readonly oauthService: OAuthService;
-
-  constructor(client: AxiosInstance = createOAuthHttpClient()) {
-    this.client = client;
-    this.oauthService = new OAuthService(this.client);
-  }
-
-  private deriveLoginMethod(
-    platforms: unknown,
-    fallback: string | null | undefined,
-  ): string | null {
-    if (fallback && fallback.length > 0) return fallback;
-    if (!Array.isArray(platforms) || platforms.length === 0) return null;
-    const set = new Set<string>(platforms.filter((p): p is string => typeof p === "string"));
-    if (set.has("REGISTERED_PLATFORM_EMAIL")) return "email";
-    if (set.has("REGISTERED_PLATFORM_GOOGLE")) return "google";
-    if (set.has("REGISTERED_PLATFORM_APPLE")) return "apple";
-    if (set.has("REGISTERED_PLATFORM_MICROSOFT") || set.has("REGISTERED_PLATFORM_AZURE"))
-      return "microsoft";
-    if (set.has("REGISTERED_PLATFORM_GITHUB")) return "github";
-    const first = Array.from(set)[0];
-    return first ? first.toLowerCase() : null;
-  }
-
-  /**
-   * Exchange OAuth authorization code for access token
-   * @example
-   * const tokenResponse = await sdk.exchangeCodeForToken(code, state);
-   */
-  async exchangeCodeForToken(code: string, state: string): Promise<ExchangeTokenResponse> {
-    return this.oauthService.getTokenByCode(code, state);
-  }
-
-  /**
-   * Get user information using access token
-   * @example
-   * const userInfo = await sdk.getUserInfo(tokenResponse.accessToken);
-   */
-  async getUserInfo(accessToken: string): Promise<GetUserInfoResponse> {
-    const data = await this.oauthService.getUserInfoByToken({
-      accessToken,
-    } as ExchangeTokenResponse);
-    const loginMethod = this.deriveLoginMethod(
-      (data as any)?.platforms,
-      (data as any)?.platform ?? data.platform ?? null,
-    );
-    return {
-      ...(data as any),
-      platform: loginMethod,
-      loginMethod,
-    } as GetUserInfoResponse;
+  constructor() {
+    // Manus OAuth Server への通信は不要になったため、HTTP クライアントは作成しない
   }
 
   private parseCookies(cookieHeader: string | undefined) {
@@ -136,14 +41,21 @@ class SDKServer {
   }
 
   private getSessionSecret() {
-    const secret = ENV.cookieSecret;
+    // テストで環境変数を変更できるように、ENV.cookieSecretではなくprocess.env.JWT_SECRETを直接参照
+    const secret = process.env.JWT_SECRET ?? ENV.cookieSecret;
+    
+    if (!secret || secret.trim() === "") {
+      throw new Error(
+        "JWT_SECRET environment variable is not set or empty. " +
+        "This is required for session token generation."
+      );
+    }
+    
     return new TextEncoder().encode(secret);
   }
 
   /**
-   * Create a session token for a Manus user openId
-   * @example
-   * const sessionToken = await sdk.createSessionToken(userInfo.openId);
+   * Create a session token for a user openId
    */
   async createSessionToken(
     openId: string,
@@ -164,7 +76,7 @@ class SDKServer {
     options: { expiresInMs?: number } = {},
   ): Promise<string> {
     const issuedAt = Date.now();
-    const expiresInMs = options.expiresInMs ?? ONE_YEAR_MS;
+    const expiresInMs = options.expiresInMs ?? SESSION_MAX_AGE_MS;
     const expirationSeconds = Math.floor((issuedAt + expiresInMs) / 1000);
     const secretKey = this.getSessionSecret();
 
@@ -182,7 +94,6 @@ class SDKServer {
     cookieValue: string | undefined | null,
   ): Promise<{ openId: string; appId: string; name: string } | null> {
     if (!cookieValue) {
-      console.warn("[Auth] Missing session cookie");
       return null;
     }
 
@@ -209,36 +120,19 @@ class SDKServer {
     }
   }
 
-  async getUserInfoWithJwt(jwtToken: string): Promise<GetUserInfoWithJwtResponse> {
-    const payload: GetUserInfoWithJwtRequest = {
-      jwtToken,
-      projectId: ENV.appId,
-    };
-
-    const { data } = await this.client.post<GetUserInfoWithJwtResponse>(
-      GET_USER_INFO_WITH_JWT_PATH,
-      payload,
-    );
-
-    const loginMethod = this.deriveLoginMethod(
-      (data as any)?.platforms,
-      (data as any)?.platform ?? data.platform ?? null,
-    );
-    return {
-      ...(data as any),
-      platform: loginMethod,
-      loginMethod,
-    } as GetUserInfoWithJwtResponse;
-  }
-
+  /**
+   * リクエストからユーザーを認証する。
+   * Bearer トークン or セッション Cookie の JWT を検証し、DB からユーザーを取得する。
+   */
   async authenticateRequest(req: Request): Promise<User> {
-    // Regular authentication flow
+    // Bearer token from Authorization header
     const authHeader = req.headers.authorization || req.headers.Authorization;
     let token: string | undefined;
     if (typeof authHeader === "string" && authHeader.startsWith("Bearer ")) {
       token = authHeader.slice("Bearer ".length).trim();
     }
 
+    // Cookie fallback
     const cookies = this.parseCookies(req.headers.cookie);
     const sessionCookie = token || cookies.get(COOKIE_NAME);
     const session = await this.verifySession(sessionCookie);
@@ -248,38 +142,83 @@ class SDKServer {
     }
 
     const sessionUserId = session.openId;
-    const signedInAt = new Date();
-    let user = await db.getUserByOpenId(sessionUserId);
 
-    // If user not in DB, sync from OAuth server automatically
-    if (!user) {
-      try {
-        const userInfo = await this.getUserInfoWithJwt(sessionCookie ?? "");
-        await db.upsertUser({
-          openId: userInfo.openId,
-          name: userInfo.name || null,
-          email: userInfo.email ?? null,
-          loginMethod: userInfo.loginMethod ?? userInfo.platform ?? null,
-          lastSignedIn: signedInAt,
-        });
-        user = await db.getUserByOpenId(userInfo.openId);
-      } catch (error) {
-        console.error("[Auth] Failed to sync user from OAuth:", error);
-        throw ForbiddenError("Failed to sync user info");
-      }
+    // アイドルタイムアウトチェック（ガイド推奨）
+    if (!checkAndUpdateActivity(sessionUserId)) {
+      throw ForbiddenError("Session expired due to inactivity");
     }
 
+    const signedInAt = new Date();
+    const user = await db.getUserByOpenId(sessionUserId);
+
     if (!user) {
+      console.error("[Auth] User not found in DB:", sessionUserId);
       throw ForbiddenError("User not found");
     }
 
-    await db.upsertUser({
-      openId: user.openId,
-      lastSignedIn: signedInAt,
-    });
+    // lastSignedIn を更新（BUG-007修正: 5分間隔でスロットリング、DB書き込み負荷軽減）
+    const lastUpdate = lastSignedInCache.get(user.openId);
+    const THROTTLE_MS = 5 * 60 * 1000; // 5分
+    if (!lastUpdate || (Date.now() - lastUpdate) > THROTTLE_MS) {
+      lastSignedInCache.set(user.openId, Date.now());
+      db.upsertUser({
+        openId: user.openId,
+        lastSignedIn: signedInAt,
+      }).catch((err) => console.warn("[Auth] lastSignedIn update failed:", err));
+    }
 
     return user;
   }
+}
+
+// =============================================================================
+// セッションアイドルタイムアウト（ガイド推奨: 非アクティブユーザーの自動ログアウト）
+// JWTの絶対タイムアウト(72h)に加え、操作がない場合にセッションを無効化
+// =============================================================================
+
+const SESSION_IDLE_TIMEOUT_MS = 4 * 60 * 60 * 1000; // 4時間（操作なし）
+const lastActivityMap = new Map<string, number>();
+// BUG-007: lastSignedIn更新のスロットリング用キャッシュ
+const lastSignedInCache = new Map<string, number>();
+
+// メモリリーク防止: 古いエントリを定期的にクリーンアップ
+setInterval(() => {
+  const now = Date.now();
+  for (const [key, ts] of lastActivityMap.entries()) {
+    if (now - ts > SESSION_IDLE_TIMEOUT_MS * 2) {
+      lastActivityMap.delete(key);
+    }
+  }
+}, 60 * 60 * 1000); // 1時間ごとにクリーンアップ
+
+/**
+ * アイドルタイムアウトのチェックと更新
+ * @returns false = タイムアウトしている (セッション無効)
+ */
+export function checkAndUpdateActivity(openId: string): boolean {
+  const now = Date.now();
+  const lastActivity = lastActivityMap.get(openId);
+  
+  // 初回アクセスは常にOK
+  if (lastActivity === undefined) {
+    lastActivityMap.set(openId, now);
+    return true;
+  }
+  
+  // アイドルタイムアウトチェック
+  if (now - lastActivity > SESSION_IDLE_TIMEOUT_MS) {
+    lastActivityMap.delete(openId);
+    return false; // タイムアウト
+  }
+  
+  // 最終アクティビティを更新
+  lastActivityMap.set(openId, now);
+  return true;
+}
+
+/** ログアウト時にアクティビティ記録を削除 */
+export function clearActivity(openId: string): void {
+  lastActivityMap.delete(openId);
 }
 
 export const sdk = new SDKServer();

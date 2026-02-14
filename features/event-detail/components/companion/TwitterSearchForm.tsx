@@ -3,12 +3,13 @@
  * Twitter検索フォーム（ユーザー名入力、検索、結果表示）
  */
 
-import { View, Text, Pressable, TextInput } from "react-native";
-import { Image } from "expo-image";
+import { View, Text, Pressable } from "react-native";
 import MaterialIcons from "@expo/vector-icons/MaterialIcons";
 import { color } from "@/theme/tokens";
 import { useColors } from "@/hooks/use-colors";
+import { Input } from "@/components/ui";
 import type { LookedUpProfile } from "../../types";
+import { TwitterUserCompact, toTwitterUserData } from "@/components/molecules/twitter-user-card";
 
 interface TwitterSearchFormProps {
   newCompanionName: string;
@@ -106,29 +107,18 @@ function TwitterInput({
   
   return (
     <>
-      <Text style={{ color: color.textSecondary, fontSize: 14, marginBottom: 4 }}>
-        Twitterユーザー名またはURL
-      </Text>
-      <Text style={{ color: color.textHint, fontSize: 12, marginBottom: 8 }}>
-        @username または https://x.com/username
-      </Text>
+      <Input
+        label="Twitterユーザー名またはURL"
+        value={value}
+        onChangeText={onChange}
+        placeholder="@idolfunch または https://x.com/idolfunch"
+        autoCapitalize="none"
+        hint="@username または https://x.com/username"
+        containerStyle={{ marginBottom: 8 }}
+        inputStyle={{ flex: 1, color: color.twitter }}
+      />
       <View style={{ flexDirection: "row", gap: 8, marginBottom: 12 }}>
-        <TextInput
-          value={value}
-          onChangeText={onChange}
-          placeholder="@idolfunch または https://x.com/idolfunch"
-          placeholderTextColor={color.textHint}
-          autoCapitalize="none"
-          style={{
-            flex: 1,
-            backgroundColor: color.surface,
-            borderRadius: 8,
-            padding: 12,
-            color: color.twitter,
-            borderWidth: 1,
-            borderColor: color.border,
-          }}
-        />
+        <View style={{ flex: 1 }} />
         <Pressable
           onPress={onSearch}
           disabled={isLoading || !value.trim()}
@@ -136,6 +126,7 @@ function TwitterInput({
             backgroundColor: isLoading || !value.trim() ? color.border : color.twitter,
             borderRadius: 8,
             paddingHorizontal: 16,
+            paddingVertical: 12,
             justifyContent: "center",
           }}
         >
@@ -148,10 +139,8 @@ function TwitterInput({
   );
 }
 
-// 検索結果表示
+// 検索結果表示（TwitterUserCompact で統一）
 function LookedUpProfileDisplay({ profile }: { profile: LookedUpProfile }) {
-  const colors = useColors();
-  
   return (
     <View style={{
       backgroundColor: color.surface,
@@ -163,17 +152,11 @@ function LookedUpProfileDisplay({ profile }: { profile: LookedUpProfile }) {
       borderWidth: 1,
       borderColor: color.twitter,
     }}>
-      <Image
-        source={{ uri: profile.profileImage }}
-        style={{ width: 40, height: 40, borderRadius: 20, marginRight: 12 }}
-      />
       <View style={{ flex: 1 }}>
-        <Text style={{ color: colors.foreground, fontWeight: "600" }}>
-          {profile.name}
-        </Text>
-        <Text style={{ color: color.twitter, fontSize: 12 }}>
-          @{profile.username}
-        </Text>
+        <TwitterUserCompact
+          user={toTwitterUserData(profile)}
+          size="medium"
+        />
       </View>
       <MaterialIcons name="check-circle" size={24} color={color.success} />
     </View>
@@ -188,29 +171,14 @@ function DirectNameInput({
   value: string;
   onChange: (text: string) => void;
 }) {
-  const colors = useColors();
-  
   return (
-    <>
-      <Text style={{ color: color.textSecondary, fontSize: 14, marginBottom: 4, marginTop: 8 }}>
-        または名前を直接入力
-      </Text>
-      <TextInput
-        value={value}
-        onChangeText={onChange}
-        placeholder="友人の名前"
-        placeholderTextColor={color.textHint}
-        style={{
-          backgroundColor: color.surface,
-          borderRadius: 8,
-          padding: 12,
-          color: colors.foreground,
-          borderWidth: 1,
-          borderColor: color.border,
-          marginBottom: 12,
-        }}
-      />
-    </>
+    <Input
+      label="または名前を直接入力"
+      value={value}
+      onChangeText={onChange}
+      placeholder="友人の名前"
+      containerStyle={{ marginTop: 8, marginBottom: 0 }}
+    />
   );
 }
 

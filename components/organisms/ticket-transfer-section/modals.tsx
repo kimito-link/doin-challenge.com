@@ -1,10 +1,11 @@
 // components/organisms/ticket-transfer-section/modals.tsx
-// v6.18: チケット譲渡のモーダルコンポーネント
+// v6.18: チケット譲渡のモーダルコンポーネント（UI Modal でラップ）
 import { useState } from "react";
-import { View, Text, Pressable, TextInput, Modal , Platform} from "react-native";
-import * as Haptics from "expo-haptics";
+import { View, Text, Pressable } from "react-native";
+import { Modal } from "@/components/ui/modal";
 import { color } from "@/theme/tokens";
 import { PriceType, priceTypeLabels, priceTypeColors } from "./types";
+import { Input } from "@/components/ui/input";
 
 // 譲渡投稿作成モーダル
 export function CreateTransferModal({
@@ -34,28 +35,8 @@ export function CreateTransferModal({
   };
 
   return (
-    <Modal visible={visible} transparent animationType="fade" onRequestClose={onClose}>
-      <View style={{
-        flex: 1,
-        backgroundColor: "rgba(0,0,0,0.8)",
-        justifyContent: "center",
-        alignItems: "center",
-        padding: 20,
-      }}>
-        <View style={{
-          backgroundColor: color.surface,
-          borderRadius: 16,
-          padding: 20,
-          width: "100%",
-          maxWidth: 400,
-          borderWidth: 1,
-          borderColor: color.border,
-        }}>
-          <Text style={{ color: color.textWhite, fontSize: 20, fontWeight: "bold", marginBottom: 20 }}>
-            チケットを譲る
-          </Text>
-          
-          {/* 枚数 */}
+    <Modal visible={visible} onClose={onClose} title="チケットを譲る" showCloseButton maxWidth={400}>
+      {/* 枚数 */}
           <Text style={{ color: color.textMuted, fontSize: 14, marginBottom: 8 }}>枚数</Text>
           <View style={{ flexDirection: "row", gap: 8, marginBottom: 16 }}>
             {[1, 2, 3, 4, 5].map((n) => (
@@ -104,30 +85,20 @@ export function CreateTransferModal({
           </View>
           
           {/* コメント */}
-          <Text style={{ color: color.textMuted, fontSize: 14, marginBottom: 8 }}>コメント（任意）</Text>
-          <TextInput
+          <Input
+            label="コメント（任意）"
             value={comment}
             onChangeText={setComment}
             placeholder="例: 急な仕事で行けなくなりました..."
-            placeholderTextColor={color.textSubtle}
             multiline
             numberOfLines={3}
-            style={{
-              backgroundColor: color.bg,
-              borderRadius: 8,
-              padding: 12,
-              color: color.textWhite,
-              borderWidth: 1,
-              borderColor: color.border,
-              minHeight: 80,
-              textAlignVertical: "top",
-              marginBottom: 16,
-            }}
+            containerStyle={{ marginBottom: 16 }}
+            style={{ minHeight: 80, textAlignVertical: "top" }}
           />
           
           {/* 注意事項 */}
           <View style={{
-            backgroundColor: "rgba(245, 158, 11, 0.1)",
+            backgroundColor: color.warning + "1A", // 10% opacity
             borderRadius: 8,
             padding: 12,
             marginBottom: 20,
@@ -169,8 +140,6 @@ export function CreateTransferModal({
               </Text>
             </Pressable>
           </View>
-        </View>
-      </View>
     </Modal>
   );
 }
@@ -199,28 +168,8 @@ export function WaitlistModal({
   };
 
   return (
-    <Modal visible={visible} transparent animationType="fade" onRequestClose={onClose}>
-      <View style={{
-        flex: 1,
-        backgroundColor: "rgba(0,0,0,0.8)",
-        justifyContent: "center",
-        alignItems: "center",
-        padding: 20,
-      }}>
-        <View style={{
-          backgroundColor: color.surface,
-          borderRadius: 16,
-          padding: 20,
-          width: "100%",
-          maxWidth: 400,
-          borderWidth: 1,
-          borderColor: color.border,
-        }}>
-          <Text style={{ color: color.textWhite, fontSize: 20, fontWeight: "bold", marginBottom: 20 }}>
-            チケットを探す
-          </Text>
-          
-          <Text style={{ color: color.textMuted, fontSize: 14, marginBottom: 16 }}>
+    <Modal visible={visible} onClose={onClose} title="チケットを探す" showCloseButton maxWidth={400}>
+      <Text style={{ color: color.textMuted, fontSize: 14, marginBottom: 16 }}>
             待機リストに登録すると、新しい譲渡投稿があった時に通知を受け取れます。
           </Text>
           
@@ -279,8 +228,6 @@ export function WaitlistModal({
               </Text>
             </Pressable>
           </View>
-        </View>
-      </View>
     </Modal>
   );
 }

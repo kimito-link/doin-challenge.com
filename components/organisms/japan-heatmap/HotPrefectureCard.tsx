@@ -5,7 +5,7 @@
  */
 
 import { View, Text, StyleSheet } from "react-native";
-import { color } from "@/theme/tokens";
+import { color, palette } from "@/theme/tokens";
 import type { HotPrefectureCardProps } from "./types";
 
 export function HotPrefectureCard({ prefecture }: HotPrefectureCardProps) {
@@ -28,11 +28,11 @@ export function HotPrefectureCard({ prefecture }: HotPrefectureCardProps) {
 
 const styles = StyleSheet.create({
   hotRegionCard: {
-    backgroundColor: "rgba(239, 68, 68, 0.15)",
+    backgroundColor: palette.red500 + "26", // 15% opacity
     borderRadius: 12,
     padding: 16,
     borderWidth: 1,
-    borderColor: "rgba(239, 68, 68, 0.3)",
+    borderColor: palette.red500 + "4D", // 30% opacity
     flexDirection: "row",
     alignItems: "center",
     marginBottom: 16,

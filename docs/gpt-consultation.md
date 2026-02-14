@@ -153,7 +153,7 @@ GitHub (main branch) にプッシュ
 | | エラーログ | `app/admin/errors.tsx` | エラーログ確認 |
 | | システム | `app/admin/system.tsx` | システム設定 |
 | | データ整合性 | `app/admin/data-integrity.tsx` | データ整合性チェック |
-| | コンポーネント | `app/admin/components.tsx` | UIコンポーネント一覧 |
+| | コンポーネント | `app/admin/component-gallery.tsx` | UIコンポーネント一覧 |
 
 ---
 

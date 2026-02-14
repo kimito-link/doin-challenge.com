@@ -9,6 +9,7 @@ import { color } from "@/theme/tokens";
 import { settingsStyles as styles } from "./SettingsSections.styles";
 import { Button } from "@/components/ui/button";
 import type { SessionExpiryInfo } from "@/lib/token-manager";
+import { TwitterUserCard, toTwitterUserData } from "@/components/molecules/twitter-user-card";
 
 type User = {
   id: number;
@@ -66,6 +67,7 @@ export function AccountSection({
   sessionExpiry,
   otherAccounts,
   onAccountSwitch,
+  onProfileEdit,
   onLogout,
 }: {
   user: User | null;
@@ -73,6 +75,7 @@ export function AccountSection({
   sessionExpiry: SessionExpiryInfo | null;
   otherAccounts: Account[];
   onAccountSwitch: () => void;
+  onProfileEdit?: () => void;
   onLogout: () => void;
 }) {
   return (
@@ -83,26 +86,12 @@ export function AccountSection({
       {isAuthenticated && user ? (
         <View style={styles.currentAccount}>
           <View style={styles.accountRow}>
-            {user.profileImage ? (
-              <Image
-                source={{ uri: user.profileImage }}
-                style={styles.avatar}
-                contentFit="cover"
-              />
-            ) : (
-              <View style={[styles.avatar, styles.avatarPlaceholder]}>
-                <MaterialIcons name="person" size={24} color={color.textMuted} />
-              </View>
-            )}
             <View style={styles.accountInfo}>
-              <Text style={styles.accountName} numberOfLines={1}>
-                {user.name || user.username || "ユーザー"}
-              </Text>
-              {user.username && (
-                <Text style={styles.accountUsername} numberOfLines={1}>
-                  @{user.username}
-                </Text>
-              )}
+              <TwitterUserCard
+                user={toTwitterUserData(user)}
+                size="medium"
+                showFollowers={false}
+              />
             </View>
             <View style={styles.currentBadge}>
               <Text style={styles.currentBadgeText}>ログイン中</Text>
@@ -130,6 +119,17 @@ export function AccountSection({
           <MaterialIcons name="person-outline" size={32} color={color.textSubtle} />
           <Text style={styles.notLoggedInText}>ログインしていません</Text>
         </View>
+      )}
+
+      {/* プロフィール編集ボタン */}
+      {isAuthenticated && onProfileEdit && (
+        <MenuItem
+          icon="person"
+          iconColor={color.info}
+          title="プロフィール編集"
+          description="都道府県・性別を変更"
+          onPress={onProfileEdit}
+        />
       )}
 
       {/* アカウント切り替えボタン */}
@@ -246,12 +246,8 @@ export function HelpSection({
   );
 }
 
-// フッター
-export function SettingsFooter({
-  onTwitter,
-}: {
-  onTwitter: () => void;
-}) {
+// フッター（ロゴと「動員ちゃれんじ」のみ）
+export function SettingsFooter() {
   return (
     <View style={styles.footer}>
       <View style={styles.footerLogoContainer}>
@@ -262,19 +258,6 @@ export function SettingsFooter({
         />
         <Text style={styles.footerAppName}>動員ちゃれんじ</Text>
       </View>
-      <Text style={styles.footerVersion}>v1.0.0</Text>
-      <Text style={styles.footerSubtext}>設定はこのデバイスに保存されます</Text>
-      
-      <View style={styles.footerLinks}>
-        <Button variant="ghost" onPress={onTwitter} style={styles.footerLink}>
-          <MaterialIcons name="alternate-email" size={16} color={color.twitter} />
-          <Text style={styles.footerLinkText}>@doin_challenge</Text>
-        </Button>
-      </View>
-      
-      <Text style={styles.footerCopyright}>
-        © 2024 KimitoLink. All rights reserved.
-      </Text>
     </View>
   );
 }

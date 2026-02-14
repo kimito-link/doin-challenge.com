@@ -81,7 +81,7 @@ const styles = StyleSheet.create({
     width: 40,
     height: 40,
     borderRadius: 20,
-    backgroundColor: "rgba(221, 101, 0, 0.1)",
+    backgroundColor: palette.orange500 + "1A",
     justifyContent: "center",
     alignItems: "center",
     marginRight: 12,

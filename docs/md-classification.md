@@ -72,7 +72,6 @@
 ### アーキテクチャ・設計
 - ADAPTATION-GUIDE.md（他プロジェクトへの適用ガイド）
 - ARCHITECTURE.md（アーキテクチャレビューチェックリスト）
-- ARCHITECTURE.old.md（旧アーキテクチャドキュメント）
 - API-ARCHITECTURE.md（API設計ドキュメント）
 - COMPONENT-ARCHITECTURE.md（コンポーネント設計）
 - COMPONENT-MAP.md（コンポーネントマップ）
@@ -132,7 +131,6 @@
 - USER-GUIDE.md（ユーザーガイド）
 - INDEX.md（インデックス）
 - project-summary.md（プロジェクトサマリー）
-- backup_20260123.md（バックアップ）
 - manual-check.md（手動チェック）
 - code-reference.md（コード参照）
 

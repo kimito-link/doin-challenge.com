@@ -1,23 +1,23 @@
 /**
  * ExperienceOverlay.styles.ts
  * 
- * ExperienceOverlayコンポーネント専用のスタイル定義
- * v6.35: スタイルコロケーション対応
+ * ExperienceOverlay????????????????
+ * v6.35: ?????????????
  */
 import { StyleSheet, Dimensions } from "react-native";
-import { color } from "@/theme/tokens";
+import { color, palette } from "@/theme/tokens";
 
 const { width: SCREEN_WIDTH } = Dimensions.get("window");
 
 export const styles = StyleSheet.create({
-  // オーバーレイ
+  // ??????
   overlay: {
     ...StyleSheet.absoluteFillObject,
     zIndex: 9999,
     paddingHorizontal: 20,
   },
   
-  // ヘッダー
+  // ????
   header: {
     flexDirection: "row",
     justifyContent: "space-between",
@@ -39,7 +39,7 @@ export const styles = StyleSheet.create({
     width: 32,
     height: 32,
     borderRadius: 16,
-    backgroundColor: "rgba(255, 255, 255, 0.2)",
+    backgroundColor: palette.white + "33",
     justifyContent: "center",
     alignItems: "center",
   },
@@ -48,7 +48,7 @@ export const styles = StyleSheet.create({
     fontSize: 16,
   },
   
-  // プログレスバー
+  // ???????
   progressContainer: {
     flexDirection: "row",
     alignItems: "center",
@@ -58,7 +58,7 @@ export const styles = StyleSheet.create({
   progressBarWrapper: {
     flex: 1,
     height: 4,
-    backgroundColor: "rgba(255, 255, 255, 0.2)",
+    backgroundColor: palette.white + "33",
     borderRadius: 2,
     overflow: "hidden",
   },
@@ -69,12 +69,12 @@ export const styles = StyleSheet.create({
   },
   progressText: {
     fontSize: 12,
-    color: "rgba(255, 255, 255, 0.6)",
+    color: palette.white + "99",
     minWidth: 50,
     textAlign: "right",
   },
   
-  // スクロールコンテンツ
+  // ??????????
   scrollContent: {
     paddingBottom: 40,
   },
@@ -82,7 +82,7 @@ export const styles = StyleSheet.create({
     alignItems: "center",
   },
   
-  // キャラクターセクション
+  // ???????????
   characterSection: {
     flexDirection: "row",
     alignItems: "flex-start",
@@ -97,10 +97,10 @@ export const styles = StyleSheet.create({
     height: 80,
   },
   
-  // 思考バブル
+  // ?????
   thoughtBubble: {
     flex: 1,
-    backgroundColor: "rgba(255, 255, 255, 0.15)",
+    backgroundColor: palette.white + "26",
     borderRadius: 16,
     padding: 12,
     position: "relative",
@@ -116,7 +116,7 @@ export const styles = StyleSheet.create({
     borderBottomWidth: 8,
     borderBottomColor: "transparent",
     borderRightWidth: 8,
-    borderRightColor: "rgba(255, 255, 255, 0.15)",
+    borderRightColor: palette.white + "26",
   },
   thoughtText: {
     fontSize: 14,
@@ -125,7 +125,7 @@ export const styles = StyleSheet.create({
     fontStyle: "italic",
   },
   
-  // スピーチバブル
+  // ????
   speechBubble: {
     backgroundColor: color.textWhite,
     borderRadius: 20,
@@ -142,13 +142,13 @@ export const styles = StyleSheet.create({
   },
   subMessageText: {
     fontSize: 14,
-    color: "rgba(255, 255, 255, 0.8)",
+    color: palette.white + "CC",
     textAlign: "center",
     marginBottom: 20,
     paddingHorizontal: 20,
   },
   
-  // ナビゲーション
+  // ???????
   navigation: {
     flexDirection: "row",
     justifyContent: "center",
@@ -157,7 +157,7 @@ export const styles = StyleSheet.create({
     gap: 40,
   },
   
-  // キャラクターナビゲーションボタン
+  // ????????????????
   characterNavButton: {
     flexDirection: "row",
     alignItems: "flex-end",
@@ -170,7 +170,7 @@ export const styles = StyleSheet.create({
     height: 56,
   },
   navBubble: {
-    backgroundColor: "rgba(255, 255, 255, 0.15)",
+    backgroundColor: palette.white + "26",
     borderRadius: 16,
     paddingHorizontal: 16,
     paddingVertical: 10,
@@ -184,7 +184,7 @@ export const styles = StyleSheet.create({
     marginRight: -8,
   },
   navBubbleDisabled: {
-    backgroundColor: "rgba(255, 255, 255, 0.08)",
+    backgroundColor: palette.white + "14",
   },
   navBubblePrimary: {
     backgroundColor: color.hotPink,
@@ -200,7 +200,7 @@ export const styles = StyleSheet.create({
     borderBottomWidth: 6,
     borderBottomColor: "transparent",
     borderRightWidth: 6,
-    borderRightColor: "rgba(255, 255, 255, 0.15)",
+    borderRightColor: palette.white + "26",
   },
   navBubbleTailRight: {
     position: "absolute",
@@ -221,7 +221,7 @@ export const styles = StyleSheet.create({
     fontWeight: "600",
   },
   navBubbleTextDisabled: {
-    color: "rgba(255, 255, 255, 0.4)",
+    color: palette.white + "66",
   },
   navBubbleTextPrimary: {
     color: color.textWhite,

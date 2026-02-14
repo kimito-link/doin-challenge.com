@@ -1,6 +1,7 @@
 import { View, Text, Pressable, Platform } from "react-native";
 import { color, palette } from "@/theme/tokens";
 import MaterialIcons from "@expo/vector-icons/MaterialIcons";
+import { RetryButton } from "@/components/ui/retry-button";
 import * as Haptics from "expo-haptics";
 
 interface ErrorMessageProps {
@@ -11,19 +12,19 @@ interface ErrorMessageProps {
 
 const typeConfig = {
   error: {
-    bgColor: "rgba(239, 68, 68, 0.1)",
+    bgColor: palette.red500 + "1A", // 10% opacity
     borderColor: color.danger,
     iconColor: color.danger,
     icon: "error-outline" as const,
   },
   warning: {
-    bgColor: "rgba(245, 158, 11, 0.1)",
+    bgColor: palette.gold + "1A", // 10% opacity
     borderColor: color.warning,
     iconColor: color.warning,
     icon: "warning" as const,
   },
   info: {
-    bgColor: "rgba(59, 130, 246, 0.1)",
+    bgColor: palette.blue500 + "1A", // 10% opacity
     borderColor: color.info,
     iconColor: color.info,
     icon: "info-outline" as const,
@@ -58,28 +59,13 @@ export function ErrorMessage({ message, onRetry, type = "error" }: ErrorMessageP
         </Text>
       </View>
       {onRetry && (
-        <Pressable
-          onPress={() => {
-            triggerHaptic();
-            onRetry();
-          }}
-          style={({ pressed }) => [
-            {
-              minHeight: 44,
-              minWidth: 44,
-              paddingHorizontal: 16,
-              paddingVertical: 10,
-              backgroundColor: config.borderColor,
-              borderRadius: 8,
-              alignItems: "center",
-              justifyContent: "center",
-              marginLeft: 12,
-            },
-            pressed && { opacity: 0.7, transform: [{ scale: 0.97 }] },
-          ]}
-        >
-          <Text style={{ color: color.textWhite, fontSize: 14, fontWeight: "600" }}>再試行</Text>
-        </Pressable>
+        <View style={{ marginLeft: 12 }}>
+          <RetryButton 
+            onPress={onRetry} 
+            size="sm"
+            label="再試行"
+          />
+        </View>
       )}
     </View>
   );

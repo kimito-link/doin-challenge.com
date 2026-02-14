@@ -5,6 +5,7 @@
  */
 
 import React, { useState } from "react";
+import { commonCopy } from "@/constants/copy/common";
 import { color, palette } from "@/theme/tokens";
 import {
   View,
@@ -27,7 +28,6 @@ import { SavedAccount, setCurrentAccount, formatLastUsed } from "@/lib/account-m
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import MaterialIcons from "@expo/vector-icons/MaterialIcons";
 import * as Auth from "@/lib/_core/auth";
-import { saveTokenData } from "@/lib/token-manager";
 import { redirectToTwitterSwitchAccount, clearSession } from "@/lib/api";
 
 interface AccountSwitcherProps {
@@ -38,7 +38,7 @@ interface AccountSwitcherProps {
 export function AccountSwitcher({ visible, onClose }: AccountSwitcherProps) {
   const colors = useColors();
   const { accounts, currentAccountId, deleteAccount, refreshAccounts } = useAccounts();
-  const { user, login, logout, refresh } = useAuth();
+  const { user, logout, refresh, isAuthReady } = useAuth();
   const { showSuccess } = useToast();
   const [isLoading, setIsLoading] = useState(false);
   const [switchingAccountId, setSwitchingAccountId] = useState<string | null>(null);
@@ -125,7 +125,7 @@ export function AccountSwitcher({ visible, onClose }: AccountSwitcherProps) {
       }, 300);
     } catch (error) {
       console.error("[AccountSwitcher] Failed to switch account:", error);
-      Alert.alert("エラー", "アカウントの切り替えに失敗しました");
+      Alert.alert(commonCopy.alerts.error, "アカウントの切り替えに失敗しました");
     } finally {
       setSwitchingAccountId(null);
     }
@@ -221,8 +221,8 @@ export function AccountSwitcher({ visible, onClose }: AccountSwitcherProps) {
           </View>
 
           <ScrollView style={styles.accountList} showsVerticalScrollIndicator={false}>
-            {/* 現在のアカウント */}
-            {user && (
+            {/* 現在のアカウント（認証確定後のみで点滅防止） */}
+            {isAuthReady && user && (
               <View
                 style={[
                   styles.accountItem,
@@ -342,7 +342,7 @@ export function AccountSwitcher({ visible, onClose }: AccountSwitcherProps) {
           <Pressable
             style={({ pressed }) => [
               styles.switchButton,
-              { backgroundColor: "#1D9BF0" },
+              { backgroundColor: palette.blue500 },
               pressed && !isLoading && { opacity: 0.7 },
             ]}
             onPress={() => {
@@ -371,7 +371,7 @@ export function AccountSwitcher({ visible, onClose }: AccountSwitcherProps) {
 const styles = StyleSheet.create({
   overlay: {
     flex: 1,
-    backgroundColor: "rgba(0, 0, 0, 0.6)",
+    backgroundColor: palette.black + "99",
     justifyContent: "flex-end",
   },
   container: {

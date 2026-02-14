@@ -6,8 +6,11 @@
 
 import { ScreenContainer } from "@/components/organisms/screen-container";
 import { RefreshingIndicator } from "@/components/molecules/refreshing-indicator";
-import { color, palette } from "@/theme/tokens";
+import { ScreenLoadingState } from "@/components/ui";
+import { commonCopy } from "@/constants/copy/common";
+import { color } from "@/theme/tokens";
 import { useColors } from "@/hooks/use-colors";
+import { useLoadingState } from "@/hooks/use-loading-state";
 import { trpc } from "@/lib/trpc";
 import { useCallback, useState } from "react";
 import {
@@ -15,7 +18,6 @@ import {
   Text,
   ScrollView,
   Pressable,
-  ActivityIndicator,
   RefreshControl,
   Alert,
   Platform,
@@ -34,8 +36,11 @@ export default function ChallengesScreen() {
   
   // ローディング状態を分離
   const hasData = !!challenges && challenges.length >= 0;
-  const isInitialLoading = isLoading && !hasData;
-  const isRefreshing = isFetching && hasData;
+  const loadingState = useLoadingState({
+    isLoading,
+    isFetching,
+    hasData,
+  });
 
   // 公開状態を切り替え
   const togglePublicMutation = trpc.events.update.useMutation({
@@ -43,7 +48,7 @@ export default function ChallengesScreen() {
       refetch();
     },
     onError: (error) => {
-      Alert.alert("エラー", error.message);
+      Alert.alert(commonCopy.alerts.error, error.message);
     },
   });
 
@@ -53,7 +58,7 @@ export default function ChallengesScreen() {
       refetch();
     },
     onError: (error) => {
-      Alert.alert("エラー", error.message);
+      Alert.alert(commonCopy.alerts.error, error.message);
     },
   });
 
@@ -80,7 +85,7 @@ export default function ChallengesScreen() {
       }
     } else {
       Alert.alert(
-        "削除確認",
+        commonCopy.alerts.deleteConfirm,
         `「${challenge.title}」を削除しますか？この操作は取り消せません。`,
         [
           { text: "キャンセル", style: "cancel" },
@@ -105,18 +110,13 @@ export default function ChallengesScreen() {
     });
   };
 
-  if (isInitialLoading) {
-    return (
-      <ScreenContainer className="flex-1 items-center justify-center">
-        <ActivityIndicator size="large" color={colors.primary} />
-        <Text className="mt-4 text-muted">チャレンジを読み込み中...</Text>
-      </ScreenContainer>
-    );
+  if (loadingState.isInitialLoading) {
+    return <ScreenLoadingState message={commonCopy.loading.challenge} />;
   }
 
   return (
     <ScreenContainer>
-      {isRefreshing && <RefreshingIndicator isRefreshing={isRefreshing} />}
+      {loadingState.isRefreshing && <RefreshingIndicator isRefreshing={loadingState.isRefreshing} />}
       <ScrollView
         className="flex-1"
         contentContainerStyle={{ padding: 16 }}
@@ -322,7 +322,7 @@ export default function ChallengesScreen() {
           <View className="bg-surface rounded-xl p-8 items-center border border-border">
             <Ionicons name="trophy-outline" size={48} color={colors.muted} />
             <Text className="text-lg font-semibold text-foreground mt-4">
-              チャレンジがありません
+              {commonCopy.empty.noChallenges}
             </Text>
             <Text className="text-muted text-center mt-2">
               {filter !== "all"

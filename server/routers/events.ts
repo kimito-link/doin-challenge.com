@@ -14,7 +14,7 @@ export const eventsRouter = router({
     return db.getAllEvents();
   }),
 
-  // ページネーション対応のイベント一覧取得
+  // ページネーション対応のイベント一覧取得（DB側でフィルタ・ページネーション）
   listPaginated: publicProcedure
     .input(z.object({
       cursor: z.number().optional(),
@@ -24,39 +24,8 @@ export const eventsRouter = router({
     }))
     .query(async ({ input }) => {
       const { cursor = 0, limit, filter, search } = input;
-      const allEvents = await db.getAllEvents();
-      
-      let filteredEvents = allEvents;
-      
-      // フィルター適用
-      if (filter && filter !== "all") {
-        filteredEvents = filteredEvents.filter((e: any) => e.eventType === filter);
-      }
-      
-      // 全文検索適用（タイトル、説明、会場、ホスト名）
-      if (search && search.trim()) {
-        const searchLower = search.toLowerCase();
-        filteredEvents = filteredEvents.filter((e: any) => {
-          const title = (e.title || "").toLowerCase();
-          const description = (e.description || "").toLowerCase();
-          const venue = (e.venue || "").toLowerCase();
-          const hostName = (e.hostName || "").toLowerCase();
-          
-          return title.includes(searchLower) ||
-                 description.includes(searchLower) ||
-                 venue.includes(searchLower) ||
-                 hostName.includes(searchLower);
-        });
-      }
-      
-      const items = filteredEvents.slice(cursor, cursor + limit);
-      const nextCursor = cursor + limit < filteredEvents.length ? cursor + limit : undefined;
-      
-      return {
-        items,
-        nextCursor,
-        totalCount: filteredEvents.length,
-      };
+      const result = await db.getEventsPaginated({ cursor, limit, filter, search });
+      return result;
     }),
 
   // イベント詳細取得
@@ -92,14 +61,13 @@ export const eventsRouter = router({
     return db.getEventsByHostTwitterId(ctx.user.openId);
   }),
 
-  // イベント作成
-  create: publicProcedure
+  // イベント作成（認証必須 - BUG-001修正）
+  create: protectedProcedure
     .input(z.object({
       title: z.string().min(1).max(255),
       description: z.string().optional(),
       eventDate: z.string(),
       venue: z.string().optional(),
-      hostTwitterId: z.string(),
       hostName: z.string(),
       hostUsername: z.string().optional(),
       hostProfileImage: z.string().optional(),
@@ -110,20 +78,16 @@ export const eventsRouter = router({
       goalUnit: z.string().optional(),
       eventType: z.enum(["solo", "group"]).optional(),
       categoryId: z.number().optional(),
-      externalUrl: z.string().optional(),
+      externalUrl: z.string().url().optional().or(z.literal("")),
       ticketPresale: z.number().optional(),
       ticketDoor: z.number().optional(),
-      ticketUrl: z.string().optional(),
+      ticketUrl: z.string().url().optional().or(z.literal("")),
     }))
-    .mutation(async ({ input }) => {
-      if (!input.hostTwitterId) {
-        throw new Error("ログインが必要です。Twitterでログインしてください。");
-      }
-      
+    .mutation(async ({ ctx, input }) => {
       try {
         const eventId = await db.createEvent({
-          hostUserId: null,
-          hostTwitterId: input.hostTwitterId,
+          hostUserId: ctx.user.id,
+          hostTwitterId: ctx.user.openId,
           hostName: input.hostName,
           hostUsername: input.hostUsername,
           hostProfileImage: input.hostProfileImage,

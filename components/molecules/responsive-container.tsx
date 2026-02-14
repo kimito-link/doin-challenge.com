@@ -1,5 +1,5 @@
 import { View, ViewProps, StyleSheet } from "react-native";
-import { color, palette } from "@/theme/tokens";
+import { color } from "@/theme/tokens";
 import { useContentMaxWidth, useResponsive } from "@/hooks/use-responsive";
 
 interface ResponsiveContainerProps extends ViewProps {
@@ -73,17 +73,6 @@ export function ResponsiveGrid({
   gap = 16,
   ...props
 }: ResponsiveGridProps) {
-  const { breakpoint, isDesktop, isTablet } = useResponsive();
-
-  // ブレークポイントに応じたカラム数
-  const getColumns = () => {
-    if (isDesktop) return Math.min(columns * 3, 3);
-    if (isTablet) return Math.min(columns * 2, 2);
-    return columns;
-  };
-
-  const actualColumns = getColumns();
-
   return (
     <View
       style={[

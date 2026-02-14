@@ -8,69 +8,9 @@ var __export = (target, all) => {
     __defProp(target, name, { get: all[name], enumerable: true });
 };
 
-// server/db/connection.ts
-import { eq, desc, and, sql, isNull, or, gte, lte, lt, inArray, asc, ne, like, count } from "drizzle-orm";
-import { drizzle } from "drizzle-orm/mysql2";
-async function getDb() {
-  if (!_db && process.env.DATABASE_URL) {
-    try {
-      let connectionUrl = process.env.DATABASE_URL;
-      if (connectionUrl && !connectionUrl.includes("ssl=")) {
-        const separator = connectionUrl.includes("?") ? "&" : "?";
-        connectionUrl = `${connectionUrl}${separator}ssl={"rejectUnauthorized":true}`;
-      }
-      _db = drizzle(connectionUrl);
-    } catch (error) {
-      console.warn("[Database] Failed to connect:", error);
-      _db = null;
-    }
-  }
-  return _db;
-}
-function generateSlug(title) {
-  const translations = {
-    "\u751F\u8A95\u796D": "birthday",
-    "\u30E9\u30A4\u30D6": "live",
-    "\u30EF\u30F3\u30DE\u30F3": "oneman",
-    "\u52D5\u54E1": "attendance",
-    "\u30C1\u30E3\u30EC\u30F3\u30B8": "challenge",
-    "\u30D5\u30A9\u30ED\u30EF\u30FC": "followers",
-    "\u540C\u6642\u8996\u8074": "viewers",
-    "\u914D\u4FE1": "stream",
-    "\u30B0\u30EB\u30FC\u30D7": "group",
-    "\u30BD\u30ED": "solo",
-    "\u30D5\u30A7\u30B9": "fes",
-    "\u5BFE\u30D0\u30F3": "taiban",
-    "\u30D5\u30A1\u30F3\u30DF\u30FC\u30C6\u30A3\u30F3\u30B0": "fanmeeting",
-    "\u30EA\u30EA\u30FC\u30B9": "release",
-    "\u30A4\u30D9\u30F3\u30C8": "event",
-    "\u4EBA": "",
-    "\u4E07": "0000"
-  };
-  let slug = title.toLowerCase();
-  for (const [jp, en] of Object.entries(translations)) {
-    slug = slug.replace(new RegExp(jp, "g"), en);
-  }
-  const words = slug.match(/[a-z]+|\d+/g) || [];
-  slug = words.join("-");
-  slug = slug.replace(/-+/g, "-");
-  slug = slug.replace(/^-|-$/g, "");
-  if (!slug) {
-    slug = `challenge-${Date.now()}`;
-  }
-  return slug;
-}
-var _db;
-var init_connection = __esm({
-  "server/db/connection.ts"() {
-    "use strict";
-    _db = null;
-  }
-});
-
 // drizzle/schema/users.ts
 import { mysqlTable, int, varchar, text, timestamp, mysqlEnum, boolean } from "drizzle-orm/mysql-core";
-var users, twitterFollowStatus, oauthPkceData, twitterUserCache;
+var users, twitterFollowStatus, oauthPkceData, twitterUserCache, userTwitterTokens;
 var init_users = __esm({
   "drizzle/schema/users.ts"() {
     "use strict";
@@ -82,6 +22,7 @@ var init_users = __esm({
       loginMethod: varchar("loginMethod", { length: 64 }),
       role: mysqlEnum("role", ["user", "admin"]).default("user").notNull(),
       gender: mysqlEnum("gender", ["male", "female", "unspecified"]).default("unspecified").notNull(),
+      prefecture: varchar("prefecture", { length: 32 }),
       createdAt: timestamp("createdAt").defaultNow().notNull(),
       updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
       lastSignedIn: timestamp("lastSignedIn").defaultNow().notNull()
@@ -119,18 +60,32 @@ var init_users = __esm({
       createdAt: timestamp("createdAt").defaultNow().notNull(),
       updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull()
     });
+    userTwitterTokens = mysqlTable("user_twitter_tokens", {
+      id: int("id").autoincrement().primaryKey(),
+      /** users.openId と紐付け（例: "twitter:12345"） */
+      openId: varchar("openId", { length: 64 }).notNull().unique(),
+      /** AES-256-GCM 暗号化済みアクセストークン (hex: iv + authTag + ciphertext) */
+      encryptedAccessToken: text("encryptedAccessToken").notNull(),
+      /** AES-256-GCM 暗号化済みリフレッシュトークン */
+      encryptedRefreshToken: text("encryptedRefreshToken"),
+      /** アクセストークン有効期限 */
+      tokenExpiresAt: timestamp("tokenExpiresAt").notNull(),
+      /** 付与されたスコープ */
+      scope: varchar("scope", { length: 255 }),
+      createdAt: timestamp("createdAt").defaultNow().notNull(),
+      updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull()
+    });
   }
 });
 
 // drizzle/schema/challenges.ts
-import { mysqlTable as mysqlTable2, int as int2, varchar as varchar2, text as text2, timestamp as timestamp2, mysqlEnum as mysqlEnum2, boolean as boolean2, json as json2 } from "drizzle-orm/mysql-core";
+import { mysqlTable as mysqlTable2, int as int2, varchar as varchar2, text as text2, timestamp as timestamp2, mysqlEnum as mysqlEnum2, boolean as boolean2, json } from "drizzle-orm/mysql-core";
 var challenges, events, categories, challengeTemplates, challengeStats, challengeMembers;
 var init_challenges = __esm({
   "drizzle/schema/challenges.ts"() {
     "use strict";
     challenges = mysqlTable2("challenges", {
       id: int2("id").autoincrement().primaryKey(),
-      // ホスト（主催者）の情報
       hostUserId: int2("hostUserId"),
       hostTwitterId: varchar2("hostTwitterId", { length: 64 }),
       hostName: varchar2("hostName", { length: 255 }).notNull(),
@@ -138,41 +93,31 @@ var init_challenges = __esm({
       hostProfileImage: text2("hostProfileImage"),
       hostFollowersCount: int2("hostFollowersCount").default(0),
       hostDescription: text2("hostDescription"),
-      // チャレンジ情報
       title: varchar2("title", { length: 255 }).notNull(),
       slug: varchar2("slug", { length: 255 }),
       description: text2("description"),
-      // 目標設定
       goalType: mysqlEnum2("goalType", ["attendance", "followers", "viewers", "points", "custom"]).default("attendance").notNull(),
       goalValue: int2("goalValue").default(100).notNull(),
       goalUnit: varchar2("goalUnit", { length: 32 }).default("\u4EBA").notNull(),
       currentValue: int2("currentValue").default(0).notNull(),
-      // イベント種別
       eventType: mysqlEnum2("eventType", ["solo", "group"]).default("solo").notNull(),
-      // カテゴリ
       categoryId: int2("categoryId"),
-      // 日時・場所
       eventDate: timestamp2("eventDate").notNull(),
       venue: varchar2("venue", { length: 255 }),
       prefecture: varchar2("prefecture", { length: 32 }),
-      // チケット情報
       ticketPresale: int2("ticketPresale"),
       ticketDoor: int2("ticketDoor"),
       ticketSaleStart: timestamp2("ticketSaleStart"),
       ticketUrl: text2("ticketUrl"),
-      // 外部リンク
       externalUrl: text2("externalUrl"),
-      // ステータス
       status: mysqlEnum2("status", ["upcoming", "active", "ended"]).default("active").notNull(),
       isPublic: boolean2("isPublic").default(true).notNull(),
-      // メタデータ
       createdAt: timestamp2("createdAt").defaultNow().notNull(),
       updatedAt: timestamp2("updatedAt").defaultNow().onUpdateNow().notNull(),
-      // AI向け最適化カラム
       aiSummary: text2("aiSummary"),
-      intentTags: json2("intentTags").$type(),
-      regionSummary: json2("regionSummary").$type(),
-      participantSummary: json2("participantSummary").$type(),
+      intentTags: json("intentTags").$type(),
+      regionSummary: json("regionSummary").$type(),
+      participantSummary: json("participantSummary").$type(),
       aiSummaryUpdatedAt: timestamp2("aiSummaryUpdatedAt")
     });
     events = challenges;
@@ -213,6 +158,7 @@ var init_challenges = __esm({
       totalContribution: int2("totalContribution").default(0).notNull(),
       newParticipants: int2("newParticipants").default(0).notNull(),
       prefectureData: text2("prefectureData"),
+      // Keeps JSON string or text content
       createdAt: timestamp2("createdAt").defaultNow().notNull()
     });
     challengeMembers = mysqlTable2("challenge_members", {
@@ -251,11 +197,9 @@ var init_participations = __esm({
       gender: mysqlEnum3("gender", ["male", "female", "unspecified"]).default("unspecified").notNull(),
       contribution: int3("contribution").default(1).notNull(),
       isAnonymous: boolean3("isAnonymous").default(false).notNull(),
-      // 参加方法: venue(会場), streaming(配信), both(両方)
       attendanceType: mysqlEnum3("attendanceType", ["venue", "streaming", "both"]).default("venue").notNull(),
       createdAt: timestamp3("createdAt").defaultNow().notNull(),
       updatedAt: timestamp3("updatedAt").defaultNow().onUpdateNow().notNull(),
-      // ソフトデリート用カラム
       deletedAt: timestamp3("deletedAt"),
       deletedBy: int3("deletedBy")
     });
@@ -391,7 +335,19 @@ var init_gamification = __esm({
       description: text6("description"),
       iconUrl: text6("iconUrl"),
       type: mysqlEnum5("type", ["participation", "achievement", "milestone", "special"]).default("participation").notNull(),
-      conditionType: mysqlEnum5("conditionType", ["first_participation", "goal_reached", "milestone_25", "milestone_50", "milestone_75", "contribution_5", "contribution_10", "contribution_20", "host_challenge", "special", "follower_badge"]).notNull(),
+      conditionType: mysqlEnum5("conditionType", [
+        "first_participation",
+        "goal_reached",
+        "milestone_25",
+        "milestone_50",
+        "milestone_75",
+        "contribution_5",
+        "contribution_10",
+        "contribution_20",
+        "host_challenge",
+        "special",
+        "follower_badge"
+      ]).notNull(),
       createdAt: timestamp6("createdAt").defaultNow().notNull()
     });
     userBadges = mysqlTable6("user_badges", {
@@ -572,16 +528,14 @@ var init_tickets = __esm({
 });
 
 // drizzle/schema/audit.ts
-import { mysqlTable as mysqlTable9, int as int9, varchar as varchar9, text as text9, timestamp as timestamp9, mysqlEnum as mysqlEnum8, json as json3 } from "drizzle-orm/mysql-core";
+import { mysqlTable as mysqlTable9, int as int9, varchar as varchar9, text as text9, timestamp as timestamp9, mysqlEnum as mysqlEnum8, json as json2 } from "drizzle-orm/mysql-core";
 var auditLogs, AUDIT_ACTIONS, ENTITY_TYPES;
 var init_audit = __esm({
   "drizzle/schema/audit.ts"() {
     "use strict";
     auditLogs = mysqlTable9("audit_logs", {
       id: int9("id").autoincrement().primaryKey(),
-      // リクエスト追跡用ID（tRPC middlewareで生成）
       requestId: varchar9("requestId", { length: 36 }).notNull(),
-      // 操作種別
       action: mysqlEnum8("action", [
         "CREATE",
         "EDIT",
@@ -593,26 +547,16 @@ var init_audit = __esm({
         "LOGOUT",
         "ADMIN_ACTION"
       ]).notNull(),
-      // 操作対象のエンティティ種別
       entityType: varchar9("entityType", { length: 64 }).notNull(),
-      // 操作対象のID
       targetId: int9("targetId"),
-      // 操作を実行したユーザーID
       actorId: int9("actorId"),
-      // 操作を実行したユーザー名（ログイン名のスナップショット）
       actorName: varchar9("actorName", { length: 255 }),
-      // 操作を実行したユーザーのロール
       actorRole: varchar9("actorRole", { length: 32 }),
-      // 変更前のデータ（JSON）
-      beforeData: json3("beforeData").$type(),
-      // 変更後のデータ（JSON）
-      afterData: json3("afterData").$type(),
-      // 操作の詳細・理由（任意）
+      beforeData: json2("beforeData").$type(),
+      afterData: json2("afterData").$type(),
       reason: text9("reason"),
-      // クライアント情報
       ipAddress: varchar9("ipAddress", { length: 45 }),
       userAgent: text9("userAgent"),
-      // タイムスタンプ
       createdAt: timestamp9("createdAt").defaultNow().notNull()
     });
     AUDIT_ACTIONS = {
@@ -638,7 +582,7 @@ var init_audit = __esm({
 });
 
 // drizzle/schema/release-notes.ts
-import { mysqlTable as mysqlTable10, int as int10, varchar as varchar10, text as text10, timestamp as timestamp10, json as json4 } from "drizzle-orm/mysql-core";
+import { mysqlTable as mysqlTable10, int as int10, varchar as varchar10, text as text10, timestamp as timestamp10, json as json3 } from "drizzle-orm/mysql-core";
 var releaseNotes;
 var init_release_notes = __esm({
   "drizzle/schema/release-notes.ts"() {
@@ -648,10 +592,45 @@ var init_release_notes = __esm({
       version: varchar10("version", { length: 32 }).notNull(),
       date: varchar10("date", { length: 32 }).notNull(),
       title: text10("title").notNull(),
-      changes: json4("changes").notNull(),
-      // { type: "new" | "improve" | "fix" | "change", text: string }[]
+      changes: json3("changes").notNull(),
       createdAt: timestamp10("createdAt").defaultNow().notNull(),
       updatedAt: timestamp10("updatedAt").defaultNow().onUpdateNow().notNull()
+    });
+  }
+});
+
+// drizzle/schema/api-usage.ts
+import { mysqlTable as mysqlTable11, int as int11, varchar as varchar11, timestamp as timestamp11, decimal, json as json4, index } from "drizzle-orm/mysql-core";
+var apiUsage, apiCostSettings;
+var init_api_usage = __esm({
+  "drizzle/schema/api-usage.ts"() {
+    "use strict";
+    apiUsage = mysqlTable11(
+      "api_usage",
+      {
+        id: int11("id").autoincrement().primaryKey(),
+        endpoint: varchar11("endpoint", { length: 255 }).notNull(),
+        method: varchar11("method", { length: 10 }).default("GET").notNull(),
+        success: int11("success").default(1).notNull(),
+        cost: decimal("cost", { precision: 10, scale: 4 }).default("0").notNull(),
+        rateLimitInfo: json4("rateLimitInfo"),
+        month: varchar11("month", { length: 7 }).notNull(),
+        createdAt: timestamp11("createdAt").defaultNow().notNull()
+      },
+      (table) => ({
+        monthIdx: index("month_idx").on(table.month),
+        endpointIdx: index("endpoint_idx").on(table.endpoint),
+        createdAtIdx: index("created_at_idx").on(table.createdAt)
+      })
+    );
+    apiCostSettings = mysqlTable11("api_cost_settings", {
+      id: int11("id").autoincrement().primaryKey(),
+      monthlyLimit: decimal("monthlyLimit", { precision: 10, scale: 2 }).default("10.00").notNull(),
+      alertThreshold: decimal("alertThreshold", { precision: 10, scale: 2 }).default("8.00").notNull(),
+      alertEmail: varchar11("alertEmail", { length: 320 }),
+      autoStop: int11("autoStop").default(0).notNull(),
+      createdAt: timestamp11("createdAt").defaultNow().notNull(),
+      updatedAt: timestamp11("updatedAt").defaultNow().onUpdateNow().notNull()
     });
   }
 });
@@ -670,6 +649,7 @@ var init_schema = __esm({
     init_tickets();
     init_audit();
     init_release_notes();
+    init_api_usage();
   }
 });
 
@@ -680,6 +660,8 @@ __export(schema_exports, {
   ENTITY_TYPES: () => ENTITY_TYPES,
   achievementPages: () => achievementPages,
   achievements: () => achievements,
+  apiCostSettings: () => apiCostSettings,
+  apiUsage: () => apiUsage,
   auditLogs: () => auditLogs,
   badges: () => badges,
   categories: () => categories,
@@ -711,12 +693,98 @@ __export(schema_exports, {
   twitterUserCache: () => twitterUserCache,
   userAchievements: () => userAchievements,
   userBadges: () => userBadges,
+  userTwitterTokens: () => userTwitterTokens,
   users: () => users
 });
 var init_schema2 = __esm({
   "drizzle/schema.ts"() {
     "use strict";
     init_schema();
+  }
+});
+
+// server/db/connection.ts
+import { eq, desc, and, sql, isNull, or, gte, lte, lt, inArray, asc, ne, like, count } from "drizzle-orm";
+import { drizzle } from "drizzle-orm/mysql2";
+import mysql from "mysql2/promise";
+async function getDb() {
+  if (!_db && process.env.DATABASE_URL) {
+    try {
+      const dbUrl = new URL(process.env.DATABASE_URL);
+      const poolConnection = mysql.createPool({
+        host: dbUrl.hostname,
+        port: Number(dbUrl.port) || 3306,
+        user: decodeURIComponent(dbUrl.username),
+        password: decodeURIComponent(dbUrl.password),
+        database: dbUrl.pathname.slice(1),
+        ssl: dbUrl.searchParams.get("ssl") === "true" ? {} : void 0,
+        connectTimeout: 1e4,
+        // 接続タイムアウト 10秒
+        waitForConnections: true,
+        connectionLimit: 5,
+        // プールサイズ
+        queueLimit: 0,
+        enableKeepAlive: true,
+        keepAliveInitialDelay: 1e4
+        // 10秒ごとにKeepAlive
+      });
+      _db = drizzle(poolConnection, { schema: schema_exports, mode: "default" });
+      try {
+        const testPromise = poolConnection.query("SELECT 1");
+        const timeoutPromise = new Promise(
+          (_, reject) => setTimeout(() => reject(new Error("Connection test timeout")), 5e3)
+        );
+        await Promise.race([testPromise, timeoutPromise]);
+        console.log("[Database] Connection pool initialized successfully");
+      } catch (testError) {
+        console.error("[Database] Connection test failed:", testError);
+      }
+    } catch (error) {
+      console.error("[Database] Failed to create connection pool:", error);
+      _db = null;
+    }
+  }
+  return _db;
+}
+function generateSlug(title) {
+  const translations = {
+    "\u751F\u8A95\u796D": "birthday",
+    "\u30E9\u30A4\u30D6": "live",
+    "\u30EF\u30F3\u30DE\u30F3": "oneman",
+    "\u52D5\u54E1": "attendance",
+    "\u30C1\u30E3\u30EC\u30F3\u30B8": "challenge",
+    "\u30D5\u30A9\u30ED\u30EF\u30FC": "followers",
+    "\u540C\u6642\u8996\u8074": "viewers",
+    "\u914D\u4FE1": "stream",
+    "\u30B0\u30EB\u30FC\u30D7": "group",
+    "\u30BD\u30ED": "solo",
+    "\u30D5\u30A7\u30B9": "fes",
+    "\u5BFE\u30D0\u30F3": "taiban",
+    "\u30D5\u30A1\u30F3\u30DF\u30FC\u30C6\u30A3\u30F3\u30B0": "fanmeeting",
+    "\u30EA\u30EA\u30FC\u30B9": "release",
+    "\u30A4\u30D9\u30F3\u30C8": "event",
+    "\u4EBA": "",
+    "\u4E07": "0000"
+  };
+  let slug = title.toLowerCase();
+  for (const [jp, en] of Object.entries(translations)) {
+    slug = slug.replace(new RegExp(jp, "g"), en);
+  }
+  const words = slug.match(/[a-z]+|\d+/g) || [];
+  slug = words.join("-");
+  slug = slug.replace(/-+/g, "-");
+  slug = slug.replace(/^-|-$/g, "");
+  if (!slug) {
+    slug = `challenge-${Date.now()}`;
+  }
+  return slug;
+}
+var _db;
+var init_connection = __esm({
+  "server/db/connection.ts"() {
+    "use strict";
+    init_schema2();
+    _db = null;
   }
 });
 
@@ -729,7 +797,6 @@ var init_env = __esm({
       appId: process.env.VITE_APP_ID ?? "",
       cookieSecret: process.env.JWT_SECRET ?? "",
       databaseUrl: process.env.DATABASE_URL ?? "",
-      oAuthServerUrl: process.env.OAUTH_SERVER_URL ?? "",
       ownerOpenId: process.env.OWNER_OPEN_ID ?? "",
       isProduction: process.env.NODE_ENV === "production",
       forgeApiUrl: process.env.BUILT_IN_FORGE_API_URL ?? "",
@@ -753,7 +820,7 @@ async function upsertUser(user) {
       openId: user.openId
     };
     const updateSet = {};
-    const textFields = ["name", "email", "loginMethod"];
+    const textFields = ["name", "email", "loginMethod", "prefecture"];
     const assignNullable = (field) => {
       const value = user[field];
       if (value === void 0) return;
@@ -844,7 +911,7 @@ var init_user_db = __esm({
 });
 
 // server/db/challenge-db.ts
-import { sql as sql2, eq as eq2, desc as desc2 } from "drizzle-orm";
+import { sql as sql2, eq as eq2, desc as desc2, and as and2, like as like2, or as or2 } from "drizzle-orm";
 async function getAllEvents() {
   const now = Date.now();
   if (eventsCache.data && now - eventsCache.timestamp < EVENTS_CACHE_TTL) {
@@ -852,36 +919,48 @@ async function getAllEvents() {
   }
   const db = await getDb();
   if (!db) return eventsCache.data ?? [];
-  const result = await db.select({
-    id: events2.id,
-    hostUserId: events2.hostUserId,
-    hostTwitterId: events2.hostTwitterId,
-    hostName: events2.hostName,
-    hostUsername: events2.hostUsername,
-    hostProfileImage: events2.hostProfileImage,
-    hostFollowersCount: events2.hostFollowersCount,
-    hostDescription: events2.hostDescription,
-    hostGender: users.gender,
-    // 主催者の性別
-    title: events2.title,
-    slug: events2.slug,
-    description: events2.description,
-    goalType: events2.goalType,
-    goalValue: events2.goalValue,
-    goalUnit: events2.goalUnit,
-    currentValue: events2.currentValue,
-    eventType: events2.eventType,
-    categoryId: events2.categoryId,
-    eventDate: events2.eventDate,
-    venue: events2.venue,
-    prefecture: events2.prefecture,
-    status: events2.status,
-    isPublic: events2.isPublic,
-    createdAt: events2.createdAt,
-    updatedAt: events2.updatedAt
-  }).from(events2).leftJoin(users, eq2(events2.hostUserId, users.id)).where(eq2(events2.isPublic, true)).orderBy(desc2(events2.eventDate));
-  eventsCache = { data: result, timestamp: now };
-  return result;
+  try {
+    const result = await db.select({
+      id: events2.id,
+      hostUserId: events2.hostUserId,
+      hostTwitterId: events2.hostTwitterId,
+      hostName: events2.hostName,
+      hostUsername: events2.hostUsername,
+      hostProfileImage: events2.hostProfileImage,
+      hostFollowersCount: events2.hostFollowersCount,
+      hostDescription: events2.hostDescription,
+      hostGender: users.gender,
+      // 主催者の性別
+      title: events2.title,
+      slug: events2.slug,
+      description: events2.description,
+      goalType: events2.goalType,
+      goalValue: events2.goalValue,
+      goalUnit: events2.goalUnit,
+      currentValue: events2.currentValue,
+      eventType: events2.eventType,
+      categoryId: events2.categoryId,
+      eventDate: events2.eventDate,
+      venue: events2.venue,
+      prefecture: events2.prefecture,
+      status: events2.status,
+      isPublic: events2.isPublic,
+      createdAt: events2.createdAt,
+      updatedAt: events2.updatedAt
+    }).from(events2).leftJoin(users, eq2(events2.hostUserId, users.id)).where(eq2(events2.isPublic, true)).orderBy(desc2(events2.eventDate));
+    eventsCache = { data: result, timestamp: now };
+    return result;
+  } catch (err) {
+    console.warn("[getAllEvents] JOIN query failed, falling back to challenges only:", err?.message);
+    try {
+      const fallback = await db.select(safeEventColumns).from(events2).where(eq2(events2.isPublic, true)).orderBy(desc2(events2.eventDate));
+      eventsCache = { data: fallback, timestamp: now };
+      return fallback;
+    } catch (fallbackErr) {
+      console.error("[getAllEvents] Fallback query also failed:", fallbackErr?.message);
+      return eventsCache.data ?? [];
+    }
+  }
 }
 function invalidateEventsCache() {
   eventsCache = { data: null, timestamp: 0 };
@@ -889,18 +968,33 @@ function invalidateEventsCache() {
 async function getEventById(id) {
   const db = await getDb();
   if (!db) return null;
-  const result = await db.select().from(events2).where(eq2(events2.id, id));
-  return result[0] || null;
+  try {
+    const result = await db.select(safeEventColumns).from(events2).where(eq2(events2.id, id));
+    return result[0] || null;
+  } catch (err) {
+    console.error("[getEventById] Query failed:", err?.message);
+    return null;
+  }
 }
 async function getEventsByHostUserId(hostUserId) {
   const db = await getDb();
   if (!db) return [];
-  return db.select().from(events2).where(eq2(events2.hostUserId, hostUserId)).orderBy(desc2(events2.eventDate));
+  try {
+    return await db.select(safeEventColumns).from(events2).where(eq2(events2.hostUserId, hostUserId)).orderBy(desc2(events2.eventDate));
+  } catch (err) {
+    console.error("[getEventsByHostUserId] Query failed:", err?.message);
+    return [];
+  }
 }
 async function getEventsByHostTwitterId(hostTwitterId) {
   const db = await getDb();
   if (!db) return [];
-  return db.select().from(events2).where(eq2(events2.hostTwitterId, hostTwitterId)).orderBy(desc2(events2.eventDate));
+  try {
+    return await db.select(safeEventColumns).from(events2).where(eq2(events2.hostTwitterId, hostTwitterId)).orderBy(desc2(events2.eventDate));
+  } catch (err) {
+    console.error("[getEventsByHostTwitterId] Query failed:", err?.message);
+    return [];
+  }
 }
 async function createEvent(data) {
   const db = await getDb();
@@ -911,11 +1005,11 @@ async function createEvent(data) {
   const ticketSaleStart = data.ticketSaleStart ? new Date(data.ticketSaleStart).toISOString().slice(0, 19).replace("T", " ") : null;
   const result = await db.execute(sql2`
     INSERT INTO challenges (
-      hostUserId, hostTwitterId, hostName, hostUsername, hostProfileImage, hostFollowersCount, hostDescription,
-      title, description, goalType, goalValue, goalUnit, currentValue,
-      eventType, categoryId, eventDate, venue, prefecture,
-      ticketPresale, ticketDoor, ticketSaleStart, ticketUrl, externalUrl,
-      status, isPublic, createdAt, updatedAt
+      "hostUserId", "hostTwitterId", "hostName", "hostUsername", "hostProfileImage", "hostFollowersCount", "hostDescription",
+      title, description, "goalType", "goalValue", "goalUnit", "currentValue",
+      "eventType", "categoryId", "eventDate", venue, prefecture,
+      "ticketPresale", "ticketDoor", "ticketSaleStart", "ticketUrl", "externalUrl",
+      status, "isPublic", "createdAt", "updatedAt"
     ) VALUES (
       ${data.hostUserId ?? null},
       ${data.hostTwitterId ?? null},
@@ -945,9 +1039,14 @@ async function createEvent(data) {
       ${now},
       ${now}
     )
+    RETURNING id
   `);
+  const raw = result;
+  const rows = Array.isArray(raw) ? raw : raw?.rows;
+  const id = rows?.[0]?.id;
   invalidateEventsCache();
-  return result[0].insertId;
+  if (id == null) throw new Error("Failed to create challenge");
+  return id;
 }
 async function updateEvent(id, data) {
   const db = await getDb();
@@ -965,16 +1064,65 @@ async function searchChallenges(query) {
   const db = await getDb();
   if (!db) return [];
   const normalizedQuery = query.toLowerCase().trim();
-  const allChallenges = await db.select().from(challenges).where(eq2(challenges.isPublic, true)).orderBy(desc2(challenges.eventDate));
-  return allChallenges.filter((c) => {
-    const title = (c.title || "").toLowerCase();
-    const hostName = (c.hostName || "").toLowerCase();
-    const description = (c.description || "").toLowerCase();
-    const venue = (c.venue || "").toLowerCase();
-    return title.includes(normalizedQuery) || hostName.includes(normalizedQuery) || description.includes(normalizedQuery) || venue.includes(normalizedQuery);
-  });
+  try {
+    const allChallenges = await db.select(safeEventColumns).from(challenges).where(eq2(challenges.isPublic, true)).orderBy(desc2(challenges.eventDate));
+    return allChallenges.filter((c) => {
+      const title = (c.title || "").toLowerCase();
+      const hostName = (c.hostName || "").toLowerCase();
+      const description = (c.description || "").toLowerCase();
+      const venue = (c.venue || "").toLowerCase();
+      return title.includes(normalizedQuery) || hostName.includes(normalizedQuery) || description.includes(normalizedQuery) || venue.includes(normalizedQuery);
+    });
+  } catch (err) {
+    console.error("[searchChallenges] Query failed:", err?.message);
+    return [];
+  }
 }
-var events2, eventsCache, EVENTS_CACHE_TTL;
+async function getEventsPaginated(params) {
+  const { cursor, limit, filter, search } = params;
+  const noFilter = (!filter || filter === "all") && (!search || !search.trim());
+  const now = Date.now();
+  if (noFilter && eventsCache.data && now - eventsCache.timestamp < EVENTS_CACHE_TTL) {
+    const items = eventsCache.data.slice(cursor, cursor + limit);
+    const nextCursor = cursor + limit < eventsCache.data.length ? cursor + limit : void 0;
+    return { items, nextCursor, totalCount: eventsCache.data.length };
+  }
+  const db = await getDb();
+  if (!db) {
+    const fallback = eventsCache.data ?? [];
+    const items = fallback.slice(cursor, cursor + limit);
+    return { items, nextCursor: cursor + limit < fallback.length ? cursor + limit : void 0, totalCount: fallback.length };
+  }
+  try {
+    const conditions = [eq2(events2.isPublic, true)];
+    if (filter && filter !== "all") {
+      conditions.push(eq2(events2.eventType, filter));
+    }
+    if (search && search.trim()) {
+      const searchPattern = `%${search.trim()}%`;
+      conditions.push(
+        or2(
+          like2(events2.title, searchPattern),
+          like2(events2.description, searchPattern),
+          like2(events2.venue, searchPattern),
+          like2(events2.hostName, searchPattern)
+        )
+      );
+    }
+    const whereClause = conditions.length === 1 ? conditions[0] : and2(...conditions);
+    const countResult = await db.select({ count: sql2`COUNT(*)` }).from(events2).where(whereClause);
+    const totalCount = Number(countResult[0]?.count ?? 0);
+    const items = await db.select(safeEventColumns).from(events2).where(whereClause).orderBy(desc2(events2.eventDate)).limit(limit).offset(cursor);
+    const nextCursor = cursor + limit < totalCount ? cursor + limit : void 0;
+    return { items, nextCursor, totalCount };
+  } catch (err) {
+    console.warn("[getEventsPaginated] Query failed, falling back to cache:", err?.message);
+    const fallback = eventsCache.data ?? [];
+    const items = fallback.slice(cursor, cursor + limit);
+    return { items, nextCursor: cursor + limit < fallback.length ? cursor + limit : void 0, totalCount: fallback.length };
+  }
+}
+var events2, safeEventColumns, eventsCache, EVENTS_CACHE_TTL;
 var init_challenge_db = __esm({
   "server/db/challenge-db.ts"() {
     "use strict";
@@ -982,8 +1130,45 @@ var init_challenge_db = __esm({
     init_connection();
     init_schema2();
     events2 = challenges;
+    safeEventColumns = {
+      id: events2.id,
+      hostUserId: events2.hostUserId,
+      hostTwitterId: events2.hostTwitterId,
+      hostName: events2.hostName,
+      hostUsername: events2.hostUsername,
+      hostProfileImage: events2.hostProfileImage,
+      hostFollowersCount: events2.hostFollowersCount,
+      hostDescription: events2.hostDescription,
+      title: events2.title,
+      slug: events2.slug,
+      description: events2.description,
+      goalType: events2.goalType,
+      goalValue: events2.goalValue,
+      goalUnit: events2.goalUnit,
+      currentValue: events2.currentValue,
+      eventType: events2.eventType,
+      categoryId: events2.categoryId,
+      eventDate: events2.eventDate,
+      venue: events2.venue,
+      prefecture: events2.prefecture,
+      ticketPresale: events2.ticketPresale,
+      ticketDoor: events2.ticketDoor,
+      ticketSaleStart: events2.ticketSaleStart,
+      ticketUrl: events2.ticketUrl,
+      externalUrl: events2.externalUrl,
+      status: events2.status,
+      isPublic: events2.isPublic,
+      createdAt: events2.createdAt,
+      updatedAt: events2.updatedAt,
+      // AI関連カラム: 本番DBに存在しない可能性があるため、NULLリテラルで返す
+      aiSummary: sql2`NULL`.as("aiSummary"),
+      intentTags: sql2`NULL`.as("intentTags"),
+      regionSummary: sql2`NULL`.as("regionSummary"),
+      participantSummary: sql2`NULL`.as("participantSummary"),
+      aiSummaryUpdatedAt: sql2`NULL`.as("aiSummaryUpdatedAt")
+    };
     eventsCache = { data: null, timestamp: 0 };
-    EVENTS_CACHE_TTL = 30 * 1e3;
+    EVENTS_CACHE_TTL = 5 * 60 * 1e3;
   }
 });
 
@@ -1022,8 +1207,8 @@ async function getActiveParticipationById(id) {
 async function createParticipation(data) {
   const db = await getDb();
   if (!db) throw new Error("Database not available");
-  const result = await db.insert(participations).values(data);
-  const participationId = result[0].insertId;
+  const [result] = await db.insert(participations).values(data);
+  const participationId = result.insertId;
   if (data.challengeId) {
     const contribution = (data.contribution || 1) + (data.companionCount || 0);
     await db.update(challenges).set({ currentValue: sql`${challenges.currentValue} + ${contribution}` }).where(eq(challenges.id, data.challengeId));
@@ -1079,23 +1264,25 @@ async function getParticipationCountByEventId(eventId) {
 async function getTotalCompanionCountByEventId(eventId) {
   const db = await getDb();
   if (!db) return 0;
-  const result = await db.select().from(participations).where(and(
+  const result = await db.select({ total: sql`COALESCE(SUM(COALESCE(${participations.contribution}, 1)), 0)` }).from(participations).where(and(
     eq(participations.challengeId, eventId),
     isNull(participations.deletedAt)
   ));
-  return result.reduce((sum, p) => sum + (p.contribution || 1), 0);
+  return Number(result[0]?.total ?? 0);
 }
 async function getParticipationsByPrefecture(challengeId) {
   const db = await getDb();
   if (!db) return {};
-  const result = await db.select().from(participations).where(and(
+  const result = await db.select({
+    prefecture: sql`COALESCE(${participations.prefecture}, '未設定')`.as("prefecture"),
+    total: sql`COALESCE(SUM(COALESCE(${participations.contribution}, 1)), 0)`.as("total")
+  }).from(participations).where(and(
     eq(participations.challengeId, challengeId),
     isNull(participations.deletedAt)
-  ));
+  )).groupBy(sql`COALESCE(${participations.prefecture}, '未設定')`);
   const prefectureMap = {};
-  result.forEach((p) => {
-    const pref = p.prefecture || "\u672A\u8A2D\u5B9A";
-    prefectureMap[pref] = (prefectureMap[pref] || 0) + (p.contribution || 1);
+  result.forEach((r) => {
+    prefectureMap[r.prefecture] = Number(r.total);
   });
   return prefectureMap;
 }
@@ -1106,8 +1293,8 @@ async function getContributionRanking(challengeId, limit = 10) {
     eq(participations.challengeId, challengeId),
     isNull(participations.deletedAt)
   )).orderBy(desc(participations.contribution));
-  return result.slice(0, limit).map((p, index) => ({
-    rank: index + 1,
+  return result.slice(0, limit).map((p, index2) => ({
+    rank: index2 + 1,
     userId: p.userId,
     displayName: p.displayName,
     username: p.username,
@@ -1125,21 +1312,21 @@ async function getParticipationsByPrefectureFilter(challengeId, prefecture) {
 async function getAttendanceTypeCounts(challengeId) {
   const db = await getDb();
   if (!db) return { venue: 0, streaming: 0, both: 0, total: 0 };
-  const result = await db.select().from(participations).where(and(
+  const result = await db.select({
+    attendanceType: sql`COALESCE(${participations.attendanceType}, 'venue')`.as("attendanceType"),
+    cnt: sql`COUNT(*)`.as("cnt")
+  }).from(participations).where(and(
     eq(participations.challengeId, challengeId),
     isNull(participations.deletedAt)
-  ));
-  const counts = {
-    venue: 0,
-    streaming: 0,
-    both: 0,
-    total: result.length
-  };
-  result.forEach((p) => {
-    const type = p.attendanceType || "venue";
-    if (type === "venue") counts.venue += 1;
-    else if (type === "streaming") counts.streaming += 1;
-    else if (type === "both") counts.both += 1;
+  )).groupBy(sql`COALESCE(${participations.attendanceType}, 'venue')`);
+  const counts = { venue: 0, streaming: 0, both: 0, total: 0 };
+  result.forEach((r) => {
+    const type = r.attendanceType;
+    const c = Number(r.cnt);
+    if (type === "venue") counts.venue = c;
+    else if (type === "streaming") counts.streaming = c;
+    else if (type === "both") counts.both = c;
+    counts.total += c;
   });
   return counts;
 }
@@ -1450,8 +1637,8 @@ async function getUsersWithNotificationEnabled(challengeId, notificationType) {
 async function createNotification(data) {
   const db = await getDb();
   if (!db) throw new Error("Database not available");
-  const result = await db.insert(notifications).values(data);
-  const notificationId = result[0].insertId;
+  const [result] = await db.insert(notifications).values(data);
+  const notificationId = result.insertId ?? null;
   try {
     const { sendNotificationToUser: sendNotificationToUser2 } = await Promise.resolve().then(() => (init_websocket(), websocket_exports));
     sendNotificationToUser2(data.userId.toString(), {
@@ -1502,8 +1689,8 @@ async function getBadgeById(id) {
 async function createBadge(data) {
   const db = await getDb();
   if (!db) throw new Error("Database not available");
-  const result = await db.insert(badges).values(data);
-  return result[0].insertId;
+  const [result] = await db.insert(badges).values(data);
+  return result.insertId ?? null;
 }
 async function getUserBadges(userId) {
   const db = await getDb();
@@ -1525,12 +1712,12 @@ async function awardBadge(userId, badgeId, challengeId) {
   if (!db) throw new Error("Database not available");
   const existing = await db.select().from(userBadges).where(and(eq(userBadges.userId, userId), eq(userBadges.badgeId, badgeId)));
   if (existing.length > 0) return null;
-  const result = await db.insert(userBadges).values({
+  const [result] = await db.insert(userBadges).values({
     userId,
     badgeId,
     challengeId
   });
-  return result[0].insertId;
+  return result.insertId ?? null;
 }
 async function checkAndAwardBadges(userId, challengeId, contribution) {
   const db = await getDb();
@@ -1606,13 +1793,13 @@ async function pickComment(participationId, challengeId, pickedBy, reason) {
   if (!db) throw new Error("Database not available");
   const existing = await db.select().from(pickedComments).where(eq(pickedComments.participationId, participationId));
   if (existing.length > 0) return null;
-  const result = await db.insert(pickedComments).values({
+  const [result] = await db.insert(pickedComments).values({
     participationId,
     challengeId,
     pickedBy,
     reason
   });
-  return result[0].insertId;
+  return result.insertId ?? null;
 }
 async function unpickComment(participationId) {
   const db = await getDb();
@@ -1633,8 +1820,8 @@ async function isCommentPicked(participationId) {
 async function sendCheer(cheer) {
   const db = await getDb();
   if (!db) return null;
-  const result = await db.insert(cheers).values(cheer);
-  return result[0].insertId;
+  const [result] = await db.insert(cheers).values(cheer);
+  return result.insertId ?? null;
 }
 async function getCheersForParticipation(participationId) {
   const db = await getDb();
@@ -1665,8 +1852,8 @@ async function getCheersSentByUser(userId) {
 async function createAchievementPage(page) {
   const db = await getDb();
   if (!db) return null;
-  const result = await db.insert(achievementPages).values(page);
-  return result[0].insertId;
+  const [result] = await db.insert(achievementPages).values(page);
+  return result.insertId ?? null;
 }
 async function getAchievementPage(challengeId) {
   const db = await getDb();
@@ -1696,8 +1883,8 @@ var init_social_db = __esm({
 async function createReminder(reminder) {
   const db = await getDb();
   if (!db) return null;
-  const result = await db.insert(reminders).values(reminder);
-  return result[0].insertId;
+  const [result] = await db.insert(reminders).values(reminder);
+  return result.insertId ?? null;
 }
 async function getRemindersForUser(userId) {
   const db = await getDb();
@@ -1738,8 +1925,8 @@ async function markReminderAsSent(id) {
 async function sendDirectMessage(dm) {
   const db = await getDb();
   if (!db) return null;
-  const result = await db.insert(directMessages).values(dm);
-  const messageId = result[0].insertId;
+  const [result] = await db.insert(directMessages).values(dm);
+  const messageId = result.insertId ?? null;
   try {
     const { sendMessageToUser: sendMessageToUser2 } = await Promise.resolve().then(() => (init_websocket(), websocket_exports));
     sendMessageToUser2(dm.toUserId.toString(), {
@@ -1770,6 +1957,12 @@ async function getUnreadMessageCount(userId) {
   const result = await db.select({ count: sql`count(*)` }).from(directMessages).where(and(eq(directMessages.toUserId, userId), eq(directMessages.isRead, false)));
   return result[0]?.count || 0;
 }
+async function getDirectMessageById(id) {
+  const db = await getDb();
+  if (!db) return null;
+  const result = await db.select().from(directMessages).where(eq(directMessages.id, id));
+  return result[0] || null;
+}
 async function markMessageAsRead(id) {
   const db = await getDb();
   if (!db) return;
@@ -1799,8 +1992,8 @@ async function getConversationList(userId, limit = 20, cursor) {
 async function createChallengeTemplate(template) {
   const db = await getDb();
   if (!db) return null;
-  const result = await db.insert(challengeTemplates).values(template);
-  return result[0].insertId;
+  const [result] = await db.insert(challengeTemplates).values(template);
+  return result.insertId ?? null;
 }
 async function getChallengeTemplatesForUser(userId) {
   const db = await getDb();
@@ -1845,8 +2038,8 @@ var init_messaging_db = __esm({
 async function saveSearchHistory(history) {
   const db = await getDb();
   if (!db) return null;
-  const result = await db.insert(searchHistory).values(history);
-  return result[0].insertId;
+  const [result] = await db.insert(searchHistory).values(history);
+  return result.insertId ?? null;
 }
 async function getSearchHistoryForUser(userId, limit = 10) {
   const db = await getDb();
@@ -1863,9 +2056,9 @@ async function followUser(follow) {
   if (!db) return null;
   const existing = await db.select().from(follows).where(and(eq(follows.followerId, follow.followerId), eq(follows.followeeId, follow.followeeId)));
   if (existing.length > 0) return null;
-  const result = await db.insert(follows).values(follow);
+  const [result] = await db.insert(follows).values(follow);
   await awardFollowerBadge(follow.followerId);
-  return result[0].insertId;
+  return result.insertId ?? null;
 }
 async function unfollowUser(followerId, followeeId) {
   const db = await getDb();
@@ -2024,8 +2217,8 @@ async function getCategoryBySlug(slug) {
 async function createCategory(category) {
   const db = await getDb();
   if (!db) return null;
-  const result = await db.insert(categories).values(category);
-  return result[0].insertId;
+  const [result] = await db.insert(categories).values(category);
+  return result.insertId ?? null;
 }
 async function getChallengesByCategory(categoryId) {
   const db = await getDb();
@@ -2059,13 +2252,19 @@ var init_category_db = __esm({
 async function createInvitation(invitation) {
   const db = await getDb();
   if (!db) return null;
-  const result = await db.insert(invitations).values(invitation);
-  return result[0].insertId;
+  const [result] = await db.insert(invitations).values(invitation);
+  return result.insertId ?? null;
 }
 async function getInvitationByCode(code) {
   const db = await getDb();
   if (!db) return null;
   const result = await db.select().from(invitations).where(eq(invitations.code, code));
+  return result[0] || null;
+}
+async function getInvitationById(id) {
+  const db = await getDb();
+  if (!db) return null;
+  const result = await db.select().from(invitations).where(eq(invitations.id, id));
   return result[0] || null;
 }
 async function getInvitationsForChallenge(challengeId) {
@@ -2091,8 +2290,8 @@ async function deactivateInvitation(id) {
 async function recordInvitationUse(use) {
   const db = await getDb();
   if (!db) return null;
-  const result = await db.insert(invitationUses).values(use);
-  return result[0].insertId;
+  const [result] = await db.insert(invitationUses).values(use);
+  return result.insertId ?? null;
 }
 async function confirmInvitationUse(invitationId, userId, participationId) {
   const db = await getDb();
@@ -2294,15 +2493,15 @@ var init_profile_db = __esm({
 async function createCompanion(companion) {
   const db = await getDb();
   if (!db) return null;
-  const result = await db.insert(participationCompanions).values(companion);
-  return result[0].insertId;
+  const [result] = await db.insert(participationCompanions).values(companion);
+  return result.insertId ?? null;
 }
 async function createCompanions(companions) {
   const db = await getDb();
   if (!db) return [];
   if (companions.length === 0) return [];
-  const result = await db.insert(participationCompanions).values(companions);
-  return result;
+  const [result] = await db.insert(participationCompanions).values(companions);
+  return result.insertId;
 }
 async function getCompanionsForParticipation(participationId) {
   const db = await getDb();
@@ -2520,8 +2719,8 @@ var init_ai_db = __esm({
 async function createTicketTransfer(transfer) {
   const db = await getDb();
   if (!db) return null;
-  const result = await db.insert(ticketTransfers).values(transfer);
-  return result[0].insertId;
+  const [result] = await db.insert(ticketTransfers).values(transfer);
+  return result.insertId ?? null;
 }
 async function getTicketTransfersForChallenge(challengeId) {
   const db = await getDb();
@@ -2558,8 +2757,8 @@ async function addToTicketWaitlist(waitlist) {
   if (existing.length > 0) {
     return existing[0].id;
   }
-  const result = await db.insert(ticketWaitlist).values(waitlist);
-  return result[0].insertId;
+  const [result] = await db.insert(ticketWaitlist).values(waitlist);
+  return result.insertId ?? null;
 }
 async function removeFromTicketWaitlist(challengeId, userId) {
   const db = await getDb();
@@ -2774,12 +2973,14 @@ async function getDbSchema() {
   if (!db) return { tables: [], error: "Database not available" };
   try {
     const result = await db.execute(sql`
-      SELECT TABLE_NAME, COLUMN_NAME, DATA_TYPE, IS_NULLABLE, COLUMN_DEFAULT
-      FROM INFORMATION_SCHEMA.COLUMNS
-      WHERE TABLE_SCHEMA = DATABASE()
-      ORDER BY TABLE_NAME, ORDINAL_POSITION
+      SELECT table_name, column_name, data_type, is_nullable, column_default
+      FROM information_schema.columns
+      WHERE table_schema = 'public'
+      ORDER BY table_name, ordinal_position
     `);
-    return { tables: result[0] };
+    const raw = result;
+    const rows = Array.isArray(raw) ? raw[0] : raw?.rows;
+    return { tables: (Array.isArray(rows) ? rows : []) ?? [] };
   } catch (error) {
     return { tables: [], error: String(error) };
   }
@@ -2789,11 +2990,13 @@ async function compareSchemas() {
   if (!db) return { match: false, error: "Database not available" };
   try {
     const result = await db.execute(sql`
-      SELECT TABLE_NAME
-      FROM INFORMATION_SCHEMA.TABLES
-      WHERE TABLE_SCHEMA = DATABASE()
+      SELECT table_name
+      FROM information_schema.tables
+      WHERE table_schema = 'public'
     `);
-    const dbTables = result[0].map((r) => r.TABLE_NAME);
+    const raw = result;
+    const rows = Array.isArray(raw) ? raw[0] : raw?.rows;
+    const dbTables = (Array.isArray(rows) ? rows : []).map((r) => r.table_name);
     const codeTables = [
       "users",
       "challenges",
@@ -2857,8 +3060,8 @@ async function createAuditLog(data) {
     return null;
   }
   try {
-    const result = await db.insert(auditLogs).values(data);
-    return result[0].insertId;
+    const [result] = await db.insert(auditLogs).values(data);
+    return result.insertId ?? null;
   } catch (error) {
     console.error("[AuditLog] Failed to create audit log:", error);
     return null;
@@ -3033,11 +3236,13 @@ __export(db_exports, {
   getDb: () => getDb,
   getDbSchema: () => getDbSchema,
   getDeletedParticipations: () => getDeletedParticipations,
+  getDirectMessageById: () => getDirectMessageById,
   getDirectMessagesForUser: () => getDirectMessagesForUser,
   getEntityAuditHistory: () => getEntityAuditHistory,
   getEventById: () => getEventById,
   getEventsByHostTwitterId: () => getEventsByHostTwitterId,
   getEventsByHostUserId: () => getEventsByHostUserId,
+  getEventsPaginated: () => getEventsPaginated,
   getFollowerCount: () => getFollowerCount,
   getFollowerIdsForUser: () => getFollowerIdsForUser,
   getFollowersForUser: () => getFollowersForUser,
@@ -3046,6 +3251,7 @@ __export(db_exports, {
   getGlobalContributionRanking: () => getGlobalContributionRanking,
   getHostRanking: () => getHostRanking,
   getInvitationByCode: () => getInvitationByCode,
+  getInvitationById: () => getInvitationById,
   getInvitationStats: () => getInvitationStats,
   getInvitationUses: () => getInvitationUses,
   getInvitationsForChallenge: () => getInvitationsForChallenge,
@@ -3146,425 +3352,479 @@ var init_db2 = __esm({
   }
 });
 
-// server/_core/index.ts
-import "dotenv/config";
-import express from "express";
-import { createServer } from "http";
-import net from "net";
-import { createExpressMiddleware } from "@trpc/server/adapters/express";
-
-// shared/const.ts
-var COOKIE_NAME = "app_session_id";
-var ONE_YEAR_MS = 1e3 * 60 * 60 * 24 * 365;
-var AXIOS_TIMEOUT_MS = 3e4;
-var UNAUTHED_ERR_MSG = "Please login (10001)";
-var NOT_ADMIN_ERR_MSG = "You do not have required permission (10002)";
-
-// server/_core/oauth.ts
-init_db2();
-
-// server/_core/cookies.ts
-var LOCAL_HOSTS = /* @__PURE__ */ new Set(["localhost", "127.0.0.1", "::1"]);
-function isIpAddress(host) {
-  if (/^\d{1,3}(\.\d{1,3}){3}$/.test(host)) return true;
-  return host.includes(":");
-}
-function isSecureRequest(req) {
-  if (req.protocol === "https") return true;
-  const forwardedProto = req.headers["x-forwarded-proto"];
-  if (!forwardedProto) return false;
-  const protoList = Array.isArray(forwardedProto) ? forwardedProto : forwardedProto.split(",");
-  return protoList.some((proto) => proto.trim().toLowerCase() === "https");
-}
-function getParentDomain(hostname) {
-  if (LOCAL_HOSTS.has(hostname) || isIpAddress(hostname)) {
-    return void 0;
-  }
-  const parts = hostname.split(".");
-  if (parts.length < 3) {
-    return void 0;
-  }
-  return "." + parts.slice(-2).join(".");
-}
-function getSessionCookieOptions(req) {
-  const hostname = req.hostname;
-  const domain = getParentDomain(hostname);
-  return {
-    domain,
-    httpOnly: true,
-    path: "/",
-    sameSite: "none",
-    secure: isSecureRequest(req)
-  };
-}
-
-// shared/_core/errors.ts
-var HttpError = class extends Error {
-  constructor(statusCode, message) {
-    super(message);
-    this.statusCode = statusCode;
-    this.name = "HttpError";
-  }
-};
-var ForbiddenError = (msg) => new HttpError(403, msg);
-
-// server/_core/sdk.ts
-init_db2();
-init_env();
-import axios from "axios";
-import { parse as parseCookieHeader } from "cookie";
-import { SignJWT, jwtVerify as jwtVerify2 } from "jose";
-var isNonEmptyString = (value) => typeof value === "string" && value.length > 0;
-var EXCHANGE_TOKEN_PATH = `/webdev.v1.WebDevAuthPublicService/ExchangeToken`;
-var GET_USER_INFO_PATH = `/webdev.v1.WebDevAuthPublicService/GetUserInfo`;
-var GET_USER_INFO_WITH_JWT_PATH = `/webdev.v1.WebDevAuthPublicService/GetUserInfoWithJwt`;
-var OAuthService = class {
-  constructor(client) {
-    this.client = client;
-    console.log("[OAuth] Initialized with baseURL:", ENV.oAuthServerUrl);
-    if (!ENV.oAuthServerUrl) {
-      console.error(
-        "[OAuth] ERROR: OAUTH_SERVER_URL is not configured! Set OAUTH_SERVER_URL environment variable."
-      );
-    }
-  }
-  decodeState(state) {
-    const redirectUri = atob(state);
-    return redirectUri;
-  }
-  async getTokenByCode(code, state) {
-    const payload = {
-      clientId: ENV.appId,
-      grantType: "authorization_code",
-      code,
-      redirectUri: this.decodeState(state)
-    };
-    const { data } = await this.client.post(EXCHANGE_TOKEN_PATH, payload);
-    return data;
-  }
-  async getUserInfoByToken(token) {
-    const { data } = await this.client.post(GET_USER_INFO_PATH, {
-      accessToken: token.accessToken
-    });
-    return data;
-  }
-};
-var createOAuthHttpClient = () => axios.create({
-  baseURL: ENV.oAuthServerUrl,
-  timeout: AXIOS_TIMEOUT_MS
+// server/db/api-usage-db.ts
+var api_usage_db_exports = {};
+__export(api_usage_db_exports, {
+  checkCostLimit: () => checkCostLimit,
+  getCostSettings: () => getCostSettings,
+  getCurrentMonthStats: () => getCurrentMonthStats,
+  getMonthlyCost: () => getMonthlyCost,
+  getMonthlyUsage: () => getMonthlyUsage,
+  getUsageByEndpoint: () => getUsageByEndpoint,
+  isApiCallAllowed: () => isApiCallAllowed,
+  recordApiUsage: () => recordApiUsage,
+  upsertCostSettings: () => upsertCostSettings
 });
-var SDKServer = class {
-  client;
-  oauthService;
-  constructor(client = createOAuthHttpClient()) {
-    this.client = client;
-    this.oauthService = new OAuthService(this.client);
+import { eq as eq4, sql as sql3, desc as desc4 } from "drizzle-orm";
+async function recordApiUsage(usage) {
+  const db = await getDb();
+  if (!db) {
+    console.warn("[API Usage] Database not available, skipping record");
+    return null;
   }
-  deriveLoginMethod(platforms, fallback) {
-    if (fallback && fallback.length > 0) return fallback;
-    if (!Array.isArray(platforms) || platforms.length === 0) return null;
-    const set = new Set(platforms.filter((p) => typeof p === "string"));
-    if (set.has("REGISTERED_PLATFORM_EMAIL")) return "email";
-    if (set.has("REGISTERED_PLATFORM_GOOGLE")) return "google";
-    if (set.has("REGISTERED_PLATFORM_APPLE")) return "apple";
-    if (set.has("REGISTERED_PLATFORM_MICROSOFT") || set.has("REGISTERED_PLATFORM_AZURE"))
-      return "microsoft";
-    if (set.has("REGISTERED_PLATFORM_GITHUB")) return "github";
-    const first = Array.from(set)[0];
-    return first ? first.toLowerCase() : null;
-  }
-  /**
-   * Exchange OAuth authorization code for access token
-   * @example
-   * const tokenResponse = await sdk.exchangeCodeForToken(code, state);
-   */
-  async exchangeCodeForToken(code, state) {
-    return this.oauthService.getTokenByCode(code, state);
-  }
-  /**
-   * Get user information using access token
-   * @example
-   * const userInfo = await sdk.getUserInfo(tokenResponse.accessToken);
-   */
-  async getUserInfo(accessToken) {
-    const data = await this.oauthService.getUserInfoByToken({
-      accessToken
-    });
-    const loginMethod = this.deriveLoginMethod(
-      data?.platforms,
-      data?.platform ?? data.platform ?? null
-    );
-    return {
-      ...data,
-      platform: loginMethod,
-      loginMethod
+  try {
+    const now = /* @__PURE__ */ new Date();
+    const month = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}`;
+    const monthlyUsage = await getMonthlyUsage(month);
+    const isFreeTier = monthlyUsage < FREE_TIER_LIMIT;
+    const cost = isFreeTier ? 0 : COST_PER_REQUEST;
+    const insertData = {
+      endpoint: usage.endpoint,
+      method: usage.method || "GET",
+      success: usage.success ? 1 : 0,
+      cost: cost.toString(),
+      rateLimitInfo: usage.rateLimitInfo ?? null,
+      month
     };
+    const [result] = await db.insert(apiUsage).values(insertData);
+    return result.insertId ?? null;
+  } catch (error) {
+    console.error("[API Usage] Failed to record usage:", error);
+    return null;
   }
-  parseCookies(cookieHeader) {
-    if (!cookieHeader) {
-      return /* @__PURE__ */ new Map();
-    }
-    const parsed = parseCookieHeader(cookieHeader);
-    return new Map(Object.entries(parsed));
-  }
-  getSessionSecret() {
-    const secret = ENV.cookieSecret;
-    return new TextEncoder().encode(secret);
-  }
-  /**
-   * Create a session token for a Manus user openId
-   * @example
-   * const sessionToken = await sdk.createSessionToken(userInfo.openId);
-   */
-  async createSessionToken(openId, options = {}) {
-    return this.signSession(
-      {
-        openId,
-        appId: ENV.appId,
-        name: options.name || ""
-      },
-      options
-    );
-  }
-  async signSession(payload, options = {}) {
-    const issuedAt = Date.now();
-    const expiresInMs = options.expiresInMs ?? ONE_YEAR_MS;
-    const expirationSeconds = Math.floor((issuedAt + expiresInMs) / 1e3);
-    const secretKey = this.getSessionSecret();
-    return new SignJWT({
-      openId: payload.openId,
-      appId: payload.appId,
-      name: payload.name
-    }).setProtectedHeader({ alg: "HS256", typ: "JWT" }).setExpirationTime(expirationSeconds).sign(secretKey);
-  }
-  async verifySession(cookieValue) {
-    if (!cookieValue) {
-      console.warn("[Auth] Missing session cookie");
-      return null;
-    }
-    try {
-      const secretKey = this.getSessionSecret();
-      const { payload } = await jwtVerify2(cookieValue, secretKey, {
-        algorithms: ["HS256"]
-      });
-      const { openId, appId, name } = payload;
-      if (!isNonEmptyString(openId) || !isNonEmptyString(appId) || !isNonEmptyString(name)) {
-        console.warn("[Auth] Session payload missing required fields");
-        return null;
-      }
-      return {
-        openId,
-        appId,
-        name
-      };
-    } catch (error) {
-      console.warn("[Auth] Session verification failed", String(error));
-      return null;
-    }
-  }
-  async getUserInfoWithJwt(jwtToken) {
-    const payload = {
-      jwtToken,
-      projectId: ENV.appId
-    };
-    const { data } = await this.client.post(
-      GET_USER_INFO_WITH_JWT_PATH,
-      payload
-    );
-    const loginMethod = this.deriveLoginMethod(
-      data?.platforms,
-      data?.platform ?? data.platform ?? null
-    );
-    return {
-      ...data,
-      platform: loginMethod,
-      loginMethod
-    };
-  }
-  async authenticateRequest(req) {
-    const authHeader = req.headers.authorization || req.headers.Authorization;
-    let token;
-    if (typeof authHeader === "string" && authHeader.startsWith("Bearer ")) {
-      token = authHeader.slice("Bearer ".length).trim();
-    }
-    const cookies = this.parseCookies(req.headers.cookie);
-    const sessionCookie = token || cookies.get(COOKIE_NAME);
-    const session = await this.verifySession(sessionCookie);
-    if (!session) {
-      throw ForbiddenError("Invalid session cookie");
-    }
-    const sessionUserId = session.openId;
-    const signedInAt = /* @__PURE__ */ new Date();
-    let user = await getUserByOpenId(sessionUserId);
-    if (!user) {
-      try {
-        const userInfo = await this.getUserInfoWithJwt(sessionCookie ?? "");
-        await upsertUser({
-          openId: userInfo.openId,
-          name: userInfo.name || null,
-          email: userInfo.email ?? null,
-          loginMethod: userInfo.loginMethod ?? userInfo.platform ?? null,
-          lastSignedIn: signedInAt
-        });
-        user = await getUserByOpenId(userInfo.openId);
-      } catch (error) {
-        console.error("[Auth] Failed to sync user from OAuth:", error);
-        throw ForbiddenError("Failed to sync user info");
-      }
-    }
-    if (!user) {
-      throw ForbiddenError("User not found");
-    }
-    await upsertUser({
-      openId: user.openId,
-      lastSignedIn: signedInAt
-    });
-    return user;
-  }
-};
-var sdk = new SDKServer();
-
-// server/_core/oauth.ts
-function getQueryParam(req, key) {
-  const value = req.query[key];
-  return typeof value === "string" ? value : void 0;
 }
-async function syncUser(userInfo) {
-  if (!userInfo.openId) {
-    throw new Error("openId missing from user info");
+async function getMonthlyUsage(month) {
+  const db = await getDb();
+  if (!db) return 0;
+  try {
+    const result = await db.select({ count: sql3`count(*)` }).from(apiUsage).where(eq4(apiUsage.month, month));
+    return result[0]?.count || 0;
+  } catch (error) {
+    console.error("[API Usage] Failed to get monthly usage:", error);
+    return 0;
   }
-  const lastSignedIn = /* @__PURE__ */ new Date();
-  await upsertUser({
-    openId: userInfo.openId,
-    name: userInfo.name || null,
-    email: userInfo.email ?? null,
-    loginMethod: userInfo.loginMethod ?? userInfo.platform ?? null,
-    lastSignedIn
-  });
-  const saved = await getUserByOpenId(userInfo.openId);
-  return saved ?? {
-    openId: userInfo.openId,
-    name: userInfo.name,
-    email: userInfo.email,
-    loginMethod: userInfo.loginMethod ?? null,
-    lastSignedIn
-  };
 }
-function buildUserResponse(user) {
+async function getMonthlyCost(month) {
+  const db = await getDb();
+  if (!db) return 0;
+  try {
+    const result = await db.select({ totalCost: sql3`sum(${apiUsage.cost})` }).from(apiUsage).where(eq4(apiUsage.month, month));
+    return Number(result[0]?.totalCost || 0);
+  } catch (error) {
+    console.error("[API Usage] Failed to get monthly cost:", error);
+    return 0;
+  }
+}
+async function getCurrentMonthStats() {
+  const now = /* @__PURE__ */ new Date();
+  const month = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}`;
+  const usage = await getMonthlyUsage(month);
+  const cost = await getMonthlyCost(month);
+  const freeTierRemaining = Math.max(0, FREE_TIER_LIMIT - usage);
   return {
-    id: user?.id ?? null,
-    openId: user?.openId ?? null,
-    name: user?.name ?? null,
-    email: user?.email ?? null,
-    loginMethod: user?.loginMethod ?? null,
-    lastSignedIn: (user?.lastSignedIn ?? /* @__PURE__ */ new Date()).toISOString()
+    usage,
+    cost,
+    freeTierRemaining
   };
 }
-function registerOAuthRoutes(app) {
-  app.get("/api/oauth/callback", async (req, res) => {
-    const code = getQueryParam(req, "code");
-    const state = getQueryParam(req, "state");
-    if (!code || !state) {
-      res.status(400).json({ error: "code and state are required" });
-      return;
-    }
-    try {
-      const tokenResponse = await sdk.exchangeCodeForToken(code, state);
-      const userInfo = await sdk.getUserInfo(tokenResponse.accessToken);
-      await syncUser(userInfo);
-      const sessionToken = await sdk.createSessionToken(userInfo.openId, {
-        name: userInfo.name || "",
-        expiresInMs: ONE_YEAR_MS
-      });
-      const cookieOptions = getSessionCookieOptions(req);
-      res.cookie(COOKIE_NAME, sessionToken, { ...cookieOptions, maxAge: ONE_YEAR_MS });
-      const host = req.get("host") || "";
-      const protocol = req.get("x-forwarded-proto") || req.protocol;
-      const forceHttps = protocol === "https" || host.includes("manus.computer") || host.includes("manus.im");
-      let frontendHost;
-      if (host.includes("doin-challenge.com") || host.includes("railway.app")) {
-        frontendHost = host;
-      } else {
-        frontendHost = host.replace(/^3000-/, "8081-");
-      }
-      const frontendUrl = process.env.EXPO_WEB_PREVIEW_URL || process.env.EXPO_PACKAGER_PROXY_URL || (host ? `${forceHttps ? "https" : protocol}://${frontendHost}` : "http://localhost:8081");
-      res.redirect(302, frontendUrl);
-    } catch (error) {
-      console.error("[OAuth] Callback failed", error);
-      res.status(500).json({ error: "OAuth callback failed" });
-    }
-  });
-  app.get("/api/oauth/mobile", async (req, res) => {
-    const code = getQueryParam(req, "code");
-    const state = getQueryParam(req, "state");
-    if (!code || !state) {
-      res.status(400).json({ error: "code and state are required" });
-      return;
-    }
-    try {
-      const tokenResponse = await sdk.exchangeCodeForToken(code, state);
-      const userInfo = await sdk.getUserInfo(tokenResponse.accessToken);
-      const user = await syncUser(userInfo);
-      const sessionToken = await sdk.createSessionToken(userInfo.openId, {
-        name: userInfo.name || "",
-        expiresInMs: ONE_YEAR_MS
-      });
-      const cookieOptions = getSessionCookieOptions(req);
-      res.cookie(COOKIE_NAME, sessionToken, { ...cookieOptions, maxAge: ONE_YEAR_MS });
-      res.json({
-        app_session_id: sessionToken,
-        user: buildUserResponse(user)
-      });
-    } catch (error) {
-      console.error("[OAuth] Mobile exchange failed", error);
-      res.status(500).json({ error: "OAuth mobile exchange failed" });
-    }
-  });
-  app.post("/api/auth/logout", (req, res) => {
-    const cookieOptions = getSessionCookieOptions(req);
-    res.clearCookie(COOKIE_NAME, { ...cookieOptions, maxAge: -1 });
-    res.json({ success: true });
-  });
-  app.get("/api/auth/me", async (req, res) => {
-    try {
-      const user = await sdk.authenticateRequest(req);
-      res.json({ user: buildUserResponse(user) });
-    } catch (error) {
-      console.error("[Auth] /api/auth/me failed:", error);
-      res.status(401).json({ error: "Not authenticated", user: null });
-    }
-  });
-  app.post("/api/auth/session", async (req, res) => {
-    try {
-      const user = await sdk.authenticateRequest(req);
-      const authHeader = req.headers.authorization || req.headers.Authorization;
-      if (typeof authHeader !== "string" || !authHeader.startsWith("Bearer ")) {
-        res.status(400).json({ error: "Bearer token required" });
-        return;
-      }
-      const token = authHeader.slice("Bearer ".length).trim();
-      const cookieOptions = getSessionCookieOptions(req);
-      res.cookie(COOKIE_NAME, token, { ...cookieOptions, maxAge: ONE_YEAR_MS });
-      res.json({ success: true, user: buildUserResponse(user) });
-    } catch (error) {
-      console.error("[Auth] /api/auth/session failed:", error);
-      res.status(401).json({ error: "Invalid token" });
-    }
-  });
+async function getUsageByEndpoint(month, limit = 20) {
+  const db = await getDb();
+  if (!db) return [];
+  try {
+    const result = await db.select({
+      endpoint: apiUsage.endpoint,
+      count: sql3`count(*)`,
+      cost: sql3`sum(${apiUsage.cost})`
+    }).from(apiUsage).where(eq4(apiUsage.month, month)).groupBy(apiUsage.endpoint).orderBy(desc4(sql3`count(*)`)).limit(limit);
+    return result.map((r) => ({
+      endpoint: r.endpoint,
+      count: r.count,
+      cost: Number(r.cost || 0)
+    }));
+  } catch (error) {
+    console.error("[API Usage] Failed to get usage by endpoint:", error);
+    return [];
+  }
 }
+async function getCostSettings() {
+  const db = await getDb();
+  if (!db) return null;
+  try {
+    const result = await db.select().from(apiCostSettings).limit(1);
+    return result[0] || null;
+  } catch (error) {
+    console.error("[API Usage] Failed to get cost settings:", error);
+    return null;
+  }
+}
+async function upsertCostSettings(settings) {
+  const db = await getDb();
+  if (!db) {
+    console.warn("[API Usage] Database not available, skipping upsert");
+    return;
+  }
+  try {
+    const existing = await getCostSettings();
+    if (existing) {
+      await db.update(apiCostSettings).set({
+        ...settings,
+        updatedAt: /* @__PURE__ */ new Date()
+      }).where(eq4(apiCostSettings.id, existing.id));
+    } else {
+      await db.insert(apiCostSettings).values({
+        monthlyLimit: settings.monthlyLimit || "10.00",
+        alertThreshold: settings.alertThreshold || "8.00",
+        alertEmail: settings.alertEmail || null,
+        autoStop: settings.autoStop || 0
+      });
+    }
+  } catch (error) {
+    console.error("[API Usage] Failed to upsert cost settings:", error);
+    throw error;
+  }
+}
+async function checkCostLimit() {
+  const settings = await getCostSettings();
+  const currentMonth = await getCurrentMonthStats();
+  const limit = settings ? Number(settings.monthlyLimit) : 10;
+  const alertThreshold = settings ? Number(settings.alertThreshold) : 8;
+  const autoStop = settings ? settings.autoStop === 1 : false;
+  const exceeded = currentMonth.cost >= limit;
+  const shouldAlert = currentMonth.cost >= alertThreshold;
+  const shouldStop = exceeded && autoStop;
+  return {
+    exceeded,
+    currentCost: currentMonth.cost,
+    limit,
+    shouldAlert,
+    shouldStop
+  };
+}
+async function isApiCallAllowed() {
+  const costLimit = await checkCostLimit();
+  return !costLimit.shouldStop;
+}
+var FREE_TIER_LIMIT, COST_PER_REQUEST;
+var init_api_usage_db = __esm({
+  "server/db/api-usage-db.ts"() {
+    "use strict";
+    init_db();
+    init_schema2();
+    FREE_TIER_LIMIT = 100;
+    COST_PER_REQUEST = 0.01;
+  }
+});
 
-// server/twitter-oauth2.ts
-init_db2();
-init_schema2();
-import crypto from "crypto";
-import { eq as eq4, lt as lt3 } from "drizzle-orm";
+// server/_core/notification.ts
+import { TRPCError } from "@trpc/server";
+async function notifyOwner(payload) {
+  const { title, content } = validatePayload(payload);
+  if (!ENV.forgeApiUrl) {
+    throw new TRPCError({
+      code: "INTERNAL_SERVER_ERROR",
+      message: "Notification service URL is not configured."
+    });
+  }
+  if (!ENV.forgeApiKey) {
+    throw new TRPCError({
+      code: "INTERNAL_SERVER_ERROR",
+      message: "Notification service API key is not configured."
+    });
+  }
+  const endpoint = buildEndpointUrl(ENV.forgeApiUrl);
+  try {
+    const response = await fetch(endpoint, {
+      method: "POST",
+      headers: {
+        accept: "application/json",
+        authorization: `Bearer ${ENV.forgeApiKey}`,
+        "content-type": "application/json",
+        "connect-protocol-version": "1"
+      },
+      body: JSON.stringify({ title, content })
+    });
+    if (!response.ok) {
+      const detail = await response.text().catch(() => "");
+      console.warn(
+        `[Notification] Failed to notify owner (${response.status} ${response.statusText})${detail ? `: ${detail}` : ""}`
+      );
+      return false;
+    }
+    return true;
+  } catch (error) {
+    console.warn("[Notification] Error calling notification service:", error);
+    return false;
+  }
+}
+var TITLE_MAX_LENGTH, CONTENT_MAX_LENGTH, trimValue, isNonEmptyString2, buildEndpointUrl, validatePayload;
+var init_notification = __esm({
+  "server/_core/notification.ts"() {
+    "use strict";
+    init_env();
+    TITLE_MAX_LENGTH = 1200;
+    CONTENT_MAX_LENGTH = 2e4;
+    trimValue = (value) => value.trim();
+    isNonEmptyString2 = (value) => typeof value === "string" && value.trim().length > 0;
+    buildEndpointUrl = (baseUrl) => {
+      const normalizedBase = baseUrl.endsWith("/") ? baseUrl : `${baseUrl}/`;
+      return new URL("webdevtoken.v1.WebDevService/SendNotification", normalizedBase).toString();
+    };
+    validatePayload = (input) => {
+      if (!isNonEmptyString2(input.title)) {
+        throw new TRPCError({
+          code: "BAD_REQUEST",
+          message: "Notification title is required."
+        });
+      }
+      if (!isNonEmptyString2(input.content)) {
+        throw new TRPCError({
+          code: "BAD_REQUEST",
+          message: "Notification content is required."
+        });
+      }
+      const title = trimValue(input.title);
+      const content = trimValue(input.content);
+      if (title.length > TITLE_MAX_LENGTH) {
+        throw new TRPCError({
+          code: "BAD_REQUEST",
+          message: `Notification title must be at most ${TITLE_MAX_LENGTH} characters.`
+        });
+      }
+      if (content.length > CONTENT_MAX_LENGTH) {
+        throw new TRPCError({
+          code: "BAD_REQUEST",
+          message: `Notification content must be at most ${CONTENT_MAX_LENGTH} characters.`
+        });
+      }
+      return { title, content };
+    };
+  }
+});
+
+// server/api-cost-alert.ts
+var api_cost_alert_exports = {};
+__export(api_cost_alert_exports, {
+  checkAndSendCostAlert: () => checkAndSendCostAlert,
+  resetAlertFlags: () => resetAlertFlags
+});
+async function sendCostAlertWebhook(payload) {
+  if (!COST_ALERT_WEBHOOK_URL) return;
+  try {
+    const res = await fetch(COST_ALERT_WEBHOOK_URL, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(payload)
+    });
+    if (!res.ok) {
+      console.warn("[Cost Alert] Webhook failed:", res.status, await res.text().catch(() => ""));
+    }
+  } catch (e) {
+    console.warn("[Cost Alert] Webhook error:", e);
+  }
+}
+async function checkAndSendCostAlert() {
+  try {
+    const costLimit = await checkCostLimit();
+    const settings = await getCostSettings();
+    if (!costLimit.shouldAlert) {
+      return;
+    }
+    const alertKey = `cost_alert_${(/* @__PURE__ */ new Date()).toISOString().slice(0, 7)}`;
+    if (alertSentFlags.get(alertKey)) {
+      return;
+    }
+    const currentMonth = await getCurrentMonthStats();
+    const message = costLimit.exceeded ? `\u26A0\uFE0F X API\u30B3\u30B9\u30C8\u4E0A\u9650\u3092\u8D85\u904E\u3057\u307E\u3057\u305F
+
+\u73FE\u5728\u306E\u30B3\u30B9\u30C8: $${costLimit.currentCost.toFixed(2)}
+\u8A2D\u5B9A\u4E0A\u9650: $${costLimit.limit.toFixed(2)}
+\u4ECA\u6708\u306E\u4F7F\u7528\u91CF: ${currentMonth.usage} \u4EF6
+\u7121\u6599\u67A0\u6B8B\u308A: ${currentMonth.freeTierRemaining} \u4EF6
+
+${costLimit.shouldStop ? "API\u547C\u3073\u51FA\u3057\u306F\u81EA\u52D5\u505C\u6B62\u3055\u308C\u3066\u3044\u307E\u3059\u3002" : "API\u547C\u3073\u51FA\u3057\u306F\u7D99\u7D9A\u4E2D\u3067\u3059\u3002"}
+
+\u7BA1\u7406\u753B\u9762\u3067\u8A2D\u5B9A\u3092\u78BA\u8A8D\u3057\u3066\u304F\u3060\u3055\u3044: /admin/api-usage` : `\u26A0\uFE0F X API\u30B3\u30B9\u30C8\u4E0A\u9650\u306B\u8FD1\u3065\u3044\u3066\u3044\u307E\u3059
+
+\u73FE\u5728\u306E\u30B3\u30B9\u30C8: $${costLimit.currentCost.toFixed(2)}
+\u30A2\u30E9\u30FC\u30C8\u95BE\u5024: $${costLimit.limit.toFixed(2)}
+\u4ECA\u6708\u306E\u4F7F\u7528\u91CF: ${currentMonth.usage} \u4EF6
+\u7121\u6599\u67A0\u6B8B\u308A: ${currentMonth.freeTierRemaining} \u4EF6
+
+\u7BA1\u7406\u753B\u9762\u3067\u8A2D\u5B9A\u3092\u78BA\u8A8D\u3057\u3066\u304F\u3060\u3055\u3044: /admin/api-usage`;
+    const title = costLimit.exceeded ? "X API\u30B3\u30B9\u30C8\u4E0A\u9650\u8D85\u904E\u30A2\u30E9\u30FC\u30C8" : "X API\u30B3\u30B9\u30C8\u4E0A\u9650\u8B66\u544A";
+    try {
+      await notifyOwner({ title, content: message });
+    } catch (e) {
+      console.warn("[Cost Alert] notifyOwner failed:", e);
+    }
+    await sendCostAlertWebhook({
+      title,
+      content: message,
+      alertEmail: settings?.alertEmail ?? null,
+      exceeded: costLimit.exceeded,
+      currentCost: costLimit.currentCost,
+      limit: costLimit.limit
+    });
+    alertSentFlags.set(alertKey, true);
+    console.log("[Cost Alert] Alert sent:", {
+      exceeded: costLimit.exceeded,
+      currentCost: costLimit.currentCost,
+      limit: costLimit.limit,
+      alertEmail: settings?.alertEmail ?? void 0
+    });
+  } catch (error) {
+    console.error("[Cost Alert] Failed to check and send alert:", error);
+  }
+}
+function resetAlertFlags() {
+  alertSentFlags.clear();
+}
+var alertSentFlags, COST_ALERT_WEBHOOK_URL;
+var init_api_cost_alert = __esm({
+  "server/api-cost-alert.ts"() {
+    "use strict";
+    init_api_usage_db();
+    init_notification();
+    alertSentFlags = /* @__PURE__ */ new Map();
+    COST_ALERT_WEBHOOK_URL = process.env.COST_ALERT_WEBHOOK_URL ?? "";
+  }
+});
+
+// server/api-usage-tracker.ts
+var api_usage_tracker_exports = {};
+__export(api_usage_tracker_exports, {
+  getApiUsageStats: () => getApiUsageStats,
+  getDashboardSummary: () => getDashboardSummary,
+  getEndpointStats: () => getEndpointStats,
+  getRateLimitWarningLevel: () => getRateLimitWarningLevel,
+  getRecentUsageHistory: () => getRecentUsageHistory,
+  getWarningsSummary: () => getWarningsSummary,
+  recordApiUsage: () => recordApiUsage2,
+  recordRateLimitError: () => recordRateLimitError,
+  resetApiUsageStats: () => resetApiUsageStats
+});
+async function recordApiUsage2(endpoint, rateLimitInfo, success = true, method = "GET") {
+  const now = Date.now();
+  stats.totalRequests++;
+  if (success) {
+    stats.successfulRequests++;
+  } else {
+    stats.rateLimitedRequests++;
+  }
+  stats.lastUpdated = now;
+  recordApiUsage({
+    endpoint,
+    method,
+    success,
+    rateLimitInfo
+  }).catch((error) => {
+    console.error("[API Usage] Failed to record to database:", error);
+  });
+  if (rateLimitInfo) {
+    const entry = {
+      endpoint,
+      limit: rateLimitInfo.limit,
+      remaining: rateLimitInfo.remaining,
+      reset: rateLimitInfo.reset,
+      timestamp: now
+    };
+    usageHistory.push(entry);
+    if (usageHistory.length > MAX_HISTORY_SIZE) {
+      usageHistory = usageHistory.slice(-MAX_HISTORY_SIZE);
+    }
+    const usagePercent = (rateLimitInfo.limit - rateLimitInfo.remaining) / rateLimitInfo.limit * 100;
+    stats.endpoints[endpoint] = {
+      requests: (stats.endpoints[endpoint]?.requests || 0) + 1,
+      limit: rateLimitInfo.limit,
+      remaining: rateLimitInfo.remaining,
+      resetAt: new Date(rateLimitInfo.reset * 1e3).toISOString(),
+      usagePercent: Math.round(usagePercent * 10) / 10
+    };
+  }
+}
+async function recordRateLimitError(endpoint, method = "GET") {
+  await recordApiUsage2(endpoint, null, false, method);
+}
+function getApiUsageStats() {
+  return { ...stats };
+}
+function getEndpointStats(endpoint) {
+  return stats.endpoints[endpoint] || null;
+}
+function getRecentUsageHistory(count3 = 100) {
+  return usageHistory.slice(-count3);
+}
+function resetApiUsageStats() {
+  usageHistory = [];
+  stats = {
+    totalRequests: 0,
+    successfulRequests: 0,
+    rateLimitedRequests: 0,
+    endpoints: {},
+    lastUpdated: Date.now()
+  };
+}
+function getRateLimitWarningLevel(endpoint) {
+  const endpointStats = stats.endpoints[endpoint];
+  if (!endpointStats) {
+    return "safe";
+  }
+  if (endpointStats.remaining <= 5) {
+    return "critical";
+  }
+  if (endpointStats.usagePercent >= 80) {
+    return "warning";
+  }
+  return "safe";
+}
+function getWarningsSummary() {
+  const warnings = [];
+  for (const [endpoint, endpointStats] of Object.entries(stats.endpoints)) {
+    const level = getRateLimitWarningLevel(endpoint);
+    if (level !== "safe") {
+      warnings.push({
+        endpoint,
+        level,
+        remaining: endpointStats.remaining,
+        resetAt: endpointStats.resetAt
+      });
+    }
+  }
+  return warnings;
+}
+async function getDashboardSummary() {
+  const monthlyStats = await getCurrentMonthStats();
+  const costLimit = await checkCostLimit();
+  const now = /* @__PURE__ */ new Date();
+  const month = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}`;
+  const endpointCosts = await getUsageByEndpoint(month, 20);
+  return {
+    stats: getApiUsageStats(),
+    warnings: getWarningsSummary(),
+    recentHistory: getRecentUsageHistory(20),
+    monthlyStats,
+    costLimit,
+    endpointCosts
+  };
+}
+var usageHistory, stats, MAX_HISTORY_SIZE;
+var init_api_usage_tracker = __esm({
+  "server/api-usage-tracker.ts"() {
+    "use strict";
+    init_api_usage_db();
+    usageHistory = [];
+    stats = {
+      totalRequests: 0,
+      successfulRequests: 0,
+      rateLimitedRequests: 0,
+      endpoints: {},
+      lastUpdated: Date.now()
+    };
+    MAX_HISTORY_SIZE = 1e3;
+  }
+});
 
 // server/rate-limit-handler.ts
-var DEFAULT_OPTIONS = {
-  maxRetries: 5,
-  initialDelayMs: 1e3,
-  maxDelayMs: 6e4
-};
 function extractRateLimitInfo(headers) {
   const limit = headers.get("x-rate-limit-limit");
   const remaining = headers.get("x-rate-limit-remaining");
@@ -3646,10 +3906,43 @@ async function withExponentialBackoff(requestFn, options = {}) {
   );
 }
 async function twitterApiFetch(url, options = {}, retryOptions = {}) {
+  try {
+    const { isApiCallAllowed: isApiCallAllowed2 } = await Promise.resolve().then(() => (init_api_usage_db(), api_usage_db_exports));
+    const isAllowed = await isApiCallAllowed2();
+    if (!isAllowed) {
+      console.warn("[RateLimit] API call blocked due to cost limit exceeded");
+      throw new Error("API\u547C\u3073\u51FA\u3057\u306F\u30B3\u30B9\u30C8\u4E0A\u9650\u306B\u3088\u308A\u505C\u6B62\u3055\u308C\u3066\u3044\u307E\u3059\u3002\u7BA1\u7406\u753B\u9762\u3067\u8A2D\u5B9A\u3092\u78BA\u8A8D\u3057\u3066\u304F\u3060\u3055\u3044\u3002");
+    }
+    Promise.resolve().then(() => (init_api_cost_alert(), api_cost_alert_exports)).then((alert) => {
+      alert.checkAndSendCostAlert().catch(() => {
+      });
+    }).catch(() => {
+    });
+  } catch (error) {
+    if (error instanceof Error && error.message.includes("\u30B3\u30B9\u30C8\u4E0A\u9650")) {
+      throw error;
+    }
+    console.warn("[RateLimit] Cost limit check failed, continuing:", error);
+  }
   const result = await withExponentialBackoff(
     () => fetch(url, options),
     retryOptions
   );
+  const success = result.response.ok || result.response.status === 429;
+  const method = options.method || "GET";
+  const urlObj = new URL(url);
+  const endpoint = urlObj.pathname;
+  Promise.resolve().then(() => (init_api_usage_tracker(), api_usage_tracker_exports)).then((tracker) => {
+    tracker.recordApiUsage(
+      endpoint,
+      result.rateLimitInfo,
+      success,
+      method
+    ).catch((error) => {
+      console.error("[RateLimit] Failed to record API usage:", error);
+    });
+  }).catch(() => {
+  });
   if (!result.response.ok && result.response.status !== 429) {
     const errorText = JSON.stringify(result.data);
     throw new Error(`Twitter API error (${result.response.status}): ${errorText}`);
@@ -3659,17 +3952,46 @@ async function twitterApiFetch(url, options = {}, retryOptions = {}) {
     rateLimitInfo: result.rateLimitInfo
   };
 }
+var DEFAULT_OPTIONS;
+var init_rate_limit_handler = __esm({
+  "server/rate-limit-handler.ts"() {
+    "use strict";
+    DEFAULT_OPTIONS = {
+      maxRetries: 5,
+      initialDelayMs: 1e3,
+      maxDelayMs: 6e4
+    };
+  }
+});
 
 // server/twitter-oauth2.ts
-var TWITTER_CLIENT_ID = process.env.TWITTER_CLIENT_ID || "";
-var TWITTER_CLIENT_SECRET = process.env.TWITTER_CLIENT_SECRET || "";
+var twitter_oauth2_exports = {};
+__export(twitter_oauth2_exports, {
+  buildAuthorizationUrl: () => buildAuthorizationUrl,
+  checkFollowStatus: () => checkFollowStatus,
+  deletePKCEData: () => deletePKCEData,
+  exchangeCodeForTokens: () => exchangeCodeForTokens,
+  generatePKCE: () => generatePKCE,
+  generateState: () => generateState,
+  getPKCEData: () => getPKCEData,
+  getTargetAccountInfo: () => getTargetAccountInfo,
+  getUserProfile: () => getUserProfile,
+  getUserProfileByUsername: () => getUserProfileByUsername,
+  refreshAccessToken: () => refreshAccessToken,
+  revokeAccessToken: () => revokeAccessToken,
+  revokeToken: () => revokeToken,
+  sanitizeToken: () => sanitizeToken,
+  storePKCEData: () => storePKCEData
+});
+import crypto from "crypto";
+import { eq as eq5, lt as lt3 } from "drizzle-orm";
 function generatePKCE() {
   const codeVerifier = crypto.randomBytes(32).toString("base64url");
   const codeChallenge = crypto.createHash("sha256").update(codeVerifier).digest("base64url");
   return { codeVerifier, codeChallenge };
 }
 function generateState() {
-  return crypto.randomBytes(16).toString("hex");
+  return crypto.randomBytes(32).toString("hex");
 }
 function buildAuthorizationUrl(callbackUrl, state, codeChallenge, forceLogin = false) {
   const params = new URLSearchParams({
@@ -3687,6 +4009,48 @@ function buildAuthorizationUrl(callbackUrl, state, codeChallenge, forceLogin = f
   }
   return `https://twitter.com/i/oauth2/authorize?${params.toString()}`;
 }
+async function fetchWithRetry(url, options, config = {}) {
+  const { maxRetries = 2, initialDelayMs = 500, timeoutMs = 15e3, label = "API" } = config;
+  for (let attempt = 0; attempt <= maxRetries; attempt++) {
+    try {
+      const controller = new AbortController();
+      const timeout = setTimeout(() => controller.abort(), timeoutMs);
+      const response = await fetch(url, {
+        ...options,
+        signal: controller.signal
+      });
+      clearTimeout(timeout);
+      if (response.status === 429 && attempt < maxRetries) {
+        const retryAfter = response.headers.get("retry-after");
+        const waitMs = retryAfter ? parseInt(retryAfter, 10) * 1e3 : initialDelayMs * Math.pow(2, attempt);
+        console.warn(`[${label}] Rate limited (429), retrying in ${waitMs}ms (attempt ${attempt + 1}/${maxRetries})`);
+        await new Promise((resolve) => setTimeout(resolve, waitMs));
+        continue;
+      }
+      if (response.status >= 500 && attempt < maxRetries) {
+        const waitMs = initialDelayMs * Math.pow(2, attempt);
+        console.warn(`[${label}] Server error (${response.status}), retrying in ${waitMs}ms (attempt ${attempt + 1}/${maxRetries})`);
+        await new Promise((resolve) => setTimeout(resolve, waitMs));
+        continue;
+      }
+      return response;
+    } catch (error) {
+      const isAbort = error instanceof Error && error.name === "AbortError";
+      const isNetwork = error instanceof TypeError && error.message.includes("fetch");
+      if ((isAbort || isNetwork) && attempt < maxRetries) {
+        const waitMs = initialDelayMs * Math.pow(2, attempt);
+        console.warn(`[${label}] ${isAbort ? "Timeout" : "Network error"}, retrying in ${waitMs}ms (attempt ${attempt + 1}/${maxRetries})`);
+        await new Promise((resolve) => setTimeout(resolve, waitMs));
+        continue;
+      }
+      if (isAbort) {
+        throw new Error(`[${label}] Request timed out after ${timeoutMs}ms`);
+      }
+      throw error;
+    }
+  }
+  throw new Error(`[${label}] All retry attempts exhausted`);
+}
 async function exchangeCodeForTokens(code, callbackUrl, codeVerifier) {
   const url = "https://api.twitter.com/2/oauth2/token";
   const params = new URLSearchParams({
@@ -3697,18 +4061,24 @@ async function exchangeCodeForTokens(code, callbackUrl, codeVerifier) {
     code_verifier: codeVerifier
   });
   const credentials = Buffer.from(`${TWITTER_CLIENT_ID}:${TWITTER_CLIENT_SECRET}`).toString("base64");
-  const response = await fetch(url, {
+  const response = await fetchWithRetry(url, {
     method: "POST",
     headers: {
       "Content-Type": "application/x-www-form-urlencoded",
       "Authorization": `Basic ${credentials}`
     },
     body: params.toString()
-  });
+  }, { maxRetries: 2, timeoutMs: 15e3, label: "TokenExchange" });
   if (!response.ok) {
     const text11 = await response.text();
-    console.error("Token exchange error:", text11);
-    throw new Error(`Failed to exchange code for tokens: ${text11}`);
+    console.error("[TokenExchange] Error:", response.status);
+    if (response.status === 400) {
+      throw new Error("\u8A8D\u8A3C\u30B3\u30FC\u30C9\u304C\u7121\u52B9\u307E\u305F\u306F\u671F\u9650\u5207\u308C\u3067\u3059\u3002\u3082\u3046\u4E00\u5EA6\u30ED\u30B0\u30A4\u30F3\u3057\u3066\u304F\u3060\u3055\u3044\u3002");
+    }
+    if (response.status === 401) {
+      throw new Error("Twitter API\u8A8D\u8A3C\u306B\u5931\u6557\u3057\u307E\u3057\u305F\u3002\u30B5\u30FC\u30D0\u30FC\u8A2D\u5B9A\u3092\u78BA\u8A8D\u3057\u3066\u304F\u3060\u3055\u3044\u3002");
+    }
+    throw new Error(`Twitter\u8A8D\u8A3C\u30C8\u30FC\u30AF\u30F3\u306E\u53D6\u5F97\u306B\u5931\u6557\u3057\u307E\u3057\u305F (${response.status})`);
   }
   return response.json();
 }
@@ -3716,18 +4086,27 @@ async function getUserProfile(accessToken) {
   const url = "https://api.twitter.com/2/users/me";
   const params = "user.fields=profile_image_url,public_metrics,description";
   const fullUrl = `${url}?${params}`;
-  const response = await fetch(fullUrl, {
+  const response = await fetchWithRetry(fullUrl, {
     method: "GET",
     headers: {
       "Authorization": `Bearer ${accessToken}`
     }
-  });
+  }, { maxRetries: 2, timeoutMs: 1e4, label: "UserProfile" });
   if (!response.ok) {
-    const text11 = await response.text();
-    console.error("User profile error:", text11);
-    throw new Error(`Failed to get user profile: ${text11}`);
+    await response.text();
+    console.error("[UserProfile] Error:", response.status);
+    if (response.status === 401) {
+      throw new Error("\u30A2\u30AF\u30BB\u30B9\u30C8\u30FC\u30AF\u30F3\u304C\u7121\u52B9\u3067\u3059\u3002\u3082\u3046\u4E00\u5EA6\u30ED\u30B0\u30A4\u30F3\u3057\u3066\u304F\u3060\u3055\u3044\u3002");
+    }
+    if (response.status === 429) {
+      throw new Error("Twitter API\u306E\u30EC\u30FC\u30C8\u5236\u9650\u306B\u9054\u3057\u307E\u3057\u305F\u3002\u3057\u3070\u3089\u304F\u5F85\u3063\u3066\u304B\u3089\u518D\u8A66\u884C\u3057\u3066\u304F\u3060\u3055\u3044\u3002");
+    }
+    throw new Error(`\u30E6\u30FC\u30B6\u30FC\u30D7\u30ED\u30D5\u30A3\u30FC\u30EB\u306E\u53D6\u5F97\u306B\u5931\u6557\u3057\u307E\u3057\u305F (${response.status})`);
   }
   const json5 = await response.json();
+  if (!json5.data) {
+    throw new Error("\u30E6\u30FC\u30B6\u30FC\u30D7\u30ED\u30D5\u30A3\u30FC\u30EB\u30C7\u30FC\u30BF\u304C\u7A7A\u3067\u3059\u3002Twitter\u30A2\u30AB\u30A6\u30F3\u30C8\u306E\u72B6\u614B\u3092\u78BA\u8A8D\u3057\u3066\u304F\u3060\u3055\u3044\u3002");
+  }
   return json5.data;
 }
 async function refreshAccessToken(refreshToken) {
@@ -3738,23 +4117,28 @@ async function refreshAccessToken(refreshToken) {
     client_id: TWITTER_CLIENT_ID
   });
   const credentials = Buffer.from(`${TWITTER_CLIENT_ID}:${TWITTER_CLIENT_SECRET}`).toString("base64");
-  const response = await fetch(url, {
+  const response = await fetchWithRetry(url, {
     method: "POST",
     headers: {
       "Content-Type": "application/x-www-form-urlencoded",
       "Authorization": `Basic ${credentials}`
     },
     body: params.toString()
-  });
+  }, { maxRetries: 1, timeoutMs: 1e4, label: "TokenRefresh" });
   if (!response.ok) {
-    const text11 = await response.text();
-    throw new Error(`Failed to refresh token: ${text11}`);
+    await response.text();
+    console.error("[TokenRefresh] Error:", response.status);
+    if (response.status === 400 || response.status === 401) {
+      throw new Error(`INVALID_REFRESH_TOKEN: \u30EA\u30D5\u30EC\u30C3\u30B7\u30E5\u30C8\u30FC\u30AF\u30F3\u304C\u7121\u52B9\u3067\u3059\u3002\u518D\u30ED\u30B0\u30A4\u30F3\u3057\u3066\u304F\u3060\u3055\u3044\u3002`);
+    }
+    throw new Error(`\u30C8\u30FC\u30AF\u30F3\u306E\u66F4\u65B0\u306B\u5931\u6557\u3057\u307E\u3057\u305F (${response.status})`);
   }
   return response.json();
 }
 async function storePKCEData(state, codeVerifier, callbackUrl) {
+  const STATE_TTL_MS = 30 * 60 * 1e3;
   pkceMemoryStore.set(state, { codeVerifier, callbackUrl });
-  setTimeout(() => pkceMemoryStore.delete(state), 30 * 60 * 1e3);
+  setTimeout(() => pkceMemoryStore.delete(state), STATE_TTL_MS);
   console.log("[PKCE] Stored PKCE data in memory for state:", state.substring(0, 8) + "...");
   setImmediate(async () => {
     try {
@@ -3763,7 +4147,7 @@ async function storePKCEData(state, codeVerifier, callbackUrl) {
         console.log("[PKCE] Database not available, memory-only mode");
         return;
       }
-      const expiresAt = new Date(Date.now() + 30 * 60 * 1e3);
+      const expiresAt = new Date(Date.now() + STATE_TTL_MS);
       await db.delete(oauthPkceData).where(lt3(oauthPkceData.expiresAt, /* @__PURE__ */ new Date())).catch(() => {
       });
       await db.insert(oauthPkceData).values({
@@ -3790,7 +4174,7 @@ async function getPKCEData(state) {
     return void 0;
   }
   try {
-    const result = await db.select().from(oauthPkceData).where(eq4(oauthPkceData.state, state)).limit(1);
+    const result = await db.select().from(oauthPkceData).where(eq5(oauthPkceData.state, state)).limit(1);
     if (result.length === 0) {
       console.log("[PKCE] No PKCE data found for state:", state.substring(0, 8) + "...");
       return void 0;
@@ -3819,15 +4203,26 @@ async function deletePKCEData(state) {
     return;
   }
   try {
-    await db.delete(oauthPkceData).where(eq4(oauthPkceData.state, state));
+    await db.delete(oauthPkceData).where(eq5(oauthPkceData.state, state));
     console.log("[PKCE] Deleted PKCE data for state:", state.substring(0, 8) + "...");
   } catch (error) {
     console.error("[PKCE] Failed to delete from database:", error);
   }
 }
-var pkceMemoryStore = /* @__PURE__ */ new Map();
-var TARGET_TWITTER_USERNAME = "idolfunch";
+function getFollowStatusCacheKey(sourceUserId, targetUsername) {
+  return `${sourceUserId}:${targetUsername}`;
+}
 async function checkFollowStatus(accessToken, sourceUserId, targetUsername = TARGET_TWITTER_USERNAME) {
+  const cacheKey = getFollowStatusCacheKey(sourceUserId, targetUsername);
+  const cached = followStatusCache.get(cacheKey);
+  const now = Date.now();
+  if (cached && now - cached.lastCheckedAt < FOLLOW_STATUS_CACHE_TTL_MS) {
+    console.log("[Twitter API] Follow status cache hit for", sourceUserId);
+    return {
+      isFollowing: cached.isFollowing,
+      targetUser: cached.targetUser
+    };
+  }
   try {
     const userLookupUrl = `https://api.twitter.com/2/users/by/username/${targetUsername}`;
     const { data: userData, rateLimitInfo: userRateLimitInfo } = await twitterApiFetch(
@@ -3873,13 +4268,19 @@ async function checkFollowStatus(accessToken, sourceUserId, targetUsername = TAR
     }
     const following = followData.data || [];
     const isFollowing2 = following.some((user) => user.id === targetUser.id);
+    const targetUserInfo = {
+      id: targetUser.id,
+      name: targetUser.name,
+      username: targetUser.username
+    };
+    followStatusCache.set(cacheKey, {
+      isFollowing: isFollowing2,
+      targetUser: targetUserInfo,
+      lastCheckedAt: now
+    });
     return {
       isFollowing: isFollowing2,
-      targetUser: {
-        id: targetUser.id,
-        name: targetUser.name,
-        username: targetUser.username
-      }
+      targetUser: targetUserInfo
     };
   } catch (error) {
     const errorMessage = error instanceof Error ? error.message : String(error);
@@ -3917,18 +4318,15 @@ async function getUserProfileByUsername(username) {
     const url = `https://api.twitter.com/2/users/by/username/${cleanUsername}`;
     const params = "user.fields=profile_image_url,public_metrics,description";
     const fullUrl = `${url}?${params}`;
-    const response = await fetch(fullUrl, {
-      method: "GET",
-      headers: {
-        "Authorization": `Bearer ${bearerToken}`
+    const { data, rateLimitInfo } = await twitterApiFetch(
+      fullUrl,
+      {
+        method: "GET",
+        headers: {
+          "Authorization": `Bearer ${bearerToken}`
+        }
       }
-    });
-    if (!response.ok) {
-      const text11 = await response.text();
-      console.error("Twitter user lookup error:", response.status, text11);
-      return null;
-    }
-    const data = await response.json();
+    );
     if (!data.data) {
       console.error("Twitter user not found:", cleanUsername);
       return null;
@@ -3947,12 +4345,736 @@ async function getUserProfileByUsername(username) {
     return null;
   }
 }
+function sanitizeToken(token) {
+  if (!token) return "[empty]";
+  return `${token.substring(0, 4)}...****`;
+}
+async function revokeToken(token, tokenTypeHint = "access_token") {
+  if (!token) return false;
+  const url = "https://api.twitter.com/2/oauth2/revoke";
+  const credentials = Buffer.from(`${TWITTER_CLIENT_ID}:${TWITTER_CLIENT_SECRET}`).toString("base64");
+  try {
+    const params = new URLSearchParams({
+      token,
+      token_type_hint: tokenTypeHint,
+      client_id: TWITTER_CLIENT_ID
+    });
+    const response = await fetch(url, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/x-www-form-urlencoded",
+        "Authorization": `Basic ${credentials}`
+      },
+      body: params.toString()
+    });
+    if (response.ok) {
+      console.log(`[Twitter OAuth 2.0] ${tokenTypeHint} revoked: ${sanitizeToken(token)}`);
+      return true;
+    }
+    console.warn(`[Twitter OAuth 2.0] Token revoke returned ${response.status} for ${tokenTypeHint}`);
+    return false;
+  } catch (error) {
+    console.warn("[Twitter OAuth 2.0] Token revoke failed:", error instanceof Error ? error.message : String(error));
+    return false;
+  }
+}
+var TWITTER_CLIENT_ID, TWITTER_CLIENT_SECRET, pkceMemoryStore, TARGET_TWITTER_USERNAME, FOLLOW_STATUS_CACHE_TTL_HOURS, FOLLOW_STATUS_CACHE_TTL_MS, followStatusCache, revokeAccessToken;
+var init_twitter_oauth2 = __esm({
+  "server/twitter-oauth2.ts"() {
+    "use strict";
+    init_db2();
+    init_schema2();
+    init_rate_limit_handler();
+    TWITTER_CLIENT_ID = process.env.TWITTER_CLIENT_ID || "";
+    TWITTER_CLIENT_SECRET = process.env.TWITTER_CLIENT_SECRET || "";
+    pkceMemoryStore = /* @__PURE__ */ new Map();
+    TARGET_TWITTER_USERNAME = "idolfunch";
+    FOLLOW_STATUS_CACHE_TTL_HOURS = parseInt(
+      process.env.FOLLOW_STATUS_CACHE_TTL_HOURS || "24",
+      10
+    );
+    FOLLOW_STATUS_CACHE_TTL_MS = FOLLOW_STATUS_CACHE_TTL_HOURS * 60 * 60 * 1e3;
+    followStatusCache = /* @__PURE__ */ new Map();
+    revokeAccessToken = (accessToken) => revokeToken(accessToken, "access_token");
+  }
+});
+
+// server/_core/index.ts
+import "dotenv/config";
+import express from "express";
+import { createServer } from "http";
+import net from "net";
+import path2 from "path";
+import { fileURLToPath as fileURLToPath2 } from "url";
+import { createExpressMiddleware } from "@trpc/server/adapters/express";
+
+// server/_core/health.ts
+import fs from "fs";
+import path from "path";
+import { fileURLToPath } from "url";
+var __dirname = path.dirname(fileURLToPath(import.meta.url));
+function readBuildInfo() {
+  const candidates = [
+    path.join(process.cwd(), "dist", "build-info.json"),
+    path.join(__dirname, "build-info.json")
+  ];
+  for (const p of candidates) {
+    try {
+      if (!fs.existsSync(p)) continue;
+      const raw = JSON.parse(fs.readFileSync(p, "utf-8"));
+      const commitSha = raw.commitSha ?? raw.version ?? "unknown";
+      const version = raw.version ?? raw.commitSha ?? "unknown";
+      const builtAt = raw.builtAt ?? raw.buildTime ?? (/* @__PURE__ */ new Date()).toISOString();
+      if (!commitSha || commitSha === "unknown") {
+        throw new Error("invalid build-info");
+      }
+      const railwaySha = process.env.RAILWAY_GIT_COMMIT_SHA;
+      const resolvedSha = railwaySha && /^[0-9a-f]{40}$/i.test(railwaySha) ? railwaySha : commitSha;
+      return {
+        ok: true,
+        commitSha: resolvedSha,
+        version: resolvedSha,
+        builtAt
+      };
+    } catch {
+      continue;
+    }
+  }
+  return {
+    ok: false,
+    commitSha: "unknown",
+    version: "unknown",
+    builtAt: "unknown"
+  };
+}
+
+// shared/version.ts
+var APP_VERSION = "6.182";
+var GIT_SHA = process.env.EXPO_PUBLIC_GIT_SHA || "unknown";
+var BUILT_AT = process.env.EXPO_PUBLIC_BUILT_AT || "unknown";
+
+// shared/const.ts
+var COOKIE_NAME = "app_session_id";
+var ONE_YEAR_MS = 1e3 * 60 * 60 * 24 * 365;
+var SESSION_MAX_AGE_MS = 1e3 * 60 * 60 * 72;
+var UNAUTHED_ERR_MSG = "Please login (10001)";
+var NOT_ADMIN_ERR_MSG = "You do not have required permission (10002)";
+
+// server/_core/cookies.ts
+var LOCAL_HOSTS = /* @__PURE__ */ new Set(["localhost", "127.0.0.1", "::1"]);
+function isIpAddress(host) {
+  if (/^\d{1,3}(\.\d{1,3}){3}$/.test(host)) return true;
+  return host.includes(":");
+}
+function isSecureRequest(req) {
+  if (req.protocol === "https") return true;
+  const forwardedProto = req.headers["x-forwarded-proto"];
+  if (!forwardedProto) return false;
+  const protoList = Array.isArray(forwardedProto) ? forwardedProto : forwardedProto.split(",");
+  return protoList.some((proto) => proto.trim().toLowerCase() === "https");
+}
+function getParentDomain(hostname) {
+  if (LOCAL_HOSTS.has(hostname) || isIpAddress(hostname)) {
+    return void 0;
+  }
+  const parts = hostname.split(".");
+  if (parts.length < 3) {
+    return void 0;
+  }
+  return "." + parts.slice(-2).join(".");
+}
+function getEffectiveHostname(req) {
+  const forwarded = req.headers["x-forwarded-host"];
+  if (forwarded) {
+    const host = Array.isArray(forwarded) ? forwarded[0] : forwarded.split(",")[0];
+    if (host && host.trim()) return host.trim();
+  }
+  const origin = req.headers.origin;
+  if (origin) {
+    try {
+      const u = new URL(origin);
+      if (u.hostname) return u.hostname;
+    } catch {
+    }
+  }
+  return req.hostname;
+}
+function getCookieDomain(req, hostname) {
+  const forwarded = req.headers["x-forwarded-host"] ?? req.headers.origin;
+  if (forwarded) {
+    return void 0;
+  }
+  return getParentDomain(hostname);
+}
+function getSessionCookieOptions(req, options) {
+  const hostname = getEffectiveHostname(req);
+  const domain = getCookieDomain(req, hostname);
+  const isSecure = isSecureRequest(req);
+  if (options?.crossSite) {
+    if (!isSecure) {
+      console.warn(
+        "[Cookies] crossSite=true requires HTTPS. Falling back to sameSite=lax"
+      );
+      return {
+        domain,
+        httpOnly: true,
+        path: "/",
+        sameSite: "lax",
+        secure: false
+      };
+    }
+    return {
+      domain,
+      httpOnly: true,
+      path: "/",
+      sameSite: "none",
+      secure: true
+    };
+  }
+  return {
+    domain,
+    httpOnly: true,
+    path: "/",
+    sameSite: "lax",
+    secure: isSecure
+  };
+}
+
+// shared/_core/errors.ts
+var HttpError = class extends Error {
+  constructor(statusCode, message) {
+    super(message);
+    this.statusCode = statusCode;
+    this.name = "HttpError";
+  }
+};
+var ForbiddenError = (msg) => new HttpError(403, msg);
+
+// server/_core/sdk.ts
+init_db2();
+init_env();
+import { parse as parseCookieHeader } from "cookie";
+import { SignJWT, jwtVerify as jwtVerify2 } from "jose";
+var isNonEmptyString = (value) => typeof value === "string" && value.length > 0;
+var SDKServer = class {
+  constructor() {
+  }
+  parseCookies(cookieHeader) {
+    if (!cookieHeader) {
+      return /* @__PURE__ */ new Map();
+    }
+    const parsed = parseCookieHeader(cookieHeader);
+    return new Map(Object.entries(parsed));
+  }
+  getSessionSecret() {
+    const secret = process.env.JWT_SECRET ?? ENV.cookieSecret;
+    if (!secret || secret.trim() === "") {
+      throw new Error(
+        "JWT_SECRET environment variable is not set or empty. This is required for session token generation."
+      );
+    }
+    return new TextEncoder().encode(secret);
+  }
+  /**
+   * Create a session token for a user openId
+   */
+  async createSessionToken(openId, options = {}) {
+    return this.signSession(
+      {
+        openId,
+        appId: ENV.appId,
+        name: options.name || ""
+      },
+      options
+    );
+  }
+  async signSession(payload, options = {}) {
+    const issuedAt = Date.now();
+    const expiresInMs = options.expiresInMs ?? SESSION_MAX_AGE_MS;
+    const expirationSeconds = Math.floor((issuedAt + expiresInMs) / 1e3);
+    const secretKey = this.getSessionSecret();
+    return new SignJWT({
+      openId: payload.openId,
+      appId: payload.appId,
+      name: payload.name
+    }).setProtectedHeader({ alg: "HS256", typ: "JWT" }).setExpirationTime(expirationSeconds).sign(secretKey);
+  }
+  async verifySession(cookieValue) {
+    if (!cookieValue) {
+      return null;
+    }
+    try {
+      const secretKey = this.getSessionSecret();
+      const { payload } = await jwtVerify2(cookieValue, secretKey, {
+        algorithms: ["HS256"]
+      });
+      const { openId, appId, name } = payload;
+      if (!isNonEmptyString(openId) || !isNonEmptyString(appId) || !isNonEmptyString(name)) {
+        console.warn("[Auth] Session payload missing required fields");
+        return null;
+      }
+      return {
+        openId,
+        appId,
+        name
+      };
+    } catch (error) {
+      console.warn("[Auth] Session verification failed", String(error));
+      return null;
+    }
+  }
+  /**
+   * リクエストからユーザーを認証する。
+   * Bearer トークン or セッション Cookie の JWT を検証し、DB からユーザーを取得する。
+   */
+  async authenticateRequest(req) {
+    const authHeader = req.headers.authorization || req.headers.Authorization;
+    let token;
+    if (typeof authHeader === "string" && authHeader.startsWith("Bearer ")) {
+      token = authHeader.slice("Bearer ".length).trim();
+    }
+    const cookies = this.parseCookies(req.headers.cookie);
+    const sessionCookie = token || cookies.get(COOKIE_NAME);
+    const session = await this.verifySession(sessionCookie);
+    if (!session) {
+      throw ForbiddenError("Invalid session cookie");
+    }
+    const sessionUserId = session.openId;
+    if (!checkAndUpdateActivity(sessionUserId)) {
+      throw ForbiddenError("Session expired due to inactivity");
+    }
+    const signedInAt = /* @__PURE__ */ new Date();
+    const user = await getUserByOpenId(sessionUserId);
+    if (!user) {
+      console.error("[Auth] User not found in DB:", sessionUserId);
+      throw ForbiddenError("User not found");
+    }
+    const lastUpdate = lastSignedInCache.get(user.openId);
+    const THROTTLE_MS = 5 * 60 * 1e3;
+    if (!lastUpdate || Date.now() - lastUpdate > THROTTLE_MS) {
+      lastSignedInCache.set(user.openId, Date.now());
+      upsertUser({
+        openId: user.openId,
+        lastSignedIn: signedInAt
+      }).catch((err) => console.warn("[Auth] lastSignedIn update failed:", err));
+    }
+    return user;
+  }
+};
+var SESSION_IDLE_TIMEOUT_MS = 4 * 60 * 60 * 1e3;
+var lastActivityMap = /* @__PURE__ */ new Map();
+var lastSignedInCache = /* @__PURE__ */ new Map();
+setInterval(() => {
+  const now = Date.now();
+  for (const [key, ts] of lastActivityMap.entries()) {
+    if (now - ts > SESSION_IDLE_TIMEOUT_MS * 2) {
+      lastActivityMap.delete(key);
+    }
+  }
+}, 60 * 60 * 1e3);
+function checkAndUpdateActivity(openId) {
+  const now = Date.now();
+  const lastActivity = lastActivityMap.get(openId);
+  if (lastActivity === void 0) {
+    lastActivityMap.set(openId, now);
+    return true;
+  }
+  if (now - lastActivity > SESSION_IDLE_TIMEOUT_MS) {
+    lastActivityMap.delete(openId);
+    return false;
+  }
+  lastActivityMap.set(openId, now);
+  return true;
+}
+function clearActivity(openId) {
+  lastActivityMap.delete(openId);
+}
+var sdk = new SDKServer();
+
+// server/_core/oauth.ts
+init_twitter_oauth2();
+
+// server/token-store.ts
+init_db2();
+init_schema2();
+import crypto2 from "crypto";
+import { eq as eq6 } from "drizzle-orm";
+var ALGORITHM = "aes-256-gcm";
+var IV_LENGTH = 12;
+var AUTH_TAG_LENGTH = 16;
+function getEncryptionKey() {
+  const rawKey = process.env.TOKEN_ENCRYPTION_KEY || process.env.JWT_SECRET || "";
+  if (!rawKey) {
+    throw new Error("TOKEN_ENCRYPTION_KEY or JWT_SECRET must be set for token encryption");
+  }
+  return crypto2.createHash("sha256").update(rawKey).digest();
+}
+function encryptToken(plaintext) {
+  const key = getEncryptionKey();
+  const iv = crypto2.randomBytes(IV_LENGTH);
+  const cipher = crypto2.createCipheriv(ALGORITHM, key, iv);
+  const encrypted = Buffer.concat([cipher.update(plaintext, "utf8"), cipher.final()]);
+  const authTag = cipher.getAuthTag();
+  return Buffer.concat([iv, authTag, encrypted]).toString("hex");
+}
+function decryptToken(encryptedHex) {
+  const key = getEncryptionKey();
+  const data = Buffer.from(encryptedHex, "hex");
+  const iv = data.subarray(0, IV_LENGTH);
+  const authTag = data.subarray(IV_LENGTH, IV_LENGTH + AUTH_TAG_LENGTH);
+  const ciphertext = data.subarray(IV_LENGTH + AUTH_TAG_LENGTH);
+  const decipher = crypto2.createDecipheriv(ALGORITHM, key, iv);
+  decipher.setAuthTag(authTag);
+  return decipher.update(ciphertext) + decipher.final("utf8");
+}
+var tokenCache = /* @__PURE__ */ new Map();
+var REFRESH_TOKEN_MAX_LIFETIME_MS = 90 * 24 * 60 * 60 * 1e3;
+async function storeTokens(openId, tokens) {
+  const expiresAt = new Date(Date.now() + tokens.expiresIn * 1e3);
+  const existingEntry = tokenCache.get(openId);
+  tokenCache.set(openId, {
+    accessToken: tokens.accessToken,
+    refreshToken: tokens.refreshToken || null,
+    expiresAt,
+    scope: tokens.scope || null,
+    createdAt: existingEntry?.createdAt || /* @__PURE__ */ new Date()
+    // 初回のみ記録
+  });
+  try {
+    const db = await getDb();
+    if (!db) return;
+    const encryptedAccess = encryptToken(tokens.accessToken);
+    const encryptedRefresh = tokens.refreshToken ? encryptToken(tokens.refreshToken) : null;
+    await db.insert(userTwitterTokens).values({
+      openId,
+      encryptedAccessToken: encryptedAccess,
+      encryptedRefreshToken: encryptedRefresh,
+      tokenExpiresAt: expiresAt,
+      scope: tokens.scope || null
+    }).onDuplicateKeyUpdate({
+      set: {
+        encryptedAccessToken: encryptedAccess,
+        encryptedRefreshToken: encryptedRefresh,
+        tokenExpiresAt: expiresAt,
+        scope: tokens.scope || null
+      }
+    });
+  } catch (error) {
+    const msg = error instanceof Error ? error.message : "unknown";
+    if (msg.includes("doesn't exist") || msg.includes("ER_NO_SUCH_TABLE") || msg.includes("1146")) {
+      console.warn("[TokenStore] Table not found, using memory-only mode. Run migration to create user_twitter_tokens table.");
+    } else {
+      console.error("[TokenStore] DB save failed:", msg);
+    }
+  }
+}
+async function getTokens(openId) {
+  const cached = tokenCache.get(openId);
+  if (cached) return cached;
+  try {
+    const db = await getDb();
+    if (!db) return null;
+    const result = await db.select().from(userTwitterTokens).where(eq6(userTwitterTokens.openId, openId)).limit(1);
+    if (result.length === 0) return null;
+    const row = result[0];
+    const entry = {
+      accessToken: decryptToken(row.encryptedAccessToken),
+      refreshToken: row.encryptedRefreshToken ? decryptToken(row.encryptedRefreshToken) : null,
+      expiresAt: new Date(row.tokenExpiresAt),
+      scope: row.scope,
+      createdAt: new Date(row.createdAt)
+      // DB の createdAt をそのまま使用
+    };
+    tokenCache.set(openId, entry);
+    return entry;
+  } catch (error) {
+    const msg = error instanceof Error ? error.message : "unknown";
+    if (msg.includes("doesn't exist") || msg.includes("ER_NO_SUCH_TABLE") || msg.includes("1146")) {
+      return null;
+    }
+    console.error("[TokenStore] DB read failed:", msg);
+    return null;
+  }
+}
+async function getValidAccessToken(openId) {
+  const entry = await getTokens(openId);
+  if (!entry) return null;
+  const tokenAge = Date.now() - entry.createdAt.getTime();
+  if (tokenAge > REFRESH_TOKEN_MAX_LIFETIME_MS) {
+    console.log(`[TokenStore] Token max lifetime exceeded for ${openId.substring(0, 8)}... (${Math.floor(tokenAge / 864e5)}d), requiring re-login`);
+    await deleteTokens(openId);
+    return null;
+  }
+  const bufferMs = 5 * 60 * 1e3;
+  if (entry.expiresAt.getTime() - bufferMs > Date.now()) {
+    return entry.accessToken;
+  }
+  if (!entry.refreshToken) return entry.accessToken;
+  try {
+    const { refreshAccessToken: refreshAccessToken3, sanitizeToken: sanitizeToken2 } = await Promise.resolve().then(() => (init_twitter_oauth2(), twitter_oauth2_exports));
+    const newTokens = await refreshAccessToken3(entry.refreshToken);
+    await storeTokens(openId, {
+      accessToken: newTokens.access_token,
+      refreshToken: newTokens.refresh_token,
+      expiresIn: newTokens.expires_in,
+      scope: newTokens.scope
+    });
+    console.log(`[TokenStore] Auto-refresh success for ${openId.substring(0, 8)}... new token: ${sanitizeToken2(newTokens.access_token)}`);
+    return newTokens.access_token;
+  } catch (error) {
+    console.error("[TokenStore] Auto-refresh failed:", error instanceof Error ? error.message : "unknown");
+    return entry.accessToken;
+  }
+}
+async function deleteTokens(openId) {
+  tokenCache.delete(openId);
+  try {
+    const db = await getDb();
+    if (!db) return;
+    await db.delete(userTwitterTokens).where(eq6(userTwitterTokens.openId, openId));
+  } catch (error) {
+    const msg = error instanceof Error ? error.message : "unknown";
+    if (msg.includes("doesn't exist") || msg.includes("ER_NO_SUCH_TABLE") || msg.includes("1146")) {
+      return;
+    }
+    console.error("[TokenStore] DB delete failed:", msg);
+  }
+}
+
+// server/_core/oauth.ts
+async function buildUserResponse(user) {
+  const u = user;
+  let twitterData = null;
+  if (user?.openId?.startsWith("twitter:")) {
+    try {
+      const { getDb: getDb2 } = await Promise.resolve().then(() => (init_db2(), db_exports));
+      const { twitterUserCache: twitterUserCache2 } = await Promise.resolve().then(() => (init_schema2(), schema_exports));
+      const { eq: eq8 } = await import("drizzle-orm");
+      const db = await getDb2();
+      if (db) {
+        const twitterId = user.openId.replace("twitter:", "");
+        const cache = await db.select().from(twitterUserCache2).where(eq8(twitterUserCache2.twitterId, twitterId)).limit(1);
+        if (cache.length > 0) {
+          twitterData = cache[0];
+        }
+      }
+    } catch (error) {
+      console.error("[Auth] Failed to fetch Twitter cache:", error instanceof Error ? error.message : "unknown");
+    }
+  }
+  return {
+    id: u?.id ?? null,
+    openId: user?.openId ?? null,
+    name: user?.name ?? null,
+    email: user?.email ?? null,
+    loginMethod: user?.loginMethod ?? null,
+    lastSignedIn: (user?.lastSignedIn ?? /* @__PURE__ */ new Date()).toISOString(),
+    prefecture: u?.prefecture ?? null,
+    gender: u?.gender ?? null,
+    role: u?.role ?? null,
+    // Twitter情報
+    username: twitterData?.twitterUsername ?? null,
+    profileImage: twitterData?.profileImage ?? null,
+    followersCount: twitterData?.followersCount ?? 0,
+    description: twitterData?.description ?? null,
+    twitterId: twitterData?.twitterId ?? null
+  };
+}
+function registerOAuthRoutes(app) {
+  app.post("/api/auth/logout", async (req, res) => {
+    const cookieOptions = getSessionCookieOptions(req);
+    res.clearCookie(COOKIE_NAME, { ...cookieOptions, maxAge: -1 });
+    res.clearCookie("admin_session", { ...cookieOptions, maxAge: -1 });
+    try {
+      const user = await sdk.authenticateRequest(req).catch(() => null);
+      if (user) {
+        const storedTokens = await getTokens(user.openId);
+        if (storedTokens?.refreshToken) {
+          revokeToken(storedTokens.refreshToken, "refresh_token").catch(() => {
+          });
+        }
+        if (storedTokens?.accessToken) {
+          revokeToken(storedTokens.accessToken, "access_token").catch(() => {
+          });
+        }
+        await deleteTokens(user.openId).catch(() => {
+        });
+        clearActivity(user.openId);
+      }
+    } catch {
+    }
+    res.json({ success: true });
+  });
+  app.get("/api/auth/me", async (req, res) => {
+    try {
+      const user = await sdk.authenticateRequest(req);
+      res.json({ user: await buildUserResponse(user) });
+    } catch (error) {
+      console.error("[Auth] /api/auth/me failed:", error instanceof Error ? error.message : "unknown");
+      res.status(401).json({ error: "Not authenticated", user: null });
+    }
+  });
+  app.post("/api/auth/session", async (req, res) => {
+    try {
+      const user = await sdk.authenticateRequest(req);
+      const authHeader = req.headers.authorization || req.headers.Authorization;
+      if (typeof authHeader !== "string" || !authHeader.startsWith("Bearer ")) {
+        res.status(400).json({ error: "Bearer token required" });
+        return;
+      }
+      const token = authHeader.slice("Bearer ".length).trim();
+      const cookieOptions = getSessionCookieOptions(req, { crossSite: true });
+      res.cookie(COOKIE_NAME, token, { ...cookieOptions, maxAge: SESSION_MAX_AGE_MS });
+      res.json({ success: true, user: await buildUserResponse(user) });
+    } catch (error) {
+      console.error("[Auth] /api/auth/session failed:", error instanceof Error ? error.message : "unknown");
+      res.status(401).json({ error: "Invalid token" });
+    }
+  });
+}
 
 // server/twitter-routes.ts
+init_twitter_oauth2();
 init_db2();
+
+// server/login-security.ts
+init_db2();
+init_schema2();
+import crypto3 from "crypto";
+function getClientIp(req) {
+  const forwarded = req.headers["x-forwarded-for"];
+  if (forwarded) {
+    const firstIp = Array.isArray(forwarded) ? forwarded[0] : forwarded.split(",")[0];
+    return firstIp?.trim() || "unknown";
+  }
+  const realIp = req.headers["x-real-ip"];
+  if (realIp) {
+    return Array.isArray(realIp) ? realIp[0] : realIp;
+  }
+  return req.ip || req.socket.remoteAddress || "unknown";
+}
+function getClientUserAgent(req) {
+  return (req.headers["user-agent"] || "unknown").substring(0, 500);
+}
+async function writeLoginAuditLog(entry) {
+  try {
+    const db = await getDb();
+    if (!db) return;
+    await db.insert(auditLogs).values({
+      requestId: crypto3.randomUUID(),
+      action: "LOGIN",
+      entityType: "user",
+      actorName: entry.twitterUsername || entry.openId,
+      reason: entry.success ? "Login successful" : `Login failed: ${entry.failureReason || "unknown"}`,
+      ipAddress: entry.ip.substring(0, 45),
+      userAgent: entry.userAgent.substring(0, 500),
+      afterData: {
+        openId: entry.openId,
+        twitterId: entry.twitterId,
+        success: entry.success
+      }
+    });
+  } catch (error) {
+    console.error("[LoginSecurity] Audit log write failed:", error instanceof Error ? error.message : "unknown");
+  }
+}
+var MAX_FAILED_ATTEMPTS = 5;
+var LOCK_DURATION_MS = 10 * 60 * 1e3;
+var FAILED_WINDOW_MS = 15 * 60 * 1e3;
+var failedLoginStore = /* @__PURE__ */ new Map();
+setInterval(() => {
+  const now = Date.now();
+  for (const [key, entry] of failedLoginStore.entries()) {
+    if (now - entry.firstFailedAt > FAILED_WINDOW_MS * 2) {
+      failedLoginStore.delete(key);
+    }
+  }
+}, 60 * 60 * 1e3);
+function isLoginLocked(ip) {
+  const entry = failedLoginStore.get(ip);
+  if (!entry || !entry.lockedUntil) {
+    return { locked: false, remainingSeconds: 0 };
+  }
+  const now = Date.now();
+  if (now >= entry.lockedUntil) {
+    failedLoginStore.delete(ip);
+    return { locked: false, remainingSeconds: 0 };
+  }
+  return {
+    locked: true,
+    remainingSeconds: Math.ceil((entry.lockedUntil - now) / 1e3)
+  };
+}
+function recordLoginFailure(ip) {
+  const now = Date.now();
+  const entry = failedLoginStore.get(ip);
+  if (!entry || now - entry.firstFailedAt > FAILED_WINDOW_MS) {
+    failedLoginStore.set(ip, {
+      count: 1,
+      firstFailedAt: now,
+      lockedUntil: null
+    });
+    return;
+  }
+  entry.count++;
+  if (entry.count >= MAX_FAILED_ATTEMPTS) {
+    entry.lockedUntil = now + LOCK_DURATION_MS;
+    console.warn(`[LoginSecurity] IP ${ip.substring(0, 10)}... locked for ${LOCK_DURATION_MS / 1e3}s after ${entry.count} failures`);
+  }
+}
+function resetLoginFailures(ip) {
+  failedLoginStore.delete(ip);
+}
+var loginCooldownStore = /* @__PURE__ */ new Map();
+function setLoginCooldown(openId) {
+  loginCooldownStore.set(openId, Date.now() + 30 * 1e3);
+}
+function isInLoginCooldown(openId) {
+  const until = loginCooldownStore.get(openId);
+  if (!until) return false;
+  if (Date.now() >= until) {
+    loginCooldownStore.delete(openId);
+    return false;
+  }
+  return true;
+}
+setInterval(() => {
+  const now = Date.now();
+  for (const [key, until] of loginCooldownStore.entries()) {
+    if (now >= until) {
+      loginCooldownStore.delete(key);
+    }
+  }
+}, 5 * 60 * 1e3);
+
+// server/twitter-routes.ts
+function createErrorResponse(error, includeDetails = false) {
+  const isProduction = process.env.NODE_ENV === "production";
+  let errorMessage = "Failed to complete Twitter authentication";
+  let errorDetails = "";
+  if (error instanceof Error) {
+    errorMessage = error.message;
+    errorDetails = includeDetails && !isProduction ? error.stack || "" : "";
+  } else if (typeof error === "string") {
+    errorMessage = error;
+  }
+  return {
+    error: true,
+    message: errorMessage,
+    ...errorDetails && { details: errorDetails.substring(0, 200) }
+  };
+}
 function registerTwitterRoutes(app) {
   app.get("/api/twitter/auth", async (req, res) => {
     try {
+      const clientIp = getClientIp(req);
+      const lockStatus = isLoginLocked(clientIp);
+      if (lockStatus.locked) {
+        res.status(429).json({
+          error: `\u30ED\u30B0\u30A4\u30F3\u8A66\u884C\u56DE\u6570\u304C\u4E0A\u9650\u306B\u9054\u3057\u307E\u3057\u305F\u3002${lockStatus.remainingSeconds}\u79D2\u5F8C\u306B\u518D\u8A66\u884C\u3057\u3066\u304F\u3060\u3055\u3044\u3002`
+        });
+        return;
+      }
       const forceLogin = req.query.force === "true" || req.query.switch === "true";
       const protocol = req.get("x-forwarded-proto") || req.protocol;
       const forceHttps = protocol === "https" || req.get("host")?.includes("manus.computer");
@@ -3961,18 +5083,27 @@ function registerTwitterRoutes(app) {
       const state = generateState();
       await storePKCEData(state, codeVerifier, callbackUrl);
       const authUrl = buildAuthorizationUrl(callbackUrl, state, codeChallenge, forceLogin);
-      console.log("[Twitter OAuth 2.0] Redirecting to:", authUrl);
       res.redirect(authUrl);
     } catch (error) {
-      console.error("Twitter auth error:", error);
-      res.status(500).json({ error: "Failed to initiate Twitter authentication" });
+      console.error("[Twitter Auth] Init error:", error instanceof Error ? error.message : "unknown");
+      res.status(500).json({ error: "\u30ED\u30B0\u30A4\u30F3\u306E\u958B\u59CB\u306B\u5931\u6557\u3057\u307E\u3057\u305F" });
     }
   });
   app.get("/api/twitter/callback", async (req, res) => {
+    const callbackIp = getClientIp(req);
+    const callbackUa = getClientUserAgent(req);
     try {
       const { code, state, error: oauthError, error_description } = req.query;
       if (oauthError) {
-        console.error("Twitter OAuth error:", oauthError, error_description);
+        writeLoginAuditLog({
+          openId: "unknown",
+          success: false,
+          ip: callbackIp,
+          userAgent: callbackUa,
+          failureReason: `OAuth error: ${oauthError}`
+        }).catch(() => {
+        });
+        if (oauthError !== "access_denied") recordLoginFailure(callbackIp);
         const host2 = req.get("host") || "";
         const protocol2 = req.get("x-forwarded-proto") || req.protocol;
         const forceHttps2 = protocol2 === "https" || host2.includes("manus.computer") || host2.includes("railway.app");
@@ -3983,33 +5114,43 @@ function registerTwitterRoutes(app) {
           const expoHost = host2.replace("3000-", "8081-");
           baseUrl2 = `${forceHttps2 ? "https" : protocol2}://${expoHost}`;
         }
+        const errorResponse = createErrorResponse(
+          {
+            message: oauthError === "access_denied" ? "\u8A8D\u8A3C\u304C\u30AD\u30E3\u30F3\u30BB\u30EB\u3055\u308C\u307E\u3057\u305F" : error_description || "Twitter\u8A8D\u8A3C\u4E2D\u306B\u30A8\u30E9\u30FC\u304C\u767A\u751F\u3057\u307E\u3057\u305F",
+            code: oauthError
+          },
+          false
+          // 本番環境では詳細情報を含めない
+        );
         const errorData = encodeURIComponent(JSON.stringify({
-          error: true,
-          code: oauthError,
-          message: oauthError === "access_denied" ? "\u8A8D\u8A3C\u304C\u30AD\u30E3\u30F3\u30BB\u30EB\u3055\u308C\u307E\u3057\u305F" : error_description || "Twitter\u8A8D\u8A3C\u4E2D\u306B\u30A8\u30E9\u30FC\u304C\u767A\u751F\u3057\u307E\u3057\u305F"
+          ...errorResponse,
+          code: oauthError
         }));
         res.redirect(`${baseUrl2}/oauth/twitter-callback?error=${errorData}`);
         return;
       }
       if (!code || !state) {
+        recordLoginFailure(callbackIp);
+        writeLoginAuditLog({ openId: "unknown", success: false, ip: callbackIp, userAgent: callbackUa, failureReason: "Missing code/state" }).catch(() => {
+        });
         res.status(400).json({ error: "Missing code or state parameter" });
         return;
       }
       const pkceData = await getPKCEData(state);
       if (!pkceData) {
+        recordLoginFailure(callbackIp);
+        writeLoginAuditLog({ openId: "unknown", success: false, ip: callbackIp, userAgent: callbackUa, failureReason: "Invalid/expired state" }).catch(() => {
+        });
         res.status(400).json({ error: "Invalid or expired state parameter" });
         return;
       }
       const { codeVerifier, callbackUrl } = pkceData;
       const tokens = await exchangeCodeForTokens(code, callbackUrl, codeVerifier);
-      console.log("[Twitter OAuth 2.0] Token exchange successful");
       setImmediate(() => deletePKCEData(state).catch(() => {
       }));
       const userProfile = await getUserProfile(tokens.access_token);
-      console.log("[Twitter OAuth 2.0] User profile retrieved:", userProfile.username);
       const isFollowingTarget = false;
       const targetAccount = null;
-      console.log("[Twitter OAuth 2.0] Skipping follow check for faster login");
       const userData = {
         twitterId: userProfile.id,
         name: userProfile.name,
@@ -4018,22 +5159,102 @@ function registerTwitterRoutes(app) {
         followersCount: userProfile.public_metrics?.followers_count || 0,
         followingCount: userProfile.public_metrics?.following_count || 0,
         description: userProfile.description || "",
-        accessToken: tokens.access_token,
-        refreshToken: tokens.refresh_token,
+        // 注意: accessToken, refreshToken はセキュリティ上クライアントに送らない
         isFollowingTarget,
         targetAccount
       };
+      const openId = `twitter:${userProfile.id}`;
+      const CACHE_TTL_HOURS = 24;
+      const expiresAt = new Date(Date.now() + CACHE_TTL_HOURS * 60 * 60 * 1e3);
       try {
-        await upsertUser({
-          openId: `twitter:${userProfile.id}`,
-          name: userProfile.name,
-          email: null,
-          loginMethod: "twitter",
-          lastSignedIn: /* @__PURE__ */ new Date()
-        });
-        console.log("[Twitter OAuth 2.0] User profile saved to database");
+        const dbConn = await getDb();
+        if (dbConn) {
+          const { twitterUserCache: twitterUserCache2 } = await Promise.resolve().then(() => (init_schema2(), schema_exports));
+          await dbConn.insert(twitterUserCache2).values({
+            twitterUsername: userProfile.username,
+            twitterId: userProfile.id,
+            displayName: userProfile.name,
+            profileImage: userProfile.profile_image_url?.replace("_normal", "_400x400") || null,
+            followersCount: userProfile.public_metrics?.followers_count || 0,
+            description: userProfile.description || null,
+            expiresAt
+          }).onDuplicateKeyUpdate({
+            set: {
+              twitterId: userProfile.id,
+              displayName: userProfile.name,
+              profileImage: userProfile.profile_image_url?.replace("_normal", "_400x400") || null,
+              followersCount: userProfile.public_metrics?.followers_count || 0,
+              description: userProfile.description || null,
+              cachedAt: /* @__PURE__ */ new Date(),
+              expiresAt
+            }
+          });
+          console.log("[Twitter Auth] Saved user cache for", userProfile.username);
+        }
       } catch (error) {
-        console.error("[Twitter OAuth 2.0] Failed to save user profile:", error);
+        console.error("[Twitter Auth] Failed to save user cache:", error instanceof Error ? error.message : "unknown");
+      }
+      await storeTokens(openId, {
+        accessToken: tokens.access_token,
+        refreshToken: tokens.refresh_token,
+        expiresIn: tokens.expires_in,
+        scope: tokens.scope
+      });
+      let dbSaveSuccess = false;
+      for (let dbRetry = 0; dbRetry < 2; dbRetry++) {
+        try {
+          await upsertUser({
+            openId,
+            name: userProfile.name,
+            email: null,
+            loginMethod: "twitter",
+            lastSignedIn: /* @__PURE__ */ new Date()
+          });
+          dbSaveSuccess = true;
+          break;
+        } catch (error) {
+          console.error(`[Twitter Auth] DB save failed (attempt ${dbRetry + 1}/2):`, error instanceof Error ? error.message : "unknown");
+          if (dbRetry === 0) {
+            await new Promise((resolve) => setTimeout(resolve, 500));
+          }
+        }
+      }
+      if (!dbSaveSuccess) {
+        console.warn("[Twitter Auth] DB save failed after retries, continuing");
+      }
+      resetLoginFailures(callbackIp);
+      setLoginCooldown(openId);
+      writeLoginAuditLog({
+        openId,
+        twitterId: userProfile.id,
+        twitterUsername: userProfile.username,
+        success: true,
+        ip: callbackIp,
+        userAgent: callbackUa
+      }).catch(() => {
+      });
+      let sessionToken;
+      let sessionError;
+      for (let sessionRetry = 0; sessionRetry < 2; sessionRetry++) {
+        try {
+          sessionToken = await sdk.createSessionToken(openId, {
+            name: userProfile.name || "",
+            expiresInMs: SESSION_MAX_AGE_MS
+          });
+          const cookieOptions = getSessionCookieOptions(req, { crossSite: true });
+          res.cookie(COOKIE_NAME, sessionToken, { ...cookieOptions, maxAge: SESSION_MAX_AGE_MS });
+          break;
+        } catch (error) {
+          const msg = error instanceof Error ? error.message : String(error);
+          console.error(`[Twitter Auth] Session creation failed (attempt ${sessionRetry + 1}/2):`, msg);
+          sessionError = msg;
+          if (sessionRetry === 0) {
+            await new Promise((resolve) => setTimeout(resolve, 300));
+          }
+        }
+      }
+      if (!sessionToken) {
+        console.error("[Twitter Auth] Session creation failed after retries");
       }
       const encodedData = encodeURIComponent(JSON.stringify(userData));
       const host = req.get("host") || "";
@@ -4046,19 +5267,16 @@ function registerTwitterRoutes(app) {
         const expoHost = host.replace("3000-", "8081-");
         baseUrl = `${forceHttps ? "https" : protocol}://${expoHost}`;
       }
-      const redirectUrl = `${baseUrl}/oauth/twitter-callback?data=${encodedData}`;
-      console.log("[Twitter OAuth 2.0] Redirecting to:", redirectUrl.substring(0, 100) + "...");
+      const redirectParams = new URLSearchParams({
+        data: encodedData
+      });
+      if (sessionToken) {
+        redirectParams.set("sessionToken", sessionToken);
+      }
+      const redirectUrl = `${baseUrl}/oauth/twitter-callback?${redirectParams.toString()}`;
       res.redirect(redirectUrl);
     } catch (error) {
-      console.error("Twitter callback error:", error);
-      let errorMessage = "Failed to complete Twitter authentication";
-      let errorDetails = "";
-      if (error instanceof Error) {
-        errorMessage = error.message;
-        errorDetails = error.stack || "";
-      } else if (typeof error === "string") {
-        errorMessage = error;
-      }
+      console.error("[Twitter Auth] Callback error:", error instanceof Error ? error.message : "unknown");
       const host = req.get("host") || "";
       const protocol = req.get("x-forwarded-proto") || req.protocol;
       const forceHttps = protocol === "https" || host.includes("manus.computer") || host.includes("railway.app");
@@ -4069,23 +5287,20 @@ function registerTwitterRoutes(app) {
         const expoHost = host.replace("3000-", "8081-");
         baseUrl = `${forceHttps ? "https" : protocol}://${expoHost}`;
       }
-      const errorData = encodeURIComponent(JSON.stringify({
-        error: true,
-        message: errorMessage,
-        details: errorDetails.substring(0, 200)
-        // 長すぎる場合は切り詰め
-      }));
+      const errorResponse = createErrorResponse(error, process.env.NODE_ENV !== "production");
+      const errorData = encodeURIComponent(JSON.stringify(errorResponse));
       res.redirect(`${baseUrl}/oauth/twitter-callback?error=${errorData}`);
     }
   });
   app.get("/api/twitter/me", async (req, res) => {
     try {
-      const authHeader = req.headers.authorization;
-      if (!authHeader || !authHeader.startsWith("Bearer ")) {
-        res.status(401).json({ error: "Missing or invalid Authorization header" });
+      const user = await sdk.authenticateRequest(req);
+      const openId = user.openId;
+      const accessToken = await getValidAccessToken(openId);
+      if (!accessToken) {
+        res.status(401).json({ error: "Twitter token not found. Please re-login." });
         return;
       }
-      const accessToken = authHeader.substring(7);
       const userProfile = await getUserProfile(accessToken);
       res.json({
         twitterId: userProfile.id,
@@ -4097,21 +5312,26 @@ function registerTwitterRoutes(app) {
         description: userProfile.description || ""
       });
     } catch (error) {
-      console.error("Twitter profile error:", error);
+      console.error("Twitter profile error:", error instanceof Error ? error.message : "unknown");
       res.status(500).json({ error: "Failed to get Twitter profile" });
     }
   });
   app.get("/api/twitter/follow-status", async (req, res) => {
     try {
-      const authHeader = req.headers.authorization;
-      if (!authHeader || !authHeader.startsWith("Bearer ")) {
-        res.status(401).json({ error: "Missing or invalid Authorization header" });
-        return;
-      }
-      const accessToken = authHeader.substring(7);
+      const user = await sdk.authenticateRequest(req);
+      const openId = user.openId;
       const userId = req.query.userId;
       if (!userId) {
         res.status(400).json({ error: "Missing userId parameter" });
+        return;
+      }
+      if (isInLoginCooldown(openId)) {
+        res.status(429).json({ error: "\u30ED\u30B0\u30A4\u30F3\u76F4\u5F8C\u306F\u3057\u3070\u3089\u304F\u304A\u5F85\u3061\u304F\u3060\u3055\u3044" });
+        return;
+      }
+      const accessToken = await getValidAccessToken(openId);
+      if (!accessToken) {
+        res.status(401).json({ error: "Twitter token not found. Please re-login." });
         return;
       }
       const followStatus = await checkFollowStatus(accessToken, userId);
@@ -4124,7 +5344,7 @@ function registerTwitterRoutes(app) {
         }
       });
     } catch (error) {
-      console.error("Follow status error:", error);
+      console.error("Follow status error:", error instanceof Error ? error.message : "unknown");
       res.status(500).json({ error: "Failed to check follow status" });
     }
   });
@@ -4159,8 +5379,8 @@ function registerTwitterRoutes(app) {
         followingCount: profile.public_metrics?.following_count || 0
       });
     } catch (error) {
-      console.error("Twitter user lookup error:", error);
-      res.status(500).json({ error: "Failed to lookup Twitter user" });
+      console.error("[Twitter] User lookup error:", error instanceof Error ? error.message : "unknown");
+      res.status(500).json({ error: "\u30E6\u30FC\u30B6\u30FC\u691C\u7D22\u306B\u5931\u6557\u3057\u307E\u3057\u305F" });
     }
   });
   app.get("/api/twitter/refresh-follow-status", async (req, res) => {
@@ -4172,32 +5392,27 @@ function registerTwitterRoutes(app) {
       const state = generateState();
       await storePKCEData(state, codeVerifier, callbackUrl);
       const authUrl = buildAuthorizationUrl(callbackUrl, state, codeChallenge);
-      console.log("[Twitter OAuth 2.0] Refresh follow status - Redirecting to:", authUrl);
       res.redirect(authUrl);
     } catch (error) {
-      console.error("Twitter refresh follow status error:", error);
-      res.status(500).json({ error: "Failed to initiate follow status refresh" });
+      console.error("[Twitter Auth] Refresh follow status error:", error instanceof Error ? error.message : "unknown");
+      res.status(500).json({ error: "\u30D5\u30A9\u30ED\u30FC\u72B6\u614B\u306E\u66F4\u65B0\u306B\u5931\u6557\u3057\u307E\u3057\u305F" });
     }
   });
   app.post("/api/twitter/refresh", async (req, res) => {
     try {
-      const { refreshToken } = req.body;
-      if (!refreshToken) {
-        res.status(400).json({ error: "Refresh token is required" });
+      const user = await sdk.authenticateRequest(req);
+      const openId = user.openId;
+      const accessToken = await getValidAccessToken(openId);
+      if (!accessToken) {
+        res.status(401).json({ error: "Token not found. Please re-login." });
         return;
       }
-      console.log("[Twitter OAuth 2.0] Refreshing access token...");
-      const tokens = await refreshAccessToken(refreshToken);
-      console.log("[Twitter OAuth 2.0] Token refresh successful");
       res.json({
-        access_token: tokens.access_token,
-        refresh_token: tokens.refresh_token,
-        expires_in: tokens.expires_in,
-        token_type: tokens.token_type,
-        scope: tokens.scope
+        success: true,
+        message: "Token refreshed server-side"
       });
     } catch (error) {
-      console.error("Twitter token refresh error:", error);
+      console.error("Twitter token refresh error:", error instanceof Error ? error.message : "unknown");
       res.status(401).json({ error: "Failed to refresh token" });
     }
   });
@@ -4223,14 +5438,14 @@ function registerTwitterRoutes(app) {
         followingCount: profile.public_metrics?.following_count || 0
       });
     } catch (error) {
-      console.error("Twitter user lookup error:", error);
-      res.status(500).json({ error: "Failed to lookup Twitter user" });
+      console.error("[Twitter] Lookup error:", error instanceof Error ? error.message : "unknown");
+      res.status(500).json({ error: "\u30E6\u30FC\u30B6\u30FC\u691C\u7D22\u306B\u5931\u6557\u3057\u307E\u3057\u305F" });
     }
   });
 }
 
 // server/_core/trpc.ts
-import { initTRPC, TRPCError } from "@trpc/server";
+import { initTRPC, TRPCError as TRPCError2 } from "@trpc/server";
 import superjson from "superjson";
 
 // server/_core/request-id.ts
@@ -4263,7 +5478,7 @@ var publicProcedure = t.procedure.use(requestIdMiddleware);
 var requireUser = t.middleware(async (opts) => {
   const { ctx, next } = opts;
   if (!ctx.user) {
-    throw new TRPCError({ code: "UNAUTHORIZED", message: UNAUTHED_ERR_MSG });
+    throw new TRPCError2({ code: "UNAUTHORIZED", message: UNAUTHED_ERR_MSG });
   }
   return next({
     ctx: {
@@ -4277,7 +5492,7 @@ var adminProcedure = t.procedure.use(requestIdMiddleware).use(
   t.middleware(async (opts) => {
     const { ctx, next } = opts;
     if (!ctx.user || ctx.user.role !== "admin") {
-      throw new TRPCError({ code: "FORBIDDEN", message: NOT_ADMIN_ERR_MSG });
+      throw new TRPCError2({ code: "FORBIDDEN", message: NOT_ADMIN_ERR_MSG });
     }
     return next({
       ctx: {
@@ -4306,7 +5521,7 @@ var eventsRouter = router({
   list: publicProcedure.query(async () => {
     return getAllEvents();
   }),
-  // ページネーション対応のイベント一覧取得
+  // ページネーション対応のイベント一覧取得（DB側でフィルタ・ページネーション）
   listPaginated: publicProcedure.input(z.object({
     cursor: z.number().optional(),
     limit: z.number().min(1).max(50).default(20),
@@ -4314,28 +5529,8 @@ var eventsRouter = router({
     search: z.string().optional()
   })).query(async ({ input }) => {
     const { cursor = 0, limit, filter, search } = input;
-    const allEvents = await getAllEvents();
-    let filteredEvents = allEvents;
-    if (filter && filter !== "all") {
-      filteredEvents = filteredEvents.filter((e) => e.eventType === filter);
-    }
-    if (search && search.trim()) {
-      const searchLower = search.toLowerCase();
-      filteredEvents = filteredEvents.filter((e) => {
-        const title = (e.title || "").toLowerCase();
-        const description = (e.description || "").toLowerCase();
-        const venue = (e.venue || "").toLowerCase();
-        const hostName = (e.hostName || "").toLowerCase();
-        return title.includes(searchLower) || description.includes(searchLower) || venue.includes(searchLower) || hostName.includes(searchLower);
-      });
-    }
-    const items = filteredEvents.slice(cursor, cursor + limit);
-    const nextCursor = cursor + limit < filteredEvents.length ? cursor + limit : void 0;
-    return {
-      items,
-      nextCursor,
-      totalCount: filteredEvents.length
-    };
+    const result = await getEventsPaginated({ cursor, limit, filter, search });
+    return result;
   }),
   // イベント詳細取得
   getById: publicProcedure.input(z.object({ id: z.number() })).query(async ({ input }) => {
@@ -4360,13 +5555,12 @@ var eventsRouter = router({
   myEvents: protectedProcedure.query(async ({ ctx }) => {
     return getEventsByHostTwitterId(ctx.user.openId);
   }),
-  // イベント作成
-  create: publicProcedure.input(z.object({
+  // イベント作成（認証必須 - BUG-001修正）
+  create: protectedProcedure.input(z.object({
     title: z.string().min(1).max(255),
     description: z.string().optional(),
     eventDate: z.string(),
     venue: z.string().optional(),
-    hostTwitterId: z.string(),
     hostName: z.string(),
     hostUsername: z.string().optional(),
     hostProfileImage: z.string().optional(),
@@ -4377,18 +5571,15 @@ var eventsRouter = router({
     goalUnit: z.string().optional(),
     eventType: z.enum(["solo", "group"]).optional(),
     categoryId: z.number().optional(),
-    externalUrl: z.string().optional(),
+    externalUrl: z.string().url().optional().or(z.literal("")),
     ticketPresale: z.number().optional(),
     ticketDoor: z.number().optional(),
-    ticketUrl: z.string().optional()
-  })).mutation(async ({ input }) => {
-    if (!input.hostTwitterId) {
-      throw new Error("\u30ED\u30B0\u30A4\u30F3\u304C\u5FC5\u8981\u3067\u3059\u3002Twitter\u3067\u30ED\u30B0\u30A4\u30F3\u3057\u3066\u304F\u3060\u3055\u3044\u3002");
-    }
+    ticketUrl: z.string().url().optional().or(z.literal(""))
+  })).mutation(async ({ ctx, input }) => {
     try {
       const eventId = await createEvent({
-        hostUserId: null,
-        hostTwitterId: input.hostTwitterId,
+        hostUserId: ctx.user.id,
+        hostTwitterId: ctx.user.openId,
         hostName: input.hostName,
         hostUsername: input.hostUsername,
         hostProfileImage: input.hostProfileImage,
@@ -4482,15 +5673,14 @@ var participationsRouter = router({
   myParticipations: protectedProcedure.query(async ({ ctx }) => {
     return getParticipationsByUserId(ctx.user.id);
   }),
-  // 参加登録
-  create: publicProcedure.input(z2.object({
+  // 参加登録（認証必須 - BUG-006修正）
+  create: protectedProcedure.input(z2.object({
     challengeId: z2.number(),
     message: z2.string().optional(),
     companionCount: z2.number().default(0),
     prefecture: z2.string().optional(),
     gender: z2.enum(["male", "female", "unspecified"]).optional(),
     attendanceType: z2.enum(["venue", "streaming", "both"]).default("venue"),
-    twitterId: z2.string().optional(),
     displayName: z2.string(),
     username: z2.string().optional(),
     profileImage: z2.string().optional(),
@@ -4503,14 +5693,11 @@ var participationsRouter = router({
     })).optional(),
     invitationCode: z2.string().optional()
   })).mutation(async ({ ctx, input }) => {
-    if (!input.twitterId) {
-      throw new Error("\u30ED\u30B0\u30A4\u30F3\u304C\u5FC5\u8981\u3067\u3059\u3002Twitter\u3067\u30ED\u30B0\u30A4\u30F3\u3057\u3066\u304F\u3060\u3055\u3044\u3002");
-    }
     try {
       const participationId = await createParticipation({
         challengeId: input.challengeId,
-        userId: ctx.user?.id,
-        twitterId: input.twitterId,
+        userId: ctx.user.id,
+        twitterId: ctx.user.openId,
         displayName: input.displayName,
         username: input.username,
         profileImage: input.profileImage,
@@ -5305,6 +6492,7 @@ var remindersRouter = router({
 
 // server/routers/dm.ts
 import { z as z11 } from "zod";
+import { TRPCError as TRPCError3 } from "@trpc/server";
 init_db2();
 var dmRouter = router({
   // DMを送信
@@ -5351,7 +6539,12 @@ var dmRouter = router({
     return getUnreadMessageCount(ctx.user.id);
   }),
   // メッセージを既読にする
-  markAsRead: protectedProcedure.input(z11.object({ id: z11.number() })).mutation(async ({ input }) => {
+  markAsRead: protectedProcedure.input(z11.object({ id: z11.number() })).mutation(async ({ ctx, input }) => {
+    const message = await getDirectMessageById(input.id);
+    if (!message) throw new TRPCError3({ code: "NOT_FOUND", message: "Message not found" });
+    if (message.toUserId !== ctx.user.id) {
+      throw new TRPCError3({ code: "FORBIDDEN", message: "You can only mark your own messages as read" });
+    }
     await markMessageAsRead(input.id);
     return { success: true };
   }),
@@ -5679,7 +6872,9 @@ var categoriesRouter = router({
 });
 
 // server/routers/invitations.ts
+import crypto4 from "crypto";
 import { z as z17 } from "zod";
+import { TRPCError as TRPCError4 } from "@trpc/server";
 init_db2();
 var invitationsRouter = router({
   // 招待リンクを作成
@@ -5690,7 +6885,7 @@ var invitationsRouter = router({
     customMessage: z17.string().max(500).optional(),
     customTitle: z17.string().max(100).optional()
   })).mutation(async ({ ctx, input }) => {
-    const code = Math.random().toString(36).substring(2, 10).toUpperCase();
+    const code = crypto4.randomBytes(6).toString("hex").toUpperCase();
     const result = await createInvitation({
       challengeId: input.challengeId,
       inviterId: ctx.user.id,
@@ -5734,7 +6929,12 @@ var invitationsRouter = router({
     return { success: true, challengeId: invitation.challengeId };
   }),
   // 招待を無効化
-  deactivate: protectedProcedure.input(z17.object({ id: z17.number() })).mutation(async ({ input }) => {
+  deactivate: protectedProcedure.input(z17.object({ id: z17.number() })).mutation(async ({ ctx, input }) => {
+    const invitation = await getInvitationById(input.id);
+    if (!invitation) throw new TRPCError4({ code: "NOT_FOUND", message: "Invitation not found" });
+    if (invitation.inviterId !== ctx.user.id) {
+      throw new TRPCError4({ code: "FORBIDDEN", message: "You can only deactivate your own invitations" });
+    }
     await deactivateInvitation(input.id);
     return { success: true };
   }),
@@ -5755,7 +6955,25 @@ var invitationsRouter = router({
 // server/routers/profiles.ts
 import { z as z18 } from "zod";
 init_db2();
+var genderSchema = z18.enum(["male", "female", "unspecified"]);
 var profilesRouter = router({
+  // 認証中ユーザーの自分用プロフィール取得（auth.me と同様だが profiles 名前空間）
+  me: publicProcedure.query((opts) => opts.ctx.user),
+  // 自分のプロフィール（都道府県・性別）を更新
+  updateMyProfile: protectedProcedure.input(
+    z18.object({
+      prefecture: z18.string().max(32).nullable().optional(),
+      gender: genderSchema.optional()
+    })
+  ).mutation(async ({ ctx, input }) => {
+    await upsertUser({
+      openId: ctx.user.openId,
+      ...input.prefecture !== void 0 && { prefecture: input.prefecture },
+      ...input.gender !== void 0 && { gender: input.gender }
+    });
+    const updated = await getUserByOpenId(ctx.user.openId);
+    return { user: updated ?? null };
+  }),
   // ユーザーの公開プロフィールを取得
   get: publicProcedure.input(z18.object({ userId: z18.number() })).query(async ({ input }) => {
     return getUserPublicProfile(input.userId);
@@ -6062,26 +7280,18 @@ init_db2();
 import { z as z24 } from "zod";
 init_db2();
 var adminParticipationsRouter = router({
-  // 削除済み参加一覧取得
-  listDeleted: protectedProcedure.input(z24.object({
+  listDeleted: adminProcedure.input(z24.object({
     challengeId: z24.number().optional(),
     userId: z24.number().optional(),
     limit: z24.number().optional().default(100)
-  })).query(async ({ ctx, input }) => {
-    if (ctx.user.role !== "admin") {
-      throw new Error("\u7BA1\u7406\u8005\u6A29\u9650\u304C\u5FC5\u8981\u3067\u3059");
-    }
+  })).query(async ({ input }) => {
     return getDeletedParticipations({
       challengeId: input.challengeId,
       userId: input.userId,
       limit: input.limit
     });
   }),
-  // 参加を復元
-  restore: protectedProcedure.input(z24.object({ id: z24.number() })).mutation(async ({ ctx, input }) => {
-    if (ctx.user.role !== "admin") {
-      throw new Error("\u7BA1\u7406\u8005\u6A29\u9650\u304C\u5FC5\u8981\u3067\u3059");
-    }
+  restore: adminProcedure.input(z24.object({ id: z24.number() })).mutation(async ({ ctx, input }) => {
     const before = await getParticipationById(input.id);
     if (!before) {
       throw new Error("\u53C2\u52A0\u304C\u898B\u3064\u304B\u308A\u307E\u305B\u3093");
@@ -6098,22 +7308,15 @@ var adminParticipationsRouter = router({
         deletedAt: before.deletedAt?.toISOString() || null,
         deletedBy: before.deletedBy
       },
-      afterData: {
-        deletedAt: null,
-        deletedBy: null
-      },
+      afterData: { deletedAt: null, deletedBy: null },
       requestId
     });
     return { ...result, requestId };
   }),
-  // 一括ソフトデリート
-  bulkDelete: protectedProcedure.input(z24.object({
+  bulkDelete: adminProcedure.input(z24.object({
     challengeId: z24.number().optional(),
     userId: z24.number().optional()
   })).mutation(async ({ ctx, input }) => {
-    if (ctx.user.role !== "admin") {
-      throw new Error("\u7BA1\u7406\u8005\u6A29\u9650\u304C\u5FC5\u8981\u3067\u3059");
-    }
     if (!input.challengeId && !input.userId) {
       throw new Error("challengeId \u307E\u305F\u306F userId \u3092\u6307\u5B9A\u3057\u3066\u304F\u3060\u3055\u3044");
     }
@@ -6138,14 +7341,10 @@ var adminParticipationsRouter = router({
     });
     return { success: true, ...result, requestId };
   }),
-  // 一括復元
-  bulkRestore: protectedProcedure.input(z24.object({
+  bulkRestore: adminProcedure.input(z24.object({
     challengeId: z24.number().optional(),
     userId: z24.number().optional()
   })).mutation(async ({ ctx, input }) => {
-    if (ctx.user.role !== "admin") {
-      throw new Error("\u7BA1\u7406\u8005\u6A29\u9650\u304C\u5FC5\u8981\u3067\u3059");
-    }
     if (!input.challengeId && !input.userId) {
       throw new Error("challengeId \u307E\u305F\u306F userId \u3092\u6307\u5B9A\u3057\u3066\u304F\u3060\u3055\u3044");
     }
@@ -6170,15 +7369,11 @@ var adminParticipationsRouter = router({
     });
     return { success: true, ...result, requestId };
   }),
-  // 監査ログ取得（参加関連のみ）
-  getAuditLogs: protectedProcedure.input(z24.object({
+  getAuditLogs: adminProcedure.input(z24.object({
     entityType: z24.string().optional(),
     targetId: z24.number().optional(),
     limit: z24.number().optional().default(50)
-  })).query(async ({ ctx, input }) => {
-    if (ctx.user.role !== "admin") {
-      throw new Error("\u7BA1\u7406\u8005\u6A29\u9650\u304C\u5FC5\u8981\u3067\u3059");
-    }
+  })).query(async ({ input }) => {
     return getAuditLogs({
       entityType: input.entityType || "participation",
       targetId: input.targetId,
@@ -6190,67 +7385,67 @@ var adminParticipationsRouter = router({
 // server/routers/admin.ts
 var adminRouter = router({
   // ユーザー一覧取得
-  users: protectedProcedure.query(async ({ ctx }) => {
-    if (ctx.user.role !== "admin") {
-      throw new Error("\u7BA1\u7406\u8005\u6A29\u9650\u304C\u5FC5\u8981\u3067\u3059");
-    }
+  users: adminProcedure.query(async () => {
     return getAllUsers();
   }),
   // ユーザー権限変更
-  updateUserRole: protectedProcedure.input(z25.object({
+  updateUserRole: adminProcedure.input(z25.object({
     userId: z25.number(),
     role: z25.enum(["user", "admin"])
-  })).mutation(async ({ ctx, input }) => {
-    if (ctx.user.role !== "admin") {
-      throw new Error("\u7BA1\u7406\u8005\u6A29\u9650\u304C\u5FC5\u8981\u3067\u3059");
-    }
+  })).mutation(async ({ input }) => {
     await updateUserRole(input.userId, input.role);
     return { success: true };
   }),
   // ユーザー詳細取得
-  getUser: protectedProcedure.input(z25.object({ userId: z25.number() })).query(async ({ ctx, input }) => {
-    if (ctx.user.role !== "admin") {
-      throw new Error("\u7BA1\u7406\u8005\u6A29\u9650\u304C\u5FC5\u8981\u3067\u3059");
-    }
+  getUser: adminProcedure.input(z25.object({ userId: z25.number() })).query(async ({ input }) => {
     return getUserById(input.userId);
   }),
   // データ整合性レポート取得
-  getDataIntegrityReport: protectedProcedure.query(async ({ ctx }) => {
-    if (ctx.user.role !== "admin") {
-      throw new Error("\u7BA1\u7406\u8005\u6A29\u9650\u304C\u5FC5\u8981\u3067\u3059");
-    }
+  getDataIntegrityReport: adminProcedure.query(async () => {
     return getDataIntegrityReport();
   }),
   // チャレンジのcurrentValueを再計算して修正
-  recalculateCurrentValues: protectedProcedure.mutation(async ({ ctx }) => {
-    if (ctx.user.role !== "admin") {
-      throw new Error("\u7BA1\u7406\u8005\u6A29\u9650\u304C\u5FC5\u8981\u3067\u3059");
-    }
+  recalculateCurrentValues: adminProcedure.mutation(async () => {
     const results = await recalculateChallengeCurrentValues();
     return { success: true, fixedCount: results.length, details: results };
   }),
   // DB構造確認API
-  getDbSchema: protectedProcedure.query(async ({ ctx }) => {
-    if (ctx.user.role !== "admin") {
-      throw new Error("\u7BA1\u7406\u8005\u6A29\u9650\u304C\u5FC5\u8981\u3067\u3059");
-    }
+  getDbSchema: adminProcedure.query(async () => {
     return getDbSchema();
   }),
   // テーブル構造とコードの比較
-  compareSchemas: protectedProcedure.query(async ({ ctx }) => {
-    if (ctx.user.role !== "admin") {
-      throw new Error("\u7BA1\u7406\u8005\u6A29\u9650\u304C\u5FC5\u8981\u3067\u3059");
-    }
+  compareSchemas: adminProcedure.query(async () => {
     return compareSchemas();
   }),
   // 参加管理（削除済み投稿の管理）
-  participations: adminParticipationsRouter
+  participations: adminParticipationsRouter,
+  // APIコスト設定取得
+  getApiCostSettings: adminProcedure.query(async () => {
+    const { getCostSettings: getCostSettings2 } = await Promise.resolve().then(() => (init_api_usage_db(), api_usage_db_exports));
+    return getCostSettings2();
+  }),
+  // APIコスト設定更新
+  updateApiCostSettings: adminProcedure.input(z25.object({
+    monthlyLimit: z25.number().optional(),
+    alertThreshold: z25.number().optional(),
+    alertEmail: z25.string().email().nullable().optional(),
+    autoStop: z25.boolean().optional()
+  })).mutation(async ({ input }) => {
+    const { upsertCostSettings: upsertCostSettings2 } = await Promise.resolve().then(() => (init_api_usage_db(), api_usage_db_exports));
+    await upsertCostSettings2({
+      monthlyLimit: input.monthlyLimit?.toFixed(2),
+      alertThreshold: input.alertThreshold?.toFixed(2),
+      alertEmail: input.alertEmail ?? void 0,
+      autoStop: input.autoStop ? 1 : 0
+    });
+    return { success: true };
+  })
 });
 
 // server/routers/stats.ts
 init_connection();
 init_schema2();
-import { eq as eq5, and as and3, gte as gte2, desc as desc4, sql as sql3, count as count2 } from "drizzle-orm";
+import { eq as eq7, and as and5, gte as gte3, desc as desc5, sql as sql4, count as count2 } from "drizzle-orm";
 var statsRouter = router({
   /**
    * ユーザー統計を取得
@@ -6259,8 +7454,8 @@ var statsRouter = router({
     const db = await getDb();
     if (!db) throw new Error("\u30C7\u30FC\u30BF\u30D9\u30FC\u30B9\u306B\u63A5\u7D9A\u3067\u304D\u307E\u305B\u3093");
     const userId = ctx.user.id;
-    const totalParticipations = await db.select({ count: count2() }).from(participations).where(eq5(participations.userId, userId));
-    const completedParticipations = await db.select({ count: count2() }).from(participations).where(eq5(participations.userId, userId));
+    const totalParticipations = await db.select({ count: count2() }).from(participations).where(eq7(participations.userId, userId));
+    const completedParticipations = await db.select({ count: count2() }).from(participations).where(eq7(participations.userId, userId));
     const total = totalParticipations[0]?.count || 0;
     const completed = completedParticipations[0]?.count || 0;
     const completionRate = total > 0 ? completed / total * 100 : 0;
@@ -6270,29 +7465,29 @@ var statsRouter = router({
       createdAt: participations.createdAt,
       updatedAt: participations.updatedAt,
       eventTitle: challenges.title
-    }).from(participations).leftJoin(challenges, eq5(participations.challengeId, challenges.id)).where(eq5(participations.userId, userId)).orderBy(desc4(participations.createdAt)).limit(10);
+    }).from(participations).leftJoin(challenges, eq7(participations.challengeId, challenges.id)).where(eq7(participations.userId, userId)).orderBy(desc5(participations.createdAt)).limit(10);
     const sixMonthsAgo = /* @__PURE__ */ new Date();
     sixMonthsAgo.setMonth(sixMonthsAgo.getMonth() - 6);
     const monthlyStats = await db.select({
-      month: sql3`DATE_FORMAT(${participations.createdAt}, '%Y-%m')`,
+      month: sql4`DATE_FORMAT(${participations.createdAt}, '%Y-%m')`,
       count: count2()
     }).from(participations).where(
-      and3(
-        eq5(participations.userId, userId),
-        gte2(participations.createdAt, sixMonthsAgo)
+      and5(
+        eq7(participations.userId, userId),
+        gte3(participations.createdAt, sixMonthsAgo)
       )
-    ).groupBy(sql3`DATE_FORMAT(${participations.createdAt}, '%Y-%m')`).orderBy(sql3`DATE_FORMAT(${participations.createdAt}, '%Y-%m')`);
+    ).groupBy(sql4`DATE_FORMAT(${participations.createdAt}, '%Y-%m')`).orderBy(sql4`DATE_FORMAT(${participations.createdAt}, '%Y-%m')`);
     const fourWeeksAgo = /* @__PURE__ */ new Date();
     fourWeeksAgo.setDate(fourWeeksAgo.getDate() - 28);
     const weeklyActivity = await db.select({
-      week: sql3`DATE_FORMAT(${participations.createdAt}, '%Y-W%u')`,
+      week: sql4`DATE_FORMAT(${participations.createdAt}, '%Y-W%u')`,
       count: count2()
     }).from(participations).where(
-      and3(
-        eq5(participations.userId, userId),
-        gte2(participations.createdAt, fourWeeksAgo)
+      and5(
+        eq7(participations.userId, userId),
+        gte3(participations.createdAt, fourWeeksAgo)
       )
-    ).groupBy(sql3`DATE_FORMAT(${participations.createdAt}, '%Y-W%u')`).orderBy(sql3`DATE_FORMAT(${participations.createdAt}, '%Y-W%u')`);
+    ).groupBy(sql4`DATE_FORMAT(${participations.createdAt}, '%Y-W%u')`).orderBy(sql4`DATE_FORMAT(${participations.createdAt}, '%Y-W%u')`);
     return {
       summary: {
         totalChallenges: total,
@@ -6331,20 +7526,20 @@ var statsRouter = router({
       userId: participations.userId,
       userName: users.name,
       completedChallenges: count2()
-    }).from(participations).leftJoin(users, eq5(participations.userId, users.id)).groupBy(participations.userId, users.name).orderBy(desc4(count2())).limit(10);
+    }).from(participations).leftJoin(users, eq7(participations.userId, users.id)).groupBy(participations.userId, users.name).orderBy(desc5(count2())).limit(10);
     const eventStats = await db.select({
       challengeId: participations.challengeId,
       eventTitle: challenges.title,
       totalAttempts: count2(),
       completedAttempts: count2()
       // 全ての参加を達成とみなす
-    }).from(participations).leftJoin(challenges, eq5(participations.challengeId, challenges.id)).groupBy(participations.challengeId, challenges.title).orderBy(desc4(count2()));
+    }).from(participations).leftJoin(challenges, eq7(participations.challengeId, challenges.id)).groupBy(participations.challengeId, challenges.title).orderBy(desc5(count2()));
     const thirtyDaysAgo = /* @__PURE__ */ new Date();
     thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
     const dailyActivity = await db.select({
-      date: sql3`DATE(${participations.createdAt})`,
+      date: sql4`DATE(${participations.createdAt})`,
       count: count2()
-    }).from(participations).where(gte2(participations.createdAt, thirtyDaysAgo)).groupBy(sql3`DATE(${participations.createdAt})`).orderBy(sql3`DATE(${participations.createdAt})`);
+    }).from(participations).where(gte3(participations.createdAt, thirtyDaysAgo)).groupBy(sql4`DATE(${participations.createdAt})`).orderBy(sql4`DATE(${participations.createdAt})`);
     return {
       summary: {
         totalUsers: totalUsers[0]?.count || 0,
@@ -6389,6 +7584,26 @@ var releaseNotesRouter = router({
     const db = await getDb();
     if (!db) return [];
     return db.select().from(releaseNotes).orderBy(desc(releaseNotes.date)).limit(input.limit);
+  }),
+  // リリースノートを追加（管理者のみ）
+  add: protectedProcedure.input(z26.object({
+    version: z26.string(),
+    date: z26.string(),
+    title: z26.string(),
+    changes: z26.array(z26.object({
+      type: z26.enum(["new", "improve", "fix", "change"]),
+      text: z26.string()
+    }))
+  })).mutation(async ({ ctx, input }) => {
+    if (ctx.user.role !== "admin") {
+      throw new Error("\u7BA1\u7406\u8005\u6A29\u9650\u304C\u5FC5\u8981\u3067\u3059");
+    }
+    const db = await getDb();
+    if (!db) {
+      throw new Error("\u30C7\u30FC\u30BF\u30D9\u30FC\u30B9\u63A5\u7D9A\u306B\u5931\u6557\u3057\u307E\u3057\u305F");
+    }
+    await db.insert(releaseNotes).values(input);
+    return { success: true };
   })
 });
 
@@ -6424,12 +7639,48 @@ var appRouter = router({
 });
 
 // server/_core/context.ts
+var ADMIN_SESSION_COOKIE = "admin_session";
+function parseCookies(cookieHeader) {
+  const cookies = /* @__PURE__ */ new Map();
+  if (!cookieHeader) return cookies;
+  cookieHeader.split(";").forEach((cookie) => {
+    const [name, value] = cookie.trim().split("=");
+    if (name && value) {
+      cookies.set(name, decodeURIComponent(value));
+    }
+  });
+  return cookies;
+}
+function hasAdminSession(req) {
+  const cookies = parseCookies(req.headers.cookie);
+  return cookies.get(ADMIN_SESSION_COOKIE) === "authenticated";
+}
 async function createContext(opts) {
   let user = null;
   try {
     user = await sdk.authenticateRequest(opts.req);
   } catch (error) {
     user = null;
+  }
+  if (!user && hasAdminSession(opts.req)) {
+    user = {
+      id: 0,
+      openId: "admin_password_auth",
+      name: "\u7BA1\u7406\u8005\uFF08\u30D1\u30B9\u30EF\u30FC\u30C9\u8A8D\u8A3C\uFF09",
+      email: null,
+      loginMethod: "password",
+      role: "admin",
+      gender: "unspecified",
+      prefecture: null,
+      createdAt: /* @__PURE__ */ new Date(),
+      updatedAt: /* @__PURE__ */ new Date(),
+      lastSignedIn: /* @__PURE__ */ new Date()
+    };
+  } else if (user && hasAdminSession(opts.req)) {
+    user = {
+      ...user,
+      role: "admin"
+    };
   }
   return {
     req: opts.req,
@@ -6438,59 +7689,11 @@ async function createContext(opts) {
   };
 }
 
-// server/api-usage-tracker.ts
-var usageHistory = [];
-var stats = {
-  totalRequests: 0,
-  successfulRequests: 0,
-  rateLimitedRequests: 0,
-  endpoints: {},
-  lastUpdated: Date.now()
-};
-function getApiUsageStats() {
-  return { ...stats };
-}
-function getRecentUsageHistory(count3 = 100) {
-  return usageHistory.slice(-count3);
-}
-function getRateLimitWarningLevel(endpoint) {
-  const endpointStats = stats.endpoints[endpoint];
-  if (!endpointStats) {
-    return "safe";
-  }
-  if (endpointStats.remaining <= 5) {
-    return "critical";
-  }
-  if (endpointStats.usagePercent >= 80) {
-    return "warning";
-  }
-  return "safe";
-}
-function getWarningsSummary() {
-  const warnings = [];
-  for (const [endpoint, endpointStats] of Object.entries(stats.endpoints)) {
-    const level = getRateLimitWarningLevel(endpoint);
-    if (level !== "safe") {
-      warnings.push({
-        endpoint,
-        level,
-        remaining: endpointStats.remaining,
-        resetAt: endpointStats.resetAt
-      });
-    }
-  }
-  return warnings;
-}
-function getDashboardSummary() {
-  return {
-    stats: getApiUsageStats(),
-    warnings: getWarningsSummary(),
-    recentHistory: getRecentUsageHistory(20)
-  };
-}
+// server/_core/index.ts
+init_api_usage_tracker();
 
 // server/ai-error-analyzer.ts
-import axios2 from "axios";
+import axios from "axios";
 var CACHE_TTL = 60 * 60 * 1e3;
 
 // server/error-tracker.ts
@@ -6550,8 +7753,8 @@ function getErrorStats() {
 // server/schema-check.ts
 init_db2();
 var EXPECTED_SCHEMA = {
-  version: "0023",
-  // 最新のマイグレーション番号
+  version: "0027",
+  // 最新のマイグレーション番号（api_usage 含む）
   tables: {
     // participationsテーブル: 参加登録
     participations: {
@@ -6613,6 +7816,31 @@ var EXPECTED_SCHEMA = {
         "createdAt",
         "updatedAt"
       ]
+    },
+    // api_usage: X API 使用量記録（0027）
+    api_usage: {
+      requiredColumns: [
+        "id",
+        "endpoint",
+        "method",
+        "success",
+        "cost",
+        "rateLimitInfo",
+        "month",
+        "createdAt"
+      ]
+    },
+    // api_cost_settings: コスト上限設定（0027）
+    api_cost_settings: {
+      requiredColumns: [
+        "id",
+        "monthlyLimit",
+        "alertThreshold",
+        "alertEmail",
+        "autoStop",
+        "createdAt",
+        "updatedAt"
+      ]
     }
   }
 };
@@ -6634,14 +7862,15 @@ async function checkSchemaIntegrity() {
     for (const [tableName, tableSpec] of Object.entries(EXPECTED_SCHEMA.tables)) {
       try {
         const columnsResult = await db.execute(
-          sql`SELECT COLUMN_NAME FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = ${tableName}`
+          sql`SELECT column_name FROM information_schema.columns WHERE table_schema = 'public' AND table_name = ${tableName}`
         );
-        const rows = Array.isArray(columnsResult) ? columnsResult[0] : columnsResult;
+        const raw = columnsResult;
+        const rows = Array.isArray(raw) ? raw[0] : raw?.rows ?? raw;
         const existingColumns = new Set(
-          rows.map((c) => c.COLUMN_NAME)
+          rows.map((c) => (c.column_name || c.COLUMN_NAME || "").toLowerCase())
         );
         for (const requiredColumn of tableSpec.requiredColumns) {
-          if (!existingColumns.has(requiredColumn)) {
+          if (!existingColumns.has(requiredColumn.toLowerCase())) {
             result.missingColumns.push({
               table: tableName,
               column: requiredColumn
@@ -6655,11 +7884,14 @@ async function checkSchemaIntegrity() {
       }
     }
     try {
-      const [migrations] = await db.execute(
-        `SELECT hash FROM __drizzle_migrations ORDER BY created_at DESC LIMIT 1`
+      const migrationsResult = await db.execute(
+        sql`SELECT hash FROM __drizzle_migrations ORDER BY created_at DESC LIMIT 1`
       );
-      if (Array.isArray(migrations) && migrations.length > 0) {
-        result.actualVersion = migrations[0].hash?.slice(0, 8) || "unknown";
+      const migRaw = migrationsResult;
+      const migRows = Array.isArray(migRaw) ? migRaw[0] : migRaw?.rows ?? migRaw;
+      const migList = Array.isArray(migRows) ? migRows : [migRows];
+      if (migList.length > 0) {
+        result.actualVersion = migList[0].hash?.slice(0, 8) || "unknown";
       }
     } catch {
       result.actualVersion = "unknown";
@@ -7254,11 +8486,21 @@ function initSentry() {
     tracesSampleRate: process.env.NODE_ENV === "production" ? 0.1 : 1,
     // Set profilesSampleRate to 1.0 to profile every transaction.
     profilesSampleRate: process.env.NODE_ENV === "production" ? 0.1 : 1,
-    beforeSend(event) {
+    // Gate 1: 3種類の通知のみに絞る（ノイズ抑制）
+    beforeSend(event, hint) {
       if (process.env.NODE_ENV === "development") {
         console.log("Sentry event (dev mode):", event);
       }
-      return event;
+      const error = hint.originalException;
+      const message = error && typeof error === "object" && "message" in error ? String(error.message) : "";
+      const statusCode = event.contexts?.response?.status_code;
+      const isOAuthError = message.includes("OAuth") || message.includes("callback") || message.includes("state parameter") || event.request?.url?.includes("/api/auth/callback");
+      const is5xxError = statusCode && statusCode >= 500 && statusCode < 600;
+      const isUnknownVersion = message.includes("unknown version") || event.extra?.version === "unknown";
+      if (isOAuthError || is5xxError || isUnknownVersion) {
+        return event;
+      }
+      return null;
     }
   });
   console.log("Sentry initialized for backend");
@@ -7294,15 +8536,15 @@ var PATH_CONFIGS = {
     // 10リクエスト
   }
 };
-function checkRateLimit(ip, path) {
+function checkRateLimit(ip, path3) {
   let config = DEFAULT_CONFIG;
   for (const [pathPrefix, pathConfig] of Object.entries(PATH_CONFIGS)) {
-    if (path.startsWith(pathPrefix)) {
+    if (path3.startsWith(pathPrefix)) {
       config = pathConfig;
       break;
     }
   }
-  const key = `${ip}:${path}`;
+  const key = `${ip}:${path3}`;
   const now = Date.now();
   const entry = rateLimitStore.get(key);
   if (!entry || entry.resetTime < now) {
@@ -7331,15 +8573,30 @@ function checkRateLimit(ip, path) {
     resetTime: entry.resetTime
   };
 }
+function getClientIp2(req) {
+  const forwardedFor = req.headers["x-forwarded-for"];
+  if (forwardedFor) {
+    const ips = Array.isArray(forwardedFor) ? forwardedFor[0].split(",") : forwardedFor.split(",");
+    const clientIp = ips[0]?.trim();
+    if (clientIp && /^[\d.:]+$/.test(clientIp)) {
+      return clientIp;
+    }
+  }
+  return req.ip || req.connection?.remoteAddress || "unknown";
+}
 function rateLimiterMiddleware(req, res, next) {
-  const ip = req.ip || req.headers["x-forwarded-for"] || req.connection.remoteAddress || "unknown";
-  const path = req.path || req.url;
-  const result = checkRateLimit(ip, path);
+  const ip = getClientIp2(req);
+  const path3 = req.path || req.url;
+  const result = checkRateLimit(ip, path3);
   res.setHeader("X-RateLimit-Limit", result.remaining + (result.allowed ? 1 : 0));
   res.setHeader("X-RateLimit-Remaining", result.remaining);
   res.setHeader("X-RateLimit-Reset", new Date(result.resetTime).toISOString());
   if (!result.allowed) {
-    console.warn(`[RateLimit] Blocked request from ${ip} to ${path}`);
+    console.warn(`[RateLimit] Blocked request from ${ip} to ${path3}`, {
+      timestamp: (/* @__PURE__ */ new Date()).toISOString(),
+      userAgent: req.headers["user-agent"]?.substring(0, 100)
+      // 長すぎる場合は切り詰め
+    });
     return res.status(429).json({
       error: "Too many requests",
       message: "\u30EA\u30AF\u30A8\u30B9\u30C8\u304C\u591A\u3059\u304E\u307E\u3059\u3002\u3057\u3070\u3089\u304F\u5F85\u3063\u3066\u304B\u3089\u518D\u8A66\u884C\u3057\u3066\u304F\u3060\u3055\u3044\u3002",
@@ -7349,7 +8606,17 @@ function rateLimiterMiddleware(req, res, next) {
   next();
 }
 
+// server/admin-password-auth.ts
+var ADMIN_PASSWORD = process.env.ADMIN_PASSWORD || "";
+if (!ADMIN_PASSWORD) {
+  console.warn("[Admin] ADMIN_PASSWORD env var is not set. Admin panel authentication is disabled.");
+}
+function verifyAdminPassword(password) {
+  return password === ADMIN_PASSWORD;
+}
+
 // server/_core/index.ts
+var __dirname2 = path2.dirname(fileURLToPath2(import.meta.url));
 function isPortAvailable(port) {
   return new Promise((resolve) => {
     const server = net.createServer();
@@ -7367,13 +8634,53 @@ async function findAvailablePort(startPort = 3e3) {
   }
   throw new Error(`No available port found starting from ${startPort}`);
 }
+function isAllowedOrigin(origin) {
+  if (!origin) return false;
+  const ALLOWED_ORIGINS = (process.env.ALLOWED_ORIGINS || "").split(",").map((s) => s.trim()).filter(Boolean);
+  if (process.env.NODE_ENV !== "production") {
+    if (origin.includes("localhost") || origin.includes("127.0.0.1")) {
+      return true;
+    }
+  }
+  if (ALLOWED_ORIGINS.length > 0) {
+    return ALLOWED_ORIGINS.some((allowed) => {
+      if (origin === allowed) return true;
+      if (allowed.startsWith(".")) {
+        try {
+          const url = new URL(origin);
+          return url.hostname === allowed.slice(1) || url.hostname.endsWith(allowed);
+        } catch {
+          return origin.endsWith(allowed) || origin === allowed.slice(1);
+        }
+      }
+      try {
+        const originUrl = new URL(origin);
+        const allowedUrl = allowed.startsWith("http") ? new URL(allowed) : null;
+        if (allowedUrl) {
+          return originUrl.origin === allowedUrl.origin;
+        } else {
+          return originUrl.hostname === allowed || originUrl.hostname.endsWith(`.${allowed}`);
+        }
+      } catch {
+        return origin === allowed || origin.endsWith(allowed);
+      }
+    });
+  }
+  try {
+    const url = new URL(origin);
+    const hostname = url.hostname;
+    return hostname === "doin-challenge.com" || hostname.endsWith(".doin-challenge.com");
+  } catch {
+    return origin.includes("doin-challenge.com") && !origin.includes("doin-challenge.com.evil") && !origin.includes("evil-doin-challenge.com");
+  }
+}
 async function startServer() {
   initSentry();
   const app = express();
   const server = createServer(app);
   app.use((req, res, next) => {
     const origin = req.headers.origin;
-    if (origin) {
+    if (origin && isAllowedOrigin(origin)) {
       res.header("Access-Control-Allow-Origin", origin);
     }
     res.header("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS");
@@ -7390,110 +8697,207 @@ async function startServer() {
   });
   app.use(express.json({ limit: "50mb" }));
   app.use(express.urlencoded({ limit: "50mb", extended: true }));
+  app.use((_req, res, next) => {
+    res.setHeader("X-Frame-Options", "DENY");
+    const cspDirectives = [
+      "default-src 'self'",
+      "script-src 'self'",
+      "style-src 'self' 'unsafe-inline'",
+      "img-src 'self' https://pbs.twimg.com https://abs.twimg.com data:",
+      "connect-src 'self' https://api.twitter.com https://api.x.com",
+      "font-src 'self'",
+      "frame-ancestors 'none'",
+      "base-uri 'self'",
+      "form-action 'self'"
+    ].join("; ");
+    res.setHeader("Content-Security-Policy", cspDirectives);
+    res.setHeader("X-Content-Type-Options", "nosniff");
+    res.setHeader("Referrer-Policy", "no-referrer");
+    if (process.env.NODE_ENV === "production") {
+      res.setHeader("Strict-Transport-Security", "max-age=31536000; includeSubDomains");
+    }
+    res.setHeader("X-XSS-Protection", "1; mode=block");
+    res.setHeader("Permissions-Policy", "camera=(), microphone=(), geolocation=()");
+    next();
+  });
   app.use(rateLimiterMiddleware);
   registerOAuthRoutes(app);
   registerTwitterRoutes(app);
   app.get("/api/health", async (_req, res) => {
-    let versionInfo = {
-      version: process.env.RAILWAY_GIT_COMMIT_SHA || process.env.APP_VERSION || "unknown",
-      commitSha: process.env.RAILWAY_GIT_COMMIT_SHA || process.env.GIT_SHA || "unknown",
-      gitSha: process.env.RAILWAY_GIT_COMMIT_SHA || process.env.GIT_SHA || "unknown",
-      builtAt: process.env.BUILT_AT || (/* @__PURE__ */ new Date()).toISOString()
-    };
-    if (versionInfo.version === "unknown" || versionInfo.commitSha === "unknown") {
-      const error = new Error("unknown version detected in /api/health");
-      if (Sentry) {
-        Sentry.captureException(error, {
-          extra: {
-            version: versionInfo.version,
-            commitSha: versionInfo.commitSha,
-            env: process.env.NODE_ENV
-          }
-        });
-      }
-      console.error("[CRITICAL] unknown version detected:", versionInfo);
-    }
-    const baseInfo = {
-      ok: true,
-      timestamp: Date.now(),
-      ...versionInfo,
-      nodeEnv: process.env.NODE_ENV || "development"
-    };
-    let dbStatus = { connected: false, latency: 0, error: "" };
     try {
-      const { getDb: getDb2 } = await Promise.resolve().then(() => (init_db2(), db_exports));
-      const startTime = Date.now();
-      const db = await getDb2();
-      if (db) {
-        await db.execute("SELECT 1");
-        dbStatus = {
-          connected: true,
-          latency: Date.now() - startTime,
-          error: ""
-        };
-      } else {
-        dbStatus.error = "DATABASE_URL\u304C\u8A2D\u5B9A\u3055\u308C\u3066\u3044\u307E\u305B\u3093";
+      const buildInfo = readBuildInfo();
+      const nodeEnv = process.env.NODE_ENV || "development";
+      const displayVersion = APP_VERSION || buildInfo.version || "unknown";
+      if (!buildInfo.ok && Sentry) {
+        Sentry.captureException(new Error("unknown version in /api/health"), {
+          extra: { commitSha: buildInfo.commitSha, env: nodeEnv }
+        });
+        console.error("[CRITICAL] unknown version detected:", buildInfo);
       }
-    } catch (err) {
-      dbStatus.error = err instanceof Error ? err.message : "\u63A5\u7D9A\u30A8\u30E9\u30FC";
-    }
-    const checkCritical = _req.query.critical === "true";
-    let criticalApis = {};
-    if (checkCritical && dbStatus.connected) {
+      const baseInfo = {
+        ...buildInfo,
+        version: displayVersion,
+        // Override/Ensure version is set
+        nodeEnv,
+        timestamp: Date.now()
+      };
+      let dbStatus = { connected: false, latency: 0, error: "" };
+      const DB_CHECK_RETRIES = 2;
       try {
-        const caller = appRouter.createCaller(await createContext({ req: _req, res, info: {} }));
-        try {
-          await caller.events.list();
-          criticalApis.homeEvents = { ok: true };
-        } catch (err) {
-          criticalApis.homeEvents = { ok: false, error: err instanceof Error ? err.message : String(err) };
-        }
-        try {
-          await caller.rankings.hosts({ limit: 1 });
-          criticalApis.rankings = { ok: true };
-        } catch (err) {
-          criticalApis.rankings = { ok: false, error: err instanceof Error ? err.message : String(err) };
+        const { getDb: getDb2, sql: sql5 } = await Promise.resolve().then(() => (init_db2(), db_exports));
+        const startTime = Date.now();
+        const db = await getDb2();
+        if (db) {
+          try {
+            let lastErr = null;
+            for (let attempt = 1; attempt <= DB_CHECK_RETRIES; attempt++) {
+              try {
+                const queryPromise = db.execute(sql5`SELECT 1`);
+                const timeoutPromise = new Promise(
+                  (_, reject) => setTimeout(() => reject(new Error("Query timeout after 10 seconds")), 1e4)
+                );
+                await Promise.race([queryPromise, timeoutPromise]);
+                lastErr = null;
+                break;
+              } catch (queryErr) {
+                lastErr = queryErr instanceof Error ? queryErr : new Error(String(queryErr));
+                if (attempt < DB_CHECK_RETRIES) {
+                  console.warn("[health] DB check attempt", attempt, "failed, retrying in 2s:", lastErr.message);
+                  await new Promise((r) => setTimeout(r, 2e3));
+                }
+              }
+            }
+            if (lastErr) throw lastErr;
+            let challengesCount = 0;
+            try {
+              const r = await db.execute(sql5`SELECT COUNT(*) AS c FROM challenges WHERE "isPublic" = true`);
+              const rows = r?.rows ?? (Array.isArray(r) ? r : []);
+              challengesCount = rows.length ? Number(rows[0]?.c ?? 0) : 0;
+            } catch (countErr) {
+              console.warn("[health] Failed to count challenges:", countErr);
+            }
+            dbStatus = {
+              connected: true,
+              latency: Date.now() - startTime,
+              error: "",
+              challengesCount
+            };
+          } catch (queryErr) {
+            const errorMessage = queryErr instanceof Error ? queryErr.message : String(queryErr);
+            let cleanMessage = errorMessage.replace(/\nparam.*$/g, "").replace(/params:.*$/g, "").replace(/Failed query:.*$/g, "").trim();
+            if (cleanMessage.includes("timeout") || cleanMessage.includes("\u30BF\u30A4\u30E0\u30A2\u30A6\u30C8")) {
+              cleanMessage = "\u30C7\u30FC\u30BF\u30D9\u30FC\u30B9\u63A5\u7D9A\u304C\u30BF\u30A4\u30E0\u30A2\u30A6\u30C8\u3057\u307E\u3057\u305F";
+            } else if (!cleanMessage || cleanMessage.length < 5) {
+              cleanMessage = "\u30C7\u30FC\u30BF\u30D9\u30FC\u30B9\u30AF\u30A8\u30EA\u306E\u5B9F\u884C\u306B\u5931\u6557\u3057\u307E\u3057\u305F";
+            }
+            console.error("[health] Database query failed:", {
+              error: cleanMessage,
+              originalError: errorMessage,
+              stack: queryErr instanceof Error ? queryErr.stack : void 0,
+              timestamp: (/* @__PURE__ */ new Date()).toISOString()
+              // インシデント調査用
+            });
+            dbStatus = {
+              connected: false,
+              latency: Date.now() - startTime,
+              error: cleanMessage
+            };
+          }
+        } else {
+          const hasDatabaseUrl = !!process.env.DATABASE_URL;
+          dbStatus.error = hasDatabaseUrl ? "\u30C7\u30FC\u30BF\u30D9\u30FC\u30B9\u63A5\u7D9A\u306E\u78BA\u7ACB\u306B\u5931\u6557\u3057\u307E\u3057\u305F" : "DATABASE_URL\u304C\u8A2D\u5B9A\u3055\u308C\u3066\u3044\u307E\u305B\u3093";
         }
       } catch (err) {
-        criticalApis.error = err instanceof Error ? err.message : String(err);
+        const errorMessage = err instanceof Error ? err.message : String(err);
+        console.error("[health] Unexpected database error:", {
+          error: errorMessage,
+          stack: err instanceof Error ? err.stack : void 0
+        });
+        dbStatus.error = errorMessage || "\u63A5\u7D9A\u30A8\u30E9\u30FC";
       }
-    }
-    const checkSchema = _req.query.schema === "true";
-    let schemaCheck;
-    if (checkSchema) {
-      try {
-        schemaCheck = await checkSchemaIntegrity();
-        if (schemaCheck.status === "mismatch") {
-          await notifySchemaIssue(schemaCheck);
+      const checkCritical = _req.query.critical === "true";
+      let criticalApis = {};
+      if (checkCritical && dbStatus.connected) {
+        try {
+          const caller = appRouter.createCaller(await createContext({ req: _req, res, info: {} }));
+          try {
+            await caller.events.list();
+            criticalApis.homeEvents = { ok: true };
+          } catch (err) {
+            criticalApis.homeEvents = { ok: false, error: err instanceof Error ? err.message : String(err) };
+          }
+          try {
+            await caller.rankings.hosts({ limit: 1 });
+            criticalApis.rankings = { ok: true };
+          } catch (err) {
+            criticalApis.rankings = { ok: false, error: err instanceof Error ? err.message : String(err) };
+          }
+        } catch (err) {
+          criticalApis.error = err instanceof Error ? err.message : String(err);
         }
-      } catch (error) {
-        console.error("[health] Schema check failed:", error);
-        schemaCheck = {
-          status: "error",
-          expectedVersion: "unknown",
-          missingColumns: [],
-          errors: [error instanceof Error ? error.message : String(error)],
-          checkedAt: (/* @__PURE__ */ new Date()).toISOString()
-        };
       }
+      const checkSchema = _req.query.schema === "true";
+      let schemaCheck;
+      if (checkSchema) {
+        try {
+          schemaCheck = await checkSchemaIntegrity();
+          if (schemaCheck.status === "mismatch") {
+            await notifySchemaIssue(schemaCheck);
+          }
+        } catch (error) {
+          console.error("[health] Schema check failed:", error);
+          schemaCheck = {
+            status: "error",
+            expectedVersion: "unknown",
+            missingColumns: [],
+            errors: [error instanceof Error ? error.message : String(error)],
+            checkedAt: (/* @__PURE__ */ new Date()).toISOString()
+          };
+        }
+      }
+      const overallOk = dbStatus.connected && buildInfo.ok && (!checkCritical || Object.values(criticalApis).every((api) => typeof api === "object" && "ok" in api && api.ok));
+      const statusCode = dbStatus.connected ? 200 : 500;
+      res.status(statusCode).json({
+        ...baseInfo,
+        // 後方互換性のため、commitsha（小文字）も含める
+        commitsha: baseInfo.commitSha,
+        ok: overallOk,
+        db: dbStatus,
+        ...checkCritical && { critical: criticalApis },
+        ...schemaCheck && { schema: schemaCheck }
+      });
+    } catch (err) {
+      console.error("[health] Unhandled error:", err);
+      const message = err instanceof Error ? err.message : String(err);
+      res.status(500).json({
+        ok: false,
+        commitSha: "unknown",
+        commitsha: "unknown",
+        // 後方互換性のため
+        version: "unknown",
+        builtAt: "unknown",
+        timestamp: Date.now(),
+        error: message,
+        db: { connected: false, latency: 0, error: message }
+      });
     }
-    const overallOk = dbStatus.connected && (!checkCritical || Object.values(criticalApis).every((api) => typeof api === "object" && "ok" in api && api.ok));
-    res.json({
-      ...baseInfo,
-      ok: overallOk,
-      db: dbStatus,
-      ...checkCritical && { critical: criticalApis },
-      ...schemaCheck && { schema: schemaCheck }
-    });
   });
   app.get("/api/debug/env", (_req, res) => {
+    const maskSecret = (value) => {
+      if (!value) return void 0;
+      if (value.length <= 8) return "***";
+      return value.substring(0, 4) + "***" + value.substring(value.length - 4);
+    };
     res.json({
       RAILWAY_GIT_COMMIT_SHA: process.env.RAILWAY_GIT_COMMIT_SHA,
       APP_VERSION: process.env.APP_VERSION,
       GIT_SHA: process.env.GIT_SHA,
       NODE_ENV: process.env.NODE_ENV,
       RAILWAY_ENVIRONMENT: process.env.RAILWAY_ENVIRONMENT,
-      RAILWAY_SERVICE_NAME: process.env.RAILWAY_SERVICE_NAME
+      RAILWAY_SERVICE_NAME: process.env.RAILWAY_SERVICE_NAME,
+      // 機密情報はマスク
+      DATABASE_URL: maskSecret(process.env.DATABASE_URL),
+      JWT_SECRET: maskSecret(process.env.JWT_SECRET)
     });
   });
   app.get("/api/openapi.json", (_req, res) => {
@@ -7564,9 +8968,14 @@ async function startServer() {
       res.status(500).json({ error: "\u30B7\u30B9\u30C6\u30E0\u72B6\u614B\u306E\u53D6\u5F97\u306B\u5931\u6557\u3057\u307E\u3057\u305F" });
     }
   });
-  app.get("/api/admin/api-usage", (_req, res) => {
-    const summary = getDashboardSummary();
-    res.json(summary);
+  app.get("/api/admin/api-usage", async (_req, res) => {
+    try {
+      const summary = await getDashboardSummary();
+      res.json(summary);
+    } catch (error) {
+      console.error("[Admin] API usage error:", error);
+      res.status(500).json({ error: "API\u4F7F\u7528\u91CF\u306E\u53D6\u5F97\u306B\u5931\u6557\u3057\u307E\u3057\u305F" });
+    }
   });
   app.get("/api/admin/api-usage/stats", (_req, res) => {
     const stats2 = getApiUsageStats();
@@ -7596,6 +9005,29 @@ async function startServer() {
     const count3 = clearErrorLogs();
     res.json({ success: true, count: count3 });
   });
+  app.post("/api/admin/verify-password", async (req, res) => {
+    try {
+      const { password } = req.body;
+      if (!password) {
+        res.status(400).json({ error: "\u30D1\u30B9\u30EF\u30FC\u30C9\u304C\u5FC5\u8981\u3067\u3059" });
+        return;
+      }
+      if (verifyAdminPassword(password)) {
+        const ADMIN_SESSION_COOKIE2 = "admin_session";
+        const cookieOptions = getSessionCookieOptions(req);
+        res.cookie(ADMIN_SESSION_COOKIE2, "authenticated", {
+          ...cookieOptions,
+          maxAge: SESSION_MAX_AGE_MS
+        });
+        res.json({ success: true });
+      } else {
+        res.status(401).json({ error: "\u30D1\u30B9\u30EF\u30FC\u30C9\u304C\u6B63\u3057\u304F\u3042\u308A\u307E\u305B\u3093" });
+      }
+    } catch (error) {
+      console.error("[Admin] Password verification error:", error);
+      res.status(500).json({ error: "\u8A8D\u8A3C\u306B\u5931\u6557\u3057\u307E\u3057\u305F" });
+    }
+  });
   app.use(
     "/api/trpc",
     createExpressMiddleware({
@@ -7617,3 +9049,6 @@ async function startServer() {
   });
 }
 startServer().catch(console.error);
+export {
+  isAllowedOrigin
+};

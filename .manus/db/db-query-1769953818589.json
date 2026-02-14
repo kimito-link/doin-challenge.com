@@ -1,9 +1,0 @@
-{
-  "query": "CREATE TABLE IF NOT EXISTS `release_notes` (\n  `id` INT AUTO_INCREMENT PRIMARY KEY,\n  `version` VARCHAR(32) NOT NULL,\n  `date` VARCHAR(32) NOT NULL,\n  `title` TEXT NOT NULL,\n  `changes` JSON NOT NULL,\n  `createdAt` TIMESTAMP DEFAULT CURRENT_TIMESTAMP NOT NULL,\n  `updatedAt` TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP NOT NULL\n);",
-  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway02.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 3YCTtbVp6bbE1oz.aaf91d266729 --database 4EfvvuNg9KRk4UPdFprmBJ --execute CREATE TABLE IF NOT EXISTS `release_notes` (\n  `id` INT AUTO_INCREMENT PRIMARY KEY,\n  `version` VARCHAR(32) NOT NULL,\n  `date` VARCHAR(32) NOT NULL,\n  `title` TEXT NOT NULL,\n  `changes` JSON NOT NULL,\n  `createdAt` TIMESTAMP DEFAULT CURRENT_TIMESTAMP NOT NULL,\n  `updatedAt` TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP NOT NULL\n);",
-  "rows": [],
-  "messages": [],
-  "stdout": "",
-  "stderr": "",
-  "execution_time_ms": 1708
-}

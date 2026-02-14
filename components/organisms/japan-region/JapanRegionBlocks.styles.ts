@@ -1,5 +1,5 @@
 import { StyleSheet } from "react-native";
-import { color } from "@/theme/tokens";
+import { color, palette } from "@/theme/tokens";
 
 export const styles = StyleSheet.create({
   container: {
@@ -194,7 +194,7 @@ export const styles = StyleSheet.create({
     borderBottomColor: color.surfaceAlt,
   },
   rankingItemHighlight: {
-    backgroundColor: "rgba(236, 72, 153, 0.1)",
+    backgroundColor: palette.pink500 + "1A", // 10% opacity
     marginHorizontal: -8,
     paddingHorizontal: 8,
     borderRadius: 8,
@@ -250,11 +250,11 @@ export const styles = StyleSheet.create({
   hotHighlight: {
     flexDirection: "row",
     alignItems: "center",
-    backgroundColor: "rgba(255, 107, 107, 0.15)",
+    backgroundColor: palette.red400 + "26", // 15% opacity
     borderRadius: 12,
     padding: 12,
     borderWidth: 1,
-    borderColor: "rgba(255, 107, 107, 0.3)",
+    borderColor: palette.red400 + "4D", // 30% opacity
   },
   hotIcon: {
     fontSize: 32,
@@ -272,7 +272,7 @@ export const styles = StyleSheet.create({
   // モーダルスタイル
   modalOverlay: {
     flex: 1,
-    backgroundColor: "rgba(0, 0, 0, 0.6)",
+    backgroundColor: palette.black + "99", // 60% opacity
     justifyContent: "flex-end",
   },
   modalContent: {
@@ -368,7 +368,7 @@ export const styles = StyleSheet.create({
     borderBottomColor: color.surfaceAlt,
   },
   prefectureRankItemHighlight: {
-    backgroundColor: "rgba(236, 72, 153, 0.15)",
+    backgroundColor: palette.pink500 + "26", // 15% opacity
     borderRadius: 8,
     marginHorizontal: -4,
     paddingHorizontal: 12,

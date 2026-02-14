@@ -1,66 +1,31 @@
-import { View, Text, ScrollView, TextInput, Pressable, KeyboardAvoidingView, Platform, ActivityIndicator } from "react-native";
-import * as Haptics from "expo-haptics";
-import { color, palette } from "@/theme/tokens";
-import { Image } from "expo-image";
+import { View, Text, ScrollView, Pressable, KeyboardAvoidingView, Platform, ActivityIndicator } from "react-native";
+import { color } from "@/theme/tokens";
 import { useLocalSearchParams } from "expo-router";
 import { navigateBack } from "@/lib/navigation/app-routes";
 import { useState, useEffect } from "react";
 import { ScreenContainer } from "@/components/organisms/screen-container";
 import { ResponsiveContainer } from "@/components/molecules/responsive-container";
 import { trpc } from "@/lib/trpc";
-import { useAuth } from "@/hooks/use-auth";
 import { useColors } from "@/hooks/use-colors";
 import MaterialIcons from "@expo/vector-icons/MaterialIcons";
 import { LinearGradient } from "expo-linear-gradient";
 import { AppHeader } from "@/components/organisms/app-header";
+import { Input } from "@/components/ui/input";
 import { DatePicker } from "@/components/molecules/date-picker";
 import { NumberStepper } from "@/components/molecules/number-stepper";
 import { showAlert } from "@/lib/web-alert";
-
-// キャラクター画像
-const characterImages = {
-  rinku: require("@/assets/images/characters/rinku.png"),
-  konta: require("@/assets/images/characters/konta.png"),
-  tanune: require("@/assets/images/characters/tanune.png"),
-};
-
-// 目標タイプの設定
-const goalTypes = [
-  { id: "attendance", label: "会場参加", icon: "people", unit: "人", description: "ライブ・イベントの参加予定者数" },
-  { id: "followers", label: "フォロワー", icon: "person-add", unit: "人", description: "SNSのフォロワー増加目標" },
-  { id: "viewers", label: "同時視聴", icon: "visibility", unit: "人", description: "配信・プレミア公開の同接" },
-  { id: "points", label: "ポイント", icon: "star", unit: "pt", description: "ミクチャ等のイベントポイント" },
-  { id: "custom", label: "カスタム", icon: "flag", unit: "", description: "自由な目標を設定" },
-];
-
-// イベントタイプの設定
-const eventTypes = [
-  { id: "solo", label: "ソロ", color: color.accentPrimary },
-  { id: "group", label: "グループ", color: color.accentAlt },
-];
-
-// 都道府県リスト
-const prefectures = [
-  "北海道", "青森県", "岩手県", "宮城県", "秋田県", "山形県", "福島県",
-  "茨城県", "栃木県", "群馬県", "埼玉県", "千葉県", "東京都", "神奈川県",
-  "新潟県", "富山県", "石川県", "福井県", "山梨県", "長野県", "岐阜県",
-  "静岡県", "愛知県", "三重県", "滋賀県", "京都府", "大阪府", "兵庫県",
-  "奈良県", "和歌山県", "鳥取県", "島根県", "岡山県", "広島県", "山口県",
-  "徳島県", "香川県", "愛媛県", "高知県", "福岡県", "佐賀県", "長崎県",
-  "熊本県", "大分県", "宮崎県", "鹿児島県", "沖縄県", "オンライン"
-];
+import { commonCopy } from "@/constants/copy/common";
+import { goalTypeOptions } from "@/constants/goal-types";
 
 export default function EditChallengeScreen() {
 
   const { id } = useLocalSearchParams<{ id: string }>();
-  const { user } = useAuth();
   const colors = useColors();
   const utils = trpc.useUtils();
   
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
   const [venue, setVenue] = useState("");
-  const [prefecture, setPrefecture] = useState("");
   const [eventDateStr, setEventDateStr] = useState("");
   const [goalType, setGoalType] = useState("attendance");
   const [goalValue, setGoalValue] = useState(100);
@@ -70,7 +35,6 @@ export default function EditChallengeScreen() {
   const [ticketDoor, setTicketDoor] = useState("");
   const [ticketUrl, setTicketUrl] = useState("");
   const [externalUrl, setExternalUrl] = useState("");
-  const [showPrefectureList, setShowPrefectureList] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
 
   // チャレンジデータを取得
@@ -85,7 +49,6 @@ export default function EditChallengeScreen() {
       setTitle(challenge.title || "");
       setDescription(challenge.description || "");
       setVenue(challenge.venue || "");
-      setPrefecture(challenge.prefecture || "");
       setEventDateStr(challenge.eventDate ? new Date(challenge.eventDate).toISOString().split("T")[0] : "");
       setGoalType(challenge.goalType || "attendance");
       setGoalValue(challenge.goalValue || 100);
@@ -112,27 +75,27 @@ export default function EditChallengeScreen() {
       ]);
     },
     onError: (error) => {
-      showAlert("エラー", error.message);
+      showAlert(commonCopy.alerts.error, error.message);
     },
   });
 
   const handleUpdate = () => {
     if (!title.trim()) {
-      showAlert("エラー", "タイトルを入力してください");
+      showAlert(commonCopy.alerts.error, "タイトルを入力してください");
       return;
     }
     if (!eventDateStr.trim()) {
-      showAlert("エラー", "開催日を入力してください");
+      showAlert(commonCopy.alerts.error, "開催日を入力してください");
       return;
     }
     if (!venue.trim()) {
-      showAlert("エラー", "開催場所を入力してください");
+      showAlert(commonCopy.alerts.error, "開催場所を入力してください");
       return;
     }
 
     const eventDate = new Date(eventDateStr);
     if (isNaN(eventDate.getTime())) {
-      showAlert("エラー", "日付の形式が正しくありません");
+      showAlert(commonCopy.alerts.error, "日付の形式が正しくありません");
       return;
     }
 
@@ -152,8 +115,6 @@ export default function EditChallengeScreen() {
       ticketUrl: ticketUrl.trim() || undefined,
     });
   };
-
-  const selectedGoalType = goalTypes.find(g => g.id === goalType);
 
   if (isChallengeLoading || isLoading) {
     return (
@@ -189,49 +150,24 @@ export default function EditChallengeScreen() {
             <View style={{ padding: 20, gap: 24 }}>
               {/* タイトル */}
               <View style={{ gap: 8 }}>
-                <Text style={{ color: colors.foreground, fontSize: 16, fontWeight: "600" }}>
-                  タイトル <Text style={{ color: colors.error }}>*</Text>
-                </Text>
-                <TextInput
+                <Input
+                  label="タイトル *"
                   value={title}
                   onChangeText={setTitle}
                   placeholder="例: 君斗りんく生誕祭2025"
-                  placeholderTextColor={colors.muted}
-                  style={{
-                    backgroundColor: colors.surface,
-                    borderRadius: 12,
-                    padding: 16,
-                    color: colors.foreground,
-                    fontSize: 16,
-                    borderWidth: 1,
-                    borderColor: colors.border,
-                  }}
                 />
               </View>
 
               {/* 説明 */}
               <View style={{ gap: 8 }}>
-                <Text style={{ color: colors.foreground, fontSize: 16, fontWeight: "600" }}>
-                  説明
-                </Text>
-                <TextInput
+                <Input
+                  label="説明"
                   value={description}
                   onChangeText={setDescription}
                   placeholder="チャレンジの詳細を入力"
-                  placeholderTextColor={colors.muted}
                   multiline
                   numberOfLines={4}
-                  style={{
-                    backgroundColor: colors.surface,
-                    borderRadius: 12,
-                    padding: 16,
-                    color: colors.foreground,
-                    fontSize: 16,
-                    borderWidth: 1,
-                    borderColor: colors.border,
-                    minHeight: 100,
-                    textAlignVertical: "top",
-                  }}
+                  style={{ minHeight: 100, textAlignVertical: "top" }}
                 />
               </View>
 
@@ -249,23 +185,11 @@ export default function EditChallengeScreen() {
 
               {/* 開催場所 */}
               <View style={{ gap: 8 }}>
-                <Text style={{ color: colors.foreground, fontSize: 16, fontWeight: "600" }}>
-                  開催場所 <Text style={{ color: colors.error }}>*</Text>
-                </Text>
-                <TextInput
+                <Input
+                  label="開催場所 *"
                   value={venue}
                   onChangeText={setVenue}
                   placeholder="例: 渋谷CLUB QUATTRO"
-                  placeholderTextColor={colors.muted}
-                  style={{
-                    backgroundColor: colors.surface,
-                    borderRadius: 12,
-                    padding: 16,
-                    color: colors.foreground,
-                    fontSize: 16,
-                    borderWidth: 1,
-                    borderColor: colors.border,
-                  }}
                 />
               </View>
 
@@ -275,7 +199,7 @@ export default function EditChallengeScreen() {
                   目標タイプ
                 </Text>
                 <View style={{ flexDirection: "row", flexWrap: "wrap", gap: 8 }}>
-                  {goalTypes.map((type) => (
+                  {goalTypeOptions.map((type) => (
                     <Pressable
                       key={type.id}
                       onPress={() => {
@@ -359,42 +283,21 @@ export default function EditChallengeScreen() {
                   </View>
                 </View>
 
-                <TextInput
+                <Input
+                  label="チケット購入URL（任意）"
                   value={ticketUrl}
                   onChangeText={setTicketUrl}
                   placeholder="チケット購入URL"
-                  placeholderTextColor={colors.muted}
-                  style={{
-                    backgroundColor: colors.surface,
-                    borderRadius: 12,
-                    padding: 16,
-                    color: colors.foreground,
-                    fontSize: 16,
-                    borderWidth: 1,
-                    borderColor: colors.border,
-                  }}
                 />
               </View>
 
               {/* 外部URL */}
               <View style={{ gap: 8 }}>
-                <Text style={{ color: colors.foreground, fontSize: 16, fontWeight: "600" }}>
-                  外部URL（任意）
-                </Text>
-                <TextInput
+                <Input
+                  label="外部URL（任意）"
                   value={externalUrl}
                   onChangeText={setExternalUrl}
                   placeholder="イベント詳細ページのURL"
-                  placeholderTextColor={colors.muted}
-                  style={{
-                    backgroundColor: colors.surface,
-                    borderRadius: 12,
-                    padding: 16,
-                    color: colors.foreground,
-                    fontSize: 16,
-                    borderWidth: 1,
-                    borderColor: colors.border,
-                  }}
                 />
               </View>
 

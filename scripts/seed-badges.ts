@@ -3,6 +3,7 @@
  * 実行: npx tsx scripts/seed-badges.ts
  */
 import { drizzle } from "drizzle-orm/mysql2";
+import mysql from "mysql2/promise";
 import { badges } from "../drizzle/schema";
 
 const badgeData = [
@@ -72,7 +73,8 @@ async function seedBadges() {
     process.exit(1);
   }
 
-  const db = drizzle(process.env.DATABASE_URL);
+  const pool = mysql.createPool(process.env.DATABASE_URL!);
+  const db = drizzle(pool);
 
   console.log("Seeding badges...");
 
@@ -81,7 +83,7 @@ async function seedBadges() {
       await db.insert(badges).values(badge);
       console.log(`✓ Created badge: ${badge.name}`);
     } catch (error: any) {
-      if (error.code === "ER_DUP_ENTRY") {
+      if (error.code === "23505") {
         console.log(`- Badge already exists: ${badge.name}`);
       } else {
         console.error(`✗ Failed to create badge: ${badge.name}`, error);

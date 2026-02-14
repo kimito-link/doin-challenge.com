@@ -4,10 +4,6 @@ import { StyleProp, ViewStyle } from "react-native";
 import Animated, {
   useSharedValue,
   useAnimatedStyle,
-  withTiming,
-  withSequence,
-  withDelay,
-  runOnJS,
 } from "react-native-reanimated";
 
 // キャラクター画像セット（通常、まばたき）
@@ -16,7 +12,7 @@ export interface CharacterImageSet {
   blink: ImageSource;
 }
 
-// りんくちゃんの画像セット
+// りんくの画像セット（主人公）
 export const LINK_CHARACTER_SETS = {
   // 通常（口閉じ）
   normalClosed: {

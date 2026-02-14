@@ -6,6 +6,7 @@
 
 import { View, Text, ActivityIndicator } from "react-native";
 import { useColors } from "@/hooks/use-colors";
+import { palette } from "@/theme/tokens";
 
 interface RefreshingIndicatorProps {
   isRefreshing: boolean;
@@ -34,7 +35,7 @@ export function RefreshingIndicator({ isRefreshing }: RefreshingIndicatorProps) 
         flexDirection: "row",
         alignItems: "center",
         gap: 6,
-        shadowColor: "#000",
+        shadowColor: palette.black,
         shadowOffset: { width: 0, height: 2 },
         shadowOpacity: 0.1,
         shadowRadius: 4,

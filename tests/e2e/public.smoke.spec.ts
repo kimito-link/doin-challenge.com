@@ -1,5 +1,6 @@
 // tests/e2e/public.smoke.spec.ts
 import { test, expect } from "@playwright/test";
+import { dismissOnboarding } from "./_helpers";
 
 // タイムアウトを60秒に設定
 test.setTimeout(60000);
@@ -8,6 +9,9 @@ test.describe("Public Smoke", () => {
   test("Home /", async ({ page }) => {
     await page.goto("/", { waitUntil: "domcontentloaded", timeout: 30000 });
     await page.waitForTimeout(2000);
+    
+    // オンボーディング画面をスキップ
+    await dismissOnboarding(page);
     
     // ページが正常に読み込まれたことを確認
     await expect(page.locator("body")).toBeVisible();
@@ -47,6 +51,9 @@ test.describe("Public Smoke", () => {
     await page.goto("/event/90001", { waitUntil: "domcontentloaded", timeout: 30000 });
     await page.waitForTimeout(2000);
     
+    // オンボーディング画面をスキップ
+    await dismissOnboarding(page);
+    
     // ページが正常に読み込まれたことを確認
     await expect(page.locator("body")).toBeVisible();
     
@@ -58,6 +65,9 @@ test.describe("Public Smoke", () => {
   test("Invite /invite/90001", async ({ page }) => {
     await page.goto("/invite/90001", { waitUntil: "domcontentloaded", timeout: 30000 });
     await page.waitForTimeout(2000);
+    
+    // オンボーディング画面をスキップ
+    await dismissOnboarding(page);
     
     // ページが正常に読み込まれたことを確認
     await expect(page.locator("body")).toBeVisible();

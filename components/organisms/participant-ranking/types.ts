@@ -15,7 +15,7 @@ export interface Participant {
   companionCount: number;
   message: string | null;
   isAnonymous: boolean;
-  createdAt: Date;
+  createdAt?: Date | string;
   gender?: "male" | "female" | "unspecified" | null;
 }
 

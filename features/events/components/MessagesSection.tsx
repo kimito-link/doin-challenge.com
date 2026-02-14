@@ -7,6 +7,7 @@ import { useColors } from "@/hooks/use-colors";
 import { regionGroups, prefectures } from "@/constants/prefectures";
 import { MessageCard } from "./MessageCard";
 import type { Participation } from "@/types/participation";
+import { eventDetailCopy } from "@/constants/copy";
 
 export type GenderFilter = "all" | "male" | "female";
 
@@ -102,10 +103,10 @@ export function MessagesSection({
             </View>
             <View style={styles.submitHighlightText}>
               <Text style={[styles.submitHighlightTitle, { color: colors.foreground }]}>
-                🎉 参加表明完了！
+                🎉 {eventDetailCopy.success.participated}
               </Text>
               <Text style={styles.submitHighlightSubtitle}>
-                あなたの応援メッセージが反映されました
+                {eventDetailCopy.success.participatedMessage}
               </Text>
             </View>
           </View>
@@ -203,7 +204,7 @@ export function MessagesSection({
               onPress={() => onGenderFilterChange("male")}
               style={[
                 styles.genderFilterButton,
-                selectedGenderFilter === "male" && { backgroundColor: "#3B82F6" },
+                selectedGenderFilter === "male" && { backgroundColor: color.info },
               ]}
             >
               <Text style={[
@@ -375,7 +376,7 @@ const styles = StyleSheet.create({
     width: 48,
     height: 48,
     borderRadius: 24,
-    backgroundColor: "rgba(255,255,255,0.2)",
+    backgroundColor: color.textWhite + "33", // rgba(255,255,255,0.2) の透明度16進数
     justifyContent: "center",
     alignItems: "center",
   },
@@ -388,12 +389,12 @@ const styles = StyleSheet.create({
     fontWeight: "bold",
   },
   submitHighlightSubtitle: {
-    color: "rgba(255,255,255,0.9)",
+    color: color.textWhite + "E6", // rgba(255,255,255,0.9) の透明度16進数
     fontSize: 14,
     marginTop: 4,
   },
   submitHighlightHint: {
-    backgroundColor: "rgba(255,255,255,0.15)",
+    backgroundColor: color.textWhite + "26", // rgba(255,255,255,0.15) の透明度16進数
     borderRadius: 12,
     padding: 12,
   },
@@ -431,7 +432,7 @@ const styles = StyleSheet.create({
     alignItems: "center",
   },
   genderBarText: {
-    fontSize: 10,
+    fontSize: 12,
     fontWeight: "bold",
   },
   genderLegend: {
@@ -483,7 +484,7 @@ const styles = StyleSheet.create({
     backgroundColor: color.accentPrimary,
   },
   genderFilterText: {
-    fontSize: 11,
+    fontSize: 12,
     fontWeight: "600",
   },
   prefectureFilterButton: {
@@ -542,7 +543,7 @@ const styles = StyleSheet.create({
     backgroundColor: color.accentPrimary,
   },
   prefectureChipText: {
-    fontSize: 11,
+    fontSize: 12,
   },
   ownPostHighlight: {
     borderWidth: 3,

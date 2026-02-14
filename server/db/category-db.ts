@@ -7,20 +7,20 @@ const CATEGORIES_CACHE_TTL = 5 * 60 * 1000; // 5分
 
 export async function getAllCategories() {
   const now = Date.now();
-  
+
   // キャッシュが有効なら即座に返す
   if (categoriesCache.data && (now - categoriesCache.timestamp) < CATEGORIES_CACHE_TTL) {
     return categoriesCache.data;
   }
-  
+
   const db = await getDb();
   if (!db) return categoriesCache.data ?? [];
-  
+
   const result = await db.select().from(categories).where(eq(categories.isActive, true)).orderBy(categories.sortOrder);
-  
+
   // キャッシュを更新
   categoriesCache = { data: result, timestamp: now };
-  
+
   return result;
 }
 
@@ -41,8 +41,8 @@ export async function getCategoryBySlug(slug: string) {
 export async function createCategory(category: InsertCategory) {
   const db = await getDb();
   if (!db) return null;
-  const result = await db.insert(categories).values(category);
-  return result[0].insertId;
+  const [result] = await db.insert(categories).values(category);
+  return result.insertId ?? null;
 }
 
 export async function getChallengesByCategory(categoryId: number) {

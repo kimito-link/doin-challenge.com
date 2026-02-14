@@ -1,46 +1,24 @@
-import { COOKIE_NAME, ONE_YEAR_MS } from "../../shared/const.js";
+/**
+ * 認証関連のAPIルート
+ * 
+ * 注意: Manus OAuth Portal経由のルート（/api/oauth/callback, /api/oauth/mobile）は
+ * 現在使用されていないため削除済み。ログインはTwitter OAuth 2.0のみ使用。
+ * 
+ * 残存ルート:
+ * - POST /api/auth/logout - ログアウト（サーバーサイドトークン無効化を含む）
+ * - GET  /api/auth/me     - 現在の認証ユーザー取得
+ * - POST /api/auth/session - Bearerトークンからセッション Cookie を確立
+ */
+import { COOKIE_NAME, SESSION_MAX_AGE_MS } from "../../shared/const.js";
 import type { Express, Request, Response } from "express";
-import { getUserByOpenId, upsertUser } from "../db";
+import { getUserByOpenId } from "../db";
 import { getSessionCookieOptions } from "./cookies";
 import { sdk } from "./sdk";
+import { revokeToken } from "../twitter-oauth2";
+import { getTokens, deleteTokens } from "../token-store";
+import { clearActivity } from "./sdk";
 
-function getQueryParam(req: Request, key: string): string | undefined {
-  const value = req.query[key];
-  return typeof value === "string" ? value : undefined;
-}
-
-async function syncUser(userInfo: {
-  openId?: string | null;
-  name?: string | null;
-  email?: string | null;
-  loginMethod?: string | null;
-  platform?: string | null;
-}) {
-  if (!userInfo.openId) {
-    throw new Error("openId missing from user info");
-  }
-
-  const lastSignedIn = new Date();
-  await upsertUser({
-    openId: userInfo.openId,
-    name: userInfo.name || null,
-    email: userInfo.email ?? null,
-    loginMethod: userInfo.loginMethod ?? userInfo.platform ?? null,
-    lastSignedIn,
-  });
-  const saved = await getUserByOpenId(userInfo.openId);
-  return (
-    saved ?? {
-      openId: userInfo.openId,
-      name: userInfo.name,
-      email: userInfo.email,
-      loginMethod: userInfo.loginMethod ?? null,
-      lastSignedIn,
-    }
-  );
-}
-
-function buildUserResponse(
+async function buildUserResponse(
   user:
     | Awaited<ReturnType<typeof getUserByOpenId>>
     | {
@@ -49,102 +27,82 @@ function buildUserResponse(
         email?: string | null;
         loginMethod?: string | null;
         lastSignedIn?: Date | null;
+        prefecture?: string | null;
+        gender?: "male" | "female" | "unspecified" | null;
+        role?: "user" | "admin" | null;
       },
 ) {
+  const u = user as any;
+  
+  // Twitter情報をtwitterUserCacheから取得
+  let twitterData = null;
+  if (user?.openId?.startsWith("twitter:")) {
+    try {
+      const { getDb } = await import("../db");
+      const { twitterUserCache } = await import("../../drizzle/schema");
+      const { eq } = await import("drizzle-orm");
+      
+      const db = await getDb();
+      if (db) {
+        const twitterId = user.openId.replace("twitter:", "");
+        const cache = await db.select().from(twitterUserCache).where(eq(twitterUserCache.twitterId, twitterId)).limit(1);
+        if (cache.length > 0) {
+          twitterData = cache[0];
+        }
+      }
+    } catch (error) {
+      console.error("[Auth] Failed to fetch Twitter cache:", error instanceof Error ? error.message : "unknown");
+    }
+  }
+  
   return {
-    id: (user as any)?.id ?? null,
+    id: u?.id ?? null,
     openId: user?.openId ?? null,
     name: user?.name ?? null,
     email: user?.email ?? null,
     loginMethod: user?.loginMethod ?? null,
     lastSignedIn: (user?.lastSignedIn ?? new Date()).toISOString(),
+    prefecture: u?.prefecture ?? null,
+    gender: u?.gender ?? null,
+    role: u?.role ?? null,
+    // Twitter情報
+    username: twitterData?.twitterUsername ?? null,
+    profileImage: twitterData?.profileImage ?? null,
+    followersCount: twitterData?.followersCount ?? 0,
+    description: twitterData?.description ?? null,
+    twitterId: twitterData?.twitterId ?? null,
   };
 }
 
 export function registerOAuthRoutes(app: Express) {
-  app.get("/api/oauth/callback", async (req: Request, res: Response) => {
-    const code = getQueryParam(req, "code");
-    const state = getQueryParam(req, "state");
-
-    if (!code || !state) {
-      res.status(400).json({ error: "code and state are required" });
-      return;
-    }
-
-    try {
-      const tokenResponse = await sdk.exchangeCodeForToken(code, state);
-      const userInfo = await sdk.getUserInfo(tokenResponse.accessToken);
-      await syncUser(userInfo);
-      const sessionToken = await sdk.createSessionToken(userInfo.openId!, {
-        name: userInfo.name || "",
-        expiresInMs: ONE_YEAR_MS,
-      });
-
-      const cookieOptions = getSessionCookieOptions(req);
-      res.cookie(COOKIE_NAME, sessionToken, { ...cookieOptions, maxAge: ONE_YEAR_MS });
-
-      // Redirect to the frontend URL (Expo web on port 8081)
-      // Cookie is set with parent domain so it works across both 3000 and 8081 subdomains
-      // Derive frontend URL from request host by replacing 3000 with 8081
-      const host = req.get("host") || "";
-      const protocol = req.get("x-forwarded-proto") || req.protocol;
-      const forceHttps = protocol === "https" || host.includes("manus.computer") || host.includes("manus.im");
-      
-      // For production domains (doin-challenge.com, railway.app), use the same domain
-      // For development (3000-xxx.manus.computer), replace 3000 with 8081
-      let frontendHost: string;
-      if (host.includes("doin-challenge.com") || host.includes("railway.app")) {
-        frontendHost = host; // Use the same domain for production
-      } else {
-        frontendHost = host.replace(/^3000-/, "8081-"); // Development: replace port
-      }
-      
-      const frontendUrl =
-        process.env.EXPO_WEB_PREVIEW_URL ||
-        process.env.EXPO_PACKAGER_PROXY_URL ||
-        (host ? `${forceHttps ? "https" : protocol}://${frontendHost}` : "http://localhost:8081");
-      res.redirect(302, frontendUrl);
-    } catch (error) {
-      console.error("[OAuth] Callback failed", error);
-      res.status(500).json({ error: "OAuth callback failed" });
-    }
-  });
-
-  app.get("/api/oauth/mobile", async (req: Request, res: Response) => {
-    const code = getQueryParam(req, "code");
-    const state = getQueryParam(req, "state");
-
-    if (!code || !state) {
-      res.status(400).json({ error: "code and state are required" });
-      return;
-    }
-
-    try {
-      const tokenResponse = await sdk.exchangeCodeForToken(code, state);
-      const userInfo = await sdk.getUserInfo(tokenResponse.accessToken);
-      const user = await syncUser(userInfo);
-
-      const sessionToken = await sdk.createSessionToken(userInfo.openId!, {
-        name: userInfo.name || "",
-        expiresInMs: ONE_YEAR_MS,
-      });
-
-      const cookieOptions = getSessionCookieOptions(req);
-      res.cookie(COOKIE_NAME, sessionToken, { ...cookieOptions, maxAge: ONE_YEAR_MS });
-
-      res.json({
-        app_session_id: sessionToken,
-        user: buildUserResponse(user),
-      });
-    } catch (error) {
-      console.error("[OAuth] Mobile exchange failed", error);
-      res.status(500).json({ error: "OAuth mobile exchange failed" });
-    }
-  });
-
-  app.post("/api/auth/logout", (req: Request, res: Response) => {
+  app.post("/api/auth/logout", async (req: Request, res: Response) => {
+    // 1. セッションCookieをクリア
     const cookieOptions = getSessionCookieOptions(req);
     res.clearCookie(COOKIE_NAME, { ...cookieOptions, maxAge: -1 });
+    res.clearCookie("admin_session", { ...cookieOptions, maxAge: -1 });
+
+    // 2. サーバーサイドのTwitterトークンをリボーク + 削除（BFFパターン）
+    try {
+      const user = await sdk.authenticateRequest(req).catch(() => null);
+      if (user) {
+        const storedTokens = await getTokens(user.openId);
+        // fire-and-forget: refresh_token → access_token の順にリボーク
+        // ZIPリファレンス準拠: 両トークンを確実に無効化
+        if (storedTokens?.refreshToken) {
+          revokeToken(storedTokens.refreshToken, "refresh_token").catch(() => {});
+        }
+        if (storedTokens?.accessToken) {
+          revokeToken(storedTokens.accessToken, "access_token").catch(() => {});
+        }
+        // サーバーサイドのトークンストアから削除
+        await deleteTokens(user.openId).catch(() => {});
+        // アイドルタイムアウト記録もクリア
+        clearActivity(user.openId);
+      }
+    } catch {
+      // ログアウト自体は必ず成功させる
+    }
+
     res.json({ success: true });
   });
 
@@ -152,22 +110,20 @@ export function registerOAuthRoutes(app: Express) {
   app.get("/api/auth/me", async (req: Request, res: Response) => {
     try {
       const user = await sdk.authenticateRequest(req);
-      res.json({ user: buildUserResponse(user) });
+      res.json({ user: await buildUserResponse(user) });
     } catch (error) {
-      console.error("[Auth] /api/auth/me failed:", error);
+      // 内部エラー詳細はユーザーに露出しない
+      console.error("[Auth] /api/auth/me failed:", error instanceof Error ? error.message : "unknown");
       res.status(401).json({ error: "Not authenticated", user: null });
     }
   });
 
   // Establish session cookie from Bearer token
-  // Used by iframe preview: frontend receives token via postMessage, then calls this endpoint
-  // to get a proper Set-Cookie response from the backend (3000-xxx domain)
+  // Used by Twitter OAuth callback to establish session on web platform
   app.post("/api/auth/session", async (req: Request, res: Response) => {
     try {
-      // Authenticate using Bearer token from Authorization header
       const user = await sdk.authenticateRequest(req);
 
-      // Get the token from the Authorization header to set as cookie
       const authHeader = req.headers.authorization || req.headers.Authorization;
       if (typeof authHeader !== "string" || !authHeader.startsWith("Bearer ")) {
         res.status(400).json({ error: "Bearer token required" });
@@ -175,13 +131,13 @@ export function registerOAuthRoutes(app: Express) {
       }
       const token = authHeader.slice("Bearer ".length).trim();
 
-      // Set cookie for this domain (3000-xxx)
-      const cookieOptions = getSessionCookieOptions(req);
-      res.cookie(COOKIE_NAME, token, { ...cookieOptions, maxAge: ONE_YEAR_MS });
+      // Webプラットフォームからのリクエストの場合、クロスサイトリクエストに対応
+      const cookieOptions = getSessionCookieOptions(req, { crossSite: true });
+      res.cookie(COOKIE_NAME, token, { ...cookieOptions, maxAge: SESSION_MAX_AGE_MS });
 
-      res.json({ success: true, user: buildUserResponse(user) });
+      res.json({ success: true, user: await buildUserResponse(user) });
     } catch (error) {
-      console.error("[Auth] /api/auth/session failed:", error);
+      console.error("[Auth] /api/auth/session failed:", error instanceof Error ? error.message : "unknown");
       res.status(401).json({ error: "Invalid token" });
     }
   });

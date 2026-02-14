@@ -16,12 +16,40 @@ export function initSentry() {
     tracesSampleRate: process.env.NODE_ENV === "production" ? 0.1 : 1.0,
     // Set profilesSampleRate to 1.0 to profile every transaction.
     profilesSampleRate: process.env.NODE_ENV === "production" ? 0.1 : 1.0,
-    beforeSend(event) {
+    // Gate 1: 3種類の通知のみに絞る（ノイズ抑制）
+    beforeSend(event, hint) {
       // Filter out development errors
       if (process.env.NODE_ENV === "development") {
         console.log("Sentry event (dev mode):", event);
       }
-      return event;
+
+      const error = hint.originalException;
+      const message = error && typeof error === "object" && "message" in error ? String(error.message) : "";
+      const statusCode = event.contexts?.response?.status_code;
+
+      // 1. ログイン失敗の急増（OAuth callback error）
+      const isOAuthError = 
+        message.includes("OAuth") || 
+        message.includes("callback") || 
+        message.includes("state parameter") ||
+        event.request?.url?.includes("/api/auth/callback");
+
+      // 2. 5xxの急増
+      const is5xxError = 
+        statusCode && statusCode >= 500 && statusCode < 600;
+
+      // 3. "unknown version"検知
+      const isUnknownVersion = 
+        message.includes("unknown version") ||
+        event.extra?.version === "unknown";
+
+      // 3種類のいずれかに該当する場合のみ通知
+      if (isOAuthError || is5xxError || isUnknownVersion) {
+        return event;
+      }
+
+      // それ以外は通知しない（ノイズ抑制）
+      return null;
     },
   });
 

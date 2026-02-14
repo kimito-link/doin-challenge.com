@@ -11,6 +11,8 @@ export interface SectionHeaderProps {
   title: string;
   subtitle?: string;
   icon?: keyof typeof MaterialIcons.glyphMap;
+  /** アイコン色（未指定時は textMuted） */
+  iconColor?: string;
   action?: React.ReactNode;
   style?: ViewStyle;
 }
@@ -30,6 +32,7 @@ export function SectionHeader({
   title, 
   subtitle, 
   icon, 
+  iconColor,
   action,
   style,
 }: SectionHeaderProps) {
@@ -40,7 +43,7 @@ export function SectionHeader({
           <MaterialIcons 
             name={icon} 
             size={20} 
-            color={color.textMuted} 
+            color={iconColor ?? color.textMuted} 
             style={styles.sectionIcon}
           />
         )}

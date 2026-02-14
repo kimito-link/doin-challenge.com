@@ -1,5 +1,5 @@
 import { Pressable, Platform, type PressableProps, type ViewStyle } from "react-native";
-import { color, palette } from "@/theme/tokens";
+import { color } from "@/theme/tokens";
 import { useState, useCallback } from "react";
 import Animated, { useAnimatedStyle, withTiming, Easing } from "react-native-reanimated";
 import * as Haptics from "expo-haptics";

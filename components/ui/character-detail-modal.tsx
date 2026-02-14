@@ -7,6 +7,7 @@ import { View, Text, ScrollView, ImageSourcePropType } from "react-native";
 import { Image } from "expo-image";
 import { Modal } from "./modal";
 import { Button } from "./button";
+import { color } from "@/theme/tokens";
 import { useColors } from "@/hooks/use-colors";
 
 export interface CharacterInfo {
@@ -52,7 +53,7 @@ export interface CharacterDetailModalProps {
  *     name: "君斗りんく",
  *     image: require("@/assets/images/link.png"),
  *     description: "動員ちゃれんじのメインキャラクター",
- *     themeColor: "#FF69B4",
+ *     themeColor: palette.pink500,
  *   }}
  * />
  * ```
@@ -104,10 +105,10 @@ export function CharacterDetailModal({
               paddingHorizontal: 12,
               paddingVertical: 4,
               borderRadius: 12,
-              backgroundColor: character.gender === "male" ? "#3B82F6" : "#EC4899",
+              backgroundColor: character.gender === "male" ? color.info : color.accentPrimary,
             }}>
               <Text style={{
-                color: "#FFFFFF",
+                color: color.textWhite,
                 fontSize: 12,
                 fontWeight: "600",
               }}>

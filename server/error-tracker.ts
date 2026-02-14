@@ -92,6 +92,7 @@ function inferCategory(error: Error, context?: ErrorLog["context"]): ErrorLog["c
     message.includes("connection") ||
     message.includes("query") ||
     stack.includes("drizzle") ||
+    stack.includes("pg") ||
     stack.includes("mysql2")
   ) {
     return "database";

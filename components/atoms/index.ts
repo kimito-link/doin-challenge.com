@@ -80,17 +80,23 @@ export { IconSymbol } from "./icon-symbol";
 export { LabeledIcon } from "./labeled-icon";
 
 // Feedback系
-export { Skeleton } from "./skeleton";
-export { CardSkeleton, ListItemSkeleton, ProfileSkeleton, ChallengeCardSkeleton } from "./skeleton-loader";
+export { 
+  Skeleton,
+  CardSkeleton, 
+  ListItemSkeleton, 
+  ProfileSkeleton, 
+  ChallengeCardSkeleton,
+  type SkeletonProps,
+} from "./skeleton-loader";
 export { Toast, ToastProvider, useToast } from "./toast";
 export { SyncStatusIndicator } from "./sync-status-indicator";
 
 // Animation系
 export { BlinkingCharacter, BlinkingLink } from "./blinking-character";
-export { HelloWave } from "./hello-wave";
+// HelloWave removed (unused)
 
 // Navigation系
-export { ExternalLink } from "./external-link";
+// ExternalLink removed (unused)
 export { HapticTab } from "./haptic-tab";
 
 // Utility系

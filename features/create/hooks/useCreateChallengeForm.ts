@@ -105,7 +105,7 @@ export function useCreateChallengeForm() {
         {
           text: "OK",
           onPress: () => {
-            navigate.toEventDetail(newChallenge.id);
+            navigate.toEventDetail(newChallenge.id as number);
           },
         },
       ]);

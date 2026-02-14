@@ -6,7 +6,10 @@
 import { View, Text } from "react-native";
 import { LinearGradient } from "expo-linear-gradient";
 import { Button } from "@/components/ui/button";
+import { color } from "@/theme/tokens";
+import { mypageFont } from "../../ui/theme/tokens";
 import type { LoginPattern } from "./constants";
+import { authCopy, commonCopy } from "@/constants/copy";
 
 interface LoginMessageCardProps {
   pattern: LoginPattern;
@@ -29,8 +32,8 @@ export function LoginMessageCard({ pattern, isLoggingIn, onLogin }: LoginMessage
       }}
     >
       <Text style={{ 
-        color: "#fff", 
-        fontSize: 20, 
+        color: color.textWhite, 
+        fontSize: mypageFont.lg,
         fontWeight: "bold",
         marginBottom: 12,
         textAlign: "center",
@@ -38,8 +41,8 @@ export function LoginMessageCard({ pattern, isLoggingIn, onLogin }: LoginMessage
         {pattern.title}
       </Text>
       <Text style={{ 
-        color: "rgba(255,255,255,0.9)", 
-        fontSize: 14,
+        color: color.textWhite + "E6", // rgba(255,255,255,0.9) の透明度16進数
+        fontSize: mypageFont.body,
         lineHeight: 22,
         textAlign: "center",
         marginBottom: 16,
@@ -47,14 +50,14 @@ export function LoginMessageCard({ pattern, isLoggingIn, onLogin }: LoginMessage
         {pattern.message}
       </Text>
       <View style={{ 
-        backgroundColor: "rgba(255,255,255,0.2)", 
+        backgroundColor: color.textWhite + "33", // rgba(255,255,255,0.2) の透明度16進数
         borderRadius: 8, 
         padding: 12,
         marginBottom: 16,
       }}>
         <Text style={{ 
-          color: "#fff", 
-          fontSize: 16, 
+          color: color.textWhite, 
+          fontSize: mypageFont.title,
           fontWeight: "bold",
           textAlign: "center",
         }}>
@@ -67,11 +70,11 @@ export function LoginMessageCard({ pattern, isLoggingIn, onLogin }: LoginMessage
         loading={isLoggingIn}
         icon="login"
         style={{
-          backgroundColor: "#1DA1F2",
+          backgroundColor: color.twitter,
           width: "100%",
         }}
       >
-        {isLoggingIn ? "ログイン中..." : "Xでログインする"}
+        {isLoggingIn ? commonCopy.loading.loading : authCopy.login.loginWithX}
       </Button>
     </LinearGradient>
   );

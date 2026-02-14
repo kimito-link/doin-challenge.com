@@ -1,18 +1,11 @@
 /**
  * Invitation-related Schema Tables
- * 
+ *
  * チャレンジ招待・コラボ招待関連のテーブル定義
  */
 
 import { mysqlTable, int, varchar, text, timestamp, mysqlEnum, boolean } from "drizzle-orm/mysql-core";
 
-// =============================================================================
-// Invitations Table
-// =============================================================================
-
-/**
- * チャレンジ招待テーブル
- */
 export const invitations = mysqlTable("invitations", {
   id: int("id").autoincrement().primaryKey(),
   challengeId: int("challengeId").notNull(),
@@ -31,13 +24,6 @@ export const invitations = mysqlTable("invitations", {
 export type Invitation = typeof invitations.$inferSelect;
 export type InsertInvitation = typeof invitations.$inferInsert;
 
-// =============================================================================
-// Invitation Uses Table
-// =============================================================================
-
-/**
- * 招待経由の参加追跡テーブル
- */
 export const invitationUses = mysqlTable("invitation_uses", {
   id: int("id").autoincrement().primaryKey(),
   invitationId: int("invitationId").notNull(),
@@ -54,13 +40,6 @@ export const invitationUses = mysqlTable("invitation_uses", {
 export type InvitationUse = typeof invitationUses.$inferSelect;
 export type InsertInvitationUse = typeof invitationUses.$inferInsert;
 
-// =============================================================================
-// Collaborators Table
-// =============================================================================
-
-/**
- * コラボホストテーブル（共同主催者）
- */
 export const collaborators = mysqlTable("collaborators", {
   id: int("id").autoincrement().primaryKey(),
   challengeId: int("challengeId").notNull(),
@@ -81,13 +60,6 @@ export const collaborators = mysqlTable("collaborators", {
 export type Collaborator = typeof collaborators.$inferSelect;
 export type InsertCollaborator = typeof collaborators.$inferInsert;
 
-// =============================================================================
-// Collaborator Invitations Table
-// =============================================================================
-
-/**
- * コラボ招待テーブル
- */
 export const collaboratorInvitations = mysqlTable("collaborator_invitations", {
   id: int("id").autoincrement().primaryKey(),
   challengeId: int("challengeId").notNull(),

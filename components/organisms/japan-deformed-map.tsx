@@ -1,4 +1,4 @@
-import { View, Text, StyleSheet, Pressable, Dimensions, useWindowDimensions, Platform } from "react-native";
+import { View, Text, StyleSheet, Pressable, useWindowDimensions, Platform } from "react-native";
 import * as Haptics from "expo-haptics";
 import { color, palette } from "@/theme/tokens";
 import { MapErrorBoundary } from "@/components/ui/map-error-boundary";
@@ -231,12 +231,12 @@ function JapanDeformedMapInner({ prefectureCounts, onPrefecturePress, onRegionPr
                   minWidth: 44,
                   minHeight: 44,
                   backgroundColor: color.bg,
-                  borderColor: color.hasParticipants ? "#FFFFFF" : color.border,
+                  borderColor: color.hasParticipants ? palette.white : color.border,
                   borderWidth: color.hasParticipants ? 2 : 1,
                   position: "absolute",
                   top,
                   left,
-                  shadowColor: color.hasParticipants ? "#FF0000" : "transparent",
+                  shadowColor: color.hasParticipants ? palette.red500 : "transparent",
                   shadowOffset: { width: 0, height: 0 },
                   shadowOpacity: color.hasParticipants ? 0.8 : 0,
                   shadowRadius: 4,
@@ -437,12 +437,12 @@ const styles = StyleSheet.create({
   hotHighlight: {
     flexDirection: "row",
     alignItems: "center",
-    backgroundColor: "rgba(255, 107, 107, 0.15)",
+    backgroundColor: palette.red400 + "26", // 15% opacity
     borderRadius: 12,
     padding: 12,
     marginBottom: 12,
     borderWidth: 1,
-    borderColor: "rgba(255, 107, 107, 0.3)",
+    borderColor: palette.red400 + "4D", // 30% opacity
   },
   hotIcon: {
     fontSize: 32,

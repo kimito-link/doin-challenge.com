@@ -1,9 +1,9 @@
-import { Text, View, ScrollView, Pressable, Share, Platform, TextInput } from "react-native";
+import { Text, View, ScrollView, Pressable, Share, Platform } from "react-native";
 import { color, palette } from "@/theme/tokens";
 import { Image } from "expo-image";
 import { useLocalSearchParams } from "expo-router";
 import { navigateBack } from "@/lib/navigation/app-routes";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { ScreenContainer } from "@/components/organisms/screen-container";
 import { trpc } from "@/lib/trpc";
 import { useAuth } from "@/hooks/use-auth";
@@ -12,6 +12,7 @@ import { LinearGradient } from "expo-linear-gradient";
 // Clipboardはネイティブ機能を使用
 import * as Haptics from "expo-haptics";
 import { AppHeader } from "@/components/organisms/app-header";
+import { Input } from "@/components/ui/input";
 import { RefreshingIndicator } from "@/components/molecules/refreshing-indicator";
 import { useColors } from "@/hooks/use-colors";
 
@@ -36,7 +37,7 @@ export default function InviteScreen() {
   const challengeId = parseInt(id || "0", 10);
   const isValidId = !isNaN(challengeId) && challengeId > 0;
 
-  const { data: challenge, isLoading, isFetching, error } = trpc.events.getById.useQuery(
+  const { data: challenge, isLoading, isFetching } = trpc.events.getById.useQuery(
     { id: challengeId },
     { enabled: isValidId }
   );
@@ -80,21 +81,21 @@ export default function InviteScreen() {
   };
 
   // 招待リンクを作成
-  const handleCreateInvite = () => {
+  const handleCreateInvite = useCallback(() => {
     if (!id || !user) return;
     setIsCreatingInvite(true);
     const payload: { challengeId: number; maxUses?: number; expiresAt?: string } = {
       challengeId: parseInt(id),
     };
     createInviteMutation.mutate(payload);
-  };
+  }, [id, user, createInviteMutation]);
 
   // 初回は自動で招待リンクを作成（カスタムメッセージなし）
   useEffect(() => {
     if (id && user && !inviteCode && !showCustomForm) {
       handleCreateInvite();
     }
-  }, [id, user]);
+  }, [id, user, handleCreateInvite, inviteCode, showCustomForm]);
 
   const inviteUrl = inviteCode 
     ? `https://douin-challenge.app/join/${inviteCode}`
@@ -235,7 +236,7 @@ export default function InviteScreen() {
             <Text style={{ color: color.textWhite, fontSize: 24, fontWeight: "bold", marginTop: 12 }}>
               友達を招待
             </Text>
-            <Text style={{ color: "rgba(255,255,255,0.8)", fontSize: 14, marginTop: 4, textAlign: "center" }}>
+            <Text style={{ color: color.textWhite + "CC", fontSize: 14, marginTop: 4, textAlign: "center" }}>
               一緒にチャレンジを盛り上げよう！
             </Text>
           </View>
@@ -313,56 +314,31 @@ export default function InviteScreen() {
             >
               {/* カスタムタイトル */}
               <View style={{ marginBottom: 16 }}>
-                <Text style={{ color: color.textMuted, fontSize: 12, marginBottom: 8 }}>
-                  招待タイトル（任意）
-                </Text>
-                <TextInput
+                <Input
+                  label="招待タイトル（任意）"
                   value={customTitle}
                   onChangeText={setCustomTitle}
                   placeholder={challenge.title}
-                  placeholderTextColor={color.textHint}
                   maxLength={100}
-                  style={{
-                    backgroundColor: colors.background,
-                    borderRadius: 8,
-                    padding: 12,
-                    color: color.textWhite,
-                    fontSize: 14,
-                    borderWidth: 1,
-                    borderColor: color.border,
-                  }}
                 />
-                <Text style={{ color: color.textHint, fontSize: 11, marginTop: 4, textAlign: "right" }}>
+                <Text style={{ color: color.textHint, fontSize: 12, marginTop: 4, textAlign: "right" }}>
                   {customTitle.length}/100
                 </Text>
               </View>
 
               {/* カスタムメッセージ */}
               <View style={{ marginBottom: 16 }}>
-                <Text style={{ color: color.textMuted, fontSize: 12, marginBottom: 8 }}>
-                  あなたからのメッセージ（任意）
-                </Text>
-                <TextInput
+                <Input
+                  label="あなたからのメッセージ（任意）"
                   value={customMessage}
                   onChangeText={setCustomMessage}
                   placeholder="例: 一緒に推しを応援しよう！絶対楽しいから来てね♪"
-                  placeholderTextColor={color.textHint}
                   multiline
                   numberOfLines={4}
                   maxLength={500}
-                  style={{
-                    backgroundColor: colors.background,
-                    borderRadius: 8,
-                    padding: 12,
-                    color: color.textWhite,
-                    fontSize: 14,
-                    minHeight: 100,
-                    textAlignVertical: "top",
-                    borderWidth: 1,
-                    borderColor: color.border,
-                  }}
+                  style={{ minHeight: 100, textAlignVertical: "top" }}
                 />
-                <Text style={{ color: color.textHint, fontSize: 11, marginTop: 4, textAlign: "right" }}>
+                <Text style={{ color: color.textHint, fontSize: 12, marginTop: 4, textAlign: "right" }}>
                   {customMessage.length}/500
                 </Text>
               </View>
@@ -567,15 +543,15 @@ export default function InviteScreen() {
               style={{
                 width: 150,
                 height: 150,
-                backgroundColor: "#f0f0f0",
+                backgroundColor: palette.gray200,
                 alignItems: "center",
                 justifyContent: "center",
                 borderRadius: 8,
               }}
             >
-              <MaterialIcons name="qr-code-2" size={100} color="#333" />
+              <MaterialIcons name="qr-code-2" size={100} color={palette.gray700} />
             </View>
-            <Text style={{ color: "#666", fontSize: 12, marginTop: 8 }}>
+            <Text style={{ color: palette.gray500, fontSize: 12, marginTop: 8 }}>
               スキャンして参加
             </Text>
           </View>

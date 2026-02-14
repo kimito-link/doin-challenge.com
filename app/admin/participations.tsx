@@ -10,7 +10,11 @@
 
 import { ScreenContainer } from "@/components/organisms/screen-container";
 import { RefreshingIndicator } from "@/components/molecules/refreshing-indicator";
+import { ScreenLoadingState, InlineErrorBar } from "@/components/ui";
+import { commonCopy } from "@/constants/copy/common";
 import { useColors } from "@/hooks/use-colors";
+import { useLoadingState } from "@/hooks/use-loading-state";
+import { color } from "@/theme/tokens";
 import { trpc } from "@/lib/trpc";
 import { useCallback, useState } from "react";
 import {
@@ -18,11 +22,11 @@ import {
   Text,
   ScrollView,
   Pressable,
-  ActivityIndicator,
   RefreshControl,
   Alert,
   Platform,
   TextInput,
+  ActivityIndicator,
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 
@@ -92,66 +96,66 @@ export default function ParticipationsScreen() {
 
   // 復元ミューテーション
   const restoreMutation = trpc.admin.participations.restore.useMutation({
-    onSuccess: (data) => {
+    onSuccess: (data: { requestId: string }) => {
       utils.admin.participations.listDeleted.invalidate();
       utils.admin.participations.getAuditLogs.invalidate();
       const message = `復元しました (requestId: ${data.requestId})`;
       if (Platform.OS === "web") {
         window.alert(message);
       } else {
-        Alert.alert("成功", message);
+        Alert.alert(commonCopy.alerts.success, message);
       }
     },
-    onError: (err) => {
+    onError: (err: { message: string }) => {
       const message = `エラー: ${err.message}`;
       if (Platform.OS === "web") {
         window.alert(message);
       } else {
-        Alert.alert("エラー", message);
+        Alert.alert(commonCopy.alerts.error, message);
       }
     },
   });
 
   // 一括復元ミューテーション
   const bulkRestoreMutation = trpc.admin.participations.bulkRestore.useMutation({
-    onSuccess: (data) => {
+    onSuccess: (data: { restoredCount: number; requestId: string }) => {
       utils.admin.participations.listDeleted.invalidate();
       utils.admin.participations.getAuditLogs.invalidate();
       const message = `${data.restoredCount}件を復元しました (requestId: ${data.requestId})`;
       if (Platform.OS === "web") {
         window.alert(message);
       } else {
-        Alert.alert("成功", message);
+        Alert.alert(commonCopy.alerts.success, message);
       }
     },
-    onError: (err) => {
+    onError: (err: { message: string }) => {
       const message = `エラー: ${err.message}`;
       if (Platform.OS === "web") {
         window.alert(message);
       } else {
-        Alert.alert("エラー", message);
+        Alert.alert(commonCopy.alerts.error, message);
       }
     },
   });
 
   // 一括削除ミューテーション
   const bulkDeleteMutation = trpc.admin.participations.bulkDelete.useMutation({
-    onSuccess: (data) => {
+    onSuccess: (data: { deletedCount: number; requestId: string }) => {
       utils.admin.participations.listDeleted.invalidate();
       utils.admin.participations.getAuditLogs.invalidate();
       const message = `${data.deletedCount}件を削除しました (requestId: ${data.requestId})`;
       if (Platform.OS === "web") {
         window.alert(message);
       } else {
-        Alert.alert("成功", message);
+        Alert.alert(commonCopy.alerts.success, message);
       }
     },
-    onError: (err) => {
+    onError: (err: { message: string }) => {
       const message = `エラー: ${err.message}`;
       if (Platform.OS === "web") {
         window.alert(message);
       } else {
-        Alert.alert("エラー", message);
+        Alert.alert(commonCopy.alerts.error, message);
       }
     },
   });
@@ -163,7 +167,7 @@ export default function ParticipationsScreen() {
         restoreMutation.mutate({ id });
       }
     } else {
-      Alert.alert("確認", confirmMessage, [
+      Alert.alert(commonCopy.alerts.confirm, confirmMessage, [
         { text: "キャンセル", style: "cancel" },
         { text: "復元", onPress: () => restoreMutation.mutate({ id }) },
       ]);
@@ -176,7 +180,7 @@ export default function ParticipationsScreen() {
       if (Platform.OS === "web") {
         window.alert(message);
       } else {
-        Alert.alert("エラー", message);
+        Alert.alert(commonCopy.alerts.error, message);
       }
       return;
     }
@@ -191,7 +195,7 @@ export default function ParticipationsScreen() {
         });
       }
     } else {
-      Alert.alert("確認", confirmMessage, [
+      Alert.alert(commonCopy.alerts.confirm, confirmMessage, [
         { text: "キャンセル", style: "cancel" },
         {
           text: "一括復元",
@@ -211,7 +215,7 @@ export default function ParticipationsScreen() {
       if (Platform.OS === "web") {
         window.alert(message);
       } else {
-        Alert.alert("エラー", message);
+        Alert.alert(commonCopy.alerts.error, message);
       }
       return;
     }
@@ -225,7 +229,7 @@ export default function ParticipationsScreen() {
         });
       }
     } else {
-      Alert.alert("確認", confirmMessage, [
+      Alert.alert(commonCopy.alerts.confirm, confirmMessage, [
         { text: "キャンセル", style: "cancel" },
         {
           text: "一括削除",
@@ -279,24 +283,22 @@ export default function ParticipationsScreen() {
   
   const isLoading = activeTab === "deleted" ? isLoadingDeleted : isLoadingAudit;
   const isFetching = activeTab === "deleted" ? isFetchingDeleted : isFetchingAudit;
-  const isInitialLoading = isLoading && !hasData;
-  const isRefreshing = isFetching && hasData;
+  const loadingState = useLoadingState({
+    isLoading,
+    isFetching,
+    hasData,
+  });
   
   const error = activeTab === "deleted" ? deletedError : auditError;
 
   // 初回ロード中はスケルトン表示
-  if (isInitialLoading) {
-    return (
-      <ScreenContainer className="flex-1 items-center justify-center">
-        <ActivityIndicator size="large" />
-        <Text className="text-muted mt-4">データを読み込み中...</Text>
-      </ScreenContainer>
-    );
+  if (loadingState.isInitialLoading) {
+    return <ScreenLoadingState message={commonCopy.loading.data} />;
   }
 
   return (
     <ScreenContainer>
-      {isRefreshing && <RefreshingIndicator isRefreshing={isRefreshing} />}
+      {loadingState.isRefreshing && <RefreshingIndicator isRefreshing={loadingState.isRefreshing} />}
       <ScrollView
         className="flex-1"
         contentContainerStyle={{ padding: 16 }}
@@ -326,7 +328,7 @@ export default function ParticipationsScreen() {
           >
             <Text
               className="text-center font-medium"
-              style={{ color: activeTab === "deleted" ? "#fff" : colors.muted }}
+              style={{ color: activeTab === "deleted" ? color.textWhite : colors.muted }}
             >
               削除済み
             </Text>
@@ -345,7 +347,7 @@ export default function ParticipationsScreen() {
           >
             <Text
               className="text-center font-medium"
-              style={{ color: activeTab === "audit" ? "#fff" : colors.muted }}
+              style={{ color: activeTab === "audit" ? color.textWhite : colors.muted }}
             >
               監査ログ
             </Text>
@@ -353,12 +355,10 @@ export default function ParticipationsScreen() {
         </View>
 
         {error && (
-          <View className="p-4 rounded-lg mb-4" style={{ backgroundColor: colors.error + "20" }}>
-            <Text style={{ color: colors.error }}>⚠️ {error.message}</Text>
-            <Text className="text-muted text-sm mt-1">
-              管理者権限が必要です。ログインしているアカウントが管理者であることを確認してください。
-            </Text>
-          </View>
+          <InlineErrorBar
+            message={error.message}
+            detail="管理者権限が必要です。ログインしているアカウントが管理者であることを確認してください。"
+          />
         )}
 
         {/* 削除済みタブ */}
@@ -444,7 +444,7 @@ export default function ParticipationsScreen() {
                 ]}
               >
                 <View className="flex-row items-center justify-center">
-                  <Ionicons name="refresh" size={16} color="#fff" />
+                  <Ionicons name="refresh" size={16} color={color.textWhite} />
                   <Text className="text-white font-medium ml-2">
                     {bulkRestoreMutation.isPending ? "処理中..." : "一括復元"}
                   </Text>
@@ -464,7 +464,7 @@ export default function ParticipationsScreen() {
                 ]}
               >
                 <View className="flex-row items-center justify-center">
-                  <Ionicons name="trash" size={16} color="#fff" />
+                  <Ionicons name="trash" size={16} color={color.textWhite} />
                   <Text className="text-white font-medium ml-2">
                     {bulkDeleteMutation.isPending ? "処理中..." : "一括削除"}
                   </Text>
@@ -556,7 +556,7 @@ export default function ParticipationsScreen() {
                               ]}
                             >
                               <View className="flex-row items-center justify-center">
-                                <Ionicons name="refresh" size={16} color="#fff" />
+                                <Ionicons name="refresh" size={16} color={color.textWhite} />
                                 <Text className="text-white font-medium ml-2">
                                   {restoreMutation.isPending ? "処理中..." : "この参加を復元"}
                                 </Text>
@@ -573,7 +573,7 @@ export default function ParticipationsScreen() {
               <View className="bg-surface rounded-xl p-8 items-center border border-border">
                 <Ionicons name="checkmark-circle-outline" size={48} color={colors.success} />
                 <Text className="text-lg font-semibold text-foreground mt-4">
-                  削除済みの参加はありません
+                  {commonCopy.empty.noParticipationsDeleted}
                 </Text>
                 <Text className="text-muted text-center mt-2">
                   ソフトデリートされた参加がここに表示されます
@@ -646,7 +646,7 @@ export default function ParticipationsScreen() {
               <View className="bg-surface rounded-xl p-8 items-center border border-border">
                 <Ionicons name="document-text-outline" size={48} color={colors.muted} />
                 <Text className="text-lg font-semibold text-foreground mt-4">
-                  監査ログがありません
+                  {commonCopy.empty.noAuditLog}
                 </Text>
                 <Text className="text-muted text-center mt-2">
                   参加に関する操作履歴がここに表示されます

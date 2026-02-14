@@ -6,11 +6,11 @@
  * キャラクターがランダムに選択され、アニメーション付きで表示される
  */
 
-import { View, Text, Modal } from "react-native";
+import { View, Modal, Text } from "react-native";
 import { useColors } from "@/hooks/use-colors";
+import { palette } from "@/theme/tokens";
 import Animated, {
   FadeIn,
-  FadeOut,
   SlideInDown,
   SlideOutDown,
   useAnimatedStyle,
@@ -18,14 +18,17 @@ import Animated, {
   withRepeat,
   withSequence,
 } from "react-native-reanimated";
+import { Image } from "expo-image";
 import { useEffect, useState } from "react";
 import { getRandomLoginMessage, type LoginMessage } from "@/constants/login-messages";
 
-// キャラクター画像の静的マッピング（動的require()を避けるため）
+const AnimatedImage = Animated.createAnimatedComponent(Image);
+
+// キャラクター画像（りんく・こん太・たぬ姉のオリジナル画像）
 const CHARACTER_IMAGES = {
-  rinku: require("@/assets/images/characters/rinku.png"),
-  konta: require("@/assets/images/characters/konta.png"),
-  tanune: require("@/assets/images/characters/tanune.png"),
+  rinku: require("@/assets/images/characters/link/link-yukkuri-smile-mouth-open.png"),
+  konta: require("@/assets/images/characters/konta/kitsune-yukkuri-smile-mouth-open.png"),
+  tanune: require("@/assets/images/characters/tanunee/tanuki-yukkuri-smile-mouth-open.png"),
 };
 
 interface WelcomeMessageProps {
@@ -37,6 +40,7 @@ interface WelcomeMessageProps {
 export function WelcomeMessage({ visible, onHide, userName }: WelcomeMessageProps) {
   const colors = useColors();
   const [message, setMessage] = useState<LoginMessage | null>(null);
+  const [imageError, setImageError] = useState(false);
 
   // 表示時にランダムなメッセージを選択
   useEffect(() => {
@@ -85,7 +89,7 @@ export function WelcomeMessage({ visible, onHide, userName }: WelcomeMessageProp
           flex: 1,
           justifyContent: "center",
           alignItems: "center",
-          backgroundColor: "rgba(0, 0, 0, 0.6)",
+          backgroundColor: palette.black + "99", // 60% opacity
         }}
       >
         <Animated.View
@@ -98,7 +102,7 @@ export function WelcomeMessage({ visible, onHide, userName }: WelcomeMessageProp
             maxWidth: 400,
             width: "90%",
             alignItems: "center",
-            shadowColor: "#000",
+            shadowColor: palette.black,
             shadowOffset: { width: 0, height: 4 },
             shadowOpacity: 0.3,
             shadowRadius: 12,
@@ -106,13 +110,29 @@ export function WelcomeMessage({ visible, onHide, userName }: WelcomeMessageProp
           }}
         >
           {/* キャラクター */}
-          <Animated.Image
-            source={CHARACTER_IMAGES[message.character]}
-            style={[
-              { width: 80, height: 80, marginBottom: 20 },
-              characterAnimatedStyle,
-            ]}
-          />
+          {!imageError ? (
+            <AnimatedImage
+              source={CHARACTER_IMAGES[message.character]}
+              style={[
+                { width: 80, height: 80, marginBottom: 20 },
+                characterAnimatedStyle,
+              ]}
+              onError={() => setImageError(true)}
+              cachePolicy="memory-disk"
+              contentFit="contain"
+            />
+          ) : (
+            <Animated.View
+              style={[
+                { width: 80, height: 80, marginBottom: 20, borderRadius: 40, backgroundColor: colors.primary, alignItems: "center", justifyContent: "center" },
+                characterAnimatedStyle,
+              ]}
+            >
+              <Text style={{ color: "white", fontSize: 32, fontWeight: "bold" }}>
+                {message.character === "rinku" ? "り" : message.character === "konta" ? "こ" : "た"}
+              </Text>
+            </Animated.View>
+          )}
 
           {/* ウェルカムメッセージ */}
           <Animated.Text

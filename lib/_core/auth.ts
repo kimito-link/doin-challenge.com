@@ -9,13 +9,15 @@ export type User = {
   email: string | null;
   loginMethod: string | null;
   lastSignedIn: Date;
-  // Twitter/X specific fields
+  // Profile (for 1-Click participation)
+  prefecture?: string | null;
+  gender?: "male" | "female" | "unspecified" | null;
+  // Twitter/X specific fields (プロフィール情報のみ、トークンは含まない)
   username?: string;
   profileImage?: string;
   followersCount?: number;
   description?: string; // Twitter bio/自己紹介
   twitterId?: string;
-  twitterAccessToken?: string;
   // Follow status for premium features
   isFollowingTarget?: boolean;
   targetAccount?: {
@@ -25,25 +27,23 @@ export type User = {
   };
   // Admin role
   role?: "user" | "admin";
-  // Gender for color-coded UI
-  gender?: "male" | "female" | "unspecified";
 };
 
 export async function getSessionToken(): Promise<string | null> {
   try {
-    // Web platform uses cookie-based auth, no manual token management needed
     if (Platform.OS === "web") {
-      console.log("[Auth] Web platform uses cookie-based auth, skipping token retrieval");
+      // Web: localStorageからセッショントークンを取得
+      // クロスオリジン（Vercel→Railway）ではCookieが届かないため、
+      // Bearer tokenによる認証が必要
+      if (typeof window !== "undefined") {
+        const token = window.localStorage.getItem(SESSION_TOKEN_KEY);
+        return token;
+      }
       return null;
     }
 
     // Use SecureStore for native
-    console.log("[Auth] Getting session token...");
     const token = await SecureStore.getItemAsync(SESSION_TOKEN_KEY);
-    console.log(
-      "[Auth] Session token retrieved from SecureStore:",
-      token ? `present (${token.substring(0, 20)}...)` : "missing",
-    );
     return token;
   } catch (error) {
     console.error("[Auth] Failed to get session token:", error);
@@ -53,16 +53,13 @@ export async function getSessionToken(): Promise<string | null> {
 
 export async function setSessionToken(token: string): Promise<void> {
   try {
-    // Web platform uses cookie-based auth, no manual token management needed
     if (Platform.OS === "web") {
-      console.log("[Auth] Web platform uses cookie-based auth, skipping token storage");
+      if (typeof window !== "undefined") {
+        window.localStorage.setItem(SESSION_TOKEN_KEY, token);
+      }
       return;
     }
-
-    // Use SecureStore for native
-    console.log("[Auth] Setting session token...", token.substring(0, 20) + "...");
     await SecureStore.setItemAsync(SESSION_TOKEN_KEY, token);
-    console.log("[Auth] Session token stored in SecureStore successfully");
   } catch (error) {
     console.error("[Auth] Failed to set session token:", error);
     throw error;
@@ -71,16 +68,16 @@ export async function setSessionToken(token: string): Promise<void> {
 
 export async function removeSessionToken(): Promise<void> {
   try {
-    // Web platform uses cookie-based auth, logout is handled by server clearing cookie
     if (Platform.OS === "web") {
-      console.log("[Auth] Web platform uses cookie-based auth, skipping token removal");
+      // Web: localStorageからセッショントークンを削除
+      if (typeof window !== "undefined") {
+        window.localStorage.removeItem(SESSION_TOKEN_KEY);
+      }
       return;
     }
 
     // Use SecureStore for native
-    console.log("[Auth] Removing session token...");
     await SecureStore.deleteItemAsync(SESSION_TOKEN_KEY);
-    console.log("[Auth] Session token removed from SecureStore successfully");
   } catch (error) {
     console.error("[Auth] Failed to remove session token:", error);
   }
@@ -88,24 +85,14 @@ export async function removeSessionToken(): Promise<void> {
 
 export async function getUserInfo(): Promise<User | null> {
   try {
-    console.log("[Auth] Getting user info...");
-
     let info: string | null = null;
     if (Platform.OS === "web") {
-      // Use localStorage for web
       info = window.localStorage.getItem(USER_INFO_KEY);
     } else {
-      // Use SecureStore for native
       info = await SecureStore.getItemAsync(USER_INFO_KEY);
     }
-
-    if (!info) {
-      console.log("[Auth] No user info found");
-      return null;
-    }
-    const user = JSON.parse(info);
-    console.log("[Auth] User info retrieved:", user);
-    return user;
+    if (!info) return null;
+    return JSON.parse(info);
   } catch (error) {
     console.error("[Auth] Failed to get user info:", error);
     return null;
@@ -114,42 +101,28 @@ export async function getUserInfo(): Promise<User | null> {
 
 export async function setUserInfo(user: User): Promise<void> {
   try {
-    // Get existing user info to preserve fields that might not be in the new user object
+    // 既存ユーザー情報とマージ（Twitter固有フィールドを保持）
     const existingUser = await getUserInfo();
-    
-    // Merge existing user with new user, preserving Twitter-specific fields
-    // New user data takes precedence, but existing fields are preserved if not present in new data
     const mergedUser: User = existingUser ? {
       ...existingUser,
       ...user,
-      // Explicitly preserve Twitter-specific fields if they exist in either object
+      prefecture: user.prefecture ?? existingUser.prefecture,
+      gender: user.gender ?? existingUser.gender,
       description: user.description ?? existingUser.description,
       username: user.username ?? existingUser.username,
       profileImage: user.profileImage ?? existingUser.profileImage,
       followersCount: user.followersCount ?? existingUser.followersCount,
       twitterId: user.twitterId ?? existingUser.twitterId,
-      twitterAccessToken: user.twitterAccessToken ?? existingUser.twitterAccessToken,
       isFollowingTarget: user.isFollowingTarget ?? existingUser.isFollowingTarget,
       targetAccount: user.targetAccount ?? existingUser.targetAccount,
     } : user;
-    
-    console.log("[Auth] Setting user info...", {
-      id: mergedUser.id,
-      name: mergedUser.name,
-      hasDescription: !!mergedUser.description,
-      descriptionPreview: mergedUser.description?.substring(0, 30),
-    });
 
+    const serialized = JSON.stringify(mergedUser);
     if (Platform.OS === "web") {
-      // Use localStorage for web
-      window.localStorage.setItem(USER_INFO_KEY, JSON.stringify(mergedUser));
-      console.log("[Auth] User info stored in localStorage successfully");
-      return;
+      window.localStorage.setItem(USER_INFO_KEY, serialized);
+    } else {
+      await SecureStore.setItemAsync(USER_INFO_KEY, serialized);
     }
-
-    // Use SecureStore for native
-    await SecureStore.setItemAsync(USER_INFO_KEY, JSON.stringify(mergedUser));
-    console.log("[Auth] User info stored in SecureStore successfully");
   } catch (error) {
     console.error("[Auth] Failed to set user info:", error);
   }

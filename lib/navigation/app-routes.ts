@@ -28,6 +28,7 @@ export const STATIC_ROUTES = {
   // 設定関連
   SETTINGS: "/settings",
   NOTIFICATION_SETTINGS: "/notification-settings",
+  PROFILE_EDIT: "/profile/edit",
   HELP: "/help",
   ACHIEVEMENTS: "/achievements",
   API_USAGE: "/admin/api-usage",
@@ -38,6 +39,7 @@ export const STATIC_ROUTES = {
   CREATE: "/create",
   ONBOARDING: "/onboarding",
   TUTORIAL: "/tutorial",
+  INSTALL_INSTRUCTIONS: "/install-instructions",
 } as const;
 
 /**
@@ -86,6 +88,7 @@ export type RouteParams = {
   [STATIC_ROUTES.LOGOUT]: undefined;
   [STATIC_ROUTES.SETTINGS]: undefined;
   [STATIC_ROUTES.NOTIFICATION_SETTINGS]: undefined;
+  [STATIC_ROUTES.PROFILE_EDIT]: undefined;
   [STATIC_ROUTES.HELP]: undefined;
   [STATIC_ROUTES.ACHIEVEMENTS]: undefined;
   [STATIC_ROUTES.API_USAGE]: undefined;
@@ -93,6 +96,7 @@ export type RouteParams = {
   [STATIC_ROUTES.CREATE]: undefined;
   [STATIC_ROUTES.ONBOARDING]: undefined;
   [STATIC_ROUTES.TUTORIAL]: undefined;
+  [STATIC_ROUTES.INSTALL_INSTRUCTIONS]: undefined;
   
   // 動的ルート
   [DYNAMIC_ROUTES.EVENT_DETAIL]: { id: string | number };
@@ -159,6 +163,11 @@ export const navigate = {
   toNotificationSettings: () => {
     console.log("[Navigation] Navigating to notification settings");
     router.push(STATIC_ROUTES.NOTIFICATION_SETTINGS as never);
+  },
+  
+  toProfileEdit: () => {
+    console.log("[Navigation] Navigating to profile edit");
+    router.push(STATIC_ROUTES.PROFILE_EDIT as never);
   },
   
   toHelp: () => {
@@ -303,6 +312,11 @@ toApiUsage: () => {
   toReminders: (id: string | number) => {
     console.log(`[Navigation] Navigating to reminders: ${id}`);
     router.push({ pathname: DYNAMIC_ROUTES.REMINDERS, params: { id: String(id) } } as never);
+  },
+
+  toInstallInstructions: () => {
+    console.log("[Navigation] Navigating to install instructions");
+    router.push(STATIC_ROUTES.INSTALL_INSTRUCTIONS as never);
   },
   
   toEditParticipation: (participationId: string | number, challengeId: string | number) => {

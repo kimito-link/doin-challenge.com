@@ -2,11 +2,11 @@
  * JapanBlockMap - 47都道府県ブロック表示の日本地図
  * v6.27: 都道府県別ブロック配置、タップ機能、ヒートマップ表示
  */
-import { View, Text, StyleSheet, Pressable, Dimensions, Platform, ScrollView } from "react-native";
+import { View, Text, StyleSheet, Pressable, Platform, ScrollView, Dimensions } from "react-native";
 import * as Haptics from "expo-haptics";
-import { color } from "@/theme/tokens";
+import { color, palette } from "@/theme/tokens";
 import { MapErrorBoundary } from "@/components/ui/map-error-boundary";
-import { useMemo, useState } from "react";
+import { useMemo, useCallback } from "react";
 
 const screenWidth = Dimensions.get("window").width;
 
@@ -18,14 +18,14 @@ interface JapanBlockMapProps {
 
 // 地域ごとの色設定
 const regionColors = {
-  "北海道": { bg: "#7DD3FC", text: "#0C4A6E", border: "#38BDF8" },      // 水色
-  "東北": { bg: "#C4B5FD", text: "#4C1D95", border: "#A78BFA" },        // 紫
-  "関東": { bg: "#86EFAC", text: "#14532D", border: "#4ADE80" },        // 緑
-  "中部": { bg: "#FDE047", text: "#713F12", border: "#FACC15" },        // 黄色
-  "関西": { bg: "#FDBA74", text: "#7C2D12", border: "#FB923C" },        // オレンジ
-  "中国": { bg: "#F9A8D4", text: "#831843", border: "#F472B6" },        // ピンク
-  "四国": { bg: "#A5F3FC", text: "#155E75", border: "#67E8F9" },        // シアン
-  "九州・沖縄": { bg: "#FCA5A5", text: "#7F1D1D", border: "#F87171" },  // 赤
+  "北海道": { bg: palette.regionHokkaido, text: palette.blue600, border: palette.borderHokkaido },
+  "東北": { bg: palette.regionTohoku, text: palette.green600, border: palette.borderTohoku },
+  "関東": { bg: palette.regionKanto, text: palette.green600, border: palette.borderKanto },
+  "中部": { bg: palette.regionChubu, text: palette.accent600, border: palette.borderChubu },
+  "関西": { bg: palette.regionKansai, text: palette.pink600, border: palette.borderKansai },
+  "中国": { bg: palette.regionChugoku, text: palette.teal600, border: palette.borderChugoku },
+  "四国": { bg: palette.regionShikoku, text: palette.gold, border: palette.borderShikoku },
+  "九州・沖縄": { bg: palette.regionKyushuOkinawa, text: palette.red600, border: palette.borderKyushu },
 };
 
 // 47都道府県データ（地域別）
@@ -99,12 +99,10 @@ const prefectureData = {
 const regionNames = Object.keys(prefectureData) as (keyof typeof prefectureData)[];
 
 function JapanBlockMapInner({ prefectureCounts, onPrefecturePress, onRegionPress }: JapanBlockMapProps) {
-  const [selectedRegion, setSelectedRegion] = useState<string | null>(null);
-
   // 都道府県のカウントを取得
-  const getCount = (prefName: string, shortName: string) => {
+  const getCount = useCallback((prefName: string, shortName: string) => {
     return prefectureCounts[prefName] || prefectureCounts[shortName] || 0;
-  };
+  }, [prefectureCounts]);
 
   // 統計情報を計算
   const stats = useMemo(() => {
@@ -126,7 +124,7 @@ function JapanBlockMapInner({ prefectureCounts, onPrefecturePress, onRegionPress
     }
     
     return { totalPrefectures, totalParticipants, maxCount, hotPrefecture };
-  }, [prefectureCounts]);
+  }, [prefectureCounts, getCount]);
 
   // 地域ごとの合計を計算
   const regionTotals = useMemo(() => {
@@ -137,14 +135,20 @@ function JapanBlockMapInner({ prefectureCounts, onPrefecturePress, onRegionPress
       }, 0);
     }
     return totals;
-  }, [prefectureCounts]);
+  }, [getCount]);
+
+  // 透明度を16進数に変換するヘルパー関数
+  const opacityToHex = (opacity: number): string => {
+    const hex = Math.round(opacity * 255).toString(16).padStart(2, "0").toUpperCase();
+    return hex;
+  };
 
   // ヒートマップの色を計算
   const getHeatColor = (count: number) => {
     if (count === 0) return "transparent";
     const intensity = Math.min(count / Math.max(stats.maxCount, 1), 1);
     const alpha = 0.3 + intensity * 0.7;
-    return `rgba(239, 68, 68, ${alpha})`; // 赤のグラデーション
+    return palette.red500 + opacityToHex(alpha); // 赤のグラデーション
   };
 
   // 都道府県ブロックをレンダリング
@@ -360,12 +364,12 @@ const styles = StyleSheet.create({
   hotHighlight: {
     flexDirection: "row",
     alignItems: "center",
-    backgroundColor: "rgba(255, 107, 107, 0.15)",
+    backgroundColor: palette.red400 + "26", // 15% opacity
     borderRadius: 12,
     padding: 10,
     marginBottom: 12,
     borderWidth: 1,
-    borderColor: "rgba(255, 107, 107, 0.3)",
+    borderColor: palette.red400 + "4D", // 30% opacity
   },
   hotIcon: {
     fontSize: 24,

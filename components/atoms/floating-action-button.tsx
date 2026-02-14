@@ -1,22 +1,21 @@
 // components/atoms/floating-action-button.tsx
 // 後方互換性のため、components/ui/buttonから再エクスポート
 
-export { FAB as FloatingActionButton, type FABProps } from "@/components/ui/button";
-
-// ExpandableFABは独自実装を維持（components/ui/buttonにはない機能）
-import { Pressable, StyleSheet, Platform, View, Text } from "react-native";
+import { Pressable, StyleSheet, View, Text, Platform } from "react-native";
 import { useCallback, useState } from "react";
 import MaterialIcons from "@expo/vector-icons/MaterialIcons";
 import * as Haptics from "expo-haptics";
-import Animated, { 
-  useSharedValue, 
-  useAnimatedStyle, 
+import Animated, {
+  useSharedValue,
+  useAnimatedStyle,
   withSpring,
   withTiming,
   interpolate,
   SharedValue,
 } from "react-native-reanimated";
-import { color } from "@/theme/tokens";
+import { color, palette } from "@/theme/tokens";
+
+export { FAB as FloatingActionButton, type FABProps } from "@/components/ui/button";
 
 interface ExpandableFABAction {
   icon: string;
@@ -161,7 +160,7 @@ const styles = StyleSheet.create({
     borderRadius: 22,
     alignItems: "center",
     justifyContent: "center",
-    shadowColor: "#000",
+    shadowColor: palette.gray900,
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.2,
     shadowRadius: 4,
@@ -173,7 +172,7 @@ const styles = StyleSheet.create({
     borderRadius: 28,
     alignItems: "center",
     justifyContent: "center",
-    shadowColor: "#000",
+    shadowColor: palette.gray900,
     shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.3,
     shadowRadius: 8,

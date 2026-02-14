@@ -7,6 +7,7 @@ import * as Api from "@/lib/_core/api";
 const FOLLOW_STATUS_KEY = "twitter_follow_status";
 const TARGET_USERNAME = "idolfunch";
 const TARGET_DISPLAY_NAME = "君斗りんく";
+const FOLLOW_STATUS_CACHE_TTL = 24 * 60 * 60 * 1000; // 24時間
 
 interface FollowStatusData {
   isFollowing: boolean;
@@ -32,12 +33,26 @@ export function useFollowStatus() {
   const appState = useRef(AppState.currentState);
   const hasCheckedAfterLogin = useRef(false);
 
-  // ローカルストレージからフォロー状態を読み込む
+  // ローカルストレージからフォロー状態を読み込む（24時間のTTLチェック）
   const loadFollowStatus = useCallback(async () => {
     try {
       const stored = await AsyncStorage.getItem(FOLLOW_STATUS_KEY);
       if (stored) {
-        const data = JSON.parse(stored) as FollowStatusData;
+        const data = JSON.parse(stored) as FollowStatusData & { cachedAt?: string };
+        
+        // キャッシュの有効期限をチェック（24時間）
+        if (data.lastCheckedAt) {
+          const lastChecked = new Date(data.lastCheckedAt).getTime();
+          const now = Date.now();
+          const age = now - lastChecked;
+          
+          if (age > FOLLOW_STATUS_CACHE_TTL) {
+            console.log("[useFollowStatus] Cache expired, clearing...");
+            await AsyncStorage.removeItem(FOLLOW_STATUS_KEY);
+            return null;
+          }
+        }
+        
         setFollowStatus(data);
         return data;
       }
@@ -103,17 +118,16 @@ export function useFollowStatus() {
         return false;
       }
 
-      // Twitterアクセストークンとユーザー情報を取得
-      const twitterAccessToken = userInfo.twitterAccessToken;
+      // BFFパターン: トークンはサーバーで管理、twitterIdのみ必要
       const twitterId = userInfo.twitterId;
 
-      if (!twitterAccessToken || !twitterId) {
-        console.log("[useFollowStatus] No Twitter credentials, cannot check follow status");
+      if (!twitterId) {
+        console.log("[useFollowStatus] No Twitter ID, cannot check follow status");
         return false;
       }
 
-      // APIを呼び出してフォローステータスを確認
-      const result = await Api.checkFollowStatus(twitterAccessToken, twitterId);
+      // APIを呼び出してフォローステータスを確認（サーバーが保管トークンを使用）
+      const result = await Api.checkFollowStatus(twitterId);
       
       if (result.isFollowing !== undefined) {
         const data: FollowStatusData = {

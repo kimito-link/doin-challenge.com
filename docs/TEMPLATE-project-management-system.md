@@ -227,7 +227,7 @@
 | ドキュメント | 説明 |
 |-------------|------|
 | [development-guide.md](./development-guide.md) | 開発環境のセットアップ手順 |
-| [architecture.md](./architecture.md) | アーキテクチャの説明 |
+| [ARCHITECTURE.md](./ARCHITECTURE.md) | アーキテクチャの説明 |
 
 ---
 

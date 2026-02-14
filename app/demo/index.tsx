@@ -5,7 +5,7 @@
  */
 
 import { useCallback, useEffect, useState } from "react";
-import { color, palette } from "@/theme/tokens";
+import { color } from "@/theme/tokens";
 import {
   View,
   Text,
@@ -16,6 +16,7 @@ import {
 } from "react-native";
 import { navigate } from "@/lib/navigation/app-routes";
 import { ScreenContainer } from "@/components/organisms/screen-container";
+import { CelebrationAnimation } from "@/components/molecules/celebration-animation";
 import { useColors } from "@/hooks/use-colors";
 import { Ionicons } from "@expo/vector-icons";
 import * as Haptics from "expo-haptics";
@@ -26,7 +27,6 @@ import Animated, {
   withSpring,
   withSequence,
   withDelay,
-  runOnJS,
   Easing,
 } from "react-native-reanimated";
 import {
@@ -34,7 +34,6 @@ import {
   joinDemoChallenge,
   addDemoContribution,
   resetDemoState,
-  setAnimationPlayed,
   type DemoChallenge,
   type DemoState,
 } from "@/lib/demo-challenge";
@@ -207,6 +206,7 @@ export default function DemoScreen() {
 
   return (
     <ScreenContainer>
+      <CelebrationAnimation visible={showConfetti} showConfetti />
       <ScrollView className="flex-1" contentContainerStyle={{ padding: 16 }}>
         {/* デモバナー */}
         <View 

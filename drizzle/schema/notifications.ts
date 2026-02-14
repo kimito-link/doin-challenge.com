@@ -1,18 +1,11 @@
 /**
  * Notification-related Schema Tables
- * 
+ *
  * 通知設定・履歴・リマインダー関連のテーブル定義
  */
 
 import { mysqlTable, int, varchar, text, timestamp, mysqlEnum, boolean } from "drizzle-orm/mysql-core";
 
-// =============================================================================
-// Notification Settings Table
-// =============================================================================
-
-/**
- * 通知設定テーブル
- */
 export const notificationSettings = mysqlTable("notification_settings", {
   id: int("id").autoincrement().primaryKey(),
   userId: int("userId").notNull(),
@@ -30,13 +23,6 @@ export const notificationSettings = mysqlTable("notification_settings", {
 export type NotificationSetting = typeof notificationSettings.$inferSelect;
 export type InsertNotificationSetting = typeof notificationSettings.$inferInsert;
 
-// =============================================================================
-// Notifications Table
-// =============================================================================
-
-/**
- * 通知履歴テーブル
- */
 export const notifications = mysqlTable("notifications", {
   id: int("id").autoincrement().primaryKey(),
   userId: int("userId").notNull(),
@@ -52,13 +38,6 @@ export const notifications = mysqlTable("notifications", {
 export type Notification = typeof notifications.$inferSelect;
 export type InsertNotification = typeof notifications.$inferInsert;
 
-// =============================================================================
-// Reminders Table
-// =============================================================================
-
-/**
- * リマインダーテーブル
- */
 export const reminders = mysqlTable("reminders", {
   id: int("id").autoincrement().primaryKey(),
   challengeId: int("challengeId").notNull(),

@@ -14,110 +14,52 @@ export async function apiCall<T>(endpoint: string, options: RequestInit = {}): P
     ...((options.headers as Record<string, string>) || {}),
   };
 
-  // Determine the auth method:
-  // - Native platform: use stored session token as Bearer auth
-  // - Web (including iframe): use cookie-based auth (browser handles automatically)
-  //   Cookie is set on backend domain via POST /api/auth/session after receiving token via postMessage
-  if (Platform.OS !== "web") {
-    const sessionToken = await Auth.getSessionToken();
-    console.log("[API] apiCall:", {
-      endpoint,
-      hasToken: !!sessionToken,
-      method: options.method || "GET",
-    });
-    if (sessionToken) {
-      headers["Authorization"] = `Bearer ${sessionToken}`;
-      console.log("[API] Authorization header added");
-    }
-  } else {
-    console.log("[API] apiCall:", { endpoint, platform: "web", method: options.method || "GET" });
+  // 全プラットフォームでBearerトークンを送信
+  // Web: localStorageから取得（クロスオリジンではCookieが届かないため必須）
+  // Native: SecureStoreから取得
+  const sessionToken = await Auth.getSessionToken();
+  if (sessionToken) {
+    headers["Authorization"] = `Bearer ${sessionToken}`;
   }
 
   const baseUrl = getApiBaseUrl();
-  // Ensure no double slashes between baseUrl and endpoint
   const cleanBaseUrl = baseUrl.endsWith("/") ? baseUrl.slice(0, -1) : baseUrl;
   const cleanEndpoint = endpoint.startsWith("/") ? endpoint : `/${endpoint}`;
   const url = baseUrl ? `${cleanBaseUrl}${cleanEndpoint}` : endpoint;
-  console.log("[API] Full URL:", url);
 
   try {
-    console.log("[API] Making request...");
     const response = await fetch(url, {
       ...options,
       headers,
       credentials: "include",
     });
 
-    console.log("[API] Response status:", response.status, response.statusText);
-    const responseHeaders = Object.fromEntries(response.headers.entries());
-    console.log("[API] Response headers:", responseHeaders);
-
-    // Check if Set-Cookie header is present (cookies are automatically handled in React Native)
-    const setCookie = response.headers.get("Set-Cookie");
-    if (setCookie) {
-      console.log("[API] Set-Cookie header received:", setCookie);
-    }
-
     if (!response.ok) {
       const errorText = await response.text();
-      console.error("[API] Error response:", errorText);
       let errorMessage = errorText;
       try {
         const errorJson = JSON.parse(errorText);
         errorMessage = errorJson.error || errorJson.message || errorText;
       } catch {
-        // Not JSON, use text as is
+        // JSON以外はそのまま使用
       }
-      throw new Error(errorMessage || `API call failed: ${response.statusText}`);
+      throw new Error(errorMessage || `API error: ${response.status}`);
     }
 
     const contentType = response.headers.get("content-type");
     if (contentType && contentType.includes("application/json")) {
-      const data = await response.json();
-      console.log("[API] JSON response received");
-      return data as T;
+      return (await response.json()) as T;
     }
 
     const text = await response.text();
-    console.log("[API] Text response received");
     return (text ? JSON.parse(text) : {}) as T;
   } catch (error) {
-    console.error("[API] Request failed:", error);
-    if (error instanceof Error) {
-      throw error;
-    }
-    throw new Error("Unknown error occurred");
+    if (error instanceof Error) throw error;
+    throw new Error("Unknown API error");
   }
 }
 
-// OAuth callback handler - exchange code for session token
-// Calls /api/oauth/mobile endpoint which returns JSON with app_session_id and user
-export async function exchangeOAuthCode(
-  code: string,
-  state: string,
-): Promise<{ sessionToken: string; user: any }> {
-  console.log("[API] exchangeOAuthCode called");
-  // Use GET with query params
-  const params = new URLSearchParams({ code, state });
-  const endpoint = `/api/oauth/mobile?${params.toString()}`;
-  console.log("[API] Calling OAuth mobile endpoint:", endpoint);
-  const result = await apiCall<{ app_session_id: string; user: any }>(endpoint);
-
-  // Convert app_session_id to sessionToken for compatibility
-  const sessionToken = result.app_session_id;
-  console.log("[API] OAuth exchange result:", {
-    hasSessionToken: !!sessionToken,
-    hasUser: !!result.user,
-    sessionToken: sessionToken ? `${sessionToken.substring(0, 50)}...` : null,
-  });
-
-  return {
-    sessionToken,
-    user: result.user,
-  };
-}
-
-// Logout
+// Logout - BFFパターン: サーバーが自動でトークンリボーク+削除
 export async function logout(): Promise<void> {
   await apiCall<void>("/api/auth/logout", {
     method: "POST",
@@ -132,12 +74,40 @@ export async function getMe(): Promise<{
   email: string | null;
   loginMethod: string | null;
   lastSignedIn: string;
+  prefecture?: string | null;
+  gender?: "male" | "female" | "unspecified" | null;
+  role?: "user" | "admin" | null;
 } | null> {
   try {
     const result = await apiCall<{ user: any }>("/api/auth/me");
     return result.user || null;
   } catch (error) {
     console.error("[API] getMe failed:", error);
+    return null;
+  }
+}
+
+// Get Twitter profile (profileImage, username, description, followersCount) for display in create form etc.
+export async function getTwitterProfile(): Promise<{
+  twitterId?: string;
+  name?: string;
+  username?: string;
+  profileImage?: string;
+  followersCount?: number;
+  description?: string;
+} | null> {
+  try {
+    const result = await apiCall<{
+      twitterId?: string;
+      name?: string;
+      username?: string;
+      profileImage?: string;
+      followersCount?: number;
+      description?: string;
+    }>("/api/twitter/me");
+    return result || null;
+  } catch (error) {
+    console.error("[API] getTwitterProfile failed:", error);
     return null;
   }
 }
@@ -168,9 +138,8 @@ export async function establishSession(token: string): Promise<boolean> {
 }
 
 
-// Check Twitter follow status (called after login)
+// Check Twitter follow status (BFFパターン: サーバーが保管トークンを使用)
 export async function checkFollowStatus(
-  accessToken: string,
   userId: string
 ): Promise<{
   isFollowing: boolean;
@@ -181,8 +150,7 @@ export async function checkFollowStatus(
   } | null;
 }> {
   try {
-    console.log("[API] checkFollowStatus: checking follow status...");
-    
+    // セッションCookie/Bearerトークンで認証、サーバーがTwitterトークンを使用
     const result = await apiGet<{
       isFollowing: boolean;
       targetAccount: {
@@ -190,24 +158,18 @@ export async function checkFollowStatus(
         name: string;
         username: string;
       } | null;
-    }>(`/api/twitter/follow-status?userId=${encodeURIComponent(userId)}`, {
-      headers: {
-        Authorization: `Bearer ${accessToken}`,
-      },
-    });
+    }>(`/api/twitter/follow-status?userId=${encodeURIComponent(userId)}`);
 
     if (!result.ok || !result.data) {
-      console.error("[API] checkFollowStatus failed:", result.status, result.error);
       return { isFollowing: false, targetAccount: null };
     }
 
-    console.log("[API] checkFollowStatus result:", result.data);
     return {
       isFollowing: result.data.isFollowing || false,
       targetAccount: result.data.targetAccount || null,
     };
   } catch (error) {
-    console.error("[API] checkFollowStatus error:", error);
+    console.error("[API] checkFollowStatus error:", error instanceof Error ? error.message : "unknown");
     return { isFollowing: false, targetAccount: null };
   }
 }

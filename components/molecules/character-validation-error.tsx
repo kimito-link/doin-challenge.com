@@ -1,27 +1,25 @@
-import { useState, useEffect, useCallback, useRef } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { color, palette } from "@/theme/tokens";
 import { View, Text, StyleSheet, Platform } from "react-native";
 import { Image } from "expo-image";
 import Animated, {
   useSharedValue,
   useAnimatedStyle,
-  withSequence,
   withTiming,
-  withRepeat,
   FadeIn,
   FadeOut,
 } from "react-native-reanimated";
 import * as Haptics from "expo-haptics";
 
-// キャラクター画像
+// キャラクター画像（りんく・こん太・たぬ姉のオリジナル画像を統一使用）
 const CHARACTER_IMAGES = {
   rinku: {
     normal: require("@/assets/images/characters/link/link-yukkuri-normal-mouth-closed.png"),
     sad: require("@/assets/images/characters/link/link-yukkuri-half-eyes-mouth-closed.png"),
     worried: require("@/assets/images/characters/link/link-yukkuri-half-eyes-mouth-open.png"),
   },
-  konta: require("@/assets/images/characters/konta.png"),
-  tanune: require("@/assets/images/characters/tanune.png"),
+  konta: require("@/assets/images/characters/konta/kitsune-yukkuri-smile-mouth-open.png"),
+  tanune: require("@/assets/images/characters/tanunee/tanuki-yukkuri-smile-mouth-open.png"),
 };
 
 // バリデーションエラーメッセージ
@@ -39,7 +37,7 @@ const VALIDATION_MESSAGES = {
   host: [
     { character: "rinku", text: "ログインしてね！", expression: "sad" },
     { character: "konta", text: "誰が主催するの？", expression: "normal" },
-    { character: "tanune", text: "Twitterでログインしよう！", expression: "normal" },
+    { character: "tanune", text: "Xでログインしよう！", expression: "normal" },
   ],
   general: [
     { character: "rinku", text: "まだ必要項目が入ってないよ！", expression: "worried" },
@@ -62,9 +60,8 @@ interface CharacterValidationErrorProps {
 }
 
 export function CharacterValidationError({ errors, visible }: CharacterValidationErrorProps) {
-  const [currentError, setCurrentError] = useState<ValidationError | null>(null);
   const [currentMessage, setCurrentMessage] = useState<{ character: CharacterType; text: string; expression: string } | null>(null);
-  const messageIndex = useRef(0);
+  const [imageError, setImageError] = useState(false);
   
   const bounceY = useSharedValue(0);
   const shake = useSharedValue(0);
@@ -78,8 +75,6 @@ export function CharacterValidationError({ errors, visible }: CharacterValidatio
   useEffect(() => {
     if (visible && errors.length > 0) {
       const error = errors[0];
-      setCurrentError(error);
-      
       const messages = VALIDATION_MESSAGES[error.field] || VALIDATION_MESSAGES.general;
       const randomIndex = Math.floor(Math.random() * messages.length);
       setCurrentMessage(messages[randomIndex] as { character: CharacterType; text: string; expression: string });
@@ -90,7 +85,6 @@ export function CharacterValidationError({ errors, visible }: CharacterValidatio
       
       triggerHaptic();
     } else {
-      setCurrentError(null);
       setCurrentMessage(null);
     }
   }, [visible, errors, bounceY, shake, triggerHaptic]);
@@ -122,11 +116,21 @@ export function CharacterValidationError({ errors, visible }: CharacterValidatio
     >
       <View style={styles.content}>
         <Animated.View style={[styles.characterContainer, animatedStyle]}>
-          <Image
-            source={getCharacterImage()}
-            style={styles.character}
-            contentFit="contain"
-          />
+          {!imageError ? (
+            <Image
+              source={getCharacterImage()}
+              style={styles.character}
+              contentFit="contain"
+              onError={() => setImageError(true)}
+              cachePolicy="memory-disk"
+            />
+          ) : (
+            <View style={[styles.character, { borderRadius: 30, backgroundColor: color.accentPrimary, alignItems: "center", justifyContent: "center" }]}>
+              <Text style={{ color: "white", fontSize: 24, fontWeight: "bold" }}>
+                {currentMessage.character === "rinku" ? "り" : currentMessage.character === "konta" ? "こ" : "た"}
+              </Text>
+            </View>
+          )}
         </Animated.View>
         
         <View style={styles.bubbleContainer}>
@@ -160,6 +164,7 @@ export function CharacterGroupValidationError({ errors, visible }: CharacterGrou
   const bounceY = useSharedValue(0);
   const [selectedCharacter, setSelectedCharacter] = useState<CharacterType>("rinku");
   const [message, setMessage] = useState("まだ必要項目が入ってないよ！");
+  const [imageErrors, setImageErrors] = useState<Record<string, boolean>>({});
 
   const triggerHaptic = useCallback(() => {
     if (Platform.OS !== "web") {
@@ -204,11 +209,19 @@ export function CharacterGroupValidationError({ errors, visible }: CharacterGrou
       {/* 3キャラクター表示 */}
       <View style={styles.charactersRow}>
         <View style={[styles.sideCharacter, selectedCharacter !== "konta" && styles.dimmed]}>
-          <Image
-            source={CHARACTER_IMAGES.konta}
-            style={styles.smallCharacter}
-            contentFit="contain"
-          />
+          {!imageErrors.konta ? (
+            <Image
+              source={CHARACTER_IMAGES.konta}
+              style={styles.smallCharacter}
+              contentFit="contain"
+              onError={() => setImageErrors(prev => ({ ...prev, konta: true }))}
+              cachePolicy="memory-disk"
+            />
+          ) : (
+            <View style={[styles.smallCharacter, { borderRadius: 20, backgroundColor: color.accentPrimary, alignItems: "center", justifyContent: "center" }]}>
+              <Text style={{ color: "white", fontSize: 16, fontWeight: "bold" }}>こ</Text>
+            </View>
+          )}
         </View>
         
         <Animated.View style={[styles.mainCharacter, animatedStyle]}>
@@ -217,21 +230,39 @@ export function CharacterGroupValidationError({ errors, visible }: CharacterGrou
             <Text style={styles.groupBubbleText}>{message}</Text>
             <View style={styles.groupBubbleArrow} />
           </View>
-          <Image
-            source={selectedCharacter === "rinku" 
-              ? CHARACTER_IMAGES.rinku.worried 
-              : CHARACTER_IMAGES[selectedCharacter]}
-            style={styles.centerCharacter}
-            contentFit="contain"
-          />
+          {!imageErrors[selectedCharacter] ? (
+            <Image
+              source={selectedCharacter === "rinku" 
+                ? CHARACTER_IMAGES.rinku.worried 
+                : CHARACTER_IMAGES[selectedCharacter]}
+              style={styles.centerCharacter}
+              contentFit="contain"
+              onError={() => setImageErrors(prev => ({ ...prev, [selectedCharacter]: true }))}
+              cachePolicy="memory-disk"
+            />
+          ) : (
+            <View style={[styles.centerCharacter, { borderRadius: 35, backgroundColor: color.accentPrimary, alignItems: "center", justifyContent: "center" }]}>
+              <Text style={{ color: "white", fontSize: 28, fontWeight: "bold" }}>
+                {selectedCharacter === "rinku" ? "り" : selectedCharacter === "konta" ? "こ" : "た"}
+              </Text>
+            </View>
+          )}
         </Animated.View>
         
         <View style={[styles.sideCharacter, selectedCharacter !== "tanune" && styles.dimmed]}>
-          <Image
-            source={CHARACTER_IMAGES.tanune}
-            style={styles.smallCharacter}
-            contentFit="contain"
-          />
+          {!imageErrors.tanune ? (
+            <Image
+              source={CHARACTER_IMAGES.tanune}
+              style={styles.smallCharacter}
+              contentFit="contain"
+              onError={() => setImageErrors(prev => ({ ...prev, tanune: true }))}
+              cachePolicy="memory-disk"
+            />
+          ) : (
+            <View style={[styles.smallCharacter, { borderRadius: 20, backgroundColor: color.accentPrimary, alignItems: "center", justifyContent: "center" }]}>
+              <Text style={{ color: "white", fontSize: 16, fontWeight: "bold" }}>た</Text>
+            </View>
+          )}
         </View>
       </View>
       
@@ -256,12 +287,12 @@ export function CharacterGroupValidationError({ errors, visible }: CharacterGrou
 
 const styles = StyleSheet.create({
   container: {
-    backgroundColor: "rgba(236, 72, 153, 0.15)",
+    backgroundColor: palette.pink500 + "26", // 15% opacity
     borderRadius: 16,
     padding: 16,
     marginBottom: 16,
     borderWidth: 1,
-    borderColor: "rgba(236, 72, 153, 0.3)",
+    borderColor: palette.pink500 + "4D", // 30% opacity
   },
   content: {
     flexDirection: "row",
@@ -317,12 +348,12 @@ const styles = StyleSheet.create({
   
   // グループバージョンのスタイル
   groupContainer: {
-    backgroundColor: "rgba(236, 72, 153, 0.1)",
+    backgroundColor: palette.pink500 + "1A",
     borderRadius: 16,
     padding: 16,
     marginBottom: 16,
     borderWidth: 1,
-    borderColor: "rgba(236, 72, 153, 0.25)",
+    borderColor: palette.pink500 + "40", // 25% opacity
   },
   charactersRow: {
     flexDirection: "row",
@@ -377,7 +408,7 @@ const styles = StyleSheet.create({
     borderTopColor: color.accentPrimary,
   },
   errorList: {
-    backgroundColor: "rgba(0, 0, 0, 0.2)",
+    backgroundColor: palette.black + "33", // 20% opacity
     borderRadius: 8,
     padding: 12,
   },

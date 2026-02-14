@@ -6,13 +6,19 @@
  */
 
 import { Stack, usePathname } from "expo-router";
+import { commonCopy } from "@/constants/copy/common";
 import { navigate, navigateReplace } from "@/lib/navigation";
 import { useColors } from "@/hooks/use-colors";
 import { useAuth } from "@/hooks/use-auth";
+import { palette } from "@/theme/tokens";
 import { View, Text, Pressable, ScrollView, ActivityIndicator, Platform } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Ionicons } from "@expo/vector-icons";
+import { getAdminSession, setAdminSession } from "@/lib/admin-session";
+import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
+import { apiCall } from "@/lib/_core/api";
 
 interface MenuItem {
   id: string;
@@ -30,20 +36,100 @@ const menuItems: MenuItem[] = [
   { id: "challenges", label: "チャレンジ管理", icon: "trophy-outline", path: "/admin/challenges" },
   { id: "users", label: "ユーザー管理", icon: "people-outline", path: "/admin/users" },
   { id: "api-usage", label: "API使用量", icon: "analytics-outline", path: "/admin/api-usage" },
-  { id: "components", label: "コンポーネント", icon: "cube-outline", path: "/admin/components" },
+  { id: "release-notes", label: "リリースノート", icon: "document-text-outline", path: "/admin/release-notes" },
+  { id: "components", label: "コンポーネント", icon: "cube-outline", path: "/admin/component-gallery" },
   { id: "participations", label: "参加管理", icon: "chatbubbles-outline", path: "/admin/participations" },
 ];
 
+// 管理パスワードは環境変数からのみ取得（ハードコード禁止: BUG-003修正）
+
 export default function AdminLayout() {
   const colors = useColors();
-  
   const pathname = usePathname();
   const insets = useSafeAreaInsets();
-  const { user, loading } = useAuth();
+  const { user } = useAuth();
   const [sidebarOpen, setSidebarOpen] = useState(Platform.OS === "web");
+  const [password, setPassword] = useState("");
+  const [isCheckingSession, setIsCheckingSession] = useState(true);
+  const [hasAdminSession, setHasAdminSession] = useState(false);
+  const [passwordError, setPasswordError] = useState("");
 
-  // ローディング中
-  if (loading) {
+  // 管理者セッションをチェック（Web/Nativeで確実に判定）
+  useEffect(() => {
+    let isMounted = true;
+    
+    const checkAdminSession = async () => {
+      let session = false;
+      try {
+        // Web環境ではlocalStorageを同期的にチェック
+        if (Platform.OS === "web" && typeof window !== "undefined" && window.localStorage) {
+          try {
+            const sessionData = window.localStorage.getItem("admin_session");
+            if (sessionData) {
+              const parsedSession = JSON.parse(sessionData);
+              // 有効期限チェック
+              if (parsedSession.expiry && Date.now() > parsedSession.expiry) {
+                window.localStorage.removeItem("admin_session");
+              } else {
+                session = parsedSession.authenticated === true;
+              }
+            }
+          } catch {
+            session = false;
+          }
+        } else if (Platform.OS !== "web") {
+          // Native環境
+          session = await getAdminSession();
+        }
+      } catch {
+        session = false;
+      } finally {
+        if (isMounted) {
+          setHasAdminSession(session);
+          setIsCheckingSession(false);
+        }
+      }
+    };
+    
+    // 即座にセッションチェックを開始
+    checkAdminSession();
+    
+    return () => {
+      isMounted = false;
+    };
+  }, []);
+
+  // パスワード認証
+  const handlePasswordSubmit = async () => {
+    try {
+      // サーバー側でパスワードを検証
+      const result = await apiCall<{ success: boolean; error?: string }>(
+        "/api/admin/verify-password",
+        {
+          method: "POST",
+          body: JSON.stringify({ password }),
+        }
+      );
+
+      if (result.success) {
+        // クライアント側のセッションも保存
+        await setAdminSession();
+        setHasAdminSession(true);
+        setPasswordError("");
+        setPassword("");
+      } else {
+        setPasswordError(result.error || commonCopy.empty.passwordIncorrect);
+      }
+    } catch (error) {
+      console.error("[Admin] Password verification error:", error);
+      const errorMessage = error instanceof Error ? error.message : "認証に失敗しました";
+      setPasswordError(errorMessage);
+    }
+  };
+
+  // ローディング中（タイムアウト付き）
+  // useAuthのloadingが長く続く場合でも、セッションチェックが完了したらパスワード画面を表示
+  if (isCheckingSession) {
     return (
       <View className="flex-1 items-center justify-center bg-background">
         <ActivityIndicator size="large" color={colors.primary} />
@@ -52,28 +138,53 @@ export default function AdminLayout() {
     );
   }
 
-  // 未ログインまたは管理者以外
-  if (!user || user.role !== "admin") {
+  // 管理者権限チェック（role: admin または パスワード認証済み）
+  const isAdmin = user?.role === "admin" || hasAdminSession;
+  
+  // パスワード認証画面（管理者権限がない場合）
+  if (!isAdmin) {
     return (
       <View className="flex-1 items-center justify-center bg-background p-6">
         <Ionicons name="lock-closed" size={64} color={colors.muted} />
-        <Text className="text-xl font-bold text-foreground mt-4">アクセス権限がありません</Text>
-        <Text className="text-muted text-center mt-2">
-          この画面は管理者のみアクセスできます
+        <Text className="text-xl font-bold text-foreground mt-4">管理者認証</Text>
+        <Text className="text-muted text-center mt-2 mb-6">
+          管理画面にアクセスするにはパスワードが必要です
         </Text>
-        <Pressable
-          onPress={() => navigateReplace.toHomeRoot()}
-          style={({ pressed }) => ({
-            backgroundColor: colors.primary,
-            paddingHorizontal: 24,
-            paddingVertical: 12,
-            borderRadius: 8,
-            marginTop: 24,
-            opacity: pressed ? 0.8 : 1,
-          })}
-        >
-          <Text className="text-white font-semibold">ホームに戻る</Text>
-        </Pressable>
+        
+        <View style={{ width: "100%", maxWidth: 400, gap: 16 }}>
+          <Input
+            value={password}
+            onChangeText={(text) => {
+              setPassword(text);
+              setPasswordError("");
+            }}
+            placeholder="パスワードを入力"
+            secureTextEntry
+            error={passwordError}
+            onSubmitEditing={handlePasswordSubmit}
+          />
+          
+          <Button
+            onPress={handlePasswordSubmit}
+            variant="primary"
+            fullWidth
+            disabled={!password.trim()}
+          >
+            認証
+          </Button>
+          
+          {user && (
+            <Pressable
+              onPress={() => navigateReplace.toHomeRoot()}
+              style={({ pressed }) => ({
+                paddingVertical: 12,
+                opacity: pressed ? 0.8 : 1,
+              })}
+            >
+              <Text className="text-muted text-center">ホームに戻る</Text>
+            </Pressable>
+          )}
+        </View>
       </View>
     );
   }
@@ -226,7 +337,7 @@ export default function AdminLayout() {
             left: 260,
             right: 0,
             bottom: 0,
-            backgroundColor: "rgba(0,0,0,0.5)",
+            backgroundColor: palette.gray900 + "80", // rgba(0,0,0,0.5) の透明度16進数
           }}
         />
       )}

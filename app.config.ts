@@ -13,7 +13,7 @@ const schemeFromBundleId = `manus${timestamp}`;
 // アプリバージョン（デプロイ確認用）
 // 本番デプロイ時にこの値を更新し、/api/healthと照合することで
 // 正しいバージョンがデプロイされているか確認できる
-const APP_VERSION = "6.53";
+const APP_VERSION = "6.182";
 
 const env = {
   // App branding - update these values directly (do not use env vars)
@@ -32,7 +32,7 @@ const env = {
 const config: ExpoConfig = {
   name: env.appName,
   slug: env.appSlug,
-  version: "6.53",
+  version: env.appVersion,
   orientation: "portrait",
   icon: "./assets/images/icon.png",
   scheme: env.scheme,

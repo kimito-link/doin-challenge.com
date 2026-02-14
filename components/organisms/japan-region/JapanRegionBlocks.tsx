@@ -1,19 +1,14 @@
-import { View, Text, Pressable, Modal, ScrollView, useWindowDimensions , Platform} from "react-native";
-import * as Haptics from "expo-haptics";
+import { View, Text, Pressable, ScrollView, useWindowDimensions } from "react-native";
 import { color } from "@/theme/tokens";
 import { useMemo, useState, useEffect } from "react";
-import Animated, { 
-  FadeIn, 
-  SlideInDown, 
-  SlideOutDown,
+import Animated, {
+  FadeIn,
   useSharedValue,
   useAnimatedStyle,
-  withRepeat,
-  withSequence,
   withTiming,
-  Easing,
   LinearTransition,
 } from "react-native-reanimated";
+import { Modal } from "@/components/ui/modal";
 
 // 分割したモジュールからインポート
 import { regions, Region, findRegionByPrefecture } from "./region-data";
@@ -44,15 +39,13 @@ export function JapanRegionBlocks({ prefectureCounts, onPrefecturePress, onRegio
   // ユーザーの地域がある場合、パルスアニメーションを開始
   useEffect(() => {
     if (userRegionId) {
-      pulseScale.value = withRepeat(
-        withSequence(
-          withTiming(1.03, { duration: 800, easing: Easing.inOut(Easing.ease) }),
-          withTiming(1, { duration: 800, easing: Easing.inOut(Easing.ease) })
-        ),
-        -1, // 無限リピート
-        true
-      );
+      pulseScale.value = withTiming(1.03, { duration: 800 });
+      const interval = setInterval(() => {
+        pulseScale.value = withTiming(pulseScale.value === 1 ? 1.03 : 1, { duration: 800 });
+      }, 800);
+      return () => clearInterval(interval);
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [userRegionId]);
   
   // パルスアニメーションスタイル
@@ -331,32 +324,21 @@ export function JapanRegionBlocks({ prefectureCounts, onPrefecturePress, onRegio
       {/* 地域タップで都道府県詳細モーダル */}
       <Modal
         visible={selectedRegion !== null}
-        transparent
-        animationType="fade"
-        onRequestClose={closeModal}
+        onClose={closeModal}
+        type="bottom"
+        title={selectedRegion?.name ?? ""}
+        showCloseButton
+        maxHeight="85%"
       >
-        <Pressable style={styles.modalOverlay} onPress={closeModal}>
-          <Animated.View 
-            entering={SlideInDown.duration(300)}
-            exiting={SlideOutDown.duration(200)}
-            style={styles.modalContent}
-          >
-            <Pressable onPress={(e) => e.stopPropagation()}>
-              {selectedRegion && (
-                <>
-                  <View style={styles.modalHeader}>
-                    <Text style={styles.modalEmoji}>{selectedRegion.emoji}</Text>
-                    <Text style={styles.modalTitle}>{selectedRegion.name}</Text>
-                    <Pressable onPress={closeModal} style={styles.closeButton}>
-                      <Text style={styles.closeButtonText}>✕</Text>
-                    </Pressable>
-                  </View>
-                  
-                  <Text style={styles.modalSubtitle}>
-                    合計 {regionTotals[selectedRegion.id]}人
-                  </Text>
-
-                  <ScrollView style={styles.prefectureList}>
+        {selectedRegion && (
+          <>
+            <View style={styles.modalHeader}>
+              <Text style={styles.modalEmoji}>{selectedRegion.emoji}</Text>
+            </View>
+            <Text style={styles.modalSubtitle}>
+              合計 {regionTotals[selectedRegion.id]}人
+            </Text>
+            <ScrollView style={styles.prefectureList}>
                     {/* 都道府県別ランキング（参加者数順） */}
                     {(() => {
                       // 参加者数でソート
@@ -440,24 +422,20 @@ export function JapanRegionBlocks({ prefectureCounts, onPrefecturePress, onRegio
                         );
                       });
                     })()}
-                  </ScrollView>
-
-                  <Pressable
-                    style={[styles.viewAllButton, { backgroundColor: selectedRegion.color }]}
-                    onPress={() => {
-                      closeModal();
-                      onRegionPress?.(selectedRegion.name, selectedRegion.prefectures.map(p => p.name));
-                    }}
-                  >
-                    <Text style={styles.viewAllButtonText}>
-                      {selectedRegion.name}の参加者を見る
-                    </Text>
-                  </Pressable>
-                </>
-              )}
+            </ScrollView>
+            <Pressable
+              style={[styles.viewAllButton, { backgroundColor: selectedRegion.color }]}
+              onPress={() => {
+                closeModal();
+                onRegionPress?.(selectedRegion.name, selectedRegion.prefectures.map(p => p.name));
+              }}
+            >
+              <Text style={styles.viewAllButtonText}>
+                {selectedRegion.name}の参加者を見る
+              </Text>
             </Pressable>
-          </Animated.View>
-        </Pressable>
+          </>
+        )}
       </Modal>
     </View>
   );

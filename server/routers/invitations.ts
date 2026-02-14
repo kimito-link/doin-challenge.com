@@ -3,7 +3,9 @@
  * 
  * 招待関連のルーター
  */
+import crypto from "crypto";
 import { z } from "zod";
+import { TRPCError } from "@trpc/server";
 import { publicProcedure, protectedProcedure, router } from "../_core/trpc";
 import * as db from "../db";
 
@@ -18,7 +20,7 @@ export const invitationsRouter = router({
       customTitle: z.string().max(100).optional(),
     }))
     .mutation(async ({ ctx, input }) => {
-      const code = Math.random().toString(36).substring(2, 10).toUpperCase();
+      const code = crypto.randomBytes(6).toString('hex').toUpperCase();
       const result = await db.createInvitation({
         challengeId: input.challengeId,
         inviterId: ctx.user.id,
@@ -78,7 +80,12 @@ export const invitationsRouter = router({
   // 招待を無効化
   deactivate: protectedProcedure
     .input(z.object({ id: z.number() }))
-    .mutation(async ({ input }) => {
+    .mutation(async ({ ctx, input }) => {
+      const invitation = await db.getInvitationById(input.id);
+      if (!invitation) throw new TRPCError({ code: "NOT_FOUND", message: "Invitation not found" });
+      if (invitation.inviterId !== ctx.user.id) {
+        throw new TRPCError({ code: "FORBIDDEN", message: "You can only deactivate your own invitations" });
+      }
       await db.deactivateInvitation(input.id);
       return { success: true };
     }),

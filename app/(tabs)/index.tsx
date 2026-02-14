@@ -4,9 +4,9 @@
  * v6.27: タブナビゲーション追加、UI改善
  */
 
-import { View, Text, FlatList, Platform } from "react-native";
+import { View, FlatList, Platform } from "react-native";
 import { color } from "@/theme/tokens";
-import { useState } from "react";
+import { useState, useCallback } from "react";
 import { ScreenContainer } from "@/components/organisms/screen-container";
 
 import { useResponsive, useGridLayout } from "@/hooks/use-responsive";
@@ -81,40 +81,49 @@ export default function HomeScreen() {
     setIsSearching(false);
   };
 
-  // レンダーアイテム
-  const renderItem = ({ item, index }: { item: Challenge; index: number }) => {
-    if (isSearching) {
-      // 検索時は従来のカード表示
-      const cardProps = {
-        challenge: item,
-        onPress: () => homeActions.handleChallengePress(item.id),
-        numColumns,
-        width: grid.itemWidth,
-        colorIndex: index,
-        isFavorite: homeData.isFavorite(item.id),
-        onToggleFavorite: homeData.toggleFavorite,
-        currentUserTwitterId: user?.twitterId,
-        onEdit: homeActions.handleChallengeEdit,
-        onDelete: homeActions.handleChallengeDelete,
-      };
-      return useColorfulCards ? (
-        <ColorfulChallengeCard {...cardProps} />
-      ) : (
-        <ChallengeCard {...cardProps} />
+  // レンダーアイテム（メモ化でスクロール時の再レンダーを削減）
+  const renderItem = useCallback(
+    ({ item, index }: { item: Challenge; index: number }) => {
+      if (isSearching) {
+        const cardProps = {
+          challenge: item,
+          onPress: () => homeActions.handleChallengePress(item.id),
+          numColumns,
+          width: grid.itemWidth,
+          colorIndex: index,
+          isFavorite: homeData.isFavorite(item.id),
+          onToggleFavorite: homeData.toggleFavorite,
+          currentUserTwitterId: user?.twitterId,
+          onEdit: homeActions.handleChallengeEdit,
+          onDelete: homeActions.handleChallengeDelete,
+        };
+        return useColorfulCards ? (
+          <ColorfulChallengeCard {...cardProps} />
+        ) : (
+          <ChallengeCard {...cardProps} />
+        );
+      }
+      return (
+        <View style={{ marginHorizontal: 16, marginTop: 10 }}>
+          <RankingRow
+            rank={index + 4}
+            challenge={item}
+            onPress={() => homeActions.handleChallengePress(item.id)}
+            onQuickJoin={() => homeActions.handleChallengePress(item.id)}
+          />
+        </View>
       );
-    }
-    // ランキング行表示（4位以降）
-    return (
-      <View style={{ marginHorizontal: 16, marginTop: 10 }}>
-        <RankingRow
-          rank={index + 4}
-          challenge={item}
-          onPress={() => homeActions.handleChallengePress(item.id)}
-          onQuickJoin={() => homeActions.handleChallengePress(item.id)}
-        />
-      </View>
-    );
-  };
+    },
+    [
+      isSearching,
+      useColorfulCards,
+      numColumns,
+      grid.itemWidth,
+      user?.twitterId,
+      homeActions,
+      homeData,
+    ]
+  );
 
   return (
     <ScreenContainer containerClassName="bg-background">

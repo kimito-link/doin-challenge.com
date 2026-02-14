@@ -4,6 +4,7 @@
 import { Text, Pressable } from "react-native";
 import { LinearGradient } from "expo-linear-gradient";
 import { color } from "@/theme/tokens";
+import { createFont } from "../../theme/tokens";
 import { useColors } from "@/hooks/use-colors";
 import type { CreateButtonSectionProps } from "./types";
 
@@ -39,7 +40,7 @@ export function CreateButtonSection({ onPress, isPending }: CreateButtonSectionP
           bottom: 0,
         }}
       />
-      <Text style={{ color: colors.foreground, fontSize: 16, fontWeight: "bold" }}>
+      <Text style={{ color: colors.foreground, fontSize: createFont.title, fontWeight: "bold" }}>
         {isPending ? "作成中..." : "チャレンジを作成"}
       </Text>
     </Pressable>

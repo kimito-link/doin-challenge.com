@@ -3,11 +3,12 @@
  * マイページで主催しているチャレンジ一覧を表示する
  */
 
-import { View, Text, Pressable , Platform} from "react-native";
-import * as Haptics from "expo-haptics";
+import { View, Text, Pressable } from "react-native";
 import { useColors } from "@/hooks/use-colors";
+import { SectionHeader, EmptyState } from "@/components/ui";
 import { mypageUI, mypageText } from "../../ui/theme/tokens";
 import MaterialIcons from "@expo/vector-icons/MaterialIcons";
+import { typography } from "@/theme/tokens";
 
 interface Challenge {
   id: number;
@@ -26,10 +27,7 @@ export function HostedChallengeSection({ challenges, onChallengePress }: HostedC
 
   return (
     <View style={{ paddingHorizontal: 16, marginBottom: 100 }}>
-      <Text style={{ color: colors.foreground, fontSize: 18, fontWeight: "bold", marginBottom: 12 }}>
-        主催チャレンジ
-      </Text>
-      
+      <SectionHeader title="主催チャレンジ" />
       {challenges && challenges.length > 0 ? (
         <View style={{ gap: 12 }}>
           {challenges.map((challenge) => (
@@ -48,13 +46,13 @@ export function HostedChallengeSection({ challenges, onChallengePress }: HostedC
                 <View style={{ flex: 1 }}>
                   <View style={{ flexDirection: "row", alignItems: "center", marginBottom: 4 }}>
                     <View style={{ backgroundColor: mypageUI.hostBadgeBg, borderRadius: 4, paddingHorizontal: 6, paddingVertical: 2, marginRight: 8 }}>
-                      <Text style={{ color: colors.foreground, fontSize: 10, fontWeight: "bold" }}>主催</Text>
+                      <Text style={{ color: colors.foreground, fontSize: typography.fontSize.xs, fontWeight: "bold" }}>主催</Text>
                     </View>
-                    <Text style={{ color: colors.foreground, fontSize: 16, fontWeight: "bold" }}>
+                    <Text style={{ color: colors.foreground, fontSize: typography.fontSize.base, fontWeight: "bold" }}>
                       {challenge.title}
                     </Text>
                   </View>
-                  <Text style={{ color: mypageText.muted, fontSize: 12 }}>
+                  <Text style={{ color: mypageText.muted, fontSize: typography.fontSize.xs }}>
                     {challenge.currentCount || 0} / {challenge.goalCount || 0} 人
                   </Text>
                 </View>
@@ -64,21 +62,11 @@ export function HostedChallengeSection({ challenges, onChallengePress }: HostedC
           ))}
         </View>
       ) : (
-        <View
-          style={{
-            backgroundColor: mypageUI.cardBg,
-            borderRadius: 12,
-            padding: 24,
-            alignItems: "center",
-            borderWidth: 1,
-            borderColor: mypageUI.cardBorder,
-          }}
-        >
-          <Text style={{ fontSize: 32, marginBottom: 8 }}>🎯</Text>
-          <Text style={{ color: mypageText.muted, fontSize: 14 }}>
-            まだチャレンジを主催していません
-          </Text>
-        </View>
+        <EmptyState
+          icon="flag"
+          title="まだチャレンジを主催していません"
+          style={{ minHeight: 160, paddingVertical: 24 }}
+        />
       )}
     </View>
   );

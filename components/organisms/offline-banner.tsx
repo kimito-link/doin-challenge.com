@@ -8,7 +8,6 @@ import { addNetworkListener, initNetworkMonitoring } from "@/lib/offline-cache";
  * オフライン状態を表示するバナー
  */
 export function OfflineBanner() {
-  const [isOffline, setIsOffline] = useState(false);
   const [showBanner, setShowBanner] = useState(false);
   const slideAnim = useRef(new Animated.Value(-50)).current;
 
@@ -18,8 +17,6 @@ export function OfflineBanner() {
 
     // ネットワーク状態変更リスナーを追加
     const unsubscribe = addNetworkListener((isConnected) => {
-      setIsOffline(!isConnected);
-      
       if (!isConnected) {
         // オフラインになったらバナーを表示
         setShowBanner(true);
@@ -134,13 +131,13 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     alignItems: "center",
     gap: 4,
-    backgroundColor: "rgba(245, 158, 11, 0.1)",
+    backgroundColor: palette.gold + "1A", // 10% opacity
     paddingHorizontal: 8,
     paddingVertical: 4,
     borderRadius: 4,
   },
   cachedText: {
     color: color.warning,
-    fontSize: 10,
+    fontSize: 12,
   },
 });

@@ -1,31 +1,38 @@
 ## 変更概要
-- 何を直したか（1〜3行で）
+（1変更 = 1目的 で簡潔に）
 
-## 変更種別（該当するものにチェック）
-- [ ] UI/表示
-- [ ] API/サーバー
-- [ ] DB/スキーマ or マイグレーション
-- [ ] OAuth/ログイン/セッション
-- [ ] デプロイ/ルーティング（Vercel/Railway/vercel.json）
-- [ ] 設定/環境変数
+## Gate 1（壊れない運用）チェック
 
----
+- [ ] このPRは「1変更=1commit / 1目的=1PR」になっている
+- [ ] Diff-check: CIで pass（Gate1 Diff Check）
+- [ ] 危険ファイルに触れていない（oauth / vercel.json / deploy workflow など）
+- [ ] もし触れた場合：理由・影響範囲・ロールバック手順を本文に明記した
+- [ ] 本番照合: `/api/health` の commitSha がこのPRのmerge後SHAになる（deploy-verifyが pass）
 
-## Gate 1（壊れない運用）
-- [ ] Gate 1: Deploy/Health確認
-- [ ] OAuth/ログイン動作確認
-- [ ] ロールバック手順確認
+### 確認結果（貼る）
+- `/api/health` レスポンス（commitShaが見える状態）:
 
-### Deploy/Health確認のメモ（貼ってOK）
-- `/api/health` のレスポンス（commitSha / version）
-- 期待値と一致しているか
 
----
+## 影響範囲
+- [ ] 認証 / OAuth
+- [ ] API
+- [ ] DB
+- [ ] UI表示のみ
+- [ ] 文言のみ
 
-## テスト
-- [ ] `pnpm test` OK
-- [ ] `pnpm lint` OK
-- [ ] `pnpm check` OK
+## 手動1分チェック（必須）
+- [ ] ログインできる
+- [ ] ホーム表示OK
+- [ ] 詳細表示OK
+- [ ] 参加表明OK
+- [ ] メッセージ投稿OK
+- [ ] /api/health の version が更新されている
 
-## リスク
-- 影響範囲 / 戻し方 / Feature Flag（あれば）
+## diff-check
+- [ ] 危険ファイルを触っていない
+- [ ] 禁止ワードを使っていない
+
+## レスポンシブ
+- [ ] モバイル
+- [ ] タブレット
+- [ ] デスクトップ

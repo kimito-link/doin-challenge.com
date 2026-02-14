@@ -10,7 +10,7 @@
  */
 
 import { useEffect, useState } from "react";
-import { View, Text, ActivityIndicator } from "react-native";
+import { Text, ActivityIndicator } from "react-native";
 import { useLocalSearchParams, usePathname } from "expo-router";
 import { navigateReplace } from "@/lib/navigation/app-routes";
 import { trpc } from "@/lib/trpc";

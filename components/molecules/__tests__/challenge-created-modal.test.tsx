@@ -8,6 +8,7 @@
  */
 
 import { describe, it, expect, vi, beforeEach } from "vitest";
+import { palette } from "@/theme/tokens";
 
 // モックの設定
 vi.mock("expo-clipboard", () => ({
@@ -23,13 +24,13 @@ vi.mock("expo-haptics", () => ({
 
 vi.mock("@/hooks/use-colors", () => ({
   useColors: () => ({
-    background: "#ffffff",
-    foreground: "#000000",
-    muted: "#666666",
-    primary: "#0a7ea4",
-    success: "#22C55E",
-    border: "#E5E7EB",
-    surface: "#f5f5f5",
+    background: palette.gray900,
+    foreground: palette.white,
+    muted: palette.gray400,
+    primary: palette.primary500,
+    success: palette.teal500,
+    border: palette.gray700,
+    surface: palette.gray800,
   }),
 }));
 

@@ -8,10 +8,7 @@ import * as Haptics from "expo-haptics";
 import Animated, { 
   useAnimatedStyle, 
   useSharedValue, 
-  withRepeat, 
   withTiming,
-  withSequence,
-  Easing,
   FadeIn,
   FadeOut,
 } from "react-native-reanimated";
@@ -53,6 +50,7 @@ export function LoginPromptModal({ visible, onLogin, onSkip }: LoginPromptModalP
       bounce.value = withTiming(0, { duration: 300 });
       sparkle.value = withTiming(1, { duration: 300 });
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [visible]);
   
   const characterAnimatedStyle = useAnimatedStyle(() => ({
@@ -210,7 +208,7 @@ export function LoginPromptModal({ visible, onLogin, onSkip }: LoginPromptModalP
 const styles = StyleSheet.create({
   overlay: {
     flex: 1,
-    backgroundColor: "rgba(0, 0, 0, 0.8)",
+    backgroundColor: palette.black + "CC", // 80% opacity
     justifyContent: "center",
     alignItems: "center",
     padding: 24,
@@ -281,8 +279,8 @@ const styles = StyleSheet.create({
     alignItems: "center",
     borderRadius: 12,
     borderWidth: 1,
-    borderColor: "rgba(255, 255, 255, 0.2)",
-    backgroundColor: "rgba(255, 255, 255, 0.05)",
+    borderColor: palette.white + "33", // 20% opacity
+    backgroundColor: palette.white + "0D", // 5% opacity
   },
   loginButtonText: {
     fontSize: 15,

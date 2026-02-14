@@ -68,10 +68,12 @@ export const PREFECTURE_LABEL_POSITIONS: Record<number, LabelPosition> = {
   47: { x: 100, y: 900 },  // 沖縄
 };
 
-/** SVGのviewBoxサイズ */
+/** SVGのviewBoxサイズ（日本列島の縦横比） */
 export const MAP_CONFIG = {
   viewBoxWidth: 800,
   viewBoxHeight: 960,
+  /** 日本列島のアスペクト比（高さ/幅）。画面サイズに合わせて地図の高さを算出する際に使用 */
+  aspectRatio: 960 / 800,
   scale: 0.85,
   offsetX: -20,
   offsetY: 0,

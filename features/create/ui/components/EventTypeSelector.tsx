@@ -6,7 +6,7 @@
 
 import { View, Text } from "react-native";
 import { useColors } from "@/hooks/use-colors";
-import { createUI } from "../theme/tokens";
+import { createUI, createFont } from "../theme/tokens";
 import { eventTypeOptions } from "@/constants/goal-types";
 import { Button } from "@/components/ui/button";
 
@@ -20,7 +20,7 @@ export function EventTypeSelector({ value, onChange }: EventTypeSelectorProps) {
 
   return (
     <View style={{ marginBottom: 16 }}>
-      <Text style={{ color: colors.muted, fontSize: 14, marginBottom: 8 }}>
+      <Text style={{ color: colors.muted, fontSize: createFont.body, marginBottom: 8 }}>
         イベントタイプ
       </Text>
       <View style={{ flexDirection: "row", gap: 12 }}>
@@ -42,7 +42,7 @@ export function EventTypeSelector({ value, onChange }: EventTypeSelectorProps) {
             <Text
               style={{
                 color: value === type.id ? "#fff" : colors.muted,
-                fontSize: 14,
+                fontSize: createFont.body,
                 fontWeight: "600",
               }}
             >

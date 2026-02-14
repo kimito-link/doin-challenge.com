@@ -1,4 +1,4 @@
-import { View, Text, ScrollView, Pressable, StyleSheet, Platform, Share } from "react-native";
+import { View, Text, ScrollView, Pressable, Platform, Share } from "react-native";
 import * as Haptics from "expo-haptics";
 import { color } from "@/theme/tokens";
 import { Image } from "expo-image";
@@ -6,7 +6,6 @@ import { useLocalSearchParams } from "expo-router";
 import { navigateBack } from "@/lib/navigation/app-routes";
 import { ScreenContainer } from "@/components/organisms/screen-container";
 import { trpc } from "@/lib/trpc";
-import { useAuth } from "@/hooks/use-auth";
 import { useColors } from "@/hooks/use-colors";
 import MaterialIcons from "@expo/vector-icons/MaterialIcons";
 import { EmojiIcon } from "@/components/ui/emoji-icon";
@@ -31,7 +30,6 @@ export default function AchievementPage() {
   const colors = useColors();
 
   const { id } = useLocalSearchParams<{ id: string }>();
-  const { user } = useAuth();
   const challengeId = parseInt(id || "0", 10);
   
   const [showAllParticipants, setShowAllParticipants] = useState(false);
@@ -125,7 +123,7 @@ export default function AchievementPage() {
 
         {/* 達成バナー */}
         <LinearGradient
-          colors={[color.accentPrimary, color.accentAlt, "#6366F1"]}
+          colors={[color.accentPrimary, color.accentAlt, color.accentAlt]}
           start={{ x: 0, y: 0 }}
           end={{ x: 1, y: 1 }}
           style={{ marginHorizontal: 16, borderRadius: 24, padding: 24, alignItems: "center" }}
@@ -136,7 +134,7 @@ export default function AchievementPage() {
           <Text style={{ color: colors.foreground, fontSize: 28, fontWeight: "bold", textAlign: "center", marginBottom: 8 }}>
             目標達成！
           </Text>
-          <Text style={{ color: "rgba(255,255,255,0.9)", fontSize: 18, textAlign: "center" }}>
+          <Text style={{ color: color.textWhite, fontSize: 18, textAlign: "center", opacity: 0.9 }}>
             {achievementPage.title || challenge.title}
           </Text>
         </LinearGradient>
@@ -172,7 +170,7 @@ export default function AchievementPage() {
               </View>
               <View style={{ width: 1, backgroundColor: color.border }} />
               <View style={{ alignItems: "center" }}>
-                <Text style={{ color: "#6366F1", fontSize: 36, fontWeight: "bold" }}>
+                <Text style={{ color: color.accentAlt, fontSize: 36, fontWeight: "bold" }}>
                   {Math.round((achievementPage.finalValue / achievementPage.goalValue) * 100)}%
                 </Text>
                 <Text style={{ color: color.textMuted, fontSize: 12 }}>
@@ -275,13 +273,13 @@ export default function AchievementPage() {
                     </View>
                   )}
                   <Text
-                    style={{ color: color.textMuted, fontSize: 10, textAlign: "center" }}
+                    style={{ color: color.textMuted, fontSize: 12, textAlign: "center" }}
                     numberOfLines={1}
                   >
                     {p.isAnonymous ? "匿名" : p.displayName}
                   </Text>
                   {p.contribution > 1 && (
-                    <Text style={{ color: color.accentPrimary, fontSize: 10 }}>
+                    <Text style={{ color: color.accentPrimary, fontSize: 12 }}>
                       +{p.contribution}
                     </Text>
                   )}
@@ -312,10 +310,10 @@ export default function AchievementPage() {
         {/* 感謝メッセージ */}
         <View style={{ padding: 16, paddingBottom: 32 }}>
           <LinearGradient
-            colors={["rgba(236, 72, 153, 0.2)", "rgba(139, 92, 246, 0.2)"]}
+            colors={[`${color.accentPrimary}33`, `${color.accentAlt}33`]}
             start={{ x: 0, y: 0 }}
             end={{ x: 1, y: 1 }}
-            style={{ borderRadius: 16, padding: 24, alignItems: "center" }}
+            style={{ borderRadius: 16, padding: 24, alignItems: "center", opacity: 1 }}
           >
             <Text style={{ fontSize: 32, marginBottom: 8 }}>💖</Text>
             <Text style={{ color: colors.foreground, fontSize: 18, fontWeight: "bold", textAlign: "center", marginBottom: 8 }}>

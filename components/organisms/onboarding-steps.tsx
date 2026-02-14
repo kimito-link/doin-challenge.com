@@ -28,7 +28,7 @@ const steps: Step[] = [
 ];
 
 export function OnboardingSteps() {
-  const { isDesktop, isTablet } = useResponsive();
+  const { isDesktop } = useResponsive();
   const iconSize = isDesktop ? 32 : 28;
   const containerPadding = isDesktop ? 24 : 16;
 
@@ -86,7 +86,7 @@ export function OnboardingSteps() {
                 position: "absolute",
                 top: -4,
                 right: isDesktop ? "30%" : "25%",
-                backgroundColor: "#00427B",
+                backgroundColor: palette.blue700,
                 width: 20,
                 height: 20,
                 borderRadius: 10,

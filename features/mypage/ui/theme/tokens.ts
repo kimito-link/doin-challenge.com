@@ -1,8 +1,11 @@
 /**
  * マイページ用カラートークン
  * 
- * 直書き色を一元管理し、テーマ変更を容易にする
+ * 直書き色を一元管理し、テーマ変更を容易にする。
+ * 一般テキストは semantic（palette）と統一。
  */
+
+import { palette } from "@/theme/tokens";
 
 // UI要素色
 export const mypageUI = {
@@ -21,16 +24,16 @@ export const mypageUI = {
   hostBorder: "#DD6500",
 } as const;
 
-// テキスト色
+// テキスト色（muted は semantic と統一）
 export const mypageText = {
-  muted: "#D1D5DB",
-  mutedLight: "#E5E7EB",
-  
-  // 統計数値
+  muted: palette.gray200,
+  mutedLight: palette.gray100,
+
+  // 統計数値（マイページ固有）
   statPink: "#EC4899",
   statPurple: "#8B5CF6",
   statOrange: "#DD6500",
-  
+
   // アクション
   switchAccount: "#93C5FD",
   logout: "#EF4444",
@@ -61,4 +64,14 @@ export const mypageAccent = {
   kontaGold: "#DD6500",
   tanuneGreen: "#10B981",
   tanunePink: "#F43F5E",
+} as const;
+
+// フォントサイズ（TOKENS_INVENTORY 方針: meta=12, body=14, title=16）
+export const mypageFont = {
+  meta: 12,
+  body: 14,
+  title: 16,
+  lg: 20,
+  xl: 24,
+  display: 32,
 } as const;

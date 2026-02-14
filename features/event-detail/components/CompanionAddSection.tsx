@@ -8,10 +8,9 @@
  * - ContributionDisplay: 貢献人数表示
  */
 
-import { View, Text, Pressable } from "react-native";
-import MaterialIcons from "@expo/vector-icons/MaterialIcons";
-import { color } from "@/theme/tokens";
-import { useColors } from "@/hooks/use-colors";
+import { View } from "react-native";
+import { SectionHeader } from "@/components/ui";
+import { Button } from "@/components/ui/button";
 import type { Companion, LookedUpProfile } from "../types";
 import {
   TwitterSearchForm,
@@ -54,8 +53,6 @@ export function CompanionAddSection({
   onRemoveCompanion,
   onLookupTwitterProfile,
 }: CompanionAddSectionProps) {
-  const colors = useColors();
-
   // フォームをキャンセルしてリセット
   const handleCancelForm = () => {
     setShowAddCompanionForm(false);
@@ -67,8 +64,21 @@ export function CompanionAddSection({
   
   return (
     <View style={{ marginBottom: 16 }}>
-      {/* ヘッダー */}
-      <SectionHeader onAddClick={() => setShowAddCompanionForm(true)} />
+      <SectionHeader
+        title="一緒に参加する友人（任意）"
+        action={
+          <Button
+            variant="outline"
+            size="sm"
+            icon="person-add"
+            iconPosition="left"
+            onPress={() => setShowAddCompanionForm(true)}
+          >
+            友人を追加
+          </Button>
+        }
+        style={{ marginBottom: 12 }}
+      />
 
       {/* 友人追加フォーム */}
       {showAddCompanionForm && (
@@ -96,33 +106,6 @@ export function CompanionAddSection({
 
       {/* 貢献人数表示 */}
       <ContributionDisplay companionCount={companions.length} />
-    </View>
-  );
-}
-
-// セクションヘッダー
-function SectionHeader({ onAddClick }: { onAddClick: () => void }) {
-  const colors = useColors();
-  
-  return (
-    <View style={{ flexDirection: "row", justifyContent: "space-between", alignItems: "center", marginBottom: 12 }}>
-      <Text style={{ color: colors.foreground, fontSize: 16, fontWeight: "bold" }}>
-        一緒に参加する友人（任意）
-      </Text>
-      <Pressable
-        onPress={onAddClick}
-        style={{
-          backgroundColor: color.border,
-          borderRadius: 8,
-          paddingHorizontal: 12,
-          paddingVertical: 8,
-          flexDirection: "row",
-          alignItems: "center",
-        }}
-      >
-        <MaterialIcons name="person-add" size={16} color={color.accentPrimary} />
-        <Text style={{ color: color.accentPrimary, fontSize: 14, marginLeft: 6 }}>友人を追加</Text>
-      </Pressable>
     </View>
   );
 }

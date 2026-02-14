@@ -4,6 +4,7 @@
  * ダイレクトメッセージ関連のルーター
  */
 import { z } from "zod";
+import { TRPCError } from "@trpc/server";
 import { protectedProcedure, router } from "../_core/trpc";
 import * as db from "../db";
 
@@ -67,7 +68,12 @@ export const dmRouter = router({
   // メッセージを既読にする
   markAsRead: protectedProcedure
     .input(z.object({ id: z.number() }))
-    .mutation(async ({ input }) => {
+    .mutation(async ({ ctx, input }) => {
+      const message = await db.getDirectMessageById(input.id);
+      if (!message) throw new TRPCError({ code: "NOT_FOUND", message: "Message not found" });
+      if (message.toUserId !== ctx.user.id) {
+        throw new TRPCError({ code: "FORBIDDEN", message: "You can only mark your own messages as read" });
+      }
       await db.markMessageAsRead(input.id);
       return { success: true };
     }),

@@ -8,6 +8,7 @@
  */
 
 import { Platform } from "react-native";
+import Constants from "expo-constants";
 
 // =============================================================================
 // 環境変数
@@ -57,24 +58,24 @@ export function getApiBaseUrl(): string {
     return env.apiBaseUrl.replace(/\/$/, "");
   }
 
-  // Web環境でのみホスト名から判定
+  // Web環境: ホスト名から判定
   if (Platform.OS === "web" && typeof location !== "undefined") {
     const protocol = location.protocol;
     const hostname = location.hostname;
-    
-    // 本番環境: Railway APIを使用
     if (isProductionDomain(hostname)) {
       return PRODUCTION_API_URL;
     }
-    
-    // 開発環境: ポート番号を変換（8081 → 3000）
     const apiHostname = hostname.replace(/^8081-/, "3000-");
     if (apiHostname !== hostname) {
       return `${protocol}//${apiHostname}`;
     }
   }
 
-  // フォールバック
+  // Native: expo config または本番URL
+  if (Platform.OS !== "web") {
+    return Constants.expoConfig?.extra?.apiUrl ?? PRODUCTION_API_URL;
+  }
+
   return "";
 }
 

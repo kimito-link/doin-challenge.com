@@ -6,7 +6,7 @@
 
 import { View, Text, StyleSheet, Platform, Pressable } from "react-native";
 import * as Haptics from "expo-haptics";
-import { color } from "@/theme/tokens";
+import { color, palette } from "@/theme/tokens";
 import { getHeatColor } from "./utils";
 import type { RegionCardProps } from "./types";
 
@@ -69,7 +69,7 @@ const styles = StyleSheet.create({
     borderWidth: 1,
   },
   regionCardHot: {
-    backgroundColor: "rgba(239, 68, 68, 0.1)",
+    backgroundColor: palette.red500 + "1A", // 10% opacity
     borderWidth: 2,
   },
   regionCardHeader: {

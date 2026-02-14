@@ -1,14 +1,15 @@
 import { View, Text, Pressable, Modal, StyleSheet, Image, Animated, Platform } from "react-native";
 import { color, palette } from "@/theme/tokens";
 import MaterialIcons from "@expo/vector-icons/MaterialIcons";
-import { useEffect, useRef } from "react";
+import { RetryButton } from "@/components/ui/retry-button";
+import { useEffect, useRef, useState, useCallback } from "react";
 import * as Haptics from "expo-haptics";
 
-// キャラクター画像
+// キャラクター画像（りんく・こん太・たぬ姉のオリジナル画像を統一使用）
 const CHARACTER_IMAGES = {
-  konta: require("@/assets/images/characters/konta.png"),
-  tanune: require("@/assets/images/characters/tanune.png"),
-  rinku: require("@/assets/images/characters/rinku.png"),
+  konta: require("@/assets/images/characters/konta/kitsune-yukkuri-smile-mouth-open.png"),
+  tanune: require("@/assets/images/characters/tanunee/tanuki-yukkuri-smile-mouth-open.png"),
+  rinku: require("@/assets/images/characters/link/link-yukkuri-smile-mouth-open.png"),
 };
 
 interface ErrorDialogProps {
@@ -62,7 +63,7 @@ export function ErrorDialog({
       scaleAnim.setValue(0.8);
       opacityAnim.setValue(0);
     }
-  }, [visible]);
+  }, [visible, scaleAnim, opacityAnim]);
 
   const handleRetry = () => {
     if (Platform.OS !== "web") {
@@ -132,16 +133,13 @@ export function ErrorDialog({
           {/* ボタン */}
           <View style={styles.buttonContainer}>
             {canRetry && onRetry && (
-              <Pressable
-                style={({ pressed }) => [
-                  styles.retryButton,
-                  pressed && { opacity: 0.8, transform: [{ scale: 0.97 }] },
-                ]}
-                onPress={handleRetry}
-              >
-                <MaterialIcons name="refresh" size={20} color={color.textWhite} />
-                <Text style={styles.retryButtonText}>もう一度試す</Text>
-              </Pressable>
+              <View style={{ flex: 1 }}>
+                <RetryButton 
+                  onPress={handleRetry} 
+                  variant="tryAgain"
+                  label="もう一度試す"
+                />
+              </View>
             )}
             <Pressable
               style={({ pressed }) => [
@@ -163,7 +161,6 @@ export function ErrorDialog({
 /**
  * エラーダイアログを簡単に使うためのフック
  */
-import { useState, useCallback } from "react";
 
 export interface UseErrorDialogReturn {
   showError: (message: string, options?: {
@@ -230,7 +227,7 @@ export function useErrorDialog(): UseErrorDialogReturn {
 const styles = StyleSheet.create({
   overlay: {
     flex: 1,
-    backgroundColor: "rgba(0, 0, 0, 0.7)",
+    backgroundColor: palette.black + "B3", // 70% opacity
     justifyContent: "center",
     alignItems: "center",
     padding: 24,
@@ -258,7 +255,7 @@ const styles = StyleSheet.create({
     width: 64,
     height: 64,
     borderRadius: 32,
-    backgroundColor: "rgba(239, 68, 68, 0.1)",
+    backgroundColor: palette.red500 + "1A", // 10% opacity
     justifyContent: "center",
     alignItems: "center",
     marginBottom: 16,
@@ -278,7 +275,7 @@ const styles = StyleSheet.create({
     marginBottom: 16,
   },
   encourageContainer: {
-    backgroundColor: "rgba(255, 255, 255, 0.05)",
+    backgroundColor: palette.white + "0D", // 5% opacity
     borderRadius: 12,
     padding: 12,
     marginBottom: 20,
@@ -294,21 +291,6 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     gap: 12,
     width: "100%",
-  },
-  retryButton: {
-    flex: 1,
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "center",
-    backgroundColor: color.hostAccentLegacy,
-    borderRadius: 12,
-    paddingVertical: 14,
-    gap: 8,
-  },
-  retryButtonText: {
-    color: color.textWhite,
-    fontSize: 15,
-    fontWeight: "600",
   },
   closeButton: {
     flex: 1,

@@ -1,18 +1,11 @@
 /**
  * Social-related Schema Tables
- * 
+ *
  * エール・フォロー・DM・検索履歴関連のテーブル定義
  */
 
 import { mysqlTable, int, varchar, text, timestamp, boolean } from "drizzle-orm/mysql-core";
 
-// =============================================================================
-// Cheers Table
-// =============================================================================
-
-/**
- * エールテーブル（参加者同士の応援）
- */
 export const cheers = mysqlTable("cheers", {
   id: int("id").autoincrement().primaryKey(),
   fromUserId: int("fromUserId").notNull(),
@@ -29,13 +22,6 @@ export const cheers = mysqlTable("cheers", {
 export type Cheer = typeof cheers.$inferSelect;
 export type InsertCheer = typeof cheers.$inferInsert;
 
-// =============================================================================
-// Follows Table
-// =============================================================================
-
-/**
- * フォローテーブル（ホスト・アーティストのフォロー）
- */
 export const follows = mysqlTable("follows", {
   id: int("id").autoincrement().primaryKey(),
   followerId: int("followerId").notNull(),
@@ -50,13 +36,6 @@ export const follows = mysqlTable("follows", {
 export type Follow = typeof follows.$inferSelect;
 export type InsertFollow = typeof follows.$inferInsert;
 
-// =============================================================================
-// Direct Messages Table
-// =============================================================================
-
-/**
- * ダイレクトメッセージテーブル
- */
 export const directMessages = mysqlTable("direct_messages", {
   id: int("id").autoincrement().primaryKey(),
   fromUserId: int("fromUserId").notNull(),
@@ -73,13 +52,6 @@ export const directMessages = mysqlTable("direct_messages", {
 export type DirectMessage = typeof directMessages.$inferSelect;
 export type InsertDirectMessage = typeof directMessages.$inferInsert;
 
-// =============================================================================
-// Search History Table
-// =============================================================================
-
-/**
- * 検索履歴テーブル
- */
 export const searchHistory = mysqlTable("search_history", {
   id: int("id").autoincrement().primaryKey(),
   userId: int("userId").notNull(),
@@ -91,13 +63,6 @@ export const searchHistory = mysqlTable("search_history", {
 export type SearchHistory = typeof searchHistory.$inferSelect;
 export type InsertSearchHistory = typeof searchHistory.$inferInsert;
 
-// =============================================================================
-// Favorite Artists Table
-// =============================================================================
-
-/**
- * お気に入りアーティストテーブル（チャレンジ開始通知用）
- */
 export const favoriteArtists = mysqlTable("favorite_artists", {
   id: int("id").autoincrement().primaryKey(),
   userId: int("userId").notNull(),

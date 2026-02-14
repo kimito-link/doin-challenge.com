@@ -1,5 +1,5 @@
 import { View, StyleSheet } from "react-native";
-import { color, palette } from "@/theme/tokens";
+import { color } from "@/theme/tokens";
 import { Skeleton } from "@/components/atoms/skeleton-loader";
 import { BlinkingLink } from "@/components/atoms/blinking-character";
 import { FadeView } from "@/components/atoms/fade-view";

@@ -4,7 +4,7 @@
  * 経験値オーバーレイのスタイル定義
  */
 import { StyleSheet, Dimensions } from "react-native";
-import { color } from "@/theme/tokens";
+import { color, palette } from "@/theme/tokens";
 
 const { width: SCREEN_WIDTH } = Dimensions.get("window");
 
@@ -39,7 +39,7 @@ export const styles = StyleSheet.create({
     width: 32,
     height: 32,
     borderRadius: 16,
-    backgroundColor: "rgba(255, 255, 255, 0.2)",
+    backgroundColor: palette.white + "33", // 20% opacity
     justifyContent: "center",
     alignItems: "center",
   },
@@ -56,7 +56,7 @@ export const styles = StyleSheet.create({
   progressBarWrapper: {
     flex: 1,
     height: 4,
-    backgroundColor: "rgba(255, 255, 255, 0.2)",
+    backgroundColor: palette.white + "33", // 20% opacity
     borderRadius: 2,
     overflow: "hidden",
   },
@@ -67,7 +67,7 @@ export const styles = StyleSheet.create({
   },
   progressText: {
     fontSize: 12,
-    color: "rgba(255, 255, 255, 0.6)",
+    color: palette.white + "99", // 60% opacity
     minWidth: 50,
     textAlign: "right",
   },
@@ -92,7 +92,7 @@ export const styles = StyleSheet.create({
   },
   thoughtBubble: {
     flex: 1,
-    backgroundColor: "rgba(255, 255, 255, 0.15)",
+    backgroundColor: palette.white + "26", // 15% opacity
     borderRadius: 16,
     padding: 12,
     position: "relative",
@@ -108,7 +108,7 @@ export const styles = StyleSheet.create({
     borderBottomWidth: 8,
     borderBottomColor: "transparent",
     borderRightWidth: 8,
-    borderRightColor: "rgba(255, 255, 255, 0.15)",
+    borderRightColor: palette.white + "26",
   },
   thoughtText: {
     fontSize: 14,
@@ -132,13 +132,13 @@ export const styles = StyleSheet.create({
   },
   subMessageText: {
     fontSize: 14,
-    color: "rgba(255, 255, 255, 0.8)",
+    color: palette.white + "CC", // 80% opacity
     textAlign: "center",
     marginBottom: 20,
     paddingHorizontal: 20,
   },
   previewContainer: {
-    backgroundColor: "rgba(255, 255, 255, 0.1)",
+    backgroundColor: palette.white + "1A", // 10% opacity
     borderRadius: 16,
     padding: 16,
     alignItems: "center",
@@ -187,7 +187,7 @@ export const styles = StyleSheet.create({
     gap: 8,
   },
   participantCard: {
-    backgroundColor: "rgba(255, 255, 255, 0.1)",
+    backgroundColor: palette.white + "1A", // 10% opacity
     borderRadius: 12,
     padding: 12,
     alignItems: "center",
@@ -213,7 +213,7 @@ export const styles = StyleSheet.create({
   },
   participantPref: {
     fontSize: 10,
-    color: "rgba(255, 255, 255, 0.7)",
+    color: palette.white + "B3", // 70% opacity
     marginTop: 2,
   },
   
@@ -243,7 +243,7 @@ export const styles = StyleSheet.create({
   },
   chartBarLabel: {
     fontSize: 10,
-    color: "rgba(255, 255, 255, 0.7)",
+    color: palette.white + "B3", // 70% opacity
   },
   
   // Notification preview
@@ -278,12 +278,12 @@ export const styles = StyleSheet.create({
   },
   notificationBody: {
     fontSize: 12,
-    color: "#666",
+    color: palette.gray600,
     marginTop: 2,
   },
   notificationTime: {
     fontSize: 10,
-    color: "#999",
+    color: palette.gray500,
     marginTop: 4,
   },
   
@@ -312,7 +312,7 @@ export const styles = StyleSheet.create({
   },
   badgeDesc: {
     fontSize: 12,
-    color: "rgba(255, 255, 255, 0.7)",
+    color: palette.white + "B3", // 70% opacity
   },
   badgeGrid: {
     flexDirection: "row",
@@ -324,7 +324,7 @@ export const styles = StyleSheet.create({
   badgeItem: {
     alignItems: "center",
     padding: 12,
-    backgroundColor: "rgba(255, 255, 255, 0.1)",
+    backgroundColor: palette.white + "1A", // 10% opacity
     borderRadius: 12,
     minWidth: 70,
   },
@@ -342,7 +342,7 @@ export const styles = StyleSheet.create({
   
   // Comment preview
   commentPreview: {
-    backgroundColor: "rgba(255, 255, 255, 0.1)",
+    backgroundColor: palette.white + "1A", // 10% opacity
     borderRadius: 16,
     padding: 16,
     width: "100%",
@@ -373,7 +373,7 @@ export const styles = StyleSheet.create({
   },
   commentTime: {
     fontSize: 10,
-    color: "rgba(255, 255, 255, 0.5)",
+    color: palette.white + "80", // 50% opacity
   },
   commentText: {
     fontSize: 14,
@@ -402,7 +402,7 @@ export const styles = StyleSheet.create({
     width: 44,
     height: 44,
     borderRadius: 22,
-    backgroundColor: "rgba(255, 255, 255, 0.2)",
+    backgroundColor: palette.white + "33", // 20% opacity
     justifyContent: "center",
     alignItems: "center",
   },
@@ -424,12 +424,12 @@ export const styles = StyleSheet.create({
   },
   inviteDesc: {
     fontSize: 12,
-    color: "rgba(255, 255, 255, 0.7)",
+    color: palette.white + "B3", // 70% opacity
   },
   
   // Form preview
   formPreview: {
-    backgroundColor: "rgba(255, 255, 255, 0.1)",
+    backgroundColor: palette.white + "1A", // 10% opacity
     borderRadius: 16,
     padding: 16,
     width: "100%",
@@ -440,26 +440,26 @@ export const styles = StyleSheet.create({
   },
   formLabel: {
     fontSize: 12,
-    color: "rgba(255, 255, 255, 0.7)",
+    color: palette.white + "B3", // 70% opacity
     marginBottom: 6,
   },
   formInput: {
-    backgroundColor: "rgba(255, 255, 255, 0.1)",
+    backgroundColor: palette.white + "1A", // 10% opacity
     borderRadius: 8,
     padding: 12,
     borderWidth: 1,
-    borderColor: "rgba(255, 255, 255, 0.2)",
+    borderColor: palette.white + "33",
   },
   formInputText: {
     fontSize: 14,
     color: color.textWhite,
   },
   formSelect: {
-    backgroundColor: "rgba(255, 255, 255, 0.1)",
+    backgroundColor: palette.white + "1A", // 10% opacity
     borderRadius: 8,
     padding: 12,
     borderWidth: 1,
-    borderColor: "rgba(255, 255, 255, 0.2)",
+    borderColor: palette.white + "33",
     flexDirection: "row",
     justifyContent: "space-between",
     alignItems: "center",
@@ -470,7 +470,7 @@ export const styles = StyleSheet.create({
   },
   formSelectArrow: {
     fontSize: 12,
-    color: "rgba(255, 255, 255, 0.5)",
+    color: palette.white + "80", // 50% opacity
   },
   
   // Prefecture preview
@@ -487,12 +487,12 @@ export const styles = StyleSheet.create({
     justifyContent: "center",
   },
   prefectureButton: {
-    backgroundColor: "rgba(255, 255, 255, 0.1)",
+    backgroundColor: palette.white + "1A", // 10% opacity
     borderRadius: 8,
     paddingHorizontal: 16,
     paddingVertical: 10,
     borderWidth: 1,
-    borderColor: "rgba(255, 255, 255, 0.2)",
+    borderColor: palette.white + "33",
   },
   prefectureButtonSelected: {
     backgroundColor: color.accentPrimary,
@@ -500,7 +500,7 @@ export const styles = StyleSheet.create({
   },
   prefectureText: {
     fontSize: 14,
-    color: "rgba(255, 255, 255, 0.7)",
+    color: palette.white + "B3", // 70% opacity
   },
   prefectureTextSelected: {
     fontSize: 14,
@@ -510,7 +510,7 @@ export const styles = StyleSheet.create({
   
   // Profile preview
   profilePreview: {
-    backgroundColor: "rgba(255, 255, 255, 0.1)",
+    backgroundColor: palette.white + "1A", // 10% opacity
     borderRadius: 16,
     padding: 16,
     width: "100%",
@@ -544,7 +544,7 @@ export const styles = StyleSheet.create({
   },
   profileBio: {
     fontSize: 12,
-    color: "rgba(255, 255, 255, 0.7)",
+    color: palette.white + "B3", // 70% opacity
     marginTop: 2,
   },
   profileFollowers: {
@@ -553,7 +553,7 @@ export const styles = StyleSheet.create({
     marginTop: 4,
   },
   influencerBadge: {
-    backgroundColor: "rgba(255, 215, 0, 0.2)",
+    backgroundColor: palette.gold + "33", // 20% opacity
     borderRadius: 4,
     paddingHorizontal: 6,
     paddingVertical: 2,
@@ -622,18 +622,19 @@ export const styles = StyleSheet.create({
   },
   genderLegendText: {
     fontSize: 12,
-    color: "rgba(255, 255, 255, 0.7)",
+    color: palette.white + "B3", // 70% opacity
   },
   
   // Challenge card preview
   challengeCardPreview: {
-    backgroundColor: "linear-gradient(135deg, #EC4899 0%, #8B5CF6 100%)",
+    // Note: LinearGradientはコンポーネント側で設定されるため、ここでは背景色のみ
+    backgroundColor: palette.pink500, // グラデーションの開始色
     borderRadius: 16,
     padding: 16,
     width: "100%",
     maxWidth: 320,
     borderWidth: 1,
-    borderColor: "rgba(236, 72, 153, 0.5)",
+    borderColor: palette.pink500 + "80", // 50% opacity
   },
   challengeCardHeader: {
     flexDirection: "row",
@@ -644,7 +645,7 @@ export const styles = StyleSheet.create({
   challengeCardCategory: {
     fontSize: 12,
     color: color.accentPrimary,
-    backgroundColor: "rgba(236, 72, 153, 0.2)",
+    backgroundColor: palette.pink500 + "33", // 20% opacity
     paddingHorizontal: 8,
     paddingVertical: 4,
     borderRadius: 4,
@@ -652,7 +653,7 @@ export const styles = StyleSheet.create({
   challengeCardDays: {
     fontSize: 12,
     color: color.textWhite,
-    backgroundColor: "rgba(255, 255, 255, 0.2)",
+    backgroundColor: palette.white + "33", // 20% opacity
     paddingHorizontal: 8,
     paddingVertical: 4,
     borderRadius: 4,
@@ -683,14 +684,14 @@ export const styles = StyleSheet.create({
   },
   challengeCardHostName: {
     fontSize: 12,
-    color: "rgba(255, 255, 255, 0.8)",
+    color: palette.white + "CC", // 80% opacity
   },
   challengeCardProgress: {
     gap: 8,
   },
   challengeCardProgressBar: {
     height: 8,
-    backgroundColor: "rgba(255, 255, 255, 0.2)",
+    backgroundColor: palette.white + "33", // 20% opacity
     borderRadius: 4,
     overflow: "hidden",
   },
@@ -723,7 +724,7 @@ export const styles = StyleSheet.create({
   },
   progressBarTrack: {
     height: 16,
-    backgroundColor: "rgba(255, 255, 255, 0.2)",
+    backgroundColor: palette.white + "33", // 20% opacity
     borderRadius: 8,
     overflow: "hidden",
     marginBottom: 8,
@@ -745,20 +746,20 @@ export const styles = StyleSheet.create({
   },
   progressBarGoal: {
     fontSize: 16,
-    color: "rgba(255, 255, 255, 0.7)",
+    color: palette.white + "B3", // 70% opacity
   },
   progressBarMilestones: {
     flexDirection: "row",
     justifyContent: "space-between",
   },
   progressBarMilestone: {
-    backgroundColor: "rgba(255, 255, 255, 0.1)",
+    backgroundColor: palette.white + "1A", // 10% opacity
     borderRadius: 4,
     paddingHorizontal: 8,
     paddingVertical: 4,
   },
   progressBarMilestoneCompleted: {
-    backgroundColor: "rgba(74, 222, 128, 0.3)",
+    backgroundColor: palette.green400 + "4D", // 30% opacity
   },
   progressBarMilestoneText: {
     fontSize: 10,
@@ -773,7 +774,7 @@ export const styles = StyleSheet.create({
   },
   countdownTitle: {
     fontSize: 14,
-    color: "rgba(255, 255, 255, 0.7)",
+    color: palette.white + "B3", // 70% opacity
     marginBottom: 12,
   },
   countdownNumbers: {
@@ -784,7 +785,7 @@ export const styles = StyleSheet.create({
   },
   countdownItem: {
     alignItems: "center",
-    backgroundColor: "rgba(255, 255, 255, 0.1)",
+    backgroundColor: palette.white + "1A", // 10% opacity
     borderRadius: 8,
     padding: 12,
     minWidth: 60,
@@ -796,16 +797,16 @@ export const styles = StyleSheet.create({
   },
   countdownLabel: {
     fontSize: 10,
-    color: "rgba(255, 255, 255, 0.7)",
+    color: palette.white + "B3", // 70% opacity
   },
   countdownSeparator: {
     fontSize: 24,
     fontWeight: "bold",
-    color: "rgba(255, 255, 255, 0.5)",
+    color: palette.white + "80", // 50% opacity
   },
   countdownDate: {
     fontSize: 12,
-    color: "rgba(255, 255, 255, 0.7)",
+    color: palette.white + "B3", // 70% opacity
   },
   
   // Achievement preview
@@ -834,7 +835,7 @@ export const styles = StyleSheet.create({
   },
   achievementDesc: {
     fontSize: 12,
-    color: "rgba(255, 255, 255, 0.7)",
+    color: palette.white + "B3", // 70% opacity
     marginBottom: 12,
   },
   achievementNames: {
@@ -846,14 +847,14 @@ export const styles = StyleSheet.create({
   achievementName: {
     fontSize: 12,
     color: color.textWhite,
-    backgroundColor: "rgba(255, 255, 255, 0.1)",
+    backgroundColor: palette.white + "1A", // 10% opacity
     paddingHorizontal: 8,
     paddingVertical: 4,
     borderRadius: 4,
   },
   achievementMore: {
     fontSize: 12,
-    color: "rgba(255, 255, 255, 0.5)",
+    color: palette.white + "80", // 50% opacity
     paddingHorizontal: 8,
     paddingVertical: 4,
   },
@@ -886,7 +887,7 @@ export const styles = StyleSheet.create({
     color: color.textWhite,
   },
   shareCard: {
-    backgroundColor: "rgba(255, 255, 255, 0.1)",
+    backgroundColor: palette.white + "1A", // 10% opacity
     borderRadius: 8,
     padding: 12,
     width: "100%",
@@ -915,13 +916,13 @@ export const styles = StyleSheet.create({
   rankingItem: {
     flexDirection: "row",
     alignItems: "center",
-    backgroundColor: "rgba(255, 255, 255, 0.1)",
+    backgroundColor: palette.white + "1A", // 10% opacity
     borderRadius: 8,
     padding: 12,
     gap: 12,
   },
   rankingItemHighlight: {
-    backgroundColor: "rgba(236, 72, 153, 0.3)",
+    backgroundColor: palette.pink500 + "4D", // 30% opacity
     borderWidth: 1,
     borderColor: color.accentPrimary,
   },
@@ -971,7 +972,7 @@ export const styles = StyleSheet.create({
     gap: 8,
   },
   dmMessageReceived: {
-    backgroundColor: "rgba(255, 255, 255, 0.1)",
+    backgroundColor: palette.white + "1A", // 10% opacity
     borderRadius: 12,
     borderTopLeftRadius: 4,
     padding: 12,
@@ -1010,7 +1011,7 @@ export const styles = StyleSheet.create({
     flexDirection: "row",
     justifyContent: "space-between",
     alignItems: "center",
-    backgroundColor: "rgba(255, 255, 255, 0.1)",
+    backgroundColor: palette.white + "1A", // 10% opacity
     borderRadius: 8,
     padding: 12,
   },
@@ -1022,7 +1023,7 @@ export const styles = StyleSheet.create({
     width: 44,
     height: 24,
     borderRadius: 12,
-    backgroundColor: "rgba(255, 255, 255, 0.2)",
+    backgroundColor: palette.white + "33", // 20% opacity
     padding: 2,
   },
   reminderToggleOn: {
@@ -1055,7 +1056,7 @@ export const styles = StyleSheet.create({
     flexDirection: "row",
     justifyContent: "space-between",
     alignItems: "center",
-    backgroundColor: "rgba(255, 255, 255, 0.1)",
+    backgroundColor: palette.white + "1A", // 10% opacity
     borderRadius: 8,
     padding: 12,
   },
@@ -1098,7 +1099,7 @@ export const styles = StyleSheet.create({
   },
   cheerButton: {
     alignItems: "center",
-    backgroundColor: "rgba(255, 255, 255, 0.1)",
+    backgroundColor: palette.white + "1A", // 10% opacity
     borderRadius: 12,
     padding: 12,
     minWidth: 60,
@@ -1133,7 +1134,7 @@ export const styles = StyleSheet.create({
   statsItem: {
     flex: 1,
     minWidth: "45%",
-    backgroundColor: "rgba(255, 255, 255, 0.1)",
+    backgroundColor: palette.white + "1A", // 10% opacity
     borderRadius: 8,
     padding: 12,
     alignItems: "center",
@@ -1145,7 +1146,7 @@ export const styles = StyleSheet.create({
   },
   statsLabel: {
     fontSize: 10,
-    color: "rgba(255, 255, 255, 0.7)",
+    color: palette.white + "B3", // 70% opacity
     marginTop: 4,
   },
   
@@ -1200,7 +1201,7 @@ export const styles = StyleSheet.create({
     height: 56,
   },
   navBubble: {
-    backgroundColor: "rgba(255, 255, 255, 0.15)",
+    backgroundColor: palette.white + "26", // 15% opacity
     borderRadius: 16,
     paddingHorizontal: 16,
     paddingVertical: 10,
@@ -1214,7 +1215,7 @@ export const styles = StyleSheet.create({
     marginRight: -8,
   },
   navBubbleDisabled: {
-    backgroundColor: "rgba(255, 255, 255, 0.08)",
+    backgroundColor: palette.white + "14", // 8% opacity
   },
   navBubblePrimary: {
     backgroundColor: color.hotPink,
@@ -1230,7 +1231,7 @@ export const styles = StyleSheet.create({
     borderBottomWidth: 6,
     borderBottomColor: "transparent",
     borderRightWidth: 6,
-    borderRightColor: "rgba(255, 255, 255, 0.15)",
+    borderRightColor: palette.white + "26",
   },
   navBubbleTailRight: {
     position: "absolute",
@@ -1251,7 +1252,7 @@ export const styles = StyleSheet.create({
     fontWeight: "600",
   },
   navBubbleTextDisabled: {
-    color: "rgba(255, 255, 255, 0.4)",
+    color: palette.white + "66", // 40% opacity
   },
   navBubbleTextPrimary: {
     color: color.textWhite,
@@ -1264,7 +1265,7 @@ export const styles = StyleSheet.create({
     paddingHorizontal: 20,
     paddingVertical: 12,
     borderRadius: 24,
-    backgroundColor: "rgba(255, 255, 255, 0.1)",
+    backgroundColor: palette.white + "1A", // 10% opacity
   },
   navButtonDisabled: {
     opacity: 0.3,
@@ -1278,7 +1279,7 @@ export const styles = StyleSheet.create({
     fontWeight: "600",
   },
   navButtonTextDisabled: {
-    color: "rgba(255, 255, 255, 0.5)",
+    color: palette.white + "80", // 50% opacity
   },
   navButtonTextPrimary: {
     color: color.textWhite,

@@ -95,7 +95,7 @@ git push origin main
 ### 方法2: 前のコミットにリセット
 
 ```bash
-git reset --hard b6c5e66  # backup_20260123.md のコミット
+git reset --hard <復帰したいコミットSHA>
 git push origin main --force
 ```
 
@@ -137,7 +137,6 @@ cp theme/tokens/palette.ts /path/to/project/theme/tokens/
 
 ## 関連ドキュメント
 
-- `docs/backup_20260123.md`: 復帰点のドキュメント
 - `docs/gpt-consultation-workflow-recovery.md`: ワークフロー復旧戦略
 
 ## チェックリスト

@@ -4,10 +4,12 @@
  * 前売り券・当日券・購入URLの入力UI
  */
 
-import { View, Text, TextInput, Pressable } from "react-native";
+import { View, Text } from "react-native";
 import MaterialIcons from "@expo/vector-icons/MaterialIcons";
 import { useColors } from "@/hooks/use-colors";
-import { createUI, createText } from "../theme/tokens";
+import { createUI, createText, createFont } from "../theme/tokens";
+import { UndecidedOption } from "./create-challenge-form/UndecidedOption";
+import { Input } from "@/components/ui";
 
 interface TicketInfoSectionProps {
   ticketPresale: string;
@@ -53,119 +55,60 @@ export function TicketInfoSection({
     >
       <View style={{ flexDirection: "row", alignItems: "center", marginBottom: 12 }}>
         <MaterialIcons name="confirmation-number" size={20} color={createText.accent} />
-        <Text style={{ color: colors.foreground, fontSize: 16, fontWeight: "600", marginLeft: 8 }}>
+        <Text style={{ color: colors.foreground, fontSize: createFont.title, fontWeight: "600", marginLeft: 8 }}>
           チケット情報（任意）
         </Text>
       </View>
-      
-      {/* まだ決まっていないオプション */}
-      <Pressable
-        onPress={handleToggleUndecided}
-        style={({ pressed }) => ({
-          flexDirection: "row",
-          alignItems: "center",
-          marginBottom: 12,
-          opacity: pressed ? 0.7 : 1,
-        })}
-      >
-        <View
-          style={{
-            width: 20,
-            height: 20,
-            borderRadius: 10,
-            borderWidth: 2,
-            borderColor: isUndecided ? createUI.activeAccent : createUI.checkboxActiveBorder,
-            backgroundColor: isUndecided ? createUI.activeAccent : "transparent",
-            marginRight: 8,
-            justifyContent: "center",
-            alignItems: "center",
-          }}
-        >
-          {isUndecided && (
-            <View style={{ width: 8, height: 8, borderRadius: 4, backgroundColor: "#fff" }} />
-          )}
-        </View>
-        <Text style={{ color: colors.muted, fontSize: 14 }}>
-          まだ決まっていない
-        </Text>
-      </Pressable>
-      
-      {isUndecided ? (
-        <Text style={{ color: createText.muted, fontSize: 12 }}>
-          ※ 決まり次第、後から編集できます
-        </Text>
-      ) : (
+
+      <UndecidedOption
+        checked={isUndecided}
+        onToggle={handleToggleUndecided}
+        marginBottom={12}
+        note="※ 決まり次第、後から編集できます"
+      />
+
+      {!isUndecided && (
         <>
           <View style={{ flexDirection: "row", gap: 12, marginBottom: 12 }}>
             <View style={{ flex: 1 }}>
-              <Text style={{ color: colors.muted, fontSize: 12, marginBottom: 4 }}>
+              <Text style={{ color: colors.muted, fontSize: createFont.meta, marginBottom: 4 }}>
                 前売り券
               </Text>
               <View style={{ flexDirection: "row", alignItems: "center" }}>
-                <TextInput
+                <Input
                   value={ticketPresale}
                   onChangeText={onTicketPresaleChange}
                   placeholder="3000"
-                  placeholderTextColor={createText.placeholder}
                   keyboardType="numeric"
-                  style={{
-                    backgroundColor: createUI.inputBg,
-                    borderRadius: 8,
-                    padding: 10,
-                    color: colors.foreground,
-                    borderWidth: 1,
-                    borderColor: createUI.inputBorder,
-                    flex: 1,
-                  }}
+                  containerStyle={{ marginBottom: 0, flex: 1 }}
                 />
-                <Text style={{ color: colors.muted, fontSize: 14, marginLeft: 8 }}>円</Text>
+                <Text style={{ color: colors.muted, fontSize: createFont.body, marginLeft: 8 }}>円</Text>
               </View>
             </View>
             <View style={{ flex: 1 }}>
-              <Text style={{ color: colors.muted, fontSize: 12, marginBottom: 4 }}>
+              <Text style={{ color: colors.muted, fontSize: createFont.meta, marginBottom: 4 }}>
                 当日券
               </Text>
               <View style={{ flexDirection: "row", alignItems: "center" }}>
-                <TextInput
+                <Input
                   value={ticketDoor}
                   onChangeText={onTicketDoorChange}
                   placeholder="3500"
-                  placeholderTextColor={createText.placeholder}
                   keyboardType="numeric"
-                  style={{
-                    backgroundColor: createUI.inputBg,
-                    borderRadius: 8,
-                    padding: 10,
-                    color: colors.foreground,
-                    borderWidth: 1,
-                    borderColor: createUI.inputBorder,
-                    flex: 1,
-                  }}
+                  containerStyle={{ marginBottom: 0, flex: 1 }}
                 />
-                <Text style={{ color: colors.muted, fontSize: 14, marginLeft: 8 }}>円</Text>
+                <Text style={{ color: colors.muted, fontSize: createFont.body, marginLeft: 8 }}>円</Text>
               </View>
             </View>
           </View>
 
-          <View>
-            <Text style={{ color: colors.muted, fontSize: 12, marginBottom: 4 }}>
-              チケット購入URL
-            </Text>
-            <TextInput
-              value={ticketUrl}
-              onChangeText={onTicketUrlChange}
-              placeholder="https://tiget.net/events/..."
-              placeholderTextColor={createText.placeholder}
-              style={{
-                backgroundColor: createUI.inputBg,
-                borderRadius: 8,
-                padding: 10,
-                color: colors.foreground,
-                borderWidth: 1,
-                borderColor: createUI.inputBorder,
-              }}
-            />
-          </View>
+          <Input
+            label="チケット購入URL"
+            value={ticketUrl}
+            onChangeText={onTicketUrlChange}
+            placeholder="https://tiget.net/events/..."
+            containerStyle={{ marginBottom: 0 }}
+          />
         </>
       )}
     </View>

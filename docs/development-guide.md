@@ -427,6 +427,6 @@ rm -rf .expo node_modules/.cache
 
 ## 次のステップ
 
-- **アーキテクチャを理解する**: `docs/architecture.md` を参照
+- **アーキテクチャを理解する**: `docs/ARCHITECTURE.md` を参照
 - **デプロイ方法を学ぶ**: `docs/deployment-guide.md` を参照
 - **品質基準を確認する**: `docs/gate1.md` を参照

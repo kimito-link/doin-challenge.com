@@ -8,7 +8,7 @@
 import { View, Text, ScrollView } from "react-native";
 import { useColors } from "@/hooks/use-colors";
 import { GENRES, type GenreId } from "@/constants/event-categories";
-import { createUI } from "../theme/tokens";
+import { createUI, createFont } from "../theme/tokens";
 import { Button } from "@/components/ui/button";
 
 interface GenreSelectorProps {
@@ -21,10 +21,10 @@ export function GenreSelector({ selectedGenre, onSelect }: GenreSelectorProps) {
 
   return (
     <View style={{ marginBottom: 16 }}>
-      <Text style={{ color: colors.muted, fontSize: 14, marginBottom: 8 }}>
+      <Text style={{ color: colors.muted, fontSize: createFont.body, marginBottom: 8 }}>
         ジャンル
       </Text>
-      <Text style={{ color: colors.muted, fontSize: 12, marginBottom: 12, opacity: 0.7 }}>
+      <Text style={{ color: colors.muted, fontSize: createFont.meta, marginBottom: 12, opacity: 0.7 }}>
         活動ジャンルを選択してください
       </Text>
       <ScrollView 
@@ -52,11 +52,11 @@ export function GenreSelector({ selectedGenre, onSelect }: GenreSelectorProps) {
                   minHeight: 44,
                 }}
               >
-                <Text style={{ fontSize: 16, marginRight: 6 }}>{genre.icon}</Text>
+                <Text style={{ fontSize: createFont.title, marginRight: 6 }}>{genre.icon}</Text>
                 <Text
                   style={{
                     color: isSelected ? "#FFFFFF" : colors.foreground,
-                    fontSize: 14,
+                    fontSize: createFont.body,
                     fontWeight: isSelected ? "600" : "400",
                   }}
                 >

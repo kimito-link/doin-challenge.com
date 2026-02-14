@@ -228,7 +228,7 @@ export function RegionParticipantsModal({
 const styles = StyleSheet.create({
   overlay: {
     flex: 1,
-    backgroundColor: "rgba(0, 0, 0, 0.7)",
+    backgroundColor: palette.black + "B3", // 70% opacity
     justifyContent: "flex-end",
   },
   modalContainer: {
@@ -303,11 +303,11 @@ const styles = StyleSheet.create({
   },
   prefectureCount: {
     color: color.textMuted,
-    fontSize: 11,
+    fontSize: 12,
     marginLeft: 6,
   },
   prefectureCountSelected: {
-    color: "rgba(255, 255, 255, 0.8)",
+    color: palette.white + "CC", // 80% opacity
   },
   prefectureCountEmpty: {
     color: color.textSubtle,
@@ -353,7 +353,7 @@ const styles = StyleSheet.create({
   },
   followersText: {
     color: color.accentAlt,
-    fontSize: 10,
+    fontSize: 12,
     fontWeight: "bold",
   },
   participantUsername: {
@@ -363,7 +363,7 @@ const styles = StyleSheet.create({
   },
   participantPrefecture: {
     color: color.textSubtle,
-    fontSize: 11,
+    fontSize: 12,
     marginTop: 2,
   },
   contributionBadge: {

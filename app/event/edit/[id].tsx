@@ -1,7 +1,6 @@
 import { View, Text, TextInput, ScrollView, Pressable, KeyboardAvoidingView, Platform, ActivityIndicator } from "react-native";
-import * as Haptics from "expo-haptics";
-import { color, palette } from "@/theme/tokens";
-import { Image } from "expo-image";
+import { commonCopy } from "@/constants/copy/common";
+import { color } from "@/theme/tokens";
 import { useLocalSearchParams } from "expo-router";
 import { navigateBack } from "@/lib/navigation/app-routes";
 import { useState, useEffect, useRef } from "react";
@@ -14,7 +13,6 @@ import { AppHeader } from "@/components/organisms/app-header";
 import { DatePicker } from "@/components/molecules/date-picker";
 import { NumberStepper } from "@/components/molecules/number-stepper";
 import { showAlert } from "@/lib/web-alert";
-import { goalTypeOptions, eventTypeOptions } from "@/constants/goal-types";
 import { prefectures } from "@/constants/prefectures";
 import {
   EventTypeSelector,
@@ -157,7 +155,7 @@ export default function EditChallengeScreen() {
             }}
             onPress={() => navigateBack()}
           >
-            <Text style={{ color: "#fff", fontWeight: "600" }}>戻る</Text>
+            <Text style={{ color: color.textWhite, fontWeight: "600" }}>戻る</Text>
           </Pressable>
         </View>
       </ScreenContainer>
@@ -170,7 +168,7 @@ export default function EditChallengeScreen() {
         <View style={{ flex: 1, justifyContent: "center", alignItems: "center", padding: 20 }}>
           <MaterialIcons name="lock" size={48} color={colors.muted} />
           <Text style={{ color: colors.foreground, fontSize: 18, marginTop: 16 }}>
-            編集権限がありません
+            {commonCopy.empty.noEditPermission}
           </Text>
           <Text style={{ color: colors.muted, fontSize: 14, marginTop: 8, textAlign: "center" }}>
             このチャレンジを編集できるのは作成者のみです
@@ -185,7 +183,7 @@ export default function EditChallengeScreen() {
             }}
             onPress={() => navigateBack()}
           >
-            <Text style={{ color: "#fff", fontWeight: "600" }}>戻る</Text>
+            <Text style={{ color: color.textWhite, fontWeight: "600" }}>戻る</Text>
           </Pressable>
         </View>
       </ScreenContainer>
@@ -529,9 +527,9 @@ export default function EditChallengeScreen() {
               disabled={updateMutation.isPending}
             >
               {updateMutation.isPending ? (
-                <ActivityIndicator color="#fff" />
+                <ActivityIndicator color={color.textWhite} />
               ) : (
-                <Text style={{ color: "#fff", fontSize: 16, fontWeight: "bold" }}>
+                <Text style={{ color: color.textWhite, fontSize: 16, fontWeight: "bold" }}>
                   更新する
                 </Text>
               )}

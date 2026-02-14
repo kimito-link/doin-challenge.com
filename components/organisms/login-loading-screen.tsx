@@ -1,6 +1,5 @@
 import React, { useEffect, useState } from "react";
 import { View, Text, StyleSheet, Animated, Easing } from "react-native";
-import { Image } from "expo-image";
 import { useColors } from "@/hooks/use-colors";
 import { BlinkingLink } from "@/components/atoms/blinking-character";
 
@@ -121,8 +120,6 @@ export function LoginLoadingScreen({
     inputRange: [0, 1],
     outputRange: ["0deg", "360deg"],
   });
-
-  const currentStepData = LOGIN_STEPS[Math.min(currentStep - 1, LOGIN_STEPS.length - 1)];
 
   return (
     <View style={[styles.container, { backgroundColor: colors.background }]}>

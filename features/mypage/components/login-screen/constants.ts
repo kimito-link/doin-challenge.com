@@ -5,11 +5,11 @@
 import { mypageGradient, mypageAccent } from "../../ui/theme/tokens";
 import type { CharacterInfo } from "@/components/ui/character-detail-modal";
 
-// キャラクター画像
+// キャラクター画像（りんく・こん太・たぬ姉のオリジナル画像を統一使用）
 export const characterImages = {
-  rinku: require("@/assets/images/characters/rinku.png"),
-  konta: require("@/assets/images/characters/konta.png"),
-  tanune: require("@/assets/images/characters/tanune.png"),
+  rinku: require("@/assets/images/characters/link/link-yukkuri-smile-mouth-open.png"),
+  konta: require("@/assets/images/characters/konta/kitsune-yukkuri-smile-mouth-open.png"),
+  tanune: require("@/assets/images/characters/tanunee/tanuki-yukkuri-smile-mouth-open.png"),
   linkFull: require("@/assets/images/characters/KimitoLink.png"),
   linkIdol: require("@/assets/images/characters/idolKimitoLink.png"),
   linkYukkuri: require("@/assets/images/characters/link/link-yukkuri-smile-mouth-open.png"),
@@ -24,10 +24,10 @@ export const logoImage = require("@/assets/images/logo/logo-maru-orange.jpg");
 export const characterDetails: Record<string, CharacterInfo> = {
   link: {
     id: "link",
-    name: "君斗りんく",
+    name: "りんく",
     gender: "female",
     image: characterImages.linkYukkuri,
-    description: "動員ちゃれんじのメインキャラクター。みんなの応援を集めて、推しの夢を叶えるお手伝いをしています。",
+    description: "動員ちゃれんじの主人公。みんなの応援を集めて、推しの夢を叶えるお手伝いをしています。",
     personality: "明るく元気で、いつもポジティブ。みんなを笑顔にするのが大好き。困っている人を見ると放っておけない性格。",
     likes: ["応援すること", "みんなの笑顔", "ライブ", "お祭り"],
     themeColor: mypageAccent.linkPink,
@@ -109,7 +109,7 @@ export const loginPatterns: LoginPattern[] = [
   {
     id: 5,
     character: "tanuneYukkuri",
-    title: "たぬねだよ！",
+    title: "たぬ姉だよ！",
     message: "チャレンジを作って、\nみんなで目標達成を目指そう！",
     highlight: "目標達成でお祝い！",
     gradientColors: mypageGradient.tanuneGreen,

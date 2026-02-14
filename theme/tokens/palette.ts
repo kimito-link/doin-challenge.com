@@ -32,13 +32,14 @@ export const palette = {
   gray800: "#171717",         // surface（カード背景）
   gray750: "#1f1f1f",         // surface alt
   gray700: "#262626",         // border
+  gray650: "#3A3F47",         // switch track (dark)
   gray600: "#404040",         // border alt
 
-  // Neutral (text) - 視認性改善（WCAG AA準拠）
-  gray500: "#525252",         // hint text
-  gray400: "#7a7a7a",         // secondary text / placeholder（コントラスト比4.61:1）
-  gray300: "#a3a3a3",         // muted text
-  gray200: "#d4d4d4",         // subtle text
+  // Neutral (text) - 視認性改善（黒背景で読めるよう semantic で gray300/200 を採用）
+  gray500: "#525252",         // 非推奨（黒背景でコントラスト不足）。semantic.textHint は gray300 を使用
+  gray400: "#7a7a7a",         // 非推奨（黒背景でやや薄い）。semantic.textSecondary は gray200 を使用
+  gray300: "#a3a3a3",         // muted / hint（プレースホルダ等）
+  gray200: "#d4d4d4",         // subtle / secondary（本文・ラベル）
   gray100: "#f5f5f5",         // primary text（最も明るい）
   white: "#FFFFFF",
 
@@ -57,10 +58,11 @@ export const palette = {
   blue500: "#3B82F6",         // info
   blue400: "#60A5FA",         // info light
   blue600: "#2563EB",         // info dark
+  blue700: "#00427B",         // deep blue (onboarding steps)
 
   // Gender colors（性別ボーダー用）
   genderMale: "#3B82F6",      // 男性: 青
-  genderFemale: "#F472B6",    // 女性: ピンク（v6.63仕様）
+  genderFemale: "#EF4444",    // 女性: 赤（仕様）
   genderNeutral: "rgba(255,255,255,0.12)", // 未設定: ニュートラル
   genderOther: "#A855F7",     // その他: パープル
 
@@ -97,15 +99,15 @@ export const palette = {
   borderKyushu: "#DC2626",
   borderOkinawa: "#EC4899",
 
-  // Heatmap Colors
+  // Heatmap Colors（温度グラデーション: 少＝ベージュ → 多＝濃い赤。最高状態で日本列島が赤く染まる）
   heatmapNone: "#1f1f1f",
-  heatmapLevel1: "#1e3a5f",
-  heatmapLevel2: "#2d5a87",
-  heatmapLevel3: "#3b7ab0",
-  heatmapLevel4: "#4a9ad8",
-  heatmapLevel5: "#59baff",
-  heatmapLevel6: "#7ecbff",
-  heatmapLevel7: "#a3dcff",
+  heatmapLevel1: "#F0DCC0", // 1,000人以上: 薄いベージュ
+  heatmapLevel2: "#E8B868", // 5,000人以上: 淡い黄橙
+  heatmapLevel3: "#E09A48", // 10,000人以上: 明るいオレンジ
+  heatmapLevel4: "#E07030", // 30,000人以上: オレンジ
+  heatmapLevel5: "#D84820", // 50,000人以上: 赤橙
+  heatmapLevel6: "#C02020", // 100,000人以上: 濃い赤
+  heatmapLevel7: "#8B1010", // 200,000人以上: 最深紅（日本列島が赤く染まる）
 
   // Heatmap Intensity Colors
   heatIntense1: "#1a1a2e",

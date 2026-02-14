@@ -1,5 +1,5 @@
-import { Text, View, Pressable, ScrollView, ActivityIndicator, Alert, TextInput , Platform} from "react-native";
-import * as Haptics from "expo-haptics";
+import { Text, View, Pressable, ScrollView, Alert } from "react-native";
+import { commonCopy } from "@/constants/copy/common";
 import { color, palette } from "@/theme/tokens";
 import { useLocalSearchParams } from "expo-router";
 import { navigateBack } from "@/lib/navigation/app-routes";
@@ -11,6 +11,7 @@ import { useColors } from "@/hooks/use-colors";
 import MaterialIcons from "@expo/vector-icons/MaterialIcons";
 import { Image } from "expo-image";
 import { AppHeader } from "@/components/organisms/app-header";
+import { Input } from "@/components/ui/input";
 
 export default function ManageCommentsScreen() {
   const colors = useColors();
@@ -192,7 +193,7 @@ export default function ManageCommentsScreen() {
                   <View
                     key={participation.id}
                     style={{
-                      backgroundColor: isPicked ? "#1E2530" : color.surface,
+                      backgroundColor: isPicked ? palette.gray800 : color.surface,
                       borderRadius: 12,
                       padding: 16,
                       marginBottom: 12,
@@ -242,7 +243,7 @@ export default function ManageCommentsScreen() {
                             paddingVertical: 4,
                           }}
                         >
-                          <Text style={{ color: colors.foreground, fontSize: 10, fontWeight: "bold" }}>
+                          <Text style={{ color: colors.foreground, fontSize: 12, fontWeight: "bold" }}>
                             ピックアップ済
                           </Text>
                         </View>
@@ -257,19 +258,11 @@ export default function ManageCommentsScreen() {
                     {/* ピックアップ理由入力 */}
                     {isPickingThis && (
                       <View style={{ marginBottom: 12 }}>
-                        <TextInput
+                        <Input
+                          label="ピックアップ理由（任意）"
                           value={pickReason}
                           onChangeText={setPickReason}
                           placeholder="ピックアップ理由（任意）"
-                          placeholderTextColor={color.textSubtle}
-                          style={{
-                            backgroundColor: colors.background,
-                            borderRadius: 8,
-                            padding: 12,
-                            color: colors.foreground,
-                            borderWidth: 1,
-                            borderColor: color.accentPrimary,
-                          }}
                           multiline
                         />
                       </View>
@@ -333,7 +326,7 @@ export default function ManageCommentsScreen() {
               <View style={{ alignItems: "center", paddingVertical: 40 }}>
                 <MaterialIcons name="chat-bubble-outline" size={64} color={color.textSubtle} />
                 <Text style={{ color: color.textMuted, fontSize: 16, marginTop: 16 }}>
-                  コメントがありません
+                  {commonCopy.empty.noComments}
                 </Text>
               </View>
             )
@@ -344,7 +337,7 @@ export default function ManageCommentsScreen() {
                 <View
                   key={picked.id}
                   style={{
-                    backgroundColor: "#1E2530",
+                    backgroundColor: palette.gray800,
                     borderRadius: 12,
                     padding: 16,
                     marginBottom: 12,
@@ -394,7 +387,7 @@ export default function ManageCommentsScreen() {
                           paddingVertical: 4,
                         }}
                       >
-                        <Text style={{ color: "#000", fontSize: 10, fontWeight: "bold" }}>
+                        <Text style={{ color: palette.gray900, fontSize: 12, fontWeight: "bold" }}>
                           動画使用済
                         </Text>
                       </View>
@@ -431,7 +424,7 @@ export default function ManageCommentsScreen() {
                           alignItems: "center",
                         }}
                       >
-                        <Text style={{ color: "#000", fontWeight: "bold" }}>
+                        <Text style={{ color: palette.gray900, fontWeight: "bold" }}>
                           動画使用済みにする
                         </Text>
                       </Pressable>
@@ -443,7 +436,7 @@ export default function ManageCommentsScreen() {
               <View style={{ alignItems: "center", paddingVertical: 40 }}>
                 <MaterialIcons name="star-outline" size={64} color={color.textSubtle} />
                 <Text style={{ color: color.textMuted, fontSize: 16, marginTop: 16 }}>
-                  ピックアップしたコメントはありません
+                  {commonCopy.empty.noPickedComments}
                 </Text>
               </View>
             )

@@ -5,7 +5,7 @@
 
 import { View, Text } from "react-native";
 import { Button } from "@/components/ui/button";
-import { mypageText, mypageUI } from "../../ui/theme/tokens";
+import { mypageText, mypageUI, mypageFont } from "../../ui/theme/tokens";
 import { loginPatterns, getRandomPattern, type LoginPattern } from "./constants";
 
 interface PatternSelectorProps {
@@ -26,7 +26,7 @@ export function PatternSelector({ currentPattern, onPatternChange }: PatternSele
           marginTop: 16,
         }}
       >
-        <Text style={{ color: mypageText.muted, fontSize: 13, marginLeft: 6 }}>
+        <Text style={{ color: mypageText.muted, fontSize: mypageFont.meta, marginLeft: 6 }}>
           他のキャラクターのメッセージを見る
         </Text>
       </Button>

@@ -7,11 +7,14 @@
  * - rankings.contribution
  * 
  * これらは最低限の疎通確認であり、詳細なロジックテストではありません。
+ * CI ではサーバーが立っていないため、API_URL 未設定時はスキップする。
  */
 
 import { describe, it, expect } from "vitest";
 
-describe("tRPC Integration Tests", () => {
+const hasApiUrl = Boolean(process.env.CI ? process.env.API_URL : true);
+
+describe.skipIf(!hasApiUrl)("tRPC Integration Tests", () => {
   const API_BASE = process.env.API_URL || "http://localhost:3000";
 
   describe("events router", () => {

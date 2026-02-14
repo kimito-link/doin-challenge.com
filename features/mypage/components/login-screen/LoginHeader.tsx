@@ -6,7 +6,7 @@
 import { Text } from "react-native";
 import { Image } from "expo-image";
 import { useColors } from "@/hooks/use-colors";
-import { mypageText } from "../../ui/theme/tokens";
+import { mypageText, mypageFont } from "../../ui/theme/tokens";
 import { logoImage } from "./constants";
 import { CharacterIconRow } from "./CharacterIconRow";
 
@@ -28,7 +28,7 @@ export function LoginHeader() {
       />
       <Text style={{ 
         color: colors.foreground, 
-        fontSize: 20, 
+fontSize: mypageFont.lg,
         fontWeight: "bold",
         marginBottom: 8,
         textAlign: "center",
@@ -37,7 +37,7 @@ export function LoginHeader() {
       </Text>
       <Text style={{ 
         color: mypageText.muted, 
-        fontSize: 14,
+        fontSize: mypageFont.body,
         marginBottom: 24,
         textAlign: "center",
       }}>

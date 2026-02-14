@@ -1,7 +1,6 @@
-import { Text, View, ScrollView, Pressable, FlatList, RefreshControl, Alert , Platform} from "react-native";
-import * as Haptics from "expo-haptics";
-import { color, palette } from "@/theme/tokens";
-import { Image } from "expo-image";
+import { Text, View, ScrollView, Pressable, RefreshControl, Alert } from "react-native";
+import { commonCopy } from "@/constants/copy/common";
+import { color } from "@/theme/tokens";
 import { useLocalSearchParams } from "expo-router";
 import { navigate, navigateBack } from "@/lib/navigation";
 import { useState } from "react";
@@ -14,18 +13,6 @@ import { AppHeader } from "@/components/organisms/app-header";
 import { RefreshingIndicator } from "@/components/molecules/refreshing-indicator";
 import { UserProfileHeader } from "@/components/organisms/user-profile-header";
 
-// バッジアイコンマッピング
-const badgeIcons: Record<string, string> = {
-  "🌟": "star",
-  "🏆": "emoji-events",
-  "🎯": "gps-fixed",
-  "👑": "workspace-premium",
-  "🔥": "local-fire-department",
-  "💎": "diamond",
-  "🎵": "music-note",
-  "🎤": "mic",
-  "🎉": "celebration",
-};
 
 export default function ProfileScreen() {
   const colors = useColors();
@@ -74,10 +61,10 @@ export default function ProfileScreen() {
   const followMutation = trpc.follows.follow.useMutation({
     onSuccess: () => {
       refetchFollowStatus();
-      Alert.alert("フォローしました", "新着チャレンジの通知を受け取れます");
+      Alert.alert(commonCopy.alerts.followDone, "新着チャレンジの通知を受け取れます");
     },
     onError: (error) => {
-      Alert.alert("エラー", error.message);
+      Alert.alert(commonCopy.alerts.error, error.message);
     },
   });
 
@@ -86,7 +73,7 @@ export default function ProfileScreen() {
       refetchFollowStatus();
     },
     onError: (error) => {
-      Alert.alert("エラー", error.message);
+      Alert.alert(commonCopy.alerts.error, error.message);
     },
   });
 
@@ -102,7 +89,7 @@ export default function ProfileScreen() {
 
   const handleFollowToggle = () => {
     if (!user) {
-      Alert.alert("ログインが必要です", "フォローするにはログインしてください");
+      Alert.alert(commonCopy.alerts.loginRequired, "フォローするにはログインしてください");
       return;
     }
 
@@ -328,7 +315,7 @@ export default function ProfileScreen() {
             ) : (
               <View style={{ alignItems: "center", padding: 32 }}>
                 <MaterialIcons name="event-busy" size={48} color={color.textSubtle} />
-                <Text style={{ color: color.textMuted, marginTop: 12 }}>参加履歴がありません</Text>
+                <Text style={{ color: color.textMuted, marginTop: 12 }}>{commonCopy.empty.noParticipationHistory}</Text>
               </View>
             )
           ) : (
@@ -359,7 +346,7 @@ export default function ProfileScreen() {
                     <Text style={{ color: colors.foreground, fontSize: 12, fontWeight: "600", textAlign: "center" }}>
                       {badge.name}
                     </Text>
-                    <Text style={{ color: color.textMuted, fontSize: 10, textAlign: "center", marginTop: 2 }}>
+                    <Text style={{ color: color.textMuted, fontSize: 12, textAlign: "center", marginTop: 2 }}>
                       {new Date(badge.earnedAt).toLocaleDateString("ja-JP")}
                     </Text>
                   </View>
@@ -368,7 +355,7 @@ export default function ProfileScreen() {
             ) : (
               <View style={{ alignItems: "center", padding: 32 }}>
                 <MaterialIcons name="emoji-events" size={48} color={color.textSubtle} />
-                <Text style={{ color: color.textMuted, marginTop: 12 }}>バッジがありません</Text>
+                <Text style={{ color: color.textMuted, marginTop: 12 }}>{commonCopy.empty.noBadges}</Text>
               </View>
             )
           )}

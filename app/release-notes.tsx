@@ -1,18 +1,19 @@
-import { View, Text, ScrollView, Pressable, ActivityIndicator } from "react-native";
-import * as Haptics from "expo-haptics";
-import { color, palette } from "@/theme/tokens";
+import { View, Text, ScrollView, Pressable } from "react-native";
+import { commonCopy } from "@/constants/copy/common";
+import { color } from "@/theme/tokens";
 import { navigateBack } from "@/lib/navigation";
 import { ScreenContainer } from "@/components/organisms/screen-container";
-import { AppHeader } from "@/components/organisms/app-header";
+import { LoadingIndicator } from "@/components/molecules/loading-screen";
 import MaterialIcons from "@expo/vector-icons/MaterialIcons";
-import { APP_VERSION } from "@/shared/version";
 import { trpc } from "@/lib/trpc";
+import * as Haptics from "expo-haptics";
+import { APP_VERSION } from "@/shared/version";
 
 // 変更タイプのアイコンと色
 const changeTypeConfig = {
   new: { icon: "new-releases", color: color.accentPrimary, label: "新機能" },
   improve: { icon: "trending-up", color: color.accentAlt, label: "改善" },
-  fix: { icon: "build", color: "#FBBF24", label: "修正" },
+  fix: { icon: "build", color: color.warning, label: "修正" },
   change: { icon: "swap-horiz", color: color.textMuted, label: "変更" },
 };
 
@@ -55,8 +56,7 @@ export default function ReleaseNotesScreen() {
         {/* ローディング */}
         {isLoading && (
           <View style={{ alignItems: "center", padding: 32 }}>
-            <ActivityIndicator size="large" color={color.accentPrimary} />
-            <Text style={{ color: color.textMuted, marginTop: 16 }}>読み込み中...</Text>
+            <LoadingIndicator message="読み込み中..." />
           </View>
         )}
 
@@ -112,7 +112,7 @@ export default function ReleaseNotesScreen() {
         {!isLoading && releaseNotes?.length === 0 && (
           <View style={{ alignItems: "center", padding: 32 }}>
             <MaterialIcons name="info-outline" size={48} color={color.textMuted} />
-            <Text style={{ color: color.textMuted, marginTop: 16 }}>リリースノートがありません</Text>
+            <Text style={{ color: color.textMuted, marginTop: 16 }}>{commonCopy.empty.noReleaseNotes}</Text>
           </View>
         )}
       </ScrollView>

@@ -5,10 +5,8 @@ import { color, palette } from "@/theme/tokens";
 import { LinearGradient } from "expo-linear-gradient";
 import MaterialIcons from "@expo/vector-icons/MaterialIcons";
 import { useColors } from "@/hooks/use-colors";
-import { useResponsive } from "@/hooks/use-responsive";
 import { AnimatedCard } from "@/components/molecules/animated-pressable";
 import { LazyAvatar } from "@/components/molecules/lazy-image";
-import { Countdown } from "@/components/atoms/countdown";
 import { goalTypeConfig } from "@/constants/goal-types";
 
 interface Challenge {
@@ -62,8 +60,8 @@ const CARD_COLORS = [
 
 // イベントタイプのバッジ
 const eventTypeBadge: Record<string, { label: string; color: string }> = {
-  solo: { label: "ソロ", color: "rgba(0,0,0,0.3)" },
-  group: { label: "グループ", color: "rgba(0,0,0,0.3)" },
+  solo: { label: "ソロ", color: palette.black + "4D" }, // 30% opacity
+  group: { label: "グループ", color: palette.black + "4D" }, // 30% opacity
 };
 
 /**
@@ -85,7 +83,6 @@ export function ColorfulChallengeCard({
   onDelete,
 }: ColorfulChallengeCardProps) {
   const colors = useColors();
-  const { isDesktop } = useResponsive();
   const eventDate = new Date(challenge.eventDate);
   const formattedDate = `${eventDate.getMonth() + 1}/${eventDate.getDate()}`;
   
@@ -93,7 +90,6 @@ export function ColorfulChallengeCard({
   const goalConfig = goalTypeConfig[challenge.goalType] || goalTypeConfig.custom;
   const typeBadge = eventTypeBadge[challenge.eventType] || eventTypeBadge.solo;
   const unit = challenge.goalUnit || goalConfig.unit;
-  const remaining = Math.max(challenge.goalValue - challenge.currentValue, 0);
 
   // width(px)が来たらそれを使用、来なければ従来互換でフォールバック
   const fallbackCardWidth = numColumns === 3 ? "31%" : numColumns === 2 ? "47%" : "100%";
@@ -104,13 +100,13 @@ export function ColorfulChallengeCard({
   
   if (challenge.hostGender === "male") {
     // 男性: 青系グラデーション
-    cardColor = { bg: "#1E40AF", gradient: ["#1E40AF", "#3B82F6", "#60A5FA"] };
+    cardColor = { bg: palette.blue600, gradient: [palette.blue600, palette.blue500, palette.blue400] };
   } else if (challenge.hostGender === "female") {
     // 女性: ピンク系グラデーション
-    cardColor = { bg: "#BE185D", gradient: ["#BE185D", "#EC4899", "#F472B6"] };
+    cardColor = { bg: palette.pink600, gradient: [palette.pink600, palette.pink500, palette.pink500] };
   } else if (challenge.hostGender === "unspecified") {
     // 未指定: グレー系グラデーション
-    cardColor = { bg: "#475569", gradient: ["#475569", "#64748B", "#94A3B8"] };
+    cardColor = { bg: palette.gray600, gradient: [palette.gray600, palette.gray500, palette.gray400] };
   } else {
     // 性別情報がない場合は従来のカラフルカラーを使用
     const safeId = challenge?.id ?? 0;
@@ -183,7 +179,7 @@ export function ColorfulChallengeCard({
               <MaterialIcons 
                 name={isFavorite ? "star" : "star-outline"} 
                 size={20} 
-                color={isFavorite ? color.rankGold : "rgba(255,255,255,0.6)"} 
+                color={isFavorite ? color.rankGold : palette.white + "99"} // 60% opacity 
                 style={pressed ? { opacity: 0.6 } : undefined}
               />
             )}
@@ -206,7 +202,7 @@ export function ColorfulChallengeCard({
                 <MaterialIcons 
                   name="more-horiz" 
                   size={20} 
-                  color={isOwner ? "rgba(255,255,255,0.9)" : "rgba(255,255,255,0.6)"} 
+                  color={isOwner ? palette.white + "E6" : palette.white + "99"} // 90% opacity or 60% opacity 
                   style={pressed ? { opacity: 0.6 } : undefined}
                 />
                 {/* 運営者バッジ */}
@@ -231,7 +227,7 @@ export function ColorfulChallengeCard({
               <LazyAvatar
                 source={challenge.hostProfileImage ? { uri: challenge.hostProfileImage } : undefined}
                 size={20}
-                fallbackColor="rgba(255,255,255,0.3)"
+                fallbackColor={palette.white + "4D"} // 30% opacity
                 fallbackText={(challenge.hostName || "?").charAt(0)}
               />
               <View style={styles.hostInfo}>
@@ -252,7 +248,7 @@ export function ColorfulChallengeCard({
                 <Text style={styles.badgeText}>{typeBadge.label}</Text>
               </View>
               {challenge.venue && (
-                <View style={[styles.badge, { backgroundColor: "rgba(0,0,0,0.2)" }]}>
+                <View style={[styles.badge, { backgroundColor: palette.black + "33" }]}>
                   <MaterialIcons name="place" size={10} color={color.textWhite} />
                   <Text style={[styles.badgeText, { marginLeft: 2 }]} numberOfLines={1}>
                     {challenge.venue}
@@ -278,14 +274,14 @@ export function ColorfulChallengeCard({
 
             {/* 日付（右下） */}
             <View style={styles.dateContainer}>
-              <MaterialIcons name="event" size={14} color="rgba(255,255,255,0.8)" />
+              <MaterialIcons name="event" size={14} color={palette.white + "CC"} />
               <Text style={styles.dateText}>{formattedDate}</Text>
             </View>
           </View>
 
           {/* コメントアイコン（右下） */}
           <View style={styles.commentIcon}>
-            <MaterialIcons name="chat-bubble-outline" size={18} color="rgba(255,255,255,0.6)" />
+            <MaterialIcons name="chat-bubble-outline" size={18} color={palette.white + "99"} />
           </View>
         </LinearGradient>
       </AnimatedCard>
@@ -363,7 +359,7 @@ const styles = StyleSheet.create({
     alignItems: "center",
   },
   ownerBadge: {
-    backgroundColor: "rgba(255,255,255,0.3)",
+    backgroundColor: palette.white + "4D", // 30% opacity
     paddingHorizontal: 6,
     paddingVertical: 2,
     borderRadius: 8,
@@ -371,7 +367,7 @@ const styles = StyleSheet.create({
   },
   ownerBadgeText: {
     color: color.textWhite,
-    fontSize: 9,
+    fontSize: 12,
     fontWeight: "600",
   },
   content: {
@@ -387,7 +383,7 @@ const styles = StyleSheet.create({
     fontWeight: "bold",
     textAlign: "center",
     marginBottom: 8,
-    textShadowColor: "rgba(0,0,0,0.2)",
+    textShadowColor: palette.black + "33", // 20% opacity
     textShadowOffset: { width: 0, height: 1 },
     textShadowRadius: 2,
   },
@@ -407,7 +403,7 @@ const styles = StyleSheet.create({
   },
   badgeText: {
     color: color.textWhite,
-    fontSize: 10,
+    fontSize: 12,
     fontWeight: "600",
   },
   progressContainer: {
@@ -423,7 +419,7 @@ const styles = StyleSheet.create({
   },
   progressBar: {
     height: 4,
-    backgroundColor: "rgba(255,255,255,0.3)",
+    backgroundColor: palette.white + "4D", // 30% opacity
     borderRadius: 2,
     overflow: "hidden",
   },
@@ -440,7 +436,7 @@ const styles = StyleSheet.create({
     alignItems: "center",
   },
   dateText: {
-    color: "rgba(255,255,255,0.8)",
+    color: palette.white + "CC", // 80% opacity
     fontSize: 12,
     marginLeft: 4,
   },
@@ -460,18 +456,18 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   hostName: {
-    color: "rgba(255,255,255,0.9)",
-    fontSize: 11,
+    color: palette.white + "E6", // 90% opacity
+    fontSize: 12,
     fontWeight: "600",
   },
   hostUsername: {
-    color: "rgba(255,255,255,0.7)",
-    fontSize: 9,
+    color: palette.white + "B3", // 70% opacity
+    fontSize: 12,
   },
   // モーダルスタイル
   modalOverlay: {
     flex: 1,
-    backgroundColor: "rgba(0,0,0,0.5)",
+    backgroundColor: palette.black + "80", // 50% opacity
     justifyContent: "center",
     alignItems: "center",
     padding: 20,

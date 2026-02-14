@@ -77,5 +77,11 @@ export { MemoizedChallengeCard } from "./memoized-challenge-card";
 export { ResponsiveContainer } from "./responsive-container";
 export { TutorialResetButton } from "./tutorial-reset-button";
 export { ColorfulChallengeCard } from "./colorful-challenge-card";
-export { TwitterUserCard } from "./twitter-user-card";
+export {
+  TwitterUserCard,
+  TwitterUserCompact,
+  TwitterAvatar,
+  toTwitterUserData,
+  type TwitterUserData,
+} from "./twitter-user-card";
 export { InlineValidationError } from "./inline-validation-error";

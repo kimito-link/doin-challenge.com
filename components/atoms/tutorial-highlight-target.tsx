@@ -60,7 +60,7 @@ export function TutorialHighlightTarget({
         }
       });
     }
-  }, [tutorial.isActive, tutorial.userType, tutorial.currentStepIndex, tutorialStep, userType, circular]);
+  }, [tutorial, tutorialStep, userType, circular]);
 
   // チュートリアルステップが変わったときにハイライトを更新
   useEffect(() => {
@@ -89,7 +89,7 @@ export function TutorialHighlightTarget({
       
       return () => clearTimeout(timer);
     }
-  }, [tutorial.isActive, tutorial.userType, tutorial.currentStepIndex, tutorialStep, userType, circular]);
+  }, [tutorial, tutorialStep, userType, circular]);
 
   return (
     <View ref={viewRef} onLayout={handleLayout} {...props}>

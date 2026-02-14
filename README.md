@@ -9,33 +9,11 @@
 
 ## 🚨 最重要：デプロイ方法（AI・人間共通）
 
-### GitHubパーソナルアクセストークン
-
-**トークン**: `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`
-
-**使用方法**:
-```bash
-cd /tmp
-git clone https://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@github.com/kimito-link/doin-challenge.com.git doin-deploy
-cd doin-deploy
-# Manusの変更をコピー
-cp -r /home/ubuntu/birthday-celebration/app .
-cp -r /home/ubuntu/birthday-celebration/components .
-cp -r /home/ubuntu/birthday-celebration/server .
-cp -r /home/ubuntu/birthday-celebration/shared .
-cp -r /home/ubuntu/birthday-celebration/drizzle .
-cp /home/ubuntu/birthday-celebration/todo.md .
-# コミットしてpush
-git add -A
-git commit -m "v6.xxx: 変更内容の説明"
-git push origin main
-```
-
 ### デプロイの3つの方法
 
 | 方法 | コマンド/手順 | 所要時間 |
 |------|--------------|---------|
-| **1. Manusから** | 上記のGitHubトークンを使用した手動デプロイ | 5-10分 |
+| **1. Manusから** | `./scripts/deploy-to-production.sh "コミットメッセージ"` | 5-10分 |
 | **2. スマホから** | GitHubアプリ → Actions → "Manual Deploy" → "Run workflow" | 5-10分 |
 | **3. PCから** | GitHubウェブ → Actions → "Manual Deploy" → "Run workflow" | 5-10分 |
 
@@ -52,29 +30,11 @@ git push origin main
 3. **Health Check API**: https://doin-challenge.com/api/health
    - `commitSha`が最新のコミットハッシュと一致しているか確認
 
-### デプロイ前チェックリスト
-
-**必ず実行してください**（特にVercelデプロイエラーを防ぐため）：
-
-```bash
-# 1. 動的require()の検索（Vercelビルドエラーの主な原因）
-grep -rn 'require(`' --include="*.ts" --include="*.tsx" app/ components/ hooks/ lib/ features/
-
-# 2. TypeScriptエラーの確認
-pnpm check
-
-# 3. ローカルビルドの成功確認
-pnpm build
-```
-
-詳細は `docs/VERCEL_DEPLOY_RULES.md` を参照してください。
-
 ### トラブルシューティング
 
-- **ワークフローが失敗した場合**: `docs/DEPLOY.md` を参照
+- **ワークフローが失敗した場合**: `docs/deployment-guide.md` を参照
 - **バージョンが更新されない場合**: GitHub Actionsのログを確認
-- **Vercelビルドエラー**: `docs/VERCEL_DEPLOY_RULES.md` を参照
-- **詳細な手順**: `docs/DEPLOY.md` を参照
+- **詳細な手順**: `docs/deployment-guide.md` を参照
 
 ---
 
@@ -99,10 +59,9 @@ pnpm build
 | ファイル | 内容 | 優先度 |
 |---------|------|--------|
 | `docs/chatlog-YYYYMMDD.md` | 過去の作業ログ（必ず読む） | 🔴 最高 |
-| `docs/DEPLOY.md` | デプロイ手順の詳細 | 🔴 最高 |
-| `docs/VERCEL_DEPLOY_RULES.md` | Vercelデプロイ前チェックリスト | 🔴 最高 |
+| `docs/deployment-guide.md` | デプロイ手順の詳細 | 🔴 最高 |
 | `docs/development-guide.md` | 開発環境のセットアップ | 🟡 高 |
-| `docs/architecture.md` | アーキテクチャの説明 | 🟢 中 |
+| `docs/ARCHITECTURE.md` | アーキテクチャの説明 | 🟢 中 |
 | `docs/gate1.md` | 本番環境の品質基準 | 🔴 最高 |
 | `todo.md` | 未完了タスク一覧 | 🔴 最高 |
 

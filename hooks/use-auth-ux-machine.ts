@@ -7,6 +7,7 @@
  */
 
 import { useReducer, useCallback, useEffect } from "react";
+import { Platform } from "react-native";
 import { useAuth } from "@/hooks/use-auth";
 
 /**
@@ -212,24 +213,27 @@ export function useAuthUxMachine() {
   // 確認モーダルで「はい」
   const confirmYes = useCallback(async () => {
     dispatch({ type: "CONFIRM_YES" });
-    // redirecting状態に遷移後、login()を呼び出す
     try {
       await login();
-      // login()成功後、waitingReturn状態に遷移（30秒タイムアウト）
-      dispatch({
-        type: "WAITING_RETURN_START",
-        startedAt: Date.now(),
-        timeoutMs: 30000, // 30秒
-      });
+      // Web: window.location.href でページ遷移するので待機画面は不要
+      // Native: 外部ブラウザが開くので、短いタイムアウトで待機
+      if (Platform.OS !== "web") {
+        dispatch({
+          type: "WAITING_RETURN_START",
+          startedAt: Date.now(),
+          timeoutMs: 15000,
+        });
+      }
+      // Webではそのまま（redirecting状態のまま画面遷移が発生する）
     } catch (error) {
-      // エラーは無視（Auth Contextが管理）
       console.error("[useAuthUxMachine] login() error:", error);
-      // waitingReturn状態に遷移（エラー検知はAuth Contextで行う）
-      dispatch({
-        type: "WAITING_RETURN_START",
-        startedAt: Date.now(),
-        timeoutMs: 30000,
-      });
+      if (Platform.OS !== "web") {
+        dispatch({
+          type: "WAITING_RETURN_START",
+          startedAt: Date.now(),
+          timeoutMs: 15000,
+        });
+      }
     }
   }, [login]);
 

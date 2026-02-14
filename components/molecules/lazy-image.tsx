@@ -1,5 +1,5 @@
 import { View, StyleSheet, Animated, Platform } from "react-native";
-import { color, palette } from "@/theme/tokens";
+import { color } from "@/theme/tokens";
 import { Image, ImageProps } from "expo-image";
 import { useState, useRef, useEffect, useCallback } from "react";
 
@@ -138,14 +138,12 @@ export function LazyAvatar({
   ...props
 }: LazyImageProps & { size?: number; fallbackText?: string }) {
   const [hasError, setHasError] = useState(false);
-  const [isLoaded, setIsLoaded] = useState(false);
   const fadeAnim = useRef(new Animated.Value(0)).current;
 
   // sourceがない、またはエラーの場合はフォールバック表示
   const showFallback = !props.source || hasError;
 
   const handleLoad = useCallback(() => {
-    setIsLoaded(true);
     Animated.timing(fadeAnim, {
       toValue: 1,
       duration: 200,

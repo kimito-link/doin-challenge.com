@@ -1,5 +1,5 @@
 import { View, Text, StyleSheet } from "react-native";
-import { color } from "@/theme/tokens";
+import { color, palette } from "@/theme/tokens";
 
 type BadgeVariant = "default" | "success" | "warning" | "error" | "info" | "primary";
 type BadgeSize = "sm" | "md" | "lg";
@@ -13,32 +13,32 @@ interface BadgeProps {
 
 const variantStyles = {
   default: {
-    bg: "rgba(156, 163, 175, 0.2)",
+    bg: palette.gray400 + "33",
     text: color.textMuted,
     border: color.textSubtle,
   },
   success: {
-    bg: "rgba(34, 197, 94, 0.2)",
+    bg: color.success + "33",
     text: color.success,
     border: color.success,
   },
   warning: {
-    bg: "rgba(245, 158, 11, 0.2)",
+    bg: color.warning + "33",
     text: color.warning,
     border: color.warning,
   },
   error: {
-    bg: "rgba(239, 68, 68, 0.2)",
+    bg: color.danger + "33",
     text: color.danger,
     border: color.danger,
   },
   info: {
-    bg: "rgba(59, 130, 246, 0.2)",
+    bg: color.info + "33",
     text: color.info,
     border: color.info,
   },
   primary: {
-    bg: "rgba(221, 101, 0, 0.2)",
+    bg: color.hostAccentLegacy + "33",
     text: color.hostAccentLegacy,
     border: color.hostAccentLegacy,
   },
@@ -48,7 +48,7 @@ const sizeStyles = {
   sm: {
     paddingVertical: 2,
     paddingHorizontal: 8,
-    fontSize: 10,
+    fontSize: 12,
     borderRadius: 4,
   },
   md: {

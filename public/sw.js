@@ -1,9 +1,14 @@
 // Service Worker for 動員ちゃれんじ
 // Cache-first strategy for static assets, network-first for API
+// 重要: キャッシュバージョンを更新することで、古いキャッシュを強制的に削除する
+// バージョンはビルド時に更新される（public/version.jsonのcommitShaを使用）
 
-const CACHE_NAME = 'douin-challenge-v1';
-const STATIC_CACHE_NAME = 'douin-static-v1';
-const API_CACHE_NAME = 'douin-api-v1';
+// キャッシュバージョン（ビルド時に更新される）
+// デフォルトはタイムスタンプベース（手動更新時も有効）
+const CACHE_VERSION = 'v2-' + Date.now();
+const CACHE_NAME = 'douin-challenge-' + CACHE_VERSION;
+const STATIC_CACHE_NAME = 'douin-static-' + CACHE_VERSION;
+const API_CACHE_NAME = 'douin-api-' + CACHE_VERSION;
 
 // Static assets to cache on install
 const STATIC_ASSETS = [
@@ -33,20 +38,19 @@ self.addEventListener('activate', (event) => {
   console.log('[SW] Activating Service Worker...');
   event.waitUntil(
     caches.keys().then((cacheNames) => {
+      // すべてのdouin-で始まるキャッシュを削除（新しいバージョンに強制更新）
       return Promise.all(
         cacheNames
-          .filter((name) => {
-            return name.startsWith('douin-') && 
-                   name !== CACHE_NAME && 
-                   name !== STATIC_CACHE_NAME && 
-                   name !== API_CACHE_NAME;
-          })
+          .filter((name) => name.startsWith('douin-'))
           .map((name) => {
             console.log('[SW] Deleting old cache:', name);
             return caches.delete(name);
           })
       );
-    }).then(() => self.clients.claim())
+    }).then(() => {
+      // すべてのクライアントを即座に制御下に置く（更新を強制）
+      return self.clients.claim();
+    })
   );
 });
 
@@ -139,20 +143,27 @@ async function networkFirstStrategy(request, cacheName) {
 }
 
 // Navigation strategy (for page requests)
+// 重要: PWAで真っ暗になる問題を防ぐため、常にネットワーク優先
+// 古いキャッシュを返さない（キャッシュが原因でクラッシュする可能性があるため）
 async function navigationStrategy(request) {
   try {
-    const networkResponse = await fetch(request);
-    return networkResponse;
-  } catch (error) {
-    // Network failed, try to return cached page or offline page
-    const cache = await caches.open(STATIC_CACHE_NAME);
-    const cachedResponse = await cache.match(request);
+    // 常にネットワークから取得（キャッシュは使わない）
+    const networkResponse = await fetch(request, {
+      cache: 'no-store', // キャッシュを無視して常にネットワークから取得
+    });
     
-    if (cachedResponse) {
-      return cachedResponse;
+    // 成功した場合のみレスポンスを返す
+    if (networkResponse.ok) {
+      return networkResponse;
     }
     
-    // Return offline page
+    // ネットワークエラーまたは非200レスポンスの場合、エラーを投げる
+    throw new Error(`Network response not ok: ${networkResponse.status}`);
+  } catch (error) {
+    console.error('[SW] Navigation request failed:', error);
+    
+    // オフラインページのみ返す（古いキャッシュは返さない）
+    const cache = await caches.open(STATIC_CACHE_NAME);
     const offlinePage = await cache.match('/offline.html');
     if (offlinePage) {
       return offlinePage;
@@ -198,7 +209,11 @@ async function fetchAndCache(request, cache) {
 
 // Listen for messages from the main thread
 self.addEventListener('message', (event) => {
-  if (event.data === 'skipWaiting') {
-    self.skipWaiting();
+  if (event.data === 'skipWaiting' || (event.data && event.data.type === 'SKIP_WAITING')) {
+    console.log('[SW] Received skipWaiting message, activating immediately');
+    self.skipWaiting().then(() => {
+      // すべてのクライアントに新しいService Workerが有効になったことを通知
+      return self.clients.claim();
+    });
   }
 });

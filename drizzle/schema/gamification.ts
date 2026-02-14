@@ -1,38 +1,27 @@
 /**
  * Gamification-related Schema Tables
- * 
+ *
  * バッジ・アチーブメント・達成記念ページ関連のテーブル定義
  */
 
 import { mysqlTable, int, varchar, text, timestamp, mysqlEnum, boolean } from "drizzle-orm/mysql-core";
 
-// =============================================================================
-// Badges Table
-// =============================================================================
-
-/**
- * バッジマスターテーブル
- */
 export const badges = mysqlTable("badges", {
   id: int("id").autoincrement().primaryKey(),
   name: varchar("name", { length: 100 }).notNull(),
   description: text("description"),
   iconUrl: text("iconUrl"),
   type: mysqlEnum("type", ["participation", "achievement", "milestone", "special"]).default("participation").notNull(),
-  conditionType: mysqlEnum("conditionType", ["first_participation", "goal_reached", "milestone_25", "milestone_50", "milestone_75", "contribution_5", "contribution_10", "contribution_20", "host_challenge", "special", "follower_badge"]).notNull(),
+  conditionType: mysqlEnum("conditionType", [
+    "first_participation", "goal_reached", "milestone_25", "milestone_50", "milestone_75",
+    "contribution_5", "contribution_10", "contribution_20", "host_challenge", "special", "follower_badge",
+  ]).notNull(),
   createdAt: timestamp("createdAt").defaultNow().notNull(),
 });
 
 export type Badge = typeof badges.$inferSelect;
 export type InsertBadge = typeof badges.$inferInsert;
 
-// =============================================================================
-// User Badges Table
-// =============================================================================
-
-/**
- * ユーザーバッジ関連テーブル
- */
 export const userBadges = mysqlTable("user_badges", {
   id: int("id").autoincrement().primaryKey(),
   userId: int("userId").notNull(),
@@ -44,13 +33,6 @@ export const userBadges = mysqlTable("user_badges", {
 export type UserBadge = typeof userBadges.$inferSelect;
 export type InsertUserBadge = typeof userBadges.$inferInsert;
 
-// =============================================================================
-// Achievements Table
-// =============================================================================
-
-/**
- * アチーブメントマスターテーブル
- */
 export const achievements = mysqlTable("achievements", {
   id: int("id").autoincrement().primaryKey(),
   name: varchar("name", { length: 100 }).notNull(),
@@ -59,26 +41,10 @@ export const achievements = mysqlTable("achievements", {
   icon: varchar("icon", { length: 32 }).default("🏆").notNull(),
   type: mysqlEnum("type", ["participation", "hosting", "invitation", "contribution", "streak", "special"]).default("participation").notNull(),
   conditionType: mysqlEnum("conditionType", [
-    "first_participation",
-    "participate_5",
-    "participate_10",
-    "participate_25",
-    "participate_50",
-    "first_host",
-    "host_5",
-    "host_10",
-    "invite_1",
-    "invite_5",
-    "invite_10",
-    "invite_25",
-    "contribution_10",
-    "contribution_50",
-    "contribution_100",
-    "streak_3",
-    "streak_7",
-    "streak_30",
-    "goal_reached",
-    "special"
+    "first_participation", "participate_5", "participate_10", "participate_25", "participate_50",
+    "first_host", "host_5", "host_10", "invite_1", "invite_5", "invite_10", "invite_25",
+    "contribution_10", "contribution_50", "contribution_100", "streak_3", "streak_7", "streak_30",
+    "goal_reached", "special",
   ]).notNull(),
   conditionValue: int("conditionValue").default(1).notNull(),
   points: int("points").default(10).notNull(),
@@ -90,13 +56,6 @@ export const achievements = mysqlTable("achievements", {
 export type Achievement = typeof achievements.$inferSelect;
 export type InsertAchievement = typeof achievements.$inferInsert;
 
-// =============================================================================
-// User Achievements Table
-// =============================================================================
-
-/**
- * ユーザーアチーブメントテーブル
- */
 export const userAchievements = mysqlTable("user_achievements", {
   id: int("id").autoincrement().primaryKey(),
   userId: int("userId").notNull(),
@@ -111,13 +70,6 @@ export const userAchievements = mysqlTable("user_achievements", {
 export type UserAchievement = typeof userAchievements.$inferSelect;
 export type InsertUserAchievement = typeof userAchievements.$inferInsert;
 
-// =============================================================================
-// Achievement Pages Table
-// =============================================================================
-
-/**
- * 達成記念ページテーブル
- */
 export const achievementPages = mysqlTable("achievement_pages", {
   id: int("id").autoincrement().primaryKey(),
   challengeId: int("challengeId").notNull(),
@@ -134,13 +86,6 @@ export const achievementPages = mysqlTable("achievement_pages", {
 export type AchievementPage = typeof achievementPages.$inferSelect;
 export type InsertAchievementPage = typeof achievementPages.$inferInsert;
 
-// =============================================================================
-// Picked Comments Table
-// =============================================================================
-
-/**
- * ピックアップコメントテーブル
- */
 export const pickedComments = mysqlTable("picked_comments", {
   id: int("id").autoincrement().primaryKey(),
   participationId: int("participationId").notNull(),

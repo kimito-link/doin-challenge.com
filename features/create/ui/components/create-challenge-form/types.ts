@@ -27,9 +27,14 @@ export type CreateChallengeFormProps = {
   validationErrors: ValidationError[];
   isPending: boolean;
   categoriesData?: CategoryData[];
+  isCategoriesLoading?: boolean;
   isDesktop: boolean;
   titleInputRef: RefObject<View | null>;
   dateInputRef: RefObject<View | null>;
+  /** 未ログイン時のバリデーションでスクロール先にするref */
+  loginSectionRef?: RefObject<View | null>;
+  /** 未ログイン時のログイン開始（共通LoginModalを開く）。未指定時は useAuth().login */
+  onLoginOpen?: () => void;
 };
 
 /**
@@ -37,6 +42,10 @@ export type CreateChallengeFormProps = {
  */
 export type TwitterLoginSectionProps = {
   onLogin: () => void;
+  /** バリデーションエラー時に吹き出しで表示 */
+  showHostError?: boolean;
+  /** ラップ用ref（スクロール先） */
+  innerRef?: RefObject<View | null>;
 };
 
 /**

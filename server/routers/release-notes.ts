@@ -4,7 +4,7 @@
  * リリースノート（アップデート履歴）のtRPCエンドポイント
  */
 import { z } from "zod";
-import { publicProcedure, router } from "../_core/trpc";
+import { publicProcedure, protectedProcedure, router } from "../_core/trpc";
 import { getDb, desc } from "../db/connection";
 import { releaseNotes } from "../../drizzle/schema";
 
@@ -26,5 +26,29 @@ export const releaseNotesRouter = router({
       if (!db) return [];
       
       return db.select().from(releaseNotes).orderBy(desc(releaseNotes.date)).limit(input.limit);
+    }),
+
+  // リリースノートを追加（管理者のみ）
+  add: protectedProcedure
+    .input(z.object({
+      version: z.string(),
+      date: z.string(),
+      title: z.string(),
+      changes: z.array(z.object({
+        type: z.enum(["new", "improve", "fix", "change"]),
+        text: z.string(),
+      })),
+    }))
+    .mutation(async ({ ctx, input }) => {
+      if (ctx.user.role !== "admin") {
+        throw new Error("管理者権限が必要です");
+      }
+      const db = await getDb();
+      if (!db) {
+        throw new Error("データベース接続に失敗しました");
+      }
+      
+      await db.insert(releaseNotes).values(input);
+      return { success: true };
     }),
 });

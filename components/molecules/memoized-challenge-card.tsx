@@ -1,5 +1,5 @@
 import { memo, useCallback } from "react";
-import { color, palette } from "@/theme/tokens";
+import { color } from "@/theme/tokens";
 import { View, Text, Pressable, StyleSheet, Platform } from "react-native";
 import { Image } from "expo-image";
 import { LinearGradient } from "expo-linear-gradient";
@@ -50,7 +50,6 @@ export const MemoizedChallengeCard = memo<MemoizedChallengeCardProps>(
     const progress = Math.min((challenge.currentValue / challenge.goalValue) * 100, 100);
     const goalConfig = goalTypeConfig[challenge.goalType] || goalTypeConfig.custom;
     const unit = challenge.goalUnit || goalConfig.unit;
-    const remaining = Math.max(challenge.goalValue - challenge.currentValue, 0);
     const badge = eventTypeBadge[challenge.eventType];
 
     // カードの幅を計算
@@ -231,7 +230,7 @@ const styles = StyleSheet.create({
   },
   badgeText: {
     color: color.textWhite,
-    fontSize: 10,
+    fontSize: 12,
     fontWeight: "600",
   },
   title: {

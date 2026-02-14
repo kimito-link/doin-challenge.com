@@ -2,7 +2,7 @@
 
 **プロジェクト**: 君斗りんくの動員ちゃれんじ  
 **ドメイン**: doin-challenge.com  
-**最終更新**: 2026年2月1日  
+**最終更新**: 2026年1月22日  
 **作成者**: Manus AI
 
 ---
@@ -13,38 +13,9 @@
 |------|----------------|----------------|
 | フロントエンド | Vercel自動デプロイ | **GitHub Actions経由** |
 | バックエンド | Manus Publish → Railway | **GitHub Actions経由** |
-| トリガー | 手動コピー＆push | **`git push origin main`** |
+| トリガー | 手動コピー＆push | **`git push production main`** |
 
 **現在の手順は [DEPLOY_WORKFLOW.md](./DEPLOY_WORKFLOW.md) を参照してください。**
-
----
-
-## GitHubパーソナルアクセストークン
-
-**トークン**: `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`
-
-**有効期限**: 2026年2月1日発行
-
-**使用方法**:
-```bash
-# 1. GitHubリポジトリをクローン
-cd /tmp
-git clone https://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@github.com/kimito-link/doin-challenge.com.git doin-deploy
-
-# 2. Manusの変更をコピー
-cd doin-deploy
-cp -r /home/ubuntu/birthday-celebration/app .
-cp -r /home/ubuntu/birthday-celebration/components .
-cp -r /home/ubuntu/birthday-celebration/server .
-cp -r /home/ubuntu/birthday-celebration/shared .
-cp -r /home/ubuntu/birthday-celebration/drizzle .
-cp /home/ubuntu/birthday-celebration/todo.md .
-
-# 3. コミットしてpush
-git add -A
-git commit -m "v6.xxx: 変更内容の説明"
-git push origin main
-```
 
 ---
 
@@ -74,7 +45,7 @@ git push origin main
 
 ### デプロイトリガー（現在）
 
-GitHub Actionsのパイプラインがデプロイを制御します。`main`ブランチへのpushでパイプラインが起動し、CIが成功した後にVercelへデプロイされます。
+GitHub Actionsのパイプラインがデプロイを制御します。`production/main`ブランチへのpushでパイプラインが起動し、CIが成功した後にVercelへデプロイされます。
 
 ---
 
@@ -126,7 +97,7 @@ git push origin main
 
 ### デプロイトリガー（現在）
 
-GitHub Actionsのパイプラインがデプロイを制御します。`main`ブランチへのpushでパイプラインが起動し、CIが成功した後にRailwayへデプロイされます。
+GitHub Actionsのパイプラインがデプロイを制御します。`production/main`ブランチへのpushでパイプラインが起動し、CIが成功した後にRailwayへデプロイされます。
 
 ---
 
@@ -156,35 +127,18 @@ Railwayの環境変数は、Railway管理画面の「Variables」タブで設定
 
 ## デプロイフロー（現在）
 
-### デプロイ前チェックリスト
-
-**必ず実行してください**（特にVercelデプロイエラーを防ぐため）：
-
-```bash
-# 1. 動的require()の検索（Vercelビルドエラーの主な原因）
-grep -rn 'require(`' --include="*.ts" --include="*.tsx" app/ components/ hooks/ lib/ features/
-
-# 2. TypeScriptエラーの確認
-pnpm check
-
-# 3. ローカルビルドの成功確認
-pnpm build
-```
-
-詳細は **[VERCEL_DEPLOY_RULES.md](./VERCEL_DEPLOY_RULES.md)** を参照してください。
-
 ### 通常のデプロイ手順
 
 1. **Manusでコード変更を完了**
-2. **デプロイ前チェックリストを実行**（上記参照）
-3. **Manusで「チェックポイント保存」を実行**（webdev_save_checkpoint）
-4. **GitHubにpush**
+2. **Manusで「チェックポイント保存」を実行**（webdev_save_checkpoint）
+3. **GitHubにpush**
    ```bash
-   git push origin main  # ← これがデプロイトリガー
+   git push origin main
+   git push production main:main  # ← これがデプロイトリガー
    ```
-5. **GitHub Actionsが自動実行**
+4. **GitHub Actionsが自動実行**
    - CI → Backend(Railway) → Migrate → Health Check → Frontend(Vercel) → E2E
-6. **本番サイトで動作確認**
+5. **本番サイトで動作確認**
 
 詳細は **[DEPLOY_WORKFLOW.md](./DEPLOY_WORKFLOW.md)** を参照。
 
@@ -201,58 +155,6 @@ pnpm build
 
 ## トラブルシューティング
 
-### Vercelビルドエラー（SyntaxError）
-
-**最も頻繁に発生する問題**：動的require()の使用
-
-#### 症状
-
-- Vercelデプロイが「Build Failed」で失敗
-- Build Logsに「SyntaxError: Invalid or unexpected token」が表示
-- 特定のファイル（例：LoginModal.tsx、WelcomeMessage.tsx）でエラー
-
-#### 原因
-
-Vercelのビルド環境では、動的なrequire()（テンプレートリテラルを使用）が使えません。
-
-```tsx
-// ❌ NG: 動的require()
- const image = require(`@/assets/images/${filename}.png`);
-```
-
-#### 解決方法
-
-1. **動的require()を検索**：
-   ```bash
-   grep -rn 'require(`' --include="*.ts" --include="*.tsx" app/ components/ hooks/ lib/ features/
-   ```
-
-2. **静的マッピングに変更**：
-   ```tsx
-   // ✅ OK: 静的マッピング
-   const IMAGES = {
-     image1: require("@/assets/images/image1.png"),
-     image2: require("@/assets/images/image2.png"),
-   };
-   const image = IMAGES[filename];
-   ```
-
-3. **production/mainブランチにpush**：
-   ```bash
-   git push production main:main
-   ```
-
-詳細は **[VERCEL_DEPLOY_RULES.md](./VERCEL_DEPLOY_RULES.md)** を参照してください。
-
-#### 過去のエラー事例
-
-| 日付 | ファイル | 原因 | 解決コミット |
-|------|--------|------|-------------|
-| 2026-02-01 | LoginModal.tsx, WelcomeMessage.tsx | 動的require()でキャラクター画像を読み込み | 3955914f |
-| 2026-02-01 | login-messages.ts | 動的require()でcharacterImageを読み込み | 8bcf7eb2 |
-
----
-
 ### ブラウザで古いバージョンが表示される
 
 1. **ブラウザキャッシュをクリア**: Ctrl+Shift+R（Mac: Cmd+Shift+R）
@@ -261,8 +163,8 @@ Vercelのビルド環境では、動的なrequire()（テンプレートリテ�
 
 ### Vercelにデプロイされない
 
-1. **production/mainブランチを確認**: `git log production/main --oneline -10` で最新コミットが含まれているか
-2. **GitHub Actionsを確認**: https://github.com/kimito-link/doin-challenge.com/actions
+1. **GitHubリポジトリを確認**: 最新コミットがプッシュされているか
+2. **Vercelの接続を確認**: Settings → Git で正しいリポジトリが接続されているか
 3. **手動でRedeploy**: Vercelダッシュボードで最新デプロイの「...」→「Redeploy」
 
 ### Railwayにデプロイされない

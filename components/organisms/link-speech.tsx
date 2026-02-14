@@ -5,6 +5,7 @@
 
 import { View, Text } from "react-native";
 import { Image } from "expo-image";
+import { palette } from "@/theme/tokens";
 
 interface LinkSpeechProps {
   message: string;
@@ -19,8 +20,8 @@ interface LinkSpeechProps {
 export function LinkSpeech({ 
   message, 
   characterImage = require("@/assets/images/characters/link/link-yukkuri-smile-mouth-open.png"),
-  backgroundColor = "rgba(255, 255, 255, 0.95)",
-  borderColor = "rgba(236, 72, 153, 0.8)",
+  backgroundColor = palette.white + "F2", // 95% opacity
+  borderColor = palette.pink500 + "CC", // 80% opacity
 }: LinkSpeechProps) {
   return (
     <View style={{ 
@@ -50,7 +51,7 @@ export function LinkSpeech({
         borderColor,
       }}>
         <Text style={{ 
-          color: "#1A1D21", 
+          color: palette.gray900, 
           fontSize: 14, 
           lineHeight: 21,
           fontWeight: "500",

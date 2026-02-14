@@ -1,5 +1,4 @@
 import { Text, View, Platform } from "react-native";
-import { color } from "@/theme/tokens";
 import { Image } from "expo-image";
 import { ScreenContainer } from "@/components/organisms/screen-container";
 import { Button } from "@/components/ui/button";

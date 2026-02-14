@@ -12,7 +12,7 @@ const { width: screenWidth } = Dimensions.get("window");
  */
 export function EventDetailSkeleton() {
   return (
-    <ScreenContainer containerClassName="bg-[#0D1117]">
+    <ScreenContainer containerClassName="bg-background">
       <AppHeader title="" />
       <FadeView visible={true} style={{ flex: 1 }}>
         <ScrollView style={{ flex: 1, backgroundColor: color.bg }}>
@@ -129,7 +129,7 @@ const styles = StyleSheet.create({
     left: 0,
     right: 0,
     padding: 16,
-    backgroundColor: "rgba(0,0,0,0.5)",
+    backgroundColor: palette.black + "80",
   },
   headerContent: {
     gap: 4,

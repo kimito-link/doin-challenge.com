@@ -1,8 +1,7 @@
 import { View, Text, Pressable, StyleSheet, Modal, Animated, Platform } from "react-native";
 import { color, palette } from "@/theme/tokens";
 import MaterialIcons from "@expo/vector-icons/MaterialIcons";
-import { useState, useRef, useEffect } from "react";
-import { LinearGradient } from "expo-linear-gradient";
+import { useState, useRef, useEffect, useCallback } from "react";
 import * as Haptics from "expo-haptics";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { scheduleEventReminder, cancelNotification } from "@/lib/push-notifications";
@@ -55,11 +54,7 @@ export function ReminderButton({
   const opacityAnim = useRef(new Animated.Value(0)).current;
 
   // 保存されたリマインダーを読み込み
-  useEffect(() => {
-    loadReminder();
-  }, [challengeId]);
-
-  const loadReminder = async () => {
+  const loadReminder = useCallback(async () => {
     try {
       const stored = await AsyncStorage.getItem(`${REMINDER_STORAGE_KEY}_${challengeId}`);
       if (stored) {
@@ -74,7 +69,11 @@ export function ReminderButton({
     } catch (error) {
       console.error("[Reminder] Failed to load:", error);
     }
-  };
+  }, [challengeId]);
+
+  useEffect(() => {
+    loadReminder();
+  }, [loadReminder]);
 
   useEffect(() => {
     if (showModal) {
@@ -316,7 +315,7 @@ const styles = StyleSheet.create({
   },
   overlay: {
     flex: 1,
-    backgroundColor: "rgba(0, 0, 0, 0.7)",
+    backgroundColor: palette.black + "B3",
     justifyContent: "center",
     alignItems: "center",
     padding: 24,
@@ -357,7 +356,7 @@ const styles = StyleSheet.create({
   },
   optionButtonActive: {
     borderColor: color.accentPrimary,
-    backgroundColor: "rgba(236, 72, 153, 0.1)",
+    backgroundColor: palette.pink500 + "1A",
   },
   optionButtonDisabled: {
     opacity: 0.5,

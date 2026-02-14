@@ -6,7 +6,10 @@
 
 import { ScreenContainer } from "@/components/organisms/screen-container";
 import { RefreshingIndicator } from "@/components/molecules/refreshing-indicator";
+import { ScreenLoadingState, ScreenErrorState } from "@/components/ui";
+import { commonCopy } from "@/constants/copy/common";
 import { useColors } from "@/hooks/use-colors";
+import { useLoadingState } from "@/hooks/use-loading-state";
 import { trpc } from "@/lib/trpc";
 import { useCallback, useState } from "react";
 import {
@@ -14,9 +17,7 @@ import {
   Text,
   ScrollView,
   Pressable,
-  ActivityIndicator,
   RefreshControl,
-  Image,
   Alert,
   Platform,
 } from "react-native";
@@ -44,8 +45,11 @@ export default function UsersScreen() {
 
   // ローディング状態を分離
   const hasData = !!users && users.length > 0;
-  const isInitialLoading = isLoading && !hasData;
-  const isRefreshing = isFetching && hasData;
+  const loadingState = useLoadingState({
+    isLoading,
+    isFetching,
+    hasData,
+  });
 
   // ユーザー権限変更
   const updateRoleMutation = trpc.admin.updateUserRole.useMutation({
@@ -55,14 +59,14 @@ export default function UsersScreen() {
       if (Platform.OS === "web") {
         window.alert("ユーザー権限を更新しました");
       } else {
-        Alert.alert("成功", "ユーザー権限を更新しました");
+        Alert.alert(commonCopy.alerts.success, "ユーザー権限を更新しました");
       }
     },
     onError: (err) => {
       if (Platform.OS === "web") {
         window.alert(`エラー: ${err.message}`);
       } else {
-        Alert.alert("エラー", err.message);
+        Alert.alert(commonCopy.alerts.error, err.message);
       }
     },
   });
@@ -78,7 +82,7 @@ export default function UsersScreen() {
       }
     } else {
       Alert.alert(
-        "確認",
+        commonCopy.alerts.confirm,
         confirmMessage,
         [
           { text: "キャンセル", style: "cancel" },
@@ -103,23 +107,27 @@ export default function UsersScreen() {
     refetch();
   }, [refetch]);
 
-  if (isInitialLoading) {
+  if (loadingState.isInitialLoading) {
+    return <ScreenLoadingState message={commonCopy.loading.user} />;
+  }
+
+  if (error) {
     return (
-      <ScreenContainer className="flex-1 items-center justify-center">
-        <ActivityIndicator size="large" color={colors.primary} />
-        <Text className="mt-4 text-muted">ユーザーを読み込み中...</Text>
-      </ScreenContainer>
+      <ScreenErrorState
+        errorMessage={error.message || "ユーザーを読み込めませんでした"}
+        onRetry={refetch}
+      />
     );
   }
 
   return (
     <ScreenContainer>
-      {isRefreshing && <RefreshingIndicator isRefreshing={isRefreshing} />}
+      {loadingState.isRefreshing && <RefreshingIndicator isRefreshing={loadingState.isRefreshing} />}
       <ScrollView
         className="flex-1"
         contentContainerStyle={{ padding: 16 }}
         refreshControl={
-          <RefreshControl refreshing={isRefreshing} onRefresh={onRefresh} />
+          <RefreshControl refreshing={loadingState.isRefreshing} onRefresh={onRefresh} />
         }
       >
         {/* ヘッダー */}
@@ -129,18 +137,6 @@ export default function UsersScreen() {
             {users?.length || 0} 人のユーザー
           </Text>
         </View>
-
-        {error && (
-          <View
-            className="p-4 rounded-lg mb-4"
-            style={{ backgroundColor: colors.error + "20" }}
-          >
-            <Text style={{ color: colors.error }}>⚠️ {error.message}</Text>
-            <Text className="text-muted text-sm mt-1">
-              管理者権限が必要です。ログインしているアカウントが管理者であることを確認してください。
-            </Text>
-          </View>
-        )}
 
         {/* 統計 */}
         {users && users.length > 0 && (

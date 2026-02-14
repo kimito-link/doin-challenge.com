@@ -1,13 +1,14 @@
-import { View, StyleSheet, Animated } from "react-native";
+import { View, StyleSheet, Animated, type ViewStyle, type DimensionValue } from "react-native";
 import { useEffect, useRef } from "react";
 import { LinearGradient } from "expo-linear-gradient";
 import { color } from "@/theme/tokens";
+import { SKELETON_CONFIG } from "@/constants/skeleton-config";
 
-interface SkeletonProps {
-  width?: number | string;
+export interface SkeletonProps {
+  width?: DimensionValue;
   height?: number;
   borderRadius?: number;
-  style?: any;
+  style?: ViewStyle;
 }
 
 /**
@@ -15,7 +16,7 @@ interface SkeletonProps {
  * コンテンツ読み込み中のプレースホルダーとして使用
  */
 export function Skeleton({
-  width = "100%",
+  width = "100%" as DimensionValue,
   height = 20,
   borderRadius = 4,
   style,
@@ -26,7 +27,7 @@ export function Skeleton({
     const animation = Animated.loop(
       Animated.timing(shimmerAnim, {
         toValue: 1,
-        duration: 1500,
+        duration: SKELETON_CONFIG.animationDuration,
         useNativeDriver: true,
       })
     );
@@ -60,7 +61,7 @@ export function Skeleton({
         ]}
       >
         <LinearGradient
-          colors={["transparent", "rgba(255,255,255,0.1)", "transparent"]}
+          colors={["transparent", color.textWhite + "1A", "transparent"]}
           start={{ x: 0, y: 0 }}
           end={{ x: 1, y: 0 }}
           style={styles.gradient}

@@ -4,6 +4,7 @@
  */
 
 import { useState, useEffect, useCallback } from "react";
+import { Platform } from "react-native";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { ONBOARDING_STORAGE_KEY, ONBOARDING_SLIDES } from "../constants";
 
@@ -23,31 +24,60 @@ interface UseOnboardingReturn {
   resetOnboarding: () => Promise<void>;
 }
 
+/**
+ * Web環境ではlocalStorageから同期的にオンボーディング状態を取得
+ * AsyncStorageの非同期待ちによるブロッキング（100-300ms）を回避
+ */
+function getInitialOnboardingStatus(): boolean | null {
+  if (Platform.OS === "web" && typeof window !== "undefined") {
+    try {
+      const completed = window.localStorage.getItem(ONBOARDING_STORAGE_KEY);
+      return completed === "true";
+    } catch {
+      // localStorage未対応の場合はnull（非同期フォールバックに任せる）
+    }
+  }
+  return null; // ネイティブの場合は非同期で取得
+}
+
 export function useOnboarding(): UseOnboardingReturn {
-  const [hasCompletedOnboarding, setHasCompletedOnboarding] = useState<boolean | null>(null);
+  // Web: localStorageから同期的に初期値を取得（null回避）
+  const [hasCompletedOnboarding, setHasCompletedOnboarding] = useState<boolean | null>(getInitialOnboardingStatus);
   const [currentSlideIndex, setCurrentSlideIndex] = useState(0);
   
   const totalSlides = ONBOARDING_SLIDES.length;
   const isLastSlide = currentSlideIndex === totalSlides - 1;
   const isFirstSlide = currentSlideIndex === 0;
   
-  // 初回起動時にオンボーディング完了状態を確認
+  // ネイティブ環境: 初回起動時にAsyncStorageからオンボーディング完了状態を確認
+  // Web環境: 初期値がnullの場合のフォールバック（通常は同期取得済み）
+  // シークレットモード対応: タイムアウトでブロックを防止
   useEffect(() => {
+    if (hasCompletedOnboarding !== null) return; // 既に同期取得済み
+
+    const RESTORE_TIMEOUT_MS = 2000;
+    const timeoutId = setTimeout(() => {
+      setHasCompletedOnboarding((prev) => (prev === null ? false : prev));
+    }, RESTORE_TIMEOUT_MS);
+
     const checkOnboardingStatus = async () => {
       try {
-        const completed = await AsyncStorage.getItem(ONBOARDING_STORAGE_KEY);
-        console.log("[Onboarding] Stored value:", completed);
-        // 明示的に"true"が保存されている場合のみ完了とみなす
+        const completed = await Promise.race([
+          AsyncStorage.getItem(ONBOARDING_STORAGE_KEY),
+          new Promise<string | null>((resolve) => setTimeout(() => resolve(null), RESTORE_TIMEOUT_MS)),
+        ]);
         setHasCompletedOnboarding(completed === "true");
       } catch (error) {
         console.error("Failed to check onboarding status:", error);
-        // エラー時はオンボーディングを表示
         setHasCompletedOnboarding(false);
+      } finally {
+        clearTimeout(timeoutId);
       }
     };
-    
+
     checkOnboardingStatus();
-  }, []);
+    return () => clearTimeout(timeoutId);
+  }, [hasCompletedOnboarding]);
   
   const goToNextSlide = useCallback(() => {
     if (!isLastSlide) {

@@ -7,7 +7,7 @@ import * as Haptics from "expo-haptics";
 import { Image } from "expo-image";
 import { LinearGradient } from "expo-linear-gradient";
 import { useColors } from "@/hooks/use-colors";
-import { homeColor, homeGradient, homeUI, homeText } from "@/features/home/ui/theme/tokens";
+import { homeColor, homeGradient, homeUI, homeText, homeFont } from "@/features/home/ui/theme/tokens";
 import { PressableCard } from "@/components/molecules/pressable-card";
 import { Countdown } from "@/components/atoms/countdown";
 import { goalTypeConfig } from "@/constants/goal-types";
@@ -50,7 +50,7 @@ export function FeaturedChallenge({ challenge, onPress }: FeaturedChallengeProps
         {/* 注目バッジ */}
         <View style={{ flexDirection: "row", alignItems: "center", marginBottom: 12 }}>
           <View style={{ backgroundColor: homeColor.accent, paddingHorizontal: 12, paddingVertical: 4, borderRadius: 12 }}>
-            <Text style={{ color: colors.foreground, fontSize: 12, fontWeight: "bold" }}>🔥 注目のチャレンジ</Text>
+            <Text style={{ color: colors.foreground, fontSize: homeFont.meta, fontWeight: "bold" }}>🔥 注目のチャレンジ</Text>
           </View>
           {!isDateUndecided && (
             <View style={{ marginLeft: "auto" }}>
@@ -84,15 +84,15 @@ export function FeaturedChallenge({ challenge, onPress }: FeaturedChallengeProps
                 justifyContent: "center",
               }}
             >
-              <Text style={{ color: colors.foreground, fontSize: 14, fontWeight: "bold" }}>
+              <Text style={{ color: colors.foreground, fontSize: homeFont.body, fontWeight: "bold" }}>
                 {(challenge.hostName || "?").charAt(0)}
               </Text>
             </View>
           )}
           <View>
-            <Text style={{ color: colors.foreground, fontSize: 14, fontWeight: "600" }}>{challenge.hostName}</Text>
+            <Text style={{ color: colors.foreground, fontSize: homeFont.body, fontWeight: "600" }}>{challenge.hostName}</Text>
             {challenge.hostUsername && (
-              <Text style={{ color: "rgba(255,255,255,0.7)", fontSize: 12 }}>@{challenge.hostUsername}</Text>
+              <Text style={{ color: "rgba(255,255,255,0.7)", fontSize: homeFont.meta }}>@{challenge.hostUsername}</Text>
             )}
           </View>
         </View>
@@ -107,7 +107,7 @@ export function FeaturedChallenge({ challenge, onPress }: FeaturedChallengeProps
               {unit}
             </Text>
           </Text>
-          <Text style={{ color: homeUI.iconBgGold, fontSize: 16, fontWeight: "bold", marginTop: 4 }}>
+          <Text style={{ color: homeUI.iconBgGold, fontSize: homeFont.title, fontWeight: "bold", marginTop: 4 }}>
             あと{remaining}
             {unit}で目標達成！
           </Text>
@@ -122,7 +122,7 @@ export function FeaturedChallenge({ challenge, onPress }: FeaturedChallengeProps
             style={{ height: "100%", width: `${progress}%`, borderRadius: 6 }}
           />
         </View>
-        <Text style={{ color: "rgba(255,255,255,0.7)", fontSize: 12, textAlign: "right", marginTop: 4 }}>
+        <Text style={{ color: "rgba(255,255,255,0.7)", fontSize: homeFont.meta, textAlign: "right", marginTop: 4 }}>
           {progress.toFixed(1)}% 達成
         </Text>
       </LinearGradient>

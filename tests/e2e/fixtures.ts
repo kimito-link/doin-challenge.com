@@ -39,7 +39,7 @@ export const test = base.extend<{
   monitoredPage: Page;
   collectedErrors: CollectedError[];
 }>({
-  collectedErrors: async ({}, use) => {
+  collectedErrors: async (_fixtures, use) => {
     const errors: CollectedError[] = [];
     await use(errors);
   },

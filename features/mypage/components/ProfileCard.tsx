@@ -4,10 +4,12 @@
  */
 import { View, Text } from "react-native";
 import MaterialIcons from "@expo/vector-icons/MaterialIcons";
+import { LinearGradient } from "expo-linear-gradient";
 import { useColors } from "@/hooks/use-colors";
 import { useResponsive } from "@/hooks/use-responsive";
-import { UserProfileHeader } from "@/components/organisms/user-profile-header";
-import { mypageUI, mypageText, mypageAccent } from "../ui/theme/tokens";
+import { FollowStatusBadge } from "@/components/molecules/follow-gate";
+import { TwitterUserCard } from "@/components/molecules/twitter-user-card";
+import { mypageUI, mypageText, mypageGradient, mypageAccent, mypageFont } from "../ui/theme/tokens";
 import { Button } from "@/components/ui/button";
 
 interface ProfileCardProps {
@@ -18,7 +20,6 @@ interface ProfileCardProps {
     profileImage?: string | null;
     followersCount?: number | null;
     description?: string | null;
-    gender?: "male" | "female" | "unspecified";
   } | null;
   isFollowing: boolean;
   totalContribution: number;
@@ -60,21 +61,31 @@ export function ProfileCard({
         width: isDesktop ? "100%" : undefined,
       }}
     >
-      {/* ユーザープロフィールヘッダー（性別色分け対応） */}
-      <UserProfileHeader
-        user={{
-          twitterId: user?.twitterId,
-          name: user?.name || "ゲスト",
-          username: user?.username ?? undefined,
-          profileImage: user?.profileImage ?? undefined,
-          followersCount: user?.followersCount ?? undefined,
-          description: user?.description ?? undefined,
-          gender: user?.gender as "male" | "female" | undefined,
-        }}
-        showFollowButton={false}
+      <LinearGradient
+        colors={[...mypageGradient.profileHeader]}
+        start={{ x: 0, y: 0 }}
+        end={{ x: 1, y: 0 }}
+        style={{ height: 4 }}
       />
-
       <View style={{ padding: 16 }}>
+        {/* Twitterユーザーカード */}
+        <View style={{ flexDirection: "row", alignItems: "flex-start" }}>
+          <View style={{ flex: 1 }}>
+            <TwitterUserCard
+              user={{
+                twitterId: user?.twitterId,
+                name: user?.name || "ゲスト",
+                username: user?.username ?? undefined,
+                profileImage: user?.profileImage ?? undefined,
+                followersCount: user?.followersCount ?? undefined,
+                description: user?.description ?? undefined,
+              }}
+              size="large"
+              showDescription={true}
+            />
+          </View>
+          <FollowStatusBadge isFollowing={isFollowing} />
+        </View>
 
         {/* 統計情報 */}
         <View
@@ -87,22 +98,22 @@ export function ProfileCard({
           }}
         >
           <View style={{ flex: 1, alignItems: "center" }}>
-            <Text style={{ color: colors.foreground, fontSize: 24, fontWeight: "bold" }}>
+            <Text style={{ color: colors.foreground, fontSize: mypageFont.xl, fontWeight: "bold" }}>
               {totalContribution}
             </Text>
-            <Text style={{ color: mypageText.muted, fontSize: 12 }}>総貢献数</Text>
+            <Text style={{ color: mypageText.muted, fontSize: mypageFont.meta }}>総貢献数</Text>
           </View>
           <View style={{ flex: 1, alignItems: "center" }}>
-            <Text style={{ color: colors.foreground, fontSize: 24, fontWeight: "bold" }}>
+            <Text style={{ color: colors.foreground, fontSize: mypageFont.xl, fontWeight: "bold" }}>
               {participationsCount}
             </Text>
-            <Text style={{ color: mypageText.muted, fontSize: 12 }}>参加中</Text>
+            <Text style={{ color: mypageText.muted, fontSize: mypageFont.meta }}>参加中</Text>
           </View>
           <View style={{ flex: 1, alignItems: "center" }}>
-            <Text style={{ color: colors.foreground, fontSize: 24, fontWeight: "bold" }}>
+            <Text style={{ color: colors.foreground, fontSize: mypageFont.xl, fontWeight: "bold" }}>
               {challengesCount}
             </Text>
-            <Text style={{ color: mypageText.muted, fontSize: 12 }}>主催</Text>
+            <Text style={{ color: mypageText.muted, fontSize: mypageFont.meta }}>主催</Text>
           </View>
         </View>
 
@@ -118,22 +129,22 @@ export function ProfileCard({
           >
             <View style={{ flexDirection: "row", alignItems: "center", marginBottom: 8 }}>
               <MaterialIcons name="people" size={16} color={mypageAccent.linkPink} />
-              <Text style={{ color: mypageAccent.linkPink, fontSize: 14, fontWeight: "bold", marginLeft: 4 }}>
+              <Text style={{ color: mypageAccent.linkPink, fontSize: mypageFont.body, fontWeight: "bold", marginLeft: 4 }}>
                 招待実績
               </Text>
             </View>
             <View style={{ flexDirection: "row" }}>
               <View style={{ flex: 1, alignItems: "center" }}>
-                <Text style={{ color: colors.foreground, fontSize: 20, fontWeight: "bold" }}>
-                  {invitationStats.totalInvited}
+<Text style={{ color: colors.foreground, fontSize: mypageFont.lg, fontWeight: "bold" }}>
+                {invitationStats.totalInvited}
                 </Text>
-                <Text style={{ color: mypageText.muted, fontSize: 12 }}>招待送信</Text>
+                <Text style={{ color: mypageText.muted, fontSize: mypageFont.meta }}>招待送信</Text>
               </View>
               <View style={{ flex: 1, alignItems: "center" }}>
-                <Text style={{ color: colors.foreground, fontSize: 20, fontWeight: "bold" }}>
-                  {invitationStats.confirmedCount}
+<Text style={{ color: colors.foreground, fontSize: mypageFont.lg, fontWeight: "bold" }}>
+                {invitationStats.confirmedCount}
                 </Text>
-                <Text style={{ color: mypageText.muted, fontSize: 12 }}>参加表明済み</Text>
+                <Text style={{ color: mypageText.muted, fontSize: mypageFont.meta }}>参加表明済み</Text>
               </View>
             </View>
           </View>
@@ -150,7 +161,7 @@ export function ProfileCard({
             marginTop: 16,
           }}
         >
-          <Text style={{ color: mypageText.switchAccount, fontSize: 14, marginLeft: 8 }}>
+          <Text style={{ color: mypageText.switchAccount, fontSize: mypageFont.body, marginLeft: 8 }}>
             別のアカウントでログイン
           </Text>
         </Button>
@@ -165,7 +176,7 @@ export function ProfileCard({
             marginTop: 8,
           }}
         >
-          <Text style={{ color: mypageText.logout, fontSize: 14, marginLeft: 8 }}>
+          <Text style={{ color: mypageText.logout, fontSize: mypageFont.body, marginLeft: 8 }}>
             ログアウト
           </Text>
         </Button>

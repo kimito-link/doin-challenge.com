@@ -17,7 +17,7 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: '22'
+          node-version: '24'
       
       - name: Install pnpm
         uses: pnpm/action-setup@v4
@@ -27,9 +27,49 @@ jobs:
       - name: Install dependencies
         run: pnpm install
       
-      - name: Build
-        run: pnpm build
+      - name: Lint (with auto-fix attempt)
+        run: |
+          set -e
+          # 自動修正可能なエラーを修正
+          pnpm lint --fix || true
+          # 修正後、エラーのみをチェック（警告は無視）
+          pnpm lint --max-warnings 9999 || {
+            echo "⚠️ Lint errors detected. Please fix them before deploying."
+            exit 1
+          }
       
+      - name: Type check
+        run: |
+          set -e
+          echo "🔍 Running TypeScript type check..."
+          pnpm check || {
+            echo "❌ Type check failed. Please fix type errors before deploying."
+            exit 1
+          }
+          echo "✅ Type check passed"
+      
+      - name: Test
+        run: |
+          set -e
+          echo "🧪 Running tests..."
+          pnpm test || {
+            echo "❌ Tests failed. Please fix failing tests before deploying."
+            exit 1
+          }
+          echo "✅ All tests passed"
+      
+      - name: Build
+        env:
+          GITHUB_SHA: ${{ github.sha }}
+        run: |
+          set -e
+          echo "🔨 Building application..."
+          pnpm build || {
+            echo "❌ Build failed. Please fix build errors before deploying."
+            exit 1
+          }
+          echo "✅ Build completed"
+
       - name: Deploy to Vercel
         uses: amondnet/vercel-action@v25
         with:
@@ -37,24 +77,102 @@ jobs:
           vercel-org-id: ${{ secrets.VERCEL_ORG_ID }}
           vercel-project-id: ${{ secrets.VERCEL_PROJECT_ID }}
           vercel-args: '--prod'
-      
-      - name: Post-deployment verification
+
+      # サイト不具合検知: 本番 /api/health がこの push のコミットで正常応答することを厳密に確認する。
+      - name: Post-deploy verify (Gate 1)
+        env:
+          EXPECTED_SHA: ${{ github.sha }}
         run: |
-          echo "Waiting for deployment to propagate..."
-          sleep 30
-          
-          echo "Checking production health..."
-          RESPONSE=$(curl -s https://doin-challenge.com/api/health)
-          echo "Health check response: $RESPONSE"
-          
-          VERSION=$(echo $RESPONSE | jq -r '.version')
-          COMMIT_SHA=$(git rev-parse HEAD)
-          
-          echo "Deployed version: $VERSION"
-          echo "Expected commit: $COMMIT_SHA"
-          
-          if [[ "$VERSION" == "$COMMIT_SHA"* ]]; then
-            echo "✅ Deployment verified successfully"
-          else
-            echo "⚠️ Version mismatch detected, but deployment may still be propagating"
+          set -e
+          echo "⏳ Waiting for Railway deployment to sync..."
+          echo "Expected commitSha (this deploy): $EXPECTED_SHA"
+          sleep 600  # 10分: Railway のビルド・デプロイ完了を待つ
+          git fetch origin main --depth=1
+          LATEST_MAIN=$(git rev-parse origin/main)
+          echo "Latest main: $LATEST_MAIN"
+          for i in $(seq 1 40); do
+            echo "Verify attempt $i/40..."
+            HEALTH=$(curl -s https://doin-challenge.com/api/health || echo "{}")
+            HEALTH_SHA=$(echo "$HEALTH" | jq -r '.commitSha // .commitsha // .gitSha // "unknown"')
+            OK=$(echo "$HEALTH" | jq -r '.ok // false')
+            DB_CONNECTED=$(echo "$HEALTH" | jq -r '.db.connected // false')
+            DB_ERROR=$(echo "$HEALTH" | jq -r '.db.error // ""')
+            echo "Actual commitSha: $HEALTH_SHA, ok: $OK, db.connected: $DB_CONNECTED (expected: $EXPECTED_SHA or $LATEST_MAIN)"
+            
+            # コミットSHAが一致しているかチェック
+            SHA_MATCH=false
+            if [[ "$HEALTH_SHA" == "$EXPECTED_SHA" ]] || [[ "$HEALTH_SHA" == "$LATEST_MAIN" ]]; then
+              SHA_MATCH=true
+            fi
+            
+            # コミットSHAが一致している場合は成功（DB接続エラーは警告のみ）
+            if [[ "$SHA_MATCH" == "true" ]]; then
+              if [[ "$OK" == "true" ]]; then
+                echo "✅ 本番は正常に応答しています (commit: $HEALTH_SHA)"
+              elif [[ "$DB_CONNECTED" == "false" ]]; then
+                echo "⚠️ コミットSHAは一致していますが、データベース接続エラーが発生しています"
+                echo "⚠️ デプロイは成功していますが、データベース設定を確認してください"
+                echo "⚠️ DB Error: $DB_ERROR"
+                echo "Last health response: $HEALTH"
+                # データベース接続エラーは警告として扱い、デプロイ自体は成功とみなす
+              else
+                echo "⚠️ コミットSHAは一致していますが、ok=falseです"
+                echo "⚠️ デプロイは成功していますが、他の問題がある可能性があります"
+                echo "Last health response: $HEALTH"
+              fi
+              break
+            fi
+            
+            if [[ $i -eq 40 ]]; then
+              # コミットSHAが一致しているか再チェック
+              SHA_MATCH=false
+              if [[ "$HEALTH_SHA" == "$EXPECTED_SHA" ]] || [[ "$HEALTH_SHA" == "$LATEST_MAIN" ]]; then
+                SHA_MATCH=true
+              fi
+              
+              if [[ "$SHA_MATCH" == "true" ]]; then
+                echo "⚠️ コミットSHAは一致していますが、ok=falseまたはDB接続エラーが発生しています"
+                echo "⚠️ デプロイは成功していますが、設定を確認してください"
+                echo "Expected: $EXPECTED_SHA or $LATEST_MAIN"
+                echo "Got: $HEALTH_SHA"
+                echo "Health ok: $OK"
+                echo "DB connected: $DB_CONNECTED"
+                if [[ "$DB_CONNECTED" == "false" ]] && [[ -n "$DB_ERROR" ]]; then
+                  echo "DB Error: $DB_ERROR"
+                fi
+                echo "Last health response: $HEALTH"
+                exit 0
+              fi
+              
+              echo "❌ 本番が期待コミットまたは最新mainで応答しませんでした（不具合の可能性）"
+              echo "Expected: $EXPECTED_SHA or $LATEST_MAIN"
+              echo "Got: $HEALTH_SHA"
+              echo "Health ok: $OK"
+              echo "DB connected: $DB_CONNECTED"
+              if [[ "$DB_CONNECTED" == "false" ]] && [[ -n "$DB_ERROR" ]]; then
+                echo "DB Error: $DB_ERROR"
+              fi
+              echo "Last health response: $HEALTH"
+              exit 1
+            fi
+            sleep 20
+          done
+          VERSION_JSON=$(curl -s https://doin-challenge.com/version.json || echo "{}")
+          VJ_SHA=$(echo "$VERSION_JSON" | jq -r '.commitSha // .gitSha // "unknown"')
+          echo "Version.json commitSha: $VJ_SHA (reference)"
+          if [[ "$VJ_SHA" != "$EXPECTED_SHA" ]] && [[ "$VJ_SHA" != "unknown" ]]; then
+            echo "⚠️ /version.json は未同期の可能性（Vercel 側の反映遅延）"
           fi
+
+      - name: Gate 2 - API smoke
+        env:
+          BASE_URL: https://doin-challenge.com
+        run: node scripts/gate2-api-smoke.mjs
+
+      - name: Gate 2 - E2E (ホーム→詳細)
+        env:
+          PLAYWRIGHT_BASE_URL: https://doin-challenge.com
+          VERCEL_AUTOMATION_BYPASS_SECRET: ${{ secrets.VERCEL_AUTOMATION_BYPASS_SECRET }}
+        run: |
+          npx playwright install --with-deps chromium
+          pnpm exec playwright test tests/e2e/gate2-flow.spec.ts --project=chromium

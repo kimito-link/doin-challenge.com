@@ -1,6 +1,6 @@
-import { Text, View, Platform } from "react-native";
+import { Text, View } from "react-native";
 import { color, palette } from "@/theme/tokens";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { Image } from "expo-image";
 import { navigateReplace } from "@/lib/navigation/app-routes";
 import { ScreenContainer } from "@/components/organisms/screen-container";
@@ -37,7 +37,7 @@ export default function LogoutScreen() {
   );
 
   // ログアウト処理
-  const handleLogout = async () => {
+  const handleLogout = useCallback(async () => {
     setIsLoggingOut(true);
     try {
       await logout();
@@ -47,14 +47,14 @@ export default function LogoutScreen() {
     } finally {
       setIsLoggingOut(false);
     }
-  };
+  }, [logout]);
 
   // 自動的にログアウト処理を開始
   useEffect(() => {
     if (isAuthenticated && !logoutComplete && !isLoggingOut) {
       handleLogout();
     }
-  }, [isAuthenticated]);
+  }, [isAuthenticated, handleLogout, isLoggingOut, logoutComplete]);
 
   const handleSameAccountLogin = () => {
     redirectToTwitterAuth();
@@ -68,7 +68,7 @@ export default function LogoutScreen() {
     <ScreenContainer containerClassName="bg-background">
       {/* グラデーション背景 */}
       <LinearGradient
-        colors={["#1E40AF", color.bg]}
+        colors={[palette.blue600, color.bg]}
         start={{ x: 0, y: 0 }}
         end={{ x: 0, y: 1 }}
         style={{

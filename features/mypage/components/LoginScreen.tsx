@@ -9,7 +9,6 @@ import { mypageGradient } from "../ui/theme/tokens";
 import {
   LoginHeader,
   LoginMessageCard,
-  LoginButton,
   CharacterBubble,
   PatternSelector,
   loginPatterns,

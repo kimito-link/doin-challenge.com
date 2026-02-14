@@ -4,12 +4,14 @@
  * 動員/フォロワー/同時視聴/ポイント/カスタムの選択UI
  */
 
-import { View, Text, ScrollView, TextInput } from "react-native";
+import { View, Text, ScrollView } from "react-native";
 import MaterialIcons from "@expo/vector-icons/MaterialIcons";
 import { useColors } from "@/hooks/use-colors";
-import { createUI, createText } from "../theme/tokens";
+import { color } from "@/theme/tokens";
+import { createUI, createText, createFont } from "../theme/tokens";
 import { goalTypeOptions } from "@/constants/goal-types";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 
 interface GoalTypeSelectorProps {
   goalType: string;
@@ -31,7 +33,7 @@ export function GoalTypeSelector({
     <>
       {/* 目標タイプ選択 */}
       <View style={{ marginBottom: 16 }}>
-        <Text style={{ color: colors.muted, fontSize: 14, marginBottom: 8 }}>
+        <Text style={{ color: colors.muted, fontSize: createFont.body, marginBottom: 8 }}>
           目標タイプ
         </Text>
         <ScrollView
@@ -59,12 +61,12 @@ export function GoalTypeSelector({
               <MaterialIcons
                 name={type.icon as any}
                 size={16}
-                color={goalType === type.id ? "#fff" : colors.muted}
+                color={goalType === type.id ? color.textWhite : colors.muted}
               />
               <Text
                 style={{
-                  color: goalType === type.id ? "#fff" : colors.muted,
-                  fontSize: 13,
+                  color: goalType === type.id ? color.textWhite : colors.muted,
+                  fontSize: createFont.meta,
                   marginLeft: 4,
                 }}
               >
@@ -74,7 +76,7 @@ export function GoalTypeSelector({
           ))}
         </ScrollView>
         {selectedGoalType && (
-          <Text style={{ color: colors.muted, fontSize: 12, marginTop: 8 }}>
+          <Text style={{ color: colors.muted, fontSize: createFont.meta, marginTop: 8 }}>
             {selectedGoalType.description}
           </Text>
         )}
@@ -82,25 +84,13 @@ export function GoalTypeSelector({
 
       {/* カスタム単位入力 */}
       {goalType === "custom" && (
-        <View style={{ marginBottom: 16 }}>
-          <Text style={{ color: colors.muted, fontSize: 14, marginBottom: 8 }}>
-            単位
-          </Text>
-          <TextInput
-            value={goalUnit}
-            onChangeText={onGoalUnitChange}
-            placeholder="例: 人、pt、回"
-            placeholderTextColor={createText.placeholder}
-            style={{
-              backgroundColor: colors.background,
-              borderRadius: 8,
-              padding: 12,
-              color: colors.foreground,
-              borderWidth: 1,
-              borderColor: createUI.inputBorder,
-            }}
-          />
-        </View>
+        <Input
+          label="単位"
+          value={goalUnit}
+          onChangeText={onGoalUnitChange}
+          placeholder="例: 人、pt、回"
+          containerStyle={{ marginBottom: 16 }}
+        />
       )}
     </>
   );

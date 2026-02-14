@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { color, palette } from "@/theme/tokens";
 import { View, Text, Pressable, Platform } from "react-native";
 import { Image } from "expo-image";
@@ -9,7 +9,8 @@ import { GlobalMenu } from "@/components/organisms/global-menu";
 import { TalkingCharacter } from "@/components/molecules/talking-character";
 import * as Haptics from "expo-haptics";
 import { APP_VERSION } from "@/shared/version";
-import { LoginConfirmModal, RedirectingScreen, WaitingReturnScreen } from "@/components/auth-ux";
+import { RedirectingScreen, WaitingReturnScreen } from "@/components/auth-ux";
+import { LoginModal } from "@/components/common/LoginModal";
 import { SuccessScreen } from "@/components/molecules/auth-ux/SuccessScreen";
 import { CancelScreen } from "@/components/molecules/auth-ux/CancelScreen";
 import { ErrorScreen } from "@/components/molecules/auth-ux/ErrorScreen";
@@ -56,9 +57,12 @@ export function AppHeader({
   showLoginButton = false,
 }: AppHeaderProps) {
   
-  const { user } = useAuth();
+  const { user, isAuthReady } = useAuth();
   const [menuVisible, setMenuVisible] = useState(false);
   const { state, tapLogin, confirmYes, confirmNo, retry, backWithoutLogin, hideWelcome } = useAuthUxMachine();
+  // 認証確定後にのみ表示して点滅を防止（ログインボタン・ログイン中バッジとも）
+  const showLoginButtonStable = showLoginButton && isAuthReady && !user;
+  const showLoginStatusStable = showLoginStatus && isAuthReady && user;
   
   const handleTitlePress = () => {
     triggerHaptic();
@@ -143,7 +147,7 @@ export function AppHeader({
                     alignItems: "center",
                     justifyContent: "center",
                     borderRadius: 22,
-                    backgroundColor: "rgba(255, 255, 255, 0.1)",
+                    backgroundColor: palette.white + "1A", // 10% opacity
                   },
                   pressed && { opacity: 0.7, transform: [{ scale: 0.97 }] },
                 ]}
@@ -154,8 +158,8 @@ export function AppHeader({
           </View>
         </View>
         
-        {/* ログイン状態表示 */}
-        {showLoginStatus && user && (
+        {/* ログイン状態表示（認証確定後のみで点滅防止） */}
+        {showLoginStatusStable && (
           <Pressable 
             onPress={handleMenuPress}
             style={({ pressed }) => [
@@ -163,7 +167,7 @@ export function AppHeader({
                 flexDirection: "row", 
                 alignItems: "center", 
                 marginTop: 8,
-                backgroundColor: "rgba(16, 185, 129, 0.15)",
+                backgroundColor: palette.green500 + "26", // 15% opacity
                 paddingHorizontal: 12,
                 paddingVertical: 6,
                 borderRadius: 20,
@@ -192,8 +196,8 @@ export function AppHeader({
           </Text>
         )}
         
-        {/* ログインボタン（未ログイン時のみ表示） */}
-        {showLoginButton && !user && (
+        {/* ログインボタン（未ログイン時のみ表示・認証確定後に表示してチカチカ防止） */}
+        {showLoginButtonStable && (
           <Pressable
             onPress={handleLoginPress}
             style={({ pressed }) => [{
@@ -222,15 +226,9 @@ export function AppHeader({
         onClose={() => setMenuVisible(false)} 
       />
       
-      {/* 認証UXモーダル */}
-      <LoginConfirmModal
-        open={state.name === "confirm"}
-        speech={{
-          title: "Xでログインしますか？",
-          message: "このあとXの公式画面に移動します。\n戻ってきたらログイン完了です。",
-        }}
-        confirmLabel="Xでログイン"
-        cancelLabel="やめておく"
+      {/* 認証UXモーダル（共通LoginModalに統一） */}
+      <LoginModal
+        visible={state.name === "confirm"}
         onConfirm={confirmYes}
         onCancel={confirmNo}
       />

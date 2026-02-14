@@ -73,14 +73,13 @@ export async function attachGuards(page: Page, testInfo: TestInfo) {
   return async function assertNoErrors() {
     // 画面内の「エラーっぽい文言」をチェック（軽く全体テキストを見る）
     // 404は正常動作として許容、500のみエラー扱い
-const bodyText = await page.locator("body").innerText().catch(() => "");
-const is404 = bodyText.includes("見つかりません") || bodyText.includes("not found");
-if (!is404) {
-  for (const pat of ERROR_TEXT_PATTERNS) {
-    expect(bodyText, `画面にエラー文言が出ています: ${pat}`).not.toMatch(pat);
-  }
-}
-
+    const bodyText = await page.locator("body").innerText().catch(() => "");
+    const is404 = bodyText.includes("見つかりません") || bodyText.includes("not found");
+    if (!is404) {
+      for (const pat of ERROR_TEXT_PATTERNS) {
+        expect(bodyText, `画面にエラー文言が出ています: ${pat}`).not.toMatch(pat);
+      }
+    }
 
     // console errors/warns（無視パターンを除外済み）
     expect(consoleErrors, `console.error が出ています:\n${consoleErrors.join("\n")}`).toEqual([]);
@@ -108,28 +107,81 @@ export async function gotoAndWait(page: Page, path: string) {
 
 /**
  * 初回訪問時のオンボーディング画面をスキップ
- * 「スキップ」ボタンがあればクリック
+ * オンボーディング画面とUserTypeSelectorの両方を確実にスキップ
  */
-async function dismissOnboarding(page: Page) {
+export async function dismissOnboarding(page: Page) {
+  // ページが完全に読み込まれるまで待機
   try {
-    // 「スキップ」ボタンを探す
-    const skipButton = page.getByText(/スキップ/i);
-    if (await skipButton.isVisible({ timeout: 2000 }).catch(() => false)) {
-      await skipButton.click();
-      await page.waitForTimeout(1000);
-      return;
-    }
-    
-    // 「あとで見る」ボタンを探す（別のモーダル用）
-    const laterButton = page.getByText(/あとで見る/i);
-    if (await laterButton.isVisible({ timeout: 500 }).catch(() => false)) {
-      await laterButton.click();
-      await page.waitForTimeout(500);
-      return;
-    }
+    await page.waitForLoadState("networkidle", { timeout: 5000 }).catch(() => {});
   } catch {
-    // オンボーディングがない場合は何もしない
+    // タイムアウトしても続行
   }
+  
+  // 少し待ってからオンボーディングをチェック
+  await page.waitForTimeout(1000);
+  
+  const maxAttempts = 10;
+  let attempts = 0;
+  
+  while (attempts < maxAttempts) {
+    attempts++;
+    
+    try {
+      // オンボーディング画面の「スキップ」ボタンを探す
+      const skipButton = page.getByText(/スキップ/i);
+      if (await skipButton.isVisible({ timeout: 2000 }).catch(() => false)) {
+        await skipButton.click();
+        await page.waitForTimeout(2000); // アニメーション完了を待つ
+        continue; // 次のループでUserTypeSelectorもチェック
+      }
+      
+      // UserTypeSelectorの「あとで見る」ボタンを探す
+      const laterButton = page.getByText(/あとで見る/i);
+      if (await laterButton.isVisible({ timeout: 2000 }).catch(() => false)) {
+        await laterButton.click();
+        await page.waitForTimeout(2000); // アニメーション完了を待つ
+        continue; // 次のループで確認
+      }
+      
+      // オンボーディング画面の「次へ」ボタンを探す（最後のスライドでない場合）
+      const nextButton = page.getByText(/次へ/i);
+      if (await nextButton.isVisible({ timeout: 1000 }).catch(() => false)) {
+        await nextButton.click();
+        await page.waitForTimeout(1500);
+        continue; // 次のスライドに進む
+      }
+      
+      // オンボーディング画面の「始める」ボタンを探す（最後のスライド）
+      const startButton = page.getByText(/始める/i);
+      if (await startButton.isVisible({ timeout: 1000 }).catch(() => false)) {
+        await startButton.click();
+        await page.waitForTimeout(2000);
+        continue; // 次のループでUserTypeSelectorもチェック
+      }
+      
+      // オンボーディング関連の要素が表示されていないことを確認
+      const hasOnboarding = 
+        await page.getByText(/スキップ/i).isVisible({ timeout: 500 }).catch(() => false) ||
+        await page.getByText(/次へ/i).isVisible({ timeout: 500 }).catch(() => false) ||
+        await page.getByText(/始める/i).isVisible({ timeout: 500 }).catch(() => false) ||
+        await page.getByText(/あとで見る/i).isVisible({ timeout: 500 }).catch(() => false) ||
+        await page.getByText(/あなたはどっち/i).isVisible({ timeout: 500 }).catch(() => false);
+      
+      if (!hasOnboarding) {
+        // オンボーディング関連の要素がすべて消えた
+        break;
+      }
+      
+      // 少し待ってから再試行
+      await page.waitForTimeout(1000);
+    } catch {
+      // エラーが発生した場合は、オンボーディングがないと判断
+      break;
+    }
+  }
+  
+  // 最終確認: オンボーディング関連の要素が表示されていないことを確認
+  await page.waitForTimeout(1000);
 }
 
 // "開けた"の判定を安定させるため、見出し候補を待つヘルパ
@@ -145,8 +197,9 @@ export async function expectAnyHeading(page: Page, candidates: RegExp[]) {
   
   // ページ全体のテキストを取得してデバッグ
   const bodyText = await page.locator("body").innerText().catch(() => "");
-  console.log("Page text:", bodyText.substring(0, 500));
+  // デバッグ用: エラーメッセージに含めるため、console.logは使用しない
+  const pageTextPreview = bodyText.substring(0, 500);
   
   // どれも見つからない場合：デバッグ用にスクショはPlaywrightが自動保存
-  expect(false, `見出し候補が見つかりません: ${candidates.map(String).join(", ")}`).toBeTruthy();
+  expect(false, `見出し候補が見つかりません: ${candidates.map(String).join(", ")}\nページテキスト（最初の500文字）: ${pageTextPreview}`).toBeTruthy();
 }

@@ -7,8 +7,8 @@ import { awardFollowerBadge } from "./badge-db";
 export async function saveSearchHistory(history: InsertSearchHistory) {
   const db = await getDb();
   if (!db) return null;
-  const result = await db.insert(searchHistory).values(history);
-  return result[0].insertId;
+  const [result] = await db.insert(searchHistory).values(history);
+  return result.insertId ?? null;
 }
 
 export async function getSearchHistoryForUser(userId: number, limit: number = 10) {
@@ -31,19 +31,18 @@ export async function clearSearchHistoryForUser(userId: number) {
 export async function followUser(follow: InsertFollow) {
   const db = await getDb();
   if (!db) return null;
-  
+
   // 既にフォロー済みかチェック
   const existing = await db.select().from(follows)
     .where(and(eq(follows.followerId, follow.followerId), eq(follows.followeeId, follow.followeeId)));
-  
+
   if (existing.length > 0) return null; // 既にフォロー済み
-  
-  const result = await db.insert(follows).values(follow);
-  
-  // フォロワーバッジを付与
+
+  const [result] = await db.insert(follows).values(follow);
+
   await awardFollowerBadge(follow.followerId);
-  
-  return result[0].insertId;
+
+  return result.insertId ?? null;
 }
 
 export async function unfollowUser(followerId: number, followeeId: number) {
@@ -57,7 +56,7 @@ export async function getFollowersForUser(userId: number) {
   if (!db) return [];
   // フォロワーの情報を取得（フォロワーのプロフィール画像も含む）
   const result = await db.select().from(follows).where(eq(follows.followeeId, userId)).orderBy(desc(follows.createdAt));
-  
+
   // 各フォロワーのプロフィール画像を取得
   const followersWithImages = await Promise.all(result.map(async (f) => {
     // フォロワーの最新の参加情報からプロフィール画像を取得
@@ -66,13 +65,13 @@ export async function getFollowersForUser(userId: number) {
       .where(eq(participations.userId, f.followerId))
       .orderBy(desc(participations.createdAt))
       .limit(1);
-    
+
     return {
       ...f,
       followerImage: latestParticipation[0]?.profileImage || null,
     };
   }));
-  
+
   return followersWithImages;
 }
 

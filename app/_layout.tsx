@@ -1,12 +1,13 @@
 import "@/global.css";
 import { QueryClient } from "@tanstack/react-query";
 import { PersistQueryClientProvider } from "@tanstack/react-query-persist-client";
-import { Stack } from "expo-router";
+import { Stack, usePathname } from "expo-router";
 import { StatusBar } from "expo-status-bar";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
 import "react-native-reanimated";
 import { Platform, View, ActivityIndicator } from "react-native";
+import { color } from "@/theme/tokens";
 import "@/lib/_core/nativewind-pressable";
 import { ThemeProvider } from "@/lib/theme-provider";
 import { LoginSuccessProvider } from "@/lib/login-success-context";
@@ -40,6 +41,31 @@ import { ExperienceProvider } from "@/lib/experience-context";
 import { ExperienceOverlay } from "@/components/organisms/experience-overlay";
 import { OnboardingScreen, useOnboarding } from "@/features/onboarding";
 import { initSentry } from "@/lib/sentry";
+import { ErrorBoundary } from "@/components/ui";
+import { usePrefetchHome } from "@/hooks/use-prefetch";
+
+/**
+ * マウント時にホーム画面のデータをプリフェッチ（D-1: 初回表示前倒し）
+ * tRPC Provider 内で使用し、ルートマウント時に即座にデータ取得を開始する
+ */
+function EarlyPrefetch() {
+  const { prefetch } = usePrefetchHome();
+  useEffect(() => {
+    prefetch();
+  }, [prefetch]);
+  return null;
+}
+
+/** /admin のときはオーバーレイを出さず管理画面だけ表示する */
+function useIsAdminRoute() {
+  const pathname = usePathname();
+  return typeof pathname === "string" && (pathname === "/admin" || pathname.startsWith("/admin/"));
+}
+
+function ConditionalExperienceOverlay() {
+  if (useIsAdminRoute()) return null;
+  return <ExperienceOverlay />;
+}
 
 const DEFAULT_WEB_INSETS: EdgeInsets = { top: 0, right: 0, bottom: 0, left: 0 };
 const DEFAULT_WEB_FRAME: Rect = { x: 0, y: 0, width: 0, height: 0 };
@@ -50,9 +76,11 @@ export const unstable_settings = {
 
 /**
  * チュートリアルUI（ユーザータイプ選択 + チュートリアルオーバーレイ）
+ * /admin のときは表示しない（管理画面のパスワード認証を隠さないため）
  */
 function TutorialUI() {
   const tutorial = useTutorial();
+  if (useIsAdminRoute()) return null;
 
   return (
     <>
@@ -87,19 +115,20 @@ function TutorialUI() {
 
 /**
  * オンボーディングラッパー
- * 初回起動時にオンボーディングを表示
+ * 初回起動時にオンボーディングを表示（/admin は常にスキップして管理画面へ）
  */
 function OnboardingWrapper({ children }: { children: React.ReactNode }) {
+  const pathname = usePathname();
   const { hasCompletedOnboarding, completeOnboarding } = useOnboarding();
-  
-  // オンボーディング状態が確認中の場合はローディング画面を表示
-  if (hasCompletedOnboarding === null) {
-    return (
-      <View style={{ flex: 1, backgroundColor: "#0a1628", justifyContent: "center", alignItems: "center" }}>
-        <ActivityIndicator size="large" color="#ffffff" />
-      </View>
-    );
+
+  // /admin へのアクセスはオンボーディングを出さずに管理画面（パスワード認証）を表示
+  const isAdminRoute = typeof pathname === "string" && (pathname === "/admin" || pathname.startsWith("/admin/"));
+  if (isAdminRoute) {
+    return <>{children}</>;
   }
+  
+  // オンボーディング状態が確認中の場合もアプリを表示（ブロッキング回避）
+  // ※ Web環境ではlocalStorageから同期取得されるためnullになることは稀
   
   // オンボーディング未完了の場合はオンボーディング画面を表示
   if (!hasCompletedOnboarding) {
@@ -119,8 +148,8 @@ export default function RootLayout() {
 
   // Initialize Manus runtime for cookie injection from parent container
   useEffect(() => {
-    // Initialize Sentry for error tracking
-    initSentry();
+    // Sentry初期化を遅延実行（初期レンダリングをブロックしない）
+    const sentryTimer = setTimeout(() => { initSentry(); }, 2000);
     initManusRuntime();
     // 重要な画像をプリロード（キャラクター等）
     preloadCriticalImages();
@@ -133,6 +162,7 @@ export default function RootLayout() {
     // APIオフラインキューのネットワーク監視を開始
     startNetworkMonitoring();
     return () => {
+      clearTimeout(sentryTimer);
       unsubscribeSync();
       stopNetworkMonitoring();
     };
@@ -187,39 +217,39 @@ export default function RootLayout() {
   }, [initialInsets, initialFrame]);
 
   const content = (
-    <GestureHandlerRootView style={{ flex: 1, overflow: "hidden" }}>
-      <trpc.Provider client={trpcClient} queryClient={queryClient}>
-        <PersistQueryClientProvider 
-          client={queryClient} 
-          persistOptions={{ persister: asyncStoragePersister }}
-        >
-          <AutoLoginProvider>
-            <LoginSuccessProvider>
-              <TutorialProvider>
-                <ExperienceProvider>
-                  <ToastProvider>
-                    <OnboardingWrapper>
-                      {/* Default to hiding native headers so raw route segments don't appear (e.g. "(tabs)", "products/[id]"). */}
-                      {/* If a screen needs the native header, explicitly enable it and set a human title via Stack.Screen options. */}
-                      <Stack screenOptions={{ headerShown: false }}>
-                        <Stack.Screen name="(tabs)" />
-                        <Stack.Screen name="oauth/callback" />
-                      </Stack>
-                      <StatusBar style="auto" />
-                      <LoginSuccessModalWrapper />
-                      <OfflineBanner />
-                      <NetworkToast />
-                      <TutorialUI />
-                      <ExperienceOverlay />
-                    </OnboardingWrapper>
-                  </ToastProvider>
-                </ExperienceProvider>
-              </TutorialProvider>
-            </LoginSuccessProvider>
-          </AutoLoginProvider>
-        </PersistQueryClientProvider>
-      </trpc.Provider>
-    </GestureHandlerRootView>
+    <ErrorBoundary screenName="App">
+      <GestureHandlerRootView style={{ flex: 1, overflow: "hidden" }}>
+        <trpc.Provider client={trpcClient} queryClient={queryClient}>
+          <PersistQueryClientProvider
+            client={queryClient}
+            persistOptions={{ persister: asyncStoragePersister }}
+          >
+            <EarlyPrefetch />
+            <AutoLoginProvider>
+              <LoginSuccessProvider>
+                <TutorialProvider>
+                  <ExperienceProvider>
+                    <ToastProvider>
+                      <OnboardingWrapper>
+                        <Stack screenOptions={{ headerShown: false }}>
+                          <Stack.Screen name="(tabs)" />
+                        </Stack>
+                        <StatusBar style="auto" />
+                        <LoginSuccessModalWrapper />
+                        <OfflineBanner />
+                        <NetworkToast />
+                        <TutorialUI />
+                        <ConditionalExperienceOverlay />
+                      </OnboardingWrapper>
+                    </ToastProvider>
+                  </ExperienceProvider>
+                </TutorialProvider>
+              </LoginSuccessProvider>
+            </AutoLoginProvider>
+          </PersistQueryClientProvider>
+        </trpc.Provider>
+      </GestureHandlerRootView>
+    </ErrorBoundary>
   );
 
   const shouldOverrideSafeArea = Platform.OS === "web";

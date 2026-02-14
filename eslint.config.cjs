@@ -9,6 +9,21 @@ module.exports = defineConfig([
     ignores: ["dist/*", "scripts/*"],
   },
   {
+    files: ["tests/e2e/fixtures.ts"],
+    rules: {
+      "react-hooks/rules-of-hooks": "off",
+    },
+  },
+  {
+    // TypeScriptファイルに対してno-undefを無効化（TypeScriptが型チェックを行うため）
+    files: ["**/*.ts", "**/*.tsx"],
+    rules: {
+      // TypeScriptプロジェクトではno-undefは不要（TypeScriptが型チェックを行うため）
+      // eslint-config-expoが既に設定している可能性があるが、明示的に無効化
+      "no-undef": "off",
+    },
+  },
+  {
     // ローカルルールをプラグインとして登録
     plugins: {
       "local-rules": {

@@ -8,13 +8,14 @@
  * - FormButtonsSection: フォームボタン部分（キャンセル、送信）
  */
 
-import { View, Text } from "react-native";
+import { View } from "react-native";
 import { color } from "@/theme/tokens";
-import { useColors } from "@/hooks/use-colors";
+import { SectionHeader, type FormGender } from "@/components/ui";
 import type { Companion, LookedUpProfile } from "../types";
 import { FormInputSection } from "./FormInputSection";
 import { CompanionAddSection } from "./CompanionAddSection";
 import { FormButtonsSection } from "./FormButtonsSection";
+import { eventDetailCopy } from "@/constants/copy";
 
 interface ParticipationFormSectionProps {
   // User
@@ -32,8 +33,8 @@ interface ParticipationFormSectionProps {
   setMessage: (value: string) => void;
   prefecture: string;
   setPrefecture: (value: string) => void;
-  gender: "male" | "female" | "";
-  setGender: (value: "male" | "female" | "") => void;
+  gender: FormGender;
+  setGender: (value: FormGender) => void;
   allowVideoUse: boolean;
   setAllowVideoUse: (value: boolean) => void;
   showPrefectureList: boolean;
@@ -96,8 +97,6 @@ export function ParticipationFormSection({
   onLookupTwitterProfile,
   isSubmitting,
 }: ParticipationFormSectionProps) {
-  const colors = useColors();
-  
   return (
     <View
       style={{
@@ -109,9 +108,7 @@ export function ParticipationFormSection({
         borderColor: color.border,
       }}
     >
-      <Text style={{ color: colors.foreground, fontSize: 18, fontWeight: "bold", marginBottom: 16 }}>
-        参加表明
-      </Text>
+      <SectionHeader title={eventDetailCopy.section.participation} style={{ paddingHorizontal: 0, paddingVertical: 0, marginBottom: 16 }} />
 
       {/* フォーム入力部分 */}
       <FormInputSection

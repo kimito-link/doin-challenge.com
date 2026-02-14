@@ -1,4 +1,4 @@
-import { Text as RNText, TextProps as RNTextProps, StyleSheet } from "react-native";
+import { Text as RNText, TextProps as RNTextProps } from "react-native";
 import { color } from "@/theme/tokens";
 
 type TextVariant = "h1" | "h2" | "h3" | "body" | "caption" | "label";
@@ -94,5 +94,3 @@ export function Text({
     </RNText>
   );
 }
-
-const styles = StyleSheet.create({});

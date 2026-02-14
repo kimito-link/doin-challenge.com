@@ -1,18 +1,11 @@
 /**
  * Ticket-related Schema Tables
- * 
+ *
  * チケット譲渡・待機リスト関連のテーブル定義
  */
 
 import { mysqlTable, int, varchar, text, timestamp, mysqlEnum, boolean } from "drizzle-orm/mysql-core";
 
-// =============================================================================
-// Ticket Transfers Table
-// =============================================================================
-
-/**
- * チケット譲渡テーブル
- */
 export const ticketTransfers = mysqlTable("ticket_transfers", {
   id: int("id").autoincrement().primaryKey(),
   challengeId: int("challengeId").notNull(),
@@ -31,13 +24,6 @@ export const ticketTransfers = mysqlTable("ticket_transfers", {
 export type TicketTransfer = typeof ticketTransfers.$inferSelect;
 export type InsertTicketTransfer = typeof ticketTransfers.$inferInsert;
 
-// =============================================================================
-// Ticket Waitlist Table
-// =============================================================================
-
-/**
- * チケット待機リストテーブル
- */
 export const ticketWaitlist = mysqlTable("ticket_waitlist", {
   id: int("id").autoincrement().primaryKey(),
   challengeId: int("challengeId").notNull(),

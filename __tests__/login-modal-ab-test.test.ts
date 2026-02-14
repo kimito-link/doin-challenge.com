@@ -15,8 +15,9 @@ describe("LoginModal A/Bテスト機能", () => {
       LOGIN_MESSAGES.forEach((msg) => {
         expect(msg).toHaveProperty("id");
         expect(msg).toHaveProperty("character");
+        expect(msg).toHaveProperty("role");
         expect(msg).toHaveProperty("message");
-        expect(msg).toHaveProperty("characterImage");
+        expect(msg).toHaveProperty("characterImagePath");
       });
     });
 

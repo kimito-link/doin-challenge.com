@@ -70,8 +70,8 @@ async function sendNotification(
     // Discord Webhook format
     payload = {
       embeds: [{
-        title: type === "success" 
-          ? "✅ Migration Successful" 
+        title: type === "success"
+          ? "✅ Migration Successful"
           : "❌ Migration Failed",
         description: message,
         color,
@@ -88,8 +88,8 @@ async function sendNotification(
     payload = {
       attachments: [{
         color: type === "success" ? "good" : "danger",
-        title: type === "success" 
-          ? "✅ Migration Successful" 
+        title: type === "success"
+          ? "✅ Migration Successful"
           : "❌ Migration Failed",
         text: message,
         ts: Math.floor(Date.now() / 1000),
@@ -138,28 +138,15 @@ async function runMigration(): Promise<void> {
   }
 
   try {
-    // Step 1: Generate migration files (if schema changed)
-    console.log("\n[migrate] Step 1: Generating migration files...");
-    try {
-      execSync("npx drizzle-kit generate", {
-        stdio: "inherit",
-        env: process.env,
-      });
-      console.log("[migrate] Migration files generated (or no changes detected)");
-    } catch (genError) {
-      // generate は変更がない場合でもエラーになることがあるので、警告のみ
-      console.log("[migrate] No schema changes detected or generation skipped");
-    }
-
-    // Step 2: Run migrations
-    console.log("\n[migrate] Step 2: Running migrations...");
-    execSync("npx drizzle-kit migrate", {
+    // PostgreSQL: 既存の .sql は MySQL 用のため migrate は使わず、push でスキーマを同期する
+    console.log("\n[migrate] Syncing schema to database (drizzle-kit push)...");
+    execSync("npx drizzle-kit push", {
       stdio: "inherit",
       env: process.env,
     });
 
     console.log("\n" + "=".repeat(60));
-    console.log("[migrate] ✅ Migration completed successfully!");
+    console.log("[migrate] ✅ Schema sync completed successfully!");
     console.log("=".repeat(60));
 
     await sendNotification(
@@ -169,7 +156,7 @@ async function runMigration(): Promise<void> {
 
   } catch (error) {
     const errorMessage = error instanceof Error ? error.message : String(error);
-    
+
     console.error("\n" + "=".repeat(60));
     console.error("[migrate] ❌ Migration FAILED!");
     console.error("[migrate] Error:", errorMessage);

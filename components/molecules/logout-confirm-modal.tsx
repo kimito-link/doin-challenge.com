@@ -168,7 +168,7 @@ export function LogoutConfirmModal({
 const styles = StyleSheet.create({
   overlay: {
     flex: 1,
-    backgroundColor: "rgba(0, 0, 0, 0.7)",
+    backgroundColor: palette.black + "B3",
     justifyContent: "center",
     alignItems: "center",
     padding: 24,
@@ -181,7 +181,7 @@ const styles = StyleSheet.create({
     maxWidth: 340,
     alignItems: "center",
     borderWidth: 1,
-    borderColor: "rgba(236, 72, 153, 0.3)",
+    borderColor: palette.pink500 + "4D",
   },
   characterSection: {
     alignItems: "center",
@@ -248,9 +248,9 @@ const styles = StyleSheet.create({
     justifyContent: "center",
   },
   cancelButton: {
-    backgroundColor: "rgba(236, 72, 153, 0.15)",
+    backgroundColor: palette.pink500 + "26",
     borderWidth: 1,
-    borderColor: "rgba(236, 72, 153, 0.3)",
+    borderColor: palette.pink500 + "4D",
   },
   cancelButtonText: {
     color: color.accentPrimary,

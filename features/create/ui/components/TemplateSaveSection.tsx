@@ -4,11 +4,11 @@
  * チャレンジをテンプレートとして保存するオプションUI
  */
 
-import { View, Text, TextInput } from "react-native";
+import { View } from "react-native";
 import MaterialIcons from "@expo/vector-icons/MaterialIcons";
-import { useColors } from "@/hooks/use-colors";
 import { createUI, createText } from "../theme/tokens";
-import { Button } from "@/components/ui/button";
+import { Checkbox } from "@/components/ui";
+import { Input } from "@/components/ui";
 
 interface TemplateSaveSectionProps {
   saveAsTemplate: boolean;
@@ -27,74 +27,32 @@ export function TemplateSaveSection({
   onTemplateNameChange,
   onTemplateIsPublicChange,
 }: TemplateSaveSectionProps) {
-  const colors = useColors();
-
   return (
     <View style={{ marginBottom: 16, backgroundColor: createUI.inputBg, borderRadius: 12, padding: 16, borderWidth: 1, borderColor: createUI.inputBorder }}>
-      <Button
-        variant="ghost"
-        onPress={() => onSaveAsTemplateChange(!saveAsTemplate)}
-        style={{ flexDirection: "row", alignItems: "center", justifyContent: "space-between", padding: 0 }}
-      >
-        <View style={{ flexDirection: "row", alignItems: "center" }}>
-          <MaterialIcons name="bookmark" size={20} color={createText.purple} />
-          <Text style={{ color: colors.foreground, fontSize: 14, fontWeight: "600", marginLeft: 8 }}>
-            テンプレートとして保存
-          </Text>
-        </View>
-        <View style={{
-          width: 24,
-          height: 24,
-          borderRadius: 4,
-          borderWidth: 2,
-          borderColor: saveAsTemplate ? createUI.purpleAccent : createUI.checkboxBorder,
-          backgroundColor: saveAsTemplate ? createUI.purpleAccent : "transparent",
-          alignItems: "center",
-          justifyContent: "center",
-        }}>
-          {saveAsTemplate && <MaterialIcons name="check" size={16} color="#fff" />}
-        </View>
-      </Button>
+      <View style={{ flexDirection: "row", alignItems: "center", marginBottom: saveAsTemplate ? 12 : 0 }}>
+        <MaterialIcons name="bookmark" size={20} color={createText.purple} style={{ marginRight: 8 }} />
+        <Checkbox
+          checked={saveAsTemplate}
+          onChange={onSaveAsTemplateChange}
+          label="テンプレートとして保存"
+          containerStyle={{ flex: 1 }}
+        />
+      </View>
       
       {saveAsTemplate && (
         <View style={{ marginTop: 12 }}>
-          <TextInput
+          <Input
             value={templateName}
             onChangeText={onTemplateNameChange}
             placeholder="テンプレート名"
-            placeholderTextColor={createText.placeholder}
-            style={{
-              backgroundColor: colors.background,
-              borderRadius: 8,
-              padding: 12,
-              color: colors.foreground,
-              borderWidth: 1,
-              borderColor: createUI.inputBorder,
-              marginBottom: 8,
-            }}
+            containerStyle={{ marginBottom: 8 }}
           />
-          <Button
-            variant="ghost"
-            onPress={() => onTemplateIsPublicChange(!templateIsPublic)}
-            style={{ flexDirection: "row", alignItems: "center", padding: 0, justifyContent: "flex-start" }}
-          >
-            <View style={{
-              width: 20,
-              height: 20,
-              borderRadius: 4,
-              borderWidth: 2,
-              borderColor: templateIsPublic ? createUI.successAccent : createUI.checkboxBorder,
-              backgroundColor: templateIsPublic ? createUI.successAccent : "transparent",
-              alignItems: "center",
-              justifyContent: "center",
-              marginRight: 8,
-            }}>
-              {templateIsPublic && <MaterialIcons name="check" size={14} color="#fff" />}
-            </View>
-            <Text style={{ color: colors.muted, fontSize: 13 }}>
-              他のユーザーにも公開する
-            </Text>
-          </Button>
+          <Checkbox
+            checked={templateIsPublic}
+            onChange={onTemplateIsPublicChange}
+            label="他のユーザーにも公開する"
+            size="sm"
+          />
         </View>
       )}
     </View>

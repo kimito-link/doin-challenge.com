@@ -4,9 +4,10 @@
  * 地図の描画に失敗した場合に表示するフォールバックUI
  */
 
-import { View, Text, StyleSheet, Pressable } from "react-native";
+import { View, Text, StyleSheet } from "react-native";
 import MaterialIcons from "@expo/vector-icons/MaterialIcons";
 import { color } from "@/theme/tokens";
+import { RetryButton } from "./retry-button";
 import type { FallbackProps } from "./error-boundary";
 
 export interface MapErrorFallbackProps extends FallbackProps {
@@ -46,16 +47,7 @@ export function MapErrorFallback({
         {error.message || "地図データの取得中にエラーが発生しました"}
       </Text>
 
-      <Pressable
-        onPress={resetErrorBoundary}
-        style={({ pressed }) => [
-          styles.retryButton,
-          pressed && styles.retryButtonPressed,
-        ]}
-      >
-        <MaterialIcons name="refresh" size={18} color={color.textWhite} />
-        <Text style={styles.retryText}>再読み込み</Text>
-      </Pressable>
+      <RetryButton onPress={resetErrorBoundary} variant="reload" size="sm" />
 
       <Text style={styles.hint}>
         問題が続く場合は、アプリを再起動してください
@@ -99,28 +91,9 @@ const styles = StyleSheet.create({
     textAlign: "center",
     maxWidth: 260,
   },
-  retryButton: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 6,
-    backgroundColor: color.border,
-    paddingHorizontal: 16,
-    paddingVertical: 10,
-    borderRadius: 8,
-    marginTop: 4,
-  },
-  retryButtonPressed: {
-    opacity: 0.8,
-    transform: [{ scale: 0.97 }],
-  },
-  retryText: {
-    color: color.textPrimary,
-    fontSize: 14,
-    fontWeight: "500",
-  },
   hint: {
     color: color.textSubtle,
-    fontSize: 11,
+    fontSize: 12,
     marginTop: 4,
   },
 });
