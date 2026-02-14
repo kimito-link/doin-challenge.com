@@ -96,7 +96,7 @@ export default function ParticipationsScreen() {
 
   // 復元ミューテーション
   const restoreMutation = trpc.admin.participations.restore.useMutation({
-    onSuccess: (data) => {
+    onSuccess: (data: { requestId: string }) => {
       utils.admin.participations.listDeleted.invalidate();
       utils.admin.participations.getAuditLogs.invalidate();
       const message = `復元しました (requestId: ${data.requestId})`;
@@ -106,7 +106,7 @@ export default function ParticipationsScreen() {
         Alert.alert(commonCopy.alerts.success, message);
       }
     },
-    onError: (err) => {
+    onError: (err: { message: string }) => {
       const message = `エラー: ${err.message}`;
       if (Platform.OS === "web") {
         window.alert(message);
@@ -118,7 +118,7 @@ export default function ParticipationsScreen() {
 
   // 一括復元ミューテーション
   const bulkRestoreMutation = trpc.admin.participations.bulkRestore.useMutation({
-    onSuccess: (data) => {
+    onSuccess: (data: { restoredCount: number; requestId: string }) => {
       utils.admin.participations.listDeleted.invalidate();
       utils.admin.participations.getAuditLogs.invalidate();
       const message = `${data.restoredCount}件を復元しました (requestId: ${data.requestId})`;
@@ -128,7 +128,7 @@ export default function ParticipationsScreen() {
         Alert.alert(commonCopy.alerts.success, message);
       }
     },
-    onError: (err) => {
+    onError: (err: { message: string }) => {
       const message = `エラー: ${err.message}`;
       if (Platform.OS === "web") {
         window.alert(message);
@@ -140,7 +140,7 @@ export default function ParticipationsScreen() {
 
   // 一括削除ミューテーション
   const bulkDeleteMutation = trpc.admin.participations.bulkDelete.useMutation({
-    onSuccess: (data) => {
+    onSuccess: (data: { deletedCount: number; requestId: string }) => {
       utils.admin.participations.listDeleted.invalidate();
       utils.admin.participations.getAuditLogs.invalidate();
       const message = `${data.deletedCount}件を削除しました (requestId: ${data.requestId})`;
@@ -150,7 +150,7 @@ export default function ParticipationsScreen() {
         Alert.alert(commonCopy.alerts.success, message);
       }
     },
-    onError: (err) => {
+    onError: (err: { message: string }) => {
       const message = `エラー: ${err.message}`;
       if (Platform.OS === "web") {
         window.alert(message);

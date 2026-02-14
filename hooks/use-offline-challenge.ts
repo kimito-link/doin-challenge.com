@@ -56,7 +56,6 @@ export function useOfflineChallenge(options: UseOfflineChallengeOptions = {}) {
           description: data.description,
           eventDate: data.eventDate,
           venue: data.venue,
-          hostTwitterId: data.hostTwitterId,
           hostName: data.hostName,
           hostUsername: data.hostUsername,
           hostProfileImage: data.hostProfileImage,

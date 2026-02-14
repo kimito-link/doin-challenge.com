@@ -80,7 +80,6 @@ export function useOfflineParticipation(options: UseOfflineParticipationOptions 
         } else {
           createMutation.mutate({
             challengeId: data.challengeId,
-            twitterId: data.twitterId,
             displayName: data.displayName,
             username: data.username,
             profileImage: data.profileImage,

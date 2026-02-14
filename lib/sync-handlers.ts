@@ -29,7 +29,6 @@ export function initSyncHandlers(): void {
     } else {
       await trpcClient.participations.create.mutate({
         challengeId: payload.challengeId as number,
-        twitterId: payload.twitterId as string,
         displayName: payload.displayName as string,
         username: payload.username as string | undefined,
         profileImage: payload.profileImage as string | undefined,
@@ -67,7 +66,6 @@ export function initSyncHandlers(): void {
       title: payload.title as string,
       description: payload.description as string | undefined,
       hostName: payload.hostName as string,
-      hostTwitterId: payload.hostTwitterId as string,
       hostUsername: payload.hostUsername as string | undefined,
       hostProfileImage: payload.hostProfileImage as string | undefined,
       hostFollowersCount: payload.hostFollowersCount as number | undefined,
