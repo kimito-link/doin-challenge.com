@@ -201,6 +201,10 @@ export default function TwitterOAuthCallback() {
 
           // Webプラットフォームの場合、セッションCookieを確立（リトライ付き）
           if (Platform.OS === "web" && typeof window !== "undefined") {
+            // BUG-002修正: URLからセッショントークンを即座に除去（ブラウザ履歴/Referer漏洩防止）
+            try {
+              window.history.replaceState(null, "", "/oauth/twitter-callback");
+            } catch { /* ignore */ }
             const sessionToken = params.sessionToken;
             let sessionEstablished = false;
             

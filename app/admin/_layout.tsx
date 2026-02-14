@@ -41,8 +41,7 @@ const menuItems: MenuItem[] = [
   { id: "participations", label: "参加管理", icon: "chatbubbles-outline", path: "/admin/participations" },
 ];
 
-const _ADMIN_PASSWORD = process.env.EXPO_PUBLIC_ADMIN_PASSWORD || "pass304130";
-void _ADMIN_PASSWORD; // 環境変数参照のため保持（管理画面認証で将来利用）
+// 管理パスワードは環境変数からのみ取得（ハードコード禁止: BUG-003修正）
 
 export default function AdminLayout() {
   const colors = useColors();

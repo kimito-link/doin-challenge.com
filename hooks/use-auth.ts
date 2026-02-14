@@ -4,7 +4,7 @@ import { getApiBaseUrl } from "@/lib/api/config";
 import {
   clearAllTokenData,
 } from "@/lib/token-manager";
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { Platform, Linking } from "react-native";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { USER_INFO_KEY } from "@/constants/oauth";
@@ -47,13 +47,15 @@ export function useAuth(options?: UseAuthOptions) {
   // キャッシュがあればloading=falseで開始（スケルトン表示をスキップ）
   const [loading, setLoading] = useState(!hasCachedAuth);
   const [error, setError] = useState<Error | null>(null);
+  // BUG-005修正: userをrefで参照して循環依存を解消
+  const userRef = useRef(user);
+  userRef.current = user;
 
   const fetchUser = useCallback(async () => {
     try {
       setError(null);
       // C-2: 既にユーザー情報がある場合はバックグラウンドリフレッシュとしてloading=trueにしない
-      // これにより、画面のスケルトン表示をブロックしない
-      const isBackgroundRefresh = user !== null || cachedAuthState?.user !== null;
+      const isBackgroundRefresh = userRef.current !== null || cachedAuthState?.user !== null;
       if (!isBackgroundRefresh) {
         setLoading(true);
       }
@@ -154,7 +156,7 @@ export function useAuth(options?: UseAuthOptions) {
     } finally {
       setLoading(false);
     }
-  }, [user]);
+  }, []); // BUG-005修正: userをdepsから除外（userRefで参照）
 
   const logout = useCallback(async () => {
     try {

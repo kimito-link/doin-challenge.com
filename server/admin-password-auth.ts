@@ -5,7 +5,10 @@
 
 import { ENV } from "./_core/env";
 
-const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD || "pass304130";
+const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD || "";
+if (!ADMIN_PASSWORD) {
+  console.warn("[Admin] ADMIN_PASSWORD env var is not set. Admin panel authentication is disabled.");
+}
 
 /**
  * パスワードが正しいかチェック

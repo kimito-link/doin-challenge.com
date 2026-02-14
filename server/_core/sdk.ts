@@ -156,11 +156,16 @@ class SDKServer {
       throw ForbiddenError("User not found");
     }
 
-    // lastSignedIn を更新
-    await db.upsertUser({
-      openId: user.openId,
-      lastSignedIn: signedInAt,
-    });
+    // lastSignedIn を更新（BUG-007修正: 5分間隔でスロットリング、DB書き込み負荷軽減）
+    const lastUpdate = lastSignedInCache.get(user.openId);
+    const THROTTLE_MS = 5 * 60 * 1000; // 5分
+    if (!lastUpdate || (Date.now() - lastUpdate) > THROTTLE_MS) {
+      lastSignedInCache.set(user.openId, Date.now());
+      db.upsertUser({
+        openId: user.openId,
+        lastSignedIn: signedInAt,
+      }).catch((err) => console.warn("[Auth] lastSignedIn update failed:", err));
+    }
 
     return user;
   }
@@ -173,6 +178,8 @@ class SDKServer {
 
 const SESSION_IDLE_TIMEOUT_MS = 4 * 60 * 60 * 1000; // 4時間（操作なし）
 const lastActivityMap = new Map<string, number>();
+// BUG-007: lastSignedIn更新のスロットリング用キャッシュ
+const lastSignedInCache = new Map<string, number>();
 
 // メモリリーク防止: 古いエントリを定期的にクリーンアップ
 setInterval(() => {
