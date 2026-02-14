@@ -49,14 +49,18 @@
    - useMypageDataフックにエラーハンドリングとrefetchを追加
    - マイページにDataErrorStateを追加
 
+7. **フォーム入力の改善** (進行中)
+   - KeyboardAvoidingContainerコンポーネントを作成 (`components/ui/keyboard-avoiding-container.tsx`)
+   - プラットフォームに応じた最適なbehaviorを設定
+
 #### 次の作業予定
 
 1. **検索画面に空の状態表示を追加**
    - NoSearchResultsStateを表示し、検索条件の変更を促す
 
-2. **フォーム入力の改善**
-   - KeyboardAvoidingViewの最適化
+2. **フォーム入力のエラー表示を改善**
    - エラーメッセージの表示位置調整
+   - 入力フィールドのバリデーション強化
    - プレースホルダーテキストの具体化
 
 3. **既存のPressableをTouchableに置き換え**

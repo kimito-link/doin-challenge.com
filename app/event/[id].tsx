@@ -93,7 +93,7 @@ export default function ChallengeDetailScreen() {
   if (eventDetail.hasError && !eventDetail.hasData) {
     return (
       <ScreenContainer containerClassName="bg-background">
-        <AppHeader title="チャレンジ詳細" showBackButton />
+        <AppHeader title="チャレンジ詳細" />
         <DataErrorState onRetry={() => eventDetail.refetch()} />
       </ScreenContainer>
     );
