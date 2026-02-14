@@ -15,6 +15,13 @@ export async function getInvitationByCode(code: string) {
   return result[0] || null;
 }
 
+export async function getInvitationById(id: number) {
+  const db = await getDb();
+  if (!db) return null;
+  const result = await db.select().from(invitations).where(eq(invitations.id, id));
+  return result[0] || null;
+}
+
 export async function getInvitationsForChallenge(challengeId: number) {
   const db = await getDb();
   if (!db) return [];

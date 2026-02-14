@@ -93,10 +93,10 @@ export { SyncStatusIndicator } from "./sync-status-indicator";
 
 // Animation系
 export { BlinkingCharacter, BlinkingLink } from "./blinking-character";
-export { HelloWave } from "./hello-wave";
+// HelloWave removed (unused)
 
 // Navigation系
-export { ExternalLink } from "./external-link";
+// ExternalLink removed (unused)
 export { HapticTab } from "./haptic-tab";
 
 // Utility系

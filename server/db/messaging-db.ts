@@ -102,6 +102,13 @@ export async function getUnreadMessageCount(userId: number) {
   return result[0]?.count || 0;
 }
 
+export async function getDirectMessageById(id: number) {
+  const db = await getDb();
+  if (!db) return null;
+  const result = await db.select().from(directMessages).where(eq(directMessages.id, id));
+  return result[0] || null;
+}
+
 export async function markMessageAsRead(id: number) {
   const db = await getDb();
   if (!db) return;
