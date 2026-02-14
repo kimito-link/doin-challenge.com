@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef } from "react";
 import { color } from "@/theme/tokens";
-import { View, Text, FlatList, TextInput, Pressable, KeyboardAvoidingView, Platform } from "react-native";
+import { View, Text, FlatList, TextInput, Pressable, Platform } from "react-native";
+import { KeyboardAvoidingContainer } from "@/components/ui/keyboard-avoiding-container";
 import { useLocalSearchParams } from "expo-router";
 import { navigateBack } from "@/lib/navigation/app-routes";
 import { ScreenContainer } from "@/components/organisms/screen-container";
@@ -108,11 +109,10 @@ export default function ConversationScreen() {
 
   return (
     <ScreenContainer edges={["top", "left", "right"]}>
-      <KeyboardAvoidingView
-        behavior={Platform.OS === "ios" ? "padding" : "height"}
+      <KeyboardAvoidingContainer>
         className="flex-1"
         keyboardVerticalOffset={Platform.OS === "ios" ? 90 : 0}
-      >
+
         {/* ヘッダー */}
         <AppHeader 
           title="君斗りんくの動員ちゃれんじ" 
@@ -176,7 +176,7 @@ export default function ConversationScreen() {
             </Text>
           </Pressable>
         </View>
-      </KeyboardAvoidingView>
+      </KeyboardAvoidingContainer>
     </ScreenContainer>
   );
 }

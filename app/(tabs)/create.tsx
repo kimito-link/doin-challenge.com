@@ -1,6 +1,7 @@
 // app/(tabs)/create.tsx
 // v6.60: 作成完了モーダル（チェックリスト＋告知文コピー）追加
-import { View, Text, ScrollView, KeyboardAvoidingView, Platform } from "react-native";
+import { View, Text, ScrollView, Platform } from "react-native";
+import { KeyboardAvoidingContainer } from "@/components/ui/keyboard-avoiding-container";
 import { Image } from "expo-image";
 import { ScreenContainer } from "@/components/organisms/screen-container";
 import { trpc } from "@/lib/trpc";
@@ -58,10 +59,7 @@ export default function CreateChallengeScreen() {
 
   return (
     <ScreenContainer containerClassName="bg-background">
-      <KeyboardAvoidingView
-        behavior={Platform.OS === "ios" ? "padding" : "height"}
-        style={{ flex: 1 }}
-      >
+      <KeyboardAvoidingContainer>
         <ScrollView 
           ref={refs.scrollViewRef}
           style={{ flex: 1, backgroundColor: colors.background }}
@@ -127,7 +125,7 @@ export default function CreateChallengeScreen() {
 
           <View style={{ height: 100 }} />
         </ScrollView>
-      </KeyboardAvoidingView>
+      </KeyboardAvoidingContainer>
       
       {/* 認証UXモーダル（「Xでログインして作成」タップ時・他タブと同一UI） */}
       <LoginModal

@@ -7,7 +7,8 @@
  * - features/event-detail/components/ - UIコンポーネント
  */
 
-import { View, Text, ScrollView, KeyboardAvoidingView, Platform, RefreshControl, Modal, Pressable } from "react-native";
+import { View, Text, ScrollView, Platform, RefreshControl, Modal, Pressable } from "react-native";
+import { KeyboardAvoidingContainer } from "@/components/ui/keyboard-avoiding-container";
 import { useLocalSearchParams } from "expo-router";
 import { navigate } from "@/lib/navigation";
 import { ScreenContainer } from "@/components/organisms/screen-container";
@@ -134,10 +135,7 @@ export default function ChallengeDetailScreen() {
     <ScreenContainer edges={["top", "left", "right"]} containerClassName="bg-background">
       {/* 更新中インジケータ */}
       <RefreshingIndicator isRefreshing={eventDetail.isRefreshing} />
-      <KeyboardAvoidingView
-        behavior={Platform.OS === "ios" ? "padding" : "height"}
-        style={{ flex: 1 }}
-      >
+      <KeyboardAvoidingContainer>
         <ScrollView 
           ref={participationForm.scrollViewRef} 
           style={{ flex: 1, backgroundColor: colors.background }}
@@ -311,7 +309,7 @@ export default function ChallengeDetailScreen() {
 
           <View style={{ height: 100 }} />
         </ScrollView>
-      </KeyboardAvoidingView>
+      </KeyboardAvoidingContainer>
 
       {/* 参加表明確認モーダル */}
       <ConfirmationModal

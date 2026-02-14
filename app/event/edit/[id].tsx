@@ -1,4 +1,5 @@
-import { View, Text, TextInput, ScrollView, Pressable, KeyboardAvoidingView, Platform, ActivityIndicator } from "react-native";
+import { View, Text, TextInput, ScrollView, Pressable, Platform, ActivityIndicator } from "react-native";
+import { KeyboardAvoidingContainer } from "@/components/ui/keyboard-avoiding-container";
 import { commonCopy } from "@/constants/copy/common";
 import { color } from "@/theme/tokens";
 import { useLocalSearchParams } from "expo-router";
@@ -192,10 +193,8 @@ export default function EditChallengeScreen() {
 
   return (
     <ScreenContainer containerClassName="bg-background">
-      <KeyboardAvoidingView
-        behavior={Platform.OS === "ios" ? "padding" : "height"}
-        style={{ flex: 1 }}
-      >
+      <KeyboardAvoidingContainer>
+
         <ScrollView
           ref={scrollViewRef}
           style={{ flex: 1, backgroundColor: colors.background }}
@@ -553,7 +552,7 @@ export default function EditChallengeScreen() {
             </Pressable>
           </View>
         </ScrollView>
-      </KeyboardAvoidingView>
+      </KeyboardAvoidingContainer>
     </ScreenContainer>
   );
 }

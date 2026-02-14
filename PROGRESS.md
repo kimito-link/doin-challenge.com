@@ -49,9 +49,16 @@
    - useMypageDataフックにエラーハンドリングとrefetchを追加
    - マイページにDataErrorStateを追加
 
-7. **フォーム入力の改善** (進行中)
+7. **フォーム入力の改善** (完了)
    - KeyboardAvoidingContainerコンポーネントを作成 (`components/ui/keyboard-avoiding-container.tsx`)
    - プラットフォームに応じた最適なbehaviorを設定
+   - 既存のKeyboardAvoidingViewを6箇所すべて置き換え
+     - app/(tabs)/create.tsx
+     - app/event/[id].tsx
+     - app/event/edit/[id].tsx
+     - app/edit-challenge/[id].tsx
+     - app/messages/[partnerId].tsx
+     - app/edit-participation/[id].tsx
 
 #### 次の作業予定
 

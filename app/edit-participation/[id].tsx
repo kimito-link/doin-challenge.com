@@ -1,4 +1,5 @@
-import { View, Text, ScrollView, TextInput, Pressable, KeyboardAvoidingView, Platform, ActivityIndicator } from "react-native";
+import { View, Text, ScrollView, TextInput, Pressable, Platform, ActivityIndicator } from "react-native";
+import { KeyboardAvoidingContainer } from "@/components/ui/keyboard-avoiding-container";
 import { color, palette } from "@/theme/tokens";
 import { useLocalSearchParams } from "expo-router";
 import { navigateBack } from "@/lib/navigation";
@@ -123,10 +124,8 @@ export default function EditParticipationScreen() {
 
   return (
     <ScreenContainer containerClassName="bg-background">
-      <KeyboardAvoidingView
-        behavior={Platform.OS === "ios" ? "padding" : "height"}
-        style={{ flex: 1 }}
-      >
+      <KeyboardAvoidingContainer>
+
         <ScrollView 
           style={{ flex: 1, backgroundColor: colors.background }}
           showsHorizontalScrollIndicator={false}
@@ -340,7 +339,7 @@ export default function EditParticipationScreen() {
             </View>
           </ResponsiveContainer>
         </ScrollView>
-      </KeyboardAvoidingView>
+      </KeyboardAvoidingContainer>
     </ScreenContainer>
   );
 }
