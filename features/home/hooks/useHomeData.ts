@@ -52,6 +52,10 @@ interface UseHomeDataReturn {
   isStaleData: boolean;
   refreshing: boolean;
   
+  // Error states
+  hasError: boolean;
+  error: Error | null;
+  
   // Pagination
   hasNextPage: boolean;
   hasNextSearchPage: boolean;
@@ -111,6 +115,8 @@ export function useHomeData({
     hasNextPage,
     isFetchingNextPage,
     refetch,
+    error: queryError,
+    isError: hasError,
   } = trpc.events.listPaginated.useInfiniteQuery(
     { 
       limit: 20, 
@@ -304,5 +310,9 @@ export function useHomeData({
     
     // Offline
     isOffline,
+    
+    // Error states
+    hasError,
+    error: queryError as Error | null,
   };
 }

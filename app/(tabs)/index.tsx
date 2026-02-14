@@ -8,6 +8,8 @@ import { View, FlatList, Platform } from "react-native";
 import { color } from "@/theme/tokens";
 import { useState, useCallback } from "react";
 import { ScreenContainer } from "@/components/organisms/screen-container";
+import { DataErrorState } from "@/components/ui/error-state";
+import { LoadingState } from "@/components/ui/loading-state";
 
 import { useResponsive, useGridLayout } from "@/hooks/use-responsive";
 import { useAuth } from "@/hooks/use-auth";
@@ -139,8 +141,12 @@ export default function HomeScreen() {
         showLoginButton={true}
       />
 
-      {/* チャレンジリスト */}
-      {homeData.displayChallenges.length > 0 || homeData.isInitialLoading ? (
+      {/* エラー表示 */}
+      {homeData.hasError && !homeData.hasData ? (
+        <DataErrorState onRetry={() => homeData.refetch()} />
+      ) : homeData.isInitialLoading ? (
+        <LoadingState message="チャレンジを読み込み中..." />
+      ) : homeData.displayChallenges.length > 0 ? (
         <FlatList
           key={isSearching ? `grid-${numColumns}` : "ranking-list"}
           data={isSearching ? homeData.displayChallenges : homeData.rest}

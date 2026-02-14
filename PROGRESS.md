@@ -30,7 +30,7 @@
      - 連続タップ防止
    - UI/UX改善チェックリスト作成 (`UI_UX_IMPROVEMENTS.md`)
 
-4. **UI状態表示コンポーネントの作成** (進行中)
+4. **UI状態表示コンポーネントの作成** (完了)
    - エラー状態コンポーネント (`components/ui/error-state.tsx`)
      - ErrorState, NetworkErrorState, DataErrorState, PermissionErrorState
    - 空の状態コンポーネント (`components/ui/empty-state.tsx`)
@@ -38,11 +38,15 @@
    - ローディング状態コンポーネント (`components/ui/loading-state.tsx`)
      - LoadingState, SkeletonPlaceholder, CardSkeleton, ListSkeleton
 
+5. **ホーム画面にUI状態コンポーネントを適用** (進行中)
+   - useHomeDataフックにエラーハンドリングを追加 (hasError, error)
+   - ホーム画面にDataErrorStateとLoadingStateを追加
+   - エラー時の再試行ボタンを実装
+
 #### 次の作業予定
 
-1. **既存の画面にUI状態コンポーネントを適用**
-   - ホーム画面、チャレンジ詳細、マイページなど
-   - エラー時の再試行ボタンを追加
+1. **他の画面にUI状態コンポーネントを適用**
+   - チャレンジ詳細、マイページ、検索画面など
    - 空の状態に適切なメッセージとアクションを表示
 
 2. **フォーム入力の改善**
