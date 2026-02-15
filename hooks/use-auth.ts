@@ -38,6 +38,17 @@ if (!cachedAuthState) {
   }
 }
 
+/**
+ * Auth0専用の認証フック
+ * 
+ * 機能:
+ * - Auth0経由のログイン/ログアウト
+ * - セッション管理（Web: Cookie、Native: SecureStore）
+ * - ユーザー情報のキャッシング（メモリ + localStorage/AsyncStorage）
+ * - 自動リトライ（ネットワークエラー時）
+ * 
+ * @param options - autoFetch: 自動的にユーザー情報を取得するか（デフォルト: true）
+ */
 export function useAuth(options?: UseAuthOptions) {
   const { autoFetch = true } = options ?? {};
   
@@ -104,7 +115,7 @@ export function useAuth(options?: UseAuthOptions) {
         }
 
         if (apiUser) {
-          // チャレンジ作成画面などのプロフィール表示用に Twitter プロフィールを取得
+          // Auth0からユーザー情報を取得
           const twitterProfile = await Api.getTwitterProfile();
           const userInfo: Auth.User = {
             id: apiUser.id,
@@ -160,7 +171,7 @@ export function useAuth(options?: UseAuthOptions) {
 
   const logout = useCallback(async () => {
     try {
-      // BFFパターン: サーバーが自動でトークンリボーク+削除するため、トークン送信不要
+      // Auth0ログアウトAPI呼び出し
       await Api.logout();
     } catch (err) {
       console.error("[Auth] Logout API call failed:", err);
@@ -174,7 +185,12 @@ export function useAuth(options?: UseAuthOptions) {
     }
   }, []);
 
-  // login関数: Auth0をメインに使用、forceSwitch=trueで別のアカウントでログイン可能
+  /**
+   * Auth0ログイン画面に遷移
+   * 
+   * @param returnUrl - ログイン後のリダイレクト先URL（オプション）
+   * @param forceSwitch - 強制的に別のアカウントでログイン（オプション）
+   */
   const login = useCallback(async (returnUrl?: string, forceSwitch: boolean = false) => {
     try {
       if (Platform.OS === "web" && typeof window !== "undefined") {

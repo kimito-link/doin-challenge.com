@@ -14,7 +14,6 @@ import type { Express, Request, Response } from "express";
 import { getUserByOpenId } from "../db";
 import { getSessionCookieOptions } from "./cookies";
 import { sdk } from "./sdk";
-import { revokeToken } from "../twitter-oauth2";
 import { getTokens, deleteTokens } from "../token-store";
 import { clearActivity } from "./sdk";
 
@@ -89,10 +88,10 @@ export function registerOAuthRoutes(app: Express) {
         // fire-and-forget: refresh_token → access_token の順にリボーク
         // ZIPリファレンス準拠: 両トークンを確実に無効化
         if (storedTokens?.refreshToken) {
-          revokeToken(storedTokens.refreshToken, "refresh_token").catch(() => {});
+          // Twitter OAuth2 removed - Auth0 handles token revocation
         }
-        if (storedTokens?.accessToken) {
-          revokeToken(storedTokens.accessToken, "access_token").catch(() => {});
+        if (storedTokens.accessToken) {
+          // Twitter OAuth2 removed - Auth0 handles token revocation
         }
         // サーバーサイドのトークンストアから削除
         await deleteTokens(user.openId).catch(() => {});

@@ -10,7 +10,6 @@ import { APP_VERSION } from "../../shared/version";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 import { registerOAuthRoutes } from "./oauth";
-import { registerTwitterRoutes } from "../twitter-routes";
 import { appRouter } from "../routers";
 import { createContext } from "./context";
 import { getDashboardSummary, getApiUsageStats } from "../api-usage-tracker";
@@ -190,7 +189,7 @@ async function startServer() {
   app.use(rateLimiterMiddleware);
 
   registerOAuthRoutes(app);
-  registerTwitterRoutes(app);
+  // Twitter OAuth2 removed - using Auth0 only
 
   // ... (existing imports)
 

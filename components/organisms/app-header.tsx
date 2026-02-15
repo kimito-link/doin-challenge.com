@@ -216,7 +216,7 @@ export function AppHeader({
           >
             <MaterialIcons name="login" size={18} color={color.textWhite} style={{ marginRight: 6 }} />
             <Text style={{ color: color.textWhite, fontSize: 14, fontWeight: "600" }}>
-              Xでログイン
+              ログイン
             </Text>
           </Pressable>
         )}
