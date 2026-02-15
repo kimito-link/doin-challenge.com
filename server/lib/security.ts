@@ -65,7 +65,7 @@ export function csrfProtection(req: Request, res: Response, next: NextFunction) 
   }
 
   const token = req.headers["x-csrf-token"] as string;
-  const sessionToken = req.session?.csrfToken;
+  const sessionToken = (req as any).session?.csrfToken;
 
   if (!token || !sessionToken || token !== sessionToken) {
     return res.status(403).json({ error: "Invalid CSRF token" });

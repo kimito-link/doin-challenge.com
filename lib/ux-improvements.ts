@@ -227,7 +227,7 @@ export function useSearch<T>(
 ) {
   const [searchQuery, setSearchQuery] = useState("");
   const [filteredItems, setFilteredItems] = useState(items);
-  const timeoutRef = useRef<NodeJS.Timeout>();
+  const timeoutRef = useRef<NodeJS.Timeout | null>(null);
 
   useEffect(() => {
     if (timeoutRef.current) {
@@ -252,7 +252,7 @@ export function useSearch<T>(
       );
 
       setFilteredItems(filtered);
-    }, debounceMs);
+    }, debounceMs) as unknown as NodeJS.Timeout;
 
     return () => {
       if (timeoutRef.current) {
