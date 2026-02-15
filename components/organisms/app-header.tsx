@@ -37,6 +37,7 @@ interface AppHeaderProps {
   showLoginStatus?: boolean;
   showMenu?: boolean;
   showLoginButton?: boolean;
+  showBackButton?: boolean;
 }
 
 const triggerHaptic = () => {
@@ -55,6 +56,7 @@ export function AppHeader({
   showLoginStatus = true,
   showMenu = true,
   showLoginButton = false,
+  showBackButton = false,
 }: AppHeaderProps) {
   
   const { user, isAuthReady } = useAuth();
