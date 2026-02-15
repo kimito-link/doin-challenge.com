@@ -43,6 +43,7 @@ import { OnboardingScreen, useOnboarding } from "@/features/onboarding";
 import { initSentry } from "@/lib/sentry";
 import { ErrorBoundary } from "@/components/ui";
 import { usePrefetchHome } from "@/hooks/use-prefetch";
+import { Auth0Provider } from "@/lib/auth0-provider";
 
 /**
  * マウント時にホーム画面のデータをプリフェッチ（D-1: 初回表示前倒し）
@@ -225,8 +226,9 @@ export default function RootLayout() {
             persistOptions={{ persister: asyncStoragePersister }}
           >
             <EarlyPrefetch />
-            <AutoLoginProvider>
-              <LoginSuccessProvider>
+            <Auth0Provider>
+              <AutoLoginProvider>
+                <LoginSuccessProvider>
                 <TutorialProvider>
                   <ExperienceProvider>
                     <ToastProvider>
@@ -244,8 +246,9 @@ export default function RootLayout() {
                     </ToastProvider>
                   </ExperienceProvider>
                 </TutorialProvider>
-              </LoginSuccessProvider>
-            </AutoLoginProvider>
+                </LoginSuccessProvider>
+              </AutoLoginProvider>
+            </Auth0Provider>
           </PersistQueryClientProvider>
         </trpc.Provider>
       </GestureHandlerRootView>

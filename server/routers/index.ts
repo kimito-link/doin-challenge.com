@@ -7,6 +7,7 @@ import { router } from "../_core/trpc";
 
 // 個別ルーターをインポート
 import { authRouter } from "./auth";
+import { auth0Router } from "./auth0";
 import { eventsRouter } from "./events";
 import { participationsRouter } from "./participations";
 import { notificationsRouter } from "./notifications";
@@ -37,6 +38,7 @@ import { releaseNotesRouter } from "./release-notes";
 // 統合ルーター
 export const appRouter = router({
   auth: authRouter,
+  auth0: auth0Router,
   events: eventsRouter,
   participations: participationsRouter,
   notifications: notificationsRouter,
@@ -71,6 +73,7 @@ export type AppRouter = typeof appRouter;
 export {
   statsRouter,
   authRouter,
+  auth0Router,
   eventsRouter,
   participationsRouter,
   notificationsRouter,

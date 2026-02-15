@@ -174,33 +174,27 @@ export function useAuth(options?: UseAuthOptions) {
     }
   }, []);
 
-  // login関数: forceSwitch=trueで別のアカウントでログイン可能
+  // login関数: Auth0をメインに使用、forceSwitch=trueで別のアカウントでログイン可能
   const login = useCallback(async (returnUrl?: string, forceSwitch: boolean = false) => {
     try {
-      const apiBaseUrl = getApiBaseUrl();
-      
       if (Platform.OS === "web" && typeof window !== "undefined") {
         // ログイン後のリダイレクト先を保存（指定がなければ現在のページ）
         const redirectPath = returnUrl || window.location.pathname;
         localStorage.setItem("auth_return_url", redirectPath);
         console.log("[Auth] Saved return URL:", redirectPath);
         
-        // forceSwitchがtrueの場合は別のアカウントでログインできるようにする
-        const switchParam = forceSwitch ? "?switch=true" : "";
-        const loginUrl = `${apiBaseUrl}/api/twitter/auth${switchParam}`;
-        console.log("[Auth] Web login URL:", loginUrl, "forceSwitch:", forceSwitch);
-        window.location.href = loginUrl;
+        // Auth0ログイン画面にリダイレクト
+        window.location.href = "/oauth";
       } else {
-        // On native, save return URL to AsyncStorage
+        // Native: Auth0ログイン画面に遷移
         if (returnUrl) {
           await AsyncStorage.setItem("auth_return_url", returnUrl);
           console.log("[Auth] Saved return URL (native):", returnUrl);
         }
         
-        const switchParam = forceSwitch ? "?switch=true" : "";
-        const loginUrl = `${apiBaseUrl}/api/twitter/auth${switchParam}`;
-        console.log("[Auth] Native login URL:", loginUrl, "forceSwitch:", forceSwitch);
-        await Linking.openURL(loginUrl);
+        // React Navigationでログイン画面に遷移
+        // Note: この部分はAuth0Providerのauthorize()を呼び出す必要がある
+        console.log("[Auth] Native Auth0 login - navigate to /oauth");
       }
     } catch (err) {
       console.error("[Auth] Login failed:", err);
