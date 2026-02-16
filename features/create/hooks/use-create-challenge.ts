@@ -6,6 +6,7 @@ import { navigate } from "@/lib/navigation";
 import { trpc } from "@/lib/trpc";
 import { useAuth } from "@/hooks/use-auth";
 import { showAlert } from "@/lib/web-alert";
+import { sanitizeText, sanitizeUrl } from "@/lib/sanitize";
 import type { GenreId, PurposeId } from "@/constants/event-categories";
 import type { ChallengePreset } from "@/constants/challenge-presets";
 
@@ -255,24 +256,24 @@ export function useCreateChallenge() {
     setState(prev => ({ ...prev, showValidationError: false }));
     
     createChallengeMutation.mutate({
-      title: state.title.trim(),
-      description: state.description.trim() || undefined,
-      venue: state.venue.trim() || undefined,
+      title: sanitizeText(state.title.trim(), 200),
+      description: state.description.trim() ? sanitizeText(state.description.trim(), 2000) : undefined,
+      venue: state.venue.trim() ? sanitizeText(state.venue.trim(), 200) : undefined,
       eventDate: eventDate.toISOString(),
       hostTwitterId: user!.twitterId!,
-      hostName: user!.name || state.hostName.trim(),
+      hostName: sanitizeText(user!.name || state.hostName.trim(), 100),
       hostUsername: user!.username || undefined,
       hostProfileImage: user!.profileImage || undefined,
       hostDescription: user!.description || undefined,
       ...(state.goalType && { goalType: state.goalType as "attendance" | "followers" | "viewers" | "points" | "custom" }),
       ...(state.goalValue && { goalValue: state.goalValue }),
-      ...(state.goalUnit && { goalUnit: state.goalUnit }),
+      ...(state.goalUnit && { goalUnit: sanitizeText(state.goalUnit, 20) }),
       ...(state.eventType && { eventType: state.eventType as "solo" | "group" }),
       ...(state.categoryId && { categoryId: state.categoryId }),
-      ...(state.externalUrl.trim() && { externalUrl: state.externalUrl.trim() }),
+      ...(state.externalUrl.trim() && { externalUrl: sanitizeUrl(state.externalUrl.trim()) }),
       ...(state.ticketPresale && state.ticketPresale !== "-1" && { ticketPresale: parseInt(state.ticketPresale) }),
       ...(state.ticketDoor && state.ticketDoor !== "-1" && { ticketDoor: parseInt(state.ticketDoor) }),
-      ...(state.ticketUrl.trim() && { ticketUrl: state.ticketUrl.trim() }),
+      ...(state.ticketUrl.trim() && { ticketUrl: sanitizeUrl(state.ticketUrl.trim()) }),
     } as any);
   }, [state, validationErrors, user, createTemplateMutation, createChallengeMutation]);
   
