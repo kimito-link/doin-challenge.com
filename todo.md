@@ -1550,3 +1550,24 @@
 - [ ] ログインフローをテスト
 - [ ] ログアウトフローをテスト
 - [ ] エラーハンドリングをテスト
+
+
+---
+
+## 🔧 Lintエラー修正（デプロイブロック解消） - 2026-02-16
+
+### エラー内容
+- [x] expo-routerの非推奨API（router.replace()）を使用している - 修正完了
+- [x] 7個のエラー、26個の警告が検出されている - エラー0個に減少
+
+### 修正対象ファイル
+- [x] app/logout.tsx - navigateReplace.toOAuth()に変更
+- [x] app/oauth/index.tsx - navigateReplace.toHome()に変更
+- [x] app/messages/[partnerId].tsx - JSX構文エラーを修正
+- [x] components/organisms/account-switcher.tsx - navigateReplace.toOAuth()に変更
+- [x] lib/navigation/app-routes.ts - navigateReplace.toOAuth()メソッドを追加
+
+### 修正方針
+- [x] router.replace() → navigateReplace.toXxx() に置き換え - 完了
+- [x] Lintエラーをすべて解消 - エラー0個
+- [ ] 修正後、再度GitHubにプッシュ

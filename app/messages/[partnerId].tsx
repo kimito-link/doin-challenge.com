@@ -109,9 +109,10 @@ export default function ConversationScreen() {
 
   return (
     <ScreenContainer edges={["top", "left", "right"]}>
-      <KeyboardAvoidingContainer>
+      <KeyboardAvoidingContainer
         className="flex-1"
         keyboardVerticalOffset={Platform.OS === "ios" ? 90 : 0}
+      >
 
         {/* ヘッダー */}
         <AppHeader 

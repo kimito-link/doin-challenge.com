@@ -358,6 +358,11 @@ export const navigateReplace = {
     router.replace(STATIC_ROUTES.MYPAGE_TAB as never);
   },
   
+  toOAuth: () => {
+    console.log("[Navigation] Replacing to OAuth");
+    router.replace(STATIC_ROUTES.OAUTH as never);
+  },
+  
   // 動的ルートへのリプレース
   withUrl: (url: string) => {
     console.log(`[Navigation] Replacing to: ${url}`);

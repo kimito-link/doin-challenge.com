@@ -3,6 +3,7 @@ import { View, Text, Pressable, ActivityIndicator, Platform } from 'react-native
 import { useRouter, useLocalSearchParams } from 'expo-router';
 import { ScreenContainer } from '@/components/organisms/screen-container';
 import { useAuth0 } from '@/lib/auth0-provider';
+import { navigateReplace } from '@/lib/navigation/app-routes';
 import * as Haptics from 'expo-haptics';
 import { getApiBaseUrl } from '@/lib/api/config';
 
@@ -23,7 +24,7 @@ export default function OAuthScreen() {
   // 既にログイン済みの場合はホーム画面にリダイレクト
   useEffect(() => {
     if (isAuthenticated && !isProcessing) {
-      router.replace('/(tabs)');
+      navigateReplace.toHome();
     }
   }, [isAuthenticated, isProcessing]);
 
@@ -64,7 +65,7 @@ export default function OAuthScreen() {
       }
 
       // ログイン成功 - ホーム画面にリダイレクト
-      router.replace('/(tabs)');
+      navigateReplace.toHome();
     } catch (err: any) {
       console.error('Auth0 callback failed:', err);
       setError(err.message || 'ログインに失敗しました。もう一度お試しください。');

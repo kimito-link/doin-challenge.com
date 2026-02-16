@@ -29,6 +29,7 @@ import AsyncStorage from "@react-native-async-storage/async-storage";
 import MaterialIcons from "@expo/vector-icons/MaterialIcons";
 import * as Auth from "@/lib/_core/auth";
 import { useRouter } from "expo-router";
+import { navigateReplace } from "@/lib/navigation/app-routes";
 
 interface AccountSwitcherProps {
   visible: boolean;
@@ -63,7 +64,7 @@ export function AccountSwitcher({ visible, onClose }: AccountSwitcherProps) {
       setTimeout(() => {
         try {
           console.log("[AccountSwitcher] Redirecting to Auth0 login");
-          router.replace("/oauth");
+          navigateReplace.toOAuth();
         } catch (e) {
           console.log("Login redirect failed:", e);
         }

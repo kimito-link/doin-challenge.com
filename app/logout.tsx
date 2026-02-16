@@ -59,11 +59,11 @@ export default function LogoutScreen() {
   const router = useRouter();
 
   const handleSameAccountLogin = () => {
-    router.replace("/oauth");
+    navigateReplace.toOAuth();
   };
 
   const handleDifferentAccountLogin = () => {
-    router.replace("/oauth");
+    navigateReplace.toOAuth();
   };
 
   return (
