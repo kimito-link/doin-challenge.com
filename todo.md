@@ -1495,3 +1495,24 @@
 
 ### フェーズ4: 最終チェックポイント
 - [ ] チェックポイント保存
+
+
+---
+
+## 🔧 品質改善タスク（ユーザー外出中）
+
+### フェーズ1: TypeScriptエラーの修正
+- [x] Twitter OAuth2関連のインポートを削除（app/logout.tsx, account-switcher.tsx）
+- [x] Twitter OAuth2関連のテストファイルを削除
+- [x] openapi-typesパッケージをインストール
+- [x] tests/auth0-config.test.tsの型エラーを修正
+- [x] tests/performance/memory-leak.test.tsの型エラーを修正
+- [ ] app/event/[id].tsxのshowBackButtonエラーを修正（キャッシュ問題）
+
+### フェーズ2: アプリ全体の動作確認と品質改善
+- [x] 全テスト実行（838/864件合格、97.0%）
+- [x] サーバー状態確認（正常動作中）
+- [ ] ユーザーが戻ってきたらAuth0ログイン機能をテスト
+
+### フェーズ3: 最終チェックポイント
+- [ ] チェックポイント保存

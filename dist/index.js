@@ -3365,7 +3365,7 @@ __export(api_usage_db_exports, {
   recordApiUsage: () => recordApiUsage,
   upsertCostSettings: () => upsertCostSettings
 });
-import { eq as eq5, sql as sql3, desc as desc4 } from "drizzle-orm";
+import { eq as eq4, sql as sql3, desc as desc4 } from "drizzle-orm";
 async function recordApiUsage(usage) {
   const db = await getDb();
   if (!db) {
@@ -3397,7 +3397,7 @@ async function getMonthlyUsage(month) {
   const db = await getDb();
   if (!db) return 0;
   try {
-    const result = await db.select({ count: sql3`count(*)` }).from(apiUsage).where(eq5(apiUsage.month, month));
+    const result = await db.select({ count: sql3`count(*)` }).from(apiUsage).where(eq4(apiUsage.month, month));
     return result[0]?.count || 0;
   } catch (error) {
     console.error("[API Usage] Failed to get monthly usage:", error);
@@ -3408,7 +3408,7 @@ async function getMonthlyCost(month) {
   const db = await getDb();
   if (!db) return 0;
   try {
-    const result = await db.select({ totalCost: sql3`sum(${apiUsage.cost})` }).from(apiUsage).where(eq5(apiUsage.month, month));
+    const result = await db.select({ totalCost: sql3`sum(${apiUsage.cost})` }).from(apiUsage).where(eq4(apiUsage.month, month));
     return Number(result[0]?.totalCost || 0);
   } catch (error) {
     console.error("[API Usage] Failed to get monthly cost:", error);
@@ -3435,7 +3435,7 @@ async function getUsageByEndpoint(month, limit = 20) {
       endpoint: apiUsage.endpoint,
       count: sql3`count(*)`,
       cost: sql3`sum(${apiUsage.cost})`
-    }).from(apiUsage).where(eq5(apiUsage.month, month)).groupBy(apiUsage.endpoint).orderBy(desc4(sql3`count(*)`)).limit(limit);
+    }).from(apiUsage).where(eq4(apiUsage.month, month)).groupBy(apiUsage.endpoint).orderBy(desc4(sql3`count(*)`)).limit(limit);
     return result.map((r) => ({
       endpoint: r.endpoint,
       count: r.count,
@@ -3469,7 +3469,7 @@ async function upsertCostSettings(settings) {
       await db.update(apiCostSettings).set({
         ...settings,
         updatedAt: /* @__PURE__ */ new Date()
-      }).where(eq5(apiCostSettings.id, existing.id));
+      }).where(eq4(apiCostSettings.id, existing.id));
     } else {
       await db.insert(apiCostSettings).values({
         monthlyLimit: settings.monthlyLimit || "10.00",
@@ -3807,76 +3807,6 @@ function clearActivity(openId) {
 }
 var sdk = new SDKServer();
 
-// server/token-store.ts
-init_db2();
-init_schema2();
-import crypto from "crypto";
-import { eq as eq4 } from "drizzle-orm";
-var ALGORITHM = "aes-256-gcm";
-var IV_LENGTH = 12;
-var AUTH_TAG_LENGTH = 16;
-function getEncryptionKey() {
-  const rawKey = process.env.TOKEN_ENCRYPTION_KEY || process.env.JWT_SECRET || "";
-  if (!rawKey) {
-    throw new Error("TOKEN_ENCRYPTION_KEY or JWT_SECRET must be set for token encryption");
-  }
-  return crypto.createHash("sha256").update(rawKey).digest();
-}
-function decryptToken(encryptedHex) {
-  const key = getEncryptionKey();
-  const data = Buffer.from(encryptedHex, "hex");
-  const iv = data.subarray(0, IV_LENGTH);
-  const authTag = data.subarray(IV_LENGTH, IV_LENGTH + AUTH_TAG_LENGTH);
-  const ciphertext = data.subarray(IV_LENGTH + AUTH_TAG_LENGTH);
-  const decipher = crypto.createDecipheriv(ALGORITHM, key, iv);
-  decipher.setAuthTag(authTag);
-  return decipher.update(ciphertext) + decipher.final("utf8");
-}
-var tokenCache = /* @__PURE__ */ new Map();
-var REFRESH_TOKEN_MAX_LIFETIME_MS = 90 * 24 * 60 * 60 * 1e3;
-async function getTokens(openId) {
-  const cached = tokenCache.get(openId);
-  if (cached) return cached;
-  try {
-    const db = await getDb();
-    if (!db) return null;
-    const result = await db.select().from(userTwitterTokens).where(eq4(userTwitterTokens.openId, openId)).limit(1);
-    if (result.length === 0) return null;
-    const row = result[0];
-    const entry = {
-      accessToken: decryptToken(row.encryptedAccessToken),
-      refreshToken: row.encryptedRefreshToken ? decryptToken(row.encryptedRefreshToken) : null,
-      expiresAt: new Date(row.tokenExpiresAt),
-      scope: row.scope,
-      createdAt: new Date(row.createdAt)
-      // DB の createdAt をそのまま使用
-    };
-    tokenCache.set(openId, entry);
-    return entry;
-  } catch (error) {
-    const msg = error instanceof Error ? error.message : "unknown";
-    if (msg.includes("doesn't exist") || msg.includes("ER_NO_SUCH_TABLE") || msg.includes("1146")) {
-      return null;
-    }
-    console.error("[TokenStore] DB read failed:", msg);
-    return null;
-  }
-}
-async function deleteTokens(openId) {
-  tokenCache.delete(openId);
-  try {
-    const db = await getDb();
-    if (!db) return;
-    await db.delete(userTwitterTokens).where(eq4(userTwitterTokens.openId, openId));
-  } catch (error) {
-    const msg = error instanceof Error ? error.message : "unknown";
-    if (msg.includes("doesn't exist") || msg.includes("ER_NO_SUCH_TABLE") || msg.includes("1146")) {
-      return;
-    }
-    console.error("[TokenStore] DB delete failed:", msg);
-  }
-}
-
 // server/_core/oauth.ts
 async function buildUserResponse(user) {
   const u = user;
@@ -3885,11 +3815,11 @@ async function buildUserResponse(user) {
     try {
       const { getDb: getDb2 } = await Promise.resolve().then(() => (init_db2(), db_exports));
       const { twitterUserCache: twitterUserCache2 } = await Promise.resolve().then(() => (init_schema2(), schema_exports));
-      const { eq: eq7 } = await import("drizzle-orm");
+      const { eq: eq6 } = await import("drizzle-orm");
       const db = await getDb2();
       if (db) {
         const twitterId = user.openId.replace("twitter:", "");
-        const cache = await db.select().from(twitterUserCache2).where(eq7(twitterUserCache2.twitterId, twitterId)).limit(1);
+        const cache = await db.select().from(twitterUserCache2).where(eq6(twitterUserCache2.twitterId, twitterId)).limit(1);
         if (cache.length > 0) {
           twitterData = cache[0];
         }
@@ -3924,13 +3854,6 @@ function registerOAuthRoutes(app) {
     try {
       const user = await sdk.authenticateRequest(req).catch(() => null);
       if (user) {
-        const storedTokens = await getTokens(user.openId);
-        if (storedTokens?.refreshToken) {
-        }
-        if (storedTokens.accessToken) {
-        }
-        await deleteTokens(user.openId).catch(() => {
-        });
         clearActivity(user.openId);
       }
     } catch {
@@ -4067,9 +3990,9 @@ function getTwitterUsernameFromAuth0User(user) {
 
 // server/routers/auth0.ts
 init_user_db();
-import crypto2 from "crypto";
+import crypto from "crypto";
 function generateSessionToken(userId) {
-  return `${userId}:${crypto2.randomBytes(32).toString("hex")}`;
+  return `${userId}:${crypto.randomBytes(32).toString("hex")}`;
 }
 var auth0Router = router({
   /**
@@ -5568,7 +5491,7 @@ var categoriesRouter = router({
 });
 
 // server/routers/invitations.ts
-import crypto3 from "crypto";
+import crypto2 from "crypto";
 import { z as z18 } from "zod";
 import { TRPCError as TRPCError3 } from "@trpc/server";
 init_db2();
@@ -5581,7 +5504,7 @@ var invitationsRouter = router({
     customMessage: z18.string().max(500).optional(),
     customTitle: z18.string().max(100).optional()
   })).mutation(async ({ ctx, input }) => {
-    const code = crypto3.randomBytes(6).toString("hex").toUpperCase();
+    const code = crypto2.randomBytes(6).toString("hex").toUpperCase();
     const result = await createInvitation({
       challengeId: input.challengeId,
       inviterId: ctx.user.id,
@@ -6141,7 +6064,7 @@ var adminRouter = router({
 // server/routers/stats.ts
 init_connection();
 init_schema2();
-import { eq as eq6, and as and5, gte as gte3, desc as desc5, sql as sql4, count as count2 } from "drizzle-orm";
+import { eq as eq5, and as and5, gte as gte3, desc as desc5, sql as sql4, count as count2 } from "drizzle-orm";
 var statsRouter = router({
   /**
    * ユーザー統計を取得
@@ -6150,8 +6073,8 @@ var statsRouter = router({
     const db = await getDb();
     if (!db) throw new Error("\u30C7\u30FC\u30BF\u30D9\u30FC\u30B9\u306B\u63A5\u7D9A\u3067\u304D\u307E\u305B\u3093");
     const userId = ctx.user.id;
-    const totalParticipations = await db.select({ count: count2() }).from(participations).where(eq6(participations.userId, userId));
-    const completedParticipations = await db.select({ count: count2() }).from(participations).where(eq6(participations.userId, userId));
+    const totalParticipations = await db.select({ count: count2() }).from(participations).where(eq5(participations.userId, userId));
+    const completedParticipations = await db.select({ count: count2() }).from(participations).where(eq5(participations.userId, userId));
     const total = totalParticipations[0]?.count || 0;
     const completed = completedParticipations[0]?.count || 0;
     const completionRate = total > 0 ? completed / total * 100 : 0;
@@ -6161,7 +6084,7 @@ var statsRouter = router({
       createdAt: participations.createdAt,
       updatedAt: participations.updatedAt,
       eventTitle: challenges.title
-    }).from(participations).leftJoin(challenges, eq6(participations.challengeId, challenges.id)).where(eq6(participations.userId, userId)).orderBy(desc5(participations.createdAt)).limit(10);
+    }).from(participations).leftJoin(challenges, eq5(participations.challengeId, challenges.id)).where(eq5(participations.userId, userId)).orderBy(desc5(participations.createdAt)).limit(10);
     const sixMonthsAgo = /* @__PURE__ */ new Date();
     sixMonthsAgo.setMonth(sixMonthsAgo.getMonth() - 6);
     const monthlyStats = await db.select({
@@ -6169,7 +6092,7 @@ var statsRouter = router({
       count: count2()
     }).from(participations).where(
       and5(
-        eq6(participations.userId, userId),
+        eq5(participations.userId, userId),
         gte3(participations.createdAt, sixMonthsAgo)
       )
     ).groupBy(sql4`DATE_FORMAT(${participations.createdAt}, '%Y-%m')`).orderBy(sql4`DATE_FORMAT(${participations.createdAt}, '%Y-%m')`);
@@ -6180,7 +6103,7 @@ var statsRouter = router({
       count: count2()
     }).from(participations).where(
       and5(
-        eq6(participations.userId, userId),
+        eq5(participations.userId, userId),
         gte3(participations.createdAt, fourWeeksAgo)
       )
     ).groupBy(sql4`DATE_FORMAT(${participations.createdAt}, '%Y-W%u')`).orderBy(sql4`DATE_FORMAT(${participations.createdAt}, '%Y-W%u')`);
@@ -6222,14 +6145,14 @@ var statsRouter = router({
       userId: participations.userId,
       userName: users.name,
       completedChallenges: count2()
-    }).from(participations).leftJoin(users, eq6(participations.userId, users.id)).groupBy(participations.userId, users.name).orderBy(desc5(count2())).limit(10);
+    }).from(participations).leftJoin(users, eq5(participations.userId, users.id)).groupBy(participations.userId, users.name).orderBy(desc5(count2())).limit(10);
     const eventStats = await db.select({
       challengeId: participations.challengeId,
       eventTitle: challenges.title,
       totalAttempts: count2(),
       completedAttempts: count2()
       // 全ての参加を達成とみなす
-    }).from(participations).leftJoin(challenges, eq6(participations.challengeId, challenges.id)).groupBy(participations.challengeId, challenges.title).orderBy(desc5(count2()));
+    }).from(participations).leftJoin(challenges, eq5(participations.challengeId, challenges.id)).groupBy(participations.challengeId, challenges.title).orderBy(desc5(count2()));
     const thirtyDaysAgo = /* @__PURE__ */ new Date();
     thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
     const dailyActivity = await db.select({

@@ -28,7 +28,7 @@ import { SavedAccount, setCurrentAccount, formatLastUsed } from "@/lib/account-m
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import MaterialIcons from "@expo/vector-icons/MaterialIcons";
 import * as Auth from "@/lib/_core/auth";
-import { redirectToTwitterSwitchAccount, clearSession } from "@/lib/api";
+import { useRouter } from "expo-router";
 
 interface AccountSwitcherProps {
   visible: boolean;
@@ -43,6 +43,8 @@ export function AccountSwitcher({ visible, onClose }: AccountSwitcherProps) {
   const [isLoading, setIsLoading] = useState(false);
   const [switchingAccountId, setSwitchingAccountId] = useState<string | null>(null);
 
+  const router = useRouter();
+
   // 別のアカウントでログイン（新規アカウント追加）
   const handleAddNewAccount = async () => {
     setIsLoading(true);
@@ -51,27 +53,17 @@ export function AccountSwitcher({ visible, onClose }: AccountSwitcherProps) {
       await logout();
       
       // 2. ローカルストレージのセッション情報をクリア
-      await AsyncStorage.removeItem("twitter_session");
-      await AsyncStorage.removeItem("refresh_token");
-      await AsyncStorage.removeItem("access_token");
+      await AsyncStorage.removeItem("auth0_access_token");
+      await AsyncStorage.removeItem("auth0_user");
       
-      // 3. ブラウザのクッキーをクリア（Web環境の場合）
-      if (Platform.OS === "web") {
-        const result = await clearSession();
-        if (!result.ok) {
-          console.log("Session clear request failed:", result.error);
-        }
-      }
-      
-      // 4. モーダルを閉じる
+      // 3. モーダルを閉じる
       onClose();
       
-      // 5. forceSwitch=trueで別のアカウントでログイン
-      // lib/api/twitter-auth.tsの関数を使用（URL構築を一元管理）
+      // 4. Auth0ログイン画面にリダイレクト
       setTimeout(() => {
         try {
-          console.log("[AccountSwitcher] Redirecting to Twitter auth with switch=true");
-          redirectToTwitterSwitchAccount();
+          console.log("[AccountSwitcher] Redirecting to Auth0 login");
+          router.replace("/oauth");
         } catch (e) {
           console.log("Login redirect failed:", e);
         }

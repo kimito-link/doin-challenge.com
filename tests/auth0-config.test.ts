@@ -13,6 +13,6 @@ describe("Auth0 Configuration", () => {
 
   it("should have AUTH0_CLIENT_SECRET environment variable", () => {
     expect(process.env.AUTH0_CLIENT_SECRET).toBeDefined();
-    expect(process.env.AUTH0_CLIENT_SECRET.length).toBeGreaterThan(0);
+    expect(process.env.AUTH0_CLIENT_SECRET?.length).toBeGreaterThan(0);
   });
 });

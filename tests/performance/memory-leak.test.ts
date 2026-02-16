@@ -254,7 +254,7 @@ describe('Timer Leaks', () => {
     const initialMemory = getMemoryUsage();
     
     // setIntervalのリークをシミュレート
-    const intervals: NodeJS.Timeout[] = [];
+    const intervals: ReturnType<typeof setInterval>[] = [];
     for (let i = 0; i < 100; i++) {
       const interval = setInterval(() => {
         // 何もしない
@@ -278,7 +278,7 @@ describe('Timer Leaks', () => {
     const initialMemory = getMemoryUsage();
     
     // タイマーを適切に管理
-    const intervals: NodeJS.Timeout[] = [];
+    const intervals: ReturnType<typeof setInterval>[] = [];
     for (let i = 0; i < 100; i++) {
       const interval = setInterval(() => {
         // 何もしない

@@ -14,7 +14,7 @@ import type { Express, Request, Response } from "express";
 import { getUserByOpenId } from "../db";
 import { getSessionCookieOptions } from "./cookies";
 import { sdk } from "./sdk";
-import { getTokens, deleteTokens } from "../token-store";
+// token-store removed - using Auth0 instead
 import { clearActivity } from "./sdk";
 
 async function buildUserResponse(
@@ -80,22 +80,11 @@ export function registerOAuthRoutes(app: Express) {
     res.clearCookie(COOKIE_NAME, { ...cookieOptions, maxAge: -1 });
     res.clearCookie("admin_session", { ...cookieOptions, maxAge: -1 });
 
-    // 2. サーバーサイドのTwitterトークンをリボーク + 削除（BFFパターン）
+    // 2. Auth0トークンのクリア（Auth0がトークン管理を担当）
     try {
       const user = await sdk.authenticateRequest(req).catch(() => null);
       if (user) {
-        const storedTokens = await getTokens(user.openId);
-        // fire-and-forget: refresh_token → access_token の順にリボーク
-        // ZIPリファレンス準拠: 両トークンを確実に無効化
-        if (storedTokens?.refreshToken) {
-          // Twitter OAuth2 removed - Auth0 handles token revocation
-        }
-        if (storedTokens.accessToken) {
-          // Twitter OAuth2 removed - Auth0 handles token revocation
-        }
-        // サーバーサイドのトークンストアから削除
-        await deleteTokens(user.openId).catch(() => {});
-        // アイドルタイムアウト記録もクリア
+        // アイドルタイムアウト記録をクリア
         clearActivity(user.openId);
       }
     } catch {

@@ -8,7 +8,7 @@ import { useAuth } from "@/hooks/use-auth";
 import MaterialIcons from "@expo/vector-icons/MaterialIcons";
 import { LinearGradient } from "expo-linear-gradient";
 import { Button } from "@/components/ui/button";
-import { redirectToTwitterAuth, redirectToTwitterSwitchAccount } from "@/lib/api";
+import { useRouter } from "expo-router";
 
 // キャラクター画像
 const characterImages = {
@@ -56,12 +56,14 @@ export default function LogoutScreen() {
     }
   }, [isAuthenticated, handleLogout, isLoggingOut, logoutComplete]);
 
+  const router = useRouter();
+
   const handleSameAccountLogin = () => {
-    redirectToTwitterAuth();
+    router.replace("/oauth");
   };
 
   const handleDifferentAccountLogin = () => {
-    redirectToTwitterSwitchAccount();
+    router.replace("/oauth");
   };
 
   return (
