@@ -252,7 +252,7 @@ function useDebounce<T>(value: T, delay: number): T {
  *   value={searchQuery}
  *   onChangeText={setSearchQuery}
  *   onSearch={handleSearch}
- *   suggestions={["ライブ", "生誕祭"]}
+ *   suggestions={["ライブ", "誕生日イベント"]}
  *   onSuggestionPress={handleSuggestion}
  * />
  */

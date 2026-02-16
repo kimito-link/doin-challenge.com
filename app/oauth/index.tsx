@@ -56,10 +56,7 @@ export default function OAuthScreen() {
 
         {/* 説明文 */}
         <Text className="text-base text-muted text-center mb-8">
-          Twitterアカウントでログインして、
-        </Text>
-        <Text className="text-base text-muted text-center mb-8">
-          生誕祭の動員チャレンジに参加しよう！
+          ログインして、動員チャレンジに参加しよう！
         </Text>
 
         {/* エラーメッセージ */}
@@ -82,7 +79,7 @@ export default function OAuthScreen() {
             <ActivityIndicator color="#ffffff" />
           ) : (
             <Text className="text-background text-lg font-bold">
-              Twitterでログイン
+              ログイン
             </Text>
           )}
         </Pressable>

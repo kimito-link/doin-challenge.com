@@ -25,7 +25,7 @@ interface SearchBarProps {
 // よく使われる検索キーワードのサジェスト候補
 const DEFAULT_SUGGESTIONS = [
   "ライブ",
-  "生誕祭",
+  "誕生日イベント",
   "配信",
   "フェス",
   "ファンミ",

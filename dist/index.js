@@ -748,7 +748,7 @@ async function getDb() {
 }
 function generateSlug(title) {
   const translations = {
-    "\u751F\u8A95\u796D": "birthday",
+    "\u8A95\u751F\u65E5\u30A4\u30D9\u30F3\u30C8": "birthday",
     "\u30E9\u30A4\u30D6": "live",
     "\u30EF\u30F3\u30DE\u30F3": "oneman",
     "\u52D5\u54E1": "attendance",
@@ -5687,8 +5687,8 @@ var devRouter = router({
         hostUsername: "kimitolink",
         hostProfileImage: "https://ui-avatars.com/api/?name=%E3%82%8A%E3%82%93%E3%81%8F&background=EC4899&color=fff&size=128",
         hostFollowersCount: 5e3,
-        title: "\u751F\u8A95\u796D\u30E9\u30A4\u30D6 \u52D5\u54E1100\u4EBA\u9054\u6210\u30C1\u30E3\u30EC\u30F3\u30B8",
-        description: "\u304D\u307F\u3068\u30EA\u30F3\u30AF\u306E\u751F\u8A95\u796D\u30E9\u30A4\u30D6\u3092\u6210\u529F\u3055\u305B\u3088\u3046\uFF01\u307F\u3093\u306A\u3067100\u4EBA\u52D5\u54E1\u3092\u76EE\u6307\u3057\u307E\u3059\u3002",
+        title: "\u8A95\u751F\u65E5\u30A4\u30D9\u30F3\u30C8\u30E9\u30A4\u30D6 \u52D5\u54E1100\u4EBA\u9054\u6210\u30C1\u30E3\u30EC\u30F3\u30B8",
+        description: "\u304D\u307F\u3068\u30EA\u30F3\u30AF\u306E\u8A95\u751F\u65E5\u30A4\u30D9\u30F3\u30C8\u30E9\u30A4\u30D6\u3092\u6210\u529F\u3055\u305B\u3088\u3046\uFF01\u307F\u3093\u306A\u3067100\u4EBA\u52D5\u54E1\u3092\u76EE\u6307\u3057\u307E\u3059\u3002",
         goalType: "attendance",
         goalValue: 100,
         goalUnit: "\u4EBA",

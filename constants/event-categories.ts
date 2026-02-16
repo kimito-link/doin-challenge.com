@@ -35,7 +35,7 @@ export const PURPOSES = [
 export const LEGACY_PURPOSES = [
   { id: "streaming", label: "配信イベント", icon: "📡", description: "YouTube配信、ミクチャ、ツイキャスなど" },
   { id: "release", label: "リリース", icon: "💿", description: "CD、DVD、グッズのリリースイベント" },
-  { id: "birthday", label: "生誕祭", icon: "🎂", description: "メンバーの誕生日イベント" },
+
   { id: "anniversary", label: "周年イベント", icon: "🎉", description: "デビュー周年、グループ結成周年など" },
   { id: "goods", label: "グッズ・物販", icon: "🛍️", description: "グッズ販売、物販イベント" },
   { id: "survey", label: "調査・アンケート", icon: "📊", description: "ファン調査、アンケート企画" },

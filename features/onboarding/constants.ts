@@ -26,7 +26,7 @@ export const ONBOARDING_SLIDES: OnboardingSlide[] = [
     emoji: "🎉",
     backgroundColor: "#0a1628", // 宇宙ダークブルー
     features: [
-      "推しの生誕祭を盛り上げよう",
+      "推しの誕生日イベントを盛り上げよう",
       "全国のファンと一緒に参加",
       "目標達成を目指そう",
     ],
@@ -75,7 +75,7 @@ export const ONBOARDING_SLIDES: OnboardingSlide[] = [
   {
     id: "start",
     title: "さあ、始めよう！",
-    description: "推しの生誕祭を\n一緒に盛り上げましょう",
+    description: "推しの誕生日イベントを\n一緒に盛り上げましょう",
     emoji: "🚀",
     backgroundColor: "#0a1628",
     features: [

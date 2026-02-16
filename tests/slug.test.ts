@@ -26,7 +26,7 @@ describe("slugify", () => {
   });
 
   it("should handle Japanese characters", () => {
-    expect(slugify("君斗りんく生誕祭")).toBe("君斗りんく生誕祭");
+    expect(slugify("君斗りんく誕生日イベント")).toBe("君斗りんく誕生日イベント");
   });
 
   it("should handle mixed content", () => {
@@ -73,7 +73,7 @@ describe("createEventSlug", () => {
   });
 
   it("should handle Japanese titles", () => {
-    expect(createEventSlug(42, "生誕祭2024")).toBe("42-生誕祭2024");
+    expect(createEventSlug(42, "誕生日イベント2024")).toBe("42-誕生日イベント2024");
   });
 
   it("should handle string challengeId", () => {

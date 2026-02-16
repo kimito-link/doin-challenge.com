@@ -59,11 +59,11 @@ export async function getDb() {
 // URL用のスラッグを生成する関数
 export function generateSlug(title: string): string {
   // 日本語のタイトルをローマ字に変換し、URLフレンドリーなスラッグを作成
-  // 例: "生誕祭ライブ 動員100人チャレンジ" -> "birthday-live-100"
+  // 例: "誕生日イベントライブ 動員100人チャレンジ" -> "birthday-live-100"
 
   // 日本語のキーワードを英語に変換
   const translations: Record<string, string> = {
-    '生誕祭': 'birthday',
+    '誕生日イベント': 'birthday',
     'ライブ': 'live',
     'ワンマン': 'oneman',
     '動員': 'attendance',

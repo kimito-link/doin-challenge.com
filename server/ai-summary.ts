@@ -157,7 +157,7 @@ export function generateIntentTags(challenge: {
   }
 
   // タイトルからキーワード抽出
-  const titleKeywords = ["生誕祭", "ワンマン", "フェス", "配信", "プレミア", "記念"];
+  const titleKeywords = ["誕生日イベント", "ワンマン", "フェス", "配信", "プレミア", "記念"];
   for (const keyword of titleKeywords) {
     if (challenge.title.includes(keyword)) {
       tags.push(keyword);
