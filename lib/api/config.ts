@@ -27,7 +27,7 @@ const env = {
  * フロントエンド（Vercel）とバックエンド（Railway）が分離しているため、
  * 本番環境では明示的にRailway URLを指定する必要があります。
  */
-export const PRODUCTION_API_URL = "https://doin-challengecom-production.up.railway.app";
+export const PRODUCTION_API_URL = "https://doin-challenge.com/api";
 
 /**
  * 本番環境のフロントエンドドメイン
