@@ -73,7 +73,7 @@ jobs:
       - name: Pre-deploy health check
         run: |
           echo "🏥 Checking production health before deploy..."
-          HEALTH=$(curl -s https://doin-challenge.com/api/health || echo "{}")
+          HEALTH=$(curl -s https://doin-challenge.com/api/health || echo "{}" )
           OK=$(echo "$HEALTH" | jq -r '.ok // false')
           if [[ "$OK" == "true" ]]; then
             echo "✅ Production is healthy before deploy"
@@ -105,7 +105,7 @@ jobs:
             
             if vercel deploy --prod --token=$VERCEL_TOKEN 2>&1 | tee deploy.log; then
               echo "✅ Deployment successful!"
-              VERCEL_URL=$(grep -oP 'https://[^\s]+\.vercel\.app' deploy.log | head -1 || echo "")
+              VERCEL_URL=$(grep -oP 'https://[^\s]+\.vercel\.app' deploy.log | head -1 || echo "" )
               if [ -n "$VERCEL_URL" ]; then
                 echo "🌐 Deployment URL: $VERCEL_URL"
                 echo "VERCEL_URL=$VERCEL_URL" >> $GITHUB_ENV
@@ -138,7 +138,7 @@ jobs:
           echo "Latest main: $LATEST_MAIN"
           for i in $(seq 1 40); do
             echo "Verify attempt $i/40..."
-            HEALTH=$(curl -s https://doin-challenge.com/api/health || echo "{}")
+            HEALTH=$(curl -s https://doin-challenge.com/api/health || echo "{}" )
             HEALTH_SHA=$(echo "$HEALTH" | jq -r '.commitSha // .commitsha // .gitSha // "unknown"')
             OK=$(echo "$HEALTH" | jq -r '.ok // false')
             DB_CONNECTED=$(echo "$HEALTH" | jq -r '.db.connected // false')
@@ -203,7 +203,7 @@ jobs:
             fi
             sleep 20
           done
-          VERSION_JSON=$(curl -s https://doin-challenge.com/version.json || echo "{}")
+          VERSION_JSON=$(curl -s https://doin-challenge.com/version.json || echo "{}" )
           VJ_SHA=$(echo "$VERSION_JSON" | jq -r '.commitSha // .gitSha // "unknown"')
           echo "Version.json commitSha: $VJ_SHA (reference)"
           if [[ "$VJ_SHA" != "$EXPECTED_SHA" ]] && [[ "$VJ_SHA" != "unknown" ]]; then
@@ -215,7 +215,7 @@ jobs:
           BASE_URL: https://doin-challenge.com
         run: node scripts/gate2-api-smoke.mjs
 
-      - name: Gate 2 - E2E (ホーム→詳細)
+      - name: Gate 2 - E2E (ホーム→詳細 )
         env:
           PLAYWRIGHT_BASE_URL: https://doin-challenge.com
           VERCEL_AUTOMATION_BYPASS_SECRET: ${{ secrets.VERCEL_AUTOMATION_BYPASS_SECRET }}
