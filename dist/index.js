@@ -7285,6 +7285,49 @@ function rateLimiterMiddleware(req, res, next) {
   next();
 }
 
+// server/_core/compression-middleware.ts
+import { createGzip } from "zlib";
+function shouldCompress(req, res) {
+  const acceptEncoding = req.headers["accept-encoding"] || "";
+  if (!acceptEncoding.includes("gzip")) {
+    return false;
+  }
+  const contentType = res.getHeader("content-type") || "";
+  const compressibleTypes = [
+    "application/json",
+    "application/javascript",
+    "text/html",
+    "text/css",
+    "text/plain",
+    "text/xml"
+  ];
+  return compressibleTypes.some((type) => contentType.includes(type));
+}
+function compressionMiddleware(req, res, next) {
+  const originalSend = res.send;
+  res.send = function(body) {
+    if (!shouldCompress(req, res)) {
+      return originalSend.call(this, body);
+    }
+    const gzip = createGzip();
+    res.setHeader("Content-Encoding", "gzip");
+    res.setHeader("Vary", "Accept-Encoding");
+    if (typeof body === "string") {
+      gzip.write(body);
+      gzip.end();
+      const chunks = [];
+      gzip.on("data", (chunk) => chunks.push(chunk));
+      gzip.on("end", () => {
+        const compressed = Buffer.concat(chunks);
+        originalSend.call(res, compressed);
+      });
+      return this;
+    }
+    return originalSend.call(this, body);
+  };
+  next();
+}
+
 // server/admin-password-auth.ts
 var ADMIN_PASSWORD = process.env.ADMIN_PASSWORD || "";
 if (!ADMIN_PASSWORD) {
@@ -7376,6 +7419,7 @@ async function startServer() {
   });
   app.use(express.json({ limit: "50mb" }));
   app.use(express.urlencoded({ limit: "50mb", extended: true }));
+  app.use(compressionMiddleware);
   app.use((_req, res, next) => {
     res.setHeader("X-Frame-Options", "DENY");
     const cspDirectives = [

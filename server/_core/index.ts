@@ -20,6 +20,7 @@ import swaggerUi from "swagger-ui-express";
 import { initWebSocketServer } from "../websocket";
 import { initSentry, Sentry } from "./sentry";
 import { rateLimiterMiddleware } from "./rate-limiter";
+import { compressionMiddleware } from "./compression-middleware";
 import { verifyAdminPassword } from "../admin-password-auth";
 import { getSessionCookieOptions } from "./cookies";
 import type { Request, Response } from "express";
@@ -150,6 +151,9 @@ async function startServer() {
 
   app.use(express.json({ limit: "50mb" }));
   app.use(express.urlencoded({ limit: "50mb", extended: true }));
+  
+  // gzip圧縮ミドルウェア（APIレスポンスサイズを30-70%削減）
+  app.use(compressionMiddleware);
 
   // セキュリティヘッダー（RFC 9700 / OWASP / 拡張版要件定義書準拠）
   app.use((_req, res, next) => {
