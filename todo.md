@@ -1586,6 +1586,8 @@
 - [x] vercel.jsonのbuildCommandに`--max-workers 1`を追加してメモリ使用量を削減
 - [x] package.jsonのtestスクリプトを一時的にスキップ
 - [x] チェックポイント保存とGitHubプッシュ - プッシュ完了（d61282a）
+- [x] vercel.jsonのbuildCommand制限エラーを修正 - package.jsonにvercel-buildスクリプトを追加（264文字→18文字）
+- [x] GitHubに再プッシュ - プッシュ完了（4615b90）
 - [ ] Vercelデプロイの確認
 
 ### 修正方針
