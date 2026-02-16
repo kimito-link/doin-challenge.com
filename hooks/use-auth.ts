@@ -1,5 +1,6 @@
 import * as Api from "@/lib/_core/api";
 import * as Auth from "@/lib/_core/auth";
+import * as SessionManager from "@/lib/_core/session-manager";
 import { getApiBaseUrl } from "@/lib/api/config";
 import {
   clearAllTokenData,
@@ -142,8 +143,8 @@ export function useAuth(options?: UseAuthOptions) {
         return;
       }
 
-      // Native: トークンベース認証
-      const sessionToken = await Auth.getSessionToken();
+      // Native: トークンベース認証（有効期限チェック付き）
+      const sessionToken = await SessionManager.getSession();
       if (!sessionToken) {
         setUser(null);
         cachedAuthState = { user: null, timestamp: Date.now() };
@@ -176,8 +177,7 @@ export function useAuth(options?: UseAuthOptions) {
     } catch (err) {
       console.error("[Auth] Logout API call failed:", err);
     } finally {
-      await Auth.removeSessionToken();
-      await Auth.clearUserInfo();
+      await SessionManager.clearSession();
       await clearAllTokenData();
       cachedAuthState = null;
       setUser(null);
