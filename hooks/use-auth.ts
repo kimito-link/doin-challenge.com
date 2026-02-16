@@ -1,43 +1,9 @@
-import * as Api from "@/lib/_core/api";
-import * as Auth from "@/lib/_core/auth";
-import * as SessionManager from "@/lib/_core/session-manager";
-import { getApiBaseUrl } from "@/lib/api/config";
-import {
-  clearAllTokenData,
-} from "@/lib/token-manager";
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { Platform, Linking } from "react-native";
-import AsyncStorage from "@react-native-async-storage/async-storage";
-import { USER_INFO_KEY } from "@/constants/oauth";
+import { useAuth0 } from "@/lib/auth0-provider";
+import { useCallback, useMemo } from "react";
 
 type UseAuthOptions = {
   autoFetch?: boolean;
 };
-
-// 認証状態のキャッシュ（メモリ内）
-let cachedAuthState: { user: Auth.User | null; timestamp: number } | null = null;
-const AUTH_CACHE_TTL = 5 * 60 * 1000; // 5分
-
-// Web: 初期化時にlocalStorageから同期的にユーザー情報を読み込む
-function getInitialUserFromLocalStorage(): Auth.User | null {
-  if (Platform.OS === "web" && typeof window !== "undefined") {
-    try {
-      const info = window.localStorage.getItem(USER_INFO_KEY);
-      if (info) return JSON.parse(info);
-    } catch {
-      // localStorageパースエラーは無視
-    }
-  }
-  return null;
-}
-
-// モジュール初期化時にlocalStorageからキャッシュを設定
-if (!cachedAuthState) {
-  const initialUser = getInitialUserFromLocalStorage();
-  if (initialUser) {
-    cachedAuthState = { user: initialUser, timestamp: Date.now() };
-  }
-}
 
 /**
  * Auth0専用の認証フック
@@ -46,209 +12,46 @@ if (!cachedAuthState) {
  * - Auth0経由のログイン/ログアウト
  * - セッション管理（Web: Cookie、Native: SecureStore）
  * - ユーザー情報のキャッシング（メモリ + localStorage/AsyncStorage）
- * - 自動リトライ（ネットワークエラー時）
  * 
  * @param options - autoFetch: 自動的にユーザー情報を取得するか（デフォルト: true）
  */
 export function useAuth(options?: UseAuthOptions) {
-  const { autoFetch = true } = options ?? {};
-  
-  // キャッシュが有効な場合は即座に表示（loading=false）
-  const hasCachedAuth = cachedAuthState !== null && (Date.now() - cachedAuthState.timestamp) < AUTH_CACHE_TTL;
-  const [user, setUser] = useState<Auth.User | null>(hasCachedAuth && cachedAuthState ? cachedAuthState.user : null);
-  // キャッシュがあればloading=falseで開始（スケルトン表示をスキップ）
-  const [loading, setLoading] = useState(!hasCachedAuth);
-  const [error, setError] = useState<Error | null>(null);
-  // BUG-005修正: userをrefで参照して循環依存を解消
-  const userRef = useRef(user);
-  userRef.current = user;
+  const { 
+    isAuthenticated, 
+    isLoading, 
+    user, 
+    login: auth0Login, 
+    logout: auth0Logout 
+  } = useAuth0();
 
-  const fetchUser = useCallback(async () => {
+  const login = useCallback(async (returnUrl?: string, forceSwitch: boolean = false) => {
     try {
-      setError(null);
-      // C-2: 既にユーザー情報がある場合はバックグラウンドリフレッシュとしてloading=trueにしない
-      const isBackgroundRefresh = userRef.current !== null || cachedAuthState?.user !== null;
-      if (!isBackgroundRefresh) {
-        setLoading(true);
-      }
-
-      // Web: localStorageキャッシュ → API の順で認証状態を取得
-      if (Platform.OS === "web") {
-        const cachedUser = await Auth.getUserInfo();
-        if (cachedUser) {
-          setUser(cachedUser);
-          cachedAuthState = { user: cachedUser, timestamp: Date.now() };
-          // キャッシュにプロフィールが無い場合、バックグラウンドで取得して補完
-          if (!cachedUser.profileImage && !cachedUser.username) {
-            Api.getTwitterProfile().then((twitterProfile) => {
-              if (twitterProfile) {
-                const enriched: Auth.User = {
-                  ...cachedUser,
-                  username: twitterProfile.username ?? cachedUser.username,
-                  profileImage: twitterProfile.profileImage ?? cachedUser.profileImage,
-                  followersCount: twitterProfile.followersCount ?? cachedUser.followersCount,
-                  description: twitterProfile.description ?? cachedUser.description,
-                };
-                setUser(enriched);
-                cachedAuthState = { user: enriched, timestamp: Date.now() };
-                Auth.setUserInfo(enriched);
-              }
-            });
-          }
-          return;
-        }
-        
-        // キャッシュなし → APIで認証確認（ネットワークエラー時1回リトライ）
-        let apiUser = null;
-        for (let attempt = 0; attempt < 2; attempt++) {
-          try {
-            apiUser = await Api.getMe();
-            break;
-          } catch (apiError) {
-            const isNetworkError = apiError instanceof Error && 
-              (apiError.message.includes("fetch") || apiError.message.includes("network") || apiError.message.includes("Failed"));
-            if (isNetworkError && attempt === 0) {
-              await new Promise(resolve => setTimeout(resolve, 1000));
-              continue;
-            }
-            break;
-          }
-        }
-
-        if (apiUser) {
-          // Auth0からユーザー情報を取得
-          const twitterProfile = await Api.getTwitterProfile();
-          const userInfo: Auth.User = {
-            id: apiUser.id,
-            openId: apiUser.openId,
-            name: apiUser.name ?? twitterProfile?.name ?? null,
-            email: apiUser.email,
-            loginMethod: apiUser.loginMethod,
-            lastSignedIn: new Date(apiUser.lastSignedIn),
-            prefecture: apiUser.prefecture ?? null,
-            gender: apiUser.gender ?? null,
-            role: apiUser.role ?? undefined,
-            username: twitterProfile?.username,
-            profileImage: twitterProfile?.profileImage,
-            followersCount: twitterProfile?.followersCount,
-            description: twitterProfile?.description,
-          };
-          setUser(userInfo);
-          cachedAuthState = { user: userInfo, timestamp: Date.now() };
-          await Auth.setUserInfo(userInfo);
-        } else {
-          setUser(null);
-          cachedAuthState = { user: null, timestamp: Date.now() };
-        }
-        return;
-      }
-
-      // Native: トークンベース認証（有効期限チェック付き）
-      const sessionToken = await SessionManager.getSession();
-      if (!sessionToken) {
-        setUser(null);
-        cachedAuthState = { user: null, timestamp: Date.now() };
-        return;
-      }
-
-      const cachedUser = await Auth.getUserInfo();
-      if (cachedUser) {
-        setUser(cachedUser);
-        cachedAuthState = { user: cachedUser, timestamp: Date.now() };
-      } else {
-        setUser(null);
-        cachedAuthState = { user: null, timestamp: Date.now() };
-      }
+      await auth0Login();
     } catch (err) {
-      const error = err instanceof Error ? err : new Error("Failed to fetch user");
-      console.error("[useAuth] fetchUser error:", error);
-      setError(error);
-      setUser(null);
-      cachedAuthState = { user: null, timestamp: Date.now() };
-    } finally {
-      setLoading(false);
+      console.error("[Auth] Login failed:", err);
+      throw err;
     }
-  }, []); // BUG-005修正: userをdepsから除外（userRefで参照）
+  }, [auth0Login]);
 
   const logout = useCallback(async () => {
     try {
-      // Auth0ログアウトAPI呼び出し
-      await Api.logout();
+      await auth0Logout();
     } catch (err) {
-      console.error("[Auth] Logout API call failed:", err);
-    } finally {
-      await SessionManager.clearSession();
-      await clearAllTokenData();
-      cachedAuthState = null;
-      setUser(null);
-      setError(null);
+      console.error("[Auth] Logout failed:", err);
+      throw err;
     }
-  }, []);
+  }, [auth0Logout]);
 
-  /**
-   * Auth0ログイン画面に遷移
-   * 
-   * @param returnUrl - ログイン後のリダイレクト先URL（オプション）
-   * @param forceSwitch - 強制的に別のアカウントでログイン（オプション）
-   */
-  const login = useCallback(async (returnUrl?: string, forceSwitch: boolean = false) => {
-    try {
-      if (Platform.OS === "web" && typeof window !== "undefined") {
-        // ログイン後のリダイレクト先を保存（指定がなければ現在のページ）
-        const redirectPath = returnUrl || window.location.pathname;
-        localStorage.setItem("auth_return_url", redirectPath);
-        console.log("[Auth] Saved return URL:", redirectPath);
-        
-        // Auth0ログイン画面にリダイレクト
-        window.location.href = "/oauth";
-      } else {
-        // Native: Auth0ログイン画面に遷移
-        if (returnUrl) {
-          await AsyncStorage.setItem("auth_return_url", returnUrl);
-          console.log("[Auth] Saved return URL (native):", returnUrl);
-        }
-        
-        // React Navigationでログイン画面に遷移
-        // Note: この部分はAuth0Providerのauthorize()を呼び出す必要がある
-        console.log("[Auth] Native Auth0 login - navigate to /oauth");
-      }
-    } catch (err) {
-      console.error("[Auth] Login failed:", err);
-      setError(err instanceof Error ? err : new Error("Login failed"));
-    }
-  }, []);
-
-  const isAuthenticated = useMemo(() => Boolean(user), [user]);
   /** 認証状態が確定済み（loading 完了）。これが true になるまで user 依存の表示を出さず点滅を防ぐ */
-  const isAuthReady = !loading;
-
-  useEffect(() => {
-    if (autoFetch) {
-      if (Platform.OS === "web") {
-        fetchUser();
-      } else {
-        // Native: キャッシュがあれば即座に表示、なければAPI
-        Auth.getUserInfo().then((cachedUser) => {
-          if (cachedUser) {
-            setUser(cachedUser);
-            setLoading(false);
-          } else {
-            fetchUser();
-          }
-        });
-      }
-    } else {
-      setLoading(false);
-    }
-  }, [autoFetch, fetchUser]);
+  const isAuthReady = !isLoading;
 
   return {
     user,
-    loading,
-    error,
+    loading: isLoading,
+    error: null,
     isAuthenticated,
     isAuthReady,
-    refresh: fetchUser,
+    refresh: async () => {}, // Auth0Providerが自動的に管理
     logout,
     login,
   };

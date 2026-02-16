@@ -1516,3 +1516,37 @@
 
 ### フェーズ3: 最終チェックポイント
 - [ ] チェックポイント保存
+
+
+---
+
+## 🔐 Auth0完全移行（セキュリティ強化） - 2026-02-16
+
+### フェーズ1: Auth0設定と環境変数の確認
+- [x] Auth0の環境変数を確認（AUTH0_DOMAIN, AUTH0_CLIENT_ID, AUTH0_CLIENT_SECRET） - すべて設定済み
+- [ ] Auth0 Twitter Social Connectionの設定を確認
+
+### フェーズ2: フロントエンドのAuth0実装
+- [x] `hooks/use-auth.ts`をAuth0対応に書き換え - useAuth0()を使用するように変更
+- [x] ログイン画面のボタンをAuth0に置き換え - すでに実装済み（app/oauth/index.tsx）
+- [x] ログアウト処理をAuth0に置き換え - useAuth0()のlogout()を使用
+
+### フェーズ3: バックエンドのAuth0実装
+- [x] `server/routers/auth0.ts`を有効化 - すでに実装済み（server/routers/index.tsに登録済み）
+- [x] Auth0のユーザー情報を`users`テーブルに保存 - upsertUser()で実装済み
+- [x] 既存のAPIルートをAuth0トークン検証に変更 - auth0Routerで実装済み
+
+### フェーズ4: 既存Twitter OAuth2コードの削除
+- [x] `server/twitter-auth.ts`を削除 - 削除完了
+- [x] 不要なTwitter OAuth2関連のコードを削除 - 他のTwitter OAuth2ファイルは存在しない
+- [x] server/_core/oauth.tsはすでにAuth0対応済みのため保持
+
+### フェーズ5: GitHubにプッシュしてデプロイ
+- [ ] 変更をコミット
+- [ ] GitHubにプッシュ
+- [ ] Vercel/Railwayのデプロイを確認
+
+### フェーズ6: 本番環境でログインテスト
+- [ ] ログインフローをテスト
+- [ ] ログアウトフローをテスト
+- [ ] エラーハンドリングをテスト

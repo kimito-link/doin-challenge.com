@@ -175,7 +175,8 @@ export function useAuthUxMachine() {
 
     // エラーを検知
     if (authError) {
-      const errorMessage = authError instanceof Error ? authError.message : String(authError);
+      const err = authError as any;
+      const errorMessage = err && typeof err === 'object' && 'message' in err ? err.message : "ログインに失敗しました";
       dispatch({ type: "ERROR", message: errorMessage });
       return;
     }
