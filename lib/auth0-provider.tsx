@@ -1,14 +1,23 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import Auth0 from 'react-native-auth0';
 import * as SecureStore from 'expo-secure-store';
-import AsyncStorage from '@react-native-async-storage/async-storage';
+import * as WebBrowser from 'expo-web-browser';
 import { Platform } from 'react-native';
 import { getApiBaseUrl } from './api/config';
 
+// Web環境用のAuth0設定
+const AUTH0_DOMAIN = process.env.EXPO_PUBLIC_AUTH0_DOMAIN || '';
+const AUTH0_CLIENT_ID = process.env.EXPO_PUBLIC_AUTH0_CLIENT_ID || '';
+
 const auth0 = new Auth0({
-  domain: process.env.EXPO_PUBLIC_AUTH0_DOMAIN || '',
-  clientId: process.env.EXPO_PUBLIC_AUTH0_CLIENT_ID || '',
+  domain: AUTH0_DOMAIN,
+  clientId: AUTH0_CLIENT_ID,
 });
+
+// WebBrowserの初期化（ネイティブアプリ用）
+if (Platform.OS !== 'web') {
+  WebBrowser.maybeCompleteAuthSession();
+}
 
 interface Auth0ContextType {
   isAuthenticated: boolean;
@@ -79,47 +88,60 @@ export function Auth0Provider({ children }: { children: React.ReactNode }) {
     try {
       setIsLoading(true);
       
-      // Auth0のUniversal Loginを使用
-      const credentials = await auth0.webAuth.authorize({
-        scope: 'openid profile email',
-        connection: 'twitter', // Twitter接続を指定
-      });
+      if (Platform.OS === 'web') {
+        // Web環境: Auth0のUniversal Loginにリダイレクト
+        const redirectUri = `${window.location.origin}/oauth`;
+        const authUrl = `https://${AUTH0_DOMAIN}/authorize?` +
+          `response_type=code&` +
+          `client_id=${AUTH0_CLIENT_ID}&` +
+          `redirect_uri=${encodeURIComponent(redirectUri)}&` +
+          `scope=openid%20profile%20email&` +
+          `connection=twitter`;
+        
+        window.location.href = authUrl;
+      } else {
+        // ネイティブアプリ: react-native-auth0を使用
+        const credentials = await auth0.webAuth.authorize({
+          scope: 'openid profile email',
+          connection: 'twitter',
+        });
 
-      // トークンを保存
-      await storage.setItem('auth0_access_token', credentials.accessToken);
-      
-      // バックエンドでトークンを検証してセッションを確立
-      const apiUrl = getApiBaseUrl();
-      const response = await fetch(`${apiUrl}/api/trpc/auth0.login`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ 
-          input: { accessToken: credentials.accessToken }
-        }),
-        credentials: 'include',
-      });
+        // トークンを保存
+        await storage.setItem('auth0_access_token', credentials.accessToken);
+        
+        // バックエンドでトークンを検証してセッションを確立
+        const apiUrl = getApiBaseUrl();
+        const response = await fetch(`${apiUrl}/api/trpc/auth0.login`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({ 
+            input: { accessToken: credentials.accessToken }
+          }),
+          credentials: 'include',
+        });
 
-      if (!response.ok) {
-        const errorText = await response.text();
-        console.error('Session establishment failed:', errorText);
-        throw new Error('Failed to establish session');
+        if (!response.ok) {
+          const errorText = await response.text();
+          console.error('Session establishment failed:', errorText);
+          throw new Error('Failed to establish session');
+        }
+
+        const result = await response.json();
+        const userData = result.result?.data || result.user;
+
+        if (!userData) {
+          throw new Error('No user data returned from server');
+        }
+
+        // ユーザー情報を保存
+        await storage.setItem('auth0_user', JSON.stringify(userData));
+
+        setAccessToken(credentials.accessToken);
+        setUser(userData);
+        setIsAuthenticated(true);
       }
-
-      const result = await response.json();
-      const userData = result.result?.data || result.user;
-
-      if (!userData) {
-        throw new Error('No user data returned from server');
-      }
-
-      // ユーザー情報を保存
-      await storage.setItem('auth0_user', JSON.stringify(userData));
-
-      setAccessToken(credentials.accessToken);
-      setUser(userData);
-      setIsAuthenticated(true);
     } catch (error) {
       console.error('Login failed:', error);
       // エラー時はトークンを削除
@@ -127,7 +149,9 @@ export function Auth0Provider({ children }: { children: React.ReactNode }) {
       await storage.deleteItem('auth0_user');
       throw error;
     } finally {
-      setIsLoading(false);
+      if (Platform.OS !== 'web') {
+        setIsLoading(false);
+      }
     }
   };
 
@@ -143,6 +167,13 @@ export function Auth0Provider({ children }: { children: React.ReactNode }) {
       // ローカルのトークンを削除
       await storage.deleteItem('auth0_access_token');
       await storage.deleteItem('auth0_user');
+
+      // バックエンドのセッションをクリア
+      const apiUrl = getApiBaseUrl();
+      await fetch(`${apiUrl}/api/trpc/auth0.logout`, {
+        method: 'POST',
+        credentials: 'include',
+      });
 
       setAccessToken(null);
       setUser(null);

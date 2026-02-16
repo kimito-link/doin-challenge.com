@@ -1,21 +1,76 @@
 import React, { useEffect, useState } from 'react';
 import { View, Text, Pressable, ActivityIndicator, Platform } from 'react-native';
-import { useRouter } from 'expo-router';
+import { useRouter, useLocalSearchParams } from 'expo-router';
 import { ScreenContainer } from '@/components/organisms/screen-container';
 import { useAuth0 } from '@/lib/auth0-provider';
 import * as Haptics from 'expo-haptics';
+import { getApiBaseUrl } from '@/lib/api/config';
 
 export default function OAuthScreen() {
   const router = useRouter();
+  const params = useLocalSearchParams();
   const { login, isLoading, isAuthenticated } = useAuth0();
   const [error, setError] = useState<string | null>(null);
+  const [isProcessing, setIsProcessing] = useState(false);
+
+  // Auth0コールバック処理（Web環境のみ）
+  useEffect(() => {
+    if (Platform.OS === 'web' && params.code) {
+      handleAuth0Callback(params.code as string);
+    }
+  }, [params.code]);
 
   // 既にログイン済みの場合はホーム画面にリダイレクト
   useEffect(() => {
-    if (isAuthenticated) {
+    if (isAuthenticated && !isProcessing) {
       router.replace('/(tabs)');
     }
-  }, [isAuthenticated]);
+  }, [isAuthenticated, isProcessing]);
+
+  const handleAuth0Callback = async (code: string) => {
+    try {
+      setIsProcessing(true);
+      setError(null);
+
+      // Auth0の認可コードをアクセストークンに交換
+      const apiUrl = getApiBaseUrl();
+      const redirectUri = `${window.location.origin}/oauth`;
+      
+      const response = await fetch(`${apiUrl}/api/trpc/auth0.exchangeCode`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          input: {
+            code,
+            redirectUri,
+          },
+        }),
+        credentials: 'include',
+      });
+
+      if (!response.ok) {
+        const errorText = await response.text();
+        console.error('Token exchange failed:', errorText);
+        throw new Error('ログインに失敗しました。もう一度お試しください。');
+      }
+
+      const result = await response.json();
+      const userData = result.result?.data?.user;
+
+      if (!userData) {
+        throw new Error('ユーザー情報の取得に失敗しました。');
+      }
+
+      // ログイン成功 - ホーム画面にリダイレクト
+      router.replace('/(tabs)');
+    } catch (err: any) {
+      console.error('Auth0 callback failed:', err);
+      setError(err.message || 'ログインに失敗しました。もう一度お試しください。');
+      setIsProcessing(false);
+    }
+  };
 
   const handleLogin = async () => {
     try {
@@ -28,8 +83,8 @@ export default function OAuthScreen() {
 
       await login();
       
-      // ログイン成功後はAuth0Providerが自動的にisAuthenticatedをtrueにする
-      // useEffectでホーム画面にリダイレクトされる
+      // Web環境ではAuth0にリダイレクトされるため、ここには戻ってこない
+      // ネイティブアプリではログイン成功後にuseEffectでリダイレクトされる
     } catch (err: any) {
       console.error('Login failed:', err);
       setError(err.message || 'ログインに失敗しました。もう一度お試しください。');
@@ -40,6 +95,18 @@ export default function OAuthScreen() {
       }
     }
   };
+
+  // コールバック処理中の表示
+  if (isProcessing) {
+    return (
+      <ScreenContainer className="flex-1 items-center justify-center p-6">
+        <ActivityIndicator size="large" color="#0a7ea4" />
+        <Text className="text-base text-muted text-center mt-4">
+          ログイン処理中...
+        </Text>
+      </ScreenContainer>
+    );
+  }
 
   return (
     <ScreenContainer className="flex-1 items-center justify-center p-6">

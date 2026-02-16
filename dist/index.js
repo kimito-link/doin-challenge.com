@@ -4073,6 +4073,81 @@ function generateSessionToken(userId) {
 }
 var auth0Router = router({
   /**
+   * Auth0の認可コードをアクセストークンに交換
+   */
+  exchangeCode: publicProcedure.input(
+    z.object({
+      code: z.string(),
+      redirectUri: z.string()
+    })
+  ).mutation(async ({ input, ctx }) => {
+    try {
+      const AUTH0_DOMAIN = process.env.AUTH0_DOMAIN;
+      const AUTH0_CLIENT_ID = process.env.AUTH0_CLIENT_ID;
+      const AUTH0_CLIENT_SECRET = process.env.AUTH0_CLIENT_SECRET;
+      if (!AUTH0_DOMAIN || !AUTH0_CLIENT_ID || !AUTH0_CLIENT_SECRET) {
+        throw new Error("Auth0 configuration is missing");
+      }
+      const tokenResponse = await fetch(`https://${AUTH0_DOMAIN}/oauth/token`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify({
+          grant_type: "authorization_code",
+          client_id: AUTH0_CLIENT_ID,
+          client_secret: AUTH0_CLIENT_SECRET,
+          code: input.code,
+          redirect_uri: input.redirectUri
+        })
+      });
+      if (!tokenResponse.ok) {
+        const errorText = await tokenResponse.text();
+        console.error("Token exchange failed:", errorText);
+        throw new Error("Failed to exchange authorization code");
+      }
+      const tokenData = await tokenResponse.json();
+      const accessToken = tokenData.access_token;
+      const auth0User = await verifyAuth0Token(accessToken);
+      const twitterId = getTwitterIdFromAuth0User(auth0User);
+      if (!twitterId) {
+        throw new Error("Twitter ID not found in Auth0 user");
+      }
+      const twitterUsername = getTwitterUsernameFromAuth0User(auth0User);
+      const openId = `twitter-${twitterId}`;
+      await upsertUser({
+        openId,
+        name: auth0User.name || twitterUsername || `User ${twitterId}`,
+        email: auth0User.email || null,
+        loginMethod: "twitter",
+        role: "user",
+        lastSignedIn: /* @__PURE__ */ new Date()
+      });
+      const user = await getUserByOpenId(openId);
+      if (!user) {
+        throw new Error("Failed to create or retrieve user");
+      }
+      const sessionToken = generateSessionToken(user.id);
+      const cookieOptions = getSessionCookieOptions(ctx.req);
+      ctx.res.cookie(COOKIE_NAME, sessionToken, cookieOptions);
+      return {
+        success: true,
+        user: {
+          id: user.id,
+          name: user.name,
+          email: user.email,
+          openId: user.openId,
+          loginMethod: user.loginMethod,
+          role: user.role
+        },
+        sessionToken
+      };
+    } catch (error) {
+      console.error("Auth0 code exchange failed:", error);
+      throw new Error(error.message || "Authentication failed");
+    }
+  }),
+  /**
    * Auth0トークンを検証してセッションを確立
    */
   login: publicProcedure.input(
