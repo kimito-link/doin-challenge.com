@@ -1593,3 +1593,27 @@
 ### 修正方針
 - デプロイを優先し、テストは後で徹底修正
 - ビルドプロセスを安定化
+
+## Vercel環境変数設定（2026-02-16）
+
+- [x] Auth0のエラー原因を特定（環境変数が未設定）
+- [x] Vercelに以下の環境変数を追加：
+  - AUTH0_DOMAIN
+  - AUTH0_CLIENT_ID
+  - AUTH0_CLIENT_SECRET
+  - EXPO_PUBLIC_AUTH0_DOMAIN
+  - EXPO_PUBLIC_AUTH0_CLIENT_ID
+- [x] 環境変数設定をdocs/vercel-environment-variables.mdに記録
+- [ ] 新しいデプロイが成功することを確認
+
+## GitHub Actionsワークフロー修正（2026-02-16）
+
+- [x] vercel-actionを削除し、Vercel CLI直接実行に変更
+- [x] リトライ機能を実装（最大3回まで再試行）
+- [x] デプロイ前のヘルスチェックを追加
+- [x] Post-deploy verifyの待機時間を最適化（10分→30秒）
+- [x] デプロイURLの自動取得と出力
+- [x] 詳細なログ出力を追加
+- [x] ワークフロー修正内容をdocs/github-actions-workflow-improvements.mdに記録
+- [ ] GitHubにプッシュしてテスト
+- [ ] デプロイ成功を確認

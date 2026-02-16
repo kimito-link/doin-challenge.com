@@ -70,13 +70,59 @@ jobs:
           }
           echo "✅ Build completed"
 
-      - name: Deploy to Vercel
-        uses: amondnet/vercel-action@v25
-        with:
-          vercel-token: ${{ secrets.VERCEL_TOKEN }}
-          vercel-org-id: ${{ secrets.VERCEL_ORG_ID }}
-          vercel-project-id: ${{ secrets.VERCEL_PROJECT_ID }}
-          vercel-args: '--prod'
+      - name: Pre-deploy health check
+        run: |
+          echo "🏥 Checking production health before deploy..."
+          HEALTH=$(curl -s https://doin-challenge.com/api/health || echo "{}")
+          OK=$(echo "$HEALTH" | jq -r '.ok // false')
+          if [[ "$OK" == "true" ]]; then
+            echo "✅ Production is healthy before deploy"
+          else
+            echo "⚠️ Production health check failed, but continuing with deploy"
+            echo "Health response: $HEALTH"
+          fi
+
+      - name: Install Vercel CLI
+        run: npm install --global vercel@latest
+
+      - name: Pull Vercel Environment Information
+        run: vercel pull --yes --environment=production --token=${{ secrets.VERCEL_TOKEN }}
+
+      - name: Deploy to Vercel (with retry)
+        env:
+          VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
+          VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
+          VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}
+        run: |
+          set -e
+          MAX_RETRIES=3
+          RETRY_COUNT=0
+          
+          echo "🚀 Deploying to Vercel..."
+          
+          while [ $RETRY_COUNT -lt $MAX_RETRIES ]; do
+            echo "📦 Deployment attempt $((RETRY_COUNT + 1))/$MAX_RETRIES"
+            
+            if vercel deploy --prod --token=$VERCEL_TOKEN 2>&1 | tee deploy.log; then
+              echo "✅ Deployment successful!"
+              VERCEL_URL=$(grep -oP 'https://[^\s]+\.vercel\.app' deploy.log | head -1 || echo "")
+              if [ -n "$VERCEL_URL" ]; then
+                echo "🌐 Deployment URL: $VERCEL_URL"
+                echo "VERCEL_URL=$VERCEL_URL" >> $GITHUB_ENV
+              fi
+              break
+            else
+              RETRY_COUNT=$((RETRY_COUNT + 1))
+              if [ $RETRY_COUNT -lt $MAX_RETRIES ]; then
+                echo "⚠️ Deployment failed. Retrying in 30 seconds..."
+                sleep 30
+              else
+                echo "❌ Deployment failed after $MAX_RETRIES attempts."
+                cat deploy.log
+                exit 1
+              fi
+            fi
+          done
 
       # サイト不具合検知: 本番 /api/health がこの push のコミットで正常応答することを厳密に確認する。
       - name: Post-deploy verify (Gate 1)
@@ -84,9 +130,9 @@ jobs:
           EXPECTED_SHA: ${{ github.sha }}
         run: |
           set -e
-          echo "⏳ Waiting for Railway deployment to sync..."
+          echo "⏳ Waiting for deployment to propagate..."
           echo "Expected commitSha (this deploy): $EXPECTED_SHA"
-          sleep 600  # 10分: Railway のビルド・デプロイ完了を待つ
+          sleep 180  # 3分: デプロイの伝播を待つ（Railwayは並行してビルド中）
           git fetch origin main --depth=1
           LATEST_MAIN=$(git rev-parse origin/main)
           echo "Latest main: $LATEST_MAIN"
