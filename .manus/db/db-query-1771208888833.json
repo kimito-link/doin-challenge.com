@@ -1,0 +1,115 @@
+{
+  "query": "SHOW TABLES;",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway02.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 3YCTtbVp6bbE1oz.aaf91d266729 --database 4EfvvuNg9KRk4UPdFprmBJ --execute SHOW TABLES;",
+  "rows": [
+    {
+      "Tables_in_4EfvvuNg9KRk4UPdFprmBJ": "__drizzle_migrations"
+    },
+    {
+      "Tables_in_4EfvvuNg9KRk4UPdFprmBJ": "achievement_pages"
+    },
+    {
+      "Tables_in_4EfvvuNg9KRk4UPdFprmBJ": "achievements"
+    },
+    {
+      "Tables_in_4EfvvuNg9KRk4UPdFprmBJ": "audit_logs"
+    },
+    {
+      "Tables_in_4EfvvuNg9KRk4UPdFprmBJ": "badges"
+    },
+    {
+      "Tables_in_4EfvvuNg9KRk4UPdFprmBJ": "categories"
+    },
+    {
+      "Tables_in_4EfvvuNg9KRk4UPdFprmBJ": "challenge_members"
+    },
+    {
+      "Tables_in_4EfvvuNg9KRk4UPdFprmBJ": "challenge_stats"
+    },
+    {
+      "Tables_in_4EfvvuNg9KRk4UPdFprmBJ": "challenge_templates"
+    },
+    {
+      "Tables_in_4EfvvuNg9KRk4UPdFprmBJ": "challenges"
+    },
+    {
+      "Tables_in_4EfvvuNg9KRk4UPdFprmBJ": "cheers"
+    },
+    {
+      "Tables_in_4EfvvuNg9KRk4UPdFprmBJ": "collaborator_invitations"
+    },
+    {
+      "Tables_in_4EfvvuNg9KRk4UPdFprmBJ": "collaborators"
+    },
+    {
+      "Tables_in_4EfvvuNg9KRk4UPdFprmBJ": "direct_messages"
+    },
+    {
+      "Tables_in_4EfvvuNg9KRk4UPdFprmBJ": "favorite_artists"
+    },
+    {
+      "Tables_in_4EfvvuNg9KRk4UPdFprmBJ": "follows"
+    },
+    {
+      "Tables_in_4EfvvuNg9KRk4UPdFprmBJ": "invitation_uses"
+    },
+    {
+      "Tables_in_4EfvvuNg9KRk4UPdFprmBJ": "invitations"
+    },
+    {
+      "Tables_in_4EfvvuNg9KRk4UPdFprmBJ": "message_likes"
+    },
+    {
+      "Tables_in_4EfvvuNg9KRk4UPdFprmBJ": "notification_settings"
+    },
+    {
+      "Tables_in_4EfvvuNg9KRk4UPdFprmBJ": "notifications"
+    },
+    {
+      "Tables_in_4EfvvuNg9KRk4UPdFprmBJ": "oauth_pkce_data"
+    },
+    {
+      "Tables_in_4EfvvuNg9KRk4UPdFprmBJ": "participation_companions"
+    },
+    {
+      "Tables_in_4EfvvuNg9KRk4UPdFprmBJ": "participations"
+    },
+    {
+      "Tables_in_4EfvvuNg9KRk4UPdFprmBJ": "picked_comments"
+    },
+    {
+      "Tables_in_4EfvvuNg9KRk4UPdFprmBJ": "release_notes"
+    },
+    {
+      "Tables_in_4EfvvuNg9KRk4UPdFprmBJ": "reminders"
+    },
+    {
+      "Tables_in_4EfvvuNg9KRk4UPdFprmBJ": "search_history"
+    },
+    {
+      "Tables_in_4EfvvuNg9KRk4UPdFprmBJ": "ticket_transfers"
+    },
+    {
+      "Tables_in_4EfvvuNg9KRk4UPdFprmBJ": "ticket_waitlist"
+    },
+    {
+      "Tables_in_4EfvvuNg9KRk4UPdFprmBJ": "twitter_follow_status"
+    },
+    {
+      "Tables_in_4EfvvuNg9KRk4UPdFprmBJ": "twitter_user_cache"
+    },
+    {
+      "Tables_in_4EfvvuNg9KRk4UPdFprmBJ": "user_achievements"
+    },
+    {
+      "Tables_in_4EfvvuNg9KRk4UPdFprmBJ": "user_badges"
+    },
+    {
+      "Tables_in_4EfvvuNg9KRk4UPdFprmBJ": "users"
+    }
+  ],
+  "messages": [],
+  "stdout": "Tables_in_4EfvvuNg9KRk4UPdFprmBJ\n__drizzle_migrations\nachievement_pages\nachievements\naudit_logs\nbadges\ncategories\nchallenge_members\nchallenge_stats\nchallenge_templates\nchallenges\ncheers\ncollaborator_invitations\ncollaborators\ndirect_messages\nfavorite_artists\nfollows\ninvitation_uses\ninvitations\nmessage_likes\nnotification_settings\nnotifications\noauth_pkce_data\nparticipation_companions\nparticipations\npicked_comments\nrelease_notes\nreminders\nsearch_history\nticket_transfers\nticket_waitlist\ntwitter_follow_status\ntwitter_user_cache\nuser_achievements\nuser_badges\nusers\n",
+  "stderr": "",
+  "execution_time_ms": 1587
+}

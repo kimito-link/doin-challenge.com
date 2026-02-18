@@ -1,0 +1,178 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* v5.35: ハイドレーション時の白い画面を防止 + 水平スクロール防止 */
+html,
+body,
+#root {
+  background-color: #0d1117;
+  overflow-x: hidden;
+  max-width: 100vw;
+  position: relative;
+}
+
+/* タッチデバイスでの水平スワイプを防止 */
+body {
+  overscroll-behavior-x: none;
+  touch-action: pan-y pinch-zoom;
+}
+
+/* iOSでの弾性スクロールを制限 */
+@supports (-webkit-touch-callout: none) {
+  body {
+    -webkit-overflow-scrolling: touch;
+  }
+}
+
+/* アクセシビリティ: フォーカスインジケーターの強化 */
+/* WCAG 2.1 AA基準: フォーカスインジケーターは明確に視認できる必要がある */
+
+/* すべてのフォーカス可能な要素に明確なフォーカスインジケーターを追加 */
+*:focus-visible {
+  outline: 3px solid #ff7a1a;
+  outline-offset: 2px;
+  border-radius: 4px;
+}
+
+/* ボタンとリンクのフォーカススタイル */
+button:focus-visible,
+a:focus-visible {
+  outline: 3px solid #ff7a1a;
+  outline-offset: 2px;
+  box-shadow: 0 0 0 4px rgba(255, 122, 26, 0.2);
+}
+
+/* 入力フィールドのフォーカススタイル */
+input:focus-visible,
+textarea:focus-visible,
+select:focus-visible {
+  outline: 3px solid #ff7a1a;
+  outline-offset: 0px;
+  border-color: #ff7a1a;
+  box-shadow: 0 0 0 4px rgba(255, 122, 26, 0.2);
+}
+
+/* チェックボックスとラジオボタンのフォーカススタイル */
+input[type="checkbox"]:focus-visible,
+input[type="radio"]:focus-visible {
+  outline: 3px solid #ff7a1a;
+  outline-offset: 2px;
+  box-shadow: 0 0 0 4px rgba(255, 122, 26, 0.2);
+}
+
+/* カードやリスト項目のフォーカススタイル */
+[role="button"]:focus-visible,
+[role="link"]:focus-visible,
+[role="tab"]:focus-visible,
+[role="menuitem"]:focus-visible {
+  outline: 3px solid #ff7a1a;
+  outline-offset: 2px;
+  box-shadow: 0 0 0 4px rgba(255, 122, 26, 0.2);
+}
+
+/* モーダルとダイアログのフォーカススタイル */
+[role="dialog"]:focus-visible,
+[role="alertdialog"]:focus-visible {
+  outline: 3px solid #ff7a1a;
+  outline-offset: -3px;
+}
+
+/* フォーカスが外れた時のスタイルをリセット */
+*:focus:not(:focus-visible) {
+  outline: none;
+}
+
+/* ダークモード対応: フォーカスインジケーターの色を調整 */
+@media (prefers-color-scheme: dark) {
+  *:focus-visible {
+    outline-color: #ff7a1a;
+  }
+
+  button:focus-visible,
+  a:focus-visible,
+  input:focus-visible,
+  textarea:focus-visible,
+  select:focus-visible {
+    box-shadow: 0 0 0 4px rgba(255, 122, 26, 0.3);
+  }
+}
+
+/* ライトモード対応: フォーカスインジケーターの色を調整 */
+@media (prefers-color-scheme: light) {
+  *:focus-visible {
+    outline-color: #b85400;
+  }
+
+  button:focus-visible,
+  a:focus-visible,
+  input:focus-visible,
+  textarea:focus-visible,
+  select:focus-visible {
+    outline-color: #b85400;
+    border-color: #b85400;
+    box-shadow: 0 0 0 4px rgba(184, 84, 0, 0.2);
+  }
+}
+
+/* アクセシビリティ: タップターゲットの最小サイズ確保 */
+/* WCAG 2.1 AA基準: タップターゲットは最低44x44ptのサイズが必要 */
+
+/* すべてのボタンとリンクに最小サイズを確保 */
+button,
+a[role="button"],
+[role="button"],
+input[type="button"],
+input[type="submit"],
+input[type="reset"] {
+  min-width: 44px;
+  min-height: 44px;
+  padding: 8px 12px;
+}
+
+/* 小さいアイコンボタンにも最小サイズを確保 */
+button[aria-label],
+a[aria-label] {
+  min-width: 44px;
+  min-height: 44px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* チェックボックスとラジオボタンのタップ領域を拡大 */
+input[type="checkbox"],
+input[type="radio"] {
+  min-width: 24px;
+  min-height: 24px;
+  cursor: pointer;
+}
+
+/* チェックボックスとラジオボタンのラベルもクリック可能に */
+label {
+  cursor: pointer;
+  padding: 8px;
+  margin: -8px;
+}
+
+/* リスト項目のタップ領域を確保 */
+[role="listitem"] button,
+[role="option"] button,
+[role="menuitem"] button {
+  min-height: 44px;
+  width: 100%;
+  padding: 12px 16px;
+}
+
+/* タブのタップ領域を確保 */
+[role="tab"] {
+  min-width: 44px;
+  min-height: 44px;
+  padding: 12px 16px;
+}
+
+/* スイッチのタップ領域を確保 */
+[role="switch"] {
+  min-width: 44px;
+  min-height: 44px;
+}

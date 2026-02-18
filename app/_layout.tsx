@@ -1,0 +1,303 @@
+import "@/global.css";
+import { QueryClient } from "@tanstack/react-query";
+import { PersistQueryClientProvider } from "@tanstack/react-query-persist-client";
+import { Stack, usePathname } from "expo-router";
+import { StatusBar } from "expo-status-bar";
+import { useCallback, useEffect, useMemo, useState } from "react";
+import { GestureHandlerRootView } from "react-native-gesture-handler";
+import "react-native-reanimated";
+import { Platform } from "react-native";
+import "@/lib/_core/nativewind-pressable";
+import { ThemeProvider } from "@/lib/theme-provider";
+import { LoginSuccessProvider } from "@/lib/login-success-context";
+import { LoginSuccessModalWrapper } from "@/components/molecules/login-success-modal-wrapper";
+import { OfflineBanner } from "@/components/organisms/offline-banner";
+import { ToastProvider } from "@/components/atoms/toast";
+import {
+  SafeAreaFrameContext,
+  SafeAreaInsetsContext,
+  SafeAreaProvider,
+  initialWindowMetrics,
+} from "react-native-safe-area-context";
+import type { EdgeInsets, Metrics, Rect } from "react-native-safe-area-context";
+
+import { trpc, createTRPCClient } from "@/lib/trpc";
+import { createPerformanceQueryCache, createPerformanceMutationCache } from "@/lib/performance-auto-monitor";
+import { asyncStoragePersister } from "@/lib/query-persister";
+import { initManusRuntime, subscribeSafeAreaInsets } from "@/lib/_core/manus-runtime";
+import { preloadCriticalImages } from "@/lib/image-preload";
+import { registerServiceWorker } from "@/lib/service-worker";
+import { initAutoSync } from "@/lib/offline-sync";
+import { startNetworkMonitoring, stopNetworkMonitoring } from "@/lib/api";
+import { initSyncHandlers } from "@/lib/sync-handlers";
+import { AutoLoginProvider } from "@/lib/auto-login-provider";
+import { TutorialProvider, useTutorial } from "@/lib/tutorial-context";
+import { TutorialOverlay } from "@/components/organisms/tutorial-overlay";
+import { UserTypeSelector } from "@/components/organisms/user-type-selector";
+import { LoginPromptModal } from "@/components/organisms/login-prompt-modal";
+import { NetworkToast } from "@/components/organisms/network-toast";
+import { ExperienceProvider } from "@/lib/experience-context";
+import { ExperienceOverlay } from "@/components/organisms/experience-overlay";
+import { OnboardingScreen, useOnboarding } from "@/features/onboarding";
+
+import { ErrorBoundary } from "@/components/ui";
+import { usePrefetchHome } from "@/hooks/use-prefetch";
+import { Auth0Provider } from "@/lib/auth0-provider";
+import { startupPerformance } from "@/lib/startup-performance";
+import { measureWebVitals, reportWebVitals } from "@/lib/web-vitals";
+import { NavigationTrackingWrapper } from "@/components/navigation-tracking-wrapper";
+import { SmartPrefetchWrapper } from "@/components/SmartPrefetchWrapper";
+
+// JavaScript読み込み完了を記録
+startupPerformance.markJSLoaded();
+
+// デバッグ用ログ：Auth0環境変数を確認
+console.log("[App Layout] EXPO_PUBLIC_AUTH0_DOMAIN:", process.env.EXPO_PUBLIC_AUTH0_DOMAIN);
+console.log("[App Layout] EXPO_PUBLIC_AUTH0_CLIENT_ID:", process.env.EXPO_PUBLIC_AUTH0_CLIENT_ID);
+
+/**
+ * マウント時にホーム画面のデータをプリフェッチ（D-1: 初回表示前倒し）
+ * tRPC Provider 内で使用し、ルートマウント時に即座にデータ取得を開始する
+ */
+function EarlyPrefetch() {
+  const { prefetch } = usePrefetchHome();
+  useEffect(() => {
+    prefetch();
+  }, [prefetch]);
+  return null;
+}
+
+/** /admin のときはオーバーレイを出さず管理画面だけ表示する */
+function useIsAdminRoute() {
+  const pathname = usePathname();
+  return typeof pathname === "string" && (pathname === "/admin" || pathname.startsWith("/admin/"));
+}
+
+function ConditionalExperienceOverlay() {
+  if (useIsAdminRoute()) return null;
+  return <ExperienceOverlay />;
+}
+
+const DEFAULT_WEB_INSETS: EdgeInsets = { top: 0, right: 0, bottom: 0, left: 0 };
+const DEFAULT_WEB_FRAME: Rect = { x: 0, y: 0, width: 0, height: 0 };
+
+export const unstable_settings = {
+  anchor: "(tabs)",
+};
+
+/**
+ * チュートリアルUI（ユーザータイプ選択 + チュートリアルオーバーレイ）
+ * /admin のときは表示しない（管理画面のパスワード認証を隠さないため）
+ */
+function TutorialUI() {
+  const tutorial = useTutorial();
+  if (useIsAdminRoute()) return null;
+
+  return (
+    <>
+      {/* ユーザータイプ選択画面 */}
+      <UserTypeSelector
+        visible={tutorial.showUserTypeSelector}
+        onSelect={tutorial.selectUserType}
+        onSkip={tutorial.skipTutorial}
+      />
+
+      {/* チュートリアルオーバーレイ */}
+      {tutorial.currentStep && (
+        <TutorialOverlay
+          step={tutorial.currentStep}
+          stepNumber={tutorial.currentStepIndex + 1}
+          totalSteps={tutorial.totalSteps}
+          onNext={tutorial.nextStep}
+          onComplete={tutorial.completeTutorial}
+          visible={tutorial.isActive}
+        />
+      )}
+
+      {/* チュートリアル完了後のログイン誘導モーダル */}
+      <LoginPromptModal
+        visible={tutorial.showLoginPrompt}
+        onLogin={tutorial.dismissLoginPrompt}
+        onSkip={tutorial.dismissLoginPrompt}
+      />
+    </>
+  );
+}
+
+/**
+ * オンボーディングラッパー
+ * 初回起動時にオンボーディングを表示（/admin は常にスキップして管理画面へ）
+ */
+function OnboardingWrapper({ children }: { children: React.ReactNode }) {
+  const pathname = usePathname();
+  const { hasCompletedOnboarding, completeOnboarding } = useOnboarding();
+
+  // /admin へのアクセスはオンボーディングを出さずに管理画面（パスワード認証）を表示
+  const isAdminRoute = typeof pathname === "string" && (pathname === "/admin" || pathname.startsWith("/admin/"));
+  if (isAdminRoute) {
+    return <>{children}</>;
+  }
+
+  // オンボーディング状態が確認中の場合もアプリを表示（ブロッキング回避）
+  // ※ Web環境ではlocalStorageから同期取得されるためnullになることは稀
+
+  // オンボーディング未完了の場合はオンボーディング画面を表示
+  if (!hasCompletedOnboarding) {
+    return <OnboardingScreen onComplete={completeOnboarding} />;
+  }
+
+  // オンボーディング完了済みの場合はアプリを表示
+  return <>{children}</>;
+}
+
+export default function RootLayout() {
+  const initialInsets = initialWindowMetrics?.insets ?? DEFAULT_WEB_INSETS;
+  const initialFrame = initialWindowMetrics?.frame ?? DEFAULT_WEB_FRAME;
+
+  const [insets, setInsets] = useState<EdgeInsets>(initialInsets);
+  const [frame, setFrame] = useState<Rect>(initialFrame);
+
+  // 最初のレンダリング完了を記録
+  useEffect(() => {
+    startupPerformance.markFirstRender();
+  }, []);
+
+  // インタラクティブになった時点を記録（初期化完了後）
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      startupPerformance.markInteractive();
+      startupPerformance.logMetrics();
+
+      // Web Vitalsの計測を開始（Web版のみ）
+      measureWebVitals(reportWebVitals);
+    }, 100);
+    return () => clearTimeout(timer);
+  }, []);
+
+  // Initialize Manus runtime for cookie injection from parent container
+  useEffect(() => {
+    const unsubscribeManusRuntime = initManusRuntime();
+    // 重要な画像をプリロード（キャラクター等）
+    preloadCriticalImages();
+    // Service Workerを登録（Webのみ）
+    registerServiceWorker();
+    // オフライン同期ハンドラーを初期化
+    initSyncHandlers();
+    // オンライン復帰時の自動同期を初期化
+    const unsubscribeSync = initAutoSync();
+    // APIオフラインキューのネットワーク監視を開始
+    startNetworkMonitoring();
+    return () => {
+      unsubscribeManusRuntime();
+      unsubscribeSync();
+      stopNetworkMonitoring();
+    };
+  }, []);
+
+  const handleSafeAreaUpdate = useCallback((metrics: Metrics) => {
+    setInsets(metrics.insets);
+    setFrame(metrics.frame);
+  }, []);
+
+  useEffect(() => {
+    if (Platform.OS !== "web") return;
+    const unsubscribe = subscribeSafeAreaInsets(handleSafeAreaUpdate);
+    return () => unsubscribe();
+  }, [handleSafeAreaUpdate]);
+
+  // Create clients once and reuse them
+  const [queryClient] = useState(
+    () =>
+      new QueryClient({
+        // v6.65: パフォーマンス計測の自動化（開発環境のみ）
+        queryCache: createPerformanceQueryCache(),
+        mutationCache: createPerformanceMutationCache(),
+        defaultOptions: {
+          queries: {
+            // Disable automatic refetching on window focus for mobile
+            refetchOnWindowFocus: false,
+            // Retry failed requests once
+            retry: 1,
+            // v5.36: キャッシュ期間を延長。２回目以降の表示を瞬時に
+            // Cache data for 60 minutes (stale-while-revalidate)
+            staleTime: 60 * 60 * 1000,
+            // Keep cached data for 4 hours
+            gcTime: 4 * 60 * 60 * 1000,
+          },
+        },
+      })
+  );
+  const [trpcClient] = useState(() => createTRPCClient());
+
+  // Ensure minimum 8px padding for top and bottom on mobile
+  const providerInitialMetrics = useMemo(() => {
+    const metrics = initialWindowMetrics ?? { insets: initialInsets, frame: initialFrame };
+    return {
+      ...metrics,
+      insets: {
+        ...metrics.insets,
+        top: Math.max(metrics.insets.top, 16),
+        bottom: Math.max(metrics.insets.bottom, 12),
+      },
+    };
+  }, [initialInsets, initialFrame]);
+
+  const content = (
+    <ErrorBoundary screenName="App">
+      <GestureHandlerRootView style={{ flex: 1, overflow: "hidden" }}>
+        <trpc.Provider client={trpcClient} queryClient={queryClient}>
+          <PersistQueryClientProvider client={queryClient} persistOptions={{ persister: asyncStoragePersister }}>
+            <EarlyPrefetch />
+            <Auth0Provider>
+              <AutoLoginProvider>
+                <LoginSuccessProvider>
+                  <TutorialProvider>
+                    <ExperienceProvider>
+                      <ToastProvider>
+                        <NavigationTrackingWrapper>
+                          <SmartPrefetchWrapper>
+                            <OnboardingWrapper>
+                          <Stack screenOptions={{ headerShown: false }}>
+                            <Stack.Screen name="(tabs)" />
+                          </Stack>
+                          <StatusBar style="auto" />
+                          <LoginSuccessModalWrapper />
+                          <OfflineBanner />
+                          <NetworkToast />
+                          <TutorialUI />
+                          <ConditionalExperienceOverlay />
+                            </OnboardingWrapper>
+                          </SmartPrefetchWrapper>
+                        </NavigationTrackingWrapper>
+                      </ToastProvider>
+                    </ExperienceProvider>
+                  </TutorialProvider>
+                </LoginSuccessProvider>
+              </AutoLoginProvider>
+            </Auth0Provider>
+          </PersistQueryClientProvider>
+        </trpc.Provider>
+      </GestureHandlerRootView>
+    </ErrorBoundary>
+  );
+
+  const shouldOverrideSafeArea = Platform.OS === "web";
+
+  if (shouldOverrideSafeArea) {
+    return (
+      <ThemeProvider>
+        <SafeAreaProvider initialMetrics={providerInitialMetrics}>
+          <SafeAreaFrameContext.Provider value={frame}>
+            <SafeAreaInsetsContext.Provider value={insets}>{content}</SafeAreaInsetsContext.Provider>
+          </SafeAreaFrameContext.Provider>
+        </SafeAreaProvider>
+      </ThemeProvider>
+    );
+  }
+
+  return (
+    <ThemeProvider>
+      <SafeAreaProvider initialMetrics={providerInitialMetrics}>{content}</SafeAreaProvider>
+    </ThemeProvider>
+  );
+}
